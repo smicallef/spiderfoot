@@ -20,7 +20,7 @@ seedUrl = 'http://www.telstra.com.au'
 # These can be overriden on a per-module basis
 sfConfig = {
     '_debug':           True, # Debug
-    '_debugfilter':     '', # Filter out debug strings
+    '_debugfilter':     'xref', # Filter out debug strings
     '_blocknotif':      False, # Block notifications
     '_useragent':       'SpiderFoot/2.0', # User-Agent to use for HTTP requests
     '_fetchtimeout':    1, # number of seconds before giving up on a fetch
@@ -34,16 +34,16 @@ moduleConfig = {
         'pause':    1
     },
     'sfp_mail': {
-        'enabled':  True
+        'enabled':  False
     },
     'sfp_websvr': {
-        'enabled':  True
+        'enabled':  False
     },
     'sfp_stor_print': {
-        'enabled':  True
+        'enabled':  False
     },
     'sfp_subdomain': {
-        'enabled':  True
+        'enabled':  False
     },
     'sfp_xref': {
         'enabled':  True
