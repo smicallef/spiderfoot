@@ -12,7 +12,7 @@
 import imp
 
 # URL to start from. This will be set either by the CLI or UI
-seedUrl = 'http://www.telstra.com.au'
+seedUrl = 'http://www.binarypool.com'
 
 # These are all hard-coded for now, but will eventually
 # be set by the UI or CLI
@@ -20,7 +20,7 @@ seedUrl = 'http://www.telstra.com.au'
 # These can be overriden on a per-module basis
 sfConfig = {
     '_debug':           True, # Debug
-    '_debugfilter':     'xref', # Filter out debug strings
+    '_debugfilter':     'pageinfo', # Filter out debug strings
     '_blocknotif':      False, # Block notifications
     '_useragent':       'SpiderFoot/2.0', # User-Agent to use for HTTP requests
     '_fetchtimeout':    1, # number of seconds before giving up on a fetch
@@ -40,16 +40,19 @@ moduleConfig = {
         'enabled':  False
     },
     'sfp_stor_print': {
-        'enabled':  False
+        'enabled':  True
     },
     'sfp_subdomain': {
         'enabled':  False
     },
     'sfp_xref': {
-        'enabled':  True
+        'enabled':  False
     },
     'sfp_similar': {
         'enabled':  False
+    },
+    'sfp_pageinfo': {
+        'enabled':  True
     }
 }
 
@@ -84,8 +87,8 @@ def main(url):
             if listenerModule != module and listenerModule.watchedEvents() != None:
                 module.registerListener(listenerModule)
 
+    # Start the modules sequentially.
     for module in moduleInstances.values():
-        # If the module extends the Thread class, then start it as a thread
         module.start()
 
 if __name__ == '__main__':
