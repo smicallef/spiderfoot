@@ -2,8 +2,7 @@
 # Name:         sfp_pageinfo
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
 #               modules (such as sfp_spider) and building up information about
-#               the page, such as whether it uses Javascript plug-ins, has
-#               forms, and more.
+#               the page, such as whether it uses Javascript, has forms, and more.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -25,7 +24,9 @@ regexps = dict({
     'WEBCONTENT_JAVASCRIPT':  list(['text/javascript', '<script']),
     'WEBCONTENT_FORM':        list(['<form ', 'method=[PG]']),
     'WEBCONTENT_PASSWORD':    list(['type=[\"\']*password']),
-    'WEBCONTENT_UPLOAD':      list(['type=[\"\']*file'])
+    'WEBCONTENT_UPLOAD':      list(['type=[\"\']*file']),
+    'WEBCONTENT_HASJAVA':     list(['<applet ']),
+    'WEBCONTENT_HASFLASH':    list(['\.swf[ \'\"]'])
 })
 
 results = dict()
