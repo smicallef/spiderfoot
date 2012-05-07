@@ -48,7 +48,7 @@ class sfp_googlesearch(SpiderFootPlugin):
         return None
 
     def start(self):
-        sf.googleIterate("site:ubs.com", {'pause': True})
+        sf.googleIterate("site:binarypool.com", {'pause': True})
 
 # End of sfp_googlesearch class
 
