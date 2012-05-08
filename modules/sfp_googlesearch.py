@@ -15,6 +15,7 @@ from sflib import SpiderFoot, SpiderFootPlugin
 
 # SpiderFoot standard lib (must be initialized in __init__)
 sf = None
+results = list()
 
 class sfp_googlesearch(SpiderFootPlugin):
     # Default options
@@ -22,7 +23,8 @@ class sfp_googlesearch(SpiderFootPlugin):
         # These must always be set
         '_debug':       True,
         '_debugfilter': '',
-        '_useragent':   'Mozilla/5.0 (Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0'
+        '_useragent':   'Mozilla/5.0 (Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
+        'fetchlinks':   True # Should we fetch links on the base domain?
     }
 
     # URL this instance is working on
@@ -48,7 +50,34 @@ class sfp_googlesearch(SpiderFootPlugin):
         return None
 
     def start(self):
-        sf.googleIterate("site:binarypool.com", {'pause': True})
+        # Sites hosted on the domain
+        pages = sf.googleIterate("site:" + self.baseDomain)
+        for page in pages.keys():
+            if page in results:
+                continue
+
+            self.notifyListeners("WEBCONTENT", page, pages[page])
+            results.append(page)
+
+            # We can optionally fetch links to our domain found in the search
+            # results. These may not have been identified through spidering.
+            if self.opts['fetchlinks']:
+                links = sf.parseLinks(page, pages[page])
+                if len(links) == 0:
+                    continue
+
+                for link in links:
+                    if link in results:
+                        continue
+                    sf.debug("Found a link: " + link)
+                    baseDom = sf.urlBaseDom(link)
+                    if baseDom == None:
+                        continue
+                    if baseDom.endswith(self.baseDomain):
+                        linkPage = sf.fetchUrl(link)
+                        self.notifyListeners("URL", page, link)
+                        self.notifyListeners("WEBCONTENT", link, linkPage['content'])
+                        results.append(link)
 
 # End of sfp_googlesearch class
 
