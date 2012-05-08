@@ -118,7 +118,7 @@ class SpiderFoot:
     def urlBaseUrl(self, url):
 
         if '://' in url:
-            bits = re.match('(.*://.[^/]*)/.*', url)
+            bits = re.match('(\w+://.[^/]*)/.*', url)
         else:
             bits = re.match('(.[^/]*)/', url)
 
@@ -132,7 +132,11 @@ class SpiderFoot:
     def urlBaseDom(self, url):
         url = self.urlBaseUrl(url)
         basedomainBits = url.rsplit('.', 2)
-        return basedomainBits[-2] + '.' + basedomainBits[-1]
+        try:
+            return basedomainBits[-2] + '.' + basedomainBits[-1]
+        except IndexError:
+            # Some error parsing the domain out of the URL
+            return None
 
     # Extract the keyword (the domain without the TLD or any subdomains)
     # from a URL
@@ -225,7 +229,7 @@ class SpiderFoot:
     # fetched and their contents {page => content}.
     # Options accepted:
     # limit: number of pages before returning, default is 10
-    # pause: randomly pause between fetches
+    # nopause: don't randomly pause between fetches
     def googleIterate(self, searchString, opts=dict()):
         limit = 10
         fetches = 0
@@ -259,7 +263,7 @@ class SpiderFoot:
             self.debug("Next Google URL: " + nextUrl)
 
             # Wait for a random number of seconds between fetches
-            if opts.has_key('pause'):
+            if not opts.has_key('nopause'):
                 pauseSecs = random.randint(4, 15)
                 self.debug("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
