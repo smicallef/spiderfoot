@@ -13,6 +13,7 @@
 import inspect
 import random
 import re
+import sqlite3
 import sys
 import time
 import urllib
@@ -29,6 +30,23 @@ class SpiderFoot:
     def __init__(self, options, handle=None):
         self.handle = handle
         self.opts = options
+
+        # connect() will create the database file if it doesn't exist, but
+        # at least we can use this opportunity to ensure we have permissions to
+        # read and write to such a file.
+        dbh = sqlite3.connect(options['_database'])
+        if dbh == None:
+            self.fatal("Could not connect to internal database. Check that " \
+                "spiderfoot.db exists and is readable and writable.")
+        self.dbh = dbh.cursor()
+
+        # Now we actually check to ensure the database file has the schema set
+        # up correctly.
+        try:
+            self.dbh.execute('SELECT COUNT(*) FROM tbl_scan_config')
+        except sqlite3.Error:
+            self.fatal("Found spiderfoot.db but it doesn't appear to be in " \
+                "the expected state - ensure the schema is created.")
 
         # initialize database handler for storing results
         return

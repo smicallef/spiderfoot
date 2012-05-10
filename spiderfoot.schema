@@ -1,0 +1,54 @@
+-------------------------------------------------------------------------------
+-- Name:         spiderfoot.schema
+-- Purpose:      Database schema for SpiderFoot
+--
+-- Author:      Steve Micallef <steve@binarypool.com>
+--
+-- Created:     10/05/2012
+-- Copyright:   (c) Steve Micallef 2012
+-- Licence:     GPL
+-------------------------------------------------------------------------------
+
+--
+-- Schema is for SQLite but has been left very generic in order to be compatible
+-- with any SQL-compliant RDBMS.
+--
+
+--
+-- Scan instances: Each scan run by the user against a target.
+--
+DROP TABLE tbl_scan_instance;
+CREATE TABLE tbl_scan_instance (
+	id		INT PRIMARY KEY,
+	name		VARCHAR NOT NULL,
+	seed_target	VARCHAR NOT NULL,
+	started		INT DEFAULT 0,
+	ended		INT DEFAULT 0,
+	status		VARCHAR NOT NULL
+);
+
+--
+-- Scan configs: The configuration used for a scan run.
+--
+DROP TABLE tbl_scan_config;
+CREATE TABLE tbl_scan_config (
+	scan_instance_id	INT NOT NULL REFERENCES tbl_scan_instance(id),
+	component		VARCHAR NOT NULL,
+	opt			VARCHAR NOT NULL,
+	val			VARCHAR NOT NULL
+);
+
+--
+-- Scan results: A collection of events stored in a semi-optimized way.
+--
+DROP TABLE tbl_scan_results;
+CREATE TABLE tbl_scan_results (
+	scan_instance_id	INT NOT NULL REFERENCES tbl_scan_instance(id),
+	generated		INT NOT NULL,
+	event			VARCHAR NOT NULL,
+	event_source		VARCHAR NOT NULL,
+	event_data		VARCHAR NOT NULL,
+	event_data_source	VARCHAR NOT NULL
+);
+
+CREATE INDEX idx_scan_results_event ON tbl_scan_results (scan_instance_id, event);
