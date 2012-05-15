@@ -65,6 +65,12 @@ class sfp_pageinfo(SpiderFootPlugin):
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        # We aren't interested in describing pages that are not hosted on
+        # our base domain.
+        if not eventSource.endswith(self.baseDomain):
+            sf.debug("Not gathering page info for " + eventSource)
+            return None
+
         if eventSource not in results.keys():
             results[eventSource] = list()
         else:

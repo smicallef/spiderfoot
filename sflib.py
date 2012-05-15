@@ -13,12 +13,9 @@
 import inspect
 import random
 import re
-import sqlite3
 import sys
 import time
-import urllib
 import urllib2
-
 
 class SpiderFoot:
     # 'options' is a dictionary of options which changes the behaviour
@@ -31,25 +28,9 @@ class SpiderFoot:
         self.handle = handle
         self.opts = options
 
-        # connect() will create the database file if it doesn't exist, but
-        # at least we can use this opportunity to ensure we have permissions to
-        # read and write to such a file.
-        dbh = sqlite3.connect(options['_database'])
-        if dbh == None:
-            self.fatal("Could not connect to internal database. Check that " \
-                "spiderfoot.db exists and is readable and writable.")
-        self.dbh = dbh.cursor()
-
-        # Now we actually check to ensure the database file has the schema set
-        # up correctly.
-        try:
-            self.dbh.execute('SELECT COUNT(*) FROM tbl_scan_config')
-        except sqlite3.Error:
-            self.fatal("Found spiderfoot.db but it doesn't appear to be in " \
-                "the expected state - ensure the schema is created.")
-
-        # initialize database handler for storing results
-        return
+    #
+    # Debug, error message and logging functions
+    #
 
     def error(self, error):
         if self.handle == None:
@@ -85,6 +66,10 @@ class SpiderFoot:
             #self.handle.debug(message)
             print 'should not be here'
         return
+
+    #
+    # URL parsing functions
+    #
 
     # Turn a relative path into an absolute path
     def urlRelativeToAbsolute(self, url):
@@ -162,6 +147,10 @@ class SpiderFoot:
         base = self.urlBaseUrl(url)
         domain = self.urlBaseDom(base)
         return domain.split('.', 2)[0]
+
+    #
+    # General helper functions to automate many common tasks between modules
+    #
 
     # Parse the contents of robots.txt, returns a list of patterns
     # which should not be followed
@@ -344,6 +333,9 @@ class SpiderFoot:
 
         return result
 
+#
+# SpiderFoot plug-in module base class
+#
 class SpiderFootPlugin(object):
     # Modules that will be notified when this module produces events
     _listenerModules = list()

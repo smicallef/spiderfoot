@@ -19,9 +19,10 @@
 --
 DROP TABLE tbl_scan_instance;
 CREATE TABLE tbl_scan_instance (
-	id		INT PRIMARY KEY,
+	guid		VARCHAR NOT NULL PRIMARY KEY,
 	name		VARCHAR NOT NULL,
 	seed_target	VARCHAR NOT NULL,
+	created		INT DEFAULT 0,
 	started		INT DEFAULT 0,
 	ended		INT DEFAULT 0,
 	status		VARCHAR NOT NULL
@@ -32,7 +33,7 @@ CREATE TABLE tbl_scan_instance (
 --
 DROP TABLE tbl_scan_config;
 CREATE TABLE tbl_scan_config (
-	scan_instance_id	INT NOT NULL REFERENCES tbl_scan_instance(id),
+	scan_instance_id	VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid),
 	component		VARCHAR NOT NULL,
 	opt			VARCHAR NOT NULL,
 	val			VARCHAR NOT NULL
@@ -43,7 +44,7 @@ CREATE TABLE tbl_scan_config (
 --
 DROP TABLE tbl_scan_results;
 CREATE TABLE tbl_scan_results (
-	scan_instance_id	INT NOT NULL REFERENCES tbl_scan_instance(id),
+	scan_instance_id	VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid),
 	generated		INT NOT NULL,
 	event			VARCHAR NOT NULL,
 	event_source		VARCHAR NOT NULL,
