@@ -27,10 +27,11 @@ class sfp_spider(SpiderFootPlugin):
         # options specific to this module
         'robotsonly':   False, # only follow links specified by robots.txt
         'pause':        0, # number of seconds to pause between fetches
-        'maxpages':     100, # max number of pages to fetch
+        'maxpages':     10000, # max number of pages to fetch
         'maxlevels':    10, # max number of levels to traverse within a site
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css',
-                        'pdf','tif','ico','flv'], # Extensions to not fetch
+                        'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg',
+			'mpeg', 'iso', 'dat', 'mov'], # Extensions to not fetch
         'filterusers':  True, # Don't follow /~user directories
         'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
         'nosubs':       False # Should links to subdomains be ignored?
@@ -212,7 +213,8 @@ class sfp_spider(SpiderFootPlugin):
 
                     totalFetched += 1
                     if totalFetched >= self.opts['maxpages']:
-                        sf.debug("Maximum number of pages (" + str(self.opts['maxpages']) + ") reached.")
+                        sf.debug("Maximum number of pages (" + str(self.opts['maxpages']) + 
+				") reached.")
                         keepSpidering = False
                         break
 
@@ -227,11 +229,13 @@ class sfp_spider(SpiderFootPlugin):
             levelsTraversed += 1
             sf.debug("Now at traversal level: " + str(levelsTraversed))
             if levelsTraversed >= self.opts['maxlevels']:
-                sf.debug("Maximum number of levels (" + str(self.opts['maxlevels']) + ") reached.")
+                sf.debug("Maximum number of levels (" + str(self.opts['maxlevels']) + 
+			") reached.")
                 keepSpidering = False
 
             # We've reached the end of our journey..
             if len(nextLinks) == 0:
+		sf.debug("No more links found to spider, finishing..")
                 keepSpidering = False
 
         return

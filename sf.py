@@ -40,28 +40,28 @@ moduleConfig = {
         'enabled':  True
     },
     'sfp_mail': {
-        'enabled':  False
+        'enabled':  True
     },
     'sfp_websvr': {
-        'enabled':  False
+        'enabled':  True
     },
     'sfp_stor_print': {
         'enabled':  False
     },
     'sfp_subdomain': {
-        'enabled':  False
+        'enabled':  True
     },
     'sfp_xref': {
-        'enabled':  False
+        'enabled': True
     },
     'sfp_similar': {
-        'enabled':  False
+        'enabled':  True
     },
     'sfp_pageinfo': {
-        'enabled':  False
+        'enabled':  True
     },
     'sfp_googlesearch': {
-        'enabled':  False
+        'enabled':  True
     }
 }
 
@@ -122,6 +122,10 @@ def main(url):
     sfdb.close()
 
 if __name__ == '__main__':
+	if len(sys.argv) == 1:
+		print "You must specify a target URL."
+		sys.exit(-1)
+
         # Process command-line options here (more advanced eventually..)
         seedUrl = sys.argv[1]
 
