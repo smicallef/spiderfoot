@@ -142,7 +142,7 @@ class SpiderFootDb:
             event_data, event_data_source) \
             VALUES (?, ?, ?, ?, ?, ?)"
         qvals = [instanceId, time.time() * 1000, eventName, eventSource,
-            eventData, eventDataSource]
+            eventData.__str__(), eventDataSource]
 
         try:
             self.dbh.execute(qry, qvals)

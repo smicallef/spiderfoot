@@ -17,6 +17,8 @@ from sflib import SpiderFoot, SpiderFootPlugin
 # SpiderFoot standard lib (must be initialized in __init__)
 sf = None
 
+results = dict()
+
 class sfp_subdomain(SpiderFootPlugin):
     # Default options
     opts = {
@@ -51,14 +53,18 @@ class sfp_subdomain(SpiderFootPlugin):
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        matches = re.findall("([a-zA-Z0-9\-\.]+)\." + self.baseDomain, eventData,
+        matches = re.findall("([a-zA-Z0-9\-\.]+\." + self.baseDomain + ")", eventData,
             re.IGNORECASE)
         if matches == None:
-            return
+            return None
 
         for match in matches:
-            sf.debug("Found sub-domain: " + match)
-            self.notifyListeners("SUBDOMAIN", eventSource, match)
+        	sf.debug("Found sub-domain: " + match)
+		if results.has_key(match):
+			continue
+		else:
+            		self.notifyListeners("SUBDOMAIN", eventSource, match)
+			results[match] = True
 
         return None
 

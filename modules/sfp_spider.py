@@ -85,10 +85,10 @@ class sfp_spider(SpiderFootPlugin):
 
     # Add a set of results to the results dictionary
     def storeResult(self, url, source=None, original=None, httpresult=None):
-        stored = ''
+        stored = '' # just used for debugging
 
         # Store in memory for use within this module and notify listeners
-        if not url in self.results.keys():
+        if url not in self.results.keys():
             self.results[url] = dict()
 
         if source != None:
@@ -103,18 +103,16 @@ class sfp_spider(SpiderFootPlugin):
         if httpresult != None:
             if httpresult.has_key('content'):
                 self.notifyListeners("WEBCONTENT", url, httpresult['content'])
-                self.results[url]['fetched'] = True
 
-            if httpresult.has_key('headers') and httpresult['headers'] != None:
-                if httpresult['headers'].has_key('Server'):
-                    sf.debug("Notifying for websvr: " + url)
-                    self.notifyListeners("WEBSERVER_BANNER", url, httpresult['headers']['Server'])
+            self.notifyListeners("WEBSERVER_HTTPHEADERS", url, httpresult['headers'])
+
+            self.results[url]['fetched'] = True
             stored += 'h'
 
         # Heavy debug
         #sf.debug("Results stored for " + url + ": " + str(self.results[url]))
         # Basic debug
-        sf.debug('stored result (elements:' + str(stored) + '): ' + url)
+        sf.debug('stored result (elements:' + stored + '): ' + url)
 
         # Eventually store to a database..
         return None

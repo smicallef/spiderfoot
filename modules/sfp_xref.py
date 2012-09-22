@@ -56,9 +56,9 @@ class sfp_xref(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        arr = list("URL")
+        arr = list('URL')
         if self.opts['checksimilar']:
-            arr.append("SIMILARDOMAIN")
+            arr.append('SIMILARDOMAIN')
         return arr
 
     # Handle events sent to this module
