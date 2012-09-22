@@ -2,6 +2,8 @@
 # Name:         sfp_dns
 # Purpose:      SpiderFoot plug-in for gathering IP addresses from sub-domains
 #		and hostnames identified, and optionally affiliates.
+#		Can also identify affiliates and other sub-domains based on
+#		reverse-looking up the IP address identified.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -18,12 +20,17 @@ from sflib import SpiderFoot, SpiderFootPlugin
 # SpiderFoot standard lib (must be initialized in __init__)
 sf = None
 
+results = dict()
+
 class sfp_dns(SpiderFootPlugin):
     # Default options
     opts = {
         # These must always be set
-        '_debug':       True,
-        '_debugfilter': ''
+        '_debug':       	True,
+        '_debugfilter': 	'',
+	'resolveaffiliate':	True, # Get IPs for affiliate domains
+	'reverselookup':	True  # Reverse-resolve IPs to names for
+				      # more clues.
     }
 
     # URL this instance is working on
@@ -46,15 +53,52 @@ class sfp_dns(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["SUBDOMAIN", "AFFILIATE"]
+	arr = ['SUBDOMAIN']
+	if self.opts['resolveaffiliate']:
+		arr.append('AFFILIATE')
+	if self.opts['reverselookup']:
+		arr.append('IP_ADDRESS')
+        return arr
 
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+	# Don't look up stuff twice
+	if results.has_key(eventData):
+		sf.debug("Skipping " + eventData + " as already resolved.")
+		return None
+	else:
+		results[eventData] = True
 
-        sf.debug("Found IP Address: " + match)
-        self.notifyListeners("IP_ADDRESS", eventSource, match)
+	try:
+		if eventName != 'IP_ADDRESS':
+			addrs = socket.gethostbyname_ex(eventData)
+		else:
+			addrs = socket.gethostbyaddr(eventData)
+	except socket.error as e:
+		sf.debug("Unable to resolve " + eventData + ", (" + e.message + ")")
+		return None
+	
+	# First element of tuple is primary hostname if requested name is 
+	# a CNAME, or an IP is being reverse looked up
+	if len(addrs[0]) > 0:
+		host = addrs[0]
+		sf.debug("Found possible URL: " + host)
+		self.notifyListeners("URL", eventData, host)
+
+		# If the returned hostname is on a different
+		# domain to baseDomain, flag it as an affiliate
+		if not host.endswith(self.baseDomain):
+			self.notifyListeners("AFFILIATE", eventData, host)
+
+	# In tests addr[1] was either always the requested lookup or empty
+
+	# Now the IP addresses..
+	if len(addrs[2]) > 0 and eventName != 'IP_ADDRESS':
+		for ipaddr in addrs[2]:
+		        sf.debug("Found IP Address: " + ipaddr)
+        		self.notifyListeners("IP_ADDRESS", eventData, ipaddr)
 
         return None
 
