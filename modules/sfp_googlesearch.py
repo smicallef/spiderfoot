@@ -24,7 +24,8 @@ class sfp_googlesearch(SpiderFootPlugin):
         '_debug':       True,
         '_debugfilter': '',
         '_useragent':   'Mozilla/5.0 (Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
-        'fetchlinks':   True # Should we fetch links on the base domain?
+        'fetchlinks':   True, # Should we fetch links on the base domain?
+	'pages':	20 # Number of google results pages to iterate
     }
 
     # URL this instance is working on
@@ -51,7 +52,7 @@ class sfp_googlesearch(SpiderFootPlugin):
 
     def start(self):
         # Sites hosted on the domain
-        pages = sf.googleIterate("site:" + self.baseDomain)
+        pages = sf.googleIterate("site:" + self.baseDomain, dict(limit=self.opts['pages']))
         for page in pages.keys():
             if page in results:
                 continue

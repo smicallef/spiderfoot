@@ -60,7 +60,7 @@ class sfp_websvr(SpiderFootPlugin):
         # banners and therefore classifying them further (type and version,
         # possibly OS. This could also trigger additional tests, such as 404s
         # and other errors to see what the header looks like.
-        if sf.urlBaseDom(eventSource) == self.baseDomain:
+        if sf.urlBaseDom(eventSource) == self.baseDomain and eventData.has_key('server'):
             self.notifyListeners("WEBSERVER_BANNER", eventSource, eventData['Server'])
             sf.debug("Found web server: " + eventData['Server'] + " (" + eventSource + ")")
 

@@ -40,7 +40,7 @@ moduleConfig = {
         'enabled':  True
     },
     'sfp_mail': {
-        'enabled':  False
+        'enabled':  True
     },
     'sfp_dns': {
 	'enabled': True
@@ -55,7 +55,7 @@ moduleConfig = {
         'enabled':  True
     },
     'sfp_xref': {
-        'enabled': False
+        'enabled': True
     },
     'sfp_similar': {
         'enabled':  False
@@ -64,7 +64,7 @@ moduleConfig = {
         'enabled':  True
     },
     'sfp_googlesearch': {
-        'enabled':  False
+        'enabled':  True
     }
 }
 

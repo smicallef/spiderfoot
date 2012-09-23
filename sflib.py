@@ -235,7 +235,7 @@ class SpiderFoot:
     # results based on options supplied. Will return a dictionary of all pages
     # fetched and their contents {page => content}.
     # Options accepted:
-    # limit: number of pages before returning, default is 10
+    # limit: number of search result pages before returning, default is 10
     # nopause: don't randomly pause between fetches
     def googleIterate(self, searchString, opts=dict()):
         limit = 10
