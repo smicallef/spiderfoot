@@ -12,8 +12,11 @@
 import imp
 import sys
 import time
+import cherrypy
+import os
 from sflib import SpiderFoot
 from sfdb import SpiderFootDb
+from sfwebui import SpiderFootWebUi
 
 # These are all hard-coded for now, but will eventually
 # be set by the UI or CLI
@@ -26,6 +29,8 @@ sfConfig = {
     '_useragent':       'SpiderFoot/2.0', # User-Agent to use for HTTP requests
     '_fetchtimeout':    1, # number of seconds before giving up on a fetch
     '_database':        'spiderfoot.db',
+    '_webaddr':         '0.0.0.0',
+    '_webport':         5001,
     '__guid__':         None # unique ID of scan. Will be set after start-up
 }
 
@@ -43,7 +48,7 @@ moduleConfig = {
         'enabled':  True
     },
     'sfp_dns': {
-	'enabled': True
+    'enabled': True
     },
     'sfp_websvr': {
         'enabled':  True
@@ -70,12 +75,6 @@ moduleConfig = {
 
 def main(url):
     moduleInstances = dict()
-
-    # Library functions (in here, only for debugging, error reporting, etc.)
-    sf = SpiderFoot(sfConfig)
-
-    # Set up the back-end database
-    sfdb = SpiderFootDb(sfConfig)
 
     # Create a unique ID for this scan and create it in the back-end DB.
     sfConfig['__guid__'] = sfdb.scanInstanceGenGUID(seedUrl)
@@ -125,12 +124,33 @@ def main(url):
     sfdb.close()
 
 if __name__ == '__main__':
-	if len(sys.argv) == 1:
-		print "You must specify a target URL."
-		sys.exit(-1)
+    if len(sys.argv) == 1:
+        print "You must specify a target URL."
+        sys.exit(-1)
 
-        # Process command-line options here (more advanced eventually..)
-        seedUrl = sys.argv[1]
+    # Process command-line options here (more advanced eventually..)
+    seedUrl = sys.argv[1]
 
-        # Start scanning...
-        main(seedUrl)
+    sf = SpiderFoot(sfConfig)
+    sfdb = SpiderFootDb(sfConfig)
+
+    # Start the web server so you can start looking at results
+    print "Starting web server at http://" + sfConfig['_webaddr'] + \
+        ":" + str(sfConfig['_webport']) + "..."
+
+    cherrypy.config.update({
+        'server.socket_host': sfConfig['_webaddr'],
+        'server.socket_port': sfConfig['_webport']
+    })
+
+    # Enable access to static files via the web directory
+    currentDir = os.path.dirname(os.path.abspath(__file__))
+    conf = { '/static': { 
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': os.path.join(currentDir, 'static')
+    }}
+                        
+    cherrypy.quickstart(SpiderFootWebUi(sfConfig), config=conf)
+
+    # Start scanning...
+    main(seedUrl)

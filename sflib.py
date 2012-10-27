@@ -354,17 +354,17 @@ class SpiderFootPlugin(object):
     # within the same execution context of this thread, not on their own.
     def notifyListeners(self, eventName, eventSource, eventData):
         if self.opts.has_key('blocknotif') and self.opts['_blocknotif']:
-	    #print "Notifications blocked for " + eventName + " to " + listener.__module__
+            #print "Notifications blocked for " + eventName + " to " + listener.__module__
             return None
 
         if eventData == None or len(eventData) == 0:
-	    #print "No data to send for " + eventName + " to " + listener.__module__
+            #print "No data to send for " + eventName + " to " + listener.__module__
             return None
 
         for listener in self._listenerModules:
-	    #print listener.__module__ + ": " + listener.watchedEvents().__str__()
+            #print listener.__module__ + ": " + listener.watchedEvents().__str__()
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
-		#print listener.__module__ + " not listening for " + eventName
+            #print listener.__module__ + " not listening for " + eventName
                 continue
             #print "Notifying " + eventName + " to " + listener.__module__
             listener.handleEvent(self.__module__, eventName, eventSource, eventData)

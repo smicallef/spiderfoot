@@ -24,8 +24,8 @@ class sfp_googlesearch(SpiderFootPlugin):
         '_debug':       True,
         '_debugfilter': '',
         '_useragent':   'Mozilla/5.0 (Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
-        'fetchlinks':   True, # Should we fetch links on the base domain?
-	'pages':	20 # Number of google results pages to iterate
+        'fetchlinks':   True,   # Should we fetch links on the base domain?
+        'pages':        20      # Number of google results pages to iterate
     }
 
     # URL this instance is working on

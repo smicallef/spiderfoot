@@ -52,10 +52,11 @@ class sfp_websvr(SpiderFootPlugin):
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-	if results.has_key(eventSource):
-		return None
-	else:
-		results[eventSource] = True
+        if results.has_key(eventSource):
+            return None
+        else:
+            results[eventSource] = True
+
         # Could apply some smarts here, for instance looking for certain
         # banners and therefore classifying them further (type and version,
         # possibly OS. This could also trigger additional tests, such as 404s

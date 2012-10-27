@@ -116,7 +116,34 @@ class SpiderFootDb:
             self.dbh.execute(qry, list(instanceId))
             return self.dbh.fetchone()
         except sqlite3.Error as e:
-            sf.fatal("SQL error encountered when retreiving scan instance:" +
+            sf.error("SQL error encountered when retreiving scan instance:" +
+                e.message)
+
+    # Obtain a summary of the results per event type
+    def scanResultSummary(self, instanceId):
+        qry = "SELECT r.event, e.event_descr, max(ROUND(generated))/1000 AS last_in, \
+            count(*) AS total FROM \
+            tbl_scan_results r, tbl_event_types e WHERE e.event = r.event \
+            AND r.scan_instance_id = ? GROUP BY r.event"
+        qvars = [instanceId]
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when fetching result summary: " +
+                e.message)
+
+    # Obtain the data for a scan and event type
+    def scanResultEvent(self, instanceId, eventType):
+        qry = "SELECT ROUND(generated/1000) as generated, event_data, event_source \
+            FROM tbl_scan_results WHERE scan_instance_id = ? AND \
+            event = ?"
+        qvars = [instanceId, eventType]
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when fetching result events: " +
                 e.message)
 
     # Delete a scan instance - don't need this yet
@@ -151,3 +178,19 @@ class SpiderFootDb:
         except sqlite3.Error as e:
             sf.fatal("SQL error encountered when storing event data: " +
                 e.message)
+
+    # List of all previously run scans
+    def scanInstanceList(self):
+        qry = "SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
+            ROUND(i.started)/1000, ROUND(i.ended)/1000, i.status, COUNT(r.event) \
+            FROM tbl_scan_instance i, tbl_scan_results r WHERE i.guid = r.scan_instance_id \
+            UNION ALL \
+            SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
+            ROUND(i.started)/1000, ROUND(i.ended)/1000, i.status, '0' \
+            FROM tbl_scan_instance i  WHERE i.guid NOT IN ( \
+            SELECT distinct scan_instance_id FROM tbl_scan_results)"
+        try:
+            self.dbh.execute(qry)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when fetching scan list: " + e.message)

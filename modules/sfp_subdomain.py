@@ -59,12 +59,12 @@ class sfp_subdomain(SpiderFootPlugin):
             return None
 
         for match in matches:
-        	sf.debug("Found sub-domain: " + match)
-		if results.has_key(match):
-			continue
-		else:
-            		self.notifyListeners("SUBDOMAIN", eventSource, match)
-			results[match] = True
+            sf.debug("Found sub-domain: " + match)
+            if results.has_key(match):
+                continue
+            else:
+                self.notifyListeners("SUBDOMAIN", eventSource, match)
+                results[match] = True
 
         return None
 
