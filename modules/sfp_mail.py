@@ -17,6 +17,8 @@ from sflib import SpiderFoot, SpiderFootPlugin
 # SpiderFoot standard lib (must be initialized in __init__)
 sf = None
 
+results = dict()
+
 class sfp_mail(SpiderFootPlugin):
     # Default options
     opts = {
@@ -57,6 +59,13 @@ class sfp_mail(SpiderFootPlugin):
         matches = re.findall("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9_\-]+)", eventData)
         for match in matches:
             sf.debug("Found email: " + match)
+
+            if results.has_key(match):
+                sf.debug("Already found, skipping.")
+                continue
+            else
+                results[match] = True
+
             # Include e-mail addresses on sub-domains within the domain?
             if self.opts['basedomainonly']:
                 if not match.endswith('@' + self.baseDomain):
