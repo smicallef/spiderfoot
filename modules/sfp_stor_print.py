@@ -38,6 +38,10 @@ class sfp_stor_print(SpiderFootPlugin):
 
         # For error reporting, debug, etc.
         sf = SpiderFoot(self.opts)
+   
+    # Module description
+    def descr(self):
+        return "Debugging module for printing results instead of storing them."
 
     # What events is this module interested in for input
     def watchedEvents(self):

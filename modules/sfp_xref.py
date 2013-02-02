@@ -16,10 +16,12 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin
 
-# SpiderFoot standard lib (must be initialized in __init__)
+# SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
 class sfp_xref(SpiderFootPlugin):
+    """Identify whether other domains are associated ('Affiliates') of the target."""
+
     # Default options
     opts = {
         # These must always be set
@@ -38,11 +40,12 @@ class sfp_xref(SpiderFootPlugin):
 
     # URL this instance is working on
     seedUrl = None
-    baseDomain = None # calculated from the URL in __init__
+    baseDomain = None # calculated from the URL in setup
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         self.seedUrl = url
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

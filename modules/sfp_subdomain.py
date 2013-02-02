@@ -17,9 +17,8 @@ from sflib import SpiderFoot, SpiderFootPlugin
 # SpiderFoot standard lib (must be initialized in __init__)
 sf = None
 
-results = dict()
-
 class sfp_subdomain(SpiderFootPlugin):
+    """ Identify hostnames / sub-domain names in URLs and obtained content. """
     # Default options
     opts = {
         # These must always be set
@@ -30,10 +29,12 @@ class sfp_subdomain(SpiderFootPlugin):
     # URL this instance is working on
     seedUrl = None
     baseDomain = None # calculated from the URL in __init__
+    results = dict()
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         self.seedUrl = url
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -60,11 +61,11 @@ class sfp_subdomain(SpiderFootPlugin):
 
         for match in matches:
             sf.debug("Found sub-domain: " + match)
-            if results.has_key(match):
+            if self.results.has_key(match):
                 continue
             else:
                 self.notifyListeners("SUBDOMAIN", eventSource, match)
-                results[match] = True
+                self.results[match] = True
 
         return None
 

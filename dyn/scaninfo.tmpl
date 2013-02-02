@@ -1,5 +1,5 @@
 <%include file="HEADER.tmpl"/>
-<h1>${id[0:15]}</h1>
+<h2>${name}</h2>
   <div class="btn-toolbar">
     <div class="btn-group">
       <a class="btn active" href="#" onClick='exploreEventList("${id}")'>Explore</a>
@@ -34,9 +34,9 @@
             $("#scansummary-content").remove();
             sf.fetchData('/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped'>";
-                            table += "<thead><tr> <th>Data Element</th><th>Obtained</th><th>Source</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Data Element</th><th>Obtained</th><th>Source</th><th>Module</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr><td>" + data[i][1] + "</td><td>" + data[i][0] + "</td><td>" + data[i][2] + "</td></tr>";
+                                table += "<tr><td>" + data[i][1] + "</td><td>" + data[i][0] + "</td><td>" + data[i][2] + "</td><td>" + data[i][3] + "</td></tr>";
                             }
                             table += "</tbody></table>"
                             $("#mainbody").append(table);

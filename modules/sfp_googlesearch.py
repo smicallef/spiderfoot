@@ -13,11 +13,12 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin
 
-# SpiderFoot standard lib (must be initialized in __init__)
+# SpiderFoot standard lib (must be initialized in setup)
 sf = None
-results = list()
 
 class sfp_googlesearch(SpiderFootPlugin):
+    """Some light Google scraping to identify links for spidering."""
+
     # Default options
     opts = {
         # These must always be set
@@ -30,11 +31,13 @@ class sfp_googlesearch(SpiderFootPlugin):
 
     # URL this instance is working on
     seedUrl = None
-    baseDomain = None # calculated from the URL in __init__
+    baseDomain = None # calculated from the URL in setup
+    results = list()
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         self.seedUrl = url
+        self.results = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -54,11 +57,11 @@ class sfp_googlesearch(SpiderFootPlugin):
         # Sites hosted on the domain
         pages = sf.googleIterate("site:" + self.baseDomain, dict(limit=self.opts['pages']))
         for page in pages.keys():
-            if page in results:
+            if page in self.results:
                 continue
 
             self.notifyListeners("WEBCONTENT", page, pages[page])
-            results.append(page)
+            self.results.append(page)
 
             # We can optionally fetch links to our domain found in the search
             # results. These may not have been identified through spidering.
@@ -68,7 +71,7 @@ class sfp_googlesearch(SpiderFootPlugin):
                     continue
 
                 for link in links:
-                    if link in results:
+                    if link in self.results:
                         continue
                     sf.debug("Found a link: " + link)
                     baseDom = sf.urlBaseDom(link)
@@ -78,7 +81,7 @@ class sfp_googlesearch(SpiderFootPlugin):
                         linkPage = sf.fetchUrl(link)
                         self.notifyListeners("URL", page, link)
                         self.notifyListeners("WEBCONTENT", link, linkPage['content'])
-                        results.append(link)
+                        self.results.append(link)
 
 # End of sfp_googlesearch class
 

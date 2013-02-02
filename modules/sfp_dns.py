@@ -17,12 +17,12 @@ import re
 import socket
 from sflib import SpiderFoot, SpiderFootPlugin
 
-# SpiderFoot standard lib (must be initialized in __init__)
+# SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
-results = dict()
-
 class sfp_dns(SpiderFootPlugin):
+    """Performs a number of DNS checks to obtain IP Addresses and Affiliates."""
+
     # Default options
     opts = {
         # These must always be set
@@ -35,11 +35,13 @@ class sfp_dns(SpiderFootPlugin):
 
     # URL this instance is working on
     seedUrl = None
-    baseDomain = None # calculated from the URL in __init__
+    baseDomain = None # calculated from the URL in setup
+    results = dict()
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         self.seedUrl = url
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -65,11 +67,11 @@ class sfp_dns(SpiderFootPlugin):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
-        if results.has_key(eventData):
+        if self.results.has_key(eventData):
             sf.debug("Skipping " + eventData + " as already resolved.")
             return None
         else:
-            results[eventData] = True
+            self.results[eventData] = True
 
         try:
             if eventName != 'IP_ADDRESS':

@@ -14,12 +14,12 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin
 
-# SpiderFoot standard lib (must be initialized in __init__)
+# SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
-results = dict()
-
 class sfp_mail(SpiderFootPlugin):
+    """ Identify e-mail addresses in any obtained web content."""
+
     # Default options
     opts = {
         # These must always be set
@@ -32,11 +32,13 @@ class sfp_mail(SpiderFootPlugin):
 
     # URL this instance is working on
     seedUrl = None
-    baseDomain = None # calculated from the URL in __init__
+    baseDomain = None # calculated from the URL in setup
+    results = dict()
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         self.seedUrl = url
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -60,11 +62,11 @@ class sfp_mail(SpiderFootPlugin):
         for match in matches:
             sf.debug("Found email: " + match)
 
-            if results.has_key(match):
+            if self.results.has_key(match):
                 sf.debug("Already found, skipping.")
                 continue
-            else
-                results[match] = True
+            else:
+                self.results[match] = True
 
             # Include e-mail addresses on sub-domains within the domain?
             if self.opts['basedomainonly']:

@@ -112,8 +112,9 @@ class SpiderFootDb:
     def scanInstanceGet(self, instanceId):
         qry = "SELECT name, seed_target, created, started, ended, status \
             FROM tbl_scan_instance WHERE guid = ?"
+        qvars = [instanceId]
         try:
-            self.dbh.execute(qry, list(instanceId))
+            self.dbh.execute(qry, qvars)
             return self.dbh.fetchone()
         except sqlite3.Error as e:
             sf.error("SQL error encountered when retreiving scan instance:" +
@@ -135,8 +136,8 @@ class SpiderFootDb:
 
     # Obtain the data for a scan and event type
     def scanResultEvent(self, instanceId, eventType):
-        qry = "SELECT ROUND(generated/1000) as generated, event_data, event_source \
-            FROM tbl_scan_results WHERE scan_instance_id = ? AND \
+        qry = "SELECT ROUND(generated/1000) as generated, event_data, event_source, \
+            event_data_source FROM tbl_scan_results WHERE scan_instance_id = ? AND \
             event = ?"
         qvars = [instanceId, eventType]
         try:
@@ -176,19 +177,24 @@ class SpiderFootDb:
             self.conn.commit()
             return None
         except sqlite3.Error as e:
-            sf.fatal("SQL error encountered when storing event data: " +
+            sf.fatal("SQL error encountered when storing event data (" + str(self.dbh) + ": " +
                 e.message)
 
     # List of all previously run scans
     def scanInstanceList(self):
+        # SQLite doesn't support OUTER JOINs, so we need a work-around that
+        # does a UNION of scans with results and scans without results to 
+        # get a complete listing.
         qry = "SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
-            ROUND(i.started)/1000, ROUND(i.ended)/1000, i.status, COUNT(r.event) \
+            ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, COUNT(r.event) \
             FROM tbl_scan_instance i, tbl_scan_results r WHERE i.guid = r.scan_instance_id \
+            GROUP BY i.guid \
             UNION ALL \
             SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
-            ROUND(i.started)/1000, ROUND(i.ended)/1000, i.status, '0' \
+            ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, '0' \
             FROM tbl_scan_instance i  WHERE i.guid NOT IN ( \
-            SELECT distinct scan_instance_id FROM tbl_scan_results)"
+            SELECT distinct scan_instance_id FROM tbl_scan_results) \
+            ORDER BY started DESC"
         try:
             self.dbh.execute(qry)
             return self.dbh.fetchall()

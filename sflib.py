@@ -43,11 +43,15 @@ class SpiderFoot:
     def fatal(self, error):
         if self.handle == None:
             print '[Fatal] ' + error
+            raise BaseException("Fatal Error Encountered.")
             exit(-1)
         else:
             #self.handle.error(error)
             print 'should not be here'
         return
+
+    def status(self, message):
+        print "STATUS: " + message
 
     def debug(self, message):
         if self.opts['_debug'] == False:
@@ -340,8 +344,17 @@ class SpiderFootPlugin(object):
     # Modules that will be notified when this module produces events
     _listenerModules = list()
 
+    # Not really needed in most cases.
+    def __init__(self):
+        pass
+
+    # Used to clear any listener relationships. This is needed because
+    # Python seems to cache local variables even between threads.
+    def clearListeners(self):
+        self._listenerModules = list()
+
     # Will always be overriden by the implementer.
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         pass
 
     # Listener modules which will get notified once we have data for them to

@@ -14,11 +14,13 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin
 
-# SpiderFoot standard lib (must be initialized in __init__)
+# SpiderFoot standard lib (must be initialized in setup)
 sf = None
 sfdb = None
 
 class sfp_stor_db(SpiderFootPlugin):
+    """Stores scan results into the back-end SpiderFoot database. You will need this."""
+
     # Default options
     opts = {
         # These must always be set
@@ -29,7 +31,7 @@ class sfp_stor_db(SpiderFootPlugin):
     # URL this instance is working on
     seedUrl = None
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         global sfdb
         self.seedUrl = url

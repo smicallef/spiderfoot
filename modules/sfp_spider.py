@@ -19,6 +19,8 @@ from sflib import SpiderFoot, SpiderFootPlugin
 sf = None
 
 class sfp_spider(SpiderFootPlugin):
+    """ Spidering of web-pages to extract content for searching. Probably the most important module. """
+
     # Default options
     opts = {
         # These must always be set
@@ -52,9 +54,10 @@ class sfp_spider(SpiderFootPlugin):
     # >> Not all of these will be populated at the same time <<
     results = dict()
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         self.seedUrl = url
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -161,13 +164,13 @@ class sfp_spider(SpiderFootPlugin):
                 continue
 
             # If we are respecting robots.txt, filter those out too
-            checkRobots = lambda blocked: str.lower(blocked) in str.lower(link) or blocked == '*'
+            checkRobots = lambda blocked: str.lower(blocked) in str.lower(str(link)) or blocked == '*'
             if self.opts['robotsonly'] and filter(checkRobots, self.robotsRules):
                 sf.debug("Ignoring page found in robots.txt: " + link)
                 continue
 
             # Filter out certain file types (if user chooses to)
-            checkExts = lambda ext: '.' + str.lower(ext) in str.lower(link)
+            checkExts = lambda ext: '.' + str.lower(ext) in str.lower(str(link))
             if filter(checkExts, self.opts['filterfiles']):
                 sf.debug('Ignoring filtered extension: ' + link)
                 continue
@@ -190,6 +193,11 @@ class sfp_spider(SpiderFootPlugin):
         levelsTraversed = 0
         nextLinks = dict()
 
+        # No links from the first fetch means we've got a problem
+        if links == None:
+            sf.error("No links found on the first fetch!")
+            return
+
         while keepSpidering:
             # Gets hit in the second and subsequent iterations when more links
             # are found
@@ -201,6 +209,7 @@ class sfp_spider(SpiderFootPlugin):
                     # Always skip links we've already fetched
                     if (link in self.results.keys() and self.results[link].has_key('fetched')):
                         if self.results[link]['fetched']:
+                            sf.debug("Already fetched " + link + ", skipping.")
                             continue
 
                     sf.debug("Fetching fresh content from: " + link)

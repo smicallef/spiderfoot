@@ -15,23 +15,24 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin
 
-# SpiderFoot standard lib (must be initialized in __init__)
+# SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
 # Indentify pages that use Javascript libs, handle passwords, have forms,
 # permit file uploads and more to come.
 regexps = dict({
-    'WEBCONTENT_JAVASCRIPT':  list(['text/javascript', '<script']),
-    'WEBCONTENT_FORM':        list(['<form ', 'method=[PG]']),
+    'WEBCONTENT_JAVASCRIPT':  list(['text/javascript', '<script ']),
+    'WEBCONTENT_FORM':        list(['<form ', 'method=[PG]', '<input ']),
     'WEBCONTENT_PASSWORD':    list(['type=[\"\']*password']),
     'WEBCONTENT_UPLOAD':      list(['type=[\"\']*file']),
     'WEBCONTENT_HASJAVA':     list(['<applet ']),
     'WEBCONTENT_HASFLASH':    list(['\.swf[ \'\"]'])
 })
 
-results = dict()
-
 class sfp_pageinfo(SpiderFootPlugin):
+    """Obtain information about web pages (do they take passwords, do they contain forms,
+etc.)"""
+
     # Default options
     opts = {
         # These must always be set
@@ -41,11 +42,13 @@ class sfp_pageinfo(SpiderFootPlugin):
 
     # URL this instance is working on
     seedUrl = None
-    baseDomain = None # calculated from the URL in __init__
+    baseDomain = None # calculated from the URL in setup
+    results = dict()
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         self.seedUrl = url
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -67,27 +70,26 @@ class sfp_pageinfo(SpiderFootPlugin):
 
         # We aren't interested in describing pages that are not hosted on
         # our base domain.
-        if not eventSource.endswith(self.baseDomain):
-            sf.debug("Not gathering page info for " + eventSource)
+        if sf.urlBaseDom(eventSource) != self.baseDomain:
+            sf.debug("Not gathering page info for external site " + eventSource)
             return None
 
-        if eventSource not in results.keys():
-            results[eventSource] = list()
-        else:
-            return None
+        if eventSource not in self.results.keys():
+            self.results[eventSource] = list()
 
         for regexpGrp in regexps.keys():
+            if regexpGrp in self.results[eventSource]:
+                next
+
             for regex in regexps[regexpGrp]:
                 matches = re.findall(regex, eventData, re.IGNORECASE)
-                if len(matches) > 0:
+                if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     sf.debug("Matched " + regex + " in content from " + eventSource)
                     self.notifyListeners(regexpGrp, eventSource, eventData)
-                    results[eventSource].append(regexpGrp)
-                    # Don't bother checking other regexps in this regexp group
-                    break
+                    self.results[eventSource].append(regexpGrp)
 
         # If no regexps were matched, consider this a static page
-        if len(results[eventSource]) == 0:
+        if len(self.results[eventSource]) == 0:
             sf.debug("Treating " + eventSource + " as WEBCONTENT_STATIC")
             self.notifyListeners("WEBCONTENT_STATIC", eventSource, eventData)
 

@@ -1,12 +1,19 @@
 <%include file="HEADER.tmpl"/>
-    <h1>Scans</h1>
+    <h2>Scans</h2>
+% if newscan:
+<div class="alert alert-success">
+ <button type="button" class="close" data-dismiss="alert">&times;</button>
+ <h4>Success!</h4>
+ Scan '${newscan}' has successfully been initiated. Reload this page for up-to-date status on the scan.
+</div>
+% endif
     <script type='text/javascript'>
             sf.fetchData('/scanlist', null, function(data) {
                             var table = "<table class='table table-bordered table-striped'>";
                             table += "<thead><tr> <th>Name</th> <th>Target</th> <th>Started</th> <th>Finished</th> <th>Status</th> <th>Events</th> </tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                            table += "<tr><td>" + data[i][1] + "</td>";
-                            table += "<td><a href=/scaninfo?id=" + data[i][0] + ">" + data[i][2] + "</a>&nbsp;&nbsp;<a target='_new' href='" + data[i][2] + "'><i class='icon-share icon-gray'></a></td>";
+                            table += "<tr><td><a href=/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
+                            table += "<td>" + data[i][2] + "&nbsp;&nbsp;<a target='_new' href='" + data[i][2] + "'><i class='icon-share icon-gray'></a></td>";
                             table += "<td>" + data[i][3] + "</td>";
                             table += "<td>" + data[i][5] + "</td>";
                             table += "<td>" + data[i][6] + "</td>";

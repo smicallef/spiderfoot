@@ -14,12 +14,12 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin
 
-# SpiderFoot standard lib (must be initialized in __init__)
+# SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
-results = dict()
-
 class sfp_websvr(SpiderFootPlugin):
+    """Obtain web server banners to identify versions of web servers being used."""
+
     # Default options
     opts = {
         # These must always be set
@@ -29,11 +29,13 @@ class sfp_websvr(SpiderFootPlugin):
 
     # URL this instance is working on
     seedUrl = None
-    baseDomain = None # calculated from the URL in __init__
+    baseDomain = None # calculated from the URL in setup
+    results = dict()
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         self.seedUrl = url
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -52,10 +54,10 @@ class sfp_websvr(SpiderFootPlugin):
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-        if results.has_key(eventSource):
+        if self.results.has_key(eventSource):
             return None
         else:
-            results[eventSource] = True
+            self.results[eventSource] = True
 
         # Could apply some smarts here, for instance looking for certain
         # banners and therefore classifying them further (type and version,

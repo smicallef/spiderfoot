@@ -38,10 +38,12 @@ whoisUrlN = "http://www.whois.net/domain-keyword-search/{0}/{1}"
 whoisLastPageIndicator = "Next >"
 whoisIncrement = 16
 
-# SpiderFoot standard lib (must be initialized in __init__)
+# SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
 class sfp_similar(SpiderFootPlugin):
+    """Search various sources to identify similar looking domain names."""
+
     # Default options
     opts = {
         '_debug':       True,
@@ -58,11 +60,12 @@ class sfp_similar(SpiderFootPlugin):
 
     # URL this instance is working on
     seedUrl = None
-    baseDomain = None # calculated from the URL in __init__
+    baseDomain = None # calculated from the URL in setup
 
-    def __init__(self, url, userOpts=dict()):
+    def setup(self, url, userOpts=dict()):
         global sf
         self.seedUrl = url
+        self.results = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
