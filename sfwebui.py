@@ -137,7 +137,7 @@ class SpiderFootWebUi:
     # Configure a new scan
     def newscan(self):
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
-        return templ.render(modules=self.config['__modules__'])
+        return templ.render(pageid='NEWSCAN', modules=self.config['__modules__'])
     newscan.exposed = True
 
     # Main page listing scans available

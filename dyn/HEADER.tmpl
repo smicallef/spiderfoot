@@ -39,8 +39,16 @@
           <a class="brand" href="/">SpiderFoot 2.0</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-                    <li><a href="/newscan"><i class="icon-screenshot icon-white"></i>&nbsp;New Scan</a></li>
-                    <li class="active"><a href="/"><i class="icon-book icon-white"></i>&nbsp;Scans</a></li>
+                    <li
+% if pageid == "NEWSCAN":
+    class="active"
+% endif
+><a href="/newscan"><i class="icon-screenshot icon-white"></i>&nbsp;New Scan</a></li>
+                    <li 
+% if pageid == "SCANLIST": 
+    class="active"
+% endif
+><a href="/"><i class="icon-book icon-white"></i>&nbsp;Scans</a></li>
                     <li><a href="#config"><i class="icon-wrench icon-white"></i>&nbsp;Settings</a></li>
             </ul>
             <ul class="nav pull-right">
