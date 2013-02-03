@@ -99,6 +99,10 @@ class sfp_similar(SpiderFootPlugin):
                 # Subsequent iterations have a different URL (in chunks of 16)
                 fetchPage = whoisUrlN.format(keyword, i * whoisIncrement)
 
+            # Check if we've been asked to stop
+            if self.checkForStop():
+                return None
+
             whois = sf.fetchUrl(fetchPage)
             if whois['content'] == None:
                 return None
@@ -126,6 +130,9 @@ class sfp_similar(SpiderFootPlugin):
                 fetchPage = domtoolUrlLeft.format(keyword, i)
             else:
                 fetchPage = domtoolUrlRight.format(keyword, i)
+
+            if self.checkForStop():
+                return None
 
             domtool = sf.fetchUrl(fetchPage)
             if domtool['content'] == None:
@@ -158,6 +165,9 @@ class sfp_similar(SpiderFootPlugin):
             else:
                 fetchPage = namedropUrlRight.format(keyword, i)
 
+            if self.checkForStop():
+                return None
+
             namedrop = sf.fetchUrl(fetchPage)
             if namedrop['content'] == None:
                 return None
@@ -184,6 +194,9 @@ class sfp_similar(SpiderFootPlugin):
 
         # Inform listening modules
         if self.opts['activeonly']:
+            if self.checkForStop():
+                return None
+
             pageContent = sf.fetchUrl('http://' + result)
             if pageContent['content'] != None:
                 self.notifyListeners("SIMILARDOMAIN", source, result)

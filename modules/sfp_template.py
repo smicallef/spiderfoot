@@ -59,6 +59,11 @@ class sfp_XXX(SpiderFootPlugin):
 
         return None
 
+    # If you intend for this module to act on its own (e.g. not solely rely
+    # on events from other modules, then you need to have a start() method
+    # and within that method call self.checkForStop() to see if you've been
+    # politely asked by the controller to stop your activities.
+
 # End of sfp_XXX class
 
 if __name__ == '__main__':

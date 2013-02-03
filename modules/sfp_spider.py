@@ -212,6 +212,10 @@ class sfp_spider(SpiderFootPlugin):
                             sf.debug("Already fetched " + link + ", skipping.")
                             continue
 
+                    # Check if we've been asked to stop
+                    if self.checkForStop():
+                        return None
+
                     sf.debug("Fetching fresh content from: " + link)
                     time.sleep(self.opts['pause'])
                     freshLinks = self.processUrl(link)
@@ -243,6 +247,10 @@ class sfp_spider(SpiderFootPlugin):
             # We've reached the end of our journey..
             if len(nextLinks) == 0:
                 sf.debug("No more links found to spider, finishing..")
+                keepSpidering = False
+
+            # We've been asked to stop scanning
+            if self.checkForStop():
                 keepSpidering = False
 
         return

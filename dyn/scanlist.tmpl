@@ -7,6 +7,13 @@
  Scan '${newscan}' has successfully been initiated. Reload this page for up-to-date status on the scan.
 </div>
 % endif
+% if stoppedscan:
+<div class="alert alert-warning">
+ <button type="button" class="close" data-dismiss="alert">&times;</button>
+ <h4>Scan aborted.</h4>
+ Please allow a minute or two for the scan to cleanly shut itself down.
+</div>
+% endif
 <div id=loader>
 Loading...
 <div class="progress progress-striped active">
@@ -18,12 +25,16 @@ Loading...
                             var table = "<table class='table table-bordered table-striped'>";
                             table += "<thead><tr> <th>Name</th> <th>Target</th> <th>Started</th> <th>Finished</th> <th>Status</th> <th>Events</th> </tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                            table += "<tr><td><a href=/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
-                            table += "<td>" + data[i][2] + "&nbsp;&nbsp;<a target='_new' href='" + data[i][2] + "'><i class='icon-share icon-gray'></a></td>";
-                            table += "<td>" + data[i][3] + "</td>";
-                            table += "<td>" + data[i][5] + "</td>";
-                            table += "<td>" + data[i][6] + "</td>";
-                            table += "<td>" + data[i][7] + "</td></tr>";
+                                table += "<tr><td><a href=/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
+                                table += "<td>" + data[i][2] + "&nbsp;&nbsp;<a target='_new' href='" + data[i][2] + "'><i class='icon-share icon-gray'></a></td>";
+                                table += "<td>" + data[i][3] + "</td>";
+                                 if (data[i][6] == "RUNNING") {
+                                    table += "<td><a href=/stopscan?id=" + data[i][0] +">Abort</a></td>";
+                                } else {
+                                    table += "<td>" + data[i][5] + "</td>";
+                                }
+                                table += "<td>" + data[i][6] + "</td>";
+                                table += "<td>" + data[i][7] + "</td></tr>";
                             }
                             table += "</tbody></table>"
                             $("#loader").fadeOut(250);

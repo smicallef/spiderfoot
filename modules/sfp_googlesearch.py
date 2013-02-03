@@ -60,6 +60,10 @@ class sfp_googlesearch(SpiderFootPlugin):
             if page in self.results:
                 continue
 
+            # Check if we've been asked to stop
+            if self.checkForStop():
+                return None
+
             self.notifyListeners("WEBCONTENT", page, pages[page])
             self.results.append(page)
 
@@ -78,6 +82,8 @@ class sfp_googlesearch(SpiderFootPlugin):
                     if baseDom == None:
                         continue
                     if baseDom.endswith(self.baseDomain):
+                        if self.checkForStop():
+                            return None
                         linkPage = sf.fetchUrl(link)
                         self.notifyListeners("URL", page, link)
                         self.notifyListeners("WEBCONTENT", link, linkPage['content'])

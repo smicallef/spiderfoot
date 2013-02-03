@@ -76,7 +76,7 @@ class SpiderFootDb:
                 ))
             self.conn.commit()
         except sqlite3.Error as e:
-            sf.fatal("Unable to create instance in DB: " + e.message)
+            sf.fatal("Unable to create instance in DB: " + e.args[0])
 
         return True
 
@@ -118,7 +118,7 @@ class SpiderFootDb:
             return self.dbh.fetchone()
         except sqlite3.Error as e:
             sf.error("SQL error encountered when retreiving scan instance:" +
-                e.message)
+                e.args[0])
 
     # Obtain a summary of the results per event type
     def scanResultSummary(self, instanceId):
@@ -132,7 +132,7 @@ class SpiderFootDb:
             return self.dbh.fetchall()
         except sqlite3.Error as e:
             sf.error("SQL error encountered when fetching result summary: " +
-                e.message)
+                e.args[0])
 
     # Obtain the data for a scan and event type
     def scanResultEvent(self, instanceId, eventType):
@@ -145,7 +145,7 @@ class SpiderFootDb:
             return self.dbh.fetchall()
         except sqlite3.Error as e:
             sf.error("SQL error encountered when fetching result events: " +
-                e.message)
+                e.args[0])
 
     # Delete a scan instance - don't need this yet
     def scanInstanceDelete(self, instanceId):
@@ -178,7 +178,7 @@ class SpiderFootDb:
             return None
         except sqlite3.Error as e:
             sf.fatal("SQL error encountered when storing event data (" + str(self.dbh) + ": " +
-                e.message)
+                e.args[0])
 
     # List of all previously run scans
     def scanInstanceList(self):
@@ -199,4 +199,4 @@ class SpiderFootDb:
             self.dbh.execute(qry)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching scan list: " + e.message)
+            sf.error("SQL error encountered when fetching scan list: " + e.args[0])

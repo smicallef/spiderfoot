@@ -257,6 +257,10 @@ class SpiderFoot:
             self.error("Google doesn't like us right now..")
             return None
 
+        if firstPage['content'] == None:
+            self.error("Failed to fetch content from Google.")
+            return None
+
         returnResults[seedUrl] = firstPage['content']
 
         matches = re.findall("(\/search\S+start=\d+.[^\'\"]*sa=N)", firstPage['content'])
@@ -282,6 +286,10 @@ class SpiderFoot:
             nextPage = self.fetchUrl('http://www.google.com' + nextUrl)
             if firstPage['code'] == 403:
                 self.error("Google doesn't like us any more..")
+                return returnResults
+
+            if nextPage['content'] == None:
+                self.error("Failed to fetch subsequent content from Google.")
                 return returnResults
 
             returnResults[nextUrl] = nextPage['content']
@@ -330,7 +338,7 @@ class SpiderFoot:
             if fatal:
                 self.fatal('URL could not be fetched (' + str(e) + ')')
         except Exception as x:
-            self.error("Unexpected exception occurred: " + str(x))
+            self.error("Unexpected exception occurred fetching: " + url + "(" + str(x) + ")")
             result['status'] = str(x)
             if fatal:
                 self.fatal('URL could not be fetched (' + str(x) + ')')
@@ -341,6 +349,8 @@ class SpiderFoot:
 # SpiderFoot plug-in module base class
 #
 class SpiderFootPlugin(object):
+    # Will be set to True by the controller if the user aborts scanning
+    _stopScanning = False
     # Modules that will be notified when this module produces events
     _listenerModules = list()
 
@@ -348,10 +358,11 @@ class SpiderFootPlugin(object):
     def __init__(self):
         pass
 
-    # Used to clear any listener relationships. This is needed because
+    # Used to clear any listener relationships, etc. This is needed because
     # Python seems to cache local variables even between threads.
     def clearListeners(self):
         self._listenerModules = list()
+        self._stopScanning = False
 
     # Will always be overriden by the implementer.
     def setup(self, url, userOpts=dict()):
@@ -366,6 +377,11 @@ class SpiderFootPlugin(object):
     # events from this plug-in. Remember that those plug-ins will be called
     # within the same execution context of this thread, not on their own.
     def notifyListeners(self, eventName, eventSource, eventData):
+        # Check if we've been asked to stop in the meantime, so that
+        # notifications stop triggering module activity.
+        if self.checkForStop():
+            return None
+
         if self.opts.has_key('blocknotif') and self.opts['_blocknotif']:
             #print "Notifications blocked for " + eventName + " to " + listener.__module__
             return None
@@ -377,10 +393,18 @@ class SpiderFootPlugin(object):
         for listener in self._listenerModules:
             #print listener.__module__ + ": " + listener.watchedEvents().__str__()
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
-            #print listener.__module__ + " not listening for " + eventName
+                #print listener.__module__ + " not listening for " + eventName
                 continue
             #print "Notifying " + eventName + " to " + listener.__module__
             listener.handleEvent(self.__module__, eventName, eventSource, eventData)
+
+    # Called to stop scanning
+    def stopScanning(self):
+        self._stopScanning = True
+
+    # For modules to use to check for when they should give back control
+    def checkForStop(self):
+        return self._stopScanning
 
     # Return a list of the default configuration options for the module.
     def defaultOpts(self):
