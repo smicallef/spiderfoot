@@ -2,16 +2,22 @@
 <h2>${name}</h2>
   <div class="btn-toolbar">
     <div class="btn-group">
-      <a class="btn active" href="#" onClick='exploreEventList("${id}")'>Explore</a>
+      <a class="btn active" href="#" onClick='browseEventList("${id}")'>Browse</a>
       <a class="btn" href="#">Config</a>
-      <a class="btn" href="#">Compare</a>
-      <a class="btn" href="#">Export</a>
       <a class="btn" href="#">Search</a>
     </div>
   </div>
+
+<div id=loader>
+Loading...
+<div class="progress progress-striped active">
+    <div class="bar" style="width: 100%"></div>
+</div>
+</div>
+
     <script type='text/javascript'>
         // Summary of event types and counts for a scan
-        function exploreEventList(instanceId) {
+        function browseEventList(instanceId) {
             // Remove pre-existing tables if they exist
             $("#scansummary-content").remove();
             sf.fetchData('/scansummary', {'id': instanceId}, function(data) {
@@ -19,19 +25,21 @@
                             table += "<thead><tr> <th>Type</th> <th>Events</th><th>Last Provided</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a onClick='";
-                                table += "exploreEventData(\"${id}\", \"" + data[i][0] + "\")' href='#'>";
+                                table += "browseEventData(\"${id}\", \"" + data[i][0] + "\")' href='#'>";
                                 table += data[i][1] + "</a></td>";
                                 table += "<td>" + data[i][3] + "</td>";
                                 table += "<td>" + data[i][2] + "</td>";
                             }
                             table += "</tbody></table>"
+                            $("#loader").fadeOut(250);
                             $("#mainbody").append(table);
             });
         }
 
         // Detailed view of data for an event type for a scan
-        function exploreEventData(instanceId, eventType) {
+        function browseEventData(instanceId, eventType) {
             $("#scansummary-content").remove();
+            $("#loader").show();
             sf.fetchData('/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped'>";
                             table += "<thead><tr> <th>Data Element</th><th>Obtained</th><th>Source</th><th>Module</th></tr></thead><tbody>";
@@ -39,11 +47,12 @@
                                 table += "<tr><td>" + data[i][1] + "</td><td>" + data[i][0] + "</td><td>" + data[i][2] + "</td><td>" + data[i][3] + "</td></tr>";
                             }
                             table += "</tbody></table>"
+                            $("#loader").fadeOut(250);
                             $("#mainbody").append(table);
             });
         }
 
-        exploreEventList("${id}");
+        browseEventList("${id}");
 
     </script>
 <%include file="FOOTER.tmpl"/>

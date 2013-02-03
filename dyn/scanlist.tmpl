@@ -7,6 +7,12 @@
  Scan '${newscan}' has successfully been initiated. Reload this page for up-to-date status on the scan.
 </div>
 % endif
+<div id=loader>
+Loading...
+<div class="progress progress-striped active">
+    <div class="bar" style="width: 100%"></div>
+</div>
+</div>
     <script type='text/javascript'>
             sf.fetchData('/scanlist', null, function(data) {
                             var table = "<table class='table table-bordered table-striped'>";
@@ -20,6 +26,7 @@
                             table += "<td>" + data[i][7] + "</td></tr>";
                             }
                             table += "</tbody></table>"
+                            $("#loader").fadeOut(250);
                             $("#mainbody").append(table);                        
             });
     </script>

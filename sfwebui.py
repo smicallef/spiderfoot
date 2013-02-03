@@ -62,7 +62,7 @@ class SpiderFootDataProvider:
             lastseen = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[0]))
             escaped = cgi.escape(row[1])
             retdata.append([lastseen, escaped, row[2], row[3]])
-        return json.dumps(retdata)
+        return json.dumps(retdata, ensure_ascii=False)
 
     def startScan(self, name, target, moduleList, moduleOpts):
         dbh = SpiderFootDb(self.config)
@@ -184,6 +184,10 @@ class SpiderFootWebUi:
     # Initiate a scan
     def startscan(self, scanname, scantarget, modulelist):
         modopts = dict()
+
+        if scanname == "" or scantarget == "" or modulelist == "":
+            return self.error("Form incomplete.")
+
         modlist = modulelist.replace('module_', '').split(',')
 
         # For now we don't permit multiple simultaneous scans

@@ -79,7 +79,7 @@ class sfp_dns(SpiderFootPlugin):
             else:
                 addrs = socket.gethostbyaddr(eventData)
         except socket.error as e:
-            sf.debug("Unable to resolve " + eventData + ", (" + e.message + ")")
+            sf.debug("Unable to resolve " + eventData)
             return None
     
         # First element of tuple is primary hostname if requested name is 
