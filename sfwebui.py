@@ -139,6 +139,7 @@ class SpiderFootDataProvider:
             print "Scan [" + sfConfig['__guid__'] + "] failed."
             dbh.scanInstanceSet(sfConfig['__guid__'], None, time.time() * 1000, 'ERROR-FAILED')
 
+        self.moduleInstances = None
         dbh.close()
 
 class SpiderFootWebUi:
@@ -244,6 +245,9 @@ class SpiderFootWebUi:
     # Stop a scan (id variable is unnecessary for now given that only one simultaneous
     # scan is permitted.)
     def stopscan(self, id):
+        if self.dp.moduleInstances == None:
+            return self.error("There are no scans running. A data consistency error for this scan probably exists. <a href='/scandelete?id=" + id + "&confirm=1'>Click here to delete it.</a>")
+
         for modName in self.dp.moduleInstances.keys():
             print "Signalling module " + modName + " to stop."
             self.dp.moduleInstances[modName].stopScanning()
