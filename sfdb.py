@@ -147,9 +147,20 @@ class SpiderFootDb:
             sf.error("SQL error encountered when fetching result events: " +
                 e.args[0])
 
-    # Delete a scan instance - don't need this yet
+    # Delete a scan instance
     def scanInstanceDelete(self, instanceId):
-        pass
+        qry1 = "DELETE FROM tbl_scan_instance WHERE guid = ?"
+        qry2 = "DELETE FROM tbl_scan_config WHERE scan_instance_id = ?"
+        qry3 = "DELETE FROM tbl_scan_results WHERE scan_instance_id = ?"
+        qvars = [instanceId]
+        try:
+            self.dbh.execute(qry1, qvars)
+            self.dbh.execute(qry2, qvars)
+            self.dbh.execute(qry3, qvars)
+            self.conn.commit()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when deleting scan: " +
+                e.args[0])
 
     # Store a configuration value for a scan
     # To unset, simply set the optMap key value to None

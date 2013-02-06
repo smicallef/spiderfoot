@@ -183,6 +183,21 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
         return templ.render(message=message)
 
+    # Delete a scan
+    def scandelete(self, id, confirm=None):
+        dbh = SpiderFootDb(self.config)
+        res = dbh.scanInstanceGet(id)
+        if res == None:
+            return self.error("Scan ID not found.")
+
+        if confirm != None:
+            dbh.scanInstanceDelete(id)
+            raise cherrypy.HTTPRedirect("/")
+        else:
+            templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
+            return templ.render(id=id, name=res[0])
+    scandelete.exposed = True
+
     #
     # DATA PROVIDERS
     #
