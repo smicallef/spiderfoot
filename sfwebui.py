@@ -13,9 +13,12 @@ import threading
 import cherrypy
 import cgi
 import time
+import urllib2
+from copy import deepcopy
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from sfdb import SpiderFootDb
+from sflib import SpiderFoot
 
 # Data providers called by front-end javascript
 # Each name maps to the data provider interface below, e.g. scanlistData()
@@ -65,17 +68,21 @@ class SpiderFootDataProvider:
             retdata.append([lastseen, escaped, row[2], row[3]])
         return json.dumps(retdata, ensure_ascii=False)
 
-    def startScan(self, name, target, moduleList, moduleOpts):
-        dbh = SpiderFootDb(self.config)
+    def startScan(self, name, target, moduleList, globalOpts, moduleOpts):
+        dbh = SpiderFootDb(globalOpts)
         self.moduleInstances = dict()
         aborted = False
 
-        # Take a copy of the configuration
-        sfConfig = self.config
+        # Take a copy of the configuration supplied
+        sfConfig = deepcopy(globalOpts)
         # Create a unique ID for this scan and create it in the back-end DB.
         sfConfig['__guid__'] = dbh.scanInstanceGenGUID(target)
         dbh.scanInstanceCreate(sfConfig['__guid__'], name, target)
         dbh.scanInstanceSet(sfConfig['__guid__'], time.time() * 1000, None, 'STARTING')
+        
+        # Save the config current set for this scan
+        sf = SpiderFoot(sfConfig)
+        dbh.scanConfigSet(sfConfig['__guid__'], sf.configSerialize(sfConfig))
 
         print "Scan [" + sfConfig['__guid__'] + "] initiated."
         # moduleList = list of modules the user wants to run
@@ -90,7 +97,7 @@ class SpiderFootDataProvider:
                 # Build up config to consist of general and module-specific config
                 # to override defaults within the module itself
                 # *** Modules are not yet configurable via the UI ***
-                sfConfig.update(moduleOpts)
+                #sfConfig.update(moduleOpts)
 
                 # A bit hacky: we pass the database object as part of the config. This
                 # object should only be used by the internal SpiderFoot modules writing
@@ -135,8 +142,8 @@ class SpiderFootDataProvider:
             else:
                 print "Scan [" + sfConfig['__guid__'] + "] completed."
                 dbh.scanInstanceSet(sfConfig['__guid__'], None, time.time() * 1000, 'FINISHED')
-        except Exception:
-            print "Scan [" + sfConfig['__guid__'] + "] failed."
+        except Exception as e:
+            print "Scan [" + sfConfig['__guid__'] + "] failed: " + str(e)
             dbh.scanInstanceSet(sfConfig['__guid__'], None, time.time() * 1000, 'ERROR-FAILED')
 
         self.moduleInstances = None
@@ -145,12 +152,18 @@ class SpiderFootDataProvider:
 class SpiderFootWebUi:
     dp = None
     lookup = TemplateLookup(directories=[''])
+    defaultConfig = dict()
 
     def __init__(self, config):
+        self.defaultConfig = deepcopy(config)
         # Data provider will provide all data from the DB
         self.dp = SpiderFootDataProvider(config)
-        self.config = config
-        return
+        dbh = SpiderFootDb(config)
+        # 'config' supplied will be the defaults, let's supplement them
+        # now with any configuration which may have previously been
+        # saved.
+        sf = SpiderFoot(config)
+        self.config = sf.configUnserialize(dbh.configGet(), config)
 
     #
     # USER INTERFACE PAGES
@@ -177,8 +190,14 @@ class SpiderFootWebUi:
             return self.error("Scan ID not found.")
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=id, name=res[0], pageid='SCANINFO')
+        return templ.render(id=id, name=res[0], pageid='SCANLIST')
     scaninfo.exposed = True
+
+    # Settings
+    def opts(self):
+        templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
+        return templ.render(opts=self.config, pageid='SETTINGS')
+    opts.exposed = True
 
     def error(self, message):
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
@@ -218,6 +237,31 @@ class SpiderFootWebUi:
         return self.dp.scaneventresultsData(id, eventType)
     scaneventresults.exposed = True
 
+    # Save settings, also used to completely reset them to default
+    def savesettings(self, allopts):
+        try:
+            dbh = SpiderFootDb(self.config)
+            # Reset config to default
+            if allopts == "RESET":
+                dbh.configClear() # Clear it in the DB
+                self.config = deepcopy(self.defaultConfig) # Clear in memory
+            else:
+                useropts = json.loads(allopts)
+                currentopts = deepcopy(self.config)
+
+                # Make a new config where the user options override
+                # the current system config.
+                sf = SpiderFoot(self.config)
+                self.config = sf.configUnserialize(useropts, currentopts)
+    
+                dbh.configSet(sf.configSerialize(currentopts))
+        except Exception as e:
+            return self.error("Processing one or more of your inputs failed: " + str(e))
+
+        templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
+        return templ.render(opts=self.config, pageid='SETTINGS', updated=True)
+    savesettings.exposed = True
+
     # Initiate a scan
     def startscan(self, scanname, scantarget, modulelist):
         modopts = dict()
@@ -235,7 +279,7 @@ class SpiderFootWebUi:
         
         # Start running a new scan
         print "Spawning thread for new scan..."
-        t = threading.Thread(name="SF_" + scanname, target=self.dp.startScan, args=(scanname, scantarget, modlist, modopts))
+        t = threading.Thread(name="SF_" + scanname, target=self.dp.startScan, args=(scanname, scantarget, modlist, self.config, modopts))
         t.start()
 
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)

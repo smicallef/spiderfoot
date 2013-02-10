@@ -24,8 +24,8 @@ class sfp_spider(SpiderFootPlugin):
     # Default options
     opts = {
         # These must always be set
-        '_debug':       True,
-        '_debugfilter': '',
+        '__debug':       True,
+        '__debugfilter': '',
         # options specific to this module
         'robotsonly':   False, # only follow links specified by robots.txt
         'pause':        0, # number of seconds to pause between fetches

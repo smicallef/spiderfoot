@@ -14,5 +14,5 @@ INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT_JAVASCRIPT'
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT_STATIC', 'Web Content (Purely Static)');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT_PASSWORD', 'Web Content (Accepts Passwords)');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT_UPLOAD', 'Web Content (Accepts Uploads)');
-INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT_BANNER', 'Web Server');
-INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT_HTTPHEADERS', 'HTTP Headers');
+INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBSERVER_BANNER', 'Web Server');
+INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBSERVER_HTTPHEADERS', 'HTTP Headers');

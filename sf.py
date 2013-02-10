@@ -17,19 +17,18 @@ import os
 from sflib import SpiderFoot
 from sfwebui import SpiderFootWebUi
 
-# These are all hard-coded for now, but will eventually
-# be set by the UI or CLI
 # 'Global' configuration options
-# These can be overriden on a per-module basis
+# These can be overriden on a per-module basis, and some will
+# be overridden from saved configuration settings stored in the DB.
 sfConfig = {
     '_debug':           True, # Debug
-    '_debugfilter':     '', # Filter out debug strings
-    '_blocknotif':      False, # Block notifications
+    '__debugfilter':     '', # Filter out debug strings
+    '__blocknotif':      False, # Block notifications
     '_useragent':       'SpiderFoot/2.0', # User-Agent to use for HTTP requests
     '_fetchtimeout':    1, # number of seconds before giving up on a fetch
-    '_database':        'spiderfoot.db',
-    '_webaddr':         '0.0.0.0',
-    '_webport':         5001,
+    '__database':        'spiderfoot.db',
+    '__webaddr':         '0.0.0.0',
+    '__webport':         5001,
     '__guid__':         None, # unique ID of scan. Will be set after start-up.
     '__modules__':        None # List of modules. Will be set after start-up.
 }
@@ -51,6 +50,7 @@ if __name__ == '__main__':
             mod = __import__('modules.' + modName, globals(), locals(), [modName])
             sfModules[modName]['object'] = getattr(mod, modName)()
             sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__
+            sfModules[modName]['opts'] = sfModules[modName]['object'].opts
 
     if len(sfModules.keys()) < 1:
         print "No modules found in the modules directory."
@@ -60,12 +60,12 @@ if __name__ == '__main__':
     sfConfig['__modules__'] = sfModules
 
     # Start the web server so you can start looking at results
-    print "Starting web server at http://" + sfConfig['_webaddr'] + \
-        ":" + str(sfConfig['_webport']) + "..."
+    print "Starting web server at http://" + sfConfig['__webaddr'] + \
+        ":" + str(sfConfig['__webport']) + "..."
 
     cherrypy.config.update({
-        'server.socket_host': sfConfig['_webaddr'],
-        'server.socket_port': sfConfig['_webport']
+        'server.socket_host': sfConfig['__webaddr'],
+        'server.socket_port': sfConfig['__webport']
     })
 
     # Enable access to static files via the web directory

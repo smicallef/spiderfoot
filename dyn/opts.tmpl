@@ -1,0 +1,107 @@
+<%include file="HEADER.tmpl"/>
+<script type='text/javascript'>
+    function saveSettings() {
+        var retarr = {}
+        $(":input").each(function(i) {
+            retarr[$(this).attr('id')] = $(this).val();
+        });
+
+        $("#allopts").val(JSON.stringify(retarr));
+    }
+
+    function clearSettings() {
+        $("#allopts").val("RESET");
+    }
+
+</script>
+    <h2>Settings</h2>
+% if updated:
+<div class="alert alert-success">
+ <button type="button" class="close" data-dismiss="alert">&times;</button>
+ <h4>Success!</h4>
+ Settings updated. These will take effect the next time you run a scan.
+</div>
+% endif
+<form class="form" action='/savesettings' method='POST'>
+<h4>Global Settings</h4>
+<table class='table table-bordered table-striped'>
+<thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>
+% for opt in sorted(opts.keys()):
+    % if not opt.startswith("__"):
+    <tr><td>${opt}</td><td>
+        % if type(opts[opt]) is int:
+            <input id='${opt}' class='input-mini' type=text value="${opts[opt]}">
+        % endif
+        % if type(opts[opt]) is str:
+            <input id='${opt}' class='input-xxlarge' type=text value="${opts[opt]}">
+        % endif
+        % if type(opts[opt]) is bool:
+        <%
+            if opts[opt] == True:
+                seltrue = "selected"
+                selfalse = ""
+            else:
+                selfalse = "selected"  
+                seltrue = ""
+        %>
+            <select id='${opt}'>
+                <option value=1 ${seltrue}>True</option>
+                <option value=0 ${selfalse}>False</option>
+            </select>
+        % endif
+        % if type(opts[opt]) is list:
+            <% expandedopt = ','.join(opts[opt]) %>
+            <input id='${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+        % endif
+    </td></tr>
+    % endif
+% endfor
+</tbody>
+</table>
+<br>
+<h4>Module Settings</h4>
+<table class='table table-bordered table-striped'>
+<thead><tr> <th>Module</th> <th>Option</th> <th>Value</th></tr></thead><tbody>
+% for mod in sorted(opts['__modules__'].keys()):
+    % for opt in opts['__modules__'][mod]['opts'].keys():
+        <% modopts = opts['__modules__'][mod]['opts'] %>
+        % if not opt.startswith("_"):
+            <tr><td>${mod}</td><td>${opt}</td><td>
+            % if type(modopts[opt]) is int:
+                <input id='${mod}:${opt}' class='input-mini' type=text value="${modopts[opt]}">
+            % endif
+            % if type(modopts[opt]) is str:
+                <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${modopts[opt]}">
+            % endif
+            % if type(modopts[opt]) is bool:
+            <%
+                if modopts[opt] == True:
+                    seltrue = "selected"
+                    selfalse = ""
+                else:
+                    selfalse = "selected"
+                    seltrue = ""
+            %>
+                <select id='${mod}:${opt}'>
+                    <option value=1 ${seltrue}>True</option>
+                    <option value=0 ${selfalse}>False</option>
+                </select>
+            % endif
+            % if type(modopts[opt]) is list:
+                <% expandedopt = ','.join(modopts[opt]) %>
+                <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+            % endif
+            </td></tr>
+        % endif
+    % endfor
+% endfor
+</tbody>
+</table>
+<div style='text-align: right'>
+    <input type=hidden id='allopts' name='allopts' value=''>
+    <button onClick='clearSettings();' class='btn btn-danger'>Reset to Default</button>
+    <button onClick='saveSettings();' class='btn btn-primary'>Save Changes</button>
+</div>
+</form>
+<br><br>
+<%include file="FOOTER.tmpl"/>

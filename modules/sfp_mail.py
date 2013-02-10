@@ -23,8 +23,8 @@ class sfp_mail(SpiderFootPlugin):
     # Default options
     opts = {
         # These must always be set
-        '_debug':       True,
-        '_debugfilter': '',
+        '__debug':       True,
+        '__debugfilter': '',
         # options specific to this module
         'basedomainonly':   False, # Only capture e-mail addrs on the base domain
         'includeexternal':  False # Include e-mail addrs on external domains

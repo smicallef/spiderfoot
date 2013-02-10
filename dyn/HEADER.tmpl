@@ -28,7 +28,7 @@
 
   <body>
 
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
           <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -43,16 +43,20 @@
 % if pageid == "NEWSCAN":
     class="active"
 % endif
-><a href="/newscan"><i class="icon-screenshot icon-white"></i>&nbsp;New Scan</a></li>
+><a href="/newscan"><i class="icon-screenshot"></i>&nbsp;New Scan</a></li>
                     <li 
 % if pageid == "SCANLIST": 
     class="active"
 % endif
-><a href="/"><i class="icon-book icon-white"></i>&nbsp;Scans</a></li>
-                    <li><a href="#config"><i class="icon-wrench icon-white"></i>&nbsp;Settings</a></li>
+><a href="/"><i class="icon-book"></i>&nbsp;Scans</a></li>
+                    <li
+% if pageid == "SETTINGS":
+    class="active"
+%endif
+><a href="/opts"><i class="icon-wrench"></i>&nbsp;Settings</a></li>
             </ul>
             <ul class="nav pull-right">
-                    <li><a href="#"><i class="icon-info-sign icon-white"></i>&nbsp;About</a></li>
+                    <li><a href="#"><i class="icon-info-sign"></i>&nbsp;About</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

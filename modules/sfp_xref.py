@@ -25,8 +25,8 @@ class sfp_xref(SpiderFootPlugin):
     # Default options
     opts = {
         # These must always be set
-        '_debug':       True,
-        '_debugfilter': '',
+        '__debug':       True,
+        '__debugfilter': '',
         'forcebase':    True, # Check the base URL for a link back to the seed
                               # domain in order to be considered a valid xref
         'checkbase':    True, # Only check the base URL for a relationship if

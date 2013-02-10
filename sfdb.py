@@ -26,10 +26,10 @@ class SpiderFootDb:
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
         # read and write to such a file.
-        dbh = sqlite3.connect(opts['_database'], timeout=10)
+        dbh = sqlite3.connect(opts['__database'], timeout=10)
         if dbh == None:
             sf.fatal("Could not connect to internal database. Check that " + \
-                opts['_database'] + " exists and is readable and writable.")
+                opts['__database'] + " exists and is readable and writable.")
         dbh.text_factory = str
 
         self.conn = dbh
@@ -162,16 +162,92 @@ class SpiderFootDb:
             sf.error("SQL error encountered when deleting scan: " +
                 e.args[0])
 
+    # Store the default configuration
+    def configSet(self, optMap=dict()):
+        qry = "REPLACE INTO tbl_config (scope, opt, val) VALUES (?, ?, ?)"
+        for opt in optMap.keys():
+            # Module option
+            if ":" in opt:
+                parts = opt.split(':')
+                qvals = [ parts[0], parts[1], optMap[opt] ]
+            else:
+            # Global option
+                qvals = [ "GLOBAL", opt, optMap[opt] ]
+
+            try:
+                self.dbh.execute(qry, qvals)
+            except sqlite3.Error as e:
+                sf.error("SQL error encountered when storing config, aborting: " +
+                    e.args[0])
+
+            self.conn.commit()
+
+    # Retreive the config from the database
+    def configGet(self):
+        qry = "SELECT scope, opt, val FROM tbl_config"
+        try:
+            retval = dict()
+            self.dbh.execute(qry)
+            for [scope, opt, val] in self.dbh.fetchall():
+                if scope == "GLOBAL":
+                    retval[opt] = val
+                else:
+                    retval[scope + ":" + opt] = val
+
+            return retval
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when fetching configuration: " + e.args[0])
+
+    # Reset the config to default (clear it from the DB and let the hard-coded
+    # settings in the code take effect.)
+    def configClear(self):
+        qry = "DELETE from tbl_config"
+        try:
+            self.dbh.execute(qry)
+            self.conn.commit()
+        except sqlite3.Error as e:
+            sf.error("Unable to clear configuration from the database: " + e.args[0])
+
     # Store a configuration value for a scan
-    # To unset, simply set the optMap key value to None
-    # don't need this yet
-    def scanConfigSet(self, instanceId, component, optMap=dict()):
-        pass
+    def scanConfigSet(self, id, optMap=dict()):
+        qry = "REPLACE INTO tbl_scan_config \
+                (scan_instance_id, component, opt, val) VALUES (?, ?, ?, ?)"
+
+        for opt in optMap.keys():
+            # Module option
+            if ":" in opt:
+                parts = opt.split(':')
+                qvals = [ id, parts[0], parts[1], optMap[opt] ]
+            else:
+            # Global option
+                qvals = [ id, "GLOBAL", opt, optMap[opt] ]
+
+            try:
+                self.dbh.execute(qry, qvals)
+            except sqlite3.Error as e:
+                sf.error("SQL error encountered when storing config, aborting: " +
+                    e.args[0])
+
+            self.conn.commit()
 
     # Retreive configuration data for a scan component
     # don't need this yet
     def scanConfigGet(self, instanceId, component):
-        pass
+        qry = "SELECT component, opt, val FROM tbl_scan_config \
+                WHERE scan_instance_id = ?"
+        qvars = [instanceId]
+        try:
+            retval = dict()
+            self.dbh.execute(qry, qvars)
+            for [component, opt, val] in self.dbh.fetchall():
+                if component == "GLOBAL":
+                    retval[opt] = val
+                else:
+                    retval[component + ":" + opt] = val
+
+            return retval
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when fetching configuration: " + e.args[0])
 
     # Store an event
     def scanEventStore(self, instanceId, eventName, eventSource,

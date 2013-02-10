@@ -35,6 +35,7 @@ class SpiderFoot:
     def error(self, error):
         if self.handle == None:
             print '[Error] ' + error
+            raise Exception(error)
         else:
             #self.handle.error(error)
             print 'should not be here'
@@ -62,7 +63,7 @@ class SpiderFoot:
                 mod = inspect.getmodule(frm[0])
 
                 msg = '[d:' + mod.__name__ + '] ' + message
-                if self.opts['_debugfilter'] != None and self.opts['_debugfilter'] not in msg:
+                if self.opts['__debugfilter'] != None and self.opts['__debugfilter'] not in msg:
                     return
 
                 print msg
@@ -70,6 +71,104 @@ class SpiderFoot:
             #self.handle.debug(message)
             print 'should not be here'
         return
+
+    #
+    # Configuration process
+    #
+
+    # Convert a Python dictionary to something storable
+    # in the database.
+    def configSerialize(self, opts, filterSystem=True):
+        storeopts = dict()
+
+        for opt in opts.keys():
+            if opt.startswith('__') and filterSystem:
+                continue
+
+            if type(opts[opt]) is int or type(opts[opt]) is str:
+                storeopts[opt] = opts[opt]
+
+            if type(opts[opt]) is bool:
+                if opts[opt]:
+                    storeopts[opt] = 1
+                else:
+                    storeopts[opt] = 0
+            if type(opts[opt]) is list:
+                storeopts[opt] = ','.join(opts[opt])
+
+        if not opts.has_key('__modules__'):
+            return storeopts
+
+        for mod in opts['__modules__']:
+            for opt in opts['__modules__'][mod]['opts']:
+                if opt.startswith('_') and filterSystem:
+                    continue
+
+                if type(opts['__modules__'][mod]['opts'][opt]) is int or type(opts['__modules__'][mod]['opts'][opt]) is str:
+                    storeopts[mod + ":" + opt] = opts['__modules__'][mod]['opts'][opt]
+
+                if type(opts['__modules__'][mod]['opts'][opt]) is bool:
+                    if opts['__modules__'][mod]['opts'][opt]:
+                        storeopts[mod + ":" + opt] = 1
+                    else:
+                        storeopts[mod + ":" + opt] = 0
+                if type(opts['__modules__'][mod]['opts'][opt]) is list:
+                    storeopts[mod + ":" + opt] = ','.join(opts['__modules__'][mod]['opts'][opt])
+
+        return storeopts
+    
+    # Take strings, etc. from the database or UI and convert them
+    # to a dictionary for Python to process.
+    # referencePoint is needed to know the actual types the options
+    # are supposed to be.
+    def configUnserialize(self, opts, referencePoint, filterSystem=True):
+        returnOpts = referencePoint
+
+        # Global options
+        for opt in referencePoint.keys():
+            if opt.startswith('__') and filterSystem:
+                # Leave out system variables
+                continue
+            if opts.has_key(opt):
+                if type(referencePoint[opt]) is bool:
+                    if opts[opt] == "1":
+                        returnOpts[opt] = True
+                    else:
+                        returnOpts[opt] = False
+
+                if type(referencePoint[opt]) is str:
+                    returnOpts[opt] = str(opts[opt])
+
+                if type(referencePoint[opt]) is int:
+                    returnOpts[opt] = int(opts[opt])
+
+                if type(referencePoint[opt]) is list:
+                    returnOpts[opt] = str(opts[opt]).split(",")
+
+        if not referencePoint.has_key('__modules__'):
+            return returnOpts
+
+        # Module options
+        for modName in referencePoint['__modules__']:
+            for opt in referencePoint['__modules__'][modName]['opts']:
+                if opt.startswith('_') and filterSystem:
+                    continue
+                if opts.has_key(modName + ":" + opt):
+                    if type(referencePoint['__modules__'][modName]['opts'][opt]) is bool:
+                        if opts[modName + ":" + opt] == "1":
+                            returnOpts['__modules__'][modName]['opts'][opt] = True
+                        else:
+                            returnOpts['__modules__'][modName]['opts'][opt] = False
+
+                    if type(referencePoint['__modules__'][modName]['opts'][opt]) is str:
+                        returnOpts['__modules__'][modName]['opts'][opt] = str(opts[modName + ":" + opt])
+
+                    if type(referencePoint['__modules__'][modName]['opts'][opt]) is int:
+                        returnOpts['__modules__'][modName]['opts'][opt] = int(opts[modName + ":" + opt])
+
+                    if type(referencePoint['__modules__'][modName]['opts'][opt]) is list:
+                        returnOpts['__modules__'][modName]['opts'][opt] = str(opts[modName + ":" + opt]).split(",")
+        return returnOpts
 
     #
     # URL parsing functions
@@ -315,6 +414,10 @@ class SpiderFoot:
             header = dict()
             if self.opts.has_key('_useragent'):
                 header['User-Agent'] = self.opts['_useragent']
+            # Let modules override
+            if self.opts.has_key('useragent'):
+                header['User-Agent'] = self.opts['useragent']
+
             if not self.opts.has_key('_fetchtimeout'):
                 self.opts['_fetchtimeout'] = 30
             req = urllib2.Request(url, None, header)
@@ -382,7 +485,7 @@ class SpiderFootPlugin(object):
         if self.checkForStop():
             return None
 
-        if self.opts.has_key('blocknotif') and self.opts['_blocknotif']:
+        if self.opts.has_key('blocknotif') and self.opts['__blocknotif']:
             #print "Notifications blocked for " + eventName + " to " + listener.__module__
             return None
 

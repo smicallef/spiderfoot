@@ -46,10 +46,10 @@ class sfp_similar(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_debug':       True,
-        '_debugfilter': '',
+        '__debug':       True,
+        '__debugfilter': '',
         # Domaintools will 403 you without a browser-like useragent
-        '_useragent':   'Mozilla/5.0 (Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
+        'useragent':   'Mozilla/5.0 (Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
         'source':       'ALL', # whois, domaintools, namedroppers or ALL
         'method':       'left,right', # left and/or right (doesn't apply to whois.com)
         'activeonly':   False # Only report domains that have content (try to fetch the page)

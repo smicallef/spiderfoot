@@ -24,6 +24,17 @@ CREATE TABLE tbl_event_types (
 );
 
 --
+-- Configuration: The configuration last set.
+--
+DROP TABLE tbl_config;
+CREATE TABLE tbl_config (
+    scope   VARCHAR NOT NULL,
+    opt     VARCHAR NOT NULL,
+    val     VARCHAR NOT NULL,
+    PRIMARY KEY (scope, opt)
+);
+
+--
 -- Scan instances: Each scan run by the user against a target.
 --
 DROP TABLE tbl_scan_instance;

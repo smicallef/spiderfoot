@@ -22,8 +22,8 @@ class sfp_XXX(SpiderFootPlugin):
     # Default options
     opts = {
         # These must always be set
-        '_debug':       True,
-        '_debugfilter': ''
+        '__debug':       True,
+        '__debugfilter': ''
     }
 
     # Be sure to completely clear any class variables in setup()

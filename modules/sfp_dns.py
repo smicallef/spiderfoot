@@ -26,8 +26,8 @@ class sfp_dns(SpiderFootPlugin):
     # Default options
     opts = {
         # These must always be set
-        '_debug':           True,
-        '_debugfilter':     '',
+        '__debug':           True,
+        '__debugfilter':     '',
         'resolveaffiliate': True,   # Get IPs for affiliate domains
         'reverselookup':    True    # Reverse-resolve IPs to names for
                                     # more clues.

@@ -22,6 +22,15 @@ Loading...
 </div>
     <script type='text/javascript'>
             sf.fetchData('/scanlist', null, function(data) {
+                            if (data.length == 0) {
+                                $("#loader").fadeOut(250);
+                                welcome = "<div class='alert alert-info'>";
+                                welcome += "<h4>Welcome to SpiderFoot!</h4>";
+                                welcome += "There is currently no history of previously run scans. Please click 'New Scan' to initiate a new scan."
+                                welcome += "</div>";
+                                $("#mainbody").append(welcome);
+                                return;
+                            }
                             var table = "<table class='table table-bordered table-striped'>";
                             table += "<thead><tr> <th>Name</th> <th>Target</th> <th>Started</th> <th>Finished</th> <th>Status</th> <th>Events</th><th>Action</th> </tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {

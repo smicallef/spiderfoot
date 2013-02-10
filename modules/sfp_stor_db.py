@@ -24,8 +24,9 @@ class sfp_stor_db(SpiderFootPlugin):
     # Default options
     opts = {
         # These must always be set
-        '_debug':       True,
-        '_debugfilter': ''
+        '__debug':       True,
+        '__debugfilter': '',
+        'maxstorage':   0 # max bytes for any piece of info stored (0 = unlimited)
     }
 
     # URL this instance is working on
@@ -52,8 +53,13 @@ class sfp_stor_db(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
-        sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
-            eventData, srcModuleName)
+        if self.opts['maxstorage'] != 0 and len(eventData) > self.opts['maxstorage']:
+            sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
+                eventData[0:self.opts['maxstorage']], srcModuleName)
+        else:
+            sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
+                eventData, srcModuleName)
+
 
 # End of sfp_stor_db class
 
