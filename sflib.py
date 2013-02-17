@@ -35,7 +35,7 @@ class SpiderFoot:
     def error(self, error):
         if self.handle == None:
             print '[Error] ' + error
-            raise Exception(error)
+            raise BaseException(error)
         else:
             #self.handle.error(error)
             print 'should not be here'
@@ -44,7 +44,7 @@ class SpiderFoot:
     def fatal(self, error):
         if self.handle == None:
             print '[Fatal] ' + error
-            raise BaseException("Fatal Error Encountered.")
+            raise BaseException("Fatal Error Encountered: " + error)
             exit(-1)
         else:
             #self.handle.error(error)

@@ -12,12 +12,14 @@ import json
 import threading
 import cherrypy
 import cgi
+import os
 import time
 import urllib2
 from copy import deepcopy
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from sfdb import SpiderFootDb
+from sfdbsetup import SpiderFootDbInit
 from sflib import SpiderFoot
 
 # Data providers called by front-end javascript
@@ -36,14 +38,14 @@ class SpiderFootDataProvider:
         data = dbh.scanInstanceList()
         retdata = []
         for row in data:
-            created = time.strftime("%d/%m/%Y", time.localtime(row[3]))
+            created = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[3]))
             if row[4] != 0:
-                started = time.strftime("%d/%m/%Y", time.localtime(row[4]))
+                started = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[4]))
             else:
                 started = "Not yet"
 
             if row[5] != 0:
-                finished = time.strftime("%d/%m/%Y", time.localtime(row[5]))
+                finished = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[5]))
             else:
                 finished = "Not yet"
             retdata.append([row[0], row[1], row[2], created, started, finished, row[6], row[7]])
@@ -82,6 +84,7 @@ class SpiderFootDataProvider:
         
         # Save the config current set for this scan
         sf = SpiderFoot(sfConfig)
+        sfConfig['_modulesenabled'] = moduleList
         dbh.scanConfigSet(sfConfig['__guid__'], sf.configSerialize(sfConfig))
 
         print "Scan [" + sfConfig['__guid__'] + "] initiated."
@@ -153,6 +156,7 @@ class SpiderFootWebUi:
     dp = None
     lookup = TemplateLookup(directories=[''])
     defaultConfig = dict()
+    config = dict()
 
     def __init__(self, config):
         self.defaultConfig = deepcopy(config)
@@ -164,6 +168,29 @@ class SpiderFootWebUi:
         # saved.
         sf = SpiderFoot(config)
         self.config = sf.configUnserialize(dbh.configGet(), config)
+
+    # DATA PROVIDERS (need to migrate all the ones from SpiderFootDataProvider 
+    # to here)
+
+    # Configuration used for a scan
+    def scanopts(self, id):
+        ret = dict()
+        dbh = SpiderFootDb(self.config)
+        ret['config'] = dbh.scanConfigGet(id)
+        sf = SpiderFoot(self.config)
+        meta = dbh.scanInstanceGet(id)
+        if meta[3] != 0:
+            started = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(meta[3]))
+        else:
+            started = "Not yet"
+
+        if meta[4] != 0:
+            finished = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(meta[4]))
+        else:
+            finished = "Not yet"
+        ret['meta'] = [meta[0], meta[1], meta[2], started, finished, meta[5]]
+        return json.dumps(ret)
+    scanopts.exposed = True
 
     #
     # USER INTERFACE PAGES
@@ -182,6 +209,12 @@ class SpiderFootWebUi:
         return templ.render(pageid='SCANLIST')
     index.exposed = True
 
+    # Include this in case the user is clicking reload after creating
+    # the DB and restarting.
+    def create(self):
+        return self.index()
+    create.exposed = True
+
     # Information about a selected scan
     def scaninfo(self, id):
         dbh = SpiderFootDb(self.config)
@@ -199,6 +232,7 @@ class SpiderFootWebUi:
         return templ.render(opts=self.config, pageid='SETTINGS')
     opts.exposed = True
 
+    # Generic error, but not exposed as not called directly
     def error(self, message):
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
         return templ.render(message=message)
@@ -298,4 +332,32 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
         return templ.render(pageid='SCANLIST',stoppedscan=True)
     stopscan.exposed = True
+
+
+# Special class used when SpiderFoot is started without a
+# database pre-existing. This will step the user through
+# the creation of one.
+class SpiderFootWebUiMini:
+    lookup = TemplateLookup(directories=[''])
+
+    def __init__(self, config):
+        self.config = config
+
+    # Main page listing scans available
+    def index(self):
+        # Look for referenced templates in the current directory only
+        templ = Template(filename='dyn/setup.tmpl', lookup=self.lookup)
+        return templ.render(stage=1, config=self.config, path=os.path.dirname(__file__))
+    index.exposed = True
+
+    # Create the database
+    def create(self):
+        try:
+            dbh = SpiderFootDbInit(self.config)
+            dbh.create()
+            templ = Template(filename='dyn/setup.tmpl', lookup=self.lookup)
+            return templ.render(stage=2)
+        except BaseException as e:
+            return "There was an error creating the database or it already exists.<br><br>Please check database permissions and try restarting SpiderFoot. If all else fails, report this as a bug."
+    create.exposed = True
 

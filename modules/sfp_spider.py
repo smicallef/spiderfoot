@@ -33,7 +33,7 @@ class sfp_spider(SpiderFootPlugin):
         'maxlevels':    10, # max number of levels to traverse within a site
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css',
                         'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg',
-                        'mpeg', 'iso', 'dat', 'mov'], # Extensions to not fetch
+                        'mpeg', 'iso', 'dat', 'mov', 'swf'], # Extensions to not fetch
         'filterusers':  True, # Don't follow /~user directories
         'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
         'nosubs':       False # Should links to subdomains be ignored?

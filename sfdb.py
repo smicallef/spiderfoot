@@ -28,7 +28,7 @@ class SpiderFootDb:
         # read and write to such a file.
         dbh = sqlite3.connect(opts['__database'], timeout=10)
         if dbh == None:
-            sf.fatal("Could not connect to internal database. Check that " + \
+            sf.error("Could not connect to internal database. Check that " + \
                 opts['__database'] + " exists and is readable and writable.")
         dbh.text_factory = str
 
@@ -42,7 +42,7 @@ class SpiderFootDb:
         try:
             self.dbh.execute('SELECT COUNT(*) FROM tbl_scan_config')
         except sqlite3.Error:
-            sf.fatal("Found spiderfoot.db but it doesn't appear to be in " \
+            sf.error("Found spiderfoot.db but it doesn't appear to be in " \
                 "the expected state - ensure the schema is created.")
 
         return
@@ -110,7 +110,8 @@ class SpiderFootDb:
     # Return info about a scan instance (name, target, created, started,
     # ended, status) - don't need this yet - untested
     def scanInstanceGet(self, instanceId):
-        qry = "SELECT name, seed_target, created, started, ended, status \
+        qry = "SELECT name, seed_target, ROUND(created/1000) AS created, \
+            ROUND(started/1000) AS started, ROUND(ended/1000) AS ended, status \
             FROM tbl_scan_instance WHERE guid = ?"
         qvars = [instanceId]
         try:
@@ -136,7 +137,7 @@ class SpiderFootDb:
 
     # Obtain the data for a scan and event type
     def scanResultEvent(self, instanceId, eventType):
-        qry = "SELECT ROUND(generated/1000) as generated, event_data, event_source, \
+        qry = "SELECT ROUND(generated/1000) AS generated, event_data, event_source, \
             event_data_source FROM tbl_scan_results WHERE scan_instance_id = ? AND \
             event = ?"
         qvars = [instanceId, eventType]
@@ -231,8 +232,7 @@ class SpiderFootDb:
             self.conn.commit()
 
     # Retreive configuration data for a scan component
-    # don't need this yet
-    def scanConfigGet(self, instanceId, component):
+    def scanConfigGet(self, instanceId):
         qry = "SELECT component, opt, val FROM tbl_scan_config \
                 WHERE scan_instance_id = ?"
         qvars = [instanceId]

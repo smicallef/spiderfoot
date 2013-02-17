@@ -36,25 +36,8 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/">SpiderFoot 2.0</a>
+          <a class="brand" href="/">SpiderFoot 2.0: Initial Setup</a>
           <div class="nav-collapse collapse">
-            <ul class="nav">
-                    <li
-% if pageid == "NEWSCAN":
-    class="active"
-% endif
-><a href="/newscan"><i class="icon-screenshot"></i>&nbsp;New Scan</a></li>
-                    <li 
-% if pageid == "SCANLIST": 
-    class="active"
-% endif
-><a href="/"><i class="icon-list"></i>&nbsp;Scans</a></li>
-                    <li
-% if pageid == "SETTINGS":
-    class="active"
-%endif
-><a href="/opts"><i class="icon-wrench"></i>&nbsp;Settings</a></li>
-            </ul>
             <ul class="nav pull-right">
                     <li><a href="#aboutmodal" data-toggle="modal"><i class="icon-info-sign"></i>&nbsp;About</a></li>
             </ul>
@@ -84,4 +67,20 @@
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <div class="container" id="mainbody">
+% if stage == 1:
+    <h3>Welcome to SpiderFoot!</h3>
+    Based on the fact that you have no SpiderFoot database, it would seem that you have just installed SpiderFoot, or have deleted your previous SpiderFoot database.
+    SpiderFoot looks for <b>${config['__database']}</b> in its installed path, <b>${path}</b>.
+    <br><br>
+    <a class='btn btn-danger' href='/create'>Create the SpiderFoot database</a>
+% else:
+<div class="alert alert-success">
+ <h4>Success!</h4>
+The SpiderFoot database has been successfully created. Please now <b>stop and start</b> SpiderFoot to start running scans.
+</div>
+% endif
+
+    </div>
+    </body>
+</html>
 

@@ -15,7 +15,7 @@ import time
 import cherrypy
 import os
 from sflib import SpiderFoot
-from sfwebui import SpiderFootWebUi
+from sfwebui import SpiderFootWebUi, SpiderFootWebUiMini
 
 # 'Global' configuration options
 # These can be overriden on a per-module basis, and some will
@@ -75,4 +75,10 @@ if __name__ == '__main__':
         'tools.staticdir.dir': os.path.join(currentDir, 'static')
     }}
                         
-    cherrypy.quickstart(SpiderFootWebUi(sfConfig), config=conf)
+    # Try starting the web server. If it fails due to a database being
+    # missing, start a smaller web server just for setting up the DB.
+    try:
+        cherrypy.quickstart(SpiderFootWebUi(sfConfig), config=conf)
+    except BaseException as e:
+        cherrypy.quickstart(SpiderFootWebUiMini(sfConfig), config=conf)
+
