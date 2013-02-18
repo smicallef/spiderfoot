@@ -69,6 +69,7 @@ class SpiderFootDbInit:
             "CREATE INDEX idx_scan_results_event ON tbl_scan_results (scan_instance_id, event)",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('AFFILIATE', 'Affiliate')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('EMAILADDR', 'Email Address')",
+            "INSERT INTO tbl_event_types (event, event_descr) VALUES ('GEOINFO', 'Physical Location')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('IP_ADDRESS', 'IP Address')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('SUBDOMAIN', 'Sub-domain')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('SIMILARDOMAIN', 'Similar Domain')",

@@ -436,12 +436,13 @@ class SpiderFoot:
             if fatal:
                 self.fatal('URL could not be fetched (' + h.code + ')')
         except urllib2.URLError as e:
-            self.debug("Error fetching " + url)
+            self.debug("Error fetching " + url + "(" + str(e) + ")")
             result['status'] = str(e)
             if fatal:
                 self.fatal('URL could not be fetched (' + str(e) + ')')
         except Exception as x:
-            self.error("Unexpected exception occurred fetching: " + url + "(" + str(x) + ")")
+            self.debug("Unexpected exception occurred fetching: " + url + "(" + str(x) + ")")
+            result['content'] = None
             result['status'] = str(x)
             if fatal:
                 self.fatal('URL could not be fetched (' + str(x) + ')')

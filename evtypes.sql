@@ -3,6 +3,7 @@
 --
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('AFFILIATE', 'Affiliate');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('EMAILADDR', 'Email Address');
+INSERT INTO tbl_event_types (event, event_descr) VALUES ('GEOINFO', 'Physical Location')
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('IP_ADDRESS', 'IP Address');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('SUBDOMAIN', 'Sub-domain');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('SIMILARDOMAIN', 'Similar Domain');
