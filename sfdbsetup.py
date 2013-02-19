@@ -73,6 +73,7 @@ class SpiderFootDbInit:
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('IP_ADDRESS', 'IP Address')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('SUBDOMAIN', 'Sub-domain')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('SIMILARDOMAIN', 'Similar Domain')",
+            "INSERT INTO tbl_event_types (event, event_descr) VALUES ('TCP_PORT_OPEN', 'Open TCP Port')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('URL', 'URL')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT', 'Web Content')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT_FORM', 'Web Content (Form)')",

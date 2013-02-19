@@ -113,7 +113,7 @@ class SpiderFoot:
                     else:
                         storeopts[mod + ":" + opt] = 0
                 if type(opts['__modules__'][mod]['opts'][opt]) is list:
-                    storeopts[mod + ":" + opt] = ','.join(opts['__modules__'][mod]['opts'][opt])
+                    storeopts[mod + ":" + opt] = ','.join(str(x) for x in opts['__modules__'][mod]['opts'][opt])
 
         return storeopts
     
@@ -143,12 +143,18 @@ class SpiderFoot:
                     returnOpts[opt] = int(opts[opt])
 
                 if type(referencePoint[opt]) is list:
-                    returnOpts[opt] = str(opts[opt]).split(",")
+                    if type(referencePoint[opt][0]) is int:
+                        returnOpts[opt] = list()
+                        for x in str(opts[opt]).split(","):
+                             returnOpts[opt].append(int(x))
+                    else:
+                        returnOpts[opt] = str(opts[opt]).split(",")
 
         if not referencePoint.has_key('__modules__'):
             return returnOpts
 
         # Module options
+        # A lot of mess to handle typing..
         for modName in referencePoint['__modules__']:
             for opt in referencePoint['__modules__'][modName]['opts']:
                 if opt.startswith('_') and filterSystem:
@@ -167,7 +173,12 @@ class SpiderFoot:
                         returnOpts['__modules__'][modName]['opts'][opt] = int(opts[modName + ":" + opt])
 
                     if type(referencePoint['__modules__'][modName]['opts'][opt]) is list:
-                        returnOpts['__modules__'][modName]['opts'][opt] = str(opts[modName + ":" + opt]).split(",")
+                        if type(referencePoint['__modules__'][modName]['opts'][opt][0]) is int:
+                            returnOpts['__modules__'][modName]['opts'][opt] = list()
+                            for x in str(opts[modName + ":" + opt]).split(","):
+                                returnOpts['__modules__'][modName]['opts'][opt].append(int(x))
+                        else:
+                            returnOpts['__modules__'][modName]['opts'][opt] = str(opts[modName + ":" + opt]).split(",")
         return returnOpts
 
     #
