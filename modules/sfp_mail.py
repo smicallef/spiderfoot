@@ -26,8 +26,15 @@ class sfp_mail(SpiderFootPlugin):
         '__debug':       True,
         '__debugfilter': '',
         # options specific to this module
-        'basedomainonly':   False, # Only capture e-mail addrs on the base domain
+        'includesubdomains':   False, # Include e-mail addresses on sub-domains of
+                                    # the target domain
         'includeexternal':  False # Include e-mail addrs on external domains
+    }
+
+    # Option descriptions
+    optdescs = {
+        'includesubdomains': "Report e-mail addresses on a sub-domain of the target base domain-name?",
+        'includeexternal': "Report e-mail addresses not on the target base domain-name?"
     }
 
     # URL this instance is working on
@@ -69,7 +76,7 @@ class sfp_mail(SpiderFootPlugin):
                 self.results[match] = True
 
             # Include e-mail addresses on sub-domains within the domain?
-            if self.opts['basedomainonly']:
+            if not self.opts['includesubdomains']:
                 if not match.endswith('@' + self.baseDomain):
                     sf.debug("Ignoring e-mail address on a sub-domain: " + match)
                     continue

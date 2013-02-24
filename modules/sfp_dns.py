@@ -33,6 +33,12 @@ class sfp_dns(SpiderFootPlugin):
                                     # more clues.
     }
 
+    # Option descriptions
+    optdescs = {
+        'resolveaffiliate': "Obtain IPs for confirmed affiliates.",
+        'reverselookup': "Obtain new URLs and more based on reverse-resolved IPs"
+    }
+
     # URL this instance is working on
     seedUrl = None
     baseDomain = None # calculated from the URL in setup

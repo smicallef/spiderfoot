@@ -29,6 +29,13 @@ class sfp_googlesearch(SpiderFootPlugin):
         'pages':        20      # Number of google results pages to iterate
     }
 
+    # Option descriptions
+    optdescs = {
+        'useragent': "User-Agent string to use when fetching Google pages.",
+        'fetchlinks': "Fetch links found on the target domain-name?",
+        'pages':    "Number of Google results pages to iterate through."
+    }
+
     # URL this instance is working on
     seedUrl = None
     baseDomain = None # calculated from the URL in setup

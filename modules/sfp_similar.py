@@ -55,6 +55,14 @@ class sfp_similar(SpiderFootPlugin):
         'activeonly':   False # Only report domains that have content (try to fetch the page)
     }
 
+    # Option descriptions
+    optdescs = {
+        'useragent':   "User-Agent string to use when fetching pages from providers.",
+        'source':       "Provider to use: 'whois', 'domaintools', 'namedroppers' or 'ALL'.",
+        'method':       "Pattern search method to use: 'left,right', 'left' or 'right'. Does not apply when searching whois.",
+        'activeonly':   "Only report domains that have content (try to fetch the page)?"
+    }
+
     # Internal results tracking
     results = list()
 

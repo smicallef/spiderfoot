@@ -1,11 +1,12 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_portscan_basic
-# Purpose:      SpiderFoot plug-in for gathering IP addresses from sub-domains
+# Purpose:      SpiderFoot plug-in for performing a basic port scan of IP
+#               addresses identified.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
-# Created:     16/09/2012
-# Copyright:   (c) Steve Micallef 2012
+# Created:     20/02/2013
+# Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
@@ -29,7 +30,14 @@ class sfp_portscan_basic(SpiderFootPlugin):
         'ports':            [ 21, 22, 23, 25, 53, 79, 80, 81, 88, 110, 111, 
                             113, 119, 123, 137, 138, 139, 143, 161, 179,
                             389, 443, 445, 465, 512, 513, 514, 515, 631, 636,
-                            990, 992, 993, 995, 1080, 8080, 8888, 9000 ]
+                            990, 992, 993, 995, 1080, 8080, 8888, 9000 ],
+        'timeout':          15
+    }
+
+    # Option descriptions
+    optdescs = {
+        'ports':    "The TCP ports to scan.",
+        'timeout':  "Seconds before giving up on a port."
     }
 
     # URL this instance is working on
@@ -68,13 +76,18 @@ class sfp_portscan_basic(SpiderFootPlugin):
             self.results[eventData] = True
 
         for port in self.opts['ports']:
+            if self.checkForStop():
+                return None
+
             sf.debug("Checking port: " + str(port) + " against " + eventData)
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            res = s.connect_ex((eventData, port))
-            if (res == 0):
+            try:
+                sock = socket.create_connection((eventData, port), self.opts['timeout'])
                 sf.debug("TCP Port " + str(port) + " found to be OPEN.")
                 self.notifyListeners("TCP_PORT_OPEN", eventData, str(port))
-            s.close()
+                sock.close()
+            except Exception as e:
+                sf.debug("Unable to connect to " + eventData + " on port " + str(port) + \
+                    ": " + str(e))
 
         return None
 

@@ -29,9 +29,14 @@ class sfp_xref(SpiderFootPlugin):
         '__debugfilter': '',
         'forcebase':    True, # Check the base URL for a link back to the seed
                               # domain in order to be considered a valid xref
-        'checkbase':    True, # Only check the base URL for a relationship if
+        'checkbase':    True # Only check the base URL for a relationship if
                               # the link provided contains no xref
-        'checksimilar': True  # Check similar domains for an xref
+    }
+
+    # Option descriptions
+    optdescs = {
+        "forcebase":    "Require the base domain of an external URL for affiliation.",
+        "checkbase":    "Check the base domain of a URL for affiliation."
     }
 
     # Internal results tracking
@@ -59,10 +64,7 @@ class sfp_xref(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        arr = list('URL')
-        if self.opts['checksimilar']:
-            arr.append('SIMILARDOMAIN')
-        return arr
+        return ['URL', 'SIMILARDOMAIN']
 
     # Handle events sent to this module
     # In this module's case, eventData will be the URL or a domain which

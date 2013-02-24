@@ -39,6 +39,18 @@ class sfp_spider(SpiderFootPlugin):
         'nosubs':       False # Should links to subdomains be ignored?
     }
 
+    # Option descriptions
+    optdescs = {
+        'robotsonly':   "Only follow links specified by robots.txt?",
+        'pause':        "Number of seconds to pause between fetches.",
+        'maxpages':     "Maximum number of pages to fetch.",
+        'maxlevels':    "Maximum levels to traverse within a site.",
+        'filterfiles':  "File extensions to ignore (don't fetch them.)",
+        'filterusers':  "Skip spidering of /~user directories?",
+        'noexternal':   "Skip spidering of external sites? (**dangerous if False**)",
+        'nosubs':       "Skip spidering of subdomains of the target?"
+    }
+
     # If using robots.txt, this will get populated with filter rules
     robotsRules = dict()
 

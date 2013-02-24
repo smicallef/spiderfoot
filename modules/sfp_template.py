@@ -16,6 +16,8 @@ from sflib import SpiderFoot, SpiderFootPlugin
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
+# Replace XXX with the name of your module. The comment below it will
+# end up in the UI as the module description to the end-user.
 class sfp_XXX(SpiderFootPlugin):
     """About me here.."""
 
@@ -24,6 +26,13 @@ class sfp_XXX(SpiderFootPlugin):
         # These must always be set
         '__debug':       True,
         '__debugfilter': ''
+    }
+
+    # Option descriptions
+    optdescs = {
+        # For each option in opts you should have a key/value pair here
+        # describing it. It will end up in the UI to explain the option 
+        # to the end-user.
     }
 
     # Be sure to completely clear any class variables in setup()

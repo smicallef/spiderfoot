@@ -29,6 +29,11 @@ class sfp_stor_db(SpiderFootPlugin):
         'maxstorage':   1024 # max bytes for any piece of info stored (0 = unlimited)
     }
 
+    # Option descriptions
+    optdescs = {
+        'maxstorage':   "Maximum bytes to store for any piece of information retreived."
+    }
+
     # URL this instance is working on
     seedUrl = None
 
