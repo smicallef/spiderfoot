@@ -108,6 +108,7 @@ class sfp_spider(SpiderFootPlugin):
                 self.notifyListeners("WEBCONTENT", url, httpresult['content'])
 
             self.notifyListeners("WEBSERVER_HTTPHEADERS", url, httpresult['headers'])
+            self.notifyListeners("HTTP_CODE", url, str(httpresult['code']))
 
             self.results[url]['fetched'] = True
             stored += 'h'

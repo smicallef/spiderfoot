@@ -439,6 +439,7 @@ class SpiderFoot:
             result['content'] = fullPage.read()
             result['headers'] = fullPage.info()
             result['realurl'] = fullPage.geturl()
+            result['code'] = fullPage.getcode()
             result['status'] = 'OK'
         except urllib2.HTTPError as h:
             self.debug("HTTP code " + str(h.code) + " encountered for " + url)
