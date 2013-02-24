@@ -28,7 +28,7 @@
 <thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>
 % for opt in sorted(opts.keys()):
     % if not opt.startswith("__"):
-    <tr><td>${opt}</td><td>
+    <tr><td>${opts['__globaloptdescs__'][opt]}</td><td>
         % if type(opts[opt]) is int:
             <input id='${opt}' class='input-mini' type=text value="${opts[opt]}">
         % endif
@@ -49,8 +49,12 @@
                 <option value=0 ${selfalse}>False</option>
             </select>
         % endif
-        % if type(opts[opt]) is list:
+        % if type(opts[opt]) is list and type(opts[opt][0]) is str:
             <% expandedopt = ','.join(opts[opt]) %>
+            <input id='${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+        % endif
+        % if type(opts[opt]) is list and type(opts[opt][0]) is int:
+            <% expandedopt = ','.join(str(x) for x in opts[opt]) %>
             <input id='${opt}' class='input-xxlarge' type=text value="${expandedopt}">
         % endif
     </td></tr>
@@ -61,12 +65,18 @@
 <br>
 <h4>Module Settings</h4>
 <table class='table table-bordered table-striped'>
-<thead><tr> <th>Module</th> <th>Option</th> <th>Value</th></tr></thead><tbody>
+<thead><tr> <th>Module</th><th>Option</th> <th>Value</th></tr></thead><tbody>
 % for mod in sorted(opts['__modules__'].keys()):
+    <% modopts = opts['__modules__'][mod]['opts'] %>
     % for opt in opts['__modules__'][mod]['opts'].keys():
-        <% modopts = opts['__modules__'][mod]['opts'] %>
         % if not opt.startswith("_"):
-            <tr><td>${mod}</td><td>${opt}</td><td>
+            <%
+            if not opts['__modules__'][mod].has_key('optdescs'):
+                optdesc = "No description available."
+            else:
+                optdesc = opts['__modules__'][mod]['optdescs'][opt]
+            %>
+            <tr><td>${mod}</td><td>${optdesc}</td><td>
             % if type(modopts[opt]) is int:
                 <input id='${mod}:${opt}' class='input-mini' type=text value="${modopts[opt]}">
             % endif
@@ -87,10 +97,15 @@
                     <option value=0 ${selfalse}>False</option>
                 </select>
             % endif
-            % if type(modopts[opt]) is list:
+            % if type(modopts[opt]) is list and type(modopts[opt][0]) is str:
                 <% expandedopt = ','.join(modopts[opt]) %>
                 <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${expandedopt}">
             % endif
+            % if type(modopts[opt]) is list and type(modopts[opt][0]) is int:
+                <% expandedopt = ','.join(str(x) for x in modopts[opt]) %>
+                <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+            % endif
+
             </td></tr>
         % endif
     % endfor
@@ -99,7 +114,7 @@
 </table>
 <div style='text-align: right'>
     <input type=hidden id='allopts' name='allopts' value=''>
-    <button onClick='clearSettings();' class='btn btn-danger'>Reset to Default</button>
+    <button onClick='clearSettings();' class='btn btn-danger'>Reset to Factory Default</button>
     <button onClick='saveSettings();' class='btn btn-primary'>Save Changes</button>
 </div>
 </form>

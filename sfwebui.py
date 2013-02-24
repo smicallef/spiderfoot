@@ -298,7 +298,7 @@ class SpiderFootWebUi:
 
     # Initiate a scan
     def startscan(self, scanname, scantarget, modulelist):
-        modopts = dict()
+        modopts = dict() # Not used yet as module options are set globally
 
         if scanname == "" or scantarget == "" or modulelist == "":
             return self.error("Form incomplete.")

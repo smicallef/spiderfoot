@@ -25,12 +25,18 @@ sfConfig = {
     '__debugfilter':     '', # Filter out debug strings
     '__blocknotif':      False, # Block notifications
     '_useragent':       'SpiderFoot/2.0', # User-Agent to use for HTTP requests
-    '_fetchtimeout':    1, # number of seconds before giving up on a fetch
+    '_fetchtimeout':    5, # number of seconds before giving up on a fetch
     '__database':        'spiderfoot.db',
     '__webaddr':         '0.0.0.0',
     '__webport':         5001,
     '__guid__':         None, # unique ID of scan. Will be set after start-up.
     '__modules__':        None # List of modules. Will be set after start-up.
+}
+
+sfOptdescs = {
+    '_debug':       "Enable debugging?",
+    '_useragent':   "Default User-Agent string to use for HTTP requests. Can be overridden by individual modules.",
+    '_fetchtimeout':    "Number of seconds before giving up on a HTTP request."
 }
 
 if __name__ == '__main__':
@@ -50,7 +56,10 @@ if __name__ == '__main__':
             mod = __import__('modules.' + modName, globals(), locals(), [modName])
             sfModules[modName]['object'] = getattr(mod, modName)()
             sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__
-            sfModules[modName]['opts'] = sfModules[modName]['object'].opts
+            if hasattr(sfModules[modName]['object'], 'opts'):
+                sfModules[modName]['opts'] = sfModules[modName]['object'].opts
+            if hasattr(sfModules[modName]['object'], 'optdescs'):
+                sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
 
     if len(sfModules.keys()) < 1:
         print "No modules found in the modules directory."
@@ -58,6 +67,8 @@ if __name__ == '__main__':
     
     # Add module info to sfConfig so it can be used by the UI
     sfConfig['__modules__'] = sfModules
+    # Add descriptions of the global config options
+    sfConfig['__globaloptdescs__'] = sfOptdescs
 
     # Start the web server so you can start looking at results
     print "Starting web server at http://" + sfConfig['__webaddr'] + \

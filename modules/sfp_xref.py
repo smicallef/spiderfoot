@@ -35,8 +35,8 @@ class sfp_xref(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "forcebase":    "Require the base domain of an external URL for affiliation.",
-        "checkbase":    "Check the base domain of a URL for affiliation."
+        "forcebase":    "Require the base domain of an external URL for affiliation?",
+        "checkbase":    "Check the base domain of a URL for affiliation?"
     }
 
     # Internal results tracking
