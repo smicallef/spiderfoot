@@ -60,6 +60,10 @@ class sfp_subdomain(SpiderFootPlugin):
             return None
 
         for match in matches:
+            # Skip URL encoded /
+            if match.startswith("2F") or match.startswith("2f"):
+                continue
+
             sf.debug("Found sub-domain: " + match)
             if self.results.has_key(match):
                 continue

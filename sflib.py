@@ -312,7 +312,7 @@ class SpiderFoot:
 
             # Don't include stuff likely part of some dynamically built incomplete
             # URL found in Javascript code (character is part of some logic)
-            if link[len(link)-1] == '.' or link[0] == '+':
+            if link[len(link)-1] == '.' or link[0] == '+' or 'javascript:' in link or '();' in link:
                 self.debug('unlikely link: ' + link)
                 continue
 
