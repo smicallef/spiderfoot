@@ -36,7 +36,9 @@ sfConfig = {
 sfOptdescs = {
     '_debug':       "Enable debugging?",
     '_useragent':   "Default User-Agent string to use for HTTP requests. Can be overridden by individual modules.",
-    '_fetchtimeout':    "Number of seconds before giving up on a HTTP request."
+    '_fetchtimeout':    "Number of seconds before giving up on a HTTP request.",
+    '_modulesenabled':  "Modules enabled for the scan." # This is a hack to get a description for
+                                                        # an option not actually available.
 }
 
 if __name__ == '__main__':

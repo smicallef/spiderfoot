@@ -82,13 +82,13 @@ Loading...
                 table += "<tr><td>Status:</td><td>" + data['meta'][5] + "</td></tr>";
                 table += "</table>";
                 table += "<h4>Global Settings</h4>";
-                table += "<table class='table table-bordered table-striped' style='width: 400px'>";
+                table += "<table class='table table-bordered table-striped' style='width: 600px'>";
                 table += "<thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>";
                 for (var key in data['config']) {
                     if (key.indexOf(":") > 0) {
                         continue;
                     }
-                    table += "<tr><td>" + key + "</td><td>" + data['config'][key] + "</td></tr>";
+                    table += "<tr><td width=100%>" + data['configdesc'][key] + "</td><td>" + data['config'][key] + "</td></tr>";
                 }
                 table += "</table>";
                 table += "<h4>Module Settings</h4>";
@@ -97,7 +97,7 @@ Loading...
                 for (var key in data['config']) {
                     if (key.indexOf(":") > 0) {
                         bits = key.split(":");
-                        table += "<tr><td>" + bits[0] + "</td><td>" + bits[1] + "</td><td>" + data['config'][key] + "</td></tr>";
+                        table += "<tr><td>" + bits[0] + "</td><td>" + data['configdesc'][key] + "</td><td>" + data['config'][key] + "</td></tr>";
                     }
                 }
                 table += "</table></div>";
