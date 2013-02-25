@@ -1,5 +1,5 @@
 <%include file="HEADER.tmpl"/>
-    <h2>Scans</h2>
+    <h2>Scans<img id=loader src=/static/img/loader.gif></h2>
 % if newscan:
 <div class="alert alert-success">
  <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -14,16 +14,10 @@
  Please allow a minute or two for the scan to cleanly shut itself down.
 </div>
 % endif
-<div id=loader>
-Loading...
-<div class="progress progress-striped active">
-    <div class="bar" style="width: 100%"></div>
-</div>
-</div>
     <script type='text/javascript'>
             sf.fetchData('/scanlist', null, function(data) {
                             if (data.length == 0) {
-                                $("#loader").fadeOut(250);
+                                $("#loader").fadeOut(500);
                                 welcome = "<div class='alert alert-info'>";
                                 welcome += "<h4>Run your first scan!</h4>";
                                 welcome += "There is currently no history of previously run scans. Please click 'New Scan' to initiate a new scan."
@@ -62,7 +56,7 @@ Loading...
                                 table += "</tr>";
                             }
                             table += "</tbody></table>";
-                            $("#loader").fadeOut(250);
+                            $("#loader").fadeOut(500);
                             $("#mainbody").append(table);                        
             });
     </script>

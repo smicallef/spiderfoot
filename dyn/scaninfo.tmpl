@@ -1,5 +1,5 @@
 <%include file="HEADER.tmpl"/>
-<h2>${name}</h2>
+<h2>${name} <img id=loader src=/static/img/loader.gif></h2>
   <div class="btn-toolbar">
     <div class="btn-group">
       <a id='btn-browse' class="btn active" href="#" onClick='browseEventList("${id}")'>Browse</a>
@@ -7,13 +7,6 @@
       <a id='btn-export' class="btn" href="#">Export</a>
     </div>
   </div>
-
-<div id=loader>
-Loading...
-<div class="progress progress-striped active">
-    <div class="bar" style="width: 100%"></div>
-</div>
-</div>
 
     <script type='text/javascript'>
         function navTo(target) {
@@ -44,7 +37,7 @@ Loading...
                                 table += "<td>" + data[i][2] + "</td>";
                             }
                             table += "</tbody></table>"
-                            $("#loader").fadeOut(250);
+                            $("#loader").fadeOut(500);
                             $("#mainbody").append(table);
             });
         }
@@ -61,7 +54,7 @@ Loading...
                                 table += "<tr><td width=50%><pre>" + data[i][1] + "</pre></td><td>" + data[i][0] + "</td><td>" + data[i][2] + "</td><td>" + data[i][3] + "</td></tr>";
                             }
                             table += "</tbody></table>"
-                            $("#loader").fadeOut(250);
+                            $("#loader").fadeOut(500);
                             $("#mainbody").append(table);
             });
         }
@@ -102,7 +95,7 @@ Loading...
                 }
                 table += "</table></div>";
 
-                $("#loader").fadeOut(250);
+                $("#loader").fadeOut(500);
                 $("#mainbody").append(table);
             });
         }
