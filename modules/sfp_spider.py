@@ -28,7 +28,7 @@ class sfp_spider(SpiderFootPlugin):
         '__debugfilter': '',
         # options specific to this module
         'robotsonly':   False, # only follow links specified by robots.txt
-        'pause':        0, # number of seconds to pause between fetches
+        'pause':        1, # number of seconds to pause between fetches
         'maxpages':     10000, # max number of pages to fetch
         'maxlevels':    10, # max number of levels to traverse within a site
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css',
@@ -108,7 +108,10 @@ class sfp_spider(SpiderFootPlugin):
 
         if source != None:
             self.results[url]['source'] = source
-            self.notifyListeners("URL", source, url)
+            if self.baseDomain + "/" in url:
+                self.notifyListeners("URL_INTERNAL", source, url)
+            else:
+                self.notifyListeners("URL_EXTERNAL", source, url)
             stored += 's'
 
         if original != None:

@@ -71,6 +71,7 @@ class sfp_googlesearch(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
+            # Submit the google results for analysis
             self.notifyListeners("WEBCONTENT", page, pages[page])
             self.results.append(page)
 
@@ -92,8 +93,12 @@ class sfp_googlesearch(SpiderFootPlugin):
                         if self.checkForStop():
                             return None
                         linkPage = sf.fetchUrl(link)
-                        self.notifyListeners("URL", page, link)
+
+                        # Submit info from what we've fetched for analysis
+                        self.notifyListeners("URL_INTERNAL", page, link)
                         self.notifyListeners("WEBCONTENT", link, linkPage['content'])
+                        self.notifyListeners("HTTP_CODE", link, linkPage['code'])
+                        self.notifyListeners("WEBSERVER_HTTPHEADERS", link, linkPage['headers'])
                         self.results.append(link)
 
 # End of sfp_googlesearch class

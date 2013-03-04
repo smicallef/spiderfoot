@@ -58,7 +58,8 @@ class sfp_stor_db(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
-        print "OPT: " + str(self.opts['maxstorage'])
+        # Convert to a string in case we get passed integers or other things
+        eventData = str(eventData)
         if self.opts['maxstorage'] != 0 and len(eventData) > self.opts['maxstorage']:
             sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
                 eventData[0:self.opts['maxstorage']], srcModuleName)

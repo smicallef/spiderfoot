@@ -48,7 +48,7 @@ class sfp_subdomain(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["WEBCONTENT", "URL"]
+        return ["WEBCONTENT", "URL_INTERNAL"]
 
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):

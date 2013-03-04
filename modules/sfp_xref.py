@@ -29,14 +29,17 @@ class sfp_xref(SpiderFootPlugin):
         '__debugfilter': '',
         'forcebase':    True, # Check the base URL for a link back to the seed
                               # domain in order to be considered a valid xref
-        'checkbase':    True # Only check the base URL for a relationship if
+        'checkbase':    True, # Only check the base URL for a relationship if
                               # the link provided contains no xref
+        'checkcontent': True  # Submit affiliate content for other modules to
+                              # analyze
     }
 
     # Option descriptions
     optdescs = {
         "forcebase":    "Require the base domain of an external URL for affiliation?",
-        "checkbase":    "Check the base domain of a URL for affiliation?"
+        "checkbase":    "Check the base domain of a URL for affiliation?",
+        "checkcontent": "Submit the affiliate content to other modules for analysis?"
     }
 
     # Internal results tracking
@@ -64,7 +67,7 @@ class sfp_xref(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['URL', 'SIMILARDOMAIN']
+        return ['URL_EXTERNAL', 'SIMILARDOMAIN']
 
     # Handle events sent to this module
     # In this module's case, eventData will be the URL or a domain which
@@ -72,13 +75,13 @@ class sfp_xref(SpiderFootPlugin):
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if eventData in self.fetched:
-            sf.debug("Ignoring " + eventData + " as already tested")
-            return
-
         # The SIMILARDOMAIN event supplies domains, not URLs. Assume HTTP.
         if eventName == 'SIMILARDOMAIN':
             eventData = 'http://'+ eventData
+
+        if eventData in self.fetched:
+            sf.debug("Ignoring " + eventData + " as already tested")
+            return
 
         # We are only interested in external sites for the xref
         if sf.urlBaseDom(eventData) == self.baseDomain:
@@ -125,6 +128,8 @@ class sfp_xref(SpiderFootPlugin):
             self.results[url] = True
             sf.debug("Found affiliate: " + url)
             self.notifyListeners("AFFILIATE", eventSource, url)
+            if self.opts['checkcontent']:
+                self.notifyListeners("WEBCONTENT", url, res['content'])
 
         return None
 

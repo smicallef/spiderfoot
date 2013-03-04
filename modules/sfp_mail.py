@@ -67,7 +67,15 @@ class sfp_mail(SpiderFootPlugin):
 
         matches = re.findall("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9_\-]+)", eventData)
         for match in matches:
-            sf.debug("Found email: " + match)
+            sf.debug("Found possible email: " + match)
+
+            if len(match) < 4:
+                sf.debug("Likely invalid address.")
+                continue
+
+            if self.baseDomain not in match:
+                sf.debug("E-mail (or something) from somewhere else..")
+                continue
 
             if self.results.has_key(match):
                 sf.debug("Already found, skipping.")

@@ -92,13 +92,14 @@ class sfp_dns(SpiderFootPlugin):
         # a CNAME, or an IP is being reverse looked up
         if len(addrs[0]) > 0:
             host = addrs[0]
-            sf.debug("Found possible URL: " + host)
-            self.notifyListeners("URL", eventData, host)
+            sf.debug("Found host: " + host)
 
         # If the returned hostname is on a different
         # domain to baseDomain, flag it as an affiliate
         if not host.endswith(self.baseDomain):
             self.notifyListeners("AFFILIATE", eventData, host)
+        else:
+            self.notifyListeners("SUBDOMAIN", eventData, host)
 
         # In tests addr[1] was either always the requested lookup or empty
 
