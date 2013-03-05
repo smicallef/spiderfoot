@@ -13,6 +13,7 @@
 import sys
 import re
 import socket
+import random
 from sflib import SpiderFoot, SpiderFootPlugin
 
 # SpiderFoot standard lib (must be initialized in setup)
@@ -31,13 +32,15 @@ class sfp_portscan_basic(SpiderFootPlugin):
                             113, 119, 123, 137, 138, 139, 143, 161, 179,
                             389, 443, 445, 465, 512, 513, 514, 515, 631, 636,
                             990, 992, 993, 995, 1080, 8080, 8888, 9000 ],
-        'timeout':          15
+        'timeout':          15,
+        'randomize':        True
     }
 
     # Option descriptions
     optdescs = {
         'ports':    "The TCP ports to scan.",
-        'timeout':  "Seconds before giving up on a port."
+        'timeout':  "Seconds before giving up on a port.",
+        'randomize':    "Randomize the order of ports scanned."
     }
 
     # URL this instance is working on
@@ -59,6 +62,9 @@ class sfp_portscan_basic(SpiderFootPlugin):
         # Extract the 'meaningful' part of the FQDN from the URL
         self.baseDomain = sf.urlBaseDom(self.seedUrl)
         sf.debug('Base Domain: ' + self.baseDomain)
+
+        if opts['randomize']:
+            random.shuffle(self.opts['ports'])
 
     # What events is this module interested in for input
     def watchedEvents(self):
