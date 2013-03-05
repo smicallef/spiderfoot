@@ -79,10 +79,6 @@ class sfp_xref(SpiderFootPlugin):
         if eventName == 'SIMILARDOMAIN':
             eventData = 'http://'+ eventData
 
-        if eventData in self.fetched:
-            sf.debug("Ignoring " + eventData + " as already tested")
-            return
-
         # We are only interested in external sites for the xref
         if sf.urlBaseDom(eventData) == self.baseDomain:
             sf.debug("Ignoring " + eventData + " as not external")
@@ -102,6 +98,7 @@ class sfp_xref(SpiderFootPlugin):
             return
 
         res = sf.fetchUrl(url)
+        self.fetched.append(url)
 
         if res['content'] == None:
             sf.debug("Ignoring " + url + " as no data returned")
