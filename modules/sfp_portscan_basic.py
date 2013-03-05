@@ -63,7 +63,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
         self.baseDomain = sf.urlBaseDom(self.seedUrl)
         sf.debug('Base Domain: ' + self.baseDomain)
 
-        if opts['randomize']:
+        if self.opts['randomize']:
             random.shuffle(self.opts['ports'])
 
     # What events is this module interested in for input
