@@ -176,11 +176,12 @@ class SpiderFootWebUi:
     def scaneventresultexport(self, id, type):
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
-        blob = "\"Updated\",\"Source\",\"Module\",\"Data\"\n"
+        blob = "\"Updated\",\"Type\",\"Source\",\"Module\",\"Data\"\n"
         for row in data:
             lastseen = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[0]))
-            escaped = cgi.escape(row[1].replace("\n", "<LB>").replace("\r", "<LB>"))
-            blob = blob + "\"" + lastseen + "\",\"" + row[2] + "\",\"" + row[3]
+            escaped = cgi.escape(row[1].replace("\n", "#LB#").replace("\r", "#LB#"))
+            blob = blob + "\"" + lastseen + "\",\"" + row[4] + "\",\""
+            blob = blob + row[2] + "\",\"" + row[3]
             blob = blob + "\",\"" + escaped + "\"\n"
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
