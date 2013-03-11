@@ -4,11 +4,13 @@
     <div class="btn-group">
       <a id='btn-browse' class="btn active" href="#" onClick='browseEventList("${id}")'>Browse</a>
       <a id='btn-info' class="btn" href="#" onClick='viewScanConfig("${id}")'>Scan Info</a>
-      <a id='btn-export' class="btn" href="#">Export</a>
+      <a id='btn-export' class="btn" href="#" onClick='exportEventData("${id}", currentType)'>Export</a>
     </div>
   </div>
 
     <script type='text/javascript'>
+        var currentType = "ALL";
+
         function navTo(target) {
             var targets = [ "btn-browse", "btn-info", "btn-export" ]
             for (var i = 0; i < targets.length; i++) {
@@ -22,6 +24,8 @@
 
         // Summary of event types and counts for a scan
         function browseEventList(instanceId) {
+            currentType = "ALL";
+
             // Remove pre-existing tables if they exist
             $("#scansummary-content").remove();
             navTo("btn-browse");
@@ -47,16 +51,27 @@
             $("#scansummary-content").remove();
             $("#loader").show();
             navTo("btn-browse");
+            currentType = eventType;
             sf.fetchData('/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
-                            table += "<thead><tr> <th>Data Element</th><th>Obtained</th><th>Source</th><th>Module</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Data Element</th><th>Source</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr><td width=50%><pre>" + data[i][1] + "</pre></td><td>" + data[i][0] + "</td><td>" + data[i][2] + "</td><td>" + data[i][3] + "</td></tr>";
+                                table += "<tr><td width=50%><pre style='border: 0px; background-color: inherit'>" + data[i][1];
+                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
+                                table += "</pre></td></tr>";
                             }
                             table += "</tbody></table>"
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(table);
             });
+        }
+
+        // Download the data currently being viewed
+        function exportEventData(instanceId, eventType) {
+            $("#loader").show();
+            var efr = document.getElementById('exportframe');
+            efr.src = '/scaneventresultexport?id=' + instanceId + '&eventType=' + eventType;
+            $("#loader").fadeOut(500);
         }
 
         // View the configuration that was used for this scan
@@ -103,4 +118,5 @@
         browseEventList("${id}");
 
     </script>
+<iframe style='display: none' id='exportframe'>
 <%include file="FOOTER.tmpl"/>

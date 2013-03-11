@@ -172,6 +172,22 @@ class SpiderFootWebUi:
     # DATA PROVIDERS (need to migrate all the ones from SpiderFootDataProvider 
     # to here)
 
+    # Get result data in CSV format
+    def scaneventresultexport(self, id, type):
+        dbh = SpiderFootDb(self.config)
+        data = dbh.scanResultEvent(id, type)
+        blob = "\"Updated\",\"Source\",\"Module\",\"Data\"\n"
+        for row in data:
+            lastseen = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[0]))
+            escaped = cgi.escape(row[1].replace("\n", "<LB>").replace("\r", "<LB>"))
+            blob = blob + "\"" + lastseen + "\",\"" + row[2] + "\",\"" + row[3]
+            blob = blob + "\",\"" + escaped + "\"\n"
+        cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
+        cherrypy.response.headers['Content-Type'] = "application/csv"
+        cherrypy.response.headers['Pragma'] = "no-cache"
+        return blob
+    scaneventresultexport.exposed = True
+        
     # Configuration used for a scan
     def scanopts(self, id):
         ret = dict()
