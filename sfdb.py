@@ -138,12 +138,14 @@ class SpiderFootDb:
     # Obtain the data for a scan and event type
     def scanResultEvent(self, instanceId, eventType='ALL'):
         qry = "SELECT ROUND(generated/1000) AS generated, event_data, event_source, \
-            event_data_source FROM tbl_scan_results WHERE scan_instance_id = ?"
+            event_data_source, event FROM tbl_scan_results WHERE scan_instance_id = ?"
         qvars = [instanceId]
 
         if eventType != "ALL":
             qry = qry + " AND event = ?"
             qvars.append(eventType)
+
+        qry = qry + " ORDER BY event_data, event_source"
 
         try:
             self.dbh.execute(qry, qvars)
