@@ -108,7 +108,7 @@ class sfp_spider(SpiderFootPlugin):
 
         if source != None:
             self.results[url]['source'] = source
-            if self.baseDomain + "/" in url:
+            if self.baseDomain == sf.urlBaseDom(url):
                 self.notifyListeners("URL_INTERNAL", source, url)
             else:
                 self.notifyListeners("URL_EXTERNAL", source, url)
@@ -156,7 +156,7 @@ class sfp_spider(SpiderFootPlugin):
             sf.debug("No links found at " + url)
             return None
 
-        #sf.debug('Links found from parsing: ' + str(links))
+        sf.debug('Links found from parsing: ' + str(links))
         return links
 
     # Clear out links that we don't want to follow

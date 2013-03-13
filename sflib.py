@@ -11,10 +11,8 @@
 #-------------------------------------------------------------------------------
 
 import inspect
-import random
 import re
 import sys
-import time
 import urllib2
 
 class SpiderFoot:
@@ -52,7 +50,7 @@ class SpiderFoot:
         return
 
     def status(self, message):
-        print "STATUS: " + message
+        print "[Status] " + message
 
     def debug(self, message):
         if self.opts['_debug'] == False:
@@ -296,19 +294,32 @@ class SpiderFoot:
             self.debug('parseLinks() called with no data to parse')
             return None
 
+        # Find actual links
         try:
             regRel = re.compile('(href|src|action|url)[:=][ \'\"]*(.[^\'\"<> ]*)',
-             re.IGNORECASE)
+                re.IGNORECASE)
             urlsRel = regRel.findall(data)
         except Exception as e:
-            self.error("Error applying regex to " + data + ", continuing anyway.")
+            self.error("Error applying regex to: " + data)
             return None
+
+        # Find potential links that aren't links (text possibly in comments, etc.)
+        try:
+            # Because we're working with a big blob of text now, don't worry
+            # about clobbering proper links by url decoding them.
+            data = urllib2.unquote(data)
+            regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.'+self.urlBaseDom(url)+')', 
+                re.IGNORECASE)
+            urlsRel = urlsRel + regRel.findall(data)
+        except Exception as e:
+            self.error("Error applying regex2 to: " + data)
 
         # Loop through all the URLs/links found by the regex
         for linkTuple in urlsRel:
             # Remember the regex will return two vars (two groups captured)
             meta = linkTuple[0]
             link = linkTuple[1]
+            absLink = None
 
             # Don't include stuff likely part of some dynamically built incomplete
             # URL found in Javascript code (character is part of some logic)
@@ -326,6 +337,10 @@ class SpiderFoot:
                 self.debug("Ignoring mail link: " + link)
                 continue
 
+            # URL decode links
+            if '%2F' in link or '%2f' in link:
+                link = urllib2.unquote(link)
+
             # Capture the absolute link:
             # If the link contains ://, it is already an absolute link
             if '://' in link:
@@ -335,8 +350,12 @@ class SpiderFoot:
             if link.startswith('/'):
                 absLink = self.urlBaseUrl(url) + link
 
+            # Maybe the domain was just mentioned and not a link, so we make it one
+            if absLink == None and self.urlBaseDom(url) in link:
+                absLink = 'http://' + link
+
             # Otherwise, it's a flat link within the current directory
-            if '://' not in link and not link.startswith('/'):
+            if absLink == None:
                 absLink = self.urlBaseDir(url) + link
 
             # Translate any relative pathing (../)
@@ -344,68 +363,6 @@ class SpiderFoot:
             returnLinks[absLink] = {'source': url, 'original': link}
 
         return returnLinks
-
-    # Scrape Google for content, starting at startUrl and iterating through
-    # results based on options supplied. Will return a dictionary of all pages
-    # fetched and their contents {page => content}.
-    # Options accepted:
-    # limit: number of search result pages before returning, default is 10
-    # nopause: don't randomly pause between fetches
-    def googleIterate(self, searchString, opts=dict()):
-        limit = 10
-        fetches = 0
-        returnResults = dict()
-
-        if opts.has_key('limit'):
-            limit = opts['limit']
-
-        # We attempt to make the URL look as authentically human as possible
-        seedUrl = "http://www.google.com/search?q={0}".format(searchString) + \
-            "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
-        firstPage = self.fetchUrl(seedUrl)
-        if firstPage['code'] == "403":
-            self.error("Google doesn't like us right now..")
-            return None
-
-        if firstPage['content'] == None:
-            self.error("Failed to fetch content from Google.")
-            return None
-
-        returnResults[seedUrl] = firstPage['content']
-
-        matches = re.findall("(\/search\S+start=\d+.[^\'\"]*sa=N)", firstPage['content'])
-        while matches > 0 and fetches < limit:
-            nextUrl = None
-            fetches += 1
-            for match in matches:
-                # Google moves in increments of 10
-                if "start=" + str(fetches*10) in match:
-                    nextUrl = match.replace("&amp;", "&")
-
-            if nextUrl == None:
-                self.debug("Nothing left to scan for in Google results.")
-                return returnResults
-            self.debug("Next Google URL: " + nextUrl)
-
-            # Wait for a random number of seconds between fetches
-            if not opts.has_key('nopause'):
-                pauseSecs = random.randint(4, 15)
-                self.debug("Pausing for " + str(pauseSecs))
-                time.sleep(pauseSecs)
-
-            nextPage = self.fetchUrl('http://www.google.com' + nextUrl)
-            if firstPage['code'] == 403:
-                self.error("Google doesn't like us any more..")
-                return returnResults
-
-            if nextPage['content'] == None:
-                self.error("Failed to fetch subsequent content from Google.")
-                return returnResults
-
-            returnResults[nextUrl] = nextPage['content']
-            matches = re.findall("(\/search\S+start=\d+.[^\'\"]*)", nextPage['content'])
-
-        return returnResults
 
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False):
@@ -445,6 +402,7 @@ class SpiderFoot:
             self.debug("HTTP code " + str(h.code) + " encountered for " + url)
             # Capture the HTTP error code
             result['code'] = h.code
+            result['headers'] = h.info()
             if fatal:
                 self.fatal('URL could not be fetched (' + h.code + ')')
         except urllib2.URLError as e:

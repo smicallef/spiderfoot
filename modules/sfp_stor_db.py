@@ -60,12 +60,15 @@ class sfp_stor_db(SpiderFootPlugin):
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
         # Convert to a string in case we get passed integers or other things
         eventData = str(eventData)
-        if self.opts['maxstorage'] != 0 and len(eventData) > self.opts['maxstorage']:
-            sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
-                eventData[0:self.opts['maxstorage']], srcModuleName)
-        else:
-            sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
-                eventData, srcModuleName)
+        if self.opts['maxstorage'] != 0:
+            if len(eventData) > self.opts['maxstorage']:
+                sf.debug("Truncated " + eventName + " data due to storage limitation")
+                sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
+                    eventData[0:self.opts['maxstorage']], srcModuleName)
+                return None
+        
+        sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
+            eventData, srcModuleName)
 
 
 # End of sfp_stor_db class

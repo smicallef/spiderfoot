@@ -6,6 +6,7 @@ INSERT INTO tbl_event_types (event, event_descr) VALUES ('EMAILADDR', 'Email Add
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('GEOINFO', 'Physical Location')
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('HTTP_CODE', 'HTTP Status Code');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('IP_ADDRESS', 'IP Address');
+INSERT INTO tbl_event_types (event, event_descr) VALUES ('NETBLOCK', 'Netblock Ownership');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('SUBDOMAIN', 'Sub-domain');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('SIMILARDOMAIN', 'Similar Domain');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('TCP_PORT_OPEN', 'Open TCP Port');
@@ -20,3 +21,4 @@ INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT_PASSWORD', 
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBCONTENT_UPLOAD', 'Web Content (Accepts Uploads)');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBSERVER_BANNER', 'Web Server');
 INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBSERVER_HTTPHEADERS', 'HTTP Headers');
+INSERT INTO tbl_event_types (event, event_descr) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology');

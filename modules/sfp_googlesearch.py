@@ -10,7 +10,9 @@
 #-------------------------------------------------------------------------------
 
 import sys
+import random
 import re
+import time
 from sflib import SpiderFoot, SpiderFootPlugin
 
 # SpiderFoot standard lib (must be initialized in setup)
@@ -60,9 +62,79 @@ class sfp_googlesearch(SpiderFootPlugin):
     def watchedEvents(self):
         return None
 
+    # Scrape Google for content, starting at startUrl and iterating through
+    # results based on options supplied. Will return a dictionary of all pages
+    # fetched and their contents {page => content}.
+    # Options accepted:
+    # limit: number of search result pages before returning, default is 10
+    # nopause: don't randomly pause between fetches
+    def googleIterate(self, searchString, opts=dict()):
+        limit = 10
+        fetches = 0
+        returnResults = dict()
+
+        if opts.has_key('limit'):
+            limit = opts['limit']
+
+        # We attempt to make the URL look as authentically human as possible
+        seedUrl = "http://www.google.com/search?q={0}".format(searchString) + \
+            "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
+        firstPage = sf.fetchUrl(seedUrl)
+        if firstPage['code'] == "403":
+            sf.error("Google doesn't like us right now..")
+            return None
+
+        if firstPage['content'] == None:
+            sf.error("Failed to fetch content from Google.")
+            return None
+
+        returnResults[seedUrl] = firstPage['content']
+
+        matches = re.findall("(\/search\S+start=\d+.[^\'\"]*sa=N)", firstPage['content'])
+        while matches > 0 and fetches < limit:
+            nextUrl = None
+            fetches += 1
+            for match in matches:
+                # Google moves in increments of 10
+                if "start=" + str(fetches*10) in match:
+                    nextUrl = match.replace("&amp;", "&")
+
+            if nextUrl == None:
+                sf.debug("Nothing left to scan for in Google results.")
+                return returnResults
+            sf.debug("Next Google URL: " + nextUrl)
+
+            # Wait for a random number of seconds between fetches
+            if not opts.has_key('nopause'):
+                pauseSecs = random.randint(4, 15)
+                sf.debug("Pausing for " + str(pauseSecs))
+                time.sleep(pauseSecs)
+
+            # Check if we've been asked to stop
+            if self.checkForStop():
+                return None
+
+            nextPage = sf.fetchUrl('http://www.google.com' + nextUrl)
+            if firstPage['code'] == 403:
+                sf.error("Google doesn't like us any more..")
+                return returnResults
+
+            if nextPage['content'] == None:
+                sf.error("Failed to fetch subsequent content from Google.")
+                return returnResults
+
+            returnResults[nextUrl] = nextPage['content']
+            matches = re.findall("(\/search\S+start=\d+.[^\'\"]*)", nextPage['content'])
+
+        return returnResults
+
     def start(self):
         # Sites hosted on the domain
-        pages = sf.googleIterate("site:" + self.baseDomain, dict(limit=self.opts['pages']))
+        pages = self.googleIterate("site:" + self.baseDomain, dict(limit=self.opts['pages']))
+        if pages == None:
+            sf.debug("No results returned from Google.")
+            return None
+
         for page in pages.keys():
             if page in self.results:
                 continue

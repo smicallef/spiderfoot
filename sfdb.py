@@ -126,7 +126,7 @@ class SpiderFootDb:
         qry = "SELECT r.event, e.event_descr, max(ROUND(generated))/1000 AS last_in, \
             count(*) AS total FROM \
             tbl_scan_results r, tbl_event_types e WHERE e.event = r.event \
-            AND r.scan_instance_id = ? GROUP BY r.event"
+            AND r.scan_instance_id = ? GROUP BY r.event ORDER BY e.event_descr"
         qvars = [instanceId]
         try:
             self.dbh.execute(qry, qvars)
@@ -264,6 +264,8 @@ class SpiderFootDb:
             VALUES (?, ?, ?, ?, ?, ?)"
         qvals = [instanceId, time.time() * 1000, eventName, eventSource,
             eventData.__str__(), eventDataSource]
+
+        #print "STORING: " + str(qvals)
 
         try:
             self.dbh.execute(qry, qvals)
