@@ -52,6 +52,13 @@ class SpiderFootDbInit:
                 ended       INT DEFAULT 0, \
                 status      VARCHAR NOT NULL \
             )",
+            "CREATE TABLE tbl_scan_log ( \
+                scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid), \
+                generated           INT NOT NULL, \
+                component           VARCHAR, \
+                type                VARCHAR NOT NULL, \
+                message             VARCHAR \
+            )",
             "CREATE TABLE tbl_scan_config ( \
                 scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid), \
                 component           VARCHAR NOT NULL, \

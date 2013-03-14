@@ -22,7 +22,6 @@ from sfwebui import SpiderFootWebUi, SpiderFootWebUiMini
 # be overridden from saved configuration settings stored in the DB.
 sfConfig = {
     '_debug':           True, # Debug
-    '__debugfilter':     '', # Filter out debug strings
     '__blocknotif':      False, # Block notifications
     '_useragent':       'SpiderFoot/2.0', # User-Agent to use for HTTP requests
     '_fetchtimeout':    5, # number of seconds before giving up on a fetch

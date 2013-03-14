@@ -23,10 +23,6 @@ class sfp_spider(SpiderFootPlugin):
 
     # Default options
     opts = {
-        # These must always be set
-        '__debug':       True,
-        '__debugfilter': '',
-        # options specific to this module
         'robotsonly':   False, # only follow links specified by robots.txt
         'pause':        1, # number of seconds to pause between fetches
         'maxpages':     10000, # max number of pages to fetch
@@ -66,26 +62,26 @@ class sfp_spider(SpiderFootPlugin):
     # >> Not all of these will be populated at the same time <<
     results = dict()
 
-    def setup(self, url, userOpts=dict()):
+    def setup(self, sfc, url, userOpts=dict()):
         global sf
+
+        sf = sfc
         self.seedUrl = url
         self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        # For error reporting, debug, etc.
-        sf = SpiderFoot(self.opts)
-
         if '://' not in self.seedUrl:
-            sf.fatal("Please specify a full URL starting point, prefixed with http:// or https://")
+            sf.error("Please specify a full URL starting point, prefixed with http:// or https://")
+            return None
 
         if re.match('.*\d+\.\d+\.\d+\.\d+.*', self.seedUrl):
-            sf.fatal("Need a named URL to start with, not an IP.")
+            sf.error("Need a named URL to start with, not an IP.")
+            return None
 
         # Extract the 'meaningful' part of the FQDN from the URL
         self.baseDomain = sf.urlBaseDom(self.seedUrl)
-        sf.debug('Base Domain: ' + self.baseDomain)
 
         # Are we respecting robots.txt?
         if self.opts['robotsonly']:
@@ -93,6 +89,9 @@ class sfp_spider(SpiderFootPlugin):
             if robotsTxt['content'] != None:
                 sf.debug('robots.txt contents: ' + robotsTxt['content'])
                 self.robotsRules = sf.parseRobotsTxt(robotsTxt['content'])
+            else:
+                sf.error("Unable to fetch robots.txt and you've asked to abide by its contents.")
+                return None
 
     # This module listens to no events
     def watchedEvents(self):

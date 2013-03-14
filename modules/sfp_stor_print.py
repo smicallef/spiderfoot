@@ -20,9 +20,6 @@ sf = None
 class sfp_stor_print(SpiderFootPlugin):
     # Default options
     opts = {
-        # These must always be set
-        '__debug':       True,
-        '__debugfilter': '',
         'datasize':     100 # Number of characters to print from event data
     }
 
@@ -34,16 +31,15 @@ class sfp_stor_print(SpiderFootPlugin):
     # URL this instance is working on
     seedUrl = None
 
-    def __init__(self, url, userOpts=dict()):
+    def __init__(self, sfc, url, userOpts=dict()):
         global sf
+
+        sf = sfc
         self.seedUrl = url
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        # For error reporting, debug, etc.
-        sf = SpiderFoot(self.opts)
-   
     # Module description
     def descr(self):
         return "Debugging module for printing results instead of storing them."

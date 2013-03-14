@@ -24,9 +24,6 @@ class sfp_xref(SpiderFootPlugin):
 
     # Default options
     opts = {
-        # These must always be set
-        '__debug':       True,
-        '__debugfilter': '',
         'forcebase':    True, # Check the base URL for a link back to the seed
                               # domain in order to be considered a valid xref
         'checkbase':    True, # Only check the base URL for a relationship if
@@ -50,20 +47,18 @@ class sfp_xref(SpiderFootPlugin):
     seedUrl = None
     baseDomain = None # calculated from the URL in setup
 
-    def setup(self, url, userOpts=dict()):
+    def setup(self, sfc, url, userOpts=dict()):
         global sf
+
+        sf = sfc
         self.seedUrl = url
         self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        # For error reporting, debug, etc.
-        sf = SpiderFoot(self.opts)
-
         # Extract the 'meaningful' part of the FQDN from the URL
         self.baseDomain = sf.urlBaseDom(self.seedUrl)
-        sf.debug('Base Domain: ' + self.baseDomain)
 
     # What events is this module interested in for input
     def watchedEvents(self):

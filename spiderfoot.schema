@@ -49,6 +49,18 @@ CREATE TABLE tbl_scan_instance (
 );
 
 --
+-- Scan events: Log messages generated during the scan.
+--
+DROP TABLE tbl_scan_log;
+CREATE TABLE tbl_scan_log (
+    scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid),
+    generated           INT NOT NULL,
+    component           VARCHAR,
+    type                VARCHAR NOT NULL,
+    message             VARCHAR
+);
+
+--
 -- Scan configs: The configuration used for a scan run.
 --
 DROP TABLE tbl_scan_config;

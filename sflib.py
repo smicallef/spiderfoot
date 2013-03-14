@@ -16,10 +16,11 @@ import sys
 import urllib2
 
 class SpiderFoot:
+    dbh = None
+    scanGUID = None
+
     # 'options' is a dictionary of options which changes the behaviour
     # of how certain things are done in this module
-    #   - debug: enable debugging
-    #   - debugfilter: filter debug messages for a string
     # 'handle' will be supplied if the module is being used within the
     # SpiderFoot GUI, in which case all feedback should be fed back
     def __init__(self, options, handle=None):
@@ -30,44 +31,49 @@ class SpiderFoot:
     # Debug, error message and logging functions
     #
 
+    # Called usually some time after instantiation
+    # to set up a database handle and scan GUID, used
+    # for logging events to the database about a scan.
+    def setDbh(self, handle):
+        self.dbh = handle
+
+    def setScanId(self, id):
+        self.scanGUID = id
+
+    def _dblog(self, level, message, component=None):
+        return self.dbh.scanLogEvent(self.scanGUID, level, message, component)
+
     def error(self, error):
-        if self.handle == None:
+        if self.dbh == None:
             print '[Error] ' + error
-            raise BaseException(error)
         else:
-            #self.handle.error(error)
-            print 'should not be here'
-        return
+            self._dblog("ERROR", error)
+        raise BaseException("Internal Error Encountered: " + error)
 
     def fatal(self, error):
-        if self.handle == None:
+        if self.dbh == None:
             print '[Fatal] ' + error
-            raise BaseException("Fatal Error Encountered: " + error)
-            exit(-1)
         else:
-            #self.handle.error(error)
-            print 'should not be here'
-        return
+            self._dblog("FATAL", error)
+        raise BaseException("Fatal Error Encountered: " + error)
+        exit(-1)
 
     def status(self, message):
-        print "[Status] " + message
+        if self.dbh == None:
+            print "[Status] " + message
+        else:
+            self._dblog("STATUS", message)
 
     def debug(self, message):
         if self.opts['_debug'] == False:
             return
 
-        if self.handle == None:
-                frm = inspect.stack()[1]
-                mod = inspect.getmodule(frm[0])
-
-                msg = '[d:' + mod.__name__ + '] ' + message
-                if self.opts['__debugfilter'] != None and self.opts['__debugfilter'] not in msg:
-                    return
-
-                print msg
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        if self.dbh == None:
+            print '[' + mod.__name__ + '] ' + message
         else:
-            #self.handle.debug(message)
-            print 'should not be here'
+            self._dblog("DEBUG", message, mod.__name__)
         return
 
     #
@@ -80,6 +86,7 @@ class SpiderFoot:
         storeopts = dict()
 
         for opt in opts.keys():
+            # Filter out system temporary variables like GUID and others
             if opt.startswith('__') and filterSystem:
                 continue
 
@@ -439,7 +446,7 @@ class SpiderFootPlugin(object):
         self._stopScanning = False
 
     # Will always be overriden by the implementer.
-    def setup(self, url, userOpts=dict()):
+    def setup(self, sf, url, userOpts=dict()):
         pass
 
     # Listener modules which will get notified once we have data for them to

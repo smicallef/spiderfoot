@@ -49,17 +49,19 @@ class SpiderFootScanner:
             return None
 
         for modName in self.moduleInstances.keys():
-            print "Signalling module " + modName + " to stop."
+            self.sf.status("Signalling module " + modName + " to stop.")
             self.moduleInstances[modName].stopScanning()
 
     # Start running a scan
     def startScan(self):
         self.moduleInstances = dict()
         dbh = SpiderFootDb(self.config)
+        self.sf.setDbh(dbh)
         aborted = False
 
         # Create a unique ID for this scan and create it in the back-end DB.
         self.config['__guid__'] = dbh.scanInstanceGenGUID(self.target)
+        self.sf.setScanId(self.config['__guid__'])
         self.myId = self.config['__guid__']
         dbh.scanInstanceCreate(self.config['__guid__'], self.name, self.target)
         dbh.scanInstanceSet(self.config['__guid__'], time.time() * 1000, None, 'STARTING')
@@ -69,7 +71,7 @@ class SpiderFootScanner:
         self.config['_modulesenabled'] = self.moduleList
         dbh.scanConfigSet(self.config['__guid__'], self.sf.configSerialize(self.config))
 
-        print "Scan [" + self.config['__guid__'] + "] initiated."
+        self.sf.status("Scan [" + self.config['__guid__'] + "] initiated.")
         # moduleList = list of modules the user wants to run
         try:
             for modName in self.moduleList:
@@ -94,9 +96,9 @@ class SpiderFootScanner:
                     modConfig[opt] = self.config[opt]
 
                 mod.clearListeners() # clear any listener relationships from the past
-                mod.setup(self.target, modConfig)
+                mod.setup(self.sf, self.target, modConfig)
                 self.moduleInstances[modName] = mod
-                print modName + " module loaded."
+                self.sf.status(modName + " module loaded.")
 
             # Register listener modules and then start all modules sequentially
             for module in self.moduleInstances.values():
@@ -136,10 +138,12 @@ class SpiderFootScanner:
                 dbh.scanInstanceSet(self.config['__guid__'], None, time.time() * 1000, 'FINISHED')
                 self.status = "FINISHED"
         except Exception as e:
-            self.sf.status("Scan [" + self.config['__guid__'] + "] failed: " + str(e))
+            self.sf.error("Scan [" + self.config['__guid__'] + "] failed: " + str(e))
             dbh.scanInstanceSet(self.config['__guid__'], None, time.time() * 1000, 'ERROR-FAILED')
             self.status = "ERROR-FAILED"
 
         self.moduleInstances = None
         dbh.close()
+        self.sf.setDbh(None)
+        self.sf.setScanId(None)
 

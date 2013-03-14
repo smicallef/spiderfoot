@@ -23,9 +23,6 @@ class sfp_stor_db(SpiderFootPlugin):
 
     # Default options
     opts = {
-        # These must always be set
-        '__debug':       True,
-        '__debugfilter': '',
         'maxstorage':   1024 # max bytes for any piece of info stored (0 = unlimited)
     }
 
@@ -37,16 +34,16 @@ class sfp_stor_db(SpiderFootPlugin):
     # URL this instance is working on
     seedUrl = None
 
-    def setup(self, url, userOpts=dict()):
+    def setup(self, sfc, url, userOpts=dict()):
         global sf
         global sfdb
+
+        sf = sfc
         self.seedUrl = url
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        # For error reporting, debug, etc.
-        sf = SpiderFoot(self.opts)
         # Use the database handle passed to us
         sfdb = userOpts['__sfdb__']
 

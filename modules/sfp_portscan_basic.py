@@ -24,9 +24,6 @@ class sfp_portscan_basic(SpiderFootPlugin):
 
     # Default options
     opts = {
-        # These must always be set
-        '__debug':           True,
-        '__debugfilter':     '',
                             # Commonly used ports on external-facing systems
         'ports':            [ 21, 22, 23, 25, 53, 79, 80, 81, 88, 110, 111, 
                             113, 119, 123, 137, 138, 139, 143, 161, 179,
@@ -48,20 +45,18 @@ class sfp_portscan_basic(SpiderFootPlugin):
     baseDomain = None # calculated from the URL in setup
     results = dict()
 
-    def setup(self, url, userOpts=dict()):
+    def setup(self, sfc, url, userOpts=dict()):
         global sf
+
+        sf = sfc
         self.seedUrl = url
         self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        # For error reporting, debug, etc.
-        sf = SpiderFoot(self.opts)
-
         # Extract the 'meaningful' part of the FQDN from the URL
         self.baseDomain = sf.urlBaseDom(self.seedUrl)
-        sf.debug('Base Domain: ' + self.baseDomain)
 
         if self.opts['randomize']:
             random.shuffle(self.opts['ports'])

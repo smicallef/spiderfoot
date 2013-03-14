@@ -23,9 +23,6 @@ class sfp_googlesearch(SpiderFootPlugin):
 
     # Default options
     opts = {
-        # These must always be set
-        '__debug':       True,
-        '__debugfilter': '',
         'useragent':   'Mozilla/5.0 (Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
         'fetchlinks':   True,   # Should we fetch links on the base domain?
         'pages':        20      # Number of google results pages to iterate
@@ -43,20 +40,18 @@ class sfp_googlesearch(SpiderFootPlugin):
     baseDomain = None # calculated from the URL in setup
     results = list()
 
-    def setup(self, url, userOpts=dict()):
+    def setup(self, sfc, url, userOpts=dict()):
         global sf
+
+        sf = sfc
         self.seedUrl = url
         self.results = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        # For error reporting, debug, etc.
-        sf = SpiderFoot(self.opts)
-
          # Extract the 'meaningful' part of the FQDN from the URL
         self.baseDomain = sf.urlBaseDom(self.seedUrl)
-        sf.debug('Base Domain: ' + self.baseDomain)
 
     # What events is this module interested in for input
     def watchedEvents(self):

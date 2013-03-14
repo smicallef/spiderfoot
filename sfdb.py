@@ -55,6 +55,24 @@ class SpiderFootDb:
     def close(self):
         self.dbh.close()
 
+    # Log an event to the database
+    def scanLogEvent(self, instanceId, classification, message, component=None):
+        if component == None:
+            component = "SpiderFoot"
+
+        qry = "INSERT INTO tbl_scan_log \
+            (scan_instance_id, generated, component, type, message) \
+            VALUES (?, ?, ?, ?, ?)"
+        try:
+            self.dbh.execute(qry, (
+                    instanceId, time.time() * 1000, component, classification, message
+                ))
+            self.conn.commit()
+        except sqlite3.Error as e:
+            sf.fatal("Unable to log event in DB: " + e.args[0])
+
+        return True
+
     # Generate an globally unique ID for this scan
     def scanInstanceGenGUID(self, scanName):
         hashStr = hashlib.sha256(
@@ -62,7 +80,6 @@ class SpiderFootDb:
                 str(time.time() * 1000) +
                 str(random.randint(100000, 999999))
             ).hexdigest()
-        sf.debug("Using GUID of: " + hashStr)
         return hashStr
 
     # Store a scan instance

@@ -46,8 +46,6 @@ class sfp_similar(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '__debug':       True,
-        '__debugfilter': '',
         # Domaintools will 403 you without a browser-like useragent
         'useragent':   'Mozilla/5.0 (Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
         'source':       'ALL', # whois, domaintools, namedroppers or ALL
@@ -70,20 +68,18 @@ class sfp_similar(SpiderFootPlugin):
     seedUrl = None
     baseDomain = None # calculated from the URL in setup
 
-    def setup(self, url, userOpts=dict()):
+    def setup(self, sfc, url, userOpts=dict()):
         global sf
+
+        sf = sfc
         self.seedUrl = url
         self.results = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        # For error reporting, debug, etc.
-        sf = SpiderFoot(self.opts)
-
         # Extract the 'meaningful' part of the FQDN from the URL
         self.baseDomain = sf.urlBaseDom(self.seedUrl)
-        sf.debug('Base Domain: ' + self.baseDomain)
 
     def findDomains(self, keyword, content):
         matches = re.findall("([a-z0-9\-]*" + keyword + "[a-z0-9\-]*\.[a-z]+)", content)
