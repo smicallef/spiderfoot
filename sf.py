@@ -21,15 +21,15 @@ from sfwebui import SpiderFootWebUi, SpiderFootWebUiMini
 # These can be overriden on a per-module basis, and some will
 # be overridden from saved configuration settings stored in the DB.
 sfConfig = {
-    '_debug':           True, # Debug
+    '_debug':            False, # Debug
     '__blocknotif':      False, # Block notifications
-    '_useragent':       'SpiderFoot/2.0', # User-Agent to use for HTTP requests
-    '_fetchtimeout':    5, # number of seconds before giving up on a fetch
+    '_useragent':        'SpiderFoot/2.0', # User-Agent to use for HTTP requests
+    '_fetchtimeout':     5, # number of seconds before giving up on a fetch
     '__database':        'spiderfoot.db',
     '__webaddr':         '0.0.0.0',
     '__webport':         5001,
-    '__guid__':         None, # unique ID of scan. Will be set after start-up.
-    '__modules__':        None # List of modules. Will be set after start-up.
+    '__guid__':          None, # unique ID of scan. Will be set after start-up.
+    '__modules__':       None # List of modules. Will be set after start-up.
 }
 
 sfOptdescs = {

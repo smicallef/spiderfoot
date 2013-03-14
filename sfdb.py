@@ -173,9 +173,9 @@ class SpiderFootDb:
 
     # Get scan logs
     def scanLogs(self, instanceId):
-        qry = "SELECT ROUND(generated/1000) AS generated, component, \
+        qry = "SELECT generated AS generated, component, \
             type, message FROM tbl_scan_log WHERE scan_instance_id = ? \
-            ORDER BY ROUND(generated/1000) DESC"
+            ORDER BY generated DESC"
         qvars = [instanceId]
 
         try:

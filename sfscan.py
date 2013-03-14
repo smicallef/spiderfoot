@@ -49,7 +49,6 @@ class SpiderFootScanner:
             return None
 
         for modName in self.moduleInstances.keys():
-            self.sf.status("Signalling module " + modName + " to stop.")
             self.moduleInstances[modName].stopScanning()
 
     # Start running a scan
