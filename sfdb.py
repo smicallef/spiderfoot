@@ -171,6 +171,20 @@ class SpiderFootDb:
             sf.error("SQL error encountered when fetching result events: " +
                 e.args[0])
 
+    # Get scan logs
+    def scanLogs(self, instanceId):
+        qry = "SELECT ROUND(generated/1000) AS generated, component, \
+            type, message FROM tbl_scan_log WHERE scan_instance_id = ? \
+            ORDER BY ROUND(generated/1000) DESC"
+        qvars = [instanceId]
+
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when fetching result events: " +
+                e.args[0])
+
     # Delete a scan instance
     def scanInstanceDelete(self, instanceId):
         qry1 = "DELETE FROM tbl_scan_instance WHERE guid = ?"

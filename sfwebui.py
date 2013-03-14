@@ -219,6 +219,17 @@ class SpiderFootWebUi:
     # DATA PROVIDERS
     #
 
+    # Scan log data
+    def scanlog(self, id):
+        dbh = SpiderFootDb(self.config)
+        data = dbh.scanLogs(id)
+        retdata = []
+        for row in data:
+            generated = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[0]))
+            retdata.append([generated, row[1], row[2], cgi.escape(row[3])])
+        return json.dumps(retdata)
+    scanlog.exposed = True
+
     # Produce a list of scans
     def scanlist(self):
         dbh = SpiderFootDb(self.config)

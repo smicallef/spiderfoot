@@ -5,6 +5,7 @@
       <a id='btn-browse' class="btn active" href="#" onClick='browseEventList("${id}")'>Browse</a>
       <a id='btn-info' class="btn" href="#" onClick='viewScanConfig("${id}")'>Scan Info</a>
       <a id='btn-export' class="btn" href="#" onClick='exportEventData("${id}", currentType)'>Export</a>
+      <a id='btn-log' class="btn" href="#" onClick='viewScanLog("${id}")'>Log</a>
     </div>
   </div>
 
@@ -12,7 +13,7 @@
         var currentType = "ALL";
 
         function navTo(target) {
-            var targets = [ "btn-browse", "btn-info", "btn-export" ]
+            var targets = [ "btn-browse", "btn-info", "btn-log", "btn-export" ]
             for (var i = 0; i < targets.length; i++) {
                 if (targets[i] == target) {
                     $("#" + targets[i]).addClass("active");
@@ -20,6 +21,31 @@
                     $("#" + targets[i]).removeClass("active");
                 }
             }
+        }
+
+        // Logs for the scan
+        function viewScanLog(instanceId) {
+            $("#scansummary-content").remove();
+            $("#loader").show();
+            navTo("btn-log");
+            sf.fetchData('/scanlog', {'id': instanceId}, function(data) {
+                            var table = "<table id='scansummary-content' class='table table-bordered table-striped'>";
+                            table += "<thead><tr> <th>Time</th> <th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
+                            for (var i = 0; i < data.length; i++) {
+                                table += "<tr";
+                                if (data[i][2] == "ERROR") {
+                                    table += " class='error'"
+                                }
+                                table += "><td>" + data[i][0] + "</a></td>";
+                                table += "<td>" + data[i][1] + "</td>";
+                                table += "<td>" + data[i][2] + "</td>";
+                                table += "<td><pre style='border: 0px; background-color: inherit'>" + data[i][3] + "</pre></td>";
+                                table += "</tr>";
+                            }
+                            table += "</tbody></table>"
+                            $("#loader").fadeOut(500);
+                            $("#mainbody").append(table);
+            });
         }
 
         // Summary of event types and counts for a scan
