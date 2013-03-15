@@ -64,22 +64,18 @@ class sfp_similar(SpiderFootPlugin):
     # Internal results tracking
     results = list()
 
-    # URL this instance is working on
-    seedUrl = None
-    baseDomain = None # calculated from the URL in setup
+    # Target
+    baseDomain = None
 
-    def setup(self, sfc, url, userOpts=dict()):
+    def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.seedUrl = url
+        self.baseDomain = target
         self.results = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-        # Extract the 'meaningful' part of the FQDN from the URL
-        self.baseDomain = sf.urlBaseDom(self.seedUrl)
 
     def findDomains(self, keyword, content):
         matches = re.findall("([a-z0-9\-]*" + keyword + "[a-z0-9\-]*\.[a-z]+)", content)
@@ -210,8 +206,8 @@ class sfp_similar(SpiderFootPlugin):
 
     # Search for similar sounding domains
     def start(self):
-        keyword = sf.urlKeyword(self.seedUrl)
-        sf.debug("Keyword extracted from " + self.seedUrl + ": " + keyword)
+        keyword = sf.domainKeyword(self.baseDomain)
+        sf.debug("Keyword extracted from " + self.baseDomain + ": " + keyword)
 
         if "whois" in self.opts['source'] or "ALL" in self.opts['source']:
             self.scrapeWhois(keyword)

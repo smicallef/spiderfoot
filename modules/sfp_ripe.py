@@ -25,23 +25,19 @@ class sfp_ripe(SpiderFootPlugin):
     # Default options
     opts = { }
 
-    # URL this instance is working on
-    seedUrl = None
-    baseDomain = None # calculated from the URL in setup
+    # Target
+    baseDomain = None
     results = dict()
 
-    def setup(self, sfc, url, userOpts=dict()):
+    def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.seedUrl = url
+        self.baseDomain = target
         self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-        # Extract the 'meaningful' part of the FQDN from the URL
-        self.baseDomain = sf.urlBaseDom(self.seedUrl)
 
     # What events is this module interested in for input
     def watchedEvents(self):

@@ -237,8 +237,9 @@ class SpiderFoot:
         return base + '/'
 
     # Extract the scheme and domain from a URL
+    # Does not return the trailing slash! So you can do .endswith()
+    # checks.
     def urlBaseUrl(self, url):
-
         if '://' in url:
             bits = re.match('(\w+://.[^/]*)/.*', url)
         else:
@@ -250,21 +251,9 @@ class SpiderFoot:
         self.debug('base url of ' + url + ' is: ' + bits.group(1))
         return bits.group(1)
 
-    # Get the base domain from a URL
-    def urlBaseDom(self, url):
-        url = self.urlBaseUrl(url)
-        basedomainBits = url.rsplit('.', 2)
-        try:
-            return basedomainBits[-2] + '.' + basedomainBits[-1]
-        except IndexError:
-            # Some error parsing the domain out of the URL
-            return None
-
     # Extract the keyword (the domain without the TLD or any subdomains)
-    # from a URL
-    def urlKeyword(self, url):
-        base = self.urlBaseUrl(url)
-        domain = self.urlBaseDom(base)
+    # from a domain. Crude for now.. just gets the first word.
+    def domainKeyword(self, domain):
         return domain.split('.', 2)[0]
 
     #
@@ -294,7 +283,7 @@ class SpiderFoot:
     # The key will be the *absolute* URL of the link obtained, so for example if
     # the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
     # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
-    def parseLinks(self, url, data):
+    def parseLinks(self, url, data, domain):
         returnLinks = dict()
 
         if data == None or len(data) == 0:
@@ -315,7 +304,7 @@ class SpiderFoot:
             # Because we're working with a big blob of text now, don't worry
             # about clobbering proper links by url decoding them.
             data = urllib2.unquote(data)
-            regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.'+self.urlBaseDom(url)+')', 
+            regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.'+domain+')', 
                 re.IGNORECASE)
             urlsRel = urlsRel + regRel.findall(data)
         except Exception as e:
@@ -358,7 +347,7 @@ class SpiderFoot:
                 absLink = self.urlBaseUrl(url) + link
 
             # Maybe the domain was just mentioned and not a link, so we make it one
-            if absLink == None and self.urlBaseDom(url) in link:
+            if absLink == None and domain in link:
                 absLink = 'http://' + link
 
             # Otherwise, it's a flat link within the current directory

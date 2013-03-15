@@ -140,7 +140,7 @@ class SpiderFootDb:
 
     # Obtain a summary of the results per event type
     def scanResultSummary(self, instanceId):
-        qry = "SELECT r.event, e.event_descr, max(ROUND(generated))/1000 AS last_in, \
+        qry = "SELECT r.event, e.event_descr, MAX(ROUND(generated))/1000 AS last_in, \
             count(*) AS total FROM \
             tbl_scan_results r, tbl_event_types e WHERE e.event = r.event \
             AND r.scan_instance_id = ? GROUP BY r.event ORDER BY e.event_descr"

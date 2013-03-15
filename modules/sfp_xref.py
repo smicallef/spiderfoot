@@ -43,22 +43,18 @@ class sfp_xref(SpiderFootPlugin):
     results = dict()
     fetched = list()
 
-    # URL this instance is working on
-    seedUrl = None
-    baseDomain = None # calculated from the URL in setup
+    # Target
+    baseDomain = None
 
-    def setup(self, sfc, url, userOpts=dict()):
+    def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.seedUrl = url
+        self.baseDomain = target
         self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-        # Extract the 'meaningful' part of the FQDN from the URL
-        self.baseDomain = sf.urlBaseDom(self.seedUrl)
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -75,7 +71,7 @@ class sfp_xref(SpiderFootPlugin):
             eventData = 'http://'+ eventData
 
         # We are only interested in external sites for the xref
-        if sf.urlBaseDom(eventData) == self.baseDomain:
+        if sf.urlBaseUrl(eventData).endswith(self.baseDomain):
             sf.debug("Ignoring " + eventData + " as not external")
             return None
 

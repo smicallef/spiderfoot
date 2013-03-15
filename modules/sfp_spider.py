@@ -27,6 +27,7 @@ class sfp_spider(SpiderFootPlugin):
         'pause':        1, # number of seconds to pause between fetches
         'maxpages':     10000, # max number of pages to fetch
         'maxlevels':    10, # max number of levels to traverse within a site
+        'start':        [ 'http://', 'https://', 'http://www.', 'https://www.' ],
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css',
                         'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg',
                         'mpeg', 'iso', 'dat', 'mov', 'swf'], # Extensions to not fetch
@@ -39,6 +40,7 @@ class sfp_spider(SpiderFootPlugin):
     optdescs = {
         'robotsonly':   "Only follow links specified by robots.txt?",
         'pause':        "Number of seconds to pause between fetches.",
+        'start':        "Prepend the target with these until you get a hit, to start spidering.",
         'maxpages':     "Maximum number of pages to fetch.",
         'maxlevels':    "Maximum levels to traverse within a site.",
         'filterfiles':  "File extensions to ignore (don't fetch them.)",
@@ -50,9 +52,11 @@ class sfp_spider(SpiderFootPlugin):
     # If using robots.txt, this will get populated with filter rules
     robotsRules = dict()
 
-    # URL this instance is working on
-    seedUrl = None
-    baseDomain = None # calculated from the URL in __init__
+    # Target
+    baseDomain = None
+
+    # Where to start spidering from
+    spiderSource = None
 
     # Results of spidering. This is a dictionary with the URL as the key, and
     # each value is again a dictionary of the following key=value pairs:
@@ -62,30 +66,30 @@ class sfp_spider(SpiderFootPlugin):
     # >> Not all of these will be populated at the same time <<
     results = dict()
 
-    def setup(self, sfc, url, userOpts=dict()):
+    def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.seedUrl = url
+        self.baseDomain = target
         self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        if '://' not in self.seedUrl:
-            sf.error("Please specify a full URL starting point, prefixed with http:// or https://")
-            return None
+        # Determine where to start spidering from
+        for prefix in self.opts['start']:
+            res = sf.fetchUrl(prefix + target)
+            if res['content'] != None:
+                self.spiderSource = prefix + target
+                break
 
-        if re.match('.*\d+\.\d+\.\d+\.\d+.*', self.seedUrl):
-            sf.error("Need a named URL to start with, not an IP.")
+        if self.spiderSource == None:
+            sf.error("Unable to fetch any start pages for the requested target.")
             return None
-
-        # Extract the 'meaningful' part of the FQDN from the URL
-        self.baseDomain = sf.urlBaseDom(self.seedUrl)
 
         # Are we respecting robots.txt?
         if self.opts['robotsonly']:
-            robotsTxt = sf.fetchUrl(sf.urlBaseUrl(self.seedUrl) + '/robots.txt').read()
+            robotsTxt = sf.fetchUrl(self.spiderSource + '/robots.txt')
             if robotsTxt['content'] != None:
                 sf.debug('robots.txt contents: ' + robotsTxt['content'])
                 self.robotsRules = sf.parseRobotsTxt(robotsTxt['content'])
@@ -107,7 +111,7 @@ class sfp_spider(SpiderFootPlugin):
 
         if source != None:
             self.results[url]['source'] = source
-            if self.baseDomain == sf.urlBaseDom(url):
+            if sf.urlBaseUrl(url).endswith(self.baseDomain):
                 self.notifyListeners("URL_INTERNAL", source, url)
             else:
                 self.notifyListeners("URL_EXTERNAL", source, url)
@@ -149,7 +153,7 @@ class sfp_spider(SpiderFootPlugin):
         self.storeResult(url, None, None, fetched)
 
         # Extract links from the content
-        links = sf.parseLinks(url, fetched['content'])
+        links = sf.parseLinks(url, fetched['content'], self.baseDomain)
 
         if links == None or len(links) == 0:
             sf.debug("No links found at " + url)
@@ -163,13 +167,13 @@ class sfp_spider(SpiderFootPlugin):
         returnLinks = dict()
 
         for link in links.keys():
-            # Optionally skip external sites
-            if self.opts['noexternal'] and self.baseDomain != sf.urlBaseDom(link):
+            # Optionally skip external sites (typical behaviour..)
+            if self.opts['noexternal'] and not sf.urlBaseUrl(link).endswith(self.baseDomain):
                 sf.debug('Ignoring external site: ' + link)
                 continue
 
             # Optionally skip sub-domain sites
-            if self.opts['nosubs'] and sf.urlBaseUrl(self.seedUrl) not in link:
+            if self.opts['nosubs'] and not sf.urlBaseUrl(link).endswith('://' + self.baseDomain):
                 sf.debug("Ignoring subdomain: " + link)
                 continue
 
@@ -203,7 +207,7 @@ class sfp_spider(SpiderFootPlugin):
         # Iterations after that are based on links found on those pages,
         # and so on..
         keepSpidering = True
-        links = self.processUrl(self.seedUrl)  # fetch first page
+        links = self.processUrl(self.spiderSource)  # fetch first page
         totalFetched = 0
         levelsTraversed = 0
         nextLinks = dict()

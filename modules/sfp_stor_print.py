@@ -28,14 +28,10 @@ class sfp_stor_print(SpiderFootPlugin):
         "datasize": "Maximum number of bytes to print on the screen for debug."
     }
 
-    # URL this instance is working on
-    seedUrl = None
-
-    def __init__(self, sfc, url, userOpts=dict()):
+    def __init__(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.seedUrl = url
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

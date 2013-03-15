@@ -31,20 +31,17 @@ class sfp_stor_db(SpiderFootPlugin):
         'maxstorage':   "Maximum bytes to store for any piece of information retreived."
     }
 
-    # URL this instance is working on
-    seedUrl = None
-
-    def setup(self, sfc, url, userOpts=dict()):
+    def setup(self, sfc, target, userOpts=dict()):
         global sf
         global sfdb
 
         sf = sfc
-        self.seedUrl = url
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
         # Use the database handle passed to us
+        # Should change to get the DBH out of sfc
         sfdb = userOpts['__sfdb__']
 
     # What events is this module interested in for input

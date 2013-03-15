@@ -35,23 +35,19 @@ class sfp_googlesearch(SpiderFootPlugin):
         'pages':    "Number of Google results pages to iterate through."
     }
 
-    # URL this instance is working on
-    seedUrl = None
-    baseDomain = None # calculated from the URL in setup
+    # Target
+    baseDomain = None
     results = list()
 
-    def setup(self, sfc, url, userOpts=dict()):
+    def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.seedUrl = url
+        self.baseDomain = target
         self.results = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-         # Extract the 'meaningful' part of the FQDN from the URL
-        self.baseDomain = sf.urlBaseDom(self.seedUrl)
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -145,7 +141,7 @@ class sfp_googlesearch(SpiderFootPlugin):
             # We can optionally fetch links to our domain found in the search
             # results. These may not have been identified through spidering.
             if self.opts['fetchlinks']:
-                links = sf.parseLinks(page, pages[page])
+                links = sf.parseLinks(page, pages[page], self.baseDomain)
                 if len(links) == 0:
                     continue
 
@@ -153,10 +149,7 @@ class sfp_googlesearch(SpiderFootPlugin):
                     if link in self.results:
                         continue
                     sf.debug("Found a link: " + link)
-                    baseDom = sf.urlBaseDom(link)
-                    if baseDom == None:
-                        continue
-                    if baseDom.endswith(self.baseDomain):
+                    if sf.urlBaseUrl(link).endswith(self.baseDomain):
                         if self.checkForStop():
                             return None
                         linkPage = sf.fetchUrl(link)

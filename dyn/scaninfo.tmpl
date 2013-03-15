@@ -58,7 +58,7 @@
             $("#loader").show();
             sf.fetchData('/scansummary', {'id': instanceId}, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped'>";
-                            table += "<thead><tr> <th>Type</th> <th>Events</th><th>Last Provided</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Type</th> <th>Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a onClick='";
                                 table += "browseEventData(\"${id}\", \"" + data[i][0] + "\")' href='#'>";
