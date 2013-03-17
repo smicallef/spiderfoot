@@ -271,7 +271,7 @@ class SpiderFootDb:
     # Retreive configuration data for a scan component
     def scanConfigGet(self, instanceId):
         qry = "SELECT component, opt, val FROM tbl_scan_config \
-                WHERE scan_instance_id = ?"
+                WHERE scan_instance_id = ? ORDER BY component, opt"
         qvars = [instanceId]
         try:
             retval = dict()
@@ -281,7 +281,6 @@ class SpiderFootDb:
                     retval[opt] = val
                 else:
                     retval[component + ":" + opt] = val
-
             return retval
         except sqlite3.Error as e:
             sf.error("SQL error encountered when fetching configuration: " + e.args[0])

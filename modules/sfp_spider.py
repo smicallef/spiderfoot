@@ -195,7 +195,7 @@ class sfp_spider(SpiderFootPlugin):
                 continue
 
             # All tests passed, add link to be spidered
-            sf.info("Adding URL for spidering: " + link)
+            sf.debug("Adding URL for spidering: " + link)
             returnLinks[link] = links[link]
 
         return returnLinks

@@ -130,7 +130,14 @@
                 table += "<h4>Module Settings</h4>";
                 table += "<table class='table table-bordered table-striped' style='width: 400px'>";
                 table += "<thead><tr><th>Module</th> <th>Option</th> <th>Value</th></tr></thead><tbody>";
+                keys = [];
                 for (var key in data['config']) {
+                    keys.push(key);
+                }
+                keys_s = keys.sort();
+
+                for (var i = 0; i < keys_s.length; i++) {
+                    key = keys_s[i];
                     if (key.indexOf(":") > 0) {
                         bits = key.split(":");
                         table += "<tr><td>" + bits[0] + "</td><td>" + data['configdesc'][key] + "</td><td>" + data['config'][key] + "</td></tr>";

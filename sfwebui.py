@@ -90,6 +90,7 @@ class SpiderFootWebUi:
         else:
             finished = "Not yet"
         ret['meta'] = [meta[0], meta[1], meta[2], started, finished, meta[5]]
+
         return json.dumps(ret)
     scanopts.exposed = True
 
