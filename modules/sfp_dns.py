@@ -87,7 +87,7 @@ class sfp_dns(SpiderFootPlugin):
 
         # If the returned hostname is on a different
         # domain to baseDomain, flag it as an affiliate
-        if not host.endswith(self.baseDomain):
+        if not host.lower().endswith(self.baseDomain):
             self.notifyListeners("AFFILIATE", eventData, host)
         else:
             self.notifyListeners("SUBDOMAIN", eventData, host)

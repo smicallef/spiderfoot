@@ -64,7 +64,7 @@ class sfp_mail(SpiderFootPlugin):
                 sf.debug("Likely invalid address.")
                 continue
 
-            if self.baseDomain not in match:
+            if self.baseDomain not in match.lower():
                 sf.debug("E-mail (or something) from somewhere else..")
                 continue
 
@@ -76,13 +76,13 @@ class sfp_mail(SpiderFootPlugin):
 
             # Include e-mail addresses on sub-domains within the domain?
             if not self.opts['includesubdomains']:
-                if not match.endswith('@' + self.baseDomain):
+                if not match.lower().endswith('@' + self.baseDomain):
                     sf.debug("Ignoring e-mail address on a sub-domain: " + match)
                     continue
 
             # Include external domains as e-mail addresses?
             if not self.opts['includeexternal']:
-                if not match.endswith(self.baseDomain):
+                if not match.lower().endswith(self.baseDomain):
                     sf.debug("Ignoring e-mail address on an external domain" + match)
                     continue
 

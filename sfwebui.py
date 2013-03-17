@@ -190,7 +190,7 @@ class SpiderFootWebUi:
                 return templ.render(modules=self.config['__modules__'], alreadyRunning=True, runningScan=thread.name[3:])
 
         # Start running a new scan
-        self.scanner = SpiderFootScanner(scanname, scantarget, modlist, self.config, modopts)
+        self.scanner = SpiderFootScanner(scanname, scantarget.lower(), modlist, self.config, modopts)
         t = threading.Thread(name="SF_" + scanname, target=self.scanner.startScan)
         t.start()
 

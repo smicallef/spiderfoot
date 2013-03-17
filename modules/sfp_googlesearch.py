@@ -115,7 +115,7 @@ class sfp_googlesearch(SpiderFootPlugin):
                 return returnResults
 
             returnResults[nextUrl] = nextPage['content']
-            matches = re.findall("(\/search\S+start=\d+.[^\'\"]*)", nextPage['content'])
+            matches = re.findall("(\/search\S+start=\d+.[^\'\"]*)", nextPage['content'], re.IGNORECASE)
 
         return returnResults
 

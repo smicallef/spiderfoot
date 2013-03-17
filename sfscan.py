@@ -10,9 +10,11 @@
 #-----------------------------------------------------------------
 import json
 import threading
+import traceback
 import os
 import time
 import urllib2
+import sys
 from copy import deepcopy
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot
@@ -137,9 +139,17 @@ class SpiderFootScanner:
                 dbh.scanInstanceSet(self.config['__guid__'], None, time.time() * 1000, 'FINISHED')
                 self.status = "FINISHED"
         except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
             self.sf.error("Scan [" + self.config['__guid__'] + "] failed: " + str(e))
             dbh.scanInstanceSet(self.config['__guid__'], None, time.time() * 1000, 'ERROR-FAILED')
             self.status = "ERROR-FAILED"
+            self.moduleInstances = None
+            dbh.close()
+            self.sf.setDbh(None)
+            self.sf.setScanId(None)
+
+            sf.fatal("Unhandled exception encountered during scan. Please report this as a bug: " + \
+                repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
 
         self.moduleInstances = None
         dbh.close()

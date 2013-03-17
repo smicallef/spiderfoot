@@ -80,11 +80,13 @@
             currentType = eventType;
             sf.fetchData('/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
-                            table += "<thead><tr> <th>Data Element</th><th>Source</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Data Element</th><th>Source</th><th>Module</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td width=50%><pre style='border: 0px; background-color: inherit'>" + data[i][1];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
-                                table += "</pre></td></tr>";
+                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
+                                table += "</pre></td>";
+                                table += "</tr>";
                             }
                             table += "</tbody></table>"
                             $("#loader").fadeOut(500);

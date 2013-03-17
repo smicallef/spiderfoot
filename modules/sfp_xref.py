@@ -68,7 +68,7 @@ class sfp_xref(SpiderFootPlugin):
 
         # The SIMILARDOMAIN event supplies domains, not URLs. Assume HTTP.
         if eventName == 'SIMILARDOMAIN':
-            eventData = 'http://'+ eventData
+            eventData = 'http://'+ eventData.lower()
 
         # We are only interested in external sites for the xref
         if sf.urlBaseUrl(eventData).endswith(self.baseDomain):
@@ -97,7 +97,7 @@ class sfp_xref(SpiderFootPlugin):
 
         # Search for mentions of our domain in the external site's data
         matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\.\'\"\ ])", 
-        res['content'], re.IGNORECASE)
+            res['content'], re.IGNORECASE)
 
         # If the domain wasn't found in the affiliate, and checkbase is set,
         # fetch the base URL of the affiliate to check for a xref. Don't bother

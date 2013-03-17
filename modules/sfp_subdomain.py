@@ -51,7 +51,7 @@ class sfp_subdomain(SpiderFootPlugin):
 
         for match in matches:
             # Skip URL encoded /
-            if match.startswith("2F") or match.startswith("2f"):
+            if match.lower().startswith("2f"):
                 continue
 
             sf.debug("Found sub-domain: " + match)

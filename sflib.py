@@ -241,20 +241,20 @@ class SpiderFoot:
     # checks.
     def urlBaseUrl(self, url):
         if '://' in url:
-            bits = re.match('(\w+://.[^/]*)/.*', url)
+            bits = re.match('(\w+://.[^/:]*)[:/].*', url)
         else:
-            bits = re.match('(.[^/]*)/', url)
+            bits = re.match('(.[^/:]*)[:/]', url)
 
         if bits == None:
-            return url
+            return url.lower()
 
         self.debug('base url of ' + url + ' is: ' + bits.group(1))
-        return bits.group(1)
+        return bits.group(1).lower()
 
     # Extract the keyword (the domain without the TLD or any subdomains)
     # from a domain. Crude for now.. just gets the first word.
     def domainKeyword(self, domain):
-        return domain.split('.', 2)[0]
+        return domain.split('.', 2)[0].lower()
 
     #
     # General helper functions to automate many common tasks between modules
@@ -268,8 +268,8 @@ class SpiderFoot:
         # We don't check the User-Agent rule yet.. probably should at some stage
 
         for line in robotsTxtData.splitlines():
-            if line.startswith('Disallow:'):
-                m = re.match('Disallow:\s*(.[^ #]*)', line)
+            if line.lower().startswith('disallow:'):
+                m = re.match('disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
                 self.debug('robots.txt parsing found disallow: ' + m.group(1))
                 returnArr.append(m.group(1))
                 continue
@@ -319,7 +319,7 @@ class SpiderFoot:
 
             # Don't include stuff likely part of some dynamically built incomplete
             # URL found in Javascript code (character is part of some logic)
-            if link[len(link)-1] == '.' or link[0] == '+' or 'javascript:' in link or '();' in link:
+            if link[len(link)-1] == '.' or link[0] == '+' or 'javascript:' in link.lower() or '();' in link:
                 self.debug('unlikely link: ' + link)
                 continue
 
@@ -329,12 +329,12 @@ class SpiderFoot:
                 continue
 
             # Ignore mail links
-            if 'mailto:' in link:
+            if 'mailto:' in link.lower():
                 self.debug("Ignoring mail link: " + link)
                 continue
 
             # URL decode links
-            if '%2F' in link or '%2f' in link:
+            if '%2f' in link.lower():
                 link = urllib2.unquote(link)
 
             # Capture the absolute link:
@@ -347,7 +347,7 @@ class SpiderFoot:
                 absLink = self.urlBaseUrl(url) + link
 
             # Maybe the domain was just mentioned and not a link, so we make it one
-            if absLink == None and domain in link:
+            if absLink == None and domain.lower() in link.lower():
                 absLink = 'http://' + link
 
             # Otherwise, it's a flat link within the current directory

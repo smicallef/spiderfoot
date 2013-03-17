@@ -78,7 +78,8 @@ class sfp_similar(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def findDomains(self, keyword, content):
-        matches = re.findall("([a-z0-9\-]*" + keyword + "[a-z0-9\-]*\.[a-z]+)", content)
+        matches = re.findall("([a-z0-9\-]*" + keyword + "[a-z0-9\-]*\.[a-z]+)", 
+            content, re.IGNORECASE)
 
         return matches
 
