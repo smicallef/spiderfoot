@@ -74,13 +74,13 @@ etc.)"""
             for regex in regexps[regexpGrp]:
                 matches = re.findall(regex, eventData, re.IGNORECASE)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
-                    sf.debug("Matched " + regex + " in content from " + eventSource)
+                    sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.notifyListeners(regexpGrp, eventSource, eventData)
                     self.results[eventSource].append(regexpGrp)
 
         # If no regexps were matched, consider this a static page
         if len(self.results[eventSource]) == 0:
-            sf.debug("Treating " + eventSource + " as WEBCONTENT_STATIC")
+            sf.info("Treating " + eventSource + " as WEBCONTENT_STATIC")
             self.notifyListeners("WEBCONTENT_STATIC", eventSource, eventData)
 
         return None

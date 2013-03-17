@@ -190,7 +190,7 @@ class sfp_similar(SpiderFootPlugin):
 
     # Store the result internally and notify listening modules
     def storeResult(self, source, result):
-        sf.debug("Found a similar domain: " + result)
+        sf.info("Found a similar domain: " + result)
         self.results.append(result)
 
         # Inform listening modules

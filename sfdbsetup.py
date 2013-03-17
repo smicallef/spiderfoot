@@ -74,6 +74,7 @@ class SpiderFootDbInit:
                 event_data_source   VARCHAR NOT NULL \
             )",
             "CREATE INDEX idx_scan_results_event ON tbl_scan_results (scan_instance_id, event)",
+            "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('AFFILIATE', 'Affiliate')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('EMAILADDR', 'Email Address')",
             "INSERT INTO tbl_event_types (event, event_descr) VALUES ('GEOINFO', 'Physical Location')",

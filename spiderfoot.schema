@@ -85,3 +85,4 @@ CREATE TABLE tbl_scan_results (
 );
 
 CREATE INDEX idx_scan_results_event ON tbl_scan_results (scan_instance_id, event);
+CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id);

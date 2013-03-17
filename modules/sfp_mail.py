@@ -86,6 +86,7 @@ class sfp_mail(SpiderFootPlugin):
                     sf.debug("Ignoring e-mail address on an external domain" + match)
                     continue
 
+            sf.info("Found e-mail address: " + match)
             self.notifyListeners("EMAILADDR", eventSource, match)
 
         return None

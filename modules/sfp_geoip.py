@@ -56,9 +56,10 @@ class sfp_geoip(SpiderFootPlugin):
 
         res = sf.fetchUrl("http://api.hostip.info/get_json.php?ip=" + eventData)
         if res['content'] == None:
-            sf.debug("No GeoIP info found for " + eventData)
+            sf.info("No GeoIP info found for " + eventData)
         hostip = json.loads(res['content'])
-        countrycity = hostip['country_name'] + " (" + hostip['city'] + ")"
+        sf.info("Found GeoIP for " + eventData + ": " + hostip['country_name'])
+        countrycity = hostip['country_name']
 
         self.notifyListeners("GEOINFO", eventData, countrycity)
 

@@ -156,7 +156,7 @@ class sfp_spider(SpiderFootPlugin):
         links = sf.parseLinks(url, fetched['content'], self.baseDomain)
 
         if links == None or len(links) == 0:
-            sf.debug("No links found at " + url)
+            sf.info("No links found at " + url)
             return None
 
         sf.debug('Links found from parsing: ' + str(links))
@@ -195,7 +195,7 @@ class sfp_spider(SpiderFootPlugin):
                 continue
 
             # All tests passed, add link to be spidered
-            sf.debug("Adding URL for spidering: " + link)
+            sf.info("Adding URL for spidering: " + link)
             returnLinks[link] = links[link]
 
         return returnLinks
@@ -243,7 +243,7 @@ class sfp_spider(SpiderFootPlugin):
 
                     totalFetched += 1
                     if totalFetched >= self.opts['maxpages']:
-                        sf.debug("Maximum number of pages (" + str(self.opts['maxpages']) + \
+                        sf.info("Maximum number of pages (" + str(self.opts['maxpages']) + \
                             ") reached.")
                         keepSpidering = False
                         break
@@ -257,15 +257,15 @@ class sfp_spider(SpiderFootPlugin):
 
             # We've scanned through another layer of the site
             levelsTraversed += 1
-            sf.debug("Now at traversal level: " + str(levelsTraversed))
+            sf.info("Now at traversal level: " + str(levelsTraversed))
             if levelsTraversed >= self.opts['maxlevels']:
-                sf.debug("Maximum number of levels (" + str(self.opts['maxlevels']) + \
+                sf.info("Maximum number of levels (" + str(self.opts['maxlevels']) + \
                     ") reached.")
                 keepSpidering = False
 
             # We've reached the end of our journey..
             if len(nextLinks) == 0:
-                sf.debug("No more links found to spider, finishing..")
+                sf.info("No more links found to spider, finishing..")
                 keepSpidering = False
 
             # We've been asked to stop scanning

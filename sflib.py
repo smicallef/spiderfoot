@@ -43,12 +43,13 @@ class SpiderFoot:
     def _dblog(self, level, message, component=None):
         return self.dbh.scanLogEvent(self.scanGUID, level, message, component)
 
-    def error(self, error):
+    def error(self, error, exception=True):
         if self.dbh == None:
             print '[Error] ' + error
         else:
             self._dblog("ERROR", error)
-        raise BaseException("Internal Error Encountered: " + error)
+        if not exception:
+            raise BaseException("Internal Error Encountered: " + error)
 
     def fatal(self, error):
         if self.dbh == None:
@@ -63,6 +64,15 @@ class SpiderFoot:
             print "[Status] " + message
         else:
             self._dblog("STATUS", message)
+
+    def info(self, message):
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        if self.dbh == None:
+            print '[' + mod.__name__ + '] ' + message
+        else:
+            self._dblog("INFO", message, mod.__name__)
+        return
 
     def debug(self, message):
         if self.opts['_debug'] == False:
@@ -385,29 +395,29 @@ class SpiderFoot:
             if not self.opts.has_key('_fetchtimeout'):
                 self.opts['_fetchtimeout'] = 30
             req = urllib2.Request(url, None, header)
-            self.debug("Fetching " + url)
+            self.info("Fetching " + url)
             fullPage = urllib2.urlopen(req, None, self.opts['_fetchtimeout'])
 
             # Prepare result to return
-            result['content'] = fullPage.read()
+            result['content'] = unicode(fullPage.read(), 'utf-8', errors='ignore')
             result['headers'] = fullPage.info()
             result['realurl'] = fullPage.geturl()
             result['code'] = fullPage.getcode()
             result['status'] = 'OK'
         except urllib2.HTTPError as h:
-            self.debug("HTTP code " + str(h.code) + " encountered for " + url)
+            self.info("HTTP code " + str(h.code) + " encountered for " + url)
             # Capture the HTTP error code
             result['code'] = h.code
             result['headers'] = h.info()
             if fatal:
                 self.fatal('URL could not be fetched (' + h.code + ')')
         except urllib2.URLError as e:
-            self.debug("Error fetching " + url + "(" + str(e) + ")")
+            self.info("Error fetching " + url + "(" + str(e) + ")")
             result['status'] = str(e)
             if fatal:
                 self.fatal('URL could not be fetched (' + str(e) + ')')
         except Exception as x:
-            self.debug("Unexpected exception occurred fetching: " + url + "(" + str(x) + ")")
+            self.info("Unexpected exception occurred fetching: " + url + "(" + str(x) + ")")
             result['content'] = None
             result['status'] = str(x)
             if fatal:

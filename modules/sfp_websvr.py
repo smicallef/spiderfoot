@@ -59,7 +59,7 @@ class sfp_websvr(SpiderFootPlugin):
         # and other errors to see what the header looks like.
         if eventData.has_key('server'):
             self.notifyListeners("WEBSERVER_BANNER", eventSource, eventData['Server'])
-            sf.debug("Found web server: " + eventData['Server'] + " (" + eventSource + ")")
+            sf.info("Found web server: " + eventData['Server'] + " (" + eventSource + ")")
 
         if (eventData.has_key('x-powered-by')):
             self.notifyListeners("WEBSERVER_TECHNOLOGY", eventSource, eventData['x-powered-by'])

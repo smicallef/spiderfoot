@@ -76,14 +76,14 @@ class sfp_portscan_basic(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            sf.debug("Checking port: " + str(port) + " against " + eventData)
+            sf.info("Checking port: " + str(port) + " against " + eventData)
             try:
                 sock = socket.create_connection((eventData, port), self.opts['timeout'])
-                sf.debug("TCP Port " + str(port) + " found to be OPEN.")
+                sf.info("TCP Port " + str(port) + " found to be OPEN.")
                 self.notifyListeners("TCP_PORT_OPEN", eventData, str(port))
                 sock.close()
             except Exception as e:
-                sf.debug("Unable to connect to " + eventData + " on port " + str(port) + \
+                sf.info("Unable to connect to " + eventData + " on port " + str(port) + \
                     ": " + str(e))
 
         return None

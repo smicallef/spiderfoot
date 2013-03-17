@@ -93,12 +93,12 @@ class sfp_googlesearch(SpiderFootPlugin):
             if nextUrl == None:
                 sf.debug("Nothing left to scan for in Google results.")
                 return returnResults
-            sf.debug("Next Google URL: " + nextUrl)
+            sf.info("Next Google URL: " + nextUrl)
 
             # Wait for a random number of seconds between fetches
             if not opts.has_key('nopause'):
                 pauseSecs = random.randint(4, 15)
-                sf.debug("Pausing for " + str(pauseSecs))
+                sf.info("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
 
             # Check if we've been asked to stop
@@ -123,7 +123,7 @@ class sfp_googlesearch(SpiderFootPlugin):
         # Sites hosted on the domain
         pages = self.googleIterate("site:" + self.baseDomain, dict(limit=self.opts['pages']))
         if pages == None:
-            sf.debug("No results returned from Google.")
+            sf.info("No results returned from Google.")
             return None
 
         for page in pages.keys():
@@ -148,7 +148,7 @@ class sfp_googlesearch(SpiderFootPlugin):
                 for link in links:
                     if link in self.results:
                         continue
-                    sf.debug("Found a link: " + link)
+                    sf.info("Found a link: " + link)
                     if sf.urlBaseUrl(link).endswith(self.baseDomain):
                         if self.checkForStop():
                             return None

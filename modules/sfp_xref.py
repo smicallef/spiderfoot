@@ -82,7 +82,7 @@ class sfp_xref(SpiderFootPlugin):
         else:
             url = eventData
 
-        sf.debug("Testing for affiliation: " + url)
+        sf.info("Testing for affiliation: " + url)
 
         if url in self.fetched:
             sf.debug("Ignoring " + url + " as already tested")
@@ -114,7 +114,7 @@ class sfp_xref(SpiderFootPlugin):
                 return None
 
             self.results[url] = True
-            sf.debug("Found affiliate: " + url)
+            sf.info("Found affiliate: " + url)
             self.notifyListeners("AFFILIATE", eventSource, url)
             if self.opts['checkcontent']:
                 self.notifyListeners("WEBCONTENT", url, res['content'])

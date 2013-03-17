@@ -57,7 +57,7 @@ class sfp_ripe(SpiderFootPlugin):
         if eventName == 'SUBDOMAIN':
             res = sf.fetchUrl("http://stat.ripe.net/data/dns-chain/data.json?resource=" + eventData)
             if res['content'] == None:
-                sf.debug("No RIPE info found/available for " + eventData)
+                sf.info("No RIPE info found/available for " + eventData)
                 return None
 
             # Just send the content off for others to process
@@ -67,7 +67,7 @@ class sfp_ripe(SpiderFootPlugin):
         # First get the netblock the IP resides on
         res = sf.fetchUrl("http://stat.ripe.net/data/network-info/data.json?resource=" + eventData)
         if res['content'] == None:
-            sf.debug("No RIPE info found/available for " + eventData)
+            sf.info("No RIPE info found/available for " + eventData)
             return None
 
         j = json.loads(res['content'])
@@ -75,11 +75,12 @@ class sfp_ripe(SpiderFootPlugin):
         # Now see who owns the prefix
         res = sf.fetchUrl("http://stat.ripe.net/data/whois/data.json?resource=" + prefix)
         if res['content'] == None:
-            sf.debug("No RIPE info found/available for prefix: " + prefix)
+            sf.info("No RIPE info found/available for prefix: " + prefix)
             return None
 
-        # Crude..
+        # Crude and probably prone to a lot of false positives. Need to revisit.
         if self.baseDomain in res['content']:        
+            sf.info("Owned netblock found: " + prefix)
             self.notifyListeners("NETBLOCK", eventData, prefix)
             self.notifyListeners("WEBCONTENT", eventData, res['content'])
 

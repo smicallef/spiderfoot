@@ -140,16 +140,11 @@ class SpiderFootScanner:
                 self.status = "FINISHED"
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.sf.error("Scan [" + self.config['__guid__'] + "] failed: " + str(e))
+            self.sf.error("Unhandled exception encountered during scan. Please report this as a bug: " + \
+                repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
+            self.sf.status("Scan [" + self.config['__guid__'] + "] failed: " + str(e))
             dbh.scanInstanceSet(self.config['__guid__'], None, time.time() * 1000, 'ERROR-FAILED')
             self.status = "ERROR-FAILED"
-            self.moduleInstances = None
-            dbh.close()
-            self.sf.setDbh(None)
-            self.sf.setScanId(None)
-
-            sf.fatal("Unhandled exception encountered during scan. Please report this as a bug: " + \
-                repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
 
         self.moduleInstances = None
         dbh.close()

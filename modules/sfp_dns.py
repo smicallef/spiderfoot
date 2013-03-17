@@ -76,14 +76,18 @@ class sfp_dns(SpiderFootPlugin):
             else:
                 addrs = socket.gethostbyaddr(eventData)
         except socket.error as e:
-            sf.debug("Unable to resolve " + eventData)
+            sf.info("Unable to resolve " + eventData)
             return None
     
         # First element of tuple is primary hostname if requested name is 
         # a CNAME, or an IP is being reverse looked up
         if len(addrs[0]) > 0:
             host = addrs[0]
-            sf.debug("Found host: " + host)
+            sf.info("Found host: " + host)
+
+        # Ignore cases where the IP resolves to the target domain
+        if host.lower() == self.baseDomain:
+            return None
 
         # If the returned hostname is on a different
         # domain to baseDomain, flag it as an affiliate
@@ -97,7 +101,7 @@ class sfp_dns(SpiderFootPlugin):
         # Now the IP addresses..
         if len(addrs[2]) > 0 and eventName != 'IP_ADDRESS':
             for ipaddr in addrs[2]:
-                sf.debug("Found IP Address: " + ipaddr)
+                sf.info("Found IP Address: " + ipaddr)
                 self.notifyListeners("IP_ADDRESS", eventData, ipaddr)
 
         return None
