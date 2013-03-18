@@ -48,7 +48,7 @@ class SpiderFoot:
             print '[Error] ' + error
         else:
             self._dblog("ERROR", error)
-        if not exception:
+        if exception:
             raise BaseException("Internal Error Encountered: " + error)
 
     def fatal(self, error):
@@ -261,6 +261,12 @@ class SpiderFoot:
         self.debug('base url of ' + url + ' is: ' + bits.group(1))
         return bits.group(1).lower()
 
+    # Extract the FQDN from a URL
+    def urlFQDN(self, url):
+        baseurl = self.urlBaseUrl(url)
+        # http://abc.com will split to ['http:', '', 'abc.com']
+        return baseurl.split('/')[2].lower()
+
     # Extract the keyword (the domain without the TLD or any subdomains)
     # from a domain. Crude for now.. just gets the first word.
     def domainKeyword(self, domain):
@@ -470,7 +476,7 @@ class SpiderFootPlugin(object):
             #print "Notifications blocked for " + eventName + " to " + listener.__module__
             return None
 
-        if eventData == None or len(str(eventData)) == 0:
+        if eventData == None or (type(eventData) is unicode and len(eventData) == 0):
             #print "No data to send for " + eventName + " to " + listener.__module__
             return None
 

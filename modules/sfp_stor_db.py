@@ -52,8 +52,15 @@ class sfp_stor_db(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+        # If we get passed a dict or list, convert it to a string first, as
+        # those types do not have a unicode converter.
+        if type(eventData) not in [unicode, str]:
+            eventData = str(eventData)
+
         # Convert to a string in case we get passed integers or other things
-        eventData = str(eventData)
+        if type(eventData) is not unicode:
+            eventData = unicode(eventData, 'utf-8', errors='ignore')
+
         if self.opts['maxstorage'] != 0:
             if len(eventData) > self.opts['maxstorage']:
                 sf.debug("Truncated " + eventName + " data due to storage limitation")

@@ -274,6 +274,13 @@ class SpiderFootWebUi:
         return json.dumps(retdata, ensure_ascii=False)
     scaneventresults.exposed = True
 
+    # Historical data for the scan, graphs will be rendered in JS
+    def scanhistory(self, id):
+        dbh = SpiderFootDb(self.config)
+        data = dbh.scanResultHistory(id)
+        return json.dumps(data, ensure_ascii=False)
+    scanhistory.exposed = True
+
 # Special class used when SpiderFoot is started without a
 # database pre-existing. This will step the user through
 # the creation of one.

@@ -293,7 +293,7 @@ class SpiderFootDb:
             event_data, event_data_source) \
             VALUES (?, ?, ?, ?, ?, ?)"
         qvals = [instanceId, time.time() * 1000, eventName, eventSource,
-            eventData.__str__(), eventDataSource]
+            eventData, eventDataSource]
 
         #print "STORING: " + str(qvals)
 
@@ -325,3 +325,16 @@ class SpiderFootDb:
             return self.dbh.fetchall()
         except sqlite3.Error as e:
             sf.error("SQL error encountered when fetching scan list: " + e.args[0])
+
+    # History of data from the scan
+    def scanResultHistory(self, instanceId):
+        qry = "SELECT STRFTIME('%H:%M %w', ROUND(generated/1000), 'unixepoch') AS hourmin, \
+                event, COUNT(*) FROM tbl_scan_results \
+                WHERE scan_instance_id = ? GROUP BY hourmin, event"
+        qvars = [instanceId]
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when fetching scan history: " + e.args[0])
+

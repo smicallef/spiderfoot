@@ -26,7 +26,7 @@
                                 return;
                             }
                             var table = "<table class='table table-bordered table-striped'>";
-                            table += "<thead><tr> <th>Name</th> <th>Target</th> <th>Started</th> <th>Finished</th> <th>Status</th> <th>Events</th><th>Action</th> </tr></thead><tbody>";
+                            table += "<thead><tr> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th style='text-align: center'>Status</th> <th style='text-align: center'>Elements</th><th style='text-align: center'>Action</th> </tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a href=/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
                                 table += "<td>" + data[i][2] + "&nbsp;&nbsp;<a target='_new' href='" + data[i][2] + "'><i class='icon-share icon-gray'></a></td>";
@@ -46,7 +46,7 @@
                                     status = "badge-important";
                                 }
                                 table += "<td style='text-align: center'><span class='badge " + status + "'>" + data[i][6] + "</span></td>";
-                                table += "<td>" + data[i][7] + "</td>";
+                                table += "<td style='text-align: center'>" + data[i][7] + "</td>";
                                 table += "<td style='text-align: center'>";
                                 if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED") {
                                     table += "<a href=/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray'></a></td>";

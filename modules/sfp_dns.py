@@ -72,7 +72,10 @@ class sfp_dns(SpiderFootPlugin):
 
         try:
             if eventName != 'IP_ADDRESS':
-                addrs = socket.gethostbyname_ex(eventData)
+                if '://' in eventData:
+                    addrs = socket.gethostbyname_ex(sf.urlFQDN(eventData))
+                else:
+                    addrs = socket.gethostbyname_ex(eventData)
             else:
                 addrs = socket.gethostbyaddr(eventData)
         except socket.error as e:

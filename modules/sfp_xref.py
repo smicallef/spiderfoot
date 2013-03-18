@@ -82,12 +82,11 @@ class sfp_xref(SpiderFootPlugin):
         else:
             url = eventData
 
-        sf.info("Testing for affiliation: " + url)
-
         if url in self.fetched:
             sf.debug("Ignoring " + url + " as already tested")
             return
 
+        sf.info("Testing for affiliation: " + url)
         res = sf.fetchUrl(url)
         self.fetched.append(url)
 
