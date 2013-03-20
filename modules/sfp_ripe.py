@@ -60,8 +60,15 @@ class sfp_ripe(SpiderFootPlugin):
                 sf.info("No RIPE info found/available for " + eventData)
                 return None
 
+            j = json.loads(res['content'])
+            nslist = j["data"]["authoritative_nameservers"]
+            for ns in nslist:
+                nsclean = ns.rstrip('.')
+                if not nsclean.endswith(self.baseDomain):
+                    self.notifyListeners("AFFILIATE", eventData, nsclean)
+
             # Just send the content off for others to process
-            self.notifyListeners("WEBCONTENT", eventData, res['content'])
+            self.notifyListeners("RAW_DATA", eventData, res['content'])
             return None
 
         # First get the netblock the IP resides on
@@ -82,12 +89,26 @@ class sfp_ripe(SpiderFootPlugin):
         if self.baseDomain in res['content']:        
             sf.info("Owned netblock found: " + prefix)
             self.notifyListeners("NETBLOCK", eventData, prefix)
-            self.notifyListeners("WEBCONTENT", eventData, res['content'])
+            self.notifyListeners("RAW_DATA", eventData, res['content'])
 
         return None
 
-# End of sfp_ripe class
+    def start(self):
+        res = sf.fetchUrl("http://stat.ripe.net/data/dns-chain/data.json?resource=" + \
+            self.baseDomain)
+        if res['content'] == None:
+            sf.info("No RIPE info found/available for " + self.baseDomain)
+            return None
 
-if __name__ == '__main__':
-    print "This module cannot be run stand-alone."
-    exit(-1)
+        j = json.loads(res['content'])
+        nslist = j["data"]["authoritative_nameservers"]
+        for ns in nslist:
+            nsclean = ns.rstrip('.')
+            if not nsclean.endswith(self.baseDomain):
+                self.notifyListeners("AFFILIATE", self.baseDomain, nsclean)
+
+        # Just send the content off for others to process
+        self.notifyListeners("RAW_DATA", self.baseDomain, res['content'])
+        return None
+       
+# End of sfp_ripe class

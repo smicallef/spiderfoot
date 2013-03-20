@@ -38,7 +38,7 @@ class sfp_subdomain(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["WEBCONTENT", "URL_INTERNAL"]
+        return ["RAW_DATA", "LINKED_URL_INTERNAL"]
 
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
@@ -65,7 +65,3 @@ class sfp_subdomain(SpiderFootPlugin):
         return None
 
 # End of sfp_subdomain class
-
-if __name__ == '__main__':
-    print "This module cannot be run stand-alone."
-    exit(-1)

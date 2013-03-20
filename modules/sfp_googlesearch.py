@@ -135,7 +135,7 @@ class sfp_googlesearch(SpiderFootPlugin):
                 return None
 
             # Submit the google results for analysis
-            self.notifyListeners("WEBCONTENT", page, pages[page])
+            self.notifyListeners("RAW_DATA", page, pages[page])
             self.results.append(page)
 
             # We can optionally fetch links to our domain found in the search
@@ -155,18 +155,10 @@ class sfp_googlesearch(SpiderFootPlugin):
                         linkPage = sf.fetchUrl(link)
 
                         # Submit info from what we've fetched for analysis
-                        self.notifyListeners("URL_INTERNAL", page, link)
-                        self.notifyListeners("WEBCONTENT", link, linkPage['content'])
+                        self.notifyListeners("LINKED_URL_INTERNAL", page, link)
+                        self.notifyListeners("RAW_DATA", link, linkPage['content'])
                         self.notifyListeners("HTTP_CODE", link, linkPage['code'])
                         self.notifyListeners("WEBSERVER_HTTPHEADERS", link, linkPage['headers'])
                         self.results.append(link)
 
 # End of sfp_googlesearch class
-
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print "You must specify a domain to start searching for."
-        exit(-1)
-
-    sfp = sfp_googlesearch(sys.argv[1])
-    sfp.start()

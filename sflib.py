@@ -462,10 +462,10 @@ class SpiderFootPlugin(object):
     # Call the handleEvent() method of every other plug-in listening for
     # events from this plug-in. Remember that those plug-ins will be called
     # within the same execution context of this thread, not on their own.
-    # eventName = the ID of the event, e.g. WEBCONTENT
+    # eventName = the ID of the event, e.g. RAW_DATA
     # eventSource = the item where this event was extracted from, e.g. a URL
     # eventData = the actual data for this event (would correspond to the eventName,
-    #             so if we're reporting WEBCONTENT, eventData is the actual content.
+    #             so if we're reporting RAW_DATA, eventData is the actual content.
     def notifyListeners(self, eventName, eventSource, eventData):
         # Check if we've been asked to stop in the meantime, so that
         # notifications stop triggering module activity.

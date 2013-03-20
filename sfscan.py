@@ -123,6 +123,8 @@ class SpiderFootScanner:
                     self.status = "ABORTING"
                     aborted = True
                     break
+                # Many modules' start() method will return None, as most will rely on 
+                # notifications during the scan from other modules.
                 module.start()
 
             # Check if any of the modules ended due to being stopped

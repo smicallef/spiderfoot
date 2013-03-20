@@ -232,11 +232,3 @@ class sfp_similar(SpiderFootPlugin):
         return None
 
 # End of sfp_similar class
-
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print "You must supply a URL as a starting point."
-        exit(-1)
-
-    sfp = sfp_similar(sys.argv[1])
-    sfp.start()

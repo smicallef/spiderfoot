@@ -58,7 +58,7 @@ class sfp_xref(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['URL_EXTERNAL', 'SIMILARDOMAIN']
+        return ['LINKED_URL_EXTERNAL', 'SIMILARDOMAIN']
 
     # Handle events sent to this module
     # In this module's case, eventData will be the URL or a domain which
@@ -86,7 +86,7 @@ class sfp_xref(SpiderFootPlugin):
             sf.debug("Ignoring " + url + " as already tested")
             return
 
-        sf.info("Testing for affiliation: " + url)
+        sf.debug("Testing for affiliation: " + url)
         res = sf.fetchUrl(url)
         self.fetched.append(url)
 
@@ -116,12 +116,8 @@ class sfp_xref(SpiderFootPlugin):
             sf.info("Found affiliate: " + url)
             self.notifyListeners("AFFILIATE", eventSource, url)
             if self.opts['checkcontent']:
-                self.notifyListeners("WEBCONTENT", url, res['content'])
+                self.notifyListeners("RAW_DATA", url, res['content'])
 
         return None
 
 # End of sfp_xref class
-
-if __name__ == '__main__':
-    print "This module cannot be run stand-alone."
-    exit(-1)

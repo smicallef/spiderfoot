@@ -73,7 +73,3 @@ class sfp_stor_db(SpiderFootPlugin):
 
 
 # End of sfp_stor_db class
-
-if __name__ == '__main__':
-    print "This module cannot be run stand-alone."
-    exit(-1)

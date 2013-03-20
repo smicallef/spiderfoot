@@ -50,7 +50,7 @@ class sfp_XXX(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["WEBCONTENT"]
+        return ["RAW_DATA"]
 
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
@@ -64,7 +64,3 @@ class sfp_XXX(SpiderFootPlugin):
     # politely asked by the controller to stop your activities.
 
 # End of sfp_XXX class
-
-if __name__ == '__main__':
-    print "This module cannot be run stand-alone."
-    exit(-1)

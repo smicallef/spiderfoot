@@ -90,7 +90,3 @@ class sfp_websvr(SpiderFootPlugin):
             return None
 
 # End of sfp_websvr class
-
-if __name__ == '__main__':
-    print "This module cannot be run stand-alone."
-    exit(-1)

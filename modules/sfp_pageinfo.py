@@ -21,12 +21,12 @@ sf = None
 # Indentify pages that use Javascript libs, handle passwords, have forms,
 # permit file uploads and more to come.
 regexps = dict({
-    'WEBCONTENT_JAVASCRIPT':  list(['text/javascript', '<script ']),
-    'WEBCONTENT_FORM':        list(['<form ', 'method=[PG]', '<input ']),
-    'WEBCONTENT_PASSWORD':    list(['type=[\"\']*password']),
-    'WEBCONTENT_UPLOAD':      list(['type=[\"\']*file']),
-    'WEBCONTENT_HASJAVA':     list(['<applet ']),
-    'WEBCONTENT_HASFLASH':    list(['\.swf[ \'\"]'])
+    'URL_JAVASCRIPT':  list(['text/javascript', '<script ']),
+    'URL_FORM':        list(['<form ', 'method=[PG]', '<input ']),
+    'URL_PASSWORD':    list(['type=[\"\']*password']),
+    'URL_UPLOAD':      list(['type=[\"\']*file']),
+    'URL_JAVA_APPLET':     list(['<applet ']),
+    'URL_FLASH':    list(['\.swf[ \'\"]'])
 })
 
 class sfp_pageinfo(SpiderFootPlugin):
@@ -52,7 +52,7 @@ etc.)"""
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["WEBCONTENT"]
+        return ["RAW_DATA"]
 
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
@@ -75,18 +75,14 @@ etc.)"""
                 matches = re.findall(regex, eventData, re.IGNORECASE)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     sf.info("Matched " + regexpGrp + " in content from " + eventSource)
-                    self.notifyListeners(regexpGrp, eventSource, eventData)
+                    self.notifyListeners(regexpGrp, eventSource, eventSource)
                     self.results[eventSource].append(regexpGrp)
 
         # If no regexps were matched, consider this a static page
         if len(self.results[eventSource]) == 0:
-            sf.info("Treating " + eventSource + " as WEBCONTENT_STATIC")
-            self.notifyListeners("WEBCONTENT_STATIC", eventSource, eventData)
+            sf.info("Treating " + eventSource + " as URL_STATIC")
+            self.notifyListeners("URL_STATIC", eventSource, eventSource)
 
         return None
 
 # End of sfp_pageinfo class
-
-if __name__ == '__main__':
-    print "This module cannot be run stand-alone."
-    exit(-1)

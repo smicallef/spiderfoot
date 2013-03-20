@@ -89,7 +89,3 @@ class sfp_portscan_basic(SpiderFootPlugin):
         return None
 
 # End of sfp_portscan_basic class
-
-if __name__ == '__main__':
-    print "This module cannot be run stand-alone."
-    exit(-1)

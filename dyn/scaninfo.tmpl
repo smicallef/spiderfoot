@@ -1,9 +1,10 @@
 <%include file="HEADER.tmpl"/>
 <h2>${name} &nbsp;<img id=loader src=/static/img/loader.gif></h2>
   <div class="btn-toolbar">
-    <div class="btn-group">
-      <a id='btn-browse' class="btn active" href="#" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
-      <a id='btn-info' class="btn" href="#" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Info</a>
+   <div class="btn-group">
+    <a id='btn-live' class="btn active" href="#" onClick='liveView("${id}")'><i class='icon-eye-open'></i>&nbsp;Live View</a>
+      <a id='btn-browse' class="btn" href="#" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
+      <a id='btn-info' class="btn" href="#" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-export' class="btn" href="#" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt'></i>&nbsp;Export</a>
       <a id='btn-log' class="btn" href="#" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
     </div>
@@ -13,7 +14,7 @@
         var currentType = "ALL";
 
         function navTo(target) {
-            var targets = [ "btn-browse", "btn-info", "btn-log", "btn-export" ]
+            var targets = [ "btn-live", "btn-browse", "btn-info", "btn-log", "btn-export" ]
             for (var i = 0; i < targets.length; i++) {
                 if (targets[i] == target) {
                     $("#" + targets[i]).addClass("active");
@@ -108,10 +109,11 @@
             $("#loader").show();
             navTo("btn-info");
             sf.fetchData('/scanopts', {'id': instanceId}, function(data) {
-                table = "<div id='scansummary-content'>";
+                table = "<div id='scansummary-content'><br>";
                 table += "<h4>Meta Information</h4>";
                 table += "<table class='table table-bordered table-striped' style='width: 400px'>";
                 table += "<tr><td>Name:</td><td>" + data['meta'][0] + "</td></tr>";
+                table += "<tr><td>Internal ID:</td><td>${id}</td></tr>";
                 table += "<tr><td>Target:</td><td>" + data['meta'][1] + "</td></tr>";
                 table += "<tr><td>Started:</td><td>" + data['meta'][3] + "</td></tr>";
                 table += "<tr><td>Completed:</td><td>" + data['meta'][4] + "</td></tr>";

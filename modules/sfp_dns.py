@@ -25,15 +25,20 @@ class sfp_dns(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'resolveaffiliate': True,   # Get IPs for affiliate domains
-        'reverselookup':    True    # Reverse-resolve IPs to names for
+        'resolveaffiliate': False,   # Get IPs for affiliate domains
+        'reverselookup':    True,    # Reverse-resolve IPs to names for
                                     # more clues.
+        "commonsubs":   [ "www", "web", "ns", "mail", "dns", "mx", "gw", "proxy",
+                          "ssl", "fw", "gateway", "firewall", "www1", "www2"
+                         ] # Common sub-domains to try.
+
     }
 
     # Option descriptions
     optdescs = {
         'resolveaffiliate': "Obtain IPs for confirmed affiliates?",
-        'reverselookup': "Obtain new URLs and possible affiliates based on reverse-resolved IPs?"
+        'reverselookup': "Obtain new URLs and possible affiliates based on reverse-resolved IPs?",
+        "commonsubs":   "Common sub-domains to try."
     }
 
     # Target
@@ -109,8 +114,22 @@ class sfp_dns(SpiderFootPlugin):
 
         return None
 
-# End of sfp_dns class
+    def start(self):
+        # Try resolving common names
+        for sub in self.opts['commonsubs']:
+            name = sub + "." + self.baseDomain
+            try:
+                addrs = socket.gethostbyname_ex(name)
+                if len(addrs[0]) > 0:
+                    host = addrs[0]
+                    sf.info("Found host: " + host)
+                    # If the returned hostname is on a different
+                    # domain to baseDomain, flag it as an affiliate
+                    if not host.lower().endswith(self.baseDomain):
+                        self.notifyListeners("AFFILIATE", self.baseDomain, host)
+                    else:
+                        self.notifyListeners("SUBDOMAIN", self.baseDomain, host)
+            except socket.error as e:
+                sf.info("Unable to resolve " + name)
 
-if __name__ == '__main__':
-    print "This module cannot be run stand-alone."
-    exit(-1)
+# End of sfp_dns class

@@ -112,9 +112,9 @@ class sfp_spider(SpiderFootPlugin):
         if source != None:
             self.results[url]['source'] = source
             if sf.urlBaseUrl(url).endswith(self.baseDomain):
-                self.notifyListeners("URL_INTERNAL", source, url)
+                self.notifyListeners("LINKED_URL_INTERNAL", source, url)
             else:
-                self.notifyListeners("URL_EXTERNAL", source, url)
+                self.notifyListeners("LINKED_URL_EXTERNAL", source, url)
             stored += 's'
 
         if original != None:
@@ -123,7 +123,7 @@ class sfp_spider(SpiderFootPlugin):
 
         if httpresult != None:
             if httpresult.has_key('content'):
-                self.notifyListeners("WEBCONTENT", url, httpresult['content'])
+                self.notifyListeners("RAW_DATA", url, httpresult['content'])
 
             self.notifyListeners("WEBSERVER_HTTPHEADERS", url, httpresult['headers'])
             self.notifyListeners("HTTP_CODE", url, str(httpresult['code']))
@@ -274,12 +274,3 @@ class sfp_spider(SpiderFootPlugin):
 
         return
 # End of sfp_spider class
-
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print "You must specify a URL to start spidering from."
-        exit(-1)
-
-    spider = sfp_spider(sys.argv[1])
-    spider.start()
-
