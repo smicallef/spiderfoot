@@ -29,7 +29,8 @@ class sfp_dns(SpiderFootPlugin):
         'reverselookup':    True,    # Reverse-resolve IPs to names for
                                     # more clues.
         "commonsubs":   [ "www", "web", "ns", "mail", "dns", "mx", "gw", "proxy",
-                          "ssl", "fw", "gateway", "firewall", "www1", "www2"
+                          "ssl", "fw", "gateway", "firewall", "www1", "www2",
+                          "ns0", "ns1", "ns2", "dns0", "dns1", "dns2", "mx1", "mx2"
                          ] # Common sub-domains to try.
 
     }
