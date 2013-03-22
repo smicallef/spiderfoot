@@ -5,13 +5,17 @@
     <a id='btn-live' class="btn active" href="#" onClick='liveView("${id}")'><i class='icon-eye-open'></i>&nbsp;Live View</a>
       <a id='btn-browse' class="btn" href="#" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
       <a id='btn-info' class="btn" href="#" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
-      <a id='btn-export' class="btn" href="#" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt'></i>&nbsp;Export</a>
       <a id='btn-log' class="btn" href="#" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
+    </div>
+    <div class="btn-group">
+    <a id='btn-refresh' data-toggle="tooltop" title="Refresh" class="btn-success btn" href="#" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
+    <a id='btn-export' data-toggle="tooltip" title="Export Data to CSV" class="btn-info btn" href="#" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
     </div>
   </div>
 
     <script type='text/javascript'>
         var currentType = "ALL";
+        var refresh = function() { browseEventList("${id}"); }
 
         function navTo(target) {
             var targets = [ "btn-live", "btn-browse", "btn-info", "btn-log", "btn-export" ]
@@ -28,9 +32,11 @@
         function viewScanLog(instanceId) {
             $("#scansummary-content").remove();
             $("#loader").show();
+            $("#btn-export").hide();
             navTo("btn-log");
+            refresh = function() { viewScanLog(instanceId); }
             sf.fetchData('/scanlog', {'id': instanceId}, function(data) {
-                            var table = "<table id='scansummary-content' class='table table-bordered table-striped'>";
+                            var table = "<table id='scansummary-content' class='table table-bordered table-striped table-condensed' style='font-size: 90%'>";
                             table += "<thead><tr> <th>Time</th> <th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr";
@@ -40,7 +46,7 @@
                                 table += "><td>" + data[i][0] + "</a></td>";
                                 table += "<td>" + data[i][1] + "</td>";
                                 table += "<td>" + data[i][2] + "</td>";
-                                table += "<td><pre style='border: 0px; background-color: inherit'>" + data[i][3] + "</pre></td>";
+                                table += "<td><pre style='border: 0px; background-color: inherit; font-size: 90%'>" + data[i][3] + "</pre></td>";
                                 table += "</tr>";
                             }
                             table += "</tbody></table>"
@@ -55,14 +61,17 @@
 
             // Remove pre-existing tables if they exist
             $("#scansummary-content").remove();
+            $("#breadcrumbs").remove();
             navTo("btn-browse");
             $("#loader").show();
+            $("#btn-export").show();
+            refresh = function() { browseEventList(instanceId); }
             sf.fetchData('/scansummary', {'id': instanceId}, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped'>";
                             table += "<thead><tr> <th>Type</th> <th>Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a onClick='";
-                                table += "browseEventData(\"${id}\", \"" + data[i][0] + "\")' href='#'>";
+                                table += "browseEventData(\"${id}\", \"" + data[i][1] + "\", \"" + data[i][0] + "\")' href='#'>";
                                 table += data[i][1] + "</a></td>";
                                 table += "<td>" + data[i][3] + "</td>";
                                 table += "<td>" + data[i][2] + "</td>";
@@ -74,14 +83,22 @@
         }
 
         // Detailed view of data for an event type for a scan
-        function browseEventData(instanceId, eventType) {
+        function browseEventData(instanceId, eventTypeLabel, eventType) {
             $("#scansummary-content").remove();
+            $("#breadcrumbs").remove();
             $("#loader").show();
             navTo("btn-browse");
+            $("#btn-export").show();
             currentType = eventType;
+            refresh = function() { browseEventData(instanceId, eventTypeLabel, eventType); }
             sf.fetchData('/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
+                            var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a href='#' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
+                            crumbs += " <span class='divider'>&gt;</span></li> <li><a href='#' onClick=";
+                            crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\");'>";
+                            crumbs += eventTypeLabel + "</a></li></ul>";
+
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
-                            table += "<thead><tr> <th>Data Element</th><th>Source</th><th>Module</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Data Element</th><th>Source Data Element</th><th>Source Module</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td width=50%><pre style='border: 0px; background-color: inherit'>" + data[i][1];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
@@ -91,7 +108,7 @@
                             }
                             table += "</tbody></table>"
                             $("#loader").fadeOut(500);
-                            $("#mainbody").append(table);
+                            $("#mainbody").append(crumbs + table);
             });
         }
 
@@ -107,11 +124,13 @@
         function viewScanConfig(instanceId) {
             $("#scansummary-content").remove();
             $("#loader").show();
+            $("#btn-export").hide();
             navTo("btn-info");
+            refresh = function() { viewScanConfig(instanceId); }
             sf.fetchData('/scanopts', {'id': instanceId}, function(data) {
                 table = "<div id='scansummary-content'><br>";
                 table += "<h4>Meta Information</h4>";
-                table += "<table class='table table-bordered table-striped' style='width: 400px'>";
+                table += "<table class='table table-bordered table-striped'>";
                 table += "<tr><td>Name:</td><td>" + data['meta'][0] + "</td></tr>";
                 table += "<tr><td>Internal ID:</td><td>${id}</td></tr>";
                 table += "<tr><td>Target:</td><td>" + data['meta'][1] + "</td></tr>";
@@ -120,7 +139,7 @@
                 table += "<tr><td>Status:</td><td>" + data['meta'][5] + "</td></tr>";
                 table += "</table>";
                 table += "<h4>Global Settings</h4>";
-                table += "<table class='table table-bordered table-striped' style='width: 600px'>";
+                table += "<table class='table table-bordered table-striped'>";
                 table += "<thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>";
                 for (var key in data['config']) {
                     if (key.indexOf(":") > 0) {
