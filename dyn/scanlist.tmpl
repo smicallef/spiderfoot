@@ -19,17 +19,17 @@
                             if (data.length == 0) {
                                 $("#loader").fadeOut(500);
                                 welcome = "<div class='alert alert-info'>";
-                                welcome += "<h4>Run your first scan!</h4>";
+                                welcome += "<h4>No scan history</h4><br>";
                                 welcome += "There is currently no history of previously run scans. Please click 'New Scan' to initiate a new scan."
                                 welcome += "</div>";
                                 $("#mainbody").append(welcome);
                                 return;
                             }
-                            var table = "<table class='table table-bordered table-striped'>";
+                            var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter'>";
                             table += "<thead><tr> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th style='text-align: center'>Status</th> <th style='text-align: center'>Elements</th><th style='text-align: center'>Action</th> </tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a href=/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
-                                table += "<td>" + data[i][2] + "&nbsp;&nbsp;<a target='_new' href='" + data[i][2] + "'><i class='icon-share icon-gray'></a></td>";
+                                table += "<td>" + data[i][2] + "&nbsp;&nbsp;<a rel='tooltip' title='Visit target' target='_new' href='http://" + data[i][2] + "'><i class='icon-share icon-gray'></a></td>";
                                 table += "<td>" + data[i][3] + "</td>";
                                 table += "<td>" + data[i][5] + "</td>";
 
@@ -49,15 +49,17 @@
                                 table += "<td style='text-align: center'>" + data[i][7] + "</td>";
                                 table += "<td style='text-align: center'>";
                                 if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED") {
-                                    table += "<a href=/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray'></a></td>";
+                                    table += "<a rel='tooltip' title='Stop Scan' href=/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray'></a></td>";
                                 } else {
-                                    table += "<a href=/scandelete?id=" + data[i][0] + "><i class='icon-trash icon-gray'></a></td>";
+                                    table += "<a rel='tooltip' title='Delete Scan' href=/scandelete?id=" + data[i][0] + "><i class='icon-trash icon-gray'></a></td>";
                                 }
                                 table += "</tr>";
                             }
                             table += "</tbody></table>";
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(table);                        
+                            sf.updateTooltips();
+                            $("#scanlist").tablesorter( { headers: { 6: { sorter: false } } });
             });
     </script>
 <%include file="FOOTER.tmpl"/>

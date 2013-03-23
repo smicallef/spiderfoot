@@ -7,9 +7,9 @@
       <a id='btn-info' class="btn" href="#" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-log' class="btn" href="#" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
     </div>
-    <div class="btn-group">
-    <a id='btn-refresh' data-toggle="tooltop" title="Refresh" class="btn-success btn" href="#" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
-    <a id='btn-export' data-toggle="tooltip" title="Export Data to CSV" class="btn-info btn" href="#" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
+    <div class="btn-group pull-right">
+    <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn" href="#" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
+    <a id='btn-export' rel="tooltip" title="Export Data to CSV" class="btn-info btn" href="#" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
     </div>
   </div>
 
@@ -26,6 +26,8 @@
                     $("#" + targets[i]).removeClass("active");
                 }
             }
+
+            $("#breadcrumbs").remove();
         }
 
         // Logs for the scan
@@ -61,13 +63,12 @@
 
             // Remove pre-existing tables if they exist
             $("#scansummary-content").remove();
-            $("#breadcrumbs").remove();
             navTo("btn-browse");
             $("#loader").show();
             $("#btn-export").show();
             refresh = function() { browseEventList(instanceId); }
             sf.fetchData('/scansummary', {'id': instanceId}, function(data) {
-                            var table = "<table id='scansummary-content' class='table table-bordered table-striped'>";
+                            var table = "<table id='scansummary-content' class='table table-bordered table-striped tablesorter'>";
                             table += "<thead><tr> <th>Type</th> <th>Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a onClick='";
@@ -79,6 +80,7 @@
                             table += "</tbody></table>"
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(table);
+                            $("#scansummary-content").tablesorter();
             });
         }
 

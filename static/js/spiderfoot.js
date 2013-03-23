@@ -29,3 +29,10 @@ sf.fetchData = function(url, postData, postFunc, opts=null) {
     });
 }
 
+sf.updateTooltips = function() {
+    $(document).ready(function () {
+        if ($("[rel=tooltip]").length) {
+            $("[rel=tooltip]").tooltip();
+        }
+    });
+}
