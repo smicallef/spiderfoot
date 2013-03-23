@@ -48,7 +48,7 @@ class SpiderFootWebUi:
         data = dbh.scanResultEvent(id, type)
         blob = "\"Updated\",\"Type\",\"Source\",\"Module\",\"Data\"\n"
         for row in data:
-            lastseen = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[0]))
+            lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             escaped = cgi.escape(row[1].replace("\n", "#LB#").replace("\r", "#LB#"))
             blob = blob + "\"" + lastseen + "\",\"" + row[4] + "\",\""
             blob = blob + row[2] + "\",\"" + row[3]
@@ -81,12 +81,12 @@ class SpiderFootWebUi:
         sf = SpiderFoot(self.config)
         meta = dbh.scanInstanceGet(id)
         if meta[3] != 0:
-            started = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(meta[3]))
+            started = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(meta[3]))
         else:
             started = "Not yet"
 
         if meta[4] != 0:
-            finished = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(meta[4]))
+            finished = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(meta[4]))
         else:
             finished = "Not yet"
         ret['meta'] = [meta[0], meta[1], meta[2], started, finished, meta[5]]
@@ -226,7 +226,7 @@ class SpiderFootWebUi:
         data = dbh.scanLogs(id)
         retdata = []
         for row in data:
-            generated = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[0]/1000))
+            generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]/1000))
             retdata.append([generated, row[1], row[2], cgi.escape(row[3])])
         return json.dumps(retdata)
     scanlog.exposed = True
@@ -237,14 +237,14 @@ class SpiderFootWebUi:
         data = dbh.scanInstanceList()
         retdata = []
         for row in data:
-            created = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[3]))
+            created = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[3]))
             if row[4] != 0:
-                started = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[4]))
+                started = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[4]))
             else:
                 started = "Not yet"
 
             if row[5] != 0:
-                finished = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[5]))
+                finished = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[5]))
             else:
                 finished = "Not yet"
             retdata.append([row[0], row[1], row[2], created, started, finished, row[6], row[7]])
@@ -257,7 +257,7 @@ class SpiderFootWebUi:
         data = dbh.scanResultSummary(id)
         retdata = []
         for row in data:
-            lastseen = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[2]))
+            lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[2]))
             retdata.append([row[0], row[1], lastseen, row[3]])
         return json.dumps(retdata)
     scansummary.exposed = True
@@ -268,11 +268,22 @@ class SpiderFootWebUi:
         data = dbh.scanResultEvent(id, eventType)
         retdata = []
         for row in data:
-            lastseen = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(row[0]))
+            lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             escaped = cgi.escape(row[1])
             retdata.append([lastseen, escaped, row[2], row[3]])
         return json.dumps(retdata, ensure_ascii=False)
     scaneventresults.exposed = True
+
+    # Unique event results for a scan
+    def scaneventresultsunique(self, id, eventType):
+        dbh = SpiderFootDb(self.config)
+        data = dbh.scanResultEventUnique(id, eventType)
+        retdata = []
+        for row in data:
+            escaped = cgi.escape(row[0])
+            retdata.append([escaped, row[1]])
+        return json.dumps(retdata, ensure_ascii=False)
+    scaneventresultsunique.exposed = True
 
     # Historical data for the scan, graphs will be rendered in JS
     def scanhistory(self, id):
