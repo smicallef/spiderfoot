@@ -140,10 +140,10 @@ class SpiderFootDb:
 
     # Obtain a summary of the results per event type
     def scanResultSummary(self, instanceId):
-        qry = "SELECT r.event, e.event_descr, MAX(ROUND(generated))/1000 AS last_in, \
+        qry = "SELECT r.type, e.event_descr, MAX(ROUND(generated)) AS last_in, \
             count(*) AS total FROM \
-            tbl_scan_results r, tbl_event_types e WHERE e.event = r.event \
-            AND r.scan_instance_id = ? GROUP BY r.event ORDER BY e.event_descr"
+            tbl_scan_results r, tbl_event_types e WHERE e.event = r.type \
+            AND r.scan_instance_id = ? GROUP BY r.type ORDER BY e.event_descr"
         qvars = [instanceId]
         try:
             self.dbh.execute(qry, qvars)
@@ -154,21 +154,42 @@ class SpiderFootDb:
 
     # Obtain the data for a scan and event type
     def scanResultEvent(self, instanceId, eventType='ALL'):
-        qry = "SELECT ROUND(generated/1000) AS generated, event_data, event_source, \
-            event_data_source, event FROM tbl_scan_results WHERE scan_instance_id = ?"
+        qry = "SELECT DISTINCT ROUND(c.generated) AS generated, c.data, \
+            s.data as 'source_data', \
+            c.module, c.type FROM tbl_scan_results c, tbl_scan_results s \
+            WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash"
         qvars = [instanceId]
 
         if eventType != "ALL":
-            qry = qry + " AND event = ?"
+            qry = qry + " AND c.type = ?"
             qvars.append(eventType)
 
-        qry = qry + " ORDER BY event_data, event_source"
+        qry = qry + " ORDER BY c.data"
 
         try:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
             sf.error("SQL error encountered when fetching result events: " +
+                e.args[0])
+
+    # Obtain a unique list of elements
+    def scanResultEventUnique(self, instanceId, eventType='ALL'):
+        qry = "SELECT DISTINCT data, type FROM tbl_scan_results \
+            WHERE scan_instance_id = ?"
+        qvars = [instanceId]
+
+        if eventType != "ALL":
+            qry = qry + " AND type = ?"
+            qvars.append(eventType)
+
+        qry = qry + " ORDER BY type, data"
+
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when fetching unique result events: " +
                 e.args[0])
 
     # Get scan logs
@@ -286,14 +307,24 @@ class SpiderFootDb:
             sf.error("SQL error encountered when fetching configuration: " + e.args[0])
 
     # Store an event
-    def scanEventStore(self, instanceId, eventName, eventSource,
-        eventData, eventDataSource):
+    # eventData is a SpiderFootEvent object with the following variables:
+    # - eventType: the event, e.g. URL_FORM, RAW_DATA, etc.
+    # - generated: time the event occurred
+    # - confidence: how sure are we of this data's validity, 0-100
+    # - visibility: how 'visible' was this data, 0-100
+    # - risk: how much risk does this data represent, 0-100
+    # - module: module that generated the event
+    # - data: the actual data, i.e. a URL, port number, webpage content, etc.
+    # - sourceEventHash: hash of the event that triggered this event
+    # And getHash() will return the event hash.
+    def scanEventStore(self, instanceId, sfEvent):
         qry = "INSERT INTO tbl_scan_results \
-            (scan_instance_id, generated, event, event_source, \
-            event_data, event_data_source) \
-            VALUES (?, ?, ?, ?, ?, ?)"
-        qvals = [instanceId, time.time() * 1000, eventName, eventSource,
-            eventData, eventDataSource]
+            (scan_instance_id, hash, type, generated, confidence, \
+            visibility, risk, module, data, source_event_hash) \
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        qvals = [ instanceId, sfEvent.getHash(), sfEvent.eventType, sfEvent.generated,
+            sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
+            sfEvent.module, sfEvent.data, sfEvent.sourceEventHash ]
 
         #print "STORING: " + str(qvals)
 
@@ -311,7 +342,7 @@ class SpiderFootDb:
         # does a UNION of scans with results and scans without results to 
         # get a complete listing.
         qry = "SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
-            ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, COUNT(r.event) \
+            ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, COUNT(r.type) \
             FROM tbl_scan_instance i, tbl_scan_results r WHERE i.guid = r.scan_instance_id \
             GROUP BY i.guid \
             UNION ALL \
@@ -329,8 +360,8 @@ class SpiderFootDb:
     # History of data from the scan
     def scanResultHistory(self, instanceId):
         qry = "SELECT STRFTIME('%H:%M %w', ROUND(generated/1000), 'unixepoch') AS hourmin, \
-                event, COUNT(*) FROM tbl_scan_results \
-                WHERE scan_instance_id = ? GROUP BY hourmin, event"
+                type, COUNT(*) FROM tbl_scan_results \
+                WHERE scan_instance_id = ? GROUP BY hourmin, type"
         qvars = [instanceId]
         try:
             self.dbh.execute(qry, qvars)

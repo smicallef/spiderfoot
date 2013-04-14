@@ -68,14 +68,19 @@ class SpiderFootDbInit:
             )",
             "CREATE TABLE tbl_scan_results ( \
                 scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid), \
+                hash                VARCHAR NOT NULL, \
+                type                VARCHAR NOT NULL REFERENCES tbl_event_types(event), \
                 generated           INT NOT NULL, \
-                event               VARCHAR NOT NULL REFERENCES tbl_event_types(event), \
-                event_source        VARCHAR NOT NULL, \
-                event_data          VARCHAR NOT NULL, \
-                event_data_source   VARCHAR NOT NULL \
+                confidence          INT NOT NULL DEFAULT 100, \
+                visibility          INT NOT NULL DEFAULT 100, \
+                risk                INT NOT NULL DEFAULT 0, \
+                module              VARCHAR NOT NULL, \
+                data                VARCHAR, \
+                source_event_hash  VARCHAR DEFAULT 'ROOT' \
             )",
             "CREATE INDEX idx_scan_results_id ON tbl_scan_results (scan_instance_id)",
-            "CREATE INDEX idx_scan_results_event ON tbl_scan_results (scan_instance_id, event)",
+            "CREATE INDEX idx_scan_results_type ON tbl_scan_results (scan_instance_id, type)",
+            "CREATE INDEX idx_scan_results_hash ON tbl_scan_results (hash)",
             "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE', 'Affiliate', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0)",

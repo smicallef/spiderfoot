@@ -81,6 +81,7 @@ class SpiderFootScanner:
 
                 module = __import__('modules.' + modName, globals(), locals(), [modName])
                 mod = getattr(module, modName)()
+                mod.__name__ = modName
 
                 # A bit hacky: we pass the database object as part of the config. This
                 # object should only be used by the internal SpiderFoot modules writing

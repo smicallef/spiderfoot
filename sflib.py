@@ -11,8 +11,10 @@
 #-------------------------------------------------------------------------------
 
 import inspect
+import hashlib
 import re
 import sys
+import time
 import urllib2
 
 class SpiderFoot:
@@ -405,7 +407,7 @@ class SpiderFoot:
             fullPage = urllib2.urlopen(req, None, self.opts['_fetchtimeout'])
 
             # Prepare result to return
-            result['content'] = unicode(fullPage.read(), 'utf-8', errors='ignore')
+            result['content'] = unicode(fullPage.read(), 'ascii', errors='ignore')
             result['headers'] = fullPage.info()
             result['realurl'] = fullPage.geturl()
             result['code'] = fullPage.getcode()
@@ -439,6 +441,8 @@ class SpiderFootPlugin(object):
     _stopScanning = False
     # Modules that will be notified when this module produces events
     _listenerModules = list()
+    # Name of this module, set at startup time
+    __name__ = "module_name_not_set!"
 
     # Not really needed in most cases.
     def __init__(self):
@@ -462,18 +466,13 @@ class SpiderFootPlugin(object):
     # Call the handleEvent() method of every other plug-in listening for
     # events from this plug-in. Remember that those plug-ins will be called
     # within the same execution context of this thread, not on their own.
-    # eventName = the ID of the event, e.g. RAW_DATA
-    # eventSource = the item where this event was extracted from, e.g. a URL
-    # eventData = the actual data for this event (would correspond to the eventName,
-    #             so if we're reporting RAW_DATA, eventData is the actual content.
-    def notifyListeners(self, eventName, eventSource, eventData):
+    def notifyListeners(self, sfEvent):
+        eventName = sfEvent.eventType
+        eventData = sfEvent.data
+
         # Check if we've been asked to stop in the meantime, so that
         # notifications stop triggering module activity.
         if self.checkForStop():
-            return None
-
-        if self.opts.has_key('blocknotif') and self.opts['__blocknotif']:
-            #print "Notifications blocked for " + eventName + " to " + listener.__module__
             return None
 
         if eventData == None or (type(eventData) is unicode and len(eventData) == 0):
@@ -486,7 +485,7 @@ class SpiderFootPlugin(object):
                 #print listener.__module__ + " not listening for " + eventName
                 continue
             #print "Notifying " + eventName + " to " + listener.__module__
-            listener.handleEvent(self.__module__, eventName, eventSource, eventData)
+            listener.handleEvent(sfEvent)
 
     # Called to stop scanning
     def stopScanning(self):
@@ -511,7 +510,7 @@ class SpiderFootPlugin(object):
     # Handle events to this module
     # Will usually be overriden by the implementer, unless it doesn't handle
     # any events.
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, sfEvent):
         return None
 
     # Kick off the work (for some modules nothing will happen here, but instead
@@ -519,3 +518,51 @@ class SpiderFootPlugin(object):
     # Will usually be overriden by the implementer.
     def start(self):
         return None
+
+# Class for SpiderFoot Events
+class SpiderFootEvent(object):
+    generated = None
+    eventType = None
+    confidence = None
+    visibility = None
+    risk = None
+    module = None
+    data = None
+    sourceEventHash = None
+    
+    def __init__(self, eventType, data, module, sourceEventHash="ROOT",
+        confidence=100, visibility=100, risk=0):
+        self.eventType = eventType
+        self.generated = time.time()
+        self.confidence = confidence
+        self.visibility = visibility
+        self.risk = risk
+        self.module = module
+        self.data = data
+        self.sourceEventHash = sourceEventHash
+
+    # Unique hash of this event
+    def getHash(self):
+        if type(self.data) != unicode:
+            self.data = unicode(self.data, 'ascii', errors='ignore')
+
+        return hashlib.sha256(self.eventType + self.data + \
+            unicode(self.generated) + self.module).hexdigest()
+
+    # Reduce data down to a certain size
+    def truncateData(self, size):
+        self.data = self.data[0:size]
+
+    # Update variables as new information becomes available
+    def setConfidence(self, confidence):
+        self.confidence = confidence
+
+    def setVisibility(self, visibility):
+        self.visibility = visibility
+
+    def setRisk(self, risk):
+        self.risk = risk
+
+    def setSourceEventHash(self, srcHash):
+        self.sourceEventHash = srcHash
+
