@@ -13,7 +13,7 @@
 import sys
 import re
 import time
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in __init__)
 sf = None
@@ -58,20 +58,18 @@ class sfp_spider(SpiderFootPlugin):
     # Where to start spidering from
     spiderSource = None
 
-    # Results of spidering. This is a dictionary with the URL as the key, and
-    # each value is again a dictionary of the following key=value pairs:
-    #   source:     the link where the link was found
-    #   original:   what the link looked like in the content it was found in
-    #   fetched:    has the content been fetched (True/False)
-    # >> Not all of these will be populated at the same time <<
-    results = dict()
+    # Pages already fetched
+    fetchedPages = dict()
+
+    # Events for links identified
+    urlEvents = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
         self.baseDomain = target
-        self.results = dict()
+        self.fetchedPages = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -101,56 +99,26 @@ class sfp_spider(SpiderFootPlugin):
     def watchedEvents(self):
         return None
 
-    # Add a set of results to the results dictionary
-    def storeResult(self, url, source=None, original=None, httpresult=None):
-        stored = '' # just used for debugging
-
-        # Store in memory for use within this module and notify listeners
-        if url not in self.results.keys():
-            self.results[url] = dict()
-
-        if source != None:
-            self.results[url]['source'] = source
-            if sf.urlBaseUrl(url).endswith(self.baseDomain):
-                self.notifyListeners("LINKED_URL_INTERNAL", source, url)
-            else:
-                self.notifyListeners("LINKED_URL_EXTERNAL", source, url)
-            stored += 's'
-
-        if original != None:
-            self.results[url]['original'] = original
-            stored += 'o'
-
-        if httpresult != None:
-            if httpresult.has_key('content'):
-                self.notifyListeners("RAW_DATA", url, httpresult['content'])
-
-            self.notifyListeners("WEBSERVER_HTTPHEADERS", url, httpresult['headers'])
-            self.notifyListeners("HTTP_CODE", url, str(httpresult['code']))
-
-            self.results[url]['fetched'] = True
-            stored += 'h'
-
-        # Heavy debug
-        #sf.debug("Results stored for " + url + ": " + str(self.results[url]))
-        # Basic debug
-        sf.debug('stored result (elements:' + stored + '): ' + url)
-
-        # Eventually store to a database..
-        return None
-
     # Fetch data from a URL and obtain all links that should be followed
     def processUrl(self, url):
         # Fetch the contents of the supplied URL (object returned)
         fetched = sf.fetchUrl(url)
+        self.fetchedPages[url] = True
+
+        if not self.urlEvents.has_key(url):
+            self.urlEvents[url] = None
+
+        # Notify modules about the content obtained
+        self.contentNotify(url, fetched, self.urlEvents[url])
+
         if fetched['realurl'] != None and fetched['realurl'] != url:
             sf.debug("Redirect of " + url + " to " + fetched['realurl'])
             # Store the content for the redirect so that it isn't fetched again
-            self.storeResult(url, None, None, fetched)
+            self.fetchedPages[fetched['realurl']] = True
+            # Notify modules about the new link
+            self.urlEvents[fetched['realurl']] = self.linkNotify(fetched['realurl'], 
+                self.urlEvents[url])
             url = fetched['realurl'] # override the URL if we had a redirect
-
-        # Store the content just received
-        self.storeResult(url, None, None, fetched)
 
         # Extract links from the content
         links = sf.parseLinks(url, fetched['content'], self.baseDomain)
@@ -158,6 +126,13 @@ class sfp_spider(SpiderFootPlugin):
         if links == None or len(links) == 0:
             sf.info("No links found at " + url)
             return None
+
+        # Notify modules about the links found
+        # Aside from the first URL, this will be the first time a new
+        # URL is spotted.
+        for link in links:
+            # Supply the SpiderFootEvent of the parent URL as the parent
+            self.urlEvents[link] = self.linkNotify(link, self.urlEvents[url])
 
         sf.debug('Links found from parsing: ' + str(links))
         return links
@@ -200,6 +175,42 @@ class sfp_spider(SpiderFootPlugin):
 
         return returnLinks
 
+    # Notify listening modules about links
+    def linkNotify(self, url, parentEvent=None):
+        if sf.urlBaseUrl(url).endswith(self.baseDomain):
+            type = "LINKED_URL_INTERNAL"
+        else:
+            type = "LINKED_URL_EXTERNAL"
+
+        if parentEvent == None:
+            parent = "ROOT"
+        else:
+            parent = parentEvent.getHash()
+
+        event = SpiderFootEvent(type, url, self.__name__, parent)
+        self.notifyListeners(event)
+
+        return event
+
+    # Notify listening modules about raw data and others
+    def contentNotify(self, url, httpresult, parentEvent=None):
+        if parentEvent == None:
+            parent = "ROOT"
+        else:
+            parent = parentEvent.getHash()
+
+        event = SpiderFootEvent("RAW_DATA", httpresult['content'], 
+            self.__name__, parent)
+        self.notifyListeners(event)
+
+        event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", httpresult['headers'],
+            self.__name__, parent)
+        self.notifyListeners(event)
+
+        event = SpiderFootEvent("HTTP_CODE", str(httpresult['code']),
+            self.__name__, parent)
+        self.notifyListeners(event)
+
     # Spidering is performed here
     def start(self):
         # ~*~ Start spidering! ~*~
@@ -226,10 +237,9 @@ class sfp_spider(SpiderFootPlugin):
                 # Fetch content from the new links
                 for link in nextLinks.keys():
                     # Always skip links we've already fetched
-                    if (link in self.results.keys() and self.results[link].has_key('fetched')):
-                        if self.results[link]['fetched']:
-                            sf.debug("Already fetched " + link + ", skipping.")
-                            continue
+                    if (link in self.fetchedPages.keys()):
+                        sf.debug("Already fetched " + link + ", skipping.")
+                        continue
 
                     # Check if we've been asked to stop
                     if self.checkForStop():
@@ -248,12 +258,7 @@ class sfp_spider(SpiderFootPlugin):
                         keepSpidering = False
                         break
 
-            # Clear out the rubbish/ignored links from our list of links
             nextLinks = self.cleanLinks(links)
-
-            # Record the result, for all links (not just those fetched)
-            for link in links.keys():
-                self.storeResult(link, links[link]['source'], links[link]['original'])
 
             # We've scanned through another layer of the site
             levelsTraversed += 1
