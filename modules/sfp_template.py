@@ -53,7 +53,7 @@ class sfp_XXX(SpiderFootPlugin):
         return ["RAW_DATA"]
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, srcModuleName, eventName, eventSource, eventSourceEvent, eventData):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         return None

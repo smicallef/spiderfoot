@@ -12,7 +12,7 @@
 
 import sys
 import re
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in __init__)
 sf = None
@@ -41,7 +41,12 @@ class sfp_subdomain(SpiderFootPlugin):
         return ["RAW_DATA", "LINKED_URL_INTERNAL"]
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+        parentEvent = event.sourceEvent
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         matches = re.findall("([a-zA-Z0-9\-\.]+\." + self.baseDomain + ")", eventData,
@@ -59,7 +64,8 @@ class sfp_subdomain(SpiderFootPlugin):
                 continue
             else:
                 sf.info("New sub-domain/host found: " + match)
-                self.notifyListeners("SUBDOMAIN", eventSource, match)
+                evt = SpiderFootEvent("SUBDOMAIN", match, self.__name__, event)
+                self.notifyListeners(evt)
                 self.results[match] = True
 
         return None

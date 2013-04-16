@@ -2,7 +2,7 @@
 <h2>${name} &nbsp;<img id=loader src=/static/img/loader.gif></h2>
   <div class="btn-toolbar">
    <div class="btn-group">
-    <a id='btn-live' class="btn active" href="#" onClick='liveView("${id}")'><i class='icon-eye-open'></i>&nbsp;Live View</a>
+    <!--<a id='btn-live' class="btn active" href="#" onClick='liveView("${id}")'><i class='icon-eye-open'></i>&nbsp;Live View</a> -->
       <a id='btn-browse' class="btn" href="#" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
       <a id='btn-info' class="btn" href="#" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-log' class="btn" href="#" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
@@ -83,6 +83,11 @@
                                 table += "<td>" + data[i][2] + "</td>";
                             }
                             table += "</tbody></table>"
+
+                            if (data.length < 1) {
+                                table = "<div id='scansummary-content' class='alert alert-warning'><h4>No data.</h4>If the scan is still running please try again soon.</div>";
+                            }
+
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(table);
                             $("#scansummary-content").tablesorter();
@@ -111,7 +116,7 @@
                             crumbs += eventTypeLabel + "</a></li></ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
-                            table += "<thead><tr> <th>Data Element</th><th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Data Element</th><th>Source Data Element</th><th style='text-align: center'>Source Module</th><th style='text-align: center'>Identified</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><pre style='border: 0px; background-color: inherit'>" + data[i][1];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];

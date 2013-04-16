@@ -14,7 +14,7 @@ import sys
 import re
 import json
 import socket
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
@@ -44,7 +44,11 @@ class sfp_geoip(SpiderFootPlugin):
         return ['IP_ADDRESS']
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
@@ -61,7 +65,8 @@ class sfp_geoip(SpiderFootPlugin):
         sf.info("Found GeoIP for " + eventData + ": " + hostip['country_name'])
         countrycity = hostip['country_name']
 
-        self.notifyListeners("GEOINFO", eventData, countrycity)
+        evt = SpiderFootEvent("GEOINFO", countrycity, self.__name__, event)
+        self.notifyListeners(evt)
 
         return None
 

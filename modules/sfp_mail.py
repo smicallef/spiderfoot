@@ -12,7 +12,7 @@
 
 import sys
 import re
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
@@ -53,7 +53,11 @@ class sfp_mail(SpiderFootPlugin):
         return ["RAW_DATA"]
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         matches = re.findall("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9_\-]+)", eventData)
@@ -87,7 +91,8 @@ class sfp_mail(SpiderFootPlugin):
                     continue
 
             sf.info("Found e-mail address: " + match)
-            self.notifyListeners("EMAILADDR", eventSource, match)
+            evt = SpiderFootEvent("EMAILADDR", match, self.__name__, event)
+            self.notifyListeners(evt)
 
         return None
 

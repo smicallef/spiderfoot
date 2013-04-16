@@ -17,7 +17,7 @@ import urllib2
 import sys
 from copy import deepcopy
 from sfdb import SpiderFootDb
-from sflib import SpiderFoot
+from sflib import SpiderFoot, SpiderFootEvent
 
 # Controls all scanning activity
 # Eventually change this to be able to control multiple scan instances
@@ -116,6 +116,11 @@ class SpiderFootScanner:
 
             dbh.scanInstanceSet(self.config['__guid__'], status='RUNNING')
             self.status = "RUNNING"
+
+            # Create the "ROOT" event which un-triggered modules will link events to
+            rootEvent = SpiderFootEvent("INITIAL_TARGET", self.target, "User Input")
+            dbh.scanEventStore(self.config['__guid__'], rootEvent)
+
             # Start the modules sequentially.
             for module in self.moduleInstances.values():
                 # Check in case the user requested to stop the scan between modules initializing

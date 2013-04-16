@@ -14,7 +14,7 @@
 
 import sys
 import re
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
@@ -63,7 +63,11 @@ class sfp_xref(SpiderFootPlugin):
     # Handle events sent to this module
     # In this module's case, eventData will be the URL or a domain which
     # was found in some content somewhere.
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # The SIMILARDOMAIN event supplies domains, not URLs. Assume HTTP.
@@ -105,8 +109,11 @@ class sfp_xref(SpiderFootPlugin):
             # Check the base url to see if there is an affiliation
             url = sf.urlBaseUrl(eventData)
             res = sf.fetchUrl(url)
-            matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\.\'\"\ ])", 
-                res['content'], re.IGNORECASE)
+            if res['content'] != None:
+                matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\.\'\"\ ])", 
+                    res['content'], re.IGNORECASE)
+            else:
+                return None
 
         if len(matches) > 0:
             if self.results.has_key(url):
@@ -114,9 +121,11 @@ class sfp_xref(SpiderFootPlugin):
 
             self.results[url] = True
             sf.info("Found affiliate: " + url)
-            self.notifyListeners("AFFILIATE", eventSource, url)
+            evt1 = SpiderFootEvent("AFFILIATE", url, self.__name__, event)
+            self.notifyListeners(evt1)
             if self.opts['checkcontent']:
-                self.notifyListeners("RAW_DATA", url, res['content'])
+                evt2 = SpiderFootEvent("RAW_DATA", res['content'], self.__name__, evt1)
+                self.notifyListeners(evt2)
 
         return None
 

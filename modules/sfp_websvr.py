@@ -12,7 +12,7 @@
 
 import sys
 import re
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
@@ -42,7 +42,12 @@ class sfp_websvr(SpiderFootPlugin):
         return ["WEBSERVER_HTTPHEADERS"]
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+        eventSource = event.sourceEvent.data
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
         if self.results.has_key(eventSource):
             return None
@@ -58,35 +63,37 @@ class sfp_websvr(SpiderFootPlugin):
         # possibly OS. This could also trigger additional tests, such as 404s
         # and other errors to see what the header looks like.
         if eventData.has_key('server'):
-            self.notifyListeners("WEBSERVER_BANNER", eventSource, eventData['Server'])
+            evt = SpiderFootEvent("WEBSERVER_BANNER", eventData['Server'], self.__name__, event)
+            self.notifyListeners(evt)
+
             sf.info("Found web server: " + eventData['Server'] + " (" + eventSource + ")")
 
         if (eventData.has_key('x-powered-by')):
-            self.notifyListeners("WEBSERVER_TECHNOLOGY", eventSource, eventData['x-powered-by'])
+            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", eventData['x-powered-by'], 
+                self.__name__, event)
+            self.notifyListeners(evt)
             return None
 
+        tech = None
         if eventData.has_key('set-cookie') and 'PHPSESS' in eventData['set-cookie']:
-            self.notifyListeners("WEBSERVER_TECHNOLOGY", eventSource, "PHP")
-            return None
+            tech = "PHP"
 
         if eventData.has_key('set-cookie') and 'JSESSIONID' in eventData['set-cookie']:
-            self.notifyListeners("WEBSERVER_TECHNOLOGY", eventSource, "Java/JSP")
-            return None
+            tech = "Java/JSP"
 
         if eventData.has_key('set-cookie') and 'ASP.NET' in eventData['set-cookie']:
-            self.notifyListeners("WEBSERVER_TECHNOLOGY", eventSource, "ASP.NET")
-            return None
+            tech = "ASP.NET"
 
         if eventData.has_key('x-aspnet-version'):
-            self.notifyListeners("WEBSERVER_TECHNOLOGY", eventSource, "ASP.NET")
-            return None
+            tech = "ASP.NET"
 
-        if '.jsp' in eventSource:
-            self.notifyListeners("WEBSERVER_TECHNOLOGY", eventSource, "Java/JSP")
-            return None
+        if tech != None and '.jsp' in eventSource:
+            tech = "Java/JSP"
 
-        if '.php' in eventSource:
-            self.notifyListeners("WEBSERVER_TECHNOLOGY", eventSource, "PHP")
-            return None
+        if tech != None and '.php' in eventSource:
+            tech = "PHP"
+
+        evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_websvr class

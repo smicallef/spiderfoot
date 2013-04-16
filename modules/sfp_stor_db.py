@@ -51,25 +51,25 @@ class sfp_stor_db(SpiderFootPlugin):
         return ["*"]
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, sfEvent):
+        
         # If we get passed a dict or list, convert it to a string first, as
         # those types do not have a unicode converter.
-        if type(eventData) not in [unicode, str]:
-            eventData = str(eventData)
+        if type(sfEvent.data) not in [unicode, str]:
+            sfEvent.data = str(sfEvent.data)
 
         # Convert to a string in case we get passed integers or other things
-        if type(eventData) is not unicode:
-            eventData = unicode(eventData, 'utf-8', errors='ignore')
+        if type(sfEvent.data) is not unicode:
+            sfEvent.data = unicode(sfEvent.data, 'utf-8', errors='ignore')
 
         if self.opts['maxstorage'] != 0:
-            if len(eventData) > self.opts['maxstorage']:
-                sf.debug("Truncated " + eventName + " data due to storage limitation")
-                sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
-                    eventData[0:self.opts['maxstorage']], srcModuleName)
+            if len(sfEvent.data) > self.opts['maxstorage']:
+                sf.debug("Truncated " + sfEvent.eventType + " data due to storage limitation")
+                sfEvent.truncateData(self.opts['maxstorage'])
+                sfdb.scanEventStore(self.opts['__guid__'], sfEvent)
                 return None
         
-        sfdb.scanEventStore(self.opts['__guid__'], eventName, eventSource,
-            eventData, srcModuleName)
+        sfdb.scanEventStore(self.opts['__guid__'], sfEvent)
 
 
 # End of sfp_stor_db class

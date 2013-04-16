@@ -13,7 +13,7 @@ import sys
 import random
 import re
 import time
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
@@ -135,7 +135,8 @@ class sfp_googlesearch(SpiderFootPlugin):
                 return None
 
             # Submit the google results for analysis
-            self.notifyListeners("RAW_DATA", page, pages[page])
+            evt = SpiderFootEvent("RAW_DATA", pages[page], self.__name__)
+            self.notifyListeners(evt)
             self.results.append(page)
 
             # We can optionally fetch links to our domain found in the search
@@ -148,17 +149,14 @@ class sfp_googlesearch(SpiderFootPlugin):
                 for link in links:
                     if link in self.results:
                         continue
-                    sf.info("Found a link: " + link)
+                    sf.debug("Found a link: " + link)
                     if sf.urlBaseUrl(link).endswith(self.baseDomain):
                         if self.checkForStop():
                             return None
-                        linkPage = sf.fetchUrl(link)
 
-                        # Submit info from what we've fetched for analysis
-                        self.notifyListeners("LINKED_URL_INTERNAL", page, link)
-                        self.notifyListeners("RAW_DATA", link, linkPage['content'])
-                        self.notifyListeners("HTTP_CODE", link, linkPage['code'])
-                        self.notifyListeners("WEBSERVER_HTTPHEADERS", link, linkPage['headers'])
+                        evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, self.__name__)
+                        self.notifyListeners(evt)
+
                         self.results.append(link)
 
 # End of sfp_googlesearch class

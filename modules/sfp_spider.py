@@ -25,22 +25,22 @@ class sfp_spider(SpiderFootPlugin):
     opts = {
         'robotsonly':   False, # only follow links specified by robots.txt
         'pause':        1, # number of seconds to pause between fetches
-        'maxpages':     10000, # max number of pages to fetch
-        'maxlevels':    10, # max number of levels to traverse within a site
-        'start':        [ 'http://', 'https://', 'http://www.', 'https://www.' ],
+        'maxpages':     1000, # max number of pages to fetch
+        'maxlevels':    5, # max number of levels to traverse within a site
+        'start':        [ 'http://', 'https://' ],
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css',
                         'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg',
                         'mpeg', 'iso', 'dat', 'mov', 'swf'], # Extensions to not fetch
         'filterusers':  True, # Don't follow /~user directories
         'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
-        'nosubs':       False # Should links to subdomains be ignored?
+        'nosubs':       False, # Should links to subdomains be ignored?
     }
 
     # Option descriptions
     optdescs = {
         'robotsonly':   "Only follow links specified by robots.txt?",
         'pause':        "Number of seconds to pause between fetches.",
-        'start':        "Prepend the target with these until you get a hit, to start spidering.",
+        'start':        "Prepend targets with these until you get a hit, to start spidering.",
         'maxpages':     "Maximum number of pages to fetch.",
         'maxlevels':    "Maximum levels to traverse within a site.",
         'filterfiles':  "File extensions to ignore (don't fetch them.)",
@@ -54,9 +54,6 @@ class sfp_spider(SpiderFootPlugin):
 
     # Target
     baseDomain = None
-
-    # Where to start spidering from
-    spiderSource = None
 
     # Pages already fetched
     fetchedPages = dict()
@@ -73,31 +70,6 @@ class sfp_spider(SpiderFootPlugin):
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-        # Determine where to start spidering from
-        for prefix in self.opts['start']:
-            res = sf.fetchUrl(prefix + target)
-            if res['content'] != None:
-                self.spiderSource = prefix + target
-                break
-
-        if self.spiderSource == None:
-            sf.error("Unable to fetch any start pages for the requested target.")
-            return None
-
-        # Are we respecting robots.txt?
-        if self.opts['robotsonly']:
-            robotsTxt = sf.fetchUrl(self.spiderSource + '/robots.txt')
-            if robotsTxt['content'] != None:
-                sf.debug('robots.txt contents: ' + robotsTxt['content'])
-                self.robotsRules = sf.parseRobotsTxt(robotsTxt['content'])
-            else:
-                sf.error("Unable to fetch robots.txt and you've asked to abide by its contents.")
-                return None
-
-    # This module listens to no events
-    def watchedEvents(self):
-        return None
 
     # Fetch data from a URL and obtain all links that should be followed
     def processUrl(self, url):
@@ -142,6 +114,8 @@ class sfp_spider(SpiderFootPlugin):
         returnLinks = dict()
 
         for link in links.keys():
+            linkBase = sf.urlBaseUrl(link)
+
             # Optionally skip external sites (typical behaviour..)
             if self.opts['noexternal'] and not sf.urlBaseUrl(link).endswith(self.baseDomain):
                 sf.debug('Ignoring external site: ' + link)
@@ -159,7 +133,7 @@ class sfp_spider(SpiderFootPlugin):
 
             # If we are respecting robots.txt, filter those out too
             checkRobots = lambda blocked: str.lower(blocked) in str.lower(str(link)) or blocked == '*'
-            if self.opts['robotsonly'] and filter(checkRobots, self.robotsRules):
+            if self.opts['robotsonly'] and filter(checkRobots, self.robotsRules[linkBase]):
                 sf.debug("Ignoring page found in robots.txt: " + link)
                 continue
 
@@ -182,50 +156,91 @@ class sfp_spider(SpiderFootPlugin):
         else:
             type = "LINKED_URL_EXTERNAL"
 
-        if parentEvent == None:
-            parent = "ROOT"
-        else:
-            parent = parentEvent.getHash()
-
-        event = SpiderFootEvent(type, url, self.__name__, parent)
+        event = SpiderFootEvent(type, url, self.__name__, parentEvent)
         self.notifyListeners(event)
 
         return event
 
     # Notify listening modules about raw data and others
     def contentNotify(self, url, httpresult, parentEvent=None):
-        if parentEvent == None:
-            parent = "ROOT"
-        else:
-            parent = parentEvent.getHash()
-
         event = SpiderFootEvent("RAW_DATA", httpresult['content'], 
-            self.__name__, parent)
+            self.__name__, parentEvent)
         self.notifyListeners(event)
 
         event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", httpresult['headers'],
-            self.__name__, parent)
+            self.__name__, parentEvent)
         self.notifyListeners(event)
 
         event = SpiderFootEvent("HTTP_CODE", str(httpresult['code']),
-            self.__name__, parent)
+            self.__name__, parentEvent)
         self.notifyListeners(event)
 
-    # Spidering is performed here
-    def start(self):
-        # ~*~ Start spidering! ~*~
-        # First iteration we are starting with links found on the start page
-        # Iterations after that are based on links found on those pages,
-        # and so on..
+    # Trigger spidering off the following events..
+    # Google search provides LINKED_URL_INTERNAL, and DNS lookups
+    # provide SUBDOMAIN.
+    def watchedEvents(self):
+        return [ "LINKED_URL_INTERNAL", "SUBDOMAIN" ]
+
+    # Some other modules may request we spider things
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+        spiderTarget = event.data
+
+        # Ignore self-generated events so that we don't end up in a recursive loop
+        if "sfp_spider" in srcModuleName:
+            sf.debug("Ignoring event from myself.")
+            return None
+
+        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if eventData in self.urlEvents.keys():
+            sf.debug("Ignoring " + eventData + " as already spidered.")           
+            return None
+        else:
+            self.urlEvents[eventData] = event
+
+        # Determine where to start spidering from if it's a SUBDOMAIN event
+        if eventName == "SUBDOMAIN":
+            for prefix in self.opts['start']:
+                res = sf.fetchUrl(prefix + eventData)
+                if res['content'] != None:
+                    spiderTarget = prefix + eventData
+                    break
+
+        sf.debug("Initiating spider of " + spiderTarget)
+
+        # Link the spidered URL to the event that triggered it
+        self.urlEvents[spiderTarget] = event
+        return self.spiderFrom(spiderTarget)
+
+    # Start spidering
+    def spiderFrom(self, startingPoint):
         keepSpidering = True
-        links = self.processUrl(self.spiderSource)  # fetch first page
         totalFetched = 0
         levelsTraversed = 0
         nextLinks = dict()
+        targetBase = sf.urlBaseUrl(startingPoint)
+
+        # Are we respecting robots.txt?
+        if self.opts['robotsonly'] and not self.robotsRules.has_key(targetBase):
+            robotsTxt = sf.fetchUrl(targetBase + '/robots.txt')
+            if robotsTxt['content'] != None:
+                sf.debug('robots.txt contents: ' + robotsTxt['content'])
+                self.robotsRules[targetBase] = sf.parseRobotsTxt(robotsTxt['content'])
+            else:
+                sf.error("Unable to fetch robots.txt and you've asked to abide by its contents.")
+                return None
+
+        # First iteration we are starting with links found on the start page
+        # Iterations after that are based on links found on those pages,
+        # and so on..
+        links = self.processUrl(startingPoint)  # fetch first page
 
         # No links from the first fetch means we've got a problem
         if links == None:
-            sf.error("No links found on the first fetch!")
+            sf.error("No links found on the first fetch!", exception=False)
             return
 
         while keepSpidering:

@@ -528,9 +528,10 @@ class SpiderFootEvent(object):
     risk = None
     module = None
     data = None
+    sourceEvent = None
     sourceEventHash = None
     
-    def __init__(self, eventType, data, module, sourceEventHash="ROOT",
+    def __init__(self, eventType, data, module, sourceEvent=None,
         confidence=100, visibility=100, risk=0):
         self.eventType = eventType
         self.generated = time.time()
@@ -539,14 +540,27 @@ class SpiderFootEvent(object):
         self.risk = risk
         self.module = module
         self.data = data
-        self.sourceEventHash = sourceEventHash
+        self.sourceEvent = sourceEvent
+
+        # "ROOT" is a special "hash" reserved for elements with no
+        # actual parent (e.g. the first page spidered.)
+        if sourceEvent != None:
+            self.sourceEventHash = sourceEvent.getHash()
+        else:
+            self.sourceEventHash = "ROOT"
 
     # Unique hash of this event
     def getHash(self):
-        if type(self.data) != unicode:
-            self.data = unicode(self.data, 'ascii', errors='ignore')
+        if self.eventType == "INITIAL_TARGET":
+            return "ROOT"
 
-        return hashlib.sha256(self.eventType + self.data + \
+        # Handle lists and dicts
+        if type(self.data) != str or type(self.data) != unicode:
+            usedata = str(self.data)
+        else:   
+            usedata = unicode(usedata, 'ascii', errors='ignore')
+
+        return hashlib.sha256(self.eventType + usedata + \
             unicode(self.generated) + self.module).hexdigest()
 
     # Reduce data down to a certain size

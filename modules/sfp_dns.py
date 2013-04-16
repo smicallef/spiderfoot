@@ -15,7 +15,7 @@
 import sys
 import re
 import socket
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
@@ -66,7 +66,11 @@ class sfp_dns(SpiderFootPlugin):
         return arr
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
@@ -101,9 +105,11 @@ class sfp_dns(SpiderFootPlugin):
         # If the returned hostname is on a different
         # domain to baseDomain, flag it as an affiliate
         if not host.lower().endswith(self.baseDomain):
-            self.notifyListeners("AFFILIATE", eventData, host)
+            type = "AFFILIATE"
         else:
-            self.notifyListeners("SUBDOMAIN", eventData, host)
+            type = "SUBDOMAIN"
+        evt = SpiderFootEvent(type, host, self.__name__, event)
+        self.notifyListeners(evt)
 
         # In tests addr[1] was either always the requested lookup or empty
 
@@ -111,11 +117,13 @@ class sfp_dns(SpiderFootPlugin):
         if len(addrs[2]) > 0 and eventName != 'IP_ADDRESS':
             for ipaddr in addrs[2]:
                 sf.info("Found IP Address: " + ipaddr)
-                self.notifyListeners("IP_ADDRESS", eventData, ipaddr)
+                evt = SpiderFootEvent("IP_ADDRESS", ipaddr, self.__name__, event)
+                self.notifyListeners(evt)
 
         return None
 
     def start(self):
+        sf.debug("Iterating through possible sub-domains [" + str(self.opts['commonsubs']) + "]")
         # Try resolving common names
         for sub in self.opts['commonsubs']:
             name = sub + "." + self.baseDomain
@@ -127,9 +135,11 @@ class sfp_dns(SpiderFootPlugin):
                     # If the returned hostname is on a different
                     # domain to baseDomain, flag it as an affiliate
                     if not host.lower().endswith(self.baseDomain):
-                        self.notifyListeners("AFFILIATE", self.baseDomain, host)
+                        type = "AFFILIATE"
                     else:
-                        self.notifyListeners("SUBDOMAIN", self.baseDomain, host)
+                        type = "SUBDOMAIN"
+                    evt = SpiderFootEvent(type, host, self.__name__)
+                    self.notifyListeners(evt)
             except socket.error as e:
                 sf.info("Unable to resolve " + name)
 

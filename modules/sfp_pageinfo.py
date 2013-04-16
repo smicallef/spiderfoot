@@ -13,7 +13,7 @@
 
 import sys
 import re
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
@@ -55,7 +55,17 @@ etc.)"""
         return ["RAW_DATA"]
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, event):
+        # We are only interested in the raw data from the spidering module
+        if "sfp_spider" not in event.module:
+            sf.debug("Ignoring RAW_DATA from " + event.module)
+            return None
+
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+        eventSource = event.sourceEvent.data # will be the URL of the raw data
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # We aren't interested in describing pages that are not hosted on
@@ -75,13 +85,15 @@ etc.)"""
                 matches = re.findall(regex, eventData, re.IGNORECASE)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     sf.info("Matched " + regexpGrp + " in content from " + eventSource)
-                    self.notifyListeners(regexpGrp, eventSource, eventSource)
+                    evt = SpiderFootEvent(regexpGrp, eventSource, self.__name__, event.sourceEvent)
+                    self.notifyListeners(evt)
                     self.results[eventSource].append(regexpGrp)
 
         # If no regexps were matched, consider this a static page
         if len(self.results[eventSource]) == 0:
             sf.info("Treating " + eventSource + " as URL_STATIC")
-            self.notifyListeners("URL_STATIC", eventSource, eventSource)
+            evt = SpiderFootEvent("URL_STATIC", eventSource, self.__name__, event.sourceEvent)
+            self.notifyListeners(evt)
 
         return None
 

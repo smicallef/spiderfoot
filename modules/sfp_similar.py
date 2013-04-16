@@ -14,7 +14,7 @@ import sys
 import re
 import time
 import random
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # These are all string builders, {0} = the domain keyword, {1} = the page number
 
@@ -203,9 +203,11 @@ class sfp_similar(SpiderFootPlugin):
 
             pageContent = sf.fetchUrl('http://' + result)
             if pageContent['content'] != None:
-                self.notifyListeners("SIMILARDOMAIN", source, result)
+                evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
+                self.notifyListeners(evt)
         else:
-            self.notifyListeners("SIMILARDOMAIN", source, result)
+            evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
+            self.notifyListeners(evt)
 
 
     # Search for similar sounding domains

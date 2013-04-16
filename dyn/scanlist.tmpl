@@ -34,18 +34,18 @@
                                 table += "<td>" + data[i][5] + "</td>";
 
                                 if (data[i][6] == "FINISHED") {
-                                    status = "badge-success";
+                                    statusy = "badge-success";
                                 }
                                 if (data[i][6].startsWith("ABORT")) {
-                                    status = "badge-warning";
+                                    statusy = "badge-warning";
                                 }
                                 if (data[i][6] == "RUNNING" || data[i][6] == "STARTED") {
-                                    status = "badge-info";
+                                    statusy = "badge-info";
                                 }
                                 if (data[i][6].endsWith("FAILED")) {
-                                    status = "badge-important";
+                                    statusy = "badge-important";
                                 }
-                                table += "<td style='text-align: center'><span class='badge " + status + "'>" + data[i][6] + "</span></td>";
+                                table += "<td style='text-align: center'><span class='badge " + statusy + "'>" + data[i][6] + "</span></td>";
                                 table += "<td style='text-align: center'>" + data[i][7] + "</td>";
                                 table += "<td style='text-align: center'>";
                                 if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED") {

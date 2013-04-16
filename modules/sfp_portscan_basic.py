@@ -14,7 +14,7 @@ import sys
 import re
 import socket
 import random
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
@@ -62,7 +62,11 @@ class sfp_portscan_basic(SpiderFootPlugin):
         return ['IP_ADDRESS']
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
@@ -80,7 +84,8 @@ class sfp_portscan_basic(SpiderFootPlugin):
             try:
                 sock = socket.create_connection((eventData, port), self.opts['timeout'])
                 sf.info("TCP Port " + str(port) + " found to be OPEN.")
-                self.notifyListeners("TCP_PORT_OPEN", eventData, str(port))
+                evt = SpiderFootEvent("TCP_PORT_OPEN", str(port), self.__name__, event)
+                self.notifyListeners(evt)
                 sock.close()
             except Exception as e:
                 sf.info("Unable to connect to " + eventData + " on port " + str(port) + \

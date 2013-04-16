@@ -14,7 +14,7 @@ import sys
 import re
 import json
 import socket
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
@@ -44,7 +44,11 @@ class sfp_ripe(SpiderFootPlugin):
         return ['IP_ADDRESS', 'SUBDOMAIN']
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
@@ -65,10 +69,12 @@ class sfp_ripe(SpiderFootPlugin):
             for ns in nslist:
                 nsclean = ns.rstrip('.')
                 if not nsclean.endswith(self.baseDomain):
-                    self.notifyListeners("AFFILIATE", eventData, nsclean)
+                    evt = SpiderFootEvent("AFFILIATE", nsclean, self.__name__, event)
+                    self.notifyListeners(evt)
 
             # Just send the content off for others to process
-            self.notifyListeners("RAW_DATA", eventData, res['content'])
+            evt = SpiderFootEvent("RAW_DATA", res['content'], self.__name__, event)
+            self.notifyListeners(evt)
             return None
 
         # First get the netblock the IP resides on
@@ -88,8 +94,10 @@ class sfp_ripe(SpiderFootPlugin):
         # Crude and probably prone to a lot of false positives. Need to revisit.
         if self.baseDomain in res['content']:        
             sf.info("Owned netblock found: " + prefix)
-            self.notifyListeners("NETBLOCK", eventData, prefix)
-            self.notifyListeners("RAW_DATA", eventData, res['content'])
+            evt = SpiderFootEvent("NETBLOCK", prefix, self.__name__, event)
+            self.notifyListeners(evt)
+            evt = SpiderFootEvent("RAW_DATA", res['content'], self.__name__, event)
+            self.notifyListeners(evt)
 
         return None
 
@@ -105,10 +113,12 @@ class sfp_ripe(SpiderFootPlugin):
         for ns in nslist:
             nsclean = ns.rstrip('.')
             if not nsclean.endswith(self.baseDomain):
-                self.notifyListeners("AFFILIATE", self.baseDomain, nsclean)
+                evt = SpiderFootEvent("AFFILIATE", nsclean, self.__name__)
+                self.notifyListeners(evt)
 
         # Just send the content off for others to process
-        self.notifyListeners("RAW_DATA", self.baseDomain, res['content'])
+        evt = SpiderFootEvent("RAW_DATA", res['content'], self.__name__)
+        self.notifyListeners(evt)
         return None
        
 # End of sfp_ripe class

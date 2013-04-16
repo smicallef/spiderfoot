@@ -45,7 +45,7 @@ class sfp_stor_print(SpiderFootPlugin):
         return ["*"]
 
     # Handle events sent to this module
-    def handleEvent(self, srcModuleName, eventName, eventSource, eventData):
+    def handleEvent(self, srcModuleName, eventName, eventSource, eventSourceEvent, eventData):
         sf.debug("RESULT:")
         sf.debug("\tSource: " + srcModuleName)
         sf.debug("\tEvent: " + eventName)
