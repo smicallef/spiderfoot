@@ -57,6 +57,7 @@ class sfp_mail(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        parentEvent = event.sourceEvent
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -91,7 +92,7 @@ class sfp_mail(SpiderFootPlugin):
                     continue
 
             sf.info("Found e-mail address: " + match)
-            evt = SpiderFootEvent("EMAILADDR", match, self.__name__, event)
+            evt = SpiderFootEvent("EMAILADDR", match, self.__name__, parentEvent)
             self.notifyListeners(evt)
 
         return None

@@ -167,7 +167,7 @@ class SpiderFootDb:
 
         qry = qry + " ORDER BY c.data"
 
-        print "QRY: " + qry
+        #print "QRY: " + qry
 
         try:
             self.dbh.execute(qry, qvars)

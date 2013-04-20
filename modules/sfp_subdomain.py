@@ -45,7 +45,10 @@ class sfp_subdomain(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        parentEvent = event.sourceEvent
+        if eventName == "RAW_DATA":
+            parentEvent = event.sourceEvent
+        else:
+            parentEvent = event
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -64,7 +67,7 @@ class sfp_subdomain(SpiderFootPlugin):
                 continue
             else:
                 sf.info("New sub-domain/host found: " + match)
-                evt = SpiderFootEvent("SUBDOMAIN", match, self.__name__, event)
+                evt = SpiderFootEvent("SUBDOMAIN", match, self.__name__, parentEvent)
                 self.notifyListeners(evt)
                 self.results[match] = True
 

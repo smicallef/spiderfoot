@@ -118,7 +118,7 @@ class SpiderFootScanner:
             self.status = "RUNNING"
 
             # Create the "ROOT" event which un-triggered modules will link events to
-            rootEvent = SpiderFootEvent("INITIAL_TARGET", self.target, "User Input")
+            rootEvent = SpiderFootEvent("INITIAL_TARGET", self.target, "SpiderFoot UI")
             dbh.scanEventStore(self.config['__guid__'], rootEvent)
 
             # Start the modules sequentially.
