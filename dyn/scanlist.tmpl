@@ -32,14 +32,13 @@
                                 table += "<td>" + data[i][2] + "&nbsp;&nbsp;<a rel='tooltip' title='Visit target' target='_new' href='http://" + data[i][2] + "'><i class='icon-share icon-gray'></a></td>";
                                 table += "<td>" + data[i][3] + "</td>";
                                 table += "<td>" + data[i][5] + "</td>";
-
                                 if (data[i][6] == "FINISHED") {
                                     statusy = "badge-success";
                                 }
                                 if (data[i][6].startsWith("ABORT")) {
                                     statusy = "badge-warning";
                                 }
-                                if (data[i][6] == "RUNNING" || data[i][6] == "STARTED") {
+                                if (data[i][6] == "RUNNING" || data[i][6] == "STARTED" || data[i][6] == "STARTING") {
                                     statusy = "badge-info";
                                 }
                                 if (data[i][6].endsWith("FAILED")) {

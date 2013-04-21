@@ -67,7 +67,7 @@ class sfp_ripe(SpiderFootPlugin):
             j = json.loads(res['content'])
             nslist = j["data"]["authoritative_nameservers"]
             for ns in nslist:
-                nsclean = ns.rstrip('.')
+                nsclean = ns.rstrip('.').lower()
                 if not nsclean.endswith(self.baseDomain):
                     evt = SpiderFootEvent("AFFILIATE", nsclean, self.__name__, event)
                     self.notifyListeners(evt)
@@ -85,6 +85,10 @@ class sfp_ripe(SpiderFootPlugin):
 
         j = json.loads(res['content'])
         prefix = j["data"]["prefix"]
+        if prefix == None:
+            sf.debug("Could not identify network prefix.")
+            return None
+
         # Now see who owns the prefix
         res = sf.fetchUrl("http://stat.ripe.net/data/whois/data.json?resource=" + prefix)
         if res['content'] == None:
@@ -111,7 +115,7 @@ class sfp_ripe(SpiderFootPlugin):
         j = json.loads(res['content'])
         nslist = j["data"]["authoritative_nameservers"]
         for ns in nslist:
-            nsclean = ns.rstrip('.')
+            nsclean = ns.rstrip('.').lower()
             if not nsclean.endswith(self.baseDomain):
                 evt = SpiderFootEvent("AFFILIATE", nsclean, self.__name__)
                 self.notifyListeners(evt)

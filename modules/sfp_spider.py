@@ -41,8 +41,8 @@ class sfp_spider(SpiderFootPlugin):
         'robotsonly':   "Only follow links specified by robots.txt?",
         'pause':        "Number of seconds to pause between fetches.",
         'start':        "Prepend targets with these until you get a hit, to start spidering.",
-        'maxpages':     "Maximum number of pages to fetch.",
-        'maxlevels':    "Maximum levels to traverse within a site.",
+        'maxpages':     "Maximum number of pages to fetch per target identified.",
+        'maxlevels':    "Maximum levels to traverse per target identified.",
         'filterfiles':  "File extensions to ignore (don't fetch them.)",
         'filterusers':  "Skip spidering of /~user directories?",
         'noexternal':   "Skip spidering of external sites? (**dangerous if False**)",
@@ -209,7 +209,7 @@ class sfp_spider(SpiderFootPlugin):
                     spiderTarget = prefix + eventData
                     break
 
-        sf.debug("Initiating spider of " + spiderTarget)
+        sf.info("Initiating spider of " + spiderTarget)
 
         # Link the spidered URL to the event that triggered it
         self.urlEvents[spiderTarget] = event

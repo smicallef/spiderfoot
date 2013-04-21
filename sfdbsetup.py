@@ -33,6 +33,7 @@ class SpiderFootDbInit:
 
     def create(self):
         queries = [
+            "PRAGMA journal_mode=WAL",
             "CREATE TABLE tbl_event_types ( \
                 event       VARCHAR NOT NULL PRIMARY KEY, \
                 event_descr VARCHAR NOT NULL, \

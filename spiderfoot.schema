@@ -14,6 +14,8 @@
 -- with any SQL-compliant RDBMS.
 --
 
+PRAGMA journal_mode=WAL;
+
 --
 -- Descriptions of event types
 --

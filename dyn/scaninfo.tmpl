@@ -116,9 +116,13 @@
                             crumbs += eventTypeLabel + "</a></li></ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
-                            table += "<thead><tr> <th>Data Element</th><th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Data Element</th><th>Confidence</th><th>Visibility</th><th>Risk</th>";
+                            table += "<th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><pre style='border: 0px; background-color: inherit'>" + data[i][1];
+                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][4];
+                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
+                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];

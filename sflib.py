@@ -441,6 +441,8 @@ class SpiderFootPlugin(object):
     _stopScanning = False
     # Modules that will be notified when this module produces events
     _listenerModules = list()
+    # Current event being processed
+    _currentEvent = None
     # Name of this module, set at startup time
     __name__ = "module_name_not_set!"
 
@@ -485,6 +487,7 @@ class SpiderFootPlugin(object):
                 #print listener.__module__ + " not listening for " + eventName
                 continue
             #print "Notifying " + eventName + " to " + listener.__module__
+            listener._currentEvent = sfEvent
             listener.handleEvent(sfEvent)
 
     # Called to stop scanning
@@ -555,10 +558,10 @@ class SpiderFootEvent(object):
             return "ROOT"
 
         # Handle lists and dicts
-        if type(self.data) != str or type(self.data) != unicode:
+        if type(self.data) not in [str, unicode]:
             usedata = str(self.data)
         else:   
-            usedata = unicode(usedata, 'ascii', errors='ignore')
+            usedata = self.data
 
         return hashlib.sha256(self.eventType + usedata + \
             unicode(self.generated) + self.module).hexdigest()
