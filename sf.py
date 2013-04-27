@@ -45,7 +45,7 @@ if __name__ == '__main__':
     sfModules = dict()
 
     # Go through each module in the modules directory with a .py extension
-    for filename in os.listdir(os.path.dirname(__file__) + '/modules/'):
+    for filename in os.listdir(sf.myPath() + '/modules/'):
         if filename.startswith("sfp_") and filename.endswith(".py"):
             # Skip the module template and debugging modules
             if filename == "sfp_template.py" or filename == 'sfp_stor_print.py':
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     })
 
     # Enable access to static files via the web directory
-    currentDir = os.path.dirname(os.path.abspath(__file__))
+    currentDir = os.path.abspath(sf.myPath())
     conf = { '/static': { 
         'tools.staticdir.on': True,
         'tools.staticdir.dir': os.path.join(currentDir, 'static')

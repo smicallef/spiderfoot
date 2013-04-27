@@ -13,6 +13,7 @@
 import inspect
 import hashlib
 import re
+import os
 import sys
 import time
 import urllib2
@@ -87,6 +88,17 @@ class SpiderFoot:
         else:
             self._dblog("DEBUG", message, mod.__name__)
         return
+
+    def myPath(self):
+        """ This will get us the program's directory,
+        even if we are frozen using py2exe"""
+
+        # Determine whether we've been compiled by py2exe
+        if hasattr(sys, "frozen"):
+            return os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding( )))
+
+        return os.path.dirname(unicode(__file__, sys.getfilesystemencoding( )))
+
 
     #
     # Configuration process

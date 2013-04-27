@@ -303,9 +303,10 @@ class SpiderFootWebUiMini:
 
     # Main page listing scans available
     def index(self):
+        sf = SpiderFoot(self.config)
         # Look for referenced templates in the current directory only
         templ = Template(filename='dyn/setup.tmpl', lookup=self.lookup)
-        return templ.render(stage=1, config=self.config, path=os.path.dirname(__file__))
+        return templ.render(stage=1, config=self.config, path=os.path.dirname(sf.myPath()))
     index.exposed = True
 
     # Create the database
