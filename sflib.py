@@ -71,10 +71,16 @@ class SpiderFoot:
     def info(self, message):
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        if self.dbh == None:
-            print '[' + mod.__name__ + '] ' + message
+
+        if mod == None:
+            modName = "Unknown"
         else:
-            self._dblog("INFO", message, mod.__name__)
+            modName = mod.__name__
+
+        if self.dbh == None:
+            print '[' + modName + '] ' + message
+        else:
+            self._dblog("INFO", message, modName)
         return
 
     def debug(self, message):

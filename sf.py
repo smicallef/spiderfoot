@@ -80,6 +80,9 @@ if __name__ == '__main__':
         'server.socket_port': sfConfig['__webport']
     })
 
+    # Disable auto-reloading of content
+    cherrypy.engine.autoreload.unsubscribe()
+
     # Enable access to static files via the web directory
     currentDir = os.path.abspath(sf.myPath())
     conf = { '/static': { 
