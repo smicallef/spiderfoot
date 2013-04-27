@@ -70,6 +70,7 @@ class sfp_dns(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        addrs = None
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -91,36 +92,42 @@ class sfp_dns(SpiderFootPlugin):
         except socket.error as e:
             sf.info("Unable to resolve " + eventData)
             return None
-    
-        # First element of tuple is primary hostname if requested name is 
-        # a CNAME, or an IP is being reverse looked up
-        if len(addrs[0]) > 0:
-            host = addrs[0]
-            sf.info("Found host: " + host)
 
-        # Ignore cases where the IP resolves to the target domain
-        if host.lower() == self.baseDomain:
-            return None
+        for addr in addrs:
+            if type(addr) == list:
+                for host in addr:
+                    self.processHost(host, event)
+            else:
+                self.processHost(addr, event)
+ 
+        return None
 
+    # Simple way to verify IPs.
+    def validIP(self, address):
+        parts = address.split(".")
+        if len(parts) != 4:
+            return False
+        for item in parts:
+            if not item.isdigit():
+                return False
+            if not 0 <= int(item) <= 255:
+                return False
+        return True
+
+    def processHost(self, host, parentEvent=None):
+        sf.info("Found host: " + host)
         # If the returned hostname is on a different
         # domain to baseDomain, flag it as an affiliate
         if not host.lower().endswith(self.baseDomain):
-            type = "AFFILIATE"
+            if self.validIP(host):
+                type = "IP_ADDRESS"
+            else:
+                type = "AFFILIATE"
         else:
             type = "SUBDOMAIN"
-        evt = SpiderFootEvent(type, host, self.__name__, event)
+
+        evt = SpiderFootEvent(type, host, self.__name__, parentEvent)
         self.notifyListeners(evt)
-
-        # In tests addr[1] was either always the requested lookup or empty
-
-        # Now the IP addresses..
-        if len(addrs[2]) > 0 and eventName != 'IP_ADDRESS':
-            for ipaddr in addrs[2]:
-                sf.info("Found IP Address: " + ipaddr)
-                evt = SpiderFootEvent("IP_ADDRESS", ipaddr, self.__name__, event)
-                self.notifyListeners(evt)
-
-        return None
 
     def start(self):
         sf.debug("Iterating through possible sub-domains [" + str(self.opts['commonsubs']) + "]")
@@ -129,17 +136,13 @@ class sfp_dns(SpiderFootPlugin):
             name = sub + "." + self.baseDomain
             try:
                 addrs = socket.gethostbyname_ex(name)
-                if len(addrs[0]) > 0:
-                    host = addrs[0]
-                    sf.info("Found host: " + host)
-                    # If the returned hostname is on a different
-                    # domain to baseDomain, flag it as an affiliate
-                    if not host.lower().endswith(self.baseDomain):
-                        type = "AFFILIATE"
+                for addr in addrs:
+                    if type(addr) == list:
+                        for host in addr:
+                            self.processHost(host)
                     else:
-                        type = "SUBDOMAIN"
-                    evt = SpiderFootEvent(type, host, self.__name__)
-                    self.notifyListeners(evt)
+                        self.processHost(addr)
+
             except socket.error as e:
                 sf.info("Unable to resolve " + name)
 

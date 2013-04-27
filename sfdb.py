@@ -69,7 +69,11 @@ class SpiderFootDb:
                 ))
             self.conn.commit()
         except sqlite3.Error as e:
-            sf.fatal("Unable to log event in DB: " + e.args[0])
+            if "locked" in e.args[0]:
+                # TODO: Do something smarter here to handle locked databases
+                sf.fatal("Unable to log event in DB: " + e.args[0])
+            else:
+                sf.fatal("Unable to log event in DB: " + e.args[0])
 
         return True
 
@@ -141,7 +145,7 @@ class SpiderFootDb:
     # Obtain a summary of the results per event type
     def scanResultSummary(self, instanceId):
         qry = "SELECT r.type, e.event_descr, MAX(ROUND(generated)) AS last_in, \
-            count(*) AS total FROM \
+            count(*) AS total, count(DISTINCT r.data) as utotal FROM \
             tbl_scan_results r, tbl_event_types e WHERE e.event = r.type \
             AND r.scan_instance_id = ? GROUP BY r.type ORDER BY e.event_descr"
         qvars = [instanceId]

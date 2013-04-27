@@ -46,13 +46,13 @@ class SpiderFootWebUi:
     def scaneventresultexport(self, id, type):
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
-        blob = "\"Updated\",\"Type\",\"Source\",\"Module\",\"Data\"\n"
+        blob = "\"Updated\",\"Type\",\"Module\",\"Source\",\"Data\"\n"
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
-            escaped = cgi.escape(row[1].replace("\n", "#LB#").replace("\r", "#LB#"))
+            escapedData = cgi.escape(row[1].replace("\n", "#LB#").replace("\r", "#LB#"))
+            escapedSrc = cgi.escape(row[2].replace("\n", "#LB#").replace("\r", "#LB#"))
             blob = blob + "\"" + lastseen + "\",\"" + row[4] + "\",\""
-            blob = blob + row[2] + "\",\"" + row[3]
-            blob = blob + "\",\"" + escaped + "\"\n"
+            blob = blob + row[3] + "\",\"" + escapedSrc + "\",\"" + escapedData + "\"\n"
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
@@ -258,7 +258,7 @@ class SpiderFootWebUi:
         retdata = []
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[2]))
-            retdata.append([row[0], row[1], lastseen, row[3]])
+            retdata.append([row[0], row[1], lastseen, row[3], row[4]])
         return json.dumps(retdata)
     scansummary.exposed = True
 

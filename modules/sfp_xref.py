@@ -52,6 +52,7 @@ class sfp_xref(SpiderFootPlugin):
         sf = sfc
         self.baseDomain = target
         self.results = dict()
+        self.fetched = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

@@ -74,11 +74,12 @@
             refresh = function() { browseEventList(instanceId); }
             sf.fetchData('/scansummary', {'id': instanceId}, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped tablesorter'>";
-                            table += "<thead><tr> <th>Type</th> <th>Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Type</th> <th>Unique Data Elements</th> <th>Total Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a onClick='";
                                 table += "browseEventData(\"${id}\", \"" + data[i][1] + "\", \"" + data[i][0] + "\", \"full\");' href='#'>";
                                 table += data[i][1] + "</a></td>";
+                                table += "<td>" + data[i][4] + "</td>";
                                 table += "<td>" + data[i][3] + "</td>";
                                 table += "<td>" + data[i][2] + "</td>";
                             }
@@ -116,13 +117,13 @@
                             crumbs += eventTypeLabel + "</a></li></ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
-                            table += "<thead><tr> <th>Data Element</th><th>Confidence</th><th>Visibility</th><th>Risk</th>";
+                            table += "<thead><tr> <th>Data Element</th></th>";
                             table += "<th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><pre style='border: 0px; background-color: inherit'>" + data[i][1];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][4];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
+                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][4];
+                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
+                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];

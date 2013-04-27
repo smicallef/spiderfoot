@@ -46,6 +46,7 @@ class sfp_websvr(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        parentEvent = event.sourceEvent
         eventSource = event.sourceEvent.data
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
@@ -63,14 +64,15 @@ class sfp_websvr(SpiderFootPlugin):
         # possibly OS. This could also trigger additional tests, such as 404s
         # and other errors to see what the header looks like.
         if eventData.has_key('server'):
-            evt = SpiderFootEvent("WEBSERVER_BANNER", eventData['Server'], self.__name__, event)
+            evt = SpiderFootEvent("WEBSERVER_BANNER", eventData['Server'], 
+                self.__name__, parentEvent)
             self.notifyListeners(evt)
 
             sf.info("Found web server: " + eventData['Server'] + " (" + eventSource + ")")
 
         if (eventData.has_key('x-powered-by')):
             evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", eventData['x-powered-by'], 
-                self.__name__, event)
+                self.__name__, parentEvent)
             self.notifyListeners(evt)
             return None
 
@@ -93,7 +95,7 @@ class sfp_websvr(SpiderFootPlugin):
         if tech != None and '.php' in eventSource:
             tech = "PHP"
 
-        evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, event)
+        evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, parentEvent)
         self.notifyListeners(evt)
 
 # End of sfp_websvr class

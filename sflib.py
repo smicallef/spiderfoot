@@ -379,7 +379,7 @@ class SpiderFoot:
         return returnLinks
 
     # Fetch a URL, return the response object
-    def fetchUrl(self, url, fatal=False):
+    def fetchUrl(self, url, fatal=False, cookies=None):
         result = {
             'code': None,
             'status': None,
@@ -403,12 +403,19 @@ class SpiderFoot:
             if not self.opts.has_key('_fetchtimeout'):
                 self.opts['_fetchtimeout'] = 30
             req = urllib2.Request(url, None, header)
-            self.info("Fetching " + url)
+            if cookies != None:
+                req.add_header('cookie', cookies)
+                self.info("Fetching (incl. cookies): " + url)
+            else:
+                self.info("Fetching: " + url)
+
             fullPage = urllib2.urlopen(req, None, self.opts['_fetchtimeout'])
 
             # Prepare result to return
             result['content'] = unicode(fullPage.read(), 'ascii', errors='ignore')
             result['headers'] = fullPage.info()
+            #print "FOR: " + url
+            #print "HEADERS: " + str(result['headers'])
             result['realurl'] = fullPage.geturl()
             result['code'] = fullPage.getcode()
             result['status'] = 'OK'

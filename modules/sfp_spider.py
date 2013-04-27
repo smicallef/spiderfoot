@@ -27,6 +27,7 @@ class sfp_spider(SpiderFootPlugin):
         'pause':        1, # number of seconds to pause between fetches
         'maxpages':     1000, # max number of pages to fetch
         'maxlevels':    5, # max number of levels to traverse within a site
+        'usecookies':   True, # Use cookies?
         'start':        [ 'http://', 'https://' ],
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css',
                         'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg',
@@ -40,6 +41,7 @@ class sfp_spider(SpiderFootPlugin):
     optdescs = {
         'robotsonly':   "Only follow links specified by robots.txt?",
         'pause':        "Number of seconds to pause between fetches.",
+        'usecookies':   "Accept and use cookies?",
         'start':        "Prepend targets with these until you get a hit, to start spidering.",
         'maxpages':     "Maximum number of pages to fetch per target identified.",
         'maxlevels':    "Maximum levels to traverse per target identified.",
@@ -61,21 +63,37 @@ class sfp_spider(SpiderFootPlugin):
     # Events for links identified
     urlEvents = dict()
 
+    # Tracked cookies per site
+    siteCookies = dict()
+
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
         self.baseDomain = target
         self.fetchedPages = dict()
+        self.urlEvents = dict()
+        self.siteCookies = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
     # Fetch data from a URL and obtain all links that should be followed
     def processUrl(self, url):
+        site = sf.urlFQDN(url)
+        cookies = None
+        if self.siteCookies.has_key(site):
+            sf.debug("Restoring cookies for " + site + ": " + str(self.siteCookies[site]))
+            cookies = self.siteCookies[site]
         # Fetch the contents of the supplied URL (object returned)
-        fetched = sf.fetchUrl(url)
+        fetched = sf.fetchUrl(url, False, cookies)
         self.fetchedPages[url] = True
+
+        # Track cookies a site has sent, then send the back in subsquent requests
+        if self.opts['usecookies'] and fetched['headers'] != None:
+            if fetched['headers'].get('Set-Cookie'):
+                self.siteCookies[site] = fetched['headers'].get('Set-Cookie')
+                sf.debug("Saving cookies for " + site + ": " + str(self.siteCookies[site]))
 
         if not self.urlEvents.has_key(url):
             self.urlEvents[url] = None
@@ -186,7 +204,7 @@ class sfp_spider(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        spiderTarget = event.data
+        spiderTarget = None
 
         # Ignore self-generated events so that we don't end up in a recursive loop
         if "sfp_spider" in srcModuleName:
@@ -196,7 +214,7 @@ class sfp_spider(SpiderFootPlugin):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventData in self.urlEvents.keys():
-            sf.debug("Ignoring " + eventData + " as already spidered.")           
+            sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")           
             return None
         else:
             self.urlEvents[eventData] = event
@@ -208,6 +226,11 @@ class sfp_spider(SpiderFootPlugin):
                 if res['content'] != None:
                     spiderTarget = prefix + eventData
                     break
+        else:
+            spiderTarget = eventData
+
+        if spiderTarget == None:
+            return None
 
         sf.info("Initiating spider of " + spiderTarget)
 
@@ -274,6 +297,7 @@ class sfp_spider(SpiderFootPlugin):
                         break
 
             nextLinks = self.cleanLinks(links)
+            sf.info("Found links: " + str(nextLinks))
 
             # We've scanned through another layer of the site
             levelsTraversed += 1

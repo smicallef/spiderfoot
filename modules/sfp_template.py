@@ -45,6 +45,9 @@ class sfp_XXX(SpiderFootPlugin):
         self.baseDomain = target
         self.results = dict()
 
+        # Clear / reset any other class member variables here
+        # or you risk them persisting between threads.
+
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
