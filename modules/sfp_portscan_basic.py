@@ -84,11 +84,12 @@ class sfp_portscan_basic(SpiderFootPlugin):
             try:
                 sock = socket.create_connection((eventData, port), self.opts['timeout'])
                 sf.info("TCP Port " + str(port) + " found to be OPEN.")
-                evt = SpiderFootEvent("TCP_PORT_OPEN", str(port), self.__name__, event)
+                evt = SpiderFootEvent("TCP_PORT_OPEN", eventData + ":" + str(port), 
+                    self.__name__, event)
                 self.notifyListeners(evt)
                 sock.close()
             except Exception as e:
-                sf.info("Unable to connect to " + eventData + " on port " + str(port) + \
+                sf.debug("Unable to connect to " + eventData + " on port " + str(port) + \
                     ": " + str(e))
 
         return None
