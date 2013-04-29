@@ -15,7 +15,7 @@ sf.genericError = function(message) {
         alert("Failure: " + message);
 }
 
-sf.fetchData = function(url, postData, postFunc, opts=null) {
+sf.fetchData = function(url, postData, postFunc) {
     var req = $.ajax({
         type: "POST",
         url: url,
