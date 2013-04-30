@@ -86,13 +86,18 @@ class SpiderFoot:
     def debug(self, message):
         if self.opts['_debug'] == False:
             return
-
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
-        if self.dbh == None:
-            print '[' + mod.__name__ + '] ' + message
+
+        if mod == None:
+            modName = "Unknown"
         else:
-            self._dblog("DEBUG", message, mod.__name__)
+            modName = mod.__name__
+
+        if self.dbh == None:
+            print '[' + modName + '] ' + message
+        else:
+            self._dblog("DEBUG", message, modName)
         return
 
     def myPath(self):
