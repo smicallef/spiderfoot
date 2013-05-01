@@ -41,6 +41,11 @@ sfOptdescs = {
 }
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        (addr, port) = sys.argv[1].split(":")
+        sfConfig['__webaddr'] = addr
+        sfConfig['__webport'] = int(port)
+
     sf = SpiderFoot(sfConfig)
     sfModules = dict()
 
