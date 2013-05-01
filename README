@@ -1,0 +1,38 @@
+ABOUT
+======
+
+SpiderFoot is an open source footprinting tool, created by Steve Micallef <steve@binarypool.com>. It is designed to be easy to use, fast and extensible.
+
+If you have any bugs to report, or requests for enhancements, please contact the support mailing list at spiderfoot-support@sourceforge.net. 
+
+Visit the project website at http://www.spiderfoot.net.
+
+
+INSTALLING AND RUNNING ON *NIX
+===============================
+
+SpiderFoot is written in Python (2.7), so to run on Linux/Solaris/etc. you need Python 2.7 installed, in addition to the CherryPy and Mako modules.
+
+To install the dependencies using PIP (https://pypi.python.org/pypi/pip), do the following:
+
+$ pip cherrypy install
+$ pip mako install
+
+All other module dependencies, such as SQLite3, are included with Python.
+
+To run SpiderFoot, simply execute sf.py from the directory you extracted SpiderFoot into:
+
+$ python ./sf.py
+
+Once executed, a web-server will be started, which by default will listen on 127.0.0.1:5001. You can then use the browser of your choice by browsing to http://127.0.0.1:5001. 
+
+If you wish to make SpiderFoot accessible from another system, for example running it on a server and controlling it remotely, then you can specify an external IP to bind to:
+
+$ python ./sf.py 0.0.0.0:5001
+
+Likewise, if port 5001 is used by another application on your system, you can change the port:
+
+$ python ./sf.py 127.0.0.1:9999
+
+** A word of caution **: SpiderFoot does not authenticate users connecting to it's user-interface (feature coming soon..), so avoid running it on a server/workstation that can be accessed from untrusted devices, as they will be able to control SpiderFoot remotely and initiate scans from your devices.
+
