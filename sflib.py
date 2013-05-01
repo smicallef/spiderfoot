@@ -435,7 +435,7 @@ class SpiderFoot:
             fullPage = urllib2.urlopen(req, None, self.opts['_fetchtimeout'])
 
             # Prepare result to return
-            result['content'] = unicode(fullPage.read(), 'ascii', errors='ignore')
+            result['content'] = unicode(fullPage.read(), 'utf-8', errors='replace')
             result['headers'] = fullPage.info()
             #print "FOR: " + url
             #print "HEADERS: " + str(result['headers'])
@@ -589,12 +589,12 @@ class SpiderFootEvent(object):
 
         # Handle lists and dicts
         if type(self.data) not in [str, unicode]:
-            usedata = str(self.data)
-        else:   
-            usedata = self.data
+            idString = unicode(self.eventType + str(self.data) + str(self.generated) + self.module, 'utf-8', errors='replace')
+        else:
+            idString = self.eventType + self.data + str(self.generated) + self.module
 
-        return hashlib.sha256(self.eventType + usedata + \
-            unicode(self.generated) + self.module).hexdigest()
+        digestStr = idString.encode('raw_unicode_escape')
+        return hashlib.sha256(digestStr).hexdigest()
 
     # Reduce data down to a certain size
     def truncateData(self, size):
