@@ -23,8 +23,8 @@ SpiderFoot is written in Python (2.7), so to run on Linux/Solaris/etc. you need 
 
 To install the dependencies using PIP (https://pypi.python.org/pypi/pip), do the following:
 
-$ pip cherrypy install
-$ pip mako install
+$ pip install cherrypy
+$ pip install mako
 
 All other module dependencies, such as SQLite3, are included with Python, so nothing further should be needed.
 
