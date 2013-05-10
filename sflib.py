@@ -432,7 +432,8 @@ class SpiderFoot:
             else:
                 self.info("Fetching: " + url)
 
-            fullPage = urllib2.urlopen(req, None, self.opts['_fetchtimeout'])
+            opener = urllib2.build_opener(SmartRedirectHandler())
+            fullPage = opener.open(req, timeout=self.opts['_fetchtimeout'])
 
             # Prepare result to return
             result['content'] = unicode(fullPage.read(), 'utf-8', errors='replace')
@@ -612,4 +613,21 @@ class SpiderFootEvent(object):
 
     def setSourceEventHash(self, srcHash):
         self.sourceEventHash = srcHash
+
+
+# Override the default redirectors to re-use cookies
+class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
+    def http_error_301(self, req, fp, code, msg, headers):
+        if headers.has_key("Set-Cookie"):
+            req.add_header('cookie', headers['Set-Cookie'])
+        result = urllib2.HTTPRedirectHandler.http_error_301(
+            self, req, fp, code, msg, headers)
+        return result
+
+    def http_error_302(self, req, fp, code, msg, headers):
+        if headers.has_key("Set-Cookie"):
+            req.add_header('cookie', headers['Set-Cookie'])
+        result = urllib2.HTTPRedirectHandler.http_error_302(
+            self, req, fp, code, msg, headers)
+        return result
 
