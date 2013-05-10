@@ -150,13 +150,13 @@ class sfp_spider(SpiderFootPlugin):
                 continue
 
             # If we are respecting robots.txt, filter those out too
-            checkRobots = lambda blocked: str.lower(blocked) in str.lower(str(link)) or blocked == '*'
+            checkRobots = lambda blocked: str.lower(blocked) in link.lower() or blocked == '*'
             if self.opts['robotsonly'] and filter(checkRobots, self.robotsRules[linkBase]):
                 sf.debug("Ignoring page found in robots.txt: " + link)
                 continue
 
             # Filter out certain file types (if user chooses to)
-            checkExts = lambda ext: '.' + str.lower(ext) in str.lower(str(link))
+            checkExts = lambda ext: '.' + ext.lower() in link.lower()
             if filter(checkExts, self.opts['filterfiles']):
                 sf.debug('Ignoring filtered extension: ' + link)
                 continue

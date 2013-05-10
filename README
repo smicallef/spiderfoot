@@ -19,12 +19,14 @@ https://github.com/smicallef/spiderfoot
 INSTALLING AND RUNNING ON *NIX
 ===============================
 
-SpiderFoot is written in Python (2.7), so to run on Linux/Solaris/etc. you need Python 2.7 installed, in addition to the CherryPy and Mako modules.
+SpiderFoot is written in Python (2.6-2.7), so to run on Linux/Solaris/etc. you need Python 2.6 or 2.7 installed, in addition to the CherryPy and Mako modules. Support for Python 3 will come in the near future.
 
 To install the dependencies using PIP (https://pypi.python.org/pypi/pip), do the following:
 
 $ pip install cherrypy
 $ pip install mako
+
+SpiderFoot was developed against 3.2.2 of CherryPy and 0.7.2 of Mako. If you run into any issues on newer versions, please let me know.
 
 All other module dependencies, such as SQLite3, are included with Python, so nothing further should be needed.
 

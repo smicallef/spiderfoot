@@ -60,7 +60,7 @@ class sfp_stor_db(SpiderFootPlugin):
 
         # Convert to a string in case we get passed integers or other things
         if type(sfEvent.data) is not unicode:
-            sfEvent.data = unicode(sfEvent.data, 'utf-8', errors='ignore')
+            sfEvent.data = unicode(sfEvent.data, 'utf-8', errors='replace')
 
         if self.opts['maxstorage'] != 0:
             if len(sfEvent.data) > self.opts['maxstorage']:
