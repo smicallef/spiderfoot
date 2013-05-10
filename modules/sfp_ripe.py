@@ -64,7 +64,12 @@ class sfp_ripe(SpiderFootPlugin):
                 sf.info("No RIPE info found/available for " + eventData)
                 return None
 
-            j = json.loads(res['content'])
+            try:
+                j = json.loads(res['content'])
+            except Exception as e:
+                sf.debug("Error processing JSON response.")
+                return None
+
             nslist = j["data"]["authoritative_nameservers"]
             for ns in nslist:
                 nsclean = ns.rstrip('.').lower()
@@ -83,7 +88,12 @@ class sfp_ripe(SpiderFootPlugin):
             sf.info("No RIPE info found/available for " + eventData)
             return None
 
-        j = json.loads(res['content'])
+        try:
+            j = json.loads(res['content'])
+        except Exception as e:
+            sf.debug("Error processing JSON response.")
+            return None
+
         prefix = j["data"]["prefix"]
         if prefix == None:
             sf.debug("Could not identify network prefix.")
@@ -112,7 +122,12 @@ class sfp_ripe(SpiderFootPlugin):
             sf.info("No RIPE info found/available for " + self.baseDomain)
             return None
 
-        j = json.loads(res['content'])
+        try:
+            j = json.loads(res['content'])
+        except Exception as e:
+            sf.debug("Error processing JSON response.")
+            return None
+
         nslist = j["data"]["authoritative_nameservers"]
         for ns in nslist:
             nsclean = ns.rstrip('.').lower()

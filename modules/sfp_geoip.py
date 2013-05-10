@@ -61,7 +61,12 @@ class sfp_geoip(SpiderFootPlugin):
         res = sf.fetchUrl("http://api.hostip.info/get_json.php?ip=" + eventData)
         if res['content'] == None:
             sf.info("No GeoIP info found for " + eventData)
-        hostip = json.loads(res['content'])
+        try:
+            hostip = json.loads(res['content'])
+        except Exception as e:
+            sf.debug("Error processing JSON response.")
+            return None
+
         sf.info("Found GeoIP for " + eventData + ": " + hostip['country_name'])
         countrycity = hostip['country_name']
 
