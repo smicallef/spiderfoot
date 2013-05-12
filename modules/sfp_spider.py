@@ -29,9 +29,9 @@ class sfp_spider(SpiderFootPlugin):
         'maxlevels':    5, # max number of levels to traverse within a site
         'usecookies':   True, # Use cookies?
         'start':        [ 'http://', 'https://' ],
-        'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css',
-                        'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg',
-                        'mpeg', 'iso', 'dat', 'mov', 'swf'], # Extensions to not fetch
+        'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css', 'tar',
+                        'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg', 'gz',
+                        'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip'],
         'filterusers':  True, # Don't follow /~user directories
         'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
         'nosubs':       False, # Should links to subdomains be ignored?
