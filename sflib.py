@@ -14,6 +14,7 @@ import inspect
 import hashlib
 import re
 import os
+import random
 import sys
 import time
 import urllib2
@@ -29,6 +30,18 @@ class SpiderFoot:
     def __init__(self, options, handle=None):
         self.handle = handle
         self.opts = options
+
+        # For the useragent option, if the user has supplied a path,
+        # open the file and load into options['__useragent_list']
+        if "_useragent" in options.keys():
+            if options["_useragent"].startswith("@"):
+                fname = options["_useragent"].split('@')[1]
+                try:
+                    f = open(fname, "r")
+                    options['__useragent_list'] = f.readlines()
+                except BaseException as b:
+                    self.error("Unable to open User Agent file, " + fname + ".")
+                    options["__useragent_list"] = [ "Unknown" ]
 
     #
     # Debug, error message and logging functions
@@ -417,11 +430,12 @@ class SpiderFoot:
 
         try:
             header = dict()
-            if self.opts.has_key('_useragent'):
+            if self.opts.has_key('_useragent') and not self.opts['_useragent'].startswith('@'):
                 header['User-Agent'] = self.opts['_useragent']
-            # Let modules override
-            if self.opts.has_key('useragent'):
-                header['User-Agent'] = self.opts['useragent']
+            if self.opts.has_key('__useragent_list'):
+                header['User-Agent'] = random.choice(self.opts['__useragent_list'])
+
+            print "HEADER: " + header['User-Agent']
 
             if not self.opts.has_key('_fetchtimeout'):
                 self.opts['_fetchtimeout'] = 30

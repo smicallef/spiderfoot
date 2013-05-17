@@ -26,7 +26,7 @@ sfConfig = {
     '_useragent':        'SpiderFoot/2.0', # User-Agent to use for HTTP requests
     '_fetchtimeout':     5, # number of seconds before giving up on a fetch
     '__database':        'spiderfoot.db',
-    '__webaddr':         '127.0.0.1',
+    '__webaddr':         '0.0.0.0',
     '__webport':         5001,
     '__guid__':          None, # unique ID of scan. Will be set after start-up.
     '__modules__':       None # List of modules. Will be set after start-up.
@@ -34,7 +34,7 @@ sfConfig = {
 
 sfOptdescs = {
     '_debug':       "Enable debugging?",
-    '_useragent':   "Default User-Agent string to use for HTTP requests. Can be overridden by individual modules.",
+    '_useragent':   "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\useragents.txt or @/home/bob/useragents.txt.",
     '_fetchtimeout':    "Number of seconds before giving up on a HTTP request.",
     '_modulesenabled':  "Modules enabled for the scan." # This is a hack to get a description for
                                                         # an option not actually available.

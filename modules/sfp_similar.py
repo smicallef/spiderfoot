@@ -46,8 +46,6 @@ class sfp_similar(SpiderFootPlugin):
 
     # Default options
     opts = {
-        # Domaintools will 403 you without a browser-like useragent
-        'useragent':   'Mozilla/5.0 (Windows NT 6.1; rv:11.0) Gecko/20100101 Firefox/11.0',
         'source':       'ALL', # domaintools, namedroppers or ALL
         'method':       'left,right', # left and/or right (doesn't apply to whois.com)
         'activeonly':   False # Only report domains that have content (try to fetch the page)
@@ -55,7 +53,6 @@ class sfp_similar(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'useragent':   "User-Agent string to use when fetching pages from providers.",
         'source':       "Provider to use: 'domaintools', 'namedroppers' or 'ALL'.",
         'method':       "Pattern search method to use: 'left,right', 'left' or 'right'.",
         'activeonly':   "Only report domains that have content (try to fetch the page)?"
