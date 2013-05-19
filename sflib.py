@@ -435,8 +435,6 @@ class SpiderFoot:
             if self.opts.has_key('__useragent_list'):
                 header['User-Agent'] = random.choice(self.opts['__useragent_list'])
 
-            print "HEADER: " + header['User-Agent']
-
             if not self.opts.has_key('_fetchtimeout'):
                 self.opts['_fetchtimeout'] = 30
             req = urllib2.Request(url, None, header)

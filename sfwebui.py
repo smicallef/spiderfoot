@@ -292,31 +292,3 @@ class SpiderFootWebUi:
         return json.dumps(data, ensure_ascii=False)
     scanhistory.exposed = True
 
-# Special class used when SpiderFoot is started without a
-# database pre-existing. This will step the user through
-# the creation of one.
-class SpiderFootWebUiMini:
-    lookup = TemplateLookup(directories=[''])
-
-    def __init__(self, config):
-        self.config = config
-
-    # Main page listing scans available
-    def index(self):
-        sf = SpiderFoot(self.config)
-        # Look for referenced templates in the current directory only
-        templ = Template(filename='dyn/setup.tmpl', lookup=self.lookup)
-        return templ.render(stage=1, config=self.config, path=os.path.dirname(sf.myPath()))
-    index.exposed = True
-
-    # Create the database
-    def create(self):
-        try:
-            dbh = SpiderFootDbInit(self.config)
-            dbh.create()
-            templ = Template(filename='dyn/setup.tmpl', lookup=self.lookup)
-            return templ.render(stage=2)
-        except BaseException as e:
-            return "There was an error creating the database or it already exists.<br><br>Please check database permissions and try restarting SpiderFoot. If all else fails, report this as a bug."
-    create.exposed = True
-
