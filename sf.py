@@ -24,6 +24,7 @@ sfConfig = {
     '_debug':            False, # Debug
     '__blocknotif':      False, # Block notifications
     '_useragent':        'SpiderFoot/2.0', # User-Agent to use for HTTP requests
+    '_dnsserver':       '', # Override the default resolver
     '_fetchtimeout':     5, # number of seconds before giving up on a fetch
     '__database':        'spiderfoot.db',
     '__webaddr':         '0.0.0.0',
@@ -35,6 +36,7 @@ sfConfig = {
 sfOptdescs = {
     '_debug':       "Enable debugging?",
     '_useragent':   "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\useragents.txt or @/home/bob/useragents.txt.",
+    '_dnsserver':   "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
     '_fetchtimeout':    "Number of seconds before giving up on a HTTP request.",
     '_modulesenabled':  "Modules enabled for the scan." # This is a hack to get a description for
                                                         # an option not actually available.
@@ -70,7 +72,7 @@ if __name__ == '__main__':
     if len(sfModules.keys()) < 1:
         print "No modules found in the modules directory."
         sys.exit(-1)
-    
+
     # Add module info to sfConfig so it can be used by the UI
     sfConfig['__modules__'] = sfModules
     # Add descriptions of the global config options

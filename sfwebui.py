@@ -19,7 +19,6 @@ from copy import deepcopy
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from sfdb import SpiderFootDb
-from sfdbsetup import SpiderFootDbInit
 from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
 

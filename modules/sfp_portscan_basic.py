@@ -14,6 +14,7 @@ import sys
 import re
 import socket
 import random
+import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
@@ -30,11 +31,13 @@ class sfp_portscan_basic(SpiderFootPlugin):
                             389, 443, 445, 465, 512, 513, 514, 515, 631, 636,
                             990, 992, 993, 995, 1080, 8080, 8888, 9000 ],
         'timeout':          15,
+        'maxthreads':       10,
         'randomize':        True
     }
 
     # Option descriptions
     optdescs = {
+        'maxthreads':   "Number of ports to try to open simultaneously (number of threads to spawn at once.)",
         'ports':    "The TCP ports to scan.",
         'timeout':  "Seconds before giving up on a port.",
         'randomize':    "Randomize the order of ports scanned."
@@ -43,6 +46,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
     # Target
     baseDomain = None
     results = dict()
+    portResults = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
@@ -61,6 +65,59 @@ class sfp_portscan_basic(SpiderFootPlugin):
     def watchedEvents(self):
         return ['IP_ADDRESS']
 
+    def tryPort(self, ip, port):
+        try:
+            sock = socket.create_connection((ip, port), self.opts['timeout'])
+            self.portResults[ip + ":" + str(port)] = True
+        except Exception as e:
+            self.portResults[ip + ":" + str(port)] = False
+            return
+
+        # If the port was open, see what we can read
+        try:
+            self.portResults[ip + ":" + str(port)] = sock.recv(4096)
+        except Exception as e:
+            sock.close()
+            return
+
+    def tryPortWrapper(self, ip, portList):
+        self.portResults = dict()
+        running = True
+        i = 0
+        t = []
+
+        # Spawn threads for scanning
+        while i < len(portList):
+            sf.info("Spawning thread to check port: " + str(portList[i]) + " on " + ip)
+            t.append(threading.Thread(name='sfp_portscan_basic_' + str(portList[i]), 
+                target=self.tryPort, args=(ip, portList[i])))
+            t[i].start()
+            i += 1
+
+        # Block until all threads are finished
+        while running:
+            found = False
+            for rt in threading.enumerate():
+                if rt.name.startswith("sfp_portscan_basic_"):
+                    found = True
+
+            if not found:
+                running = False
+
+        return self.portResults
+
+    def sendEvent(self, resArray, srcEvent):
+        for cp in resArray:
+            if resArray[cp]:
+                sf.info("TCP Port " + cp + " found to be OPEN.")
+                evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
+                self.notifyListeners(evt)
+                if resArray[cp] != "" and resArray[cp] != True:
+                    bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", resArray[cp],
+                        self.__name__, evt)
+                    self.notifyListeners(bevt)
+
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -76,21 +133,23 @@ class sfp_portscan_basic(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
+        i = 0
+        portArr = []
         for port in self.opts['ports']:
             if self.checkForStop():
                 return None
+            
+            if i < self.opts['maxthreads']:
+                portArr.append(port)    
+                i += 1
+            else:
+                self.sendEvent(self.tryPortWrapper(eventData, portArr), event)
+                i = 1
+                portArr = []
+                portArr.append(port)
 
-            sf.info("Checking port: " + str(port) + " against " + eventData)
-            try:
-                sock = socket.create_connection((eventData, port), self.opts['timeout'])
-                sf.info("TCP Port " + str(port) + " found to be OPEN.")
-                evt = SpiderFootEvent("TCP_PORT_OPEN", eventData + ":" + str(port), 
-                    self.__name__, event)
-                self.notifyListeners(evt)
-                sock.close()
-            except Exception as e:
-                sf.debug("Unable to connect to " + eventData + " on port " + str(port) + \
-                    ": " + str(e))
+        # Scan whatever is remaining
+        self.sendEvent(self.tryPortWrapper(eventData, portArr), event)
 
         return None
 

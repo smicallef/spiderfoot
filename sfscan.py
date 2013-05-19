@@ -8,8 +8,8 @@
 # Copyright:    (c) Steve Micallef 2013
 # License:      GPL
 #-----------------------------------------------------------------
+import dns.resolver
 import json
-import threading
 import traceback
 import os
 import time
@@ -32,6 +32,12 @@ class SpiderFootScanner:
         self.target = target
         self.moduleList = moduleList
         self.name = name
+
+        # Override the default DNS server
+        if self.config['_dnsserver'] != "":
+            resolver = dns.resolver.Resolver()
+            resolver.nameservers = [ self.config['_dnsserver'] ]
+            dns.resolver.override_system_resolver(resolver)
 
         return
 
