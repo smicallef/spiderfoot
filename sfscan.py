@@ -38,6 +38,8 @@ class SpiderFootScanner:
             resolver = dns.resolver.Resolver()
             resolver.nameservers = [ self.config['_dnsserver'] ]
             dns.resolver.override_system_resolver(resolver)
+        else:
+            dns.resolver.restore_system_resolver()
 
         return
 
