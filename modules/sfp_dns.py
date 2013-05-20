@@ -15,6 +15,7 @@
 import sys
 import re
 import socket
+import dns.resolver
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
@@ -89,7 +90,7 @@ class sfp_dns(SpiderFootPlugin):
                     addrs = socket.gethostbyname_ex(eventData)
             else:
                 addrs = socket.gethostbyaddr(eventData)
-        except socket.error as e:
+        except BaseException as e:
             sf.info("Unable to resolve " + eventData)
             return None
 
@@ -130,6 +131,36 @@ class sfp_dns(SpiderFootPlugin):
         self.notifyListeners(evt)
 
     def start(self):
+        sf.debug("Gathering MX, SOA and NS records.")
+        # Process the raw data alone
+        try:
+            mx = dns.resolver.query(self.baseDomain, 'MX')
+            soa = dns.resolver.query(self.baseDomain, 'SOA')
+            ns = dns.resolver.query(self.baseDomain, 'NS')
+
+            for data in [ns, mx, soa]:
+                strdata = unicode(data.rrset.to_text(), 'utf-8', errors='replace') 
+                evt = SpiderFootEvent("RAW_DATA", strdata, self.__name__)
+                self.notifyListeners(evt)
+
+            for rdata in mx:
+                item = str(rdata.exchange).lower()[0:-1]
+                evt = SpiderFootEvent("PROVIDER_MAIL", item, self.__name__)
+                self.notifyListeners(evt)
+                if not item.endswith(self.baseDomain):
+                    evt = SpiderFootEvent("AFFILIATE", item, self.__name__)
+                    self.notifyListeners(evt)
+
+            for rdata in ns:
+                item = str(rdata).lower()[0:-1]
+                evt = SpiderFootEvent("PROVIDER_DNS", item, self.__name__)
+                self.notifyListeners(evt)
+                if not item.endswith(self.baseDomain):
+                    evt = SpiderFootEvent("AFFILIATE", item, self.__name__)
+                    self.notifyListeners(evt)
+        except BaseException as e:
+            sf.error("Failed to obtain MX, SOA and/or NS data out of DNS.", False)
+            
         sf.debug("Iterating through possible sub-domains [" + str(self.opts['commonsubs']) + "]")
         # Try resolving common names
         for sub in self.opts['commonsubs']:
@@ -143,7 +174,8 @@ class sfp_dns(SpiderFootPlugin):
                     else:
                         self.processHost(addr)
 
-            except socket.error as e:
+            except BaseException as e:
                 sf.info("Unable to resolve " + name)
+
 
 # End of sfp_dns class
