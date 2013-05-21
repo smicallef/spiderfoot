@@ -48,7 +48,7 @@ class sfp_similar(SpiderFootPlugin):
     opts = {
         'source':       'ALL', # domaintools, namedroppers or ALL
         'method':       'left,right', # left and/or right (doesn't apply to whois.com)
-        'activeonly':   False # Only report domains that have content (try to fetch the page)
+        'activeonly':   True # Only report domains that have content (try to fetch the page)
     }
 
     # Option descriptions
