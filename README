@@ -26,7 +26,9 @@ To install the dependencies using PIP (https://pypi.python.org/pypi/pip), do the
 $ pip install cherrypy
 $ pip install mako
 
-SpiderFoot was developed against 3.2.2 of CherryPy and 0.7.2 of Mako. If you run into any issues on newer versions, please let me know.
+SpiderFoot was developed against 3.2.2 of CherryPy and 0.7.2 of Mako. If you run into any issues on newer versions, please let me know. 
+
+DNSPython (http://www.dnspython.org) is also a dependency but is included in the package under the dns directory, so does *not* need to be installed.
 
 All other module dependencies, such as SQLite3, are included with Python, so nothing further should be needed.
 
