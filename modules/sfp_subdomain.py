@@ -67,9 +67,9 @@ class sfp_subdomain(SpiderFootPlugin):
                 continue
             else:
                 sf.info("New sub-domain/host found: " + match)
+                self.results[match] = True
                 evt = SpiderFootEvent("SUBDOMAIN", match, self.__name__, parentEvent)
                 self.notifyListeners(evt)
-                self.results[match] = True
 
         return None
 

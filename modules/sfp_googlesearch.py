@@ -127,6 +127,8 @@ class sfp_googlesearch(SpiderFootPlugin):
         for page in pages.keys():
             if page in self.results:
                 continue
+            else:
+                self.results.append(page)
 
             # Check if we've been asked to stop
             if self.checkForStop():
@@ -135,7 +137,6 @@ class sfp_googlesearch(SpiderFootPlugin):
             # Submit the google results for analysis
             evt = SpiderFootEvent("RAW_DATA", pages[page], self.__name__)
             self.notifyListeners(evt)
-            self.results.append(page)
 
             # We can optionally fetch links to our domain found in the search
             # results. These may not have been identified through spidering.
@@ -147,6 +148,8 @@ class sfp_googlesearch(SpiderFootPlugin):
                 for link in links:
                     if link in self.results:
                         continue
+                    else:
+                        self.results.append(link)
                     sf.debug("Found a link: " + link)
                     if sf.urlBaseUrl(link).endswith(self.baseDomain):
                         if self.checkForStop():
@@ -154,7 +157,5 @@ class sfp_googlesearch(SpiderFootPlugin):
 
                         evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, self.__name__)
                         self.notifyListeners(evt)
-
-                        self.results.append(link)
 
 # End of sfp_googlesearch class

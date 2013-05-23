@@ -85,9 +85,9 @@ etc.)"""
                 matches = re.findall(regex, eventData, re.IGNORECASE)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     sf.info("Matched " + regexpGrp + " in content from " + eventSource)
+                    self.results[eventSource].append(regexpGrp)
                     evt = SpiderFootEvent(regexpGrp, eventSource, self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)
-                    self.results[eventSource].append(regexpGrp)
 
         # If no regexps were matched, consider this a static page
         if len(self.results[eventSource]) == 0:
