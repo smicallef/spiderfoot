@@ -164,6 +164,9 @@ class sfp_dns(SpiderFootPlugin):
         sf.debug("Iterating through possible sub-domains [" + str(self.opts['commonsubs']) + "]")
         # Try resolving common names
         for sub in self.opts['commonsubs']:
+            if self.checkForStop():
+                return None
+
             name = sub + "." + self.baseDomain
             try:
                 addrs = socket.gethostbyname_ex(name)
