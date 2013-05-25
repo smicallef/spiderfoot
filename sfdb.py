@@ -93,6 +93,7 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_FORM', 'URL (Form)', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_FLASH', 'URL (Uses Flash)', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVASCRIPT', 'URL (Uses Javascript)', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVASCRIPT_FRAMEWORK', 'URL (Uses a Javascript Framework)', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVA_APPLET', 'URL (Uses Java applet)', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_STATIC', 'URL (Purely Static)', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_PASSWORD', 'URL (Accepts Passwords)', 0)",
@@ -255,7 +256,7 @@ class SpiderFootDb:
     def scanResultEvent(self, instanceId, eventType='ALL'):
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
-            c.module, c.type, c.confidence, c.visibility, c.risk \
+            c.module, c.type, c.confidence, c.visibility, c.risk, c.hash \
             FROM tbl_scan_results c, tbl_scan_results s \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
             s.scan_instance_id = c.scan_instance_id"
