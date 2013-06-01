@@ -22,7 +22,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_dns(SpiderFootPlugin):
-    """Performs a number of DNS checks to obtain IP Addresses and Affiliates."""
+    """Performs a number of DNS checks to obtain Sub-domains/Hostnames, IP Addresses and Affiliates."""
 
     # Default options
     opts = {
@@ -46,12 +46,14 @@ class sfp_dns(SpiderFootPlugin):
     # Target
     baseDomain = None
     results = dict()
+    subresults = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
         self.results = dict()
+        self.subresults = dict()
         self.baseDomain = target
 
         for opt in userOpts.keys():
@@ -59,7 +61,7 @@ class sfp_dns(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        arr = ['SUBDOMAIN']
+        arr = ['RAW_DATA', 'LINKED_URL_INTERNAL', 'SUBDOMAIN']
         if self.opts['resolveaffiliate']:
             arr.append('AFFILIATE')
         if self.opts['reverselookup']:
@@ -72,8 +74,35 @@ class sfp_dns(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         addrs = None
+        if eventName == "RAW_DATA":
+            parentEvent = event.sourceEvent
+        else:
+            parentEvent = event
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if eventName in [ "RAW_DATA", "LINKED_URL_INTERNAL" ]:
+            # If we've received a link or some raw data, extract potential sub-domains
+            # from the data for resolving later.
+            matches = re.findall("([a-zA-Z0-9\-\.]+\." + self.baseDomain + ")", eventData,
+                re.IGNORECASE)
+
+            if matches != None:
+                for match in matches:
+                    if match.lower().startswith("2f"):
+                        continue
+
+                    sf.debug("Found sub-domain: " + match)
+                    if self.subresults.has_key(match):
+                        continue
+                    else:
+                        sf.info("New sub-domain/host found: " + match)
+                        self.subresults[match] = True
+                        evt = SpiderFootEvent("SUBDOMAIN", match, self.__name__, parentEvent)
+                        self.notifyListeners(evt)
+
+            # Nothing left to do with internal links and raw data
+            return None
 
         # Don't look up stuff twice
         if self.results.has_key(eventData):
@@ -91,17 +120,25 @@ class sfp_dns(SpiderFootPlugin):
             else:
                 addrs = socket.gethostbyaddr(eventData)
         except BaseException as e:
-            sf.info("Unable to resolve " + eventData)
+            sf.info("Unable to resolve " + eventData + " (" + str(e) + ")")
             return None
 
         for addr in addrs:
             if type(addr) == list:
                 for host in addr:
-                    self.processHost(host, event)
+                    self.processHost(host, parentEvent)
             else:
-                self.processHost(addr, event)
+                self.processHost(addr, parentEvent)
  
         return None
+
+    # Resolve a host
+    def resolveHost(self, hostname):
+        try:
+            return socket.gethostbyname_ex(hostname)
+        except BaseException as e:
+            sf.info("Unable to resolve " + eventData + " (" + str(e) + ")")
+            return None
 
     # Simple way to verify IPs.
     def validIP(self, address):
@@ -126,6 +163,11 @@ class sfp_dns(SpiderFootPlugin):
                 type = "AFFILIATE"
         else:
             type = "SUBDOMAIN"
+
+        if parentEvent != None:
+            # Don't report back the same thing that was provided
+            if type == parentEvent.eventType and host == parentEvent.data:
+                return
 
         evt = SpiderFootEvent(type, host, self.__name__, parentEvent)
         self.notifyListeners(evt)
@@ -178,7 +220,7 @@ class sfp_dns(SpiderFootPlugin):
                         self.processHost(addr)
 
             except BaseException as e:
-                sf.info("Unable to resolve " + name)
+                sf.info("Unable to resolve " + name + " (" + str(e) + ")")
 
 
 # End of sfp_dns class
