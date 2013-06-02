@@ -143,6 +143,9 @@ class sfp_dns(SpiderFootPlugin):
     # Simple way to verify IPs.
     def validIP(self, address):
         parts = address.split(".")
+        if parts == None:
+            return False
+
         if len(parts) != 4:
             return False
         for item in parts:

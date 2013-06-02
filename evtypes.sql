@@ -15,6 +15,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_HO
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_INTERNET', 'Internet Service Provider', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_MAIL', 'Email Gateway (MX)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_DATA', 'Raw Data', 1);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOCIAL_MEDIA', 'Social Media Presence', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SUBDOMAIN', 'Sub-domain', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SIMILARDOMAIN', 'Similar Domain', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TCP_PORT_OPEN', 'Open TCP Port', 0);
