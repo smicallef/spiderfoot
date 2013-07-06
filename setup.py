@@ -5,7 +5,7 @@ setup(
     console=['sf.py'],
     options={
         "py2exe": {
-            "packages": ["modules", "sflib", "sfwebui", "sfdb", "mako", "cherrypy"],
+            "packages": ["modules", "dns", "sflib", "sfwebui", "sfdb", "mako", "cherrypy"],
             "bundle_files": 1,
             "compressed": True
         }

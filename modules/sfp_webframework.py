@@ -19,12 +19,12 @@ sf = None
 regexps = dict({
     "jQuery":           list(['jquery']), # unlikely false positive
     "YUI":              list(['\/yui\/', 'yui\-', 'yui\.']),
-    "Prototype":        list(['\/prototype\/', 'prototype\-', 'prototype\.']),
-    "ZURB Foundation":  list(['\/foundation\/', 'foundation\-', 'foundation\.']),
-    "Bootstrap":        list(['\/bootstrap\/', 'bootstrap\-', 'bootstrap\.']),
+    "Prototype":        list(['\/prototype\/', 'prototype\-', 'prototype\.js']),
+    "ZURB Foundation":  list(['\/foundation\/', 'foundation\-', 'foundation\.js']),
+    "Bootstrap":        list(['\/bootstrap\/', 'bootstrap\-', 'bootstrap\.js']),
     "ExtJS":            list(['[\'\"\=]ext\.js', 'extjs', '\/ext\/*\.js']),
-    "Mootools":         list(['\/mootools\/', 'mootools\-', 'mootools\.']),
-    "Dojo":             list(['\/dojo\/', '[\'\"\=]dojo\-', '[\'\"\=]dojo\.'])
+    "Mootools":         list(['\/mootools\/', 'mootools\-', 'mootools\.js']),
+    "Dojo":             list(['\/dojo\/', '[\'\"\=]dojo\-', '[\'\"\=]dojo\.js'])
 })
 
 class sfp_webframework(SpiderFootPlugin):
