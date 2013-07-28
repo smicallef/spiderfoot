@@ -76,7 +76,11 @@ etc.)"""
 
         if eventSource not in self.results.keys():
             self.results[eventSource] = list()
+        else:
+            sf.debug("Already checked this page for a page type, skipping.")
+            return None
 
+        # Check the configured regexps to determine the page type
         for regexpGrp in regexps.keys():
             if regexpGrp in self.results[eventSource]:
                 next
@@ -94,6 +98,15 @@ etc.)"""
             sf.info("Treating " + eventSource + " as URL_STATIC")
             evt = SpiderFootEvent("URL_STATIC", eventSource, self.__name__, event.sourceEvent)
             self.notifyListeners(evt)
+
+        # Check for externally referenced Javascript pages
+        matches = re.findall("<script.*src=[\'\"]?([^\'\">]*)", eventData, re.IGNORECASE)
+        if len(matches) > 0:
+            for match in matches:
+                if '://' in match and not sf.urlBaseUrl(match).endswith(self.baseDomain):
+                    sf.debug("Externally hosted Javascript found at: " + match)
+                    evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match, self.__name__, event.sourceEvent)
+                    self.notifyListeners(evt)
 
         return None
 
