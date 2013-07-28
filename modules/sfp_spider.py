@@ -31,7 +31,8 @@ class sfp_spider(SpiderFootPlugin):
         'start':        [ 'http://', 'https://' ],
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css', 'tar',
                         'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg', 'gz',
-                        'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip'],
+                        'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip',
+                        'bin', 'bz2'],
         'filterusers':  True, # Don't follow /~user directories
         'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
         'nosubs':       False, # Should links to subdomains be ignored?
@@ -156,7 +157,7 @@ class sfp_spider(SpiderFootPlugin):
                 continue
 
             # Filter out certain file types (if user chooses to)
-            checkExts = lambda ext: '.' + ext.lower() in link.lower()
+            checkExts = lambda ext: link.lower().endswith('.' + ext.lower())
             if filter(checkExts, self.opts['filterfiles']):
                 sf.debug('Ignoring filtered extension: ' + link)
                 continue
