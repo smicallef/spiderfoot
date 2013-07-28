@@ -269,7 +269,9 @@ class SpiderFootWebUi:
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             escaped = cgi.escape(row[1])
-            retdata.append([lastseen, escaped, row[2], row[3], row[5], row[6], row[7]])
+            # For debug
+            retdata.append([lastseen, escaped, row[2], row[3], row[5], row[6], row[7], row[8]])
+            #retdata.append([lastseen, escaped, row[2], row[3], row[5], row[6], row[7]])
         return json.dumps(retdata, ensure_ascii=False)
     scaneventresults.exposed = True
 
