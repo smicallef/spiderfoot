@@ -100,7 +100,7 @@ class sfp_xref(SpiderFootPlugin):
             return None
 
         # Search for mentions of our domain in the external site's data
-        matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\.\'\"\ ])", 
+        matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\.\'\/\"\ ])", 
             res['content'], re.IGNORECASE)
 
         # If the domain wasn't found in the affiliate, and checkbase is set,
@@ -111,7 +111,7 @@ class sfp_xref(SpiderFootPlugin):
             url = sf.urlBaseUrl(eventData)
             res = sf.fetchUrl(url)
             if res['content'] != None:
-                matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\.\'\"\ ])", 
+                matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\.\'\/\"\ ])", 
                     res['content'], re.IGNORECASE)
             else:
                 return None
