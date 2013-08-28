@@ -204,7 +204,7 @@ class sfp_dns(SpiderFootPlugin):
                     evt = SpiderFootEvent("AFFILIATE", item, self.__name__)
                     self.notifyListeners(evt)
         except BaseException as e:
-            sf.error("Failed to obtain MX, SOA and/or NS data out of DNS.", False)
+            sf.error("Failed to obtain MX, SOA and/or NS data out of DNS: " + str(e), False)
             
         sf.debug("Iterating through possible sub-domains [" + str(self.opts['commonsubs']) + "]")
         # Try resolving common names
