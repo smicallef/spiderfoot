@@ -15,6 +15,7 @@
 import sys
 import re
 import socket
+import random
 import dns.resolver
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -29,6 +30,7 @@ class sfp_dns(SpiderFootPlugin):
         'resolveaffiliate': False,   # Get IPs for affiliate domains
         'reverselookup':    True,    # Reverse-resolve IPs to names for
                                     # more clues.
+        "skipcommononwildcard": True,
         "commonsubs":   [ "www", "web", "ns", "mail", "dns", "mx", "gw", "proxy",
                           "ssl", "fw", "gateway", "firewall", "www1", "www2",
                           "ns0", "ns1", "ns2", "dns0", "dns1", "dns2", "mx1", "mx2"
@@ -38,6 +40,7 @@ class sfp_dns(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
+        'skipcommononwildcard': "If wildcard DNS is detected, look up the first common sub-domain only.",
         'resolveaffiliate': "Obtain IPs for confirmed affiliates?",
         'reverselookup': "Obtain new URLs and possible affiliates based on reverse-resolved IPs?",
         "commonsubs":   "Common sub-domains to try."
@@ -207,11 +210,18 @@ class sfp_dns(SpiderFootPlugin):
             sf.error("Failed to obtain MX, SOA and/or NS data out of DNS: " + str(e), False)
             
         sf.debug("Iterating through possible sub-domains [" + str(self.opts['commonsubs']) + "]")
+        count = 0
+        wildcard = self.checkWildcard(self.baseDomain)
         # Try resolving common names
         for sub in self.opts['commonsubs']:
+            if wildcard and self.opts['skipcommononwildcard'] and count > 0:
+                sf.debug("Wildcard DNS detected, skipping iterating through remaining hosts.")
+                return None
+                
             if self.checkForStop():
                 return None
 
+            count += 1
             name = sub + "." + self.baseDomain
             try:
                 addrs = socket.gethostbyname_ex(name)
@@ -225,5 +235,16 @@ class sfp_dns(SpiderFootPlugin):
             except BaseException as e:
                 sf.info("Unable to resolve " + name + " (" + str(e) + ")")
 
+    # Check if wildcard DNS is enabled by looking up two random hostnames
+    def checkWildcard(self, target):
+        randhost = ''.join([random.choice('bcdfghjklmnpqrstvwxyz3456789') for x in range(8)])
+
+        try:
+            addrs = socket.gethostbyname_ex(randhost + "." + target)
+            sf.debug(target + " has wildcard DNS.")
+            return True
+        except BaseException as e:
+            sf.debug(target + " does not have wildcard DNS.")
+            return False
 
 # End of sfp_dns class
