@@ -64,7 +64,7 @@ class sfp_similar(SpiderFootPlugin):
         'method':       "Pattern search method to use: 'left,right', 'left' or 'right'.",
         'activeonly':   "Only report domains that have content (try to fetch the page)?",
         'checkcommon':  "For every TLD, also prepend each common sub-TLD (com, net, ...)",
-        "commontlds":   "Common TLDs to try.",
+        "commontlds":   "Common sub-TLDs to try when iterating through all Internet TLDs.",
         "tldlist":      "The list of all Internet TLDs."
     }
 
