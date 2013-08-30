@@ -18,7 +18,7 @@ from sflib import SpiderFoot, SpiderFootPlugin
 sf = None
 sfdb = None
 
-class sfp_stor_db(SpiderFootPlugin):
+class sfp__stor_db(SpiderFootPlugin):
     """Stores scan results into the back-end SpiderFoot database. You will need this."""
 
     # Default options
@@ -72,4 +72,4 @@ class sfp_stor_db(SpiderFootPlugin):
         sfdb.scanEventStore(self.opts['__guid__'], sfEvent)
 
 
-# End of sfp_stor_db class
+# End of sfp__stor_db class
