@@ -245,7 +245,7 @@ class sfp_similar(SpiderFootPlugin):
                     addrs = socket.gethostbyname_ex(tryDomain)
                     self.storeResult(None, tryDomain)
                 except BaseException as e:
-                    sf.info("Unable to resolve " + tryDomain + "(" + str(e) + ")")
+                    sf.debug("Unable to resolve " + tryDomain + "(" + str(e) + ")")
 
                 # Try to resolve <target>.<subTLD>.<TLD>
                 if self.opts['checkcommon']:
@@ -259,7 +259,7 @@ class sfp_similar(SpiderFootPlugin):
                             addrs = socket.gethostbyname_ex(subDomain)
                             self.storeResult(None, subDomain)
                         except BaseException as e:
-                            sf.info("Unable to resolve " + subDomain + "(" + str(e) + ")")
+                            sf.debug("Unable to resolve " + subDomain + "(" + str(e) + ")")
 
         # Check popular Internet repositories for domains containing our target keyword
         if "domtools" in self.opts['source'] or "ALL" in self.opts['source']:
