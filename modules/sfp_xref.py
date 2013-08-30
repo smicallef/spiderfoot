@@ -111,7 +111,7 @@ class sfp_xref(SpiderFootPlugin):
             url = sf.urlBaseUrl(eventData)
             res = sf.fetchUrl(url)
             if res['content'] != None:
-                matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\.\'\/\"\ ])", 
+                matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\'\/\"\ ])", 
                     res['content'], re.IGNORECASE)
             else:
                 return None
