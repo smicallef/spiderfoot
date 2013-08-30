@@ -93,7 +93,7 @@ class SpiderFootScanner:
 
                 # A bit hacky: we pass the database object as part of the config. This
                 # object should only be used by the internal SpiderFoot modules writing
-                # to the database, which at present is only sfp_stor_db.
+                # to the database, which at present is only sfp__stor_db.
                 # Individual modules cannot create their own SpiderFootDb instance or
                 # we'll get database locking issues, so it all goes through this.
                 self.config['__sfdb__'] = dbh
