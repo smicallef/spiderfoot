@@ -40,8 +40,6 @@ whoisUrlN = "http://www.whois.net/domain-keyword-search/{0}/{1}"
 whoisLastPageIndicator = "Next >"
 whoisIncrement = 16
 
-
-
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
@@ -52,20 +50,14 @@ class sfp_similar(SpiderFootPlugin):
     opts = {
         'source':       'ALL', # domaintools, namedroppers or ALL
         'method':       'left,right', # left and/or right (doesn't apply to whois.com)
-        'activeonly':   True, # Only report domains that have content (try to fetch the page)
-        'checkcommon':  True, # For every TLD, try the common domains like com, net, etc. too
-        'commontlds':   ['com', 'info', 'net', 'org', 'biz', 'co', 'edu', 'gov', 'mil' ],
-        'tldlist':      "http://data.iana.org/TLD/tlds-alpha-by-domain.txt"
+        'activeonly':   True # Only report domains that have content (try to fetch the page)
     }
 
     # Option descriptions
     optdescs = {
         'source':       "Provider to use: 'domaintools', 'namedroppers' or 'ALL'.",
         'method':       "Pattern search method to use: 'left,right', 'left' or 'right'.",
-        'activeonly':   "Only report domains that have content (try to fetch the page)?",
-        'checkcommon':  "For every TLD, also prepend each common sub-TLD (com, net, ...)",
-        "commontlds":   "Common sub-TLDs to try when iterating through all Internet TLDs.",
-        "tldlist":      "The list of all Internet TLDs."
+        'activeonly':   "Only report domains that have content (try to fetch the page)?"
     }
 
     # Internal results tracking
@@ -225,41 +217,6 @@ class sfp_similar(SpiderFootPlugin):
         # No longer seems to work.
         #if "whois" in self.opts['source'] or "ALL" in self.opts['source']:
         #    self.scrapeWhois(keyword)
-
-        # Look through all TLDs for the existence of this target keyword
-        tldlistContent = sf.fetchUrl(self.opts['tldlist'])
-        if tldlistContent['content'] == None:
-            sf.error("Unable to obtain TLD list from " + self.opts['tldlist'], False)
-        else:
-            for tld in tldlistContent['content'].lower().splitlines():
-                if tld.startswith("#"):
-                    continue
-
-                tryDomain = keyword + "." + tld
-
-                if self.checkForStop():
-                    return None
-
-                # Try to resolve <target>.<TLD>
-                try:
-                    addrs = socket.gethostbyname_ex(tryDomain)
-                    self.storeResult(None, tryDomain)
-                except BaseException as e:
-                    sf.debug("Unable to resolve " + tryDomain + "(" + str(e) + ")")
-
-                # Try to resolve <target>.<subTLD>.<TLD>
-                if self.opts['checkcommon']:
-                    for subtld in self.opts['commontlds']:
-                        subDomain = keyword + "." + subtld + "." + tld 
-
-                        if self.checkForStop():
-                            return None
-
-                        try:
-                            addrs = socket.gethostbyname_ex(subDomain)
-                            self.storeResult(None, subDomain)
-                        except BaseException as e:
-                            sf.debug("Unable to resolve " + subDomain + "(" + str(e) + ")")
 
         # Check popular Internet repositories for domains containing our target keyword
         if "domtools" in self.opts['source'] or "ALL" in self.opts['source']:
