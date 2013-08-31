@@ -23,7 +23,7 @@ from sfwebui import SpiderFootWebUi
 sfConfig = {
     '_debug':            False, # Debug
     '__blocknotif':      False, # Block notifications
-    '_useragent':        'SpiderFoot/2.0', # User-Agent to use for HTTP requests
+    '_useragent':        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0', # User-Agent to use for HTTP requests
     '_dnsserver':       '', # Override the default resolver
     '_fetchtimeout':     5, # number of seconds before giving up on a fetch
     '__database':        'spiderfoot.db',
