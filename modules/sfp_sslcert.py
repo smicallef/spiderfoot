@@ -93,20 +93,20 @@ class sfp_sslcert(SpiderFootPlugin):
             rawcert = sock.getpeercert(True)
             cert = ssl.DER_cert_to_PEM_cert(rawcert)
             m2cert = M2Crypto.X509.load_cert_string(cert)
-
-            # Generate the event for the raw cert (in text form)
-            # Cert raw data text contains a lot of gems..
-            rawevt = SpiderFootEvent("RAW_DATA", m2cert.as_text(), self.__name__, event)
-            self.notifyListeners(rawevt)
-
-            # Generate events for other cert aspects
-            self.getIssued(m2cert, event)
-            self.getIssuer(m2cert, event)
-            self.checkHostMatch(m2cert, fqdn, event)
-            self.checkExpiry(m2cert, event)
         except BaseException as x:
             sf.info("Unable to SSL-connect to " + fqdn + ": " + str(x))
             return None
+
+        # Generate the event for the raw cert (in text form)
+        # Cert raw data text contains a lot of gems..
+        rawevt = SpiderFootEvent("RAW_DATA", m2cert.as_text(), self.__name__, event)
+        self.notifyListeners(rawevt)
+
+        # Generate events for other cert aspects
+        self.getIssued(m2cert, event)
+        self.getIssuer(m2cert, event)
+        self.checkHostMatch(m2cert, fqdn, event)
+        self.checkExpiry(m2cert, event)
 
     # Report back who the certificate was issued to
     def getIssued(self, cert, sevt):
@@ -131,7 +131,7 @@ class sfp_sslcert(SpiderFootPlugin):
             hosts = [ fqdn ]
 
         try:
-            hosts = hosts + cert.get_ext("subjectAltName").get_value().lower()
+            hosts.append(cert.get_ext("subjectAltName").get_value().lower())
         except LookupError as e:
             sf.debug("No alternative name found in certificate.")
 
