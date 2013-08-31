@@ -322,11 +322,13 @@ class SpiderFootDb:
         qry1 = "DELETE FROM tbl_scan_instance WHERE guid = ?"
         qry2 = "DELETE FROM tbl_scan_config WHERE scan_instance_id = ?"
         qry3 = "DELETE FROM tbl_scan_results WHERE scan_instance_id = ?"
+        qry4 = "DELETE FROM tbl_scan_log WHERE scan_instance_id = ?"
         qvars = [instanceId]
         try:
             self.dbh.execute(qry1, qvars)
             self.dbh.execute(qry2, qvars)
             self.dbh.execute(qry3, qvars)
+            self.dbh.execute(qry4, qvars)
             self.conn.commit()
         except sqlite3.Error as e:
             sf.error("SQL error encountered when deleting scan: " +
