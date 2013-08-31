@@ -609,10 +609,6 @@ class SpiderFootEvent(object):
         digestStr = idString.encode('raw_unicode_escape')
         return hashlib.sha256(digestStr).hexdigest()
 
-    # Reduce data down to a certain size
-    def truncateData(self, size):
-        self.data = self.data[0:size]
-
     # Update variables as new information becomes available
     def setConfidence(self, confidence):
         self.confidence = confidence
