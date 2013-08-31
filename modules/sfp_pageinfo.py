@@ -83,7 +83,7 @@ etc.)"""
         # Check the configured regexps to determine the page type
         for regexpGrp in regexps.keys():
             if regexpGrp in self.results[eventSource]:
-                next
+                continue
 
             for regex in regexps[regexpGrp]:
                 matches = re.findall(regex, eventData, re.IGNORECASE)

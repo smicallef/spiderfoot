@@ -85,7 +85,7 @@ class sfp_webframework(SpiderFootPlugin):
 
         for regexpGrp in regexps.keys():
             if regexpGrp in self.results[eventSource]:
-                next
+                continue
 
             for regex in regexps[regexpGrp]:
                 matches = re.findall(regex, eventData, re.IGNORECASE)
