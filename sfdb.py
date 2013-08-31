@@ -432,7 +432,9 @@ class SpiderFootDb:
     # And getHash() will return the event hash.
     def scanEventStore(self, instanceId, sfEvent, truncateSize=0):
         if truncateSize > 0:
-            sfEvent.data = sfEvent.data[0:truncateSize]
+            storeData = sfEvent.data[0:truncateSize]
+        else:
+            storeData = sfEvent.data
 
         qry = "INSERT INTO tbl_scan_results \
             (scan_instance_id, hash, type, generated, confidence, \
@@ -440,7 +442,7 @@ class SpiderFootDb:
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         qvals = [ instanceId, sfEvent.getHash(), sfEvent.eventType, sfEvent.generated,
             sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
-            sfEvent.module, sfEvent.data, sfEvent.sourceEventHash ]
+            sfEvent.module, storeData, sfEvent.sourceEventHash ]
 
         #print "STORING: " + str(qvals)
 
