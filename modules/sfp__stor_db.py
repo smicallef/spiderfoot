@@ -64,9 +64,7 @@ class sfp__stor_db(SpiderFootPlugin):
 
         if self.opts['maxstorage'] != 0:
             if len(sfEvent.data) > self.opts['maxstorage']:
-                sf.debug("Truncated " + sfEvent.eventType + " data due to storage limitation")
-                sfEvent.truncateData(self.opts['maxstorage'])
-                sfdb.scanEventStore(self.opts['__guid__'], sfEvent)
+                sfdb.scanEventStore(self.opts['__guid__'], sfEvent, self.opts['maxstorage'])
                 return None
         
         sfdb.scanEventStore(self.opts['__guid__'], sfEvent)
