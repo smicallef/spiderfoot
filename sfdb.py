@@ -430,7 +430,10 @@ class SpiderFootDb:
     # - data: the actual data, i.e. a URL, port number, webpage content, etc.
     # - sourceEventHash: hash of the event that triggered this event
     # And getHash() will return the event hash.
-    def scanEventStore(self, instanceId, sfEvent):
+    def scanEventStore(self, instanceId, sfEvent, truncateSize=0):
+        if truncateSize > 0:
+            sfEvent.data = sfEvent.data[0:truncateSize]
+
         qry = "INSERT INTO tbl_scan_results \
             (scan_instance_id, hash, type, generated, confidence, \
             visibility, risk, module, data, source_event_hash) \
