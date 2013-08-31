@@ -181,31 +181,32 @@ class sfp_dns(SpiderFootPlugin):
     def start(self):
         sf.debug("Gathering MX, SOA and NS records.")
         # Process the raw data alone
-        try:
-            lookup = True
-            mx = dns.resolver.query(self.baseDomain, 'MX')
-            soa = dns.resolver.query(self.baseDomain, 'SOA')
-            ns = dns.resolver.query(self.baseDomain, 'NS')
-        except BaseException as e:
-            sf.error("Failed to obtain MX, SOA and/or NS data out of DNS: " + str(e), False)
-            lookup = False
+        recs = [ 'MX', 'NS', 'SOA' ]
+        recdata = dict()
 
-        if lookup:
-            for data in [ns, mx, soa]:
-                strdata = unicode(data.rrset.to_text(), 'utf-8', errors='replace') 
-                evt = SpiderFootEvent("RAW_DATA", strdata, self.__name__)
-                self.notifyListeners(evt)
+        for rec in recs:
+            try:
+                recdata[rec] = dns.resolver.query(self.baseDomain, rec)
+            except BaseException as e:
+                sf.error("Failed to obtain " + rec + " data out of DNS: " + str(e), False)
 
-            for rdata in mx:
-                item = str(rdata.exchange).lower()[0:-1]
+        for key in recdata.keys():
+            strdata = unicode(recdata[key].rrset.to_text(), 'utf-8', errors='replace') 
+            evt = SpiderFootEvent("RAW_DATA", strdata, self.__name__)
+            self.notifyListeners(evt)
+
+        if recdata.has_key('MX'):
+            for rec in recdata['MX']:
+                item = str(rec.exchange).lower()[0:-1]
                 evt = SpiderFootEvent("PROVIDER_MAIL", item, self.__name__)
                 self.notifyListeners(evt)
                 if not item.endswith(self.baseDomain):
                     evt = SpiderFootEvent("AFFILIATE", item, self.__name__)
                     self.notifyListeners(evt)
 
-            for rdata in ns:
-                item = str(rdata).lower()[0:-1]
+        if recdata.has_key('NS'):
+            for rec in recdata['NS']:
+                item = str(rec).lower()[0:-1]
                 evt = SpiderFootEvent("PROVIDER_DNS", item, self.__name__)
                 self.notifyListeners(evt)
                 if not item.endswith(self.baseDomain):
