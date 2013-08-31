@@ -182,10 +182,15 @@ class sfp_dns(SpiderFootPlugin):
         sf.debug("Gathering MX, SOA and NS records.")
         # Process the raw data alone
         try:
+            lookup = True
             mx = dns.resolver.query(self.baseDomain, 'MX')
             soa = dns.resolver.query(self.baseDomain, 'SOA')
             ns = dns.resolver.query(self.baseDomain, 'NS')
+        except BaseException as e:
+            sf.error("Failed to obtain MX, SOA and/or NS data out of DNS: " + str(e), False)
+            lookup = False
 
+        if lookup:
             for data in [ns, mx, soa]:
                 strdata = unicode(data.rrset.to_text(), 'utf-8', errors='replace') 
                 evt = SpiderFootEvent("RAW_DATA", strdata, self.__name__)
@@ -206,8 +211,6 @@ class sfp_dns(SpiderFootPlugin):
                 if not item.endswith(self.baseDomain):
                     evt = SpiderFootEvent("AFFILIATE", item, self.__name__)
                     self.notifyListeners(evt)
-        except BaseException as e:
-            sf.error("Failed to obtain MX, SOA and/or NS data out of DNS: " + str(e), False)
             
         sf.debug("Iterating through possible sub-domains [" + str(self.opts['commonsubs']) + "]")
         count = 0
@@ -224,16 +227,19 @@ class sfp_dns(SpiderFootPlugin):
             count += 1
             name = sub + "." + self.baseDomain
             try:
+                lookup = True
                 addrs = socket.gethostbyname_ex(name)
+            except BaseException as e:
+                sf.info("Unable to resolve " + name + " (" + str(e) + ")")
+                lookup = False
+
+            if lookup:
                 for addr in addrs:
                     if type(addr) == list:
                         for host in addr:
                             self.processHost(host)
                     else:
                         self.processHost(addr)
-
-            except BaseException as e:
-                sf.info("Unable to resolve " + name + " (" + str(e) + ")")
 
     # Check if wildcard DNS is enabled by looking up two random hostnames
     def checkWildcard(self, target):
