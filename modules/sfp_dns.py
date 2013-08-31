@@ -215,7 +215,7 @@ class sfp_dns(SpiderFootPlugin):
             
         sf.debug("Iterating through possible sub-domains [" + str(self.opts['commonsubs']) + "]")
         count = 0
-        wildcard = self.checkWildcard(self.baseDomain)
+        wildcard = sf.checkDnsWildcard(self.baseDomain)
         # Try resolving common names
         for sub in self.opts['commonsubs']:
             if wildcard and self.opts['skipcommononwildcard'] and count > 0:
@@ -241,17 +241,5 @@ class sfp_dns(SpiderFootPlugin):
                             self.processHost(host)
                     else:
                         self.processHost(addr)
-
-    # Check if wildcard DNS is enabled by looking up two random hostnames
-    def checkWildcard(self, target):
-        randhost = ''.join([random.choice('bcdfghjklmnpqrstvwxyz3456789') for x in range(8)])
-
-        try:
-            addrs = socket.gethostbyname_ex(randhost + "." + target)
-            sf.debug(target + " has wildcard DNS.")
-            return True
-        except BaseException as e:
-            sf.debug(target + " does not have wildcard DNS.")
-            return False
 
 # End of sfp_dns class

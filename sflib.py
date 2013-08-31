@@ -15,6 +15,7 @@ import hashlib
 import re
 import os
 import random
+import socket
 import sys
 import time
 import urllib2
@@ -475,6 +476,22 @@ class SpiderFoot:
                 self.fatal('URL could not be fetched (' + str(x) + ')')
 
         return result
+
+    # Check if wildcard DNS is enabled by looking up two random hostnames
+    def checkDnsWildcard(self, target):
+        randpool = 'bcdfghjklmnpqrstvwxyz3456789'
+        randhost1 = ''.join([random.choice(randpool) for x in range(6)])
+        randhost2 = ''.join([random.choice(randpool) for x in range(10)])
+
+        # An exception will be raised if either of the resolutions fail
+        try:
+            addrs = socket.gethostbyname_ex(randhost1 + "." + target)
+            addrs = socket.gethostbyname_ex(randhost2 + "." + target)
+            self.debug(target + " has wildcard DNS.")
+            return True
+        except BaseException as e:
+            self.debug(target + " does not have wildcard DNS.")
+            return False
 
 #
 # SpiderFoot plug-in module base class
