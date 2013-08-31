@@ -16,6 +16,7 @@ import sys
 import re
 import time
 import random
+import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
@@ -27,10 +28,11 @@ class sfp_searchtld(SpiderFootPlugin):
     # Default options
     opts = {
         'activeonly':   True, # Only report domains that have content (try to fetch the page)
-        'checkcommon':  True, # For every TLD, try the common domains like com, net, etc. too
+        'checkcommon':  True, # For every TLD, try the common sub-TLDs like com, net, etc. too
         'commontlds':   ['com', 'info', 'net', 'org', 'biz', 'co', 'edu', 'gov', 'mil' ],
         'tldlist':      "http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
-        'skipwildcards':    True
+        'skipwildcards':    True,
+        'maxthreads':   100
     }
 
     # Option descriptions
@@ -39,7 +41,8 @@ class sfp_searchtld(SpiderFootPlugin):
         'checkcommon':  "For every TLD, also prepend each common sub-TLD (com, net, ...)",
         "commontlds":   "Common sub-TLDs to try when iterating through all Internet TLDs.",
         "tldlist":      "The list of all Internet TLDs.",
-        "skipwildcards":    "Skip TLDs and sub-TLDs that have wildcard DNS."
+        "skipwildcards":    "Skip TLDs and sub-TLDs that have wildcard DNS.",
+        "maxthreads":   "Number of simultaneous DNS resolutions to perform at once."
     }
 
     # Internal results tracking
@@ -47,6 +50,9 @@ class sfp_searchtld(SpiderFootPlugin):
 
     # Target
     baseDomain = None
+
+    # Track TLD search results between threads
+    tldResults = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
@@ -62,8 +68,43 @@ class sfp_searchtld(SpiderFootPlugin):
     def watchedEvents(self):
         return None
 
+    def tryTld(self, target):
+        try:
+            addrs = socket.gethostbyname_ex(target)
+            self.tldResults[target] = True
+        except BaseException as e:
+            self.tldResults[target] = False
+
+    def tryTldWrapper(self, tldList):
+        self.tldResults = dict()
+        running = True
+        i = 0
+        t = []
+
+        # Spawn threads for scanning
+        sf.info("Spawning threads to check TLDs: " + str(tldList))
+        for tld in tldList:
+            t.append(threading.Thread(name='sfp_searchtld_' + tld,
+                target=self.tryTld, args=(tld,)))
+            t[i].start()
+            i += 1
+
+        # Block until all threads are finished
+        while running:
+            found = False
+            for rt in threading.enumerate():
+                if rt.name.startswith("sfp_searchtld_"):
+                    found = True
+
+            if not found:
+                running = False
+
+        for res in self.tldResults.keys():
+            if self.tldResults[res]:
+                self.sendEvent(None, res)
+
     # Store the result internally and notify listening modules
-    def storeResult(self, source, result):
+    def sendEvent(self, source, result):
         if result == self.baseDomain:
             return
 
@@ -83,11 +124,11 @@ class sfp_searchtld(SpiderFootPlugin):
             evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
             self.notifyListeners(evt)
 
-
     # Search for similar sounding domains
     def start(self):
         keyword = sf.domainKeyword(self.baseDomain)
         sf.debug("Keyword extracted from " + self.baseDomain + ": " + keyword)
+        targetList = list()
 
         # No longer seems to work.
         #if "whois" in self.opts['source'] or "ALL" in self.opts['source']:
@@ -99,38 +140,43 @@ class sfp_searchtld(SpiderFootPlugin):
             sf.error("Unable to obtain TLD list from " + self.opts['tldlist'], False)
         else:
             for tld in tldlistContent['content'].lower().splitlines():
-                if tld.startswith("#") or sf.checkDnsWildcard(tld):
+                if tld.startswith("#"):
+                    continue
+
+                if self.opts['skipwildcards'] and sf.checkDnsWildcard(tld):
                     continue
 
                 tryDomain = keyword + "." + tld
-                sf.debug("Trying " + tryDomain)
 
                 if self.checkForStop():
                     return None
 
-                # Try to resolve <target>.<TLD>
-                try:
-                    addrs = socket.gethostbyname_ex(tryDomain)
-                    self.storeResult(None, tryDomain)
-                except BaseException as e:
-                    sf.debug("Unable to resolve " + tryDomain + "(" + str(e) + ")")
+                if len(targetList) <= self.opts['maxthreads']:
+                    targetList.append(tryDomain)
+                else:
+                    self.tryTldWrapper(targetList)
+                    targetList = list()
 
                 # Try to resolve <target>.<subTLD>.<TLD>
                 if self.opts['checkcommon']:
                     for subtld in self.opts['commontlds']:
-                        if sf.checkDnsWildcard(subtld + "." + tld):
-                            continue
-
                         subDomain = keyword + "." + subtld + "." + tld 
 
                         if self.checkForStop():
                             return None
 
-                        try:
-                            addrs = socket.gethostbyname_ex(subDomain)
-                            self.storeResult(None, subDomain)
-                        except BaseException as e:
-                            sf.debug("Unable to resolve " + subDomain + "(" + str(e) + ")")
+                        if self.opts['skipwildcards'] and sf.checkDnsWildcard(subtld+"."+tld):
+                            pass   
+                        else:
+                            if len(targetList) <= self.opts['maxthreads']:
+                                targetList.append(subDomain)
+                            else:
+                                self.tryTldWrapper(targetList)
+                                targetList = list()
+
+        # Scan whatever may be left over.
+        if len(targetList) > 0:
+            self.tryTldWrapper(targetList)
 
         return None
 
