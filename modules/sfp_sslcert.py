@@ -142,9 +142,9 @@ class sfp_sslcert(SpiderFootPlugin):
 
     # Check if the expiration date is in the future
     def checkExpiry(self, cert, sevt):
-        exp = int(cert.get_not_after().get_datetime().strftime("%s"))
+        exp = int(time.mktime(cert.get_not_after().get_datetime().timetuple()))
         expstr = cert.get_not_after().get_datetime().strftime("%Y-%m-%d %H:%M:%S")
-        now = int(time.strftime("%s"))
+        now = int(time.time())
         warnexp = now + self.opts['certexpiringdays'] * 86400
 
         if exp <= now:
