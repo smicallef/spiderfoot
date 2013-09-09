@@ -52,16 +52,6 @@ class sfp__stor_db(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, sfEvent):
-        
-        # If we get passed a dict or list, convert it to a string first, as
-        # those types do not have a unicode converter.
-        if type(sfEvent.data) not in [unicode, str]:
-            sfEvent.data = str(sfEvent.data)
-
-        # Convert to a string in case we get passed integers or other things
-        if type(sfEvent.data) is not unicode:
-            sfEvent.data = unicode(sfEvent.data, 'utf-8', errors='replace')
-
         if self.opts['maxstorage'] != 0:
             if len(sfEvent.data) > self.opts['maxstorage']:
                 sfdb.scanEventStore(self.opts['__guid__'], sfEvent, self.opts['maxstorage'])

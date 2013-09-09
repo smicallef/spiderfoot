@@ -59,10 +59,6 @@ class sfp_websvr(SpiderFootPlugin):
             sf.debug("Not collecting web server information for external sites.")
             return None
 
-        # Protect myself from bad data
-        if eventData is not dict():
-            return None
-
         # Could apply some smarts here, for instance looking for certain
         # banners and therefore classifying them further (type and version,
         # possibly OS. This could also trigger additional tests, such as 404s

@@ -73,7 +73,6 @@ class SpiderFoot:
             print '[Fatal] ' + error
         else:
             self._dblog("FATAL", error)
-        raise BaseException("Fatal Error Encountered: " + error)
         exit(-1)
 
     def status(self, message):
@@ -593,6 +592,7 @@ class SpiderFootEvent(object):
     data = None
     sourceEvent = None
     sourceEventHash = None
+    __id = None
     
     def __init__(self, eventType, data, module, sourceEvent=None,
         confidence=100, visibility=100, risk=0):
@@ -612,18 +612,20 @@ class SpiderFootEvent(object):
         else:
             self.sourceEventHash = "ROOT"
 
+        # Handle lists, dicts
+        #if type(self.data) not in [str, unicode]:
+        #    self.__id = unicode(self.eventType + str(self.data) + str(self.generated) + self.module, 'utf-8', errors='replace')
+        #else:
+        #    self.__id = self.eventType + self.data + str(self.generated) + self.module
+        self.__id = self.eventType + str(self.generated) + self.module + \
+            str(random.randint(0, 99999999))
+
     # Unique hash of this event
     def getHash(self):
         if self.eventType == "INITIAL_TARGET":
             return "ROOT"
 
-        # Handle lists and dicts
-        if type(self.data) not in [str, unicode]:
-            idString = unicode(self.eventType + str(self.data) + str(self.generated) + self.module, 'utf-8', errors='replace')
-        else:
-            idString = self.eventType + self.data + str(self.generated) + self.module
-
-        digestStr = idString.encode('raw_unicode_escape')
+        digestStr = self.__id.encode('raw_unicode_escape')
         return hashlib.sha256(digestStr).hexdigest()
 
     # Update variables as new information becomes available

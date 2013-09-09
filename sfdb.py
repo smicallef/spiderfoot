@@ -431,10 +431,22 @@ class SpiderFootDb:
     # - sourceEventHash: hash of the event that triggered this event
     # And getHash() will return the event hash.
     def scanEventStore(self, instanceId, sfEvent, truncateSize=0):
-        if truncateSize > 0:
-            storeData = sfEvent.data[0:truncateSize]
+
+        if type(sfEvent.data) is not unicode:
+            # If sfEvent.data is a dict or list, convert it to a string first, as
+            # those types do not have a unicode converter.
+            if type(sfEvent.data) is str:
+                storeData = unicode(sfEvent.data, 'utf-8', errors='replace')
+            else:
+                try:
+                    storeData = unicode(str(sfEvent.data), 'utf-8', errors='replace')
+                except BaseException as e:
+                    sf.fatal("Unhandled type detected: " + str(type(sfEvent.data)))
         else:
             storeData = sfEvent.data
+
+        if truncateSize > 0:
+            storeData = storeData[0:truncateSize]
 
         qry = "INSERT INTO tbl_scan_results \
             (scan_instance_id, hash, type, generated, confidence, \
