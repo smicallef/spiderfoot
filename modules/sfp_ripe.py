@@ -105,8 +105,13 @@ class sfp_ripe(SpiderFootPlugin):
             sf.info("No RIPE info found/available for prefix: " + prefix)
             return None
 
+        keyword = sf.domainKeyword(self.baseDomain)
+        res['content'] = res['content'].lower()
+        print keyword + " and " + self.baseDomain + " in: " + res['content']
         # Crude and probably prone to a lot of false positives. Need to revisit.
-        if self.baseDomain in res['content']:        
+        if self.baseDomain in res['content'] or "\"" + keyword in res['content'] \
+            or keyword +"\"" in res['content'] or keyword +"-" in res['content'] \
+            or "-"+keyword in res['content']:
             sf.info("Owned netblock found: " + prefix)
             evt = SpiderFootEvent("NETBLOCK", prefix, self.__name__, event)
             self.notifyListeners(evt)
