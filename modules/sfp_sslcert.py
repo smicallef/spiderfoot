@@ -123,15 +123,16 @@ class sfp_sslcert(SpiderFootPlugin):
     # Check if the hostname matches the name of the server
     def checkHostMatch(self, cert, fqdn, sevt):
         fqdn = fqdn.lower()
-        hosts = list()
+        hosts = ""
 
         # Extract the CN from the issued section
         issued = cert.get_subject().as_text()
+        sf.debug("Checking for " + fqdn + " in " + issued.lower())
         if "cn=" + fqdn in issued.lower():
-            hosts = [ fqdn ]
+            hosts = 'dns:' + fqdn
 
         try:
-            hosts.append(cert.get_ext("subjectAltName").get_value().lower())
+            hosts = hosts + " " + cert.get_ext("subjectAltName").get_value().lower()
         except LookupError as e:
             sf.debug("No alternative name found in certificate.")
 
