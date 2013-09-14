@@ -37,6 +37,15 @@ class SpiderFootWebUi:
         sf = SpiderFoot(config)
         self.config = sf.configUnserialize(dbh.configGet(), config)
 
+    # Sanitize user input
+    def cleanUserInput(self, inputList):
+        ret = list()
+
+        for item in inputList:
+            ret.append(cgi.escape(item))
+
+        return ret
+
     #
     # USER INTERFACE PAGES
     #
@@ -106,12 +115,6 @@ class SpiderFootWebUi:
         return templ.render(pageid='SCANLIST')
     index.exposed = True
 
-    # Include this in case the user is clicking reload after creating
-    # the DB and restarting.
-    def create(self):
-        return self.index()
-    create.exposed = True
-
     # Information about a selected scan
     def scaninfo(self, id):
         dbh = SpiderFootDb(self.config)
@@ -177,6 +180,8 @@ class SpiderFootWebUi:
     # Initiate a scan
     def startscan(self, scanname, scantarget, modulelist):
         modopts = dict() # Not used yet as module options are set globally
+
+        [scanname, scantarget] = self.cleanUserInput([scanname, scantarget])
 
         if scanname == "" or scantarget == "" or modulelist == "":
             return self.error("Form incomplete.")
