@@ -31,6 +31,10 @@ SpiderFoot was developed against M2Crypto 0.20.2, CherryPy 3.2.2 and Mako 0.7.2.
 
 DNSPython (http://www.dnspython.org) is also a dependency but is included in the package under the dns directory, so does *not* need to be installed.
 
+Depending on your Linux build, you may also need SWIG installed. If your Linux distribution supports APT, you can install it with:
+
+$ sudo apt-get install swig
+
 All other module dependencies, such as SQLite3, are included with Python, so nothing further should be needed.
 
 To run SpiderFoot, simply execute sf.py from the directory you extracted SpiderFoot into:
