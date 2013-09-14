@@ -20,6 +20,7 @@ sf.fetchData = function(url, postData, postFunc) {
         type: "POST",
         url: url,
         data: postData,
+        cache: false,
         dataType: "json"
     });
 

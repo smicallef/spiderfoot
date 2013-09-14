@@ -3,17 +3,17 @@
   <div class="btn-toolbar">
    <div class="btn-group">
     <!--<a id='btn-live' class="btn active" href="#" onClick='liveView("${id}")'><i class='icon-eye-open'></i>&nbsp;Live View</a> -->
-      <a id='btn-browse' class="btn" href="#" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
-      <a id='btn-info' class="btn" href="#" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
-      <a id='btn-log' class="btn" href="#" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
+      <a id='btn-browse' class="btn" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
+      <a id='btn-info' class="btn" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
+      <a id='btn-log' class="btn" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
     </div>
     <div class="btn-group pull-right">
-    <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn" href="#" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
-    <a id='btn-export' rel="tooltip" title="Export Data to CSV" class="btn-info btn" href="#" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
+    <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
+    <a id='btn-export' rel="tooltip" title="Export Data to CSV" class="btn-info btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
     </div> 
     <div id='customview' class="btn-group pull-right">
-    <a id='btn-fullview' rel="tooltip" title="Full Data View" class="btn-inverse btn active" href="#" onClick='browseUpdate("full")'><i class='icon-th icon-white'></i></a>
-    <a id='btn-uniqueview' rel="tooltip" title="Unique Data View" class="btn-inverse btn" href="#" onClick='browseUpdate("unique")'><i class='icon-align-justify icon-white'></i></a>
+    <a id='btn-fullview' rel="tooltip" title="Full Data View" class="btn-inverse btn active" onClick='browseUpdate("full")'><i class='icon-th icon-white'></i></a>
+    <a id='btn-uniqueview' rel="tooltip" title="Unique Data View" class="btn-inverse btn" onClick='browseUpdate("unique")'><i class='icon-align-justify icon-white'></i></a>
     </div>
   </div>
 
@@ -77,7 +77,7 @@
                             table += "<thead><tr> <th>Type</th> <th>Unique Data Elements</th> <th>Total Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a onClick='";
-                                table += "browseEventData(\"${id}\", \"" + data[i][1] + "\", \"" + data[i][0] + "\", \"full\");' href='#'>";
+                                table += "browseEventData(\"${id}\", \"" + data[i][1] + "\", \"" + data[i][0] + "\", \"full\");'>";
                                 table += data[i][1] + "</a></td>";
                                 table += "<td>" + data[i][4] + "</td>";
                                 table += "<td>" + data[i][3] + "</td>";
@@ -111,8 +111,8 @@
                 $("#btn-fullview").addClass("active");
                 $("#btn-uniqueview").removeClass("active");
                 sf.fetchData('/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
-                            var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a href='#' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                            crumbs += " <span class='divider'>&gt;</span></li> <li><a href='#' onClick=";
+                            var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
+                            crumbs += " <span class='divider'>&gt;</span></li> <li><a onClick=";
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
                             crumbs += eventTypeLabel + "</a></li></ul>";
 
@@ -141,8 +141,8 @@
                 $("#btn-uniqueview").addClass("active");
                 $("#btn-fullview").removeClass("active");
                 sf.fetchData('/scaneventresultsunique', {'id': instanceId, 'eventType': eventType }, function(data) {
-                            var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a href='#' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                            crumbs += " <span class='divider'>&gt;</span></li> <li><a href='#' onClick=";
+                            var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
+                            crumbs += " <span class='divider'>&gt;</span></li> <li><a onClick=";
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
                             crumbs += eventTypeLabel + "</a></li></ul>";
 
