@@ -6,3 +6,7 @@ background-position: center left;
 padding-left: 20px; 
 margin-left: -1px; 
 }
+
+a.link:hover {
+    cursor: pointer;
+}
