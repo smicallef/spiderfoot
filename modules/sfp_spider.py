@@ -32,7 +32,7 @@ class sfp_spider(SpiderFootPlugin):
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css', 'tar',
                         'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg', 'gz',
                         'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip',
-                        'bin', 'bz2'],
+                        'bin', 'bz2', 'xsl'],
         'filterusers':  True, # Don't follow /~user directories
         'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
         'nosubs':       False, # Should links to subdomains be ignored?
@@ -87,7 +87,8 @@ class sfp_spider(SpiderFootPlugin):
             sf.debug("Restoring cookies for " + site + ": " + str(self.siteCookies[site]))
             cookies = self.siteCookies[site]
         # Fetch the contents of the supplied URL (object returned)
-        fetched = sf.fetchUrl(url, False, cookies)
+        fetched = sf.fetchUrl(url, False, cookies, 
+            self.opts['_fetchtimeout'], self.opts['_useragent'])
         self.fetchedPages[url] = True
 
         # Track cookies a site has sent, then send the back in subsquent requests
@@ -223,7 +224,8 @@ class sfp_spider(SpiderFootPlugin):
         # Determine where to start spidering from if it's a SUBDOMAIN event
         if eventName == "SUBDOMAIN":
             for prefix in self.opts['start']:
-                res = sf.fetchUrl(prefix + eventData)
+                res = sf.fetchUrl(prefix + eventData, timeout=self.opts['_fetchtimeout'], 
+                    useragent=self.opts['_useragent'])
                 if res['content'] != None:
                     spiderTarget = prefix + eventData
                     break
@@ -249,7 +251,8 @@ class sfp_spider(SpiderFootPlugin):
 
         # Are we respecting robots.txt?
         if self.opts['robotsonly'] and not self.robotsRules.has_key(targetBase):
-            robotsTxt = sf.fetchUrl(targetBase + '/robots.txt')
+            robotsTxt = sf.fetchUrl(targetBase + '/robots.txt', 
+                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if robotsTxt['content'] != None:
                 sf.debug('robots.txt contents: ' + robotsTxt['content'])
                 self.robotsRules[targetBase] = sf.parseRobotsTxt(robotsTxt['content'])

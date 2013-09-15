@@ -43,7 +43,7 @@ class sfp_dns(SpiderFootPlugin):
         'skipcommononwildcard': "If wildcard DNS is detected, look up the first common sub-domain only.",
         'resolveaffiliate': "Obtain IPs for confirmed affiliates?",
         'reverselookup': "Obtain new URLs and possible affiliates based on reverse-resolved IPs?",
-        "commonsubs":   "Common sub-domains to try."
+        "commonsubs":   "Common sub-domains to try. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
     }
 
     # Target
@@ -212,12 +212,19 @@ class sfp_dns(SpiderFootPlugin):
                 if not item.endswith(self.baseDomain):
                     evt = SpiderFootEvent("AFFILIATE", item, self.__name__)
                     self.notifyListeners(evt)
+
+        sublist = self.opts['commonsubs']
+        # User may have supplied a file or URL containing the subdomains
+        if self.opts['commonsubs'][0].startswith("http://") or \
+            self.opts['commonsubs'][0].startswith("https://") or \
+            self.opts['commonsubs'][0].startswith("@"):
+            sublist = sf.optValueToData(self.opts['commonsubs'][0])
             
-        sf.debug("Iterating through possible sub-domains [" + str(self.opts['commonsubs']) + "]")
+        sf.debug("Iterating through possible sub-domains [" + str(sublist) + "]")
         count = 0
         wildcard = sf.checkDnsWildcard(self.baseDomain)
         # Try resolving common names
-        for sub in self.opts['commonsubs']:
+        for sub in sublist:
             if wildcard and self.opts['skipcommononwildcard'] and count > 0:
                 sf.debug("Wildcard DNS detected, skipping iterating through remaining hosts.")
                 return None

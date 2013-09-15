@@ -32,21 +32,46 @@ class SpiderFoot:
         self.handle = handle
         self.opts = options
 
-        # For the useragent option, if the user has supplied a path,
-        # open the file and load into options['__useragent_list']
-        if "_useragent" in options.keys():
-            if options["_useragent"].startswith("@"):
-                fname = options["_useragent"].split('@')[1]
-                try:
-                    f = open(fname, "r")
-                    options['__useragent_list'] = f.readlines()
-                except BaseException as b:
-                    self.error("Unable to open User Agent file, " + fname + ".")
-                    options["__useragent_list"] = [ "Unknown" ]
+    # Supplied an option value, return the data based on what the
+    # value is. If val is a URL, you'll get back the fetched content,
+    # if val is a file path it will be loaded and get back the contents,
+    # and if a string it will simply be returned back.
+    def optValueToData(self, val, fatal=True, splitLines=True):
+        if val.startswith('@'):
+            fname = val.split('@')[1]
+            try:
+                self.info("Loading configuration data from: " + fname)
+                f = open(fname, "r")
+                if splitLines:
+                    arr = f.readlines()
+                    ret = list()
+                    for x in arr:
+                        ret.append(x.rstrip('\n'))
+                else:
+                    ret = f.read()
+                return ret
+            except BaseException as b:
+                if fatal:
+                    self.error("Unable to open option file, " + fname + ".")
+                else:
+                    return None
 
-    #
-    # Debug, error message and logging functions
-    #
+        if val.lower().startswith('http://') or val.lower().startswith('https://'):
+            try:
+                self.info("Downloading configuration data from: " + val)
+                res = urllib2.urlopen(val)
+                data = res.read()
+                if splitLines:
+                    return data.splitlines()
+                else:
+                    return data
+            except BaseException as e:
+                if fatal:
+                    self.error("Unable to open option URL, " + val + ".")
+                else:
+                    return None
+
+        return val
 
     # Called usually some time after instantiation
     # to set up a database handle and scan GUID, used
@@ -114,14 +139,13 @@ class SpiderFoot:
         return
 
     def myPath(self):
-        """ This will get us the program's directory,
-        even if we are frozen using py2exe"""
+        # This will get us the program's directory, even if we are frozen using py2exe.
 
         # Determine whether we've been compiled by py2exe
         if hasattr(sys, "frozen"):
-            return os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding( )))
+            return os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding()))
 
-        return os.path.dirname(unicode(__file__, sys.getfilesystemencoding( )))
+        return os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
 
 
     #
@@ -157,7 +181,8 @@ class SpiderFoot:
                 if opt.startswith('_') and filterSystem:
                     continue
 
-                if type(opts['__modules__'][mod]['opts'][opt]) is int or type(opts['__modules__'][mod]['opts'][opt]) is str:
+                if type(opts['__modules__'][mod]['opts'][opt]) is int or \
+                    type(opts['__modules__'][mod]['opts'][opt]) is str:
                     storeopts[mod + ":" + opt] = opts['__modules__'][mod]['opts'][opt]
 
                 if type(opts['__modules__'][mod]['opts'][opt]) is bool:
@@ -166,7 +191,8 @@ class SpiderFoot:
                     else:
                         storeopts[mod + ":" + opt] = 0
                 if type(opts['__modules__'][mod]['opts'][opt]) is list:
-                    storeopts[mod + ":" + opt] = ','.join(str(x) for x in opts['__modules__'][mod]['opts'][opt])
+                    storeopts[mod + ":" + opt] = ','.join(str(x) \
+                        for x in opts['__modules__'][mod]['opts'][opt])
 
         return storeopts
     
@@ -220,10 +246,12 @@ class SpiderFoot:
                             returnOpts['__modules__'][modName]['opts'][opt] = False
 
                     if type(referencePoint['__modules__'][modName]['opts'][opt]) is str:
-                        returnOpts['__modules__'][modName]['opts'][opt] = str(opts[modName + ":" + opt])
+                        returnOpts['__modules__'][modName]['opts'][opt] = \
+                            str(opts[modName + ":" + opt])
 
                     if type(referencePoint['__modules__'][modName]['opts'][opt]) is int:
-                        returnOpts['__modules__'][modName]['opts'][opt] = int(opts[modName + ":" + opt])
+                        returnOpts['__modules__'][modName]['opts'][opt] = \
+                            int(opts[modName + ":" + opt])
 
                     if type(referencePoint['__modules__'][modName]['opts'][opt]) is list:
                         if type(referencePoint['__modules__'][modName]['opts'][opt][0]) is int:
@@ -231,7 +259,8 @@ class SpiderFoot:
                             for x in str(opts[modName + ":" + opt]).split(","):
                                 returnOpts['__modules__'][modName]['opts'][opt].append(int(x))
                         else:
-                            returnOpts['__modules__'][modName]['opts'][opt] = str(opts[modName + ":" + opt]).split(",")
+                            returnOpts['__modules__'][modName]['opts'][opt] = \
+                                str(opts[modName + ":" + opt]).split(",")
         return returnOpts
 
     #
@@ -373,7 +402,8 @@ class SpiderFoot:
 
             # Don't include stuff likely part of some dynamically built incomplete
             # URL found in Javascript code (character is part of some logic)
-            if link[len(link)-1] == '.' or link[0] == '+' or 'javascript:' in link.lower() or '();' in link:
+            if link[len(link)-1] == '.' or link[0] == '+' or \
+                'javascript:' in link.lower() or '();' in link:
                 self.debug('unlikely link: ' + link)
                 continue
 
@@ -415,7 +445,8 @@ class SpiderFoot:
         return returnLinks
 
     # Fetch a URL, return the response object
-    def fetchUrl(self, url, fatal=False, cookies=None):
+    def fetchUrl(self, url, fatal=False, cookies=None, timeout=30, 
+        useragent="SpiderFoot"):
         result = {
             'code': None,
             'status': None,
@@ -430,22 +461,23 @@ class SpiderFoot:
 
         try:
             header = dict()
-            if self.opts.has_key('_useragent') and not self.opts['_useragent'].startswith('@'):
-                header['User-Agent'] = self.opts['_useragent']
-            if self.opts.has_key('__useragent_list'):
-                header['User-Agent'] = random.choice(self.opts['__useragent_list'])
+            if type(useragent) is list:
+                header['User-Agent'] = random.choice(useragent)
+            else:
+                header['User-Agent'] = useragent
 
-            if not self.opts.has_key('_fetchtimeout'):
-                self.opts['_fetchtimeout'] = 30
             req = urllib2.Request(url, None, header)
             if cookies != None:
                 req.add_header('cookie', cookies)
-                self.info("Fetching (incl. cookies): " + url)
+                self.info("Fetching (incl. cookies): " + url + \
+                    " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                    str(timeout) + "]")
             else:
-                self.info("Fetching: " + url)
+                self.info("Fetching: " + url + " [user-agent: " + \
+                    header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
             opener = urllib2.build_opener(SmartRedirectHandler())
-            fullPage = opener.open(req, timeout=self.opts['_fetchtimeout'])
+            fullPage = opener.open(req, timeout=timeout)
 
             # Prepare result to return
             result['content'] = unicode(fullPage.read(), 'utf-8', errors='replace')

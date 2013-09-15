@@ -83,6 +83,9 @@ class SpiderFootScanner:
         self.sf.status("Scan [" + self.config['__guid__'] + "] initiated.")
         # moduleList = list of modules the user wants to run
         try:
+            # Process global options that point to other places for data
+            self.config['_useragent'] = self.sf.optValueToData(self.config['_useragent'])
+
             for modName in self.moduleList:
                 if modName == '':
                     continue
@@ -154,7 +157,7 @@ class SpiderFootScanner:
                 self.sf.status("Scan [" + self.config['__guid__'] + "] completed.")
                 dbh.scanInstanceSet(self.config['__guid__'], None, time.time() * 1000, 'FINISHED')
                 self.status = "FINISHED"
-        except Exception as e:
+        except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.sf.error("Unhandled exception (" + e.__class__.__name__ + ") " + \
                 "encountered during scan. Please report this as a bug: " + \

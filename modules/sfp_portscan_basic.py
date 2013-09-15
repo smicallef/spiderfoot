@@ -26,10 +26,10 @@ class sfp_portscan_basic(SpiderFootPlugin):
     # Default options
     opts = {
                             # Commonly used ports on external-facing systems
-        'ports':            [ 21, 22, 23, 25, 53, 79, 80, 81, 88, 110, 111, 
-                            113, 119, 123, 137, 138, 139, 143, 161, 179,
-                            389, 443, 445, 465, 512, 513, 514, 515, 631, 636,
-                            990, 992, 993, 995, 1080, 8080, 8888, 9000 ],
+        'ports':            [ '21', '22', '23', '25', '53', '79', '80', '81', '88', '110','111', 
+                            '113', '119', '123', '137', '138', '139', '143', '161', '179',
+                            '389', '443', '445', '465', '512', '513', '514', '515', '631', '636',
+                            '990', '992', '993', '995', '1080', '8080', '8888', '9000' ],
         'timeout':          15,
         'maxthreads':       10,
         'randomize':        True
@@ -38,7 +38,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'maxthreads':   "Number of ports to try to open simultaneously (number of threads to spawn at once.)",
-        'ports':    "The TCP ports to scan.",
+        'ports':    "The TCP ports to scan. Prefix with an '@' to iterate through a file containing ports to try (one per line), e.g. @C:\ports.txt or @/home/bob/ports.txt. Or supply a URL to load the list from there.",
         'timeout':  "Seconds before giving up on a port.",
         'randomize':    "Randomize the order of ports scanned."
     }
@@ -46,6 +46,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
     # Target
     baseDomain = None
     results = dict()
+    portlist = list()
     portResults = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
@@ -58,8 +59,18 @@ class sfp_portscan_basic(SpiderFootPlugin):
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
+        if self.opts['ports'][0].startswith("http://") or \
+            self.opts['ports'][0].startswith("https://") or \
+            self.opts['ports'][0].startswith("@"):
+            self.portlist = sf.optValueToData(self.opts['ports'][0])
+        else:
+            self.portlist = self.opts['ports']
+
+        # Convert to integers
+        self.portlist = [int(x) for x in self.portlist]
+
         if self.opts['randomize']:
-            random.shuffle(self.opts['ports'])
+            random.shuffle(self.portlist)
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -139,7 +150,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
 
         i = 0
         portArr = []
-        for port in self.opts['ports']:
+        for port in self.portlist:
             if self.checkForStop():
                 return None
             

@@ -68,7 +68,8 @@ class sfp_googlesearch(SpiderFootPlugin):
         # We attempt to make the URL look as authentically human as possible
         seedUrl = "http://www.google.com/search?q={0}".format(searchString) + \
             "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
-        firstPage = sf.fetchUrl(seedUrl)
+        firstPage = sf.fetchUrl(seedUrl, timeout=self.opts['_fetchtimeout'],
+            useragent=self.opts['_useragent'])
         if firstPage['code'] == "403":
             sf.error("Google doesn't like us right now..")
             return None
@@ -103,7 +104,8 @@ class sfp_googlesearch(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            nextPage = sf.fetchUrl('http://www.google.com' + nextUrl)
+            nextPage = sf.fetchUrl('http://www.google.com' + nextUrl,
+                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if firstPage['code'] == 403:
                 sf.error("Google doesn't like us any more..")
                 return returnResults

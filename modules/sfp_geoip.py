@@ -58,7 +58,8 @@ class sfp_geoip(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        res = sf.fetchUrl("http://api.hostip.info/get_json.php?ip=" + eventData)
+        res = sf.fetchUrl("http://api.hostip.info/get_json.php?ip=" + eventData,
+            timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] == None:
             sf.info("No GeoIP info found for " + eventData)
         try:

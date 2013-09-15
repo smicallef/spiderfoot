@@ -59,7 +59,8 @@ class sfp_ripe(SpiderFootPlugin):
             self.results[eventData] = True
 
         if eventName == 'SUBDOMAIN':
-            res = sf.fetchUrl("http://stat.ripe.net/data/dns-chain/data.json?resource=" + eventData)
+            res = sf.fetchUrl("http://stat.ripe.net/data/dns-chain/data.json?resource=" + \
+                eventData, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if res['content'] == None:
                 sf.info("No RIPE info found/available for " + eventData)
                 return None
@@ -83,7 +84,8 @@ class sfp_ripe(SpiderFootPlugin):
             return None
 
         # First get the netblock the IP resides on
-        res = sf.fetchUrl("http://stat.ripe.net/data/network-info/data.json?resource=" + eventData)
+        res = sf.fetchUrl("http://stat.ripe.net/data/network-info/data.json?resource=" + \
+            eventData, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] == None:
             sf.info("No RIPE info found/available for " + eventData)
             return None
@@ -100,14 +102,15 @@ class sfp_ripe(SpiderFootPlugin):
             return None
 
         # Now see who owns the prefix
-        res = sf.fetchUrl("http://stat.ripe.net/data/whois/data.json?resource=" + prefix)
+        res = sf.fetchUrl("http://stat.ripe.net/data/whois/data.json?resource=" + \
+            prefix, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] == None:
             sf.info("No RIPE info found/available for prefix: " + prefix)
             return None
 
         keyword = sf.domainKeyword(self.baseDomain)
         res['content'] = res['content'].lower()
-        print keyword + " and " + self.baseDomain + " in: " + res['content']
+        #print keyword + " and " + self.baseDomain + " in: " + res['content']
         # Crude and probably prone to a lot of false positives. Need to revisit.
         if self.baseDomain in res['content'] or "\"" + keyword in res['content'] \
             or keyword +"\"" in res['content'] or keyword +"-" in res['content'] \
@@ -122,7 +125,8 @@ class sfp_ripe(SpiderFootPlugin):
 
     def start(self):
         res = sf.fetchUrl("http://stat.ripe.net/data/dns-chain/data.json?resource=" + \
-            self.baseDomain)
+            self.baseDomain, timeout=self.opts['_fetchtimeout'], 
+            useragent=self.opts['_useragent'])
         if res['content'] == None:
             sf.info("No RIPE info found/available for " + self.baseDomain)
             return None

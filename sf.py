@@ -35,7 +35,7 @@ sfConfig = {
 
 sfOptdescs = {
     '_debug':       "Enable debugging?",
-    '_useragent':   "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\useragents.txt or @/home/bob/useragents.txt.",
+    '_useragent':   "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
     '_dnsserver':   "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
     '_fetchtimeout':    "Number of seconds before giving up on a HTTP request.",
     '_modulesenabled':  "Modules enabled for the scan." # This is a hack to get a description for

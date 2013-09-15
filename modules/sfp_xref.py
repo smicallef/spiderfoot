@@ -92,7 +92,8 @@ class sfp_xref(SpiderFootPlugin):
             return
 
         sf.debug("Testing for affiliation: " + url)
-        res = sf.fetchUrl(url)
+        res = sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+            useragent=self.opts['_useragent'])
         self.fetched.append(url)
 
         if res['content'] == None:
@@ -109,7 +110,8 @@ class sfp_xref(SpiderFootPlugin):
         if not self.opts['forcebase'] and len(matches) > 0 and self.opts['checkbase']:
             # Check the base url to see if there is an affiliation
             url = sf.urlBaseUrl(eventData)
-            res = sf.fetchUrl(url)
+            res = sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+                useragent=self.opts['_useragent'])
             if res['content'] != None:
                 matches = re.findall("([\.\'\/\"\ ]" + self.baseDomain + "[\'\/\"\ ])", 
                     res['content'], re.IGNORECASE)

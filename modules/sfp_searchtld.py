@@ -116,7 +116,8 @@ class sfp_searchtld(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            pageContent = sf.fetchUrl('http://' + result)
+            pageContent = sf.fetchUrl('http://' + result,
+                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if pageContent['content'] != None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
                 self.notifyListeners(evt)
@@ -135,7 +136,8 @@ class sfp_searchtld(SpiderFootPlugin):
         #    self.scrapeWhois(keyword)
 
         # Look through all TLDs for the existence of this target keyword
-        tldlistContent = sf.fetchUrl(self.opts['tldlist'])
+        tldlistContent = sf.fetchUrl(self.opts['tldlist'],
+            timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if tldlistContent['content'] == None:
             sf.error("Unable to obtain TLD list from " + self.opts['tldlist'], False)
         else:

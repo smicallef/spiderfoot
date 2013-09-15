@@ -103,7 +103,8 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            whois = sf.fetchUrl(fetchPage)
+            whois = sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
+                useragent=self.opts['_useragent'])
             if whois['content'] == None:
                 return None
 
@@ -134,7 +135,8 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            domtool = sf.fetchUrl(fetchPage)
+            domtool = sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
+                useragent=self.opts['_useragent'])
             if domtool['content'] == None:
                 return None
 
@@ -168,7 +170,8 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            namedrop = sf.fetchUrl(fetchPage)
+            namedrop = sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
+                useragent=self.opts['_useragent'])
             if namedrop['content'] == None:
                 return None
 
@@ -200,7 +203,8 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            pageContent = sf.fetchUrl('http://' + result)
+            pageContent = sf.fetchUrl('http://' + result, 
+                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if pageContent['content'] != None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
                 self.notifyListeners(evt)
