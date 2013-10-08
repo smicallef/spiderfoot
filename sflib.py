@@ -562,6 +562,7 @@ class SpiderFootPlugin(object):
     def notifyListeners(self, sfEvent):
         eventName = sfEvent.eventType
         eventData = sfEvent.data
+        storeOnly = False # Under some conditions, only store and don't notify
 
         # Check if we've been asked to stop in the meantime, so that
         # notifications stop triggering module activity.
@@ -572,11 +573,40 @@ class SpiderFootPlugin(object):
             #print "No data to send for " + eventName + " to " + listener.__module__
             return None
 
+        # Look back to ensure the original notification for an element
+        # is what's linked to children. For instance, sfp_dns may find
+        # xyz.abc.com, and then sfp_ripe obtains some raw data for the
+        # same, and then sfp_dns finds xyz.abc.com in there, we should
+        # suppress the notification of that to other modules, as the
+        # original xyz.abc.com notification from sfp_dns will trigger
+        # those modules anyway. This also avoids messy iterations that
+        # traverse many many levels.
+
+        # storeOnly is used in this case so that the source to dest
+        # relationship is made, but no further events are triggered
+        # from dest, as we are already operating on dest's original
+        # notification from one of the upstream events.
+
+        prevEvent = sfEvent.sourceEvent
+        while prevEvent != None:
+            if prevEvent.sourceEvent != None:
+                if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
+                    prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
+                    #print "Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data
+                    storeOnly = True
+                    break
+            prevEvent = prevEvent.sourceEvent
+
         for listener in self._listenerModules:
             #print listener.__module__ + ": " + listener.watchedEvents().__str__()
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
                 #print listener.__module__ + " not listening for " + eventName
                 continue
+
+            if storeOnly and "__stor" not in listener.__module__:
+                #print "Storing only for " + sfEvent.eventType + " / " + sfEvent.data
+                continue
+
             #print "Notifying " + eventName + " to " + listener.__module__
             listener._currentEvent = sfEvent
             listener.handleEvent(sfEvent)
@@ -644,11 +674,6 @@ class SpiderFootEvent(object):
         else:
             self.sourceEventHash = "ROOT"
 
-        # Handle lists, dicts
-        #if type(self.data) not in [str, unicode]:
-        #    self.__id = unicode(self.eventType + str(self.data) + str(self.generated) + self.module, 'utf-8', errors='replace')
-        #else:
-        #    self.__id = self.eventType + self.data + str(self.generated) + self.module
         self.__id = self.eventType + str(self.generated) + self.module + \
             str(random.randint(0, 99999999))
 
