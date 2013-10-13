@@ -370,9 +370,30 @@ class SpiderFoot:
         return baseurl.split('/')[2].lower()
 
     # Extract the keyword (the domain without the TLD or any subdomains)
-    # from a domain. Crude for now.. just gets the first word.
+    # from a domain.
     def domainKeyword(self, domain):
         return domain.split('.', 2)[0].lower()
+
+    # Obtain the domain name for a supplied hostname
+    # tldList needs to be an array based on the Mozilla public list
+    def hostDomain(self, hostname, tldList):
+        ps = PublicSuffixList(tldList)
+        return ps.get_public_suffix(hostname)
+
+    # Simple way to verify IPs.
+    def validIP(self, address):
+        parts = address.split(".")
+        if parts == None:
+            return False
+
+        if len(parts) != 4:
+            return False
+        for item in parts:
+            if not item.isdigit():
+                return False
+            if not 0 <= int(item) <= 255:
+                return False
+        return True
 
     #
     # General helper functions to automate many common tasks between modules
@@ -772,7 +793,7 @@ class PublicSuffixList(object):
 			#input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
 			#input_file = codecs.open(input_path, "r", "utf8")
 
-		root = self._build_structure(input_file)
+		root = self._build_structure(input_data)
 		self.root = self._simplify(root)
 
 	def _find_node(self, parent, parts):
