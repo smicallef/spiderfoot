@@ -70,9 +70,12 @@ class SpiderFootDb:
             )",
             "CREATE INDEX idx_scan_results_id ON tbl_scan_results (scan_instance_id)",
             "CREATE INDEX idx_scan_results_type ON tbl_scan_results (scan_instance_id, type)",
-            "CREATE INDEX idx_scan_results_hash ON tbl_scan_results (hash)",
+            "CREATE INDEX idx_scan_results_hash ON tbl_scan_results (scan_instance_id, hash)",
+            "CREATE INDEX idx_scan_results_srchash ON tbl_scan_results (scan_instance_id, source_event_hash)",
             "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE', 'Affiliate', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE', 'Affiliate (Hostname)', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_DOMAIN', 'Affiliate (Domain)', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_IPADDR', 'Affiliate (IP Address)', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0)",
@@ -88,7 +91,7 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_DATA', 'Raw Data', 1)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOCIAL_MEDIA', 'Social Media Presence', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SUBDOMAIN', 'Sub-domain', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SUBDOMAIN', 'Sub-domain/Hostname', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SIMILARDOMAIN', 'Similar Domain', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUED', 'SSL Certificate - Issued to', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUER', 'SSL Certificate - Issued by', 0)",
@@ -286,7 +289,7 @@ class SpiderFootDb:
 
     # Obtain a unique list of elements
     def scanResultEventUnique(self, instanceId, eventType='ALL'):
-        qry = "SELECT DISTINCT data, type FROM tbl_scan_results \
+        qry = "SELECT DISTINCT data, type, COUNT(*) FROM tbl_scan_results \
             WHERE scan_instance_id = ?"
         qvars = [instanceId]
 
@@ -294,7 +297,7 @@ class SpiderFootDb:
             qry = qry + " AND type = ?"
             qvars.append(eventType)
 
-        qry = qry + " ORDER BY type, data"
+        qry = qry + " GROUP BY type, data ORDER BY COUNT(*)"
 
         try:
             self.dbh.execute(qry, qvars)
@@ -489,7 +492,7 @@ class SpiderFootDb:
 
     # History of data from the scan
     def scanResultHistory(self, instanceId):
-        qry = "SELECT STRFTIME('%H:%M %w', ROUND(generated/1000), 'unixepoch') AS hourmin, \
+        qry = "SELECT STRFTIME('%H:%M %w', generated, 'unixepoch') AS hourmin, \
                 type, COUNT(*) FROM tbl_scan_results \
                 WHERE scan_instance_id = ? GROUP BY hourmin, type"
         qvars = [instanceId]
