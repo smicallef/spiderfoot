@@ -23,14 +23,11 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_searchtld(SpiderFootPlugin):
-    """Search all Internet TLDs for domains with the same name as the target."""
+    """TLD Search:Search all Internet TLDs for domains with the same name as the target."""
 
     # Default options
     opts = {
         'activeonly':   True, # Only report domains that have content (try to fetch the page)
-        'checkcommon':  True, # For every TLD, try the common sub-TLDs like com, net, etc. too
-        'commontlds':   ['com', 'info', 'net', 'org', 'biz', 'co', 'edu', 'gov', 'mil' ],
-        'tldlist':      "http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
         'skipwildcards':    True,
         'maxthreads':   100
     }
@@ -38,9 +35,6 @@ class sfp_searchtld(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'activeonly':   "Only report domains that have content (try to fetch the page)?",
-        'checkcommon':  "For every TLD, also prepend each common sub-TLD (com, net, ...)",
-        "commontlds":   "Common sub-TLDs to try when iterating through all Internet TLDs.",
-        "tldlist":      "The list of all Internet TLDs.",
         "skipwildcards":    "Skip TLDs and sub-TLDs that have wildcard DNS.",
         "maxthreads":   "Number of simultaneous DNS resolutions to perform at once."
     }
@@ -131,50 +125,32 @@ class sfp_searchtld(SpiderFootPlugin):
         sf.debug("Keyword extracted from " + self.baseDomain + ": " + keyword)
         targetList = list()
 
-        # No longer seems to work.
-        #if "whois" in self.opts['source'] or "ALL" in self.opts['source']:
-        #    self.scrapeWhois(keyword)
-
         # Look through all TLDs for the existence of this target keyword
-        tldlistContent = sf.fetchUrl(self.opts['tldlist'],
-            timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-        if tldlistContent['content'] == None:
-            sf.error("Unable to obtain TLD list from " + self.opts['tldlist'], False)
-        else:
-            for tld in tldlistContent['content'].lower().splitlines():
-                if tld.startswith("#"):
-                    continue
+        for tld in self.opts['_internettlds']:
+            tld = unicode(tld.strip(), errors='ignore')
 
-                if self.opts['skipwildcards'] and sf.checkDnsWildcard(tld):
-                    continue
+            if tld.startswith("//") or len(tld) == 0:
+                continue
 
-                tryDomain = keyword + "." + tld
+            if tld.startswith("!") or tld.startswith("*") or tld.startswith(".."):
+                continue
 
-                if self.checkForStop():
-                    return None
+            if tld.endswith(".arpa"):
+                continue
 
-                if len(targetList) <= self.opts['maxthreads']:
-                    targetList.append(tryDomain)
-                else:
-                    self.tryTldWrapper(targetList)
-                    targetList = list()
+            if self.opts['skipwildcards'] and sf.checkDnsWildcard(tld):
+                continue
 
-                # Try to resolve <target>.<subTLD>.<TLD>
-                if self.opts['checkcommon']:
-                    for subtld in self.opts['commontlds']:
-                        subDomain = keyword + "." + subtld + "." + tld 
+            tryDomain = keyword + "." + tld
 
-                        if self.checkForStop():
-                            return None
+            if self.checkForStop():
+                return None
 
-                        if self.opts['skipwildcards'] and sf.checkDnsWildcard(subtld+"."+tld):
-                            pass   
-                        else:
-                            if len(targetList) <= self.opts['maxthreads']:
-                                targetList.append(subDomain)
-                            else:
-                                self.tryTldWrapper(targetList)
-                                targetList = list()
+            if len(targetList) <= self.opts['maxthreads']:
+                targetList.append(tryDomain)
+            else:
+                self.tryTldWrapper(targetList)
+                targetList = list()
 
         # Scan whatever may be left over.
         if len(targetList) > 0:
