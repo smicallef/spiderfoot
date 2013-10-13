@@ -23,7 +23,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_dns(SpiderFootPlugin):
-    """Performs a number of DNS checks to obtain Sub-domains/Hostnames, IP Addresses and Affiliates."""
+    """DNS:Performs a number of DNS checks to obtain Sub-domains/Hostnames, IP Addresses and Affiliates."""
 
     # Default options
     opts = {
@@ -77,12 +77,18 @@ class sfp_dns(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         addrs = None
-        if eventName == "RAW_DATA":
-            parentEvent = event.sourceEvent
-        else:
-            parentEvent = event
+        #if eventName == "RAW_DATA":
+        #    parentEvent = event.sourceEvent
+        #else:
+        #    parentEvent = event
+        parentEvent = event
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.subresults.has_key(eventData):
+            return None
+
+        self.subresults[eventData] = True
 
         if eventName in [ "RAW_DATA", "LINKED_URL_INTERNAL" ]:
             # If we've received a link or some raw data, extract potential sub-domains
@@ -95,17 +101,14 @@ class sfp_dns(SpiderFootPlugin):
                     if match.lower().startswith("2f"):
                         continue
 
-                    sf.debug("Found sub-domain: " + match)
-                    if self.subresults.has_key(match):
-                        continue
-                    else:
-                        sf.info("New sub-domain/host found: " + match)
-                        self.subresults[match] = True
-                        evt = SpiderFootEvent("SUBDOMAIN", match, self.__name__, parentEvent)
-                        self.notifyListeners(evt)
+                    sf.info("Sub-domain/host found: " + match)
+                    evt = SpiderFootEvent("SUBDOMAIN", match, self.__name__, parentEvent)
+                    self.notifyListeners(evt)
 
             # Nothing left to do with internal links and raw data
             return None
+
+        # Handling SUBDOMAIN, AFFILIATE and IP_ADDRESS events..
 
         # Don't look up stuff twice
         if self.results.has_key(eventData):
@@ -143,27 +146,12 @@ class sfp_dns(SpiderFootPlugin):
             sf.info("Unable to resolve " + eventData + " (" + str(e) + ")")
             return None
 
-    # Simple way to verify IPs.
-    def validIP(self, address):
-        parts = address.split(".")
-        if parts == None:
-            return False
-
-        if len(parts) != 4:
-            return False
-        for item in parts:
-            if not item.isdigit():
-                return False
-            if not 0 <= int(item) <= 255:
-                return False
-        return True
-
     def processHost(self, host, parentEvent=None):
         sf.info("Found host: " + host)
         # If the returned hostname is on a different
         # domain to baseDomain, flag it as an affiliate
         if not host.lower().endswith(self.baseDomain):
-            if self.validIP(host):
+            if sf.validIP(host):
                 type = "IP_ADDRESS"
             else:
                 type = "AFFILIATE"

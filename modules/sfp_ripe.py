@@ -20,7 +20,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_ripe(SpiderFootPlugin):
-    """Queries RIPE to identify netblocks and other info."""
+    """RIPE Query:Queries RIPE to identify netblocks and other info."""
 
     # Default options
     opts = { }

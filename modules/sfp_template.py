@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_XXX(SpiderFootPlugin):
-    """Description"""
+    """Name:Description"""
 
     # Default options
     opts = { }

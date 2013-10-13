@@ -19,7 +19,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_bingsearch(SpiderFootPlugin):
-    """Some light Bing scraping to identify sub-domains."""
+    """Bing:Some light Bing scraping to identify sub-domains."""
 
     # Default options
     opts = {

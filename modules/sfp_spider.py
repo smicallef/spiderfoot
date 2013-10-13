@@ -19,7 +19,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_spider(SpiderFootPlugin):
-    """ Spidering of web-pages to extract content for searching. Probably the most important module. """
+    """Spider:Spidering of web-pages to extract content for searching. Probably the most important module. """
 
     # Default options
     opts = {

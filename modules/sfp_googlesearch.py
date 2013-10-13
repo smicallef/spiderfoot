@@ -19,7 +19,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_googlesearch(SpiderFootPlugin):
-    """Some light Google scraping to identify links for spidering."""
+    """Google:Some light Google scraping to identify links for spidering."""
 
     # Default options
     opts = {

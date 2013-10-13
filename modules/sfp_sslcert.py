@@ -20,7 +20,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_sslcert(SpiderFootPlugin):
-    """Gather information about SSL certificates used by the target's HTTPS sites."""
+    """SSL:Gather information about SSL certificates used by the target's HTTPS sites."""
 
     # Default options
     opts = { 

@@ -20,7 +20,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_geoip(SpiderFootPlugin):
-    """Identifies the physical location of IP addresses identified."""
+    """GeoIP:Identifies the physical location of IP addresses identified."""
 
     # Default options
     opts = { }

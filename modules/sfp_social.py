@@ -29,7 +29,7 @@ regexps = dict({
 })
 
 class sfp_social(SpiderFootPlugin):
-    """Identify presence on social media networks such as LinkedIn, Twitter and others."""
+    """Social Networks:Identify presence on social media networks such as LinkedIn, Twitter and others."""
 
     # Default options
     opts = { }

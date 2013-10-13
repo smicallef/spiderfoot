@@ -18,7 +18,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_websvr(SpiderFootPlugin):
-    """Obtain web server banners to identify versions of web servers being used."""
+    """Web Server:Obtain web server banners to identify versions of web servers being used."""
 
     # Default options
     opts = { }

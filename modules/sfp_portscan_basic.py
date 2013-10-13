@@ -21,7 +21,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_portscan_basic(SpiderFootPlugin):
-    """Scans for commonly open TCP ports on Internet-facing systems."""
+    """Port Scanner:Scans for commonly open TCP ports on Internet-facing systems."""
 
     # Default options
     opts = {
@@ -122,7 +122,8 @@ class sfp_portscan_basic(SpiderFootPlugin):
         for cp in resArray:
             if resArray[cp]:
                 sf.info("TCP Port " + cp + " found to be OPEN.")
-                evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
+                (addr, port) = cp.split(":")
+                evt = SpiderFootEvent("TCP_PORT_OPEN", port, self.__name__, srcEvent)
                 self.notifyListeners(evt)
                 if resArray[cp] != "" and resArray[cp] != True:
                     bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", resArray[cp],

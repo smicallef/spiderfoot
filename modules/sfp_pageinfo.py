@@ -30,7 +30,7 @@ regexps = dict({
 })
 
 class sfp_pageinfo(SpiderFootPlugin):
-    """Obtain information about web pages (do they take passwords, do they contain forms,
+    """Page Info:Obtain information about web pages (do they take passwords, do they contain forms,
 etc.)"""
 
     # Default options

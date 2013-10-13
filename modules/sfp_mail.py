@@ -18,12 +18,12 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_mail(SpiderFootPlugin):
-    """ Identify e-mail addresses in any obtained web content."""
+    """E-Mail:Identify e-mail addresses in any obtained data."""
 
     # Default options
     opts = {
         # options specific to this module
-        'includesubdomains':   False, # Include e-mail addresses on sub-domains of
+        'includesubdomains':   True, # Include e-mail addresses on sub-domains of
                                     # the target domain
         'includeexternal':  False # Include e-mail addrs on external domains
     }
@@ -73,11 +73,7 @@ class sfp_mail(SpiderFootPlugin):
                 sf.debug("E-mail (or something) from somewhere else..")
                 continue
 
-            if self.results.has_key(match):
-                sf.debug("Already found, skipping.")
-                continue
-            else:
-                self.results[match] = True
+            self.results[match] = True
 
             # Include e-mail addresses on sub-domains within the domain?
             if not self.opts['includesubdomains']:

@@ -20,7 +20,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_xref(SpiderFootPlugin):
-    """Identify whether other domains are associated ('Affiliates') of the target."""
+    """Cross-Reference:Identify whether other domains are associated ('Affiliates') of the target."""
 
     # Default options
     opts = {
