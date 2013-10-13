@@ -1,7 +1,9 @@
 --
 -- Event types and their descriptions
 --
-INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE', 'Affiliate', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE', 'Affiliate (Hostname)', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_DOMAIN', 'Affiliate (Domain)', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_IPADDR', 'Affiliate (IP Address)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0);
@@ -17,7 +19,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_JA
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_MAIL', 'Email Gateway (MX)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_DATA', 'Raw Data', 1);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOCIAL_MEDIA', 'Social Media Presence', 0);
-INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SUBDOMAIN', 'Sub-domain', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SUBDOMAIN', 'Sub-domain/Hostname', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SIMILARDOMAIN', 'Similar Domain', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUED', 'SSL Certificate - Issued to', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUER', 'SSL Certificate - Issued by', 0);
