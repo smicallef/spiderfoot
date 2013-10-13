@@ -85,6 +85,13 @@ class SpiderFootScanner:
         try:
             # Process global options that point to other places for data
             self.config['_useragent'] = self.sf.optValueToData(self.config['_useragent'])
+            tlddata = self.sf.cacheGet("internet_tlds", self.config['_internettlds_cache'])
+            # If it wasn't loadable from cache, load it from scratch
+            if tlddata == None:
+                self.config['_internettlds'] = self.sf.optValueToData(self.config['_internettlds'])
+                self.sf.cachePut("internet_tlds", self.config['_internettlds'])
+            else:
+                self.config["_internettlds"] = tlddata.splitlines()
 
             for modName in self.moduleList:
                 if modName == '':

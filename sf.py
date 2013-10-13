@@ -26,6 +26,8 @@ sfConfig = {
     '_useragent':        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0', # User-Agent to use for HTTP requests
     '_dnsserver':       '', # Override the default resolver
     '_fetchtimeout':     5, # number of seconds before giving up on a fetch
+    '_internettlds':    'http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1',
+    '_internettlds_cache':  72,
     '__database':        'spiderfoot.db',
     '__webaddr':         '127.0.0.1',
     '__webport':         5001,
@@ -35,6 +37,8 @@ sfConfig = {
 
 sfOptdescs = {
     '_debug':       "Enable debugging?",
+    '_internettlds':    "List of Internet TLDs.",
+    '_internettlds_cache': "Hours to cache the Internet TLD list. This can safely be quite a long time given that the list doesn't change too often.",
     '_useragent':   "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
     '_dnsserver':   "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
     '_fetchtimeout':    "Number of seconds before giving up on a HTTP request.",
@@ -63,7 +67,8 @@ if __name__ == '__main__':
             sfModules[modName] = dict()
             mod = __import__('modules.' + modName, globals(), locals(), [modName])
             sfModules[modName]['object'] = getattr(mod, modName)()
-            sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__
+            sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":",2)[0]
+            sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":",2)[1]
             if hasattr(sfModules[modName]['object'], 'opts'):
                 sfModules[modName]['opts'] = sfModules[modName]['object'].opts
             if hasattr(sfModules[modName]['object'], 'optdescs'):
