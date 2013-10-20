@@ -2,7 +2,6 @@
 <h2>${name} &nbsp;<img id=loader src=/static/img/loader.gif></h2>
   <div class="btn-toolbar">
    <div class="btn-group">
-    <!--<a id='btn-live' class="btn active" href="#" onClick='liveView("${id}")'><i class='icon-eye-open'></i>&nbsp;Live View</a> -->
       <a id='btn-browse' class="btn" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
       <a id='btn-info' class="btn" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-log' class="btn" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
@@ -12,8 +11,17 @@
     <a id='btn-export' rel="tooltip" title="Export Data to CSV" class="btn-info btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
     </div> 
     <div id='customview' class="btn-group pull-right">
-    <a id='btn-fullview' rel="tooltip" title="Full Data View" class="btn-inverse btn active" onClick='browseUpdate("full")'><i class='icon-th icon-white'></i></a>
-    <a id='btn-uniqueview' rel="tooltip" title="Unique Data View" class="btn-inverse btn" onClick='browseUpdate("unique")'><i class='icon-align-justify icon-white'></i></a>
+     <a id='btn-fullview' rel="tooltip" data-title="Full Data View" class="btn-inverse btn active" onClick='browseUpdate("full")'><i class='icon-th icon-white'></i></a>
+     <a id='btn-uniqueview' rel="tooltip" data-title="Unique Data View" class="btn-inverse btn" onClick='browseUpdate("unique")'><i class='icon-align-justify icon-white'></i></a>
+     <a id='btn-vizview' rel="tooltip" data-title="Visualize" class="btn-inverse btn dropdown-toggle" data-toggle="dropdown"><i class='icon-picture icon-white'></i></a>
+     <ul class="dropdown-menu">
+        <li><a class='link' onClick='browseUpdate("viz-bubble-data")'>Bubble (Data Element)</a></li>
+        <li><a class='link' onClick='browseUpdate("viz-bubble-source")'>Bubble (Source Data Element)</a></li>
+        <li><a class='link' onClick='browseUpdate("viz-dendro")'>Discovery Path</a></li>
+        <li><a class='link' onClick='browseUpdate("viz-discovery")'>Relationship Tree (One Level)</a></li>
+        <li><a class='link' onClick='browseUpdate("viz-discovery")'>Relationship Tree (Two Levels)</a></li>
+        <li><a class='link' onClick='browseUpdate("viz-discovery")'>Relationship Tree (Three Levels)</a></li>
+     </ul>
     </div>
   </div>
 
@@ -22,7 +30,7 @@
         var refresh = function() { browseEventList("${id}"); }
 
         function navTo(target) {
-            var targets = [ "btn-live", "btn-browse", "btn-info", "btn-log", "btn-export" ]
+            var targets = [ "btn-browse", "btn-info", "btn-log", "btn-export", "btn-viz" ]
             for (var i = 0; i < targets.length; i++) {
                 if (targets[i] == target) {
                     $("#" + targets[i]).addClass("active");
@@ -110,6 +118,7 @@
             if (format == 'full') {
                 $("#btn-fullview").addClass("active");
                 $("#btn-uniqueview").removeClass("active");
+                $("#btn-vizview").removeClass("active");
                 sf.fetchData('/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
                             crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
@@ -122,9 +131,9 @@
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><pre style='border: 0px; background-color: inherit'>" + data[i][1];
                                 // for debug
-                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
-                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
-                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
+                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
+                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
+                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
@@ -140,23 +149,64 @@
             if (format == 'unique') {
                 $("#btn-uniqueview").addClass("active");
                 $("#btn-fullview").removeClass("active");
+                $("#btn-vizview").removeClass("active");
                 sf.fetchData('/scaneventresultsunique', {'id': instanceId, 'eventType': eventType }, function(data) {
-                            var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                            crumbs += " <span class='divider'>&gt;</span></li> <li><a onClick=";
+                            var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
+                            crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
                             crumbs += eventTypeLabel + "</a></li></ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
-                            table += "<thead><tr> <th>Unique Data Element</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Unique Data Element</th><th>Occurrences</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
-                                table += "</pre></td>";
+                                table += "</pre></td><td>" + data[i][2] + "</td>";
                                 table += "</tr>";
                             }
                             table += "</tbody></table>"
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(crumbs + table);
                 });
+            }
+
+            if (format.indexOf('viz') == 0) {
+                $("#btn-vizview").addClass("active");
+                $("#btn-fullview").removeClass("active");
+                $("#btn-uniqueview").removeClass("active");
+
+                if (format.indexOf("viz-bubble") == 0) {
+                    sf.fetchData('/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
+                        var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
+                        crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                        crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
+                        crumbs += eventTypeLabel + "</a></li></ul>";
+                        itemList = []
+                        for (var i = 0; i < data.length; i++) {
+                            if (format == "viz-bubble-source") {
+                                itemList.push(data[i][2]);
+                            }
+                            if (format == "viz-bubble-data") {
+                                itemList.push(data[i][1]);
+                            }
+                        }
+                        $("#loader").fadeOut(500);
+                        $("#mainbody").append(crumbs + "<div id='scansummary-content' style='text-align: center'></div>");
+                        sf_viz_bubble("#scansummary-content", itemList)
+                    });
+                }
+
+                if (format == "viz-dendro") {
+                    sf.fetchData("/scanelementtypediscovery", {'id': instanceId, 'eventType': eventType }, function(data) {
+                        var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
+                        crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                        crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
+                        crumbs += eventTypeLabel + "</a></li></ul>";
+
+                        $("#loader").fadeOut(500);
+                        $("#mainbody").append(crumbs + "<div id='scansummary-content' style='text-align: center'></div>");
+                        sf_viz_dendrogram("#scansummary-content", data);
+                    });
+                }
             }
         }
 
