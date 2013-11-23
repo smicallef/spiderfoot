@@ -71,6 +71,13 @@ class sfp_dns(SpiderFootPlugin):
             arr.append('IP_ADDRESS')
         return arr
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "IP_ADDRESS", "SUBDOMAIN", "PROVIDER_MAIL", 
+            "PROVIDER_DNS", "AFFILIATE" ]
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType

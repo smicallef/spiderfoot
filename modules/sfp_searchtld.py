@@ -62,6 +62,12 @@ class sfp_searchtld(SpiderFootPlugin):
     def watchedEvents(self):
         return None
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "SIMILARDOMAIN" ]
+
     def tryTld(self, target):
         try:
             addrs = socket.gethostbyname_ex(target)

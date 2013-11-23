@@ -51,6 +51,12 @@ class sfp_bingsearch(SpiderFootPlugin):
     def watchedEvents(self):
         return None
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "LINKED_URL_INTERNAL" ]
+
     # Scrape Bing for content, starting at startUrl and iterating through
     # results based on options supplied. Will return a dictionary of all pages
     # fetched and their contents {page => content}.

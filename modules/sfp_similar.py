@@ -86,6 +86,12 @@ class sfp_similar(SpiderFootPlugin):
     def watchedEvents(self):
         return None
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "SIMILARDOMAIN" ]
+
     # Fetch and loop through Whois.com results, updating our results data. Stop
     # once we've reached the end.
     def scrapeWhois(self, keyword):

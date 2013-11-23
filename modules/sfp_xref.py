@@ -61,6 +61,12 @@ class sfp_xref(SpiderFootPlugin):
     def watchedEvents(self):
         return ['LINKED_URL_EXTERNAL', 'SIMILARDOMAIN']
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "AFFILIATE" ]
+
     # Handle events sent to this module
     # In this module's case, eventData will be the URL or a domain which
     # was found in some content somewhere.

@@ -52,6 +52,12 @@ class sfp_mail(SpiderFootPlugin):
     def watchedEvents(self):
         return ["RAW_DATA"]
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "EMAILADDR" ]
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType

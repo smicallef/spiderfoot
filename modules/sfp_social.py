@@ -60,6 +60,12 @@ class sfp_social(SpiderFootPlugin):
     def watchedEvents(self):
         return ["LINKED_URL_EXTERNAL"]
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "SOCIAL_MEDIA" ]
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType

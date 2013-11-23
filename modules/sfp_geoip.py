@@ -43,6 +43,12 @@ class sfp_geoip(SpiderFootPlugin):
     def watchedEvents(self):
         return ['IP_ADDRESS']
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "GEOINFO" ]
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType

@@ -76,6 +76,12 @@ class sfp_portscan_basic(SpiderFootPlugin):
     def watchedEvents(self):
         return ['IP_ADDRESS']
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER" ]
+
     def tryPort(self, ip, port):
         try:
             sock = socket.create_connection((ip, port), self.opts['timeout'])

@@ -61,6 +61,14 @@ class sfp_sslcert(SpiderFootPlugin):
     def watchedEvents(self):
         return ["SUBDOMAIN", "LINKED_URL_INTERNAL"]
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
+            "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
+            "SSL_CERTIFICATE_EXPIRING" ]
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType

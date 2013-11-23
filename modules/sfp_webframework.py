@@ -59,6 +59,12 @@ class sfp_webframework(SpiderFootPlugin):
     def watchedEvents(self):
         return ["RAW_DATA"]
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "URL_JAVASCRIPT_FRAMEWORK" ]
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType

@@ -201,6 +201,13 @@ class sfp_spider(SpiderFootPlugin):
     def watchedEvents(self):
         return [ "LINKED_URL_INTERNAL", "SUBDOMAIN" ]
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "WEBSERVER_HTTPHEADERS", "HTTP_CODE", "LINKED_URL_INTERNAL",
+            "LINKED_URL_EXTERNAL" ]
+
     # Some other modules may request we spider things
     def handleEvent(self, event):
         eventName = event.eventType

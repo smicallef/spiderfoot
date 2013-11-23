@@ -54,6 +54,13 @@ etc.)"""
     def watchedEvents(self):
         return ["RAW_DATA"]
 
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return [ "URL_STATIC", "URL_JAVASCRIPT", "URL_FORM", "URL_PASSWORD",
+            "URL_UPLOAD", "URL_JAVA_APPLET", "URL_FLASH", "PROVIDER_JAVASCRIPT" ]
+
     # Handle events sent to this module
     def handleEvent(self, event):
         # We are only interested in the raw data from the spidering module
