@@ -69,8 +69,11 @@ function sf_viz_countLevels(arg, levelsDeep, maxLevels) {
     return [ levels, max ];
 }
 
-function sf_viz_dendrogram(targetId, plotData) {
-    var width = sf_viz_countLevels([plotData], 0, 0)[1] * 150;
+function sf_viz_dendrogram(targetId, data) {
+    var plotData = data['tree'];
+    var dataMap = data['data'];
+    console.dir(dataMap);
+    var width = sf_viz_countLevels([plotData], 0, 0)[1] * 120;
     var height = sf_viz_countTailNodes([plotData]) * 20;
 
     if (width < 600) {
@@ -108,7 +111,7 @@ function sf_viz_dendrogram(targetId, plotData) {
         .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
         .on("mouseover", function(d, i) {
             d3.select(this).style("fill", "silver");
-            showToolTip(d.name, d3.event.pageX+10, d3.event.pageY+10,true);
+            showToolTip(buildPopupMessage(dataMap[d.name]), d3.event.pageX+10, d3.event.pageY+10,true);
         })
         .on("mouseout", function() {
             d3.select(this).style("fill", "black");
@@ -119,12 +122,37 @@ function sf_viz_dendrogram(targetId, plotData) {
         .attr("r", 4.5);
 
     node.append("text")
-        .attr("dx", function(d) { return d.children ? -8 : 8; })
+        .attr("dx", function(d) { 
+            if (d.depth == 0) { 
+                return 50;
+            }
+
+            return d.children ? -8 : 8; 
+        })
         .attr("dy", 3)
         .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
-        .text(function(d) { return 'something'; });
+        .text(function(d) { 
+            if (dataMap[d.name][1].length > 20) {
+                return dataMap[d.name][1].substring(0, 20) + "...";
+            } else {
+                return dataMap[d.name][1];
+            }
+        });
 
     d3.select(targetId).style("height", height + "px");
+
+    function buildPopupMessage(data) {
+        if (data[1].length > 200) {
+            data[1] = data[1].substring(0, 200) + "...";
+        }
+        data[1] = data[1].replace("<", "&lt;").replace(">", "&gt;");
+        message = "<table>";
+        message += "<tr><td><b>Type:</b></td><td>" + data[10] + "</td></tr>";
+        message += "<tr><td><b>Source Module:</b></td><td>" + data[3] + "</td></tr>";
+        message += "<tr><td><b>Data:</b></td><td>" + data[1] + "</td></tr>";
+        message += "</table>";
+        return message;
+    }
 
     function showToolTip(pMessage,pX,pY,pShow) {
         if (typeof(tooltipDivID)=="undefined") {

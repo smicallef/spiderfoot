@@ -161,6 +161,16 @@ class SpiderFootDb:
     def close(self):
         self.dbh.close()
 
+    # Get event types
+    def eventTypes(self):
+        qry = "SELECT event_descr, event, event_raw FROM tbl_event_types"
+        try:
+            self.dbh.execute(qry)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when retreiving event types:" +
+                e.args[0])
+
     # Log an event to the database
     def scanLogEvent(self, instanceId, classification, message, component=None):
         if component == None:
@@ -266,10 +276,13 @@ class SpiderFootDb:
     def scanResultEvent(self, instanceId, eventType='ALL'):
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
-            c.module, c.type, c.confidence, c.visibility, c.risk, c.hash \
-            FROM tbl_scan_results c, tbl_scan_results s \
+            c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
+            c.source_event_hash, t.event_descr \
+            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
-            s.scan_instance_id = c.scan_instance_id"
+            s.scan_instance_id = c.scan_instance_id AND \
+            t.event = c.type"
+
         qvars = [instanceId]
 
         if eventType != "ALL":
@@ -501,4 +514,30 @@ class SpiderFootDb:
             return self.dbh.fetchall()
         except sqlite3.Error as e:
             sf.error("SQL error encountered when fetching scan history: " + e.args[0])
+
+
+    # Get the source IDs, types and data for a set of IDs
+    def scanElementSources(self, instanceId, elementIdList):
+        # the output of this needs to be aligned with scanResultEvent,
+        # as other functions call both expecting the same output.
+        qry = "SELECT ROUND(c.generated) AS generated, c.data, \
+            s.data as 'source_data', \
+            c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
+            c.source_event_hash, t.event_descr \
+            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
+            WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
+            s.scan_instance_id = c.scan_instance_id AND \
+            t.event = c.type AND c.hash in ("
+        qvars = [instanceId]
+
+        for hashId in elementIdList:
+            qry = qry + "'" + hashId + "',"
+        qry = qry + "'')"
+
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when getting source element IDs: " + e.args[0])
+
 

@@ -395,6 +395,50 @@ class SpiderFoot:
                 return False
         return True
 
+    # Converts a dictionary of k -> array to a nested
+    # tree that can be digested by d3 for visualizations.
+    def dataParentChildToTree(self, data):
+        def get_children(needle, haystack):
+            #print "called"
+            ret = list()
+
+            if needle not in haystack.keys():
+                return None
+
+            if haystack[needle] == None:
+                return None
+
+            for c in haystack[needle]:
+                #print "found child of " + needle + ": " + c
+                ret.append({ "name": c, "children": get_children(c, haystack) })
+            return ret
+
+        # Find the element with no parents, that's our root.
+        root = None
+        for k in data.keys():
+            if data[k] == None:
+                continue
+
+            contender = True
+            for ck in data.keys():
+                if data[ck] == None:
+                    continue
+
+                if k in data[ck]:
+                    contender = False
+
+            if contender:
+                root = k
+                break
+
+        if root == None:
+            #print "*BUG*: Invalid structure - needs to go back to one root."
+            final = { }
+        else:
+            final = { "name": root, "children": get_children(root, data) }
+
+        return final
+
     #
     # General helper functions to automate many common tasks between modules
     #
@@ -620,11 +664,6 @@ class SpiderFootPlugin(object):
         eventData = sfEvent.data
         storeOnly = False # Under some conditions, only store and don't notify
 
-        # Check if we've been asked to stop in the meantime, so that
-        # notifications stop triggering module activity.
-        if self.checkForStop():
-            return None
-
         if eventData == None or (type(eventData) is unicode and len(eventData) == 0):
             #print "No data to send for " + eventName + " to " + listener.__module__
             return None
@@ -665,6 +704,12 @@ class SpiderFootPlugin(object):
 
             #print "Notifying " + eventName + " to " + listener.__module__
             listener._currentEvent = sfEvent
+
+            # Check if we've been asked to stop in the meantime, so that
+            # notifications stop triggering module activity.
+            if self.checkForStop():
+                return None
+
             listener.handleEvent(sfEvent)
 
     # Called to stop scanning
@@ -686,6 +731,12 @@ class SpiderFootPlugin(object):
     # in all events (default behavior).
     def watchedEvents(self):
         return [ '*' ]
+
+    # What events this module produces
+    # This is to support the end user in selecting modules based on events
+    # produced.
+    def producedEvents(self):
+        return None
 
     # Handle events to this module
     # Will usually be overriden by the implementer, unless it doesn't handle

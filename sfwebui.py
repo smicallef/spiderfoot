@@ -104,8 +104,11 @@ class SpiderFootWebUi:
 
     # Configure a new scan
     def newscan(self):
+        dbh = SpiderFootDb(self.config)
+        types = dbh.eventTypes()
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
-        return templ.render(pageid='NEWSCAN', modules=self.config['__modules__'])
+        return templ.render(pageid='NEWSCAN', types=types, 
+            modules=self.config['__modules__'])
     newscan.exposed = True
 
     # Main page listing scans available
@@ -231,7 +234,8 @@ class SpiderFootWebUi:
         retdata = []
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]/1000))
-            retdata.append([generated, row[1], row[2], cgi.escape(row[3])])
+            retdata.append([generated, row[1], row[2], 
+                cgi.escape(unicode(row[3], errors='replace'))])
         return json.dumps(retdata)
     scanlog.exposed = True
 
@@ -273,10 +277,10 @@ class SpiderFootWebUi:
         retdata = []
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
-            escaped = cgi.escape(row[1])
-            # For debug
-            retdata.append([lastseen, escaped, row[2], row[3], row[5], row[6], row[7], row[8]])
-            #retdata.append([lastseen, escaped, row[2], row[3], row[5], row[6], row[7]])
+            escapeddata = cgi.escape(row[1])
+            escapedsrc = cgi.escape(row[2])
+            retdata.append([lastseen, escapeddata, escapedsrc, 
+                row[3], row[5], row[6], row[7], row[8]])
         return json.dumps(retdata, ensure_ascii=False)
     scaneventresults.exposed = True
 
@@ -287,7 +291,7 @@ class SpiderFootWebUi:
         retdata = []
         for row in data:
             escaped = cgi.escape(row[0])
-            retdata.append([escaped, row[1]])
+            retdata.append([escaped, row[1], row[2]])
         return json.dumps(retdata, ensure_ascii=False)
     scaneventresultsunique.exposed = True
 
@@ -298,3 +302,65 @@ class SpiderFootWebUi:
         return json.dumps(data, ensure_ascii=False)
     scanhistory.exposed = True
 
+    def scanelementtypediscovery(self, id, eventType):
+        keepGoing = True
+        sf = SpiderFoot(self.config)
+        dbh = SpiderFootDb(self.config)
+        pc = dict()
+        datamap = dict()
+
+        # Get the events we will be tracing back from
+        leafSet = dbh.scanResultEvent(id, eventType)
+
+        # Get the first round of source IDs for the leafs
+        nextIds = list()
+        for row in leafSet:
+            # these must be unique values!
+            parentId = row[9]
+            childId = row[8]
+            datamap[childId] = row
+
+            if pc.has_key(parentId):
+                if childId not in pc[parentId]:
+                    pc[parentId].append(childId)
+            else:
+                pc[parentId] = [ childId ]
+
+            # parents of the leaf set
+            if parentId not in nextIds:
+                nextIds.append(parentId)
+
+        while keepGoing:
+            #print "Next IDs: " + str(nextIds)
+            parentSet = dbh.scanElementSources(id, nextIds)
+            nextIds = list()
+            keepGoing = False
+
+            for row in parentSet:
+                parentId = row[9]
+                childId = row[8]
+                datamap[childId] = row
+
+                # Prevent us from looping at root
+                # 0 = event_hash and 3 = source_event_hash
+                if row[8] == "ROOT" and row[9] == "ROOT":
+                    continue
+
+                if pc.has_key(parentId):
+                    if childId not in pc[parentId]:
+                        pc[parentId].append(childId)
+                else:
+                    pc[parentId] = [ childId ]
+                if parentId not in nextIds:
+                    nextIds.append(parentId)
+                # Stop until we've found ROOT
+                # 3 = source_event_hash
+                if row[3] != "ROOT":
+                    keepGoing = True
+
+        #print pc
+        retdata = dict()
+        retdata['tree'] = sf.dataParentChildToTree(pc)
+        retdata['data'] = datamap
+        return json.dumps(retdata, ensure_ascii=False)
+    scanelementtypediscovery.exposed = True
