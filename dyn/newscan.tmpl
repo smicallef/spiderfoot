@@ -1,5 +1,8 @@
 <%include file="HEADER.tmpl"/>
 <script type='text/javascript'>
+    activeTab = "module";
+    alternateTab = "type";
+
     function submitForm() {
         modList = "";
         $("[id^=module_]").each(function() {
@@ -9,6 +12,16 @@
         });
 
         $("#modulelist").val(modList);
+    }
+
+    function switchTab() {
+        $("#"+activeTab+"table").hide();
+        $("#"+activeTab+"tab").removeClass("active");
+        $("#"+alternateTab+"table").show();
+        $("#"+alternateTab+"tab").addClass("active");
+        tempTab = alternateTab;
+        alternateTab = activeTab;
+        activeTab = tempTab;
     }
 </script>
 <h2>New Scan</h2>
@@ -33,10 +46,30 @@ Another scan is currently running (${runningScan}). Please either wait for that 
         </div>
     </div>
     <div class="control-group">
-        <label class="control-label" for="moduletable">Modules</label>
+        <ul class='nav nav-tabs'>
+        <li id='moduletab' class="active"><a onClick='switchTab()' href='#'>By Module</a></li>
+        <li id='typetab'><a onClick='switchTab()' href='#'>By Required Data</a></li>
+        <div style='text-align: right'>
+        <button onClick='selectAll()' class="btn-mini btn-info">Select All</button>&nbsp;&nbsp;
+        <button onClick='deselectAll()' class="btn-mini btn-info">De-Select All</button>
+        </div>
+        </ul>
         <table class="table table-striped table-condensed" id="moduletable">
             % for item in sorted(modules):
-                <tr><td><input type=checkbox id="module_${item}" checked></td><td>${item}</td><td>${modules[item]['descr']}</td></tr>
+                <tr><td><input type=checkbox id="module_${item}" checked></td><td>${modules[item]['name']}</td><td>${modules[item]['descr']}</td></tr>
+            % endfor
+        </table>
+        <table class="table table-striped table-condensed" id="typetable" style='display: none'>
+            <% count = 0 %>
+            % for item in sorted(types):
+                % if count % 2 == 0:
+                    <tr>
+                % endif
+                <td><input type=checkbox id="type_${item[1]}" checked></td><td>${item[0]}</td>
+                % if not count % 2 == 0:
+                    </tr>
+                % endif
+                <% count = count + 1 %>
             % endfor
         </table>
     </div>

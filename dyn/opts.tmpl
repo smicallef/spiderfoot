@@ -1,5 +1,6 @@
 <%include file="HEADER.tmpl"/>
 <script type='text/javascript'>
+    activeTab = "global";
     function saveSettings() {
         var retarr = {}
         $(":input").each(function(i) {
@@ -13,6 +14,14 @@
         $("#allopts").val("RESET");
     }
 
+    function switchTab(tab) {
+        $("#optsect_"+activeTab).hide();
+        $("#optsect_"+tab).show();
+        $("#tab_"+activeTab).removeClass("active");
+        $("#tab_"+tab).addClass("active");
+        activeTab = tab;
+    }
+
 </script>
     <h2>Settings</h2>
 % if updated:
@@ -23,6 +32,21 @@
 </div>
 % endif
 <form class="form" action='/savesettings' method='POST'>
+<div style='text-align: left'>
+    <input type=hidden id='allopts' name='allopts' value=''>
+    <button onClick='clearSettings();' class='btn btn-danger'>Reset to Factory Default</button>
+    <button onClick='saveSettings();' class='btn btn-primary'>Save Changes</button>
+<br><br>
+</div>
+
+<div class="tabbable tabs-left">
+<ul class="nav nav-tabs">
+<li id='tab_global' class="active"><a href='#' onClick='switchTab("global");'>Global</a></li>
+% for mod in sorted(opts['__modules__'].keys()):
+    <li id='tab_${mod}'><a href='#' onClick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}</a></li>
+% endfor
+</ul>
+<div id='optsect_global' class="tab-content">
 <h4>Global Settings</h4>
 <table class='table table-bordered table-striped'>
 <thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>
@@ -62,12 +86,15 @@
 % endfor
 </tbody>
 </table>
-<br>
-<h4>Module Settings</h4>
-<table class='table table-bordered table-striped'>
-<thead><tr> <th>Module</th><th>Option</th> <th>Value</th></tr></thead><tbody>
+</div>
 % for mod in sorted(opts['__modules__'].keys()):
     <% modopts = opts['__modules__'][mod]['opts'] %>
+    <div id='optsect_${mod}' style='display: none' class="tab-content">
+    <h4>${mod} Settings</h4>
+    <table class='table table-bordered table-striped'>
+    <thead><tr> <th>Option</th> <th>Value</th></tr></thead>
+    <tbody>
+
     % for opt in opts['__modules__'][mod]['opts'].keys():
         % if not opt.startswith("_"):
             <%
@@ -76,7 +103,8 @@
             else:
                 optdesc = opts['__modules__'][mod]['optdescs'][opt]
             %>
-            <tr><td>${mod}</td><td>${optdesc}</td><td>
+
+            <tr><td>${optdesc}</td><td>
             % if type(modopts[opt]) is int:
                 <input id='${mod}:${opt}' class='input-mini' type=text value="${modopts[opt]}">
             % endif
@@ -109,13 +137,10 @@
             </td></tr>
         % endif
     % endfor
+    </tbody>
+    </table>
+    </div>
 % endfor
-</tbody>
-</table>
-<div style='text-align: right'>
-    <input type=hidden id='allopts' name='allopts' value=''>
-    <button onClick='clearSettings();' class='btn btn-danger'>Reset to Factory Default</button>
-    <button onClick='saveSettings();' class='btn btn-primary'>Save Changes</button>
 </div>
 </form>
 <br><br>
