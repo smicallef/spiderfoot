@@ -93,5 +93,6 @@ CREATE TABLE tbl_scan_results (
 
 CREATE INDEX idx_scan_results_id ON tbl_scan_results (scan_instance_id);
 CREATE INDEX idx_scan_results_type ON tbl_scan_results (scan_instance_id, type);
-CREATE INDEX idx_scan_results_hash ON tbl_scan_results (hash);
+CREATE INDEX idx_scan_results_hash ON tbl_scan_results (scan_instance_id, hash);
+CREATE INDEX idx_scan_results_srchash ON tbl_scan_results (scan_instance_id, source_event_hash);
 CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id);
