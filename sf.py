@@ -69,6 +69,8 @@ if __name__ == '__main__':
             sfModules[modName]['object'] = getattr(mod, modName)()
             sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":",2)[0]
             sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":",2)[1]
+            sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
+            sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
             if hasattr(sfModules[modName]['object'], 'opts'):
                 sfModules[modName]['opts'] = sfModules[modName]['object'].opts
             if hasattr(sfModules[modName]['object'], 'optdescs'):

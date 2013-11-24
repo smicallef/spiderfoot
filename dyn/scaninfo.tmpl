@@ -18,9 +18,6 @@
         <li><a class='link' onClick='browseUpdate("viz-bubble-data")'>Bubble (Data Element)</a></li>
         <li><a class='link' onClick='browseUpdate("viz-bubble-source")'>Bubble (Source Data Element)</a></li>
         <li><a class='link' onClick='browseUpdate("viz-dendro")'>Discovery Path</a></li>
-        <li><a class='link' onClick='browseUpdate("viz-discovery")'>Relationship Tree (One Level)</a></li>
-        <li><a class='link' onClick='browseUpdate("viz-discovery")'>Relationship Tree (Two Levels)</a></li>
-        <li><a class='link' onClick='browseUpdate("viz-discovery")'>Relationship Tree (Three Levels)</a></li>
      </ul>
     </div>
   </div>
@@ -129,11 +126,13 @@
                             table += "<thead><tr> <th>Data Element</th></th>";
                             table += "<th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr><td><pre style='border: 0px; background-color: inherit'>" + data[i][1];
+                                table += "<tr><td><pre style='border: 0px; background-color: inherit'>";
+                                //table += "<a href='/entityinfo?id=" + data[i][7] + "'>" + data[i][1] + "</a>";
+                                table += data[i][1];
                                 // for debug
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
+                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
+                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
+                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
@@ -204,6 +203,7 @@
 
                         $("#loader").fadeOut(500);
                         $("#mainbody").append(crumbs + "<div id='scansummary-content' style='text-align: center'></div>");
+                        console.dir(data);
                         sf_viz_dendrogram("#scansummary-content", data);
                     });
                 }
