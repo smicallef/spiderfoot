@@ -110,6 +110,7 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_UPLOAD', 'URL (Accepts Uploads)', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_BANNER', 'Web Server', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_HTTPHEADERS', 'HTTP Headers', 1)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_STRANGEHEADER', 'Non-Standard HTTP Header', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0)"
     ]
 
@@ -139,7 +140,7 @@ class SpiderFootDb:
             try:
                 self.create()
             except BaseException as e:
-                self.fatal("Tried to set up the SpiderFoot database schema, but failed: " + \
+                sf.error("Tried to set up the SpiderFoot database schema, but failed: " + \
                     e.args[0])
         return
 

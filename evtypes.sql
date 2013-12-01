@@ -38,4 +38,5 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_PASSWOR
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_UPLOAD', 'URL (Accepts Uploads)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_BANNER', 'Web Server', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_HTTPHEADERS', 'HTTP Headers', 1);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_STRANGEHEADER', 'Non-Standard HTTP Header', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0);
