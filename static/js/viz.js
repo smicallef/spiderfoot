@@ -73,7 +73,7 @@ function sf_viz_dendrogram(targetId, data) {
     var plotData = data['tree'];
     var dataMap = data['data'];
     console.dir(dataMap);
-    var width = sf_viz_countLevels([plotData], 0, 0)[1] * 120;
+    var width = sf_viz_countLevels([plotData], 0, 0)[1] * 170;
     var height = sf_viz_countTailNodes([plotData]) * 20;
 
     if (width < 600) {
@@ -132,9 +132,6 @@ function sf_viz_dendrogram(targetId, data) {
         .attr("dy", 3)
         .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
         .text(function(d) { 
-            if (dataMap[d.name][4] == "RAW_DATA") {
-                return "Raw Data";
-            }
             if (dataMap[d.name][1].length > 20) {
                 return dataMap[d.name][1].substring(0, 20) + "...";
             } else {

@@ -4,14 +4,15 @@
     alternateTab = "type";
 
     function submitForm() {
-        modList = "";
-        $("[id^=module_]").each(function() {
+        list = "";
+        $("[id^="+activeTab+"_]").each(function() {
             if ($(this).is(":checked")) {
-                modList += $(this).attr('id') + ",";
+                list += $(this).attr('id') + ",";
             }
         });
 
-        $("#modulelist").val(modList);
+        $("#"+activeTab+"list").val(list);
+        $("#"+alternateTab+"list").val("");
     }
 
     function switchTab() {
@@ -23,6 +24,15 @@
         alternateTab = activeTab;
         activeTab = tempTab;
     }
+
+    function selectAll() {
+        $("[id^="+activeTab+"_]").prop("checked", true);
+    }
+
+    function deselectAll() {
+        $("[id^="+activeTab+"_]").prop("checked", false);
+    }
+
 </script>
 <h2>New Scan</h2>
 % if alreadyRunning == True:
@@ -50,8 +60,8 @@ Another scan is currently running (${runningScan}). Please either wait for that 
         <li id='moduletab' class="active"><a onClick='switchTab()' href='#'>By Module</a></li>
         <li id='typetab'><a onClick='switchTab()' href='#'>By Required Data</a></li>
         <div style='text-align: right'>
-        <button onClick='selectAll()' class="btn-mini btn-info">Select All</button>&nbsp;&nbsp;
-        <button onClick='deselectAll()' class="btn-mini btn-info">De-Select All</button>
+        <button type="button" onClick='selectAll()' class="btn-mini btn-info">Select All</button>&nbsp;&nbsp;
+        <button type="button" onClick='deselectAll()' class="btn-mini btn-info">De-Select All</button>
         </div>
         </ul>
         <table class="table table-striped table-condensed" id="moduletable">
@@ -76,6 +86,7 @@ Another scan is currently running (${runningScan}). Please either wait for that 
     <div class="control-group">
         <div class="controls">
             <input type=hidden id='modulelist' name='modulelist' value=''>
+            <input type=hidden id='typelist' name='typelist' value=''>
             <button onClick='submitForm();' class="btn btn-danger">Run Scan</button>
             <span class="help-block" style='font-size: 10px'>Note: Scan will be started immediately.</span>
         </div>

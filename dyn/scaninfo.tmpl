@@ -82,7 +82,7 @@
                             table += "<thead><tr> <th>Type</th> <th>Unique Data Elements</th> <th>Total Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a class='link' onClick='";
-                                table += "browseEventData(\"${id}\", \"" + data[i][1] + "\", \"" + data[i][0] + "\", \"full\");'>";
+                                table += "browseEventData(\"${id}\", \"" + escape(data[i][1]) + "\", \"" + data[i][0] + "\", \"full\");'>";
                                 table += data[i][1] + "</a></td>";
                                 table += "<td>" + data[i][4] + "</td>";
                                 table += "<td>" + data[i][3] + "</td>";
@@ -120,7 +120,7 @@
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
                             crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
-                            crumbs += eventTypeLabel + "</a></li></ul>";
+                            crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
                             table += "<thead><tr> <th>Data Element</th></th>";
@@ -153,7 +153,7 @@
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
                             crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
-                            crumbs += eventTypeLabel + "</a></li></ul>";
+                            crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
                             table += "<thead><tr> <th>Unique Data Element</th><th>Occurrences</th></tr></thead><tbody>";
@@ -178,7 +178,7 @@
                         var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
                         crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
                         crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
-                        crumbs += eventTypeLabel + "</a></li></ul>";
+                        crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
                         itemList = []
                         for (var i = 0; i < data.length; i++) {
                             if (format == "viz-bubble-source") {
@@ -199,7 +199,7 @@
                         var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
                         crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
                         crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
-                        crumbs += eventTypeLabel + "</a></li></ul>";
+                        crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
 
                         $("#loader").fadeOut(500);
                         $("#mainbody").append(crumbs + "<div id='scansummary-content' style='text-align: center'></div>");
