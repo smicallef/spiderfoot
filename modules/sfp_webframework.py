@@ -57,7 +57,7 @@ class sfp_webframework(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["RAW_DATA"]
+        return ["TARGET_WEB_CONTENT"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -75,7 +75,7 @@ class sfp_webframework(SpiderFootPlugin):
         if srcModuleName != "sfp_spider":
             return None
 
-        # If you are processing RAW_DATA, this is how you would get the
+        # If you are processing TARGET_WEB_CONTENT, this is how you would get the
         # source of that raw data (e.g. a URL.)
         eventSource = event.sourceEvent.data
 

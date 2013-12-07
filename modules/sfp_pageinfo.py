@@ -52,7 +52,7 @@ etc.)"""
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["RAW_DATA"]
+        return ["TARGET_WEB_CONTENT"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -64,8 +64,10 @@ etc.)"""
     # Handle events sent to this module
     def handleEvent(self, event):
         # We are only interested in the raw data from the spidering module
+        # because the spidering module will always provide events with the
+        # event.sourceEvent.data set to the URL of the source.
         if "sfp_spider" not in event.module:
-            sf.debug("Ignoring RAW_DATA from " + event.module)
+            sf.debug("Ignoring web content from " + event.module)
             return None
 
         eventName = event.eventType

@@ -65,7 +65,7 @@ class sfp_xref(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "AFFILIATE" ]
+        return [ "AFFILIATE", "AFFILIATE_WEB_CONTENT" ]
 
     # Handle events sent to this module
     # In this module's case, eventData will be the URL or a domain which
@@ -133,7 +133,7 @@ class sfp_xref(SpiderFootPlugin):
             evt1 = SpiderFootEvent("AFFILIATE", url, self.__name__, event)
             self.notifyListeners(evt1)
             if self.opts['checkcontent']:
-                evt2 = SpiderFootEvent("RAW_DATA", res['content'], self.__name__, evt1)
+                evt2 = SpiderFootEvent("AFFILIATE_WEB_CONTENT", res['content'], self.__name__, evt1)
                 self.notifyListeners(evt2)
 
         return None

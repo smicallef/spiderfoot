@@ -47,7 +47,7 @@ class sfp_ripe(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "AFFILIATE", "NETBLOCK" ]
+        return [ "AFFILIATE", "NETBLOCK", "RAW_RIPE_DATA" ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -85,7 +85,7 @@ class sfp_ripe(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
             # Just send the content off for others to process
-            evt = SpiderFootEvent("RAW_DATA", res['content'], self.__name__, event)
+            evt = SpiderFootEvent("RAW_RIPE_DATA", res['content'], self.__name__, event)
             self.notifyListeners(evt)
             return None
 
@@ -115,17 +115,111 @@ class sfp_ripe(SpiderFootPlugin):
             return None
 
         keyword = sf.domainKeyword(self.baseDomain)
-        res['content'] = res['content'].lower()
+        content = res['content'].lower()
         #print keyword + " and " + self.baseDomain + " in: " + res['content']
         # Crude and probably prone to a lot of false positives. Need to revisit.
-        if self.baseDomain in res['content'] or "\"" + keyword in res['content'] \
-            or keyword +"\"" in res['content'] or keyword +"-" in res['content'] \
-            or "-"+keyword in res['content']:
+        if self.baseDomain in content or "\"" + keyword in content \
+            or keyword +"\"" in content or keyword +"-" in content \
+            or "-"+keyword in content:
             sf.info("Owned netblock found: " + prefix)
             evt = SpiderFootEvent("NETBLOCK", prefix, self.__name__, event)
             self.notifyListeners(evt)
-            evt = SpiderFootEvent("RAW_DATA", res['content'], self.__name__, event)
+            evt = SpiderFootEvent("RAW_RIPE_DATA", res['content'], self.__name__, event)
             self.notifyListeners(evt)
+
+            # We now have a netblock owned by our target, we want to find
+            # the AS hop before the AS owning this netblock to find the ISP.
+            # 1. Parse the AS out of res['content']
+            try:
+                j = json.loads(res['content'])
+            except Exception as e:
+                sf.debug("Error processing JSON response.")
+                return None
+            data = j["data"]["irr_records"][0]
+            asn = None
+            for rec in data:
+                if rec["key"] == "origin":
+                    asn = rec["value"]
+                    break
+
+            # 2. Find all the netblocks owned by this AS
+            if asn != None:
+                res = sf.fetchUrl("http://stat.ripe.net/data/announced-prefixes/data.json?resource=" + \
+                    "AS" + str(asn), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                if res['content'] == None:
+                    sf.info("No RIPE info found/available for AS" + asn)
+                else:
+                    evt = SpiderFootEvent("BGP_AS", asn, self.__name__, event)
+                    self.notifyListeners(evt)
+                    try:
+                        j = json.loads(res['content'])
+                    except Exception as e:
+                        sf.debug("Error processing JSON response.")
+                        return None
+                    data = j["data"]["prefixes"]
+                    for rec in data:
+                        pfx = rec["prefix"]
+                        sf.info("Additional netblock found from same AS: " + pfx)
+                        evt = SpiderFootEvent("NETBLOCK", pfx, self.__name__, event)
+                        self.notifyListeners(evt)
+
+                # 3. Find all the AS neighbours (the last hop before our target)
+                res = sf.fetchUrl("http://stat.ripe.net/data/asn-neighbours/data.json?resource=" + \
+                    "AS" + str(asn), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                if res['content'] == None:
+                    sf.info("No RIPE info found/available for AS" + asn)
+                else:
+                    try:
+                        j = json.loads(res['content'])
+                    except Exception as e:
+                        sf.debug("Error processing JSON response.")
+                        return None
+                    data = j["data"]["neighbours"]
+                    for rec in data:
+                        nasn = rec['asn']
+                        res = sf.fetchUrl("http://stat.ripe.net/data/whois/data.json?resource=" + \
+                            str(nasn), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                        if res['content'] == None:
+                            sf.info("No RIPE info found/available for prefix: " + prefix)
+                            return None
+                        try:
+                            j = json.loads(res['content'])
+                        except Exception as e:
+                            sf.debug("Error processing JSON response.")
+                            return None
+
+                        name = None
+                        for rec in j["data"]["records"]:
+                            for rrec in rec:
+                                if rrec['key'] == "descr":
+                                    name = rrec['value']
+                                    break
+                                if rrec['key'] == "OrgName":
+                                    name = rrec['value']
+                                    break
+
+                            if name != None:
+                                break
+
+                        if name != None:
+                            evt = SpiderFootEvent("PROVIDER_INTERNET", name,
+                                 self.__name__, event)
+                            self.notifyListeners(evt)                           
+        else:
+            # If they don't own the netblock they are serving from, then
+            # the netblock owner is their Internet provider.
+            try:
+                j = json.loads(res['content'])
+            except Exception as e:
+                sf.debug("Error processing JSON response.")
+                return None
+            data = j["data"]["irr_records"][0]
+            for rec in data:
+                if rec['key'] == "descr":
+                    evt = SpiderFootEvent("PROVIDER_INTERNET", rec['value'],
+                        self.__name__, event)
+                    self.notifyListeners(evt)
+                    break
 
         return None
 
@@ -151,7 +245,7 @@ class sfp_ripe(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
         # Just send the content off for others to process
-        evt = SpiderFootEvent("RAW_DATA", res['content'], self.__name__)
+        evt = SpiderFootEvent("RAW_RIPE_DATA", res['content'], self.__name__)
         self.notifyListeners(evt)
         return None
        

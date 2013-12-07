@@ -55,7 +55,7 @@ class sfp_bingsearch(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "LINKED_URL_INTERNAL" ]
+        return [ "LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT" ]
 
     # Scrape Bing for content, starting at startUrl and iterating through
     # results based on options supplied. Will return a dictionary of all pages
@@ -143,7 +143,7 @@ class sfp_bingsearch(SpiderFootPlugin):
                 return None
 
             # Submit the bing results for analysis
-            evt = SpiderFootEvent("RAW_DATA", pages[page], self.__name__)
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], self.__name__)
             self.notifyListeners(evt)
 
             # We can optionally fetch links to our domain found in the search

@@ -27,7 +27,6 @@ class sfp_dns(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'resolveaffiliate': False,   # Get IPs for affiliate domains
         'reverselookup':    True,    # Reverse-resolve IPs to names for
                                     # more clues.
         "skipcommononwildcard": True,
@@ -41,7 +40,6 @@ class sfp_dns(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'skipcommononwildcard': "If wildcard DNS is detected, look up the first common sub-domain only.",
-        'resolveaffiliate': "Obtain IPs for confirmed affiliates?",
         'reverselookup': "Obtain new URLs and possible affiliates based on reverse-resolved IPs?",
         "commonsubs":   "Common sub-domains to try. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
     }
@@ -64,9 +62,8 @@ class sfp_dns(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        arr = ['RAW_DATA', 'LINKED_URL_INTERNAL', 'SUBDOMAIN']
-        if self.opts['resolveaffiliate']:
-            arr.append('AFFILIATE')
+        arr = ['RAW_DNS_RECORDS', 'SEARCH_ENGINE_WEB_CONTENT', 'RAW_RIPE_DATA',
+            'TARGET_WEB_CONTENT', 'LINKED_URL_INTERNAL', 'SUBDOMAIN' ]
         if self.opts['reverselookup']:
             arr.append('IP_ADDRESS')
         return arr
@@ -76,7 +73,7 @@ class sfp_dns(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return [ "IP_ADDRESS", "SUBDOMAIN", "PROVIDER_MAIL", 
-            "PROVIDER_DNS", "AFFILIATE" ]
+            "PROVIDER_DNS", "AFFILIATE", "RAW_DNS_RECORDS" ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -84,10 +81,6 @@ class sfp_dns(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         addrs = None
-        #if eventName == "RAW_DATA":
-        #    parentEvent = event.sourceEvent
-        #else:
-        #    parentEvent = event
         parentEvent = event
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
@@ -97,7 +90,8 @@ class sfp_dns(SpiderFootPlugin):
 
         self.subresults[eventData] = True
 
-        if eventName in [ "RAW_DATA", "LINKED_URL_INTERNAL" ]:
+        if eventName in [ "SEARCH_ENGINE_WEB_CONTENT", "TARGET_WEB_CONTENT",
+            "LINKED_URL_INTERNAL", "RAW_RIPE_DATA", "RAW_DNS_RECORDS" ]:
             # If we've received a link or some raw data, extract potential sub-domains
             # from the data for resolving later.
             matches = re.findall("([a-zA-Z0-9\-\.]+\." + self.baseDomain + ")", eventData,
@@ -115,7 +109,7 @@ class sfp_dns(SpiderFootPlugin):
             # Nothing left to do with internal links and raw data
             return None
 
-        # Handling SUBDOMAIN, AFFILIATE and IP_ADDRESS events..
+        # Handling SUBDOMAIN and IP_ADDRESS events..
 
         # Don't look up stuff twice
         if self.results.has_key(eventData):
@@ -187,7 +181,7 @@ class sfp_dns(SpiderFootPlugin):
 
         for key in recdata.keys():
             strdata = unicode(recdata[key].rrset.to_text(), 'utf-8', errors='replace') 
-            evt = SpiderFootEvent("RAW_DATA", strdata, self.__name__)
+            evt = SpiderFootEvent("RAW_DNS_DATA", strdata, self.__name__)
             self.notifyListeners(evt)
 
         if recdata.has_key('MX'):

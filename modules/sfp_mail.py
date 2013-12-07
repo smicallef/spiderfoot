@@ -50,7 +50,7 @@ class sfp_mail(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["RAW_DATA"]
+        return ["*"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -65,7 +65,14 @@ class sfp_mail(SpiderFootPlugin):
         eventData = event.data
         parentEvent = event.sourceEvent
 
+        if eventName == "EMAILADDR":
+            return None
+
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if type(eventData) not in [ str, unicode ]:
+            sf.debug("Unhandled type to find e-mails: " + str(type(eventData)))
+            return None
 
         matches = re.findall("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9_\-]+)", eventData)
         for match in matches:

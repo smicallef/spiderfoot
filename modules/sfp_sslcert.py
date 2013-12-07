@@ -67,7 +67,7 @@ class sfp_sslcert(SpiderFootPlugin):
     def producedEvents(self):
         return [ "SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
             "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
-            "SSL_CERTIFICATE_EXPIRING" ]
+            "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW" ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -107,7 +107,7 @@ class sfp_sslcert(SpiderFootPlugin):
 
         # Generate the event for the raw cert (in text form)
         # Cert raw data text contains a lot of gems..
-        rawevt = SpiderFootEvent("RAW_DATA", m2cert.as_text(), self.__name__, event)
+        rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW", m2cert.as_text(), self.__name__, event)
         self.notifyListeners(rawevt)
 
         # Generate events for other cert aspects

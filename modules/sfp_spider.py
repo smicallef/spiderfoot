@@ -183,7 +183,7 @@ class sfp_spider(SpiderFootPlugin):
 
     # Notify listening modules about raw data and others
     def contentNotify(self, url, httpresult, parentEvent=None):
-        event = SpiderFootEvent("RAW_DATA", httpresult['content'], 
+        event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'], 
             self.__name__, parentEvent)
         self.notifyListeners(event)
 
@@ -206,7 +206,7 @@ class sfp_spider(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return [ "WEBSERVER_HTTPHEADERS", "HTTP_CODE", "LINKED_URL_INTERNAL",
-            "LINKED_URL_EXTERNAL" ]
+            "LINKED_URL_EXTERNAL", "TARGET_WEB_CONTENT" ]
 
     # Some other modules may request we spider things
     def handleEvent(self, event):

@@ -64,7 +64,7 @@ class sfp_XXX(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        # If you are processing RAW_DATA from sfp_spider, this is how you 
+        # If you are processing TARGET_WEB_CONTENT from sfp_spider, this is how you 
         # would get the source of that raw data (e.g. a URL.)
         eventSource = event.sourceEvent.data
 

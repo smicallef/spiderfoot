@@ -123,7 +123,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
 
         return self.portResults
 
-    # Generate both a RAW_DATA and TCP_PORT_OPEN_BANNER event
+    # Generate TCP_PORT_OPEN_BANNER event
     def sendEvent(self, resArray, srcEvent):
         for cp in resArray:
             if resArray[cp]:
@@ -135,9 +135,6 @@ class sfp_portscan_basic(SpiderFootPlugin):
                     bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", resArray[cp],
                         self.__name__, evt)
                     self.notifyListeners(bevt)
-                    revt = SpiderFootEvent("RAW_DATA", resArray[cp],
-                        self.__name__, evt)
-                    self.notifyListeners(revt)
 
 
     # Handle events sent to this module
