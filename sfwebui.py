@@ -181,24 +181,55 @@ class SpiderFootWebUi:
     savesettings.exposed = True
 
     # Initiate a scan
-    def startscan(self, scanname, scantarget, modulelist):
+    def startscan(self, scanname, scantarget, modulelist, typelist):
         modopts = dict() # Not used yet as module options are set globally
+        modlist = list()
+        sf = SpiderFoot(self.config)
+        dbh = SpiderFootDb(self.config)
+        types = dbh.eventTypes()
 
         [scanname, scantarget] = self.cleanUserInput([scanname, scantarget])
 
-        if scanname == "" or scantarget == "" or modulelist == "":
+        if scanname == "" or scantarget == "":
             return self.error("Form incomplete.")
 
-        modlist = modulelist.replace('module_', '').split(',')
+        if typelist == "" and modulelist == "":
+            return self.error("Form incomplete.")
+
+        if modulelist != "":
+            modlist = modulelist.replace('module_', '').split(',')
+        else:
+            types = typelist.replace('type_', '').split(',')
+            # 1. Find all modules that produce the requested types
+            modlist = sf.modulesProducing(types)
+            newmods = deepcopy(modlist)
+            newmodcpy = deepcopy(newmods)
+            # 2. For each type those modules consume, get modules producing
+            while len(newmodcpy) > 0:
+                for etype in sf.eventsToModules(newmodcpy):
+                    xmods = sf.modulesProducing([etype])
+                    for mod in xmods:
+                        if mod not in modlist:
+                            modlist.append(mod)
+                            newmods.append(mod)
+                newmodcpy = deepcopy(newmods)
+                newmods = list()
+
+            # Add our mandatory storage module..
+            modlist.append("sfp__stor_db")
+            modlist.sort()
 
         # For now we don't permit multiple simultaneous scans
         for thread in threading.enumerate():
             if thread.name.startswith("SF_"):
                 templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
-                return templ.render(modules=self.config['__modules__'], alreadyRunning=True, runningScan=thread.name[3:])
+                return templ.render(modules=self.config['__modules__'], 
+                    alreadyRunning=True, runningScan=thread.name[3:], 
+                    types=types)
 
         # Start running a new scan
-        self.scanner = SpiderFootScanner(scanname, scantarget.lower(), modlist, self.config, modopts)
+        self.scanner = SpiderFootScanner(scanname, scantarget.lower(), modlist, 
+            self.config, modopts)
         t = threading.Thread(name="SF_" + scanname, target=self.scanner.startScan)
         t.start()
 
@@ -210,13 +241,17 @@ class SpiderFootWebUi:
     # scan is permitted.)
     def stopscan(self, id):
         if self.scanner == None:
-            return self.error("There are no scans running. A data consistency error for this scan probably exists. <a href='/scandelete?id=" + id + "&confirm=1'>Click here to delete it.</a>")
+            return self.error("There are no scans running. A data consistency " + \
+                "error for this scan probably exists. <a href='/scandelete?id=" + \
+                id + "&confirm=1'>Click here to delete it.</a>")
 
         if self.scanner.scanStatus(id) == "ABORTED":
             return self.error("The scan is already aborted.")
 
         if not self.scanner.scanStatus(id) == "RUNNING":
-            return self.error("The running scan is currently in the state '" + self.scanner.scanStatus(id) + "', please try again later or restart SpiderFoot.")
+            return self.error("The running scan is currently in the state '" + \
+                self.scanner.scanStatus(id) + "', please try again later or restart " + \
+                " SpiderFoot.")
 
         self.scanner.stopScan(id)
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)

@@ -157,26 +157,32 @@ class SpiderFoot:
 
     # Store data to the cache
     def cachePut(self, label, data):
-        cacheFile = self.cachePath() + "/" + label
+        pathLabel = hashlib.sha224(label).hexdigest()
+        cacheFile = self.cachePath() + "/" + pathLabel
         fp = file(cacheFile, "w")
         if type(data) is list:
             for line in data:
                 fp.write(line + '\n')
         else:
+            data = data.encode('utf-8')
             fp.write(data)
         fp.close()
 
     # Retreive data from the cache
     def cacheGet(self, label, timeoutHrs):
-        cacheFile = self.cachePath() + "/" + label
+        pathLabel = hashlib.sha224(label).hexdigest()
+        cacheFile = self.cachePath() + "/" + pathLabel
         try:
             (m, i, d, n, u, g, sz, atime, mtime, ctime) = os.stat(cacheFile)
-        
-            if mtime > time.time() - timeoutHrs*3600:
+
+            if sz == 0:
+                return None
+
+            if mtime > time.time() - timeoutHrs*3600 or timeoutHrs == 0:
                 fp = file(cacheFile, "r")
                 fileContents = fp.read()
                 fp.close()
-
+                fileContents = fileContents.decode('utf-8')
                 return fileContents
             else:
                 return None
@@ -296,7 +302,60 @@ class SpiderFoot:
                         else:
                             returnOpts['__modules__'][modName]['opts'][opt] = \
                                 str(opts[modName + ":" + opt]).split(",")
+
         return returnOpts
+
+    # Return an array of module names for returning the
+    # types specified.
+    def modulesProducing(self, events):
+        modlist = list()
+        for mod in self.opts['__modules__'].keys():
+            if self.opts['__modules__'][mod]['provides'] == None:
+                continue
+
+            for evtype in self.opts['__modules__'][mod]['provides']:
+                if evtype in events and mod not in modlist:
+                    modlist.append(mod)
+
+        return modlist
+
+    # Return an array of modules that consume the types
+    # specified.
+    def modulesConsuming(self, events):
+        modlist = list()
+        for mod in self.opts['__modules__'].keys():
+            if self.opts['__modules__'][mod]['consumes'] == None:
+                continue
+
+            for evtype in self.opts['__modules__'][mod]['consumes']:
+                if evtype in events and mod not in modlist:
+                    modlist.append(mod)
+
+        return modlist
+
+    # Return an array of types that are produced by the list
+    # of modules supplied.
+    def eventsFromModules(self, modules):
+        evtlist = list()
+        for mod in modules:
+            if mod in self.opts['__modules__'].keys():
+                if self.opts['__modules__'][mod]['provides'] != None:
+                    for evt in self.opts['__modules__'][mod]['provides']:
+                        evtlist.append(evt)
+
+        return evtlist
+
+    # Return an array of types that are consumed by the list
+    # of modules supplied.
+    def eventsToModules(self, modules):
+        evtlist = list()
+        for mod in modules:
+            if mod in self.opts['__modules__'].keys():
+                if self.opts['__modules__'][mod]['consumes'] != None:
+                    for evt in self.opts['__modules__'][mod]['consumes']:
+                        evtlist.append(evt)
+
+        return evtlist
 
     #
     # URL parsing functions
