@@ -47,7 +47,8 @@ class sfp_ripe(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "AFFILIATE", "NETBLOCK", "RAW_RIPE_DATA" ]
+        return [ "AFFILIATE", "NETBLOCK", "RAW_RIPE_DATA",
+            "BGP_AS", "PROVIDER_INTERNET" ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -132,10 +133,10 @@ class sfp_ripe(SpiderFootPlugin):
             # 1. Parse the AS out of res['content']
             try:
                 j = json.loads(res['content'])
+                data = j["data"]["irr_records"][0]
             except Exception as e:
                 sf.debug("Error processing JSON response.")
                 return None
-            data = j["data"]["irr_records"][0]
             asn = None
             for rec in data:
                 if rec["key"] == "origin":
@@ -153,10 +154,10 @@ class sfp_ripe(SpiderFootPlugin):
                     self.notifyListeners(evt)
                     try:
                         j = json.loads(res['content'])
+                        data = j["data"]["prefixes"]
                     except Exception as e:
                         sf.debug("Error processing JSON response.")
                         return None
-                    data = j["data"]["prefixes"]
                     for rec in data:
                         pfx = rec["prefix"]
                         sf.info("Additional netblock found from same AS: " + pfx)
@@ -171,10 +172,10 @@ class sfp_ripe(SpiderFootPlugin):
                 else:
                     try:
                         j = json.loads(res['content'])
+                        data = j["data"]["neighbours"]
                     except Exception as e:
                         sf.debug("Error processing JSON response.")
                         return None
-                    data = j["data"]["neighbours"]
                     for rec in data:
                         nasn = rec['asn']
                         res = sf.fetchUrl("http://stat.ripe.net/data/whois/data.json?resource=" + \
@@ -184,12 +185,13 @@ class sfp_ripe(SpiderFootPlugin):
                             return None
                         try:
                             j = json.loads(res['content'])
+                            data = j["data"]["records"]
                         except Exception as e:
                             sf.debug("Error processing JSON response.")
                             return None
 
                         name = None
-                        for rec in j["data"]["records"]:
+                        for rec in data:
                             for rrec in rec:
                                 if rrec['key'] == "descr":
                                     name = rrec['value']
@@ -210,10 +212,10 @@ class sfp_ripe(SpiderFootPlugin):
             # the netblock owner is their Internet provider.
             try:
                 j = json.loads(res['content'])
+                data = j["data"]["irr_records"][0]
             except Exception as e:
                 sf.debug("Error processing JSON response.")
                 return None
-            data = j["data"]["irr_records"][0]
             for rec in data:
                 if rec['key'] == "descr":
                     evt = SpiderFootEvent("PROVIDER_INTERNET", rec['value'],
