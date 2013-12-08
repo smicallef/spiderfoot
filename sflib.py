@@ -605,7 +605,7 @@ class SpiderFoot:
 
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30, 
-        useragent="SpiderFoot"):
+        useragent="SpiderFoot", headers=None):
         result = {
             'code': None,
             'status': None,
@@ -624,6 +624,11 @@ class SpiderFoot:
                 header['User-Agent'] = random.choice(useragent)
             else:
                 header['User-Agent'] = useragent
+
+            # Add custom headers
+            if headers != None:
+                for k in headers.keys():
+                    header[k] = headers[k]
 
             req = urllib2.Request(url, None, header)
             if cookies != None:
