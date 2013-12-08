@@ -91,7 +91,7 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_INTERNET', 'Internet Service Provider', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_MAIL', 'Email Gateway (DNS ''MX'' Records)', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_RIPE_DATA', 'Raw Data from RIPE', 1)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_RIR_DATA', 'Raw Data from RIRs', 1)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_DNS_RECORDS', 'Raw DNS Records', 1)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SEARCH_ENGINE_WEB_CONTENT', 'Search Engine''s Web Content', 1)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOCIAL_MEDIA', 'Social Media Presence', 0)",
