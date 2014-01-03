@@ -25,8 +25,8 @@ class sfp_spider(SpiderFootPlugin):
     opts = {
         'robotsonly':   False, # only follow links specified by robots.txt
         'pause':        1, # number of seconds to pause between fetches
-        'maxpages':     1000, # max number of pages to fetch
-        'maxlevels':    5, # max number of levels to traverse within a site
+        'maxpages':     100, # max number of pages to fetch
+        'maxlevels':    3, # max number of levels to traverse within a site
         'usecookies':   True, # Use cookies?
         'start':        [ 'http://', 'https://' ],
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css', 'tar',
