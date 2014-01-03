@@ -74,7 +74,7 @@ class sfp_bingsearch(SpiderFootPlugin):
         else:
             self.results.append(eventData)
 
-        results = self.bingIterate("ip:" + eventData, { "limit": 100 })
+        results = self.bingIterate("ip:" + eventData, dict(limit=self.opts['pages']))
         myres = list()
         if results == None:
             sf.info("No data returned from Bing.")
@@ -91,6 +91,11 @@ class sfp_bingsearch(SpiderFootPlugin):
                     evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
                     self.notifyListeners(evt)
                     myres.append(site)
+
+            # Submit the bing results for analysis
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key], 
+                self.__name__, event)
+            self.notifyListeners(evt)
 
     # Scrape Bing for content, starting at startUrl and iterating through
     # results based on options supplied. Will return a dictionary of all pages
