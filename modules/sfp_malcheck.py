@@ -77,6 +77,26 @@ malchecks = {
         'url': 'http://www.avgthreatlabs.com/website-safety-reports/domain/{0}',
         'badregex': ['.*potentially active malware was detected.*'],
         'goodregex': []
+    },
+    'malwaredomains.com List': {
+        'id': 'malwaredomains',
+        'type': 'list',
+        'checks': ['domain'],
+        'url': 'https://easylist-downloads.adblockplus.org/malwaredomains_full.txt',
+        'regex': '^\|\|{0}\^$'
+    },
+    'PhishTank': {
+        'id': 'phishtank',
+        'type': 'list',
+        'checks': ['domain'],
+        'url': 'http://data.phishtank.com/data/online-valid.csv',
+        'regex': '.*,.*://{0}/.*'
+    },
+    'malc0de.com List': {
+        'id': 'malc0de',
+        'type': 'list',
+        'checks': ['ip'],
+        'url': 'http://malc0de.com/bl/IP_Blacklist.txt'
     }
 }
 
@@ -91,10 +111,11 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusespyip': True,
         'googledomain': True,
         'googleasn': True,
-        'malwaredomain': True,
-        #'nortondomain': True,
+        'malwaredomains': True,
         'mcafeedomain': True,
         'avgdomain': True,
+        'phishtank': True,
+        'malc0de': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 48
@@ -108,10 +129,11 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusespyip': "Enable abuse.ch SpeEye IP check?",
         'googledomain': "Enable Google Safe Browsing domain check?",
         'googleasn': "Enable Google Safe Browsing ASN check?",
-        'malwaredomain': "Enable malwaredomainlist.com check?",
-        #'nortondomain': "Enable Norton/Symantec Safe Web check?",
+        'malwaredomains': "Enable malwaredomainlist.com check?",
         'mcafeedomain': "Enable McAfee Site Advisor check?",
-        'avgdomain': "Enable AVG Safety Check?",
+        'avgdomain': "Enable AVG Safety check?",
+        'phishtank': "Enable PhishTank check?",
+        'malc0de': "Enable malc0de.com check?",
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'cacheperiod':  "Hours to cache list data before re-fetching."
@@ -173,25 +195,26 @@ class sfp_malcheck(SpiderFootPlugin):
 
     # Look up 'query' type sources
     def resourceQuery(self, id, target):
-        sf.debug("Checking " + id + " for maliciousness of " + target)
+        sf.debug("Querying " + id + " for maliciousness of " + target)
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "query":
                 url = malchecks[check]['url']
                 res = sf.fetchUrl(url.format(target), useragent=self.opts['_useragent'])
                 if res['content'] == None:
-                    return [ None, None ]
-                status = self.contentMalicious(res['content'], 
+                    return None
+                if self.contentMalicious(res['content'], 
                     malchecks[check]['goodregex'],
-                    malchecks[check]['badregex'])
+                    malchecks[check]['badregex']):
+                    return url.format(target)
 
-                return [ url.format(target), status ]
-
-        return [ None, None ]
+        return None
 
     # Look up 'list' type resources
     def resourceList(self, id, target):
         sf.debug("Checking " + id + " for maliciousness of " + target)
+        targetDom = sf.hostDomain(target, self.opts['_internettlds'])
+
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "list":
@@ -201,18 +224,25 @@ class sfp_malcheck(SpiderFootPlugin):
                 if data['content'] == None:
                     data = sf.fetchUrl(url, useragent=self.opts['_useragent'])
                     if data['content'] == None:
-                        return [ None, None ]
+                        return None
                     else:
                         sf.cachePut("sfmal_" + cid, data['content'])
 
-                for line in data['content'].split('\n'):
-                    targetDom = sf.hostDomain(target, self.opts['_internettlds'])
-                    if line == target or line == targetDom:
-                        sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                        status = True
-                        return [ url, status ]
+                if not malchecks[check].has_key('regex'):
+                    for line in data['content'].split('\n'):
+                        if line == target or line == targetDom:
+                            sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                            return url
+                else:
+                    rxDom = malchecks[check]['regex'].format(targetDom)
+                    rxTgt = malchecks[check]['regex'].format(target)
+                    for line in data['content'].split('\n'):
+                        if re.match(rxDom, line, re.IGNORECASE) or \
+                            re.match(rxTgt, line, re.IGNORECASE):
+                            sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                            return url
 
-        return [ None, None ]
+        return None
 
     def lookupItem(self, resourceId, itemType, target):
         for check in malchecks.keys():
@@ -224,7 +254,7 @@ class sfp_malcheck(SpiderFootPlugin):
                 if malchecks[check]['type'] == "list":
                     return self.resourceList(cid, target)
 
-        return [ None, None ]
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -270,16 +300,33 @@ class sfp_malcheck(SpiderFootPlugin):
                     if eventName == 'CO_HOSTED_SITE':
                         evtType = 'MALICIOUS_COHOST'
 
-                info = self.lookupItem(cid, typeId, eventData)
+                url = self.lookupItem(cid, typeId, eventData)
                 if self.checkForStop():
                     return None
 
                 # Notify other modules of what you've found
-                if info[1] == True:
-                    text = check + "\n" + info[0]
+                if url != None:
+                    text = check + "\n" + url
                     evt = SpiderFootEvent(evtType, text, self.__name__, event)
                     self.notifyListeners(evt)
 
         return None
+
+    def start(self):
+        keyword = sf.domainKeyword(self.baseDomain)
+        sf.debug("Keyword extracted from " + self.baseDomain + ": " + keyword)
+        if self.baseDomain in self.results:
+            return None
+
+        for check in malchecks.keys():
+            if self.checkForStop():
+                return None
+
+            cid = malchecks[check]['id']
+            if self.opts[cid]:
+                url = self.lookupItem(cid, 'domain', self.baseDomain)
+                if url != None:
+                    evt = SpiderFootEvent('MALICIOUS_SUBDOMAIN', url, self.__name__)
+                    self.notifyListeners(evt)
 
 # End of sfp_malcheck class
