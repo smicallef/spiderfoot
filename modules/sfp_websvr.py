@@ -70,11 +70,11 @@ class sfp_websvr(SpiderFootPlugin):
         # possibly OS. This could also trigger additional tests, such as 404s
         # and other errors to see what the header looks like.
         if eventData.has_key('server'):
-            evt = SpiderFootEvent("WEBSERVER_BANNER", eventData['Server'], 
+            evt = SpiderFootEvent("WEBSERVER_BANNER", eventData['server'], 
                 self.__name__, parentEvent)
             self.notifyListeners(evt)
 
-            sf.info("Found web server: " + eventData['Server'] + " (" + eventSource + ")")
+            sf.info("Found web server: " + eventData['server'] + " (" + eventSource + ")")
 
         if eventData.has_key('x-powered-by'):
             evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", eventData['x-powered-by'], 
