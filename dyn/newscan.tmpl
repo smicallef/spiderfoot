@@ -66,7 +66,9 @@ Another scan is currently running (${runningScan}). Please either wait for that 
         </ul>
         <table class="table table-striped table-condensed" id="moduletable">
             % for item in sorted(modules):
-                <tr><td><input type=checkbox id="module_${item}" checked></td><td>${modules[item]['name']}</td><td>${modules[item]['descr']}</td></tr>
+                % if item != "sfp__stor_db":
+                    <tr><td><input type=checkbox id="module_${item}" checked></td><td>${modules[item]['name']}</td><td>${modules[item]['descr']}</td></tr>
+                % endif
             % endfor
         </table>
         <table class="table table-striped table-condensed" id="typetable" style='display: none'>

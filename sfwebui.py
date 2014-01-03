@@ -215,9 +215,10 @@ class SpiderFootWebUi:
                 newmodcpy = deepcopy(newmods)
                 newmods = list()
 
-            # Add our mandatory storage module..
+        # Add our mandatory storage module..
+        if "sfp__stor_db" not in modlist:
             modlist.append("sfp__stor_db")
-            modlist.sort()
+        modlist.sort()
 
         # For now we don't permit multiple simultaneous scans
         for thread in threading.enumerate():
