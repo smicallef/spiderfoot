@@ -19,7 +19,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_bingsearch(SpiderFootPlugin):
-    """Bing:Some light Bing scraping to identify sub-domains."""
+    """Bing:Some light Bing scraping to identify sub-domains and co-hosted sites."""
 
     # Default options
     opts = {
@@ -49,13 +49,44 @@ class sfp_bingsearch(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return None
+        return [ "IP_ADDRESS" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT" ]
+        return [ "LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT", 
+            "CO_HOSTED_SITE" ]
+
+    # Handle events sent to this module
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+        self.currentEventSrc = event
+
+        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        # Don't look up stuff twice
+        if eventData in self.results:
+            sf.debug("Skipping " + eventData + " as already mapped.")
+            return None
+        else:
+            self.results.append(eventData)
+
+        results = self.bingIterate("ip:" + eventData, { "limit": 100 })
+        myres = list()
+        for key in results.keys():
+            res = results[key]
+            matches = re.findall("<div class=\"sb_meta\"><cite>(\S+)</cite>", 
+                res, re.IGNORECASE)
+            for match in matches:
+                sf.info("Found something on same IP: " + match)
+                site = sf.urlFQDN(match)
+                if site not in myres:
+                    evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
+                    self.notifyListeners(evt)
+                    myres.append(site)
 
     # Scrape Bing for content, starting at startUrl and iterating through
     # results based on options supplied. Will return a dictionary of all pages
