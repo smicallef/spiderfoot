@@ -1,7 +1,7 @@
 <%include file="HEADER.tmpl"/>
 <script type='text/javascript'>
-    activeTab = "module";
-    alternateTab = "type";
+    activeTab = "type";
+    alternateTab = "module";
 
     function submitForm() {
         list = "";
@@ -57,21 +57,21 @@ Another scan is currently running (${runningScan}). Please either wait for that 
     </div>
     <div class="control-group">
         <ul class='nav nav-tabs'>
-        <li id='moduletab' class="active"><a onClick='switchTab()' href='#'>By Module</a></li>
-        <li id='typetab'><a onClick='switchTab()' href='#'>By Required Data</a></li>
+        <li id='typetab' class="active"><a onClick='switchTab()' href='#'>By Required Data</a></li>
+        <li id='moduletab'><a onClick='switchTab()' href='#'>By Module</a></li>
         <div style='text-align: right'>
         <button type="button" onClick='selectAll()' class="btn-mini btn-info">Select All</button>&nbsp;&nbsp;
         <button type="button" onClick='deselectAll()' class="btn-mini btn-info">De-Select All</button>
         </div>
         </ul>
-        <table class="table table-striped table-condensed" id="moduletable">
+        <table class="table table-striped table-condensed" id="moduletable" style='display: none'>
             % for item in sorted(modules):
                 % if item != "sfp__stor_db":
                     <tr><td><input type=checkbox id="module_${item}" checked></td><td>${modules[item]['name']}</td><td>${modules[item]['descr']}</td></tr>
                 % endif
             % endfor
         </table>
-        <table class="table table-striped table-condensed" id="typetable" style='display: none'>
+        <table class="table table-striped table-condensed" id="typetable">
             <% count = 0 %>
             % for item in sorted(types):
                 % if count % 2 == 0:

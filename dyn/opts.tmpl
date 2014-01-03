@@ -43,7 +43,8 @@
 <ul class="nav nav-tabs">
 <li id='tab_global' class="active"><a href='#' onClick='switchTab("global");'>Global</a></li>
 % for mod in sorted(opts['__modules__'].keys()):
-    % if len(opts['__modules__'][mod]['opts']) > 0:
+    <% keylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].iteritems() if not k.startswith('_')) %>
+    % if len(keylist) > 0:
         <li id='tab_${mod}'><a href='#' onClick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}</a></li>
     % endif
 % endfor
