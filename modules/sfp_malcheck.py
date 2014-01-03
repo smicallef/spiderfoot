@@ -81,7 +81,7 @@ malchecks = {
 }
 
 class sfp_malcheck(SpiderFootPlugin):
-    """Malicious:Check if a website, IP or ASN is considered malicious by various sources."""
+    """Malicious Check:Check if a website, IP or ASN is considered malicious by various sources."""
 
     # Default options
     opts = { 
@@ -271,6 +271,8 @@ class sfp_malcheck(SpiderFootPlugin):
                         evtType = 'MALICIOUS_COHOST'
 
                 info = self.lookupItem(cid, typeId, eventData)
+                if self.checkForStop():
+                    return None
 
                 # Notify other modules of what you've found
                 if info[1] == True:

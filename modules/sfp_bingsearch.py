@@ -76,6 +76,10 @@ class sfp_bingsearch(SpiderFootPlugin):
 
         results = self.bingIterate("ip:" + eventData, { "limit": 100 })
         myres = list()
+        if results == None:
+            sf.info("No data returned from Bing.")
+            return None
+
         for key in results.keys():
             res = results[key]
             matches = re.findall("<div class=\"sb_meta\"><cite>(\S+)</cite>", 

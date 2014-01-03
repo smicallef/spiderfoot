@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Name:         sfp_searchtld
+# Name:         sfp_tldsearch
 # Purpose:      SpiderFoot plug-in for identifying the existence of this target
 #               on other TLDs.
 #
@@ -22,7 +22,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
-class sfp_searchtld(SpiderFootPlugin):
+class sfp_tldsearch(SpiderFootPlugin):
     """TLD Search:Search all Internet TLDs for domains with the same name as the target."""
 
     # Default options
@@ -84,7 +84,7 @@ class sfp_searchtld(SpiderFootPlugin):
         # Spawn threads for scanning
         sf.info("Spawning threads to check TLDs: " + str(tldList))
         for tld in tldList:
-            t.append(threading.Thread(name='sfp_searchtld_' + tld,
+            t.append(threading.Thread(name='sfp_tldsearch_' + tld,
                 target=self.tryTld, args=(tld,)))
             t[i].start()
             i += 1
@@ -93,7 +93,7 @@ class sfp_searchtld(SpiderFootPlugin):
         while running:
             found = False
             for rt in threading.enumerate():
-                if rt.name.startswith("sfp_searchtld_"):
+                if rt.name.startswith("sfp_tldsearch_"):
                     found = True
 
             if not found:
@@ -164,4 +164,4 @@ class sfp_searchtld(SpiderFootPlugin):
 
         return None
 
-# End of sfp_searchtld class
+# End of sfp_tldsearch class

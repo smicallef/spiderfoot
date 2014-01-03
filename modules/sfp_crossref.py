@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Name:         sfp_xref
+# Name:         sfp_crossref
 # Purpose:      SpiderFoot plug-in for scanning links identified from the
 #               spidering process, and for external links, fetching them to
 #               see if those sites link back to the original site, indicating a
@@ -19,15 +19,15 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
-class sfp_xref(SpiderFootPlugin):
+class sfp_crossref(SpiderFootPlugin):
     """Cross-Reference:Identify whether other domains are associated ('Affiliates') of the target."""
 
     # Default options
     opts = {
         'forcebase':    True, # Check the base URL for a link back to the seed
-                              # domain in order to be considered a valid xref
+                              # domain in order to be considered a valid crossref
         'checkbase':    True, # Only check the base URL for a relationship if
-                              # the link provided contains no xref
+                              # the link provided contains no crossref
         'checkcontent': True  # Submit affiliate content for other modules to
                               # analyze
     }
@@ -81,7 +81,7 @@ class sfp_xref(SpiderFootPlugin):
         if eventName == 'SIMILARDOMAIN':
             eventData = 'http://'+ eventData.lower()
 
-        # We are only interested in external sites for the xref
+        # We are only interested in external sites for the crossref
         if sf.urlBaseUrl(eventData).endswith(self.baseDomain):
             sf.debug("Ignoring " + eventData + " as not external")
             return None
@@ -111,7 +111,7 @@ class sfp_xref(SpiderFootPlugin):
             res['content'], re.IGNORECASE)
 
         # If the domain wasn't found in the affiliate, and checkbase is set,
-        # fetch the base URL of the affiliate to check for a xref. Don't bother
+        # fetch the base URL of the affiliate to check for a crossref. Don't bother
         # if forcebase was set, as we would've already checked that anyway.
         if not self.opts['forcebase'] and len(matches) > 0 and self.opts['checkbase']:
             # Check the base url to see if there is an affiliation
@@ -138,4 +138,4 @@ class sfp_xref(SpiderFootPlugin):
 
         return None
 
-# End of sfp_xref class
+# End of sfp_crossref class

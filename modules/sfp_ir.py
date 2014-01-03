@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Name:         sfp_rir
+# Name:         sfp_ir
 # Purpose:      Queries Internet registryes like RIPE and ARIN to get netblocks
 #               and other bits of info.
 #
@@ -19,7 +19,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
-class sfp_rir(SpiderFootPlugin):
+class sfp_ir(SpiderFootPlugin):
     """Internet Registries:Queries RIPE and ARIN to identify netblocks and other info."""
 
     # Default options
@@ -238,4 +238,4 @@ class sfp_rir(SpiderFootPlugin):
 
         return None
 
-# End of sfp_rir class
+# End of sfp_ir class
