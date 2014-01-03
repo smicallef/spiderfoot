@@ -12,6 +12,7 @@
 
 import inspect
 import hashlib
+import gzip
 import re
 import os
 import random
@@ -19,6 +20,7 @@ import socket
 import sys
 import time
 import urllib2
+import StringIO
 
 class SpiderFoot:
     dbh = None
@@ -425,8 +427,13 @@ class SpiderFoot:
     # Extract the FQDN from a URL
     def urlFQDN(self, url):
         baseurl = self.urlBaseUrl(url)
+        if '://' not in baseurl:
+            count = 0
+        else:
+            count = 2
+
         # http://abc.com will split to ['http:', '', 'abc.com']
-        return baseurl.split('/')[2].lower()
+        return baseurl.split('/')[count].lower()
 
     # Extract the keyword (the domain without the TLD or any subdomains)
     # from a domain.
@@ -642,10 +649,18 @@ class SpiderFoot:
 
             opener = urllib2.build_opener(SmartRedirectHandler())
             fullPage = opener.open(req, timeout=timeout)
+            content = fullPage.read()
 
-            # Prepare result to return
-            result['content'] = unicode(fullPage.read(), 'utf-8', errors='replace')
-            result['headers'] = fullPage.info()
+            result['headers'] = dict()
+            for k, v in fullPage.info().items():
+                result['headers'][k.lower()] = v
+
+            # Content is compressed
+            if 'gzip' in result['headers'].get('content-encoding', ''):
+                content = gzip.GzipFile(fileobj=StringIO.StringIO(content)).read()
+
+            result['content'] = unicode(content, 'utf-8', errors='replace')
+
             #print "FOR: " + url
             #print "HEADERS: " + str(result['headers'])
             result['realurl'] = fullPage.geturl()
@@ -664,7 +679,7 @@ class SpiderFoot:
             if fatal:
                 self.fatal('URL could not be fetched (' + str(e) + ')')
         except Exception as x:
-            self.info("Unexpected exception occurred fetching: " + url + "(" + str(x) + ")")
+            self.info("Unexpected exception occurred fetching: " + url + " (" + str(x) + ")")
             result['content'] = None
             result['status'] = str(x)
             if fatal:
