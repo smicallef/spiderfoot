@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Name:         sfp_mail
+# Name:         sfp_email
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
 #               modules (such as sfp_spider) and identifying e-mail addresses
 #
@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
-class sfp_mail(SpiderFootPlugin):
+class sfp_email(SpiderFootPlugin):
     """E-Mail:Identify e-mail addresses in any obtained data."""
 
     # Default options
@@ -106,4 +106,4 @@ class sfp_mail(SpiderFootPlugin):
 
         return None
 
-# End of sfp_mail class
+# End of sfp_email class
