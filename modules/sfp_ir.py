@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_ir
-# Purpose:      Queries Internet registryes like RIPE and ARIN to get netblocks
-#               and other bits of info.
+# Purpose:      Queries Internet registryes like RIPE (incl. ARIN) to get 
+#               netblocks and other bits of info.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -20,7 +20,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_ir(SpiderFootPlugin):
-    """Internet Registries:Queries RIPE and ARIN to identify netblocks and other info."""
+    """Internet Registries:Queries Internet Registries to identify netblocks and other info."""
 
     # Default options
     opts = { }
@@ -125,7 +125,9 @@ class sfp_ir(SpiderFootPlugin):
 
         for rec in data:
             for d in rec:
-                if d["key"].startswith("Org") or d["key"].startswith("AS"):
+                if d["key"].lower().startswith("org") or \
+                    d["key"].lower().startswith("as") or \
+                    d["key"].lower().startswith("descr"):
                     ownerinfo[d["key"]] = d["value"]
 
         return ownerinfo
@@ -225,14 +227,21 @@ class sfp_ir(SpiderFootPlugin):
                 neighs = self.asNeighbours(asn)
                 for nasn in neighs:
                     ownerinfo = self.asOwnerInfo(nasn)
+                    ownertext = ''
+                    for k, v in ownerinfo.iteritems():
+                        ownertext = ownertext + k + ": " + v + "\n"
+
                     if len(ownerinfo) > 0:
-                        evt = SpiderFootEvent("PROVIDER_INTERNET", str(ownerinfo),
+                        evt = SpiderFootEvent("PROVIDER_INTERNET", ownertext,
                             self.__name__, event)
                         self.notifyListeners(evt)                           
         else:
             # If they don't own the netblock they are serving from, then
             # the netblock owner is their Internet provider.
-            evt = SpiderFootEvent("PROVIDER_INTERNET", str(ownerinfo),
+            ownertext = ''
+            for k, v in ownerinfo.iteritems():
+                ownertext = ownertext + k + ": " + v + "\n"
+            evt = SpiderFootEvent("PROVIDER_INTERNET", ownertext,
                 self.__name__, event)
             self.notifyListeners(evt)
 
