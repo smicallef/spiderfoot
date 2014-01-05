@@ -23,7 +23,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_tldsearch(SpiderFootPlugin):
-    """TLD Search:Search all Internet TLDs for domains with the same name as the target."""
+    """TLD Search:Search all Internet TLDs for domains with the same name as the target (this can be slow.)"""
 
     # Default options
     opts = {
@@ -84,8 +84,8 @@ class sfp_tldsearch(SpiderFootPlugin):
         # Spawn threads for scanning
         sf.info("Spawning threads to check TLDs: " + str(tldList))
         for tld in tldList:
-            t.append(threading.Thread(name='sfp_tldsearch_' + tld,
-                target=self.tryTld, args=(tld,)))
+            tn = 'sfp_tldsearch_' + str(random.randint(0,999999999))
+            t.append(threading.Thread(name=tn, target=self.tryTld, args=(tld,)))
             t[i].start()
             i += 1
 
@@ -133,7 +133,10 @@ class sfp_tldsearch(SpiderFootPlugin):
 
         # Look through all TLDs for the existence of this target keyword
         for tld in self.opts['_internettlds']:
-            tld = unicode(tld.strip(), errors='ignore')
+            if type(tld) != unicode:
+                tld = unicode(tld.strip(), errors='ignore')
+            else:
+                tld = tld.strip()
 
             if tld.startswith("//") or len(tld) == 0:
                 continue

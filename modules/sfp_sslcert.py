@@ -146,7 +146,7 @@ class sfp_sslcert(SpiderFootPlugin):
 
         fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
         if "dns:"+fqdn not in hosts and "dns:*."+fqdn_tld not in hosts:
-            evt = SpiderFootEvent("SSL_CERTIFICATE_MISMATCH", fqdn, self.__name__, sevt)
+            evt = SpiderFootEvent("SSL_CERTIFICATE_MISMATCH", hosts, self.__name__, sevt)
             self.notifyListeners(evt)
 
     # Check if the expiration date is in the future

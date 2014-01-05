@@ -421,7 +421,7 @@ class SpiderFoot:
         if bits == None:
             return url.lower()
 
-        self.debug('base url of ' + url + ' is: ' + bits.group(1))
+        #self.debug('base url of ' + url + ' is: ' + bits.group(1))
         return bits.group(1).lower()
 
     # Extract the FQDN from a URL
@@ -647,11 +647,11 @@ class SpiderFoot:
                 self.info("Fetching: " + url + " [user-agent: " + \
                     header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
+            result['headers'] = dict()
             opener = urllib2.build_opener(SmartRedirectHandler())
             fullPage = opener.open(req, timeout=timeout)
             content = fullPage.read()
 
-            result['headers'] = dict()
             for k, v in fullPage.info().items():
                 result['headers'][k.lower()] = v
 
@@ -670,7 +670,8 @@ class SpiderFoot:
             self.info("HTTP code " + str(h.code) + " encountered for " + url)
             # Capture the HTTP error code
             result['code'] = h.code
-            result['headers'] = h.info()
+            for k, v in h.info().items():
+                result['headers'][k.lower()] = v
             if fatal:
                 self.fatal('URL could not be fetched (' + h.code + ')')
         except urllib2.URLError as e:

@@ -223,6 +223,13 @@ class sfp_dns(SpiderFootPlugin):
 
             count += 1
             name = sub + "." + self.baseDomain
+            # Don't look up stuff twice
+            if self.results.has_key(name):
+                sf.debug("Skipping " + name + " as already resolved.")
+                continue
+            else:
+                self.results[name] = True
+
             try:
                 lookup = True
                 addrs = socket.gethostbyname_ex(name)
@@ -234,8 +241,12 @@ class sfp_dns(SpiderFootPlugin):
                 for addr in addrs:
                     if type(addr) == list:
                         for host in addr:
-                            self.processHost(host)
+                            if host not in self.results.keys():
+                                self.processHost(host)
+                                self.results[host] = True
                     else:
-                        self.processHost(addr)
+                        if addr not in self.results.keys():
+                            self.processHost(addr)
+                            self.results[addr] = True
 
 # End of sfp_dns class

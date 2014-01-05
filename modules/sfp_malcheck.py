@@ -56,8 +56,7 @@ malchecks = {
         'type': 'query',
         'checks': ['asn'],
         'url': 'http://www.google.com/safebrowsing/diagnostic?site=AS:{0}',
-        'badregex': [ '.*served content that resulted in malicious software.*',
-            '.*for example.*, that appeared to function as intermediaries.*',
+        'badregex': [ '.*for example.*, that appeared to function as intermediaries.*',
             '.*this network has hosted sites that have distributed malicious.*'
         ],
         'goodregex': []
@@ -306,7 +305,7 @@ class sfp_malcheck(SpiderFootPlugin):
 
                 # Notify other modules of what you've found
                 if url != None:
-                    text = check + "\n" + url
+                    text = check + " [" + eventData + "]\n" + url
                     evt = SpiderFootEvent(evtType, text, self.__name__, event)
                     self.notifyListeners(evt)
 
@@ -326,6 +325,7 @@ class sfp_malcheck(SpiderFootPlugin):
             if self.opts[cid]:
                 url = self.lookupItem(cid, 'domain', self.baseDomain)
                 if url != None:
+                    text = check + " [" + self.baseDomain + "]\n" + url
                     evt = SpiderFootEvent('MALICIOUS_SUBDOMAIN', url, self.__name__)
                     self.notifyListeners(evt)
 

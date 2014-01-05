@@ -24,13 +24,15 @@ class sfp_bingsearch(SpiderFootPlugin):
     # Default options
     opts = {
         'fetchlinks':   True,   # Should we fetch links on the base domain?
-        'pages':        20      # Number of bing results pages to iterate
+        'pages':        20,      # Number of bing results pages to iterate
+        'cohostsamedomain': False
     }
 
     # Option descriptions
     optdescs = {
         'fetchlinks': "Fetch links found on the target domain-name?",
-        'pages':    "Number of Bing results pages to iterate through."
+        'pages':    "Number of Bing results pages to iterate through.",
+        'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?"
     }
 
     # Target
@@ -87,7 +89,10 @@ class sfp_bingsearch(SpiderFootPlugin):
             for match in matches:
                 sf.info("Found something on same IP: " + match)
                 site = sf.urlFQDN(match)
-                if site not in myres:
+                if site not in myres and site != eventData:
+                    if not self.opts['cohostsamedomain'] and site.endswith(self.baseDomain):
+                        sf.debug("Skipping " + site + " because it is on the same domain.")
+                        continue
                     evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
                     self.notifyListeners(evt)
                     myres.append(site)

@@ -29,6 +29,8 @@ class sfp_ir(SpiderFootPlugin):
     baseDomain = None
     results = dict()
     currentEventSrc = None
+    memCache = dict()
+    nbreported = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
@@ -36,6 +38,9 @@ class sfp_ir(SpiderFootPlugin):
         sf = sfc
         self.baseDomain = target
         self.results = dict()
+        self.memCache = dict()
+        self.currentEventSrc = None
+        self.nbreported = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -52,14 +57,16 @@ class sfp_ir(SpiderFootPlugin):
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
-        res = sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
-            useragent=self.opts['_useragent'])
-
-        if res['content'] != None:
-            evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__, 
-                self.currentEventSrc)
-            self.notifyListeners(evt)
-
+        if self.memCache.has_key(url):
+            res = self.memCache[url]
+        else:
+            res = sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+                useragent=self.opts['_useragent'])
+            if res['content'] != None:
+                self.memCache[url] = res
+                evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__, 
+                    self.currentEventSrc)
+                self.notifyListeners(evt)
         return res
 
     # Get the netblock the IP resides in
@@ -95,7 +102,10 @@ class sfp_ir(SpiderFootPlugin):
 
         try:
             j = json.loads(res['content'])
-            data = j["data"]["irr_records"][0]
+            if len(j["data"]["irr_records"]) > 0:
+                data = j["data"]["irr_records"][0]
+            else:
+                data = j["data"]["records"][0]
         except Exception as e:
             sf.debug("Error processing JSON response.")
             return None
@@ -127,9 +137,14 @@ class sfp_ir(SpiderFootPlugin):
             for d in rec:
                 if d["key"].lower().startswith("org") or \
                     d["key"].lower().startswith("as") or \
-                    d["key"].lower().startswith("descr"):
-                    ownerinfo[d["key"]] = d["value"]
+                    d["key"].lower().startswith("descr") and \
+                    d["value"].lower() not in [ "null", "none", "none specified" ]:
+                    if ownerinfo.has_key(d["key"]):
+                        ownerinfo[d["key"]].append(d["value"])
+                    else:
+                        ownerinfo[d["key"]] = [ d["value"] ]
 
+        sf.debug("Returning ownerinfo: " + str(ownerinfo))
         return ownerinfo
 
     # Netblocks owned by an AS
@@ -175,6 +190,36 @@ class sfp_ir(SpiderFootPlugin):
 
         return neighbours
 
+    # Determine whether there is a textual link between the target 
+    # and the string supplied.
+    def findName(self, string):
+        # Simplest check to perform..
+        if self.baseDomain in string:
+            return True
+
+        # Slightly more complex..
+        keyword = sf.domainKeyword(self.baseDomain).lower()
+        rx = [ 
+            '^{0}[-_/\'\"\\\.,\?\! ]',
+            '[-_/\'\"\\\.,\?\! ]{0}$',
+            '[-_/\'\"\\\.,\?\! ]{0}[-_/\'\"\\\.,\?\! ]'
+        ]
+
+        # Mess with the keyword as a last resort..
+        keywordList = list()
+        # Create versions of the keyword, esp. if hyphens are involved.
+        keywordList.append(keyword)
+        keywordList.append(keyword.replace('-', ' '))
+        keywordList.append(keyword.replace('-', '_'))
+        keywordList.append(keyword.replace('-', ''))
+        # More versions in future..
+        for kw in keywordList:
+            for r in rx:
+                if re.match(r.format(kw), string, re.IGNORECASE) != None:
+                    return True
+        
+        return False
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -202,45 +247,53 @@ class sfp_ir(SpiderFootPlugin):
             return None
 
         ownerinfo = self.asOwnerInfo(asn)
-        keyword = sf.domainKeyword(self.baseDomain).lower()
         owned = False
         for k in ownerinfo.keys():
-            item = ownerinfo[k]
-            if self.baseDomain in item or "\"" + keyword in item \
-                or keyword +"\"" in item or keyword +"-" in item \
-                or "-"+keyword in item:
-                owned = True
+            items = ownerinfo[k]
+            for item in items:
+                if self.findName(item.lower()):
+                    owned = True
 
         if owned:
             sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
             evt = SpiderFootEvent("NETBLOCK", prefix, self.__name__, event)
             self.notifyListeners(evt)
-            evt = SpiderFootEvent("BGP_AS", asn, self.__name__, event)
-            self.notifyListeners(evt)
+            asevt = SpiderFootEvent("BGP_AS", asn, self.__name__, event)
+            self.notifyListeners(asevt)
 
-            # 2. Find all the netblocks owned by this AS
-            netblocks = self.asNetblocks(asn)
-            for netblock in netblocks:
-                evt = SpiderFootEvent("NETBLOCK", netblock, self.__name__, event)
-                self.notifyListeners(evt)
+            # Don't report additional netblocks from this AS if we've
+            # already found this AS before.
+            if not self.nbreported.has_key(asn):
+                # 2. Find all the netblocks owned by this AS
+                self.nbreported[asn] = True
+                netblocks = self.asNetblocks(asn)
+                for netblock in netblocks:
+                    if netblock == prefix:
+                        continue
 
+                    # Technically this netblock was identified via the AS, not
+                    # the original IP event, so link it to asevt, not event.
+                    evt = SpiderFootEvent("NETBLOCK", netblock, self.__name__, asevt)
+                    self.notifyListeners(evt)
+
+                # 3. Find all the AS neighbors to this AS
                 neighs = self.asNeighbours(asn)
                 for nasn in neighs:
                     ownerinfo = self.asOwnerInfo(nasn)
                     ownertext = ''
                     for k, v in ownerinfo.iteritems():
-                        ownertext = ownertext + k + ": " + v + "\n"
-
+                        ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
+    
                     if len(ownerinfo) > 0:
                         evt = SpiderFootEvent("PROVIDER_INTERNET", ownertext,
-                            self.__name__, event)
+                            self.__name__, asevt)
                         self.notifyListeners(evt)                           
         else:
             # If they don't own the netblock they are serving from, then
             # the netblock owner is their Internet provider.
             ownertext = ''
             for k, v in ownerinfo.iteritems():
-                ownertext = ownertext + k + ": " + v + "\n"
+                ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
             evt = SpiderFootEvent("PROVIDER_INTERNET", ownertext,
                 self.__name__, event)
             self.notifyListeners(evt)

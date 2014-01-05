@@ -59,7 +59,7 @@ class sfp_crossref(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['LINKED_URL_EXTERNAL', 'SIMILARDOMAIN']
+        return ['LINKED_URL_EXTERNAL', 'SIMILARDOMAIN', 'CO_HOSTED_SITE']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -77,8 +77,9 @@ class sfp_crossref(SpiderFootPlugin):
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        # The SIMILARDOMAIN event supplies domains, not URLs. Assume HTTP.
-        if eventName == 'SIMILARDOMAIN':
+        # The SIMILARDOMAIN and CO_HOSTED_SITE events supply domains, 
+        # not URLs. Assume HTTP.
+        if eventName in [ 'SIMILARDOMAIN', 'CO_HOSTED_SITE' ]:
             eventData = 'http://'+ eventData.lower()
 
         # We are only interested in external sites for the crossref

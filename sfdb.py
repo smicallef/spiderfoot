@@ -460,6 +460,7 @@ class SpiderFootDb:
     # - sourceEventHash: hash of the event that triggered this event
     # And getHash() will return the event hash.
     def scanEventStore(self, instanceId, sfEvent, truncateSize=0):
+        storeData = ''
 
         if type(sfEvent.data) is not unicode:
             # If sfEvent.data is a dict or list, convert it to a string first, as
