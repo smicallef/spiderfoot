@@ -221,7 +221,7 @@ class sfp_similar(SpiderFootPlugin):
 
     # Search for similar sounding domains
     def start(self):
-        keyword = sf.domainKeyword(self.baseDomain)
+        keyword = sf.domainKeyword(self.baseDomain, self.opts['_internettlds'])
         sf.debug("Keyword extracted from " + self.baseDomain + ": " + keyword)
 
         # No longer seems to work.

@@ -387,7 +387,7 @@ class SpiderFoot:
 
             finalBits.append(chunk)
 
-        self.debug('xfrmed rel to abs path: ' + url + ' to ' + '/'.join(finalBits))
+        #self.debug('xfrmed rel to abs path: ' + url + ' to ' + '/'.join(finalBits))
         return '/'.join(finalBits)
 
     # Extract the top level directory from a URL
@@ -397,16 +397,16 @@ class SpiderFoot:
 
         # For cases like 'www.somesite.com'
         if len(bits) == 0:
-            self.debug('base dir of ' + url + ' not identified, using URL as base.')
+            #self.debug('base dir of ' + url + ' not identified, using URL as base.')
             return url + '/'
 
         # For cases like 'http://www.blah.com'
         if '://' in url and url.count('/') < 3:
-            self.debug('base dir of ' + url + ' is: ' + url + '/')
+            #self.debug('base dir of ' + url + ' is: ' + url + '/')
             return url + '/'
 
         base = '/'.join(bits[:-1])
-        self.debug('base dir of ' + url + ' is: ' + base + '/')
+        #self.debug('base dir of ' + url + ' is: ' + base + '/')
         return base + '/'
 
     # Extract the scheme and domain from a URL
@@ -437,9 +437,17 @@ class SpiderFoot:
 
     # Extract the keyword (the domain without the TLD or any subdomains)
     # from a domain.
-    def domainKeyword(self, domain):
-        return domain.split('.', 2)[0].lower()
+    def domainKeyword(self, domain, tldList):
+        # Strip off the TLD
+        tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
+        ret = domain.lower().replace('.'+tld, '')
 
+        # If the user supplied a domain with a sub-domain, return the second part
+        if '.' in ret:
+            return ret.split('.')[-1]
+        else:
+            return ret
+        
     # Obtain the domain name for a supplied hostname
     # tldList needs to be an array based on the Mozilla public list
     def hostDomain(self, hostname, tldList):

@@ -312,7 +312,7 @@ class sfp_malcheck(SpiderFootPlugin):
         return None
 
     def start(self):
-        keyword = sf.domainKeyword(self.baseDomain)
+        keyword = sf.domainKeyword(self.baseDomain, self.opts['_internettlds'])
         sf.debug("Keyword extracted from " + self.baseDomain + ": " + keyword)
         if self.baseDomain in self.results:
             return None
@@ -326,7 +326,7 @@ class sfp_malcheck(SpiderFootPlugin):
                 url = self.lookupItem(cid, 'domain', self.baseDomain)
                 if url != None:
                     text = check + " [" + self.baseDomain + "]\n" + url
-                    evt = SpiderFootEvent('MALICIOUS_SUBDOMAIN', url, self.__name__)
+                    evt = SpiderFootEvent('MALICIOUS_SUBDOMAIN', text, self.__name__)
                     self.notifyListeners(evt)
 
 # End of sfp_malcheck class

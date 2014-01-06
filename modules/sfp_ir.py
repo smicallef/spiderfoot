@@ -31,6 +31,7 @@ class sfp_ir(SpiderFootPlugin):
     currentEventSrc = None
     memCache = dict()
     nbreported = dict()
+    keyword = None
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
@@ -44,6 +45,8 @@ class sfp_ir(SpiderFootPlugin):
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
+
+        self.keyword = sf.domainKeyword(self.baseDomain, self.opts['_internettlds']).lower()
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -198,7 +201,6 @@ class sfp_ir(SpiderFootPlugin):
             return True
 
         # Slightly more complex..
-        keyword = sf.domainKeyword(self.baseDomain).lower()
         rx = [ 
             '^{0}[-_/\'\"\\\.,\?\! ]',
             '[-_/\'\"\\\.,\?\! ]{0}$',
@@ -208,10 +210,10 @@ class sfp_ir(SpiderFootPlugin):
         # Mess with the keyword as a last resort..
         keywordList = list()
         # Create versions of the keyword, esp. if hyphens are involved.
-        keywordList.append(keyword)
-        keywordList.append(keyword.replace('-', ' '))
-        keywordList.append(keyword.replace('-', '_'))
-        keywordList.append(keyword.replace('-', ''))
+        keywordList.append(self.keyword)
+        keywordList.append(self.keyword.replace('-', ' '))
+        keywordList.append(self.keyword.replace('-', '_'))
+        keywordList.append(self.keyword.replace('-', ''))
         # More versions in future..
         for kw in keywordList:
             for r in rx:
