@@ -96,6 +96,12 @@ malchecks = {
         'type': 'list',
         'checks': ['ip'],
         'url': 'http://malc0de.com/bl/IP_Blacklist.txt'
+    },
+    'TOR Node List': {
+        'id': 'tornodes',
+        'type': 'list',
+        'checks': [ 'ip' ],
+        'url': 'http://torstatus.blutmagie.de/ip_list_all.php/Tor_ip_list_ALL.csv'
     }
 }
 
@@ -117,7 +123,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'malc0de': True,
         'checkaffiliates': True,
         'checkcohosts': True,
-        'cacheperiod': 48
+        'cacheperiod': 48,
+        'checknetblocks': True
     }
 
     # Option descriptions
@@ -135,7 +142,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'malc0de': "Enable malc0de.com check?",
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
-        'cacheperiod':  "Hours to cache list data before re-fetching."
+        'cacheperiod':  "Hours to cache list data before re-fetching.",
+        'checknetblocks': "Report if any malicious IPs are found within identified netblocks?"
     }
 
     # Be sure to completely clear any class variables in setup()
