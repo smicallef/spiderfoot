@@ -79,7 +79,7 @@
             refresh = function() { browseEventList(instanceId); }
             sf.fetchData('/scansummary', {'id': instanceId}, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped tablesorter'>";
-                            table += "<thead><tr> <th>Type</th> <th>Unique Data Elements</th> <th>Total Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
+                            table += "<thead><tr> <th>Type</th><th>Unique Data Elements</th> <th>Total Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><a class='link' onClick='";
                                 table += "browseEventData(\"${id}\", \"" + escape(data[i][1]) + "\", \"" + data[i][0] + "\", \"full\");'>";
