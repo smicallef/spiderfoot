@@ -124,27 +124,27 @@ class sfp_blacklist(SpiderFootPlugin):
                     if  type(addr) == dict:
                         for a in addr:
                             if type(self.checks[domain]) is str:
-                                text = self.checks[domain] + " [" + eventData + "]"
+                                text = self.checks[domain]
                             else:
                                 if str(a) not in self.checks[domain].keys():
                                     sf.debug("Return code not found in list: " + str(a))
                                     continue
                                 k = str(a)
-                                text = self.checks[k] + " [" + eventData + "]"
+                                text = self.checks[k]
 
                             evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
                                 text, self.__name__, parentEvent)
                             self.notifyListeners(evt)
                     else:
                         if type(self.checks[domain]) is str:
-                            text = self.checks[domain] + " [" + eventData + "]"
+                            text = self.checks[domain]
                         else:
                             if str(addr) not in self.checks.keys():
                                 sf.debug("Return code not found in list: " + str(addr))
                                 continue
 
                             k = str(addr)
-                            text = self.checks[k] + " [" + eventData + "]"
+                            text = self.checks[k]
 
                         evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
                             text, self.__name__, parentEvent)
