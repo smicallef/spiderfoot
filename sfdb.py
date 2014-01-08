@@ -79,6 +79,7 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS', 'BGP AS Ownership', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_IPADDR', 'Blacklisted IP Address', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_AFFILIATE_IPADDR', 'Blacklisted Affiliate IP Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('CO_HOSTED_SITE', 'Co-Hosted Site', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0)",

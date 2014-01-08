@@ -88,13 +88,13 @@ class sfp_blacklist(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'IP_ADDRESS' ]
+        return [ 'IP_ADDRESS', 'AFFILIATE_IPADDR' ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "BLACKLISTED_IPADDR" ]
+        return [ "BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR" ]
 
     # Swap 1.2.3.4 to 4.3.2.1
     def reverseAddr(self, ipaddr):
@@ -143,9 +143,14 @@ class sfp_blacklist(SpiderFootPlugin):
                             k = str(addr)
                             text = self.checks[k]
 
-                evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
-                    text, self.__name__, parentEvent)
-                self.notifyListeners(evt)
+                if eventName == "AFFILIATE_IPADDR":
+                    evt = SpiderFootEvent('BLACKLISTED_AFFILIATE_IPADDR',
+                        text, self.__name__, parentEvent)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
+                        text, self.__name__, parentEvent)
+                    self.notifyListeners(evt)
             except BaseException as e:
                 sf.debug("Unable to resolve " + eventData + " / " + lookup + ": " + str(e))
  
