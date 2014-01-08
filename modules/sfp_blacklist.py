@@ -118,7 +118,7 @@ class sfp_blacklist(SpiderFootPlugin):
             try:
                 lookup = self.reverseAddr(eventData) + "." + domain
                 sf.debug("Checking Blacklist: " + lookup)
-                addrs = socket.gethostbyaddr(lookup)
+                addrs = socket.gethostbyname_ex(lookup)
                 sf.debug("Addresses returned: " + str(addrs))
                 for addr in addrs:
                     if  type(addr) == dict:
@@ -150,8 +150,7 @@ class sfp_blacklist(SpiderFootPlugin):
                             text, self.__name__, parentEvent)
                         self.notifyListeners(evt)
             except BaseException as e:
-                sf.debug("Unable to resolve " + eventData + " / " + lookup)
-                return None
+                sf.debug("Unable to resolve " + eventData + " / " + lookup + ": " + str(e))
  
         return None
 
