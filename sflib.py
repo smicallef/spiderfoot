@@ -633,6 +633,9 @@ class SpiderFoot:
             self.error('Blank URL supplied to be fetched')
             return result
 
+        # Clean the URL
+        url = url.encode('ascii', 'ignore')
+
         try:
             header = dict()
             if type(useragent) is list:
