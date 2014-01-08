@@ -132,9 +132,6 @@ class sfp_blacklist(SpiderFootPlugin):
                                 k = str(a)
                                 text = self.checks[k]
 
-                            evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
-                                text, self.__name__, parentEvent)
-                            self.notifyListeners(evt)
                     else:
                         if type(self.checks[domain]) is str:
                             text = self.checks[domain]
@@ -146,9 +143,9 @@ class sfp_blacklist(SpiderFootPlugin):
                             k = str(addr)
                             text = self.checks[k]
 
-                        evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
-                            text, self.__name__, parentEvent)
-                        self.notifyListeners(evt)
+                evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
+                    text, self.__name__, parentEvent)
+                self.notifyListeners(evt)
             except BaseException as e:
                 sf.debug("Unable to resolve " + eventData + " / " + lookup + ": " + str(e))
  
