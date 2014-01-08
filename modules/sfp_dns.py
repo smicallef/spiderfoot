@@ -203,6 +203,8 @@ class sfp_dns(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
         sublist = self.opts['commonsubs']
+        # Also look up the base target itself
+        sublist.append('')
         # User may have supplied a file or URL containing the subdomains
         if self.opts['commonsubs'][0].startswith("http://") or \
             self.opts['commonsubs'][0].startswith("https://") or \
@@ -222,7 +224,10 @@ class sfp_dns(SpiderFootPlugin):
                 return None
 
             count += 1
-            name = sub + "." + self.baseDomain
+            if sub != "":
+                name = sub + "." + self.baseDomain
+            else:
+                name = self.baseDomain
             # Don't look up stuff twice
             if self.results.has_key(name):
                 sf.debug("Skipping " + name + " as already resolved.")
