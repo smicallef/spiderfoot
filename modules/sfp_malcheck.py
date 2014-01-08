@@ -102,7 +102,12 @@ malchecks = {
         'type': 'list',
         'checks': [ 'ip' ],
         'url': 'http://torstatus.blutmagie.de/ip_list_all.php/Tor_ip_list_ALL.csv'
-    }
+    },
+    'blocklist.de List': {
+        'id': 'blocklistde',
+        'type': 'list',
+        'checks': [ 'ip' ],
+        'url': 'http://lists.blocklist.de/lists/all.txt'
 }
 
 class sfp_malcheck(SpiderFootPlugin):
@@ -121,6 +126,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'avgdomain': True,
         'phishtank': True,
         'malc0de': True,
+        'blocklistde': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 48,
@@ -140,6 +146,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'avgdomain': "Enable AVG Safety check?",
         'phishtank': "Enable PhishTank check?",
         'malc0de': "Enable malc0de.com check?",
+        'blocklistde': 'Enable blocklist.de check?',
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'cacheperiod':  "Hours to cache list data before re-fetching.",
