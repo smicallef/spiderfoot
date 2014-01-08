@@ -22,7 +22,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sf = None
 
 class sfp_blacklist(SpiderFootPlugin):
-    """SORBS: Query the SORBS database for open relays, open proxies, vulnerable servers, etc."""
+    """Blacklist: Query various blacklist database for open relays, open proxies, vulnerable servers, etc."""
 
     # Default options
     opts = {
@@ -94,7 +94,7 @@ class sfp_blacklist(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "MALICIOUS_IPADDR" ]
+        return [ "BLACKLISTED_IPADDR" ]
 
     # Swap 1.2.3.4 to 4.3.2.1
     def reverseAddr(self, ipaddr):
@@ -132,7 +132,7 @@ class sfp_blacklist(SpiderFootPlugin):
                                 k = str(a)
                                 text = self.checks[k] + " [" + eventData + "]"
 
-                            evt = SpiderFootEvent('MALICIOUS_IPADDR', 
+                            evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
                                 text, self.__name__, parentEvent)
                             self.notifyListeners(evt)
                     else:
@@ -146,7 +146,7 @@ class sfp_blacklist(SpiderFootPlugin):
                             k = str(addr)
                             text = self.checks[k] + " [" + eventData + "]"
 
-                        evt = SpiderFootEvent('MALICIOUS_IPADDR', 
+                        evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
                             text, self.__name__, parentEvent)
                         self.notifyListeners(evt)
             except BaseException as e:
