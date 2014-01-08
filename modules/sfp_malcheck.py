@@ -108,6 +108,7 @@ malchecks = {
         'type': 'list',
         'checks': [ 'ip' ],
         'url': 'http://lists.blocklist.de/lists/all.txt'
+    }
 }
 
 class sfp_malcheck(SpiderFootPlugin):
