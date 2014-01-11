@@ -89,12 +89,18 @@ malchecks = {
         'badregex': ['.*potentially active malware was detected.*'],
         'goodregex': []
     },
-    'malwaredomains.com List': {
-        'id': 'malwaredomains',
+    'malwaredomains.com IP List': {
+        'id': 'malwaredomainsip',
+        'type': 'list',
+        'checks': ['ip'],
+        'url': 'http://www.malwaredomainlist.com/hostslist/ip.txt'
+    },
+    'malwaredomains.com Domain List': {
+        'id': 'malwaredomainsdomain',
         'type': 'list',
         'checks': ['domain'],
-        'url': 'https://easylist-downloads.adblockplus.org/malwaredomains_full.txt',
-        'regex': '^\|\|{0}\^$'
+        'url': 'http://www.malwaredomainlist.com/hostslist/hosts.txt',
+        'regex': '^127.0.0.1\s+{0}$'
     },
     'PhishTank': {
         'id': 'phishtank',
@@ -136,17 +142,18 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusepalevoip': True,
         'googledomain': True,
         'googleasn': True,
-        'malwaredomains': True,
+        'malwaredomainsdomain': True,
+        'malwaredomainsip': True,
         'mcafeedomain': True,
         'avgdomain': True,
         'phishtank': True,
         'malc0de': True,
         'blocklistde': True,
         'tornodes': True,
-        'checkaffiliates': True,
-        'checkcohosts': True,
-        'cacheperiod': 48,
-        'checknetblocks': True
+        'aaacheckaffiliates': True,
+        'aaacheckcohosts': True,
+        'aaacacheperiod': 48,
+        'aaachecknetblocks': True
     }
 
     # Option descriptions
@@ -159,17 +166,18 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusepalevoip': "Enable abuse.ch Palevo IP check?",
         'googledomain': "Enable Google Safe Browsing domain check?",
         'googleasn': "Enable Google Safe Browsing ASN check?",
-        'malwaredomains': "Enable malwaredomainlist.com check?",
+        'malwaredomainsdomain': "Enable malwaredomainlist.com domain check?",
+        'malwaredomainsip': "Enable malwaredomainlist.com IP check?",
         'mcafeedomain': "Enable McAfee Site Advisor check?",
         'avgdomain': "Enable AVG Safety check?",
         'phishtank': "Enable PhishTank check?",
         'malc0de': "Enable malc0de.com check?",
         'blocklistde': 'Enable blocklist.de check?',
-        'tornodes': 'Check for potential TOR nodes?',
-        'checkaffiliates': "Apply checks to affiliates?",
-        'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
-        'cacheperiod':  "Hours to cache list data before re-fetching.",
-        'checknetblocks': "Report if any malicious IPs are found within identified netblocks?"
+        'tornodes': 'Enable TOR exit node check?',
+        'aaacheckaffiliates': "Apply checks to affiliates?",
+        'aaacheckcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
+        'aaacacheperiod':  "Hours to cache list data before re-fetching.",
+        'aaachecknetblocks': "Report if any malicious IPs are found within identified netblocks?"
     }
 
     # Be sure to completely clear any class variables in setup()
