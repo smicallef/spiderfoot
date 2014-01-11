@@ -98,6 +98,7 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_SUBDOMAIN', 'Malicious Sub-domain/Host', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_AFFILIATE', 'Malicious Affiliate', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_AFFILIATE_IPADDR', 'Malicious Affiliate IP Address', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_NETBLOCK', 'Owned Netblock with Malicious IP', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_INTERNAL', 'Linked URL - Internal', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_EXTERNAL', 'Linked URL - External', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_DNS', 'Name Server (DNS ''NS'' Records)', 0)",
