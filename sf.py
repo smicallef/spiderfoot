@@ -35,6 +35,7 @@ for mod in deps:
 import imp
 import time
 import os
+import cherrypy
 from sflib import SpiderFoot
 from sfwebui import SpiderFootWebUi
 
