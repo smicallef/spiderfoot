@@ -38,8 +38,20 @@ malchecks = {
     'abuse.ch SpyEye Tracker (IP)': {
         'id': 'abusespyip',
         'type': 'list',
-        'checks': ['domain'],
+        'checks': ['ip'],
         'url':  'https://spyeyetracker.abuse.ch/blocklist.php?download=ipblocklist'
+    },
+    'abuse.ch Palevo Tracker (Domain)': {
+        'id': 'abusepalevodomain',
+        'type': 'list',
+        'checks': ['domain'],
+        'url':  'https://palevotracker.abuse.ch/blocklists.php?download=domainblocklist'
+    },
+    'abuse.ch Palevo Tracker (IP)': {
+        'id': 'abusepalevoip',
+        'type': 'list',
+        'checks': ['ip'],
+        'url':  'https://palevotracker.abuse.ch/blocklists.php?download=ipblocklist'
     },
     'Google SafeBrowsing (Domain/IP)': {
         'id': 'googledomain',
@@ -120,6 +132,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusezeusip': True,
         'abusespydomain': True,
         'abusespyip': True,
+        'abusepalevodomain': True,
+        'abusepalevoip': True,
         'googledomain': True,
         'googleasn': True,
         'malwaredomains': True,
@@ -141,6 +155,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusezeusip': "Enable abuse.ch Zeus IP check?",
         'abusespydomain': "Enable abuse.ch SpyEye domain check?",
         'abusespyip': "Enable abuse.ch SpeEye IP check?",
+        'abusepalevodomain': "Enable abuse.ch Palevo domain check?",
+        'abusepalevoip': "Enable abuse.ch Palevo IP check?",
         'googledomain': "Enable Google Safe Browsing domain check?",
         'googleasn': "Enable Google Safe Browsing ASN check?",
         'malwaredomains': "Enable malwaredomainlist.com check?",
