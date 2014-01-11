@@ -715,6 +715,10 @@ class SpiderFoot:
             self.debug(target + " does not have wildcard DNS.")
             return False
 
+    # Is an IP within a CIDR range?
+    def ipInSubnet(self, ipaddr, subnet):
+        pass
+
 #
 # SpiderFoot plug-in module base class
 #

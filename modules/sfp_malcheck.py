@@ -9,6 +9,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
+from netaddr import IPAddress, IPNetwork
 import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
@@ -26,7 +27,7 @@ malchecks = {
     'abuse.ch Zeus Tracker (IP)': {
         'id': 'abusezeusip',
         'type': 'list',
-        'checks': ['ip'],
+        'checks': ['ip', 'netblock'],
         'url': 'https://zeustracker.abuse.ch/blocklist.php?download=badips'
     },
     'abuse.ch SpyEye Tracker (Domain)': {
@@ -38,7 +39,7 @@ malchecks = {
     'abuse.ch SpyEye Tracker (IP)': {
         'id': 'abusespyip',
         'type': 'list',
-        'checks': ['ip'],
+        'checks': ['ip', 'netblock'],
         'url':  'https://spyeyetracker.abuse.ch/blocklist.php?download=ipblocklist'
     },
     'abuse.ch Palevo Tracker (Domain)': {
@@ -50,7 +51,7 @@ malchecks = {
     'abuse.ch Palevo Tracker (IP)': {
         'id': 'abusepalevoip',
         'type': 'list',
-        'checks': ['ip'],
+        'checks': ['ip', 'netblock'],
         'url':  'https://palevotracker.abuse.ch/blocklists.php?download=ipblocklist'
     },
     'Google SafeBrowsing (Domain/IP)': {
@@ -92,7 +93,7 @@ malchecks = {
     'malwaredomains.com IP List': {
         'id': 'malwaredomainsip',
         'type': 'list',
-        'checks': ['ip'],
+        'checks': ['ip', 'netblock'],
         'url': 'http://www.malwaredomainlist.com/hostslist/ip.txt'
     },
     'malwaredomains.com Domain List': {
@@ -100,31 +101,31 @@ malchecks = {
         'type': 'list',
         'checks': ['domain'],
         'url': 'http://www.malwaredomainlist.com/hostslist/hosts.txt',
-        'regex': '^127.0.0.1\s+{0}$'
+        'regex': '.*\s+{0}[\s$]'
     },
     'PhishTank': {
         'id': 'phishtank',
         'type': 'list',
         'checks': ['domain'],
         'url': 'http://data.phishtank.com/data/online-valid.csv',
-        'regex': '.*,.*://{0}/.*'
+        'regex': '.*,.*[\./]{0}/.*'
     },
     'malc0de.com List': {
         'id': 'malc0de',
         'type': 'list',
-        'checks': ['ip'],
+        'checks': ['ip', 'netblock'],
         'url': 'http://malc0de.com/bl/IP_Blacklist.txt'
     },
     'TOR Node List': {
         'id': 'tornodes',
         'type': 'list',
-        'checks': [ 'ip' ],
+        'checks': [ 'ip', 'netblock' ],
         'url': 'http://torstatus.blutmagie.de/ip_list_all.php/Tor_ip_list_ALL.csv'
     },
     'blocklist.de List': {
         'id': 'blocklistde',
         'type': 'list',
-        'checks': [ 'ip' ],
+        'checks': [ 'ip', 'netblock' ],
         'url': 'http://lists.blocklist.de/lists/all.txt'
     }
 }
@@ -150,7 +151,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'malc0de': True,
         'blocklistde': True,
         'tornodes': True,
-        'aaacheckaffiliates': True,
+        'aaacheckaffiliates': True, # prefix with aaa so they appear on the top of the UI list
         'aaacheckcohosts': True,
         'aaacacheperiod': 48,
         'aaachecknetblocks': True
@@ -205,7 +206,7 @@ class sfp_malcheck(SpiderFootPlugin):
     def watchedEvents(self):
         return ["IP_ADDRESS", "BGP_AS", "SUBDOMAIN", 
             "AFFILIATE_DOMAIN", "AFFILIATE_IPADDR",
-            "CO_HOSTED_SITE" ]
+            "CO_HOSTED_SITE", "NETBLOCK" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -235,7 +236,7 @@ class sfp_malcheck(SpiderFootPlugin):
         return None
 
     # Look up 'query' type sources
-    def resourceQuery(self, id, target):
+    def resourceQuery(self, id, target, targetType):
         sf.debug("Querying " + id + " for maliciousness of " + target)
         for check in malchecks.keys():
             cid = malchecks[check]['id']
@@ -252,16 +253,18 @@ class sfp_malcheck(SpiderFootPlugin):
         return None
 
     # Look up 'list' type resources
-    def resourceList(self, id, target):
-        sf.debug("Checking " + id + " for maliciousness of " + target)
-        targetDom = sf.hostDomain(target, self.opts['_internettlds'])
+    def resourceList(self, id, target, targetType):
+        targetDom = ''
+        # Get the base domain if we're supplied a domain
+        if targetType == "domain":
+            targetDom = sf.hostDomain(target, self.opts['_internettlds'])
 
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "list":
                 data = dict()
                 url = malchecks[check]['url']
-                data['content'] = sf.cacheGet("sfmal_" + cid, self.opts['cacheperiod'])
+                data['content'] = sf.cacheGet("sfmal_" + cid, self.opts['aaacacheperiod'])
                 if data['content'] == None:
                     data = sf.fetchUrl(url, useragent=self.opts['_useragent'])
                     if data['content'] == None:
@@ -269,31 +272,58 @@ class sfp_malcheck(SpiderFootPlugin):
                     else:
                         sf.cachePut("sfmal_" + cid, data['content'])
 
+                # If we're looking at netblocks
+                if targetType == "netblock":
+                    iplist = list()
+                    # Get the regex, replace {0} with an IP address matcher to 
+                    # build a list of IP.
+                    # Cycle through each IP and check if it's in the netblock.
+                    if malchecks[check].has_key('regex'):
+                        rx = rxTgt = malchecks[check]['regex'].replace("{0}", \
+                            "(\d+\.\d+\.\d+\.\d+)")
+                        sf.debug("New regex for " + check + ": " + rx)
+                        for line in data['content'].split('\n'):
+                            grp = re.findall(rx, line, re.IGNORECASE)
+                            if len(grp) > 0:
+                                sf.debug("Adding " + grp[0] + " to list.")
+                                iplist.append(grp[0])
+                    else:
+                        iplist = data['content'].split('\n')
+
+                    for ip in iplist:
+                        if IPAddress(ip) in IPNetwork(target):
+                            sf.debug(ip + " found within netblock " + target + " in " + check)
+                            return url
+
+                    return None
+
+                # If we're looking at hostnames/domains/IPs
                 if not malchecks[check].has_key('regex'):
                     for line in data['content'].split('\n'):
-                        if line == target or line == targetDom:
+                        if line == target or (targetType == "domain" and line == targetDom):
                             sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
                 else:
                     rxDom = malchecks[check]['regex'].format(targetDom)
                     rxTgt = malchecks[check]['regex'].format(target)
+                    sf.debug("Dom: " + rxDom + ", Tgt: " + rxTgt)
                     for line in data['content'].split('\n'):
-                        if re.match(rxDom, line, re.IGNORECASE) or \
+                        if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                             re.match(rxTgt, line, re.IGNORECASE):
                             sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
-
         return None
 
     def lookupItem(self, resourceId, itemType, target):
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                sf.debug("Checking maliciousness of " + target + " with: " + cid)
+                sf.debug("Checking maliciousness of " + target + " (" +  \
+                    itemType + ") with: " + cid)
                 if malchecks[check]['type'] == "query":
-                    return self.resourceQuery(cid, target)
+                    return self.resourceQuery(cid, target, itemType)
                 if malchecks[check]['type'] == "list":
-                    return self.resourceList(cid, target)
+                    return self.resourceList(cid, target, itemType)
 
         return None
 
@@ -311,10 +341,12 @@ class sfp_malcheck(SpiderFootPlugin):
         else:
             self.results.append(eventData)
 
-        if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
+        if eventName == 'CO_HOSTED_SITE' and not self.opts['aaacheckcohosts']:
             return None
         if eventName == 'AFFILIATE_DOMAIN' or eventName == 'AFFILIATE_IPADDR' \
-            and not self.opts['checkaffiliates']:
+            and not self.opts['aaacheckaffiliates']:
+            return None
+        if eventName == 'NETBLOCK' and not self.opts['aaachecknetblocks']:
             return None
 
         for check in malchecks.keys():
@@ -340,6 +372,10 @@ class sfp_malcheck(SpiderFootPlugin):
                         evtType = 'MALICIOUS_AFFILIATE'
                     if eventName == 'CO_HOSTED_SITE':
                         evtType = 'MALICIOUS_COHOST'
+
+                if eventName == 'NETBLOCK':
+                    typeId = 'netblock'
+                    evtType = 'MALICIOUS_NETBLOCK'
 
                 url = self.lookupItem(cid, typeId, eventData)
                 if self.checkForStop():
