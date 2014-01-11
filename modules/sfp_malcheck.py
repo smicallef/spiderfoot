@@ -306,7 +306,6 @@ class sfp_malcheck(SpiderFootPlugin):
                 else:
                     rxDom = malchecks[check]['regex'].format(targetDom)
                     rxTgt = malchecks[check]['regex'].format(target)
-                    sf.debug("Dom: " + rxDom + ", Tgt: " + rxTgt)
                     for line in data['content'].split('\n'):
                         if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                             re.match(rxTgt, line, re.IGNORECASE):
@@ -394,6 +393,8 @@ class sfp_malcheck(SpiderFootPlugin):
         sf.debug("Keyword extracted from " + self.baseDomain + ": " + keyword)
         if self.baseDomain in self.results:
             return None
+        else:
+            self.results.append(self.baseDomain)
 
         for check in malchecks.keys():
             if self.checkForStop():
