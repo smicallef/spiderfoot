@@ -98,7 +98,7 @@
     <thead><tr> <th>Option</th> <th>Value</th></tr></thead>
     <tbody>
 
-    % for opt in opts['__modules__'][mod]['opts'].keys():
+    % for opt in sorted(opts['__modules__'][mod]['opts'].keys()):
         % if not opt.startswith("_"):
             <%
             if not opts['__modules__'][mod].has_key('optdescs'):
