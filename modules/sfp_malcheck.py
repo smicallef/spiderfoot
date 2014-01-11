@@ -291,9 +291,17 @@ class sfp_malcheck(SpiderFootPlugin):
                         iplist = data['content'].split('\n')
 
                     for ip in iplist:
-                        if IPAddress(ip) in IPNetwork(target):
-                            sf.debug(ip + " found within netblock " + target + " in " + check)
-                            return url
+                        if len(ip) < 8 or ip.startswith("#"):
+                            continue
+                        ip = ip.strip()
+
+                        try:
+                            if IPAddress(ip) in IPNetwork(target):
+                                sf.debug(ip + " found within netblock " + target + " in " + check)
+                                return url
+                        except Exception as e:
+                                sf.debug("Error encountered parsing: " + str(e))
+                                continue
 
                     return None
 
