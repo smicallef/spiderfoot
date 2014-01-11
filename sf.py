@@ -9,8 +9,30 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import imp
 import sys
+
+deps = [ 'M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako']
+for mod in deps:
+    try:
+        __import__(mod)
+    except ImportError as e:
+        print ""
+        print "Critical Start-up Failure: " + str(e)
+        print "================================="
+        print "It appears you are missing a module required for SpiderFoot"
+        print "to function. Please refer to the README file to get a list of"
+        print "the dependencies and install them."
+        print ""
+        print "Python modules required are: "
+        for mod in deps:
+            print " - " + mod
+        print ""
+        print "If you are running on Windows and getting this error, please"
+        print "report this as a bug to support@spiderfoot.net."
+        print ""
+        sys.exit(-1)
+
+import imp
 import time
 import cherrypy
 import os
