@@ -16,6 +16,7 @@ import sys
 import re
 import socket
 import random
+from netaddr import IPAddress, IPNetwork
 import dns.resolver
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -29,6 +30,11 @@ class sfp_dns(SpiderFootPlugin):
     opts = {
         'reverselookup':    True,    # Reverse-resolve IPs to names for
                                     # more clues.
+        'subnetlookup': True,
+        'netblocklookup': True,
+        'maxnetblock': 24,
+        'lookaside': True,
+        'lookasidecount': 10,
         "skipcommononwildcard": True,
         "commonsubs":   [ "www", "web", "ns", "mail", "dns", "mx", "gw", "proxy",
                           "ssl", "fw", "gateway", "firewall", "www1", "www2",
@@ -41,6 +47,11 @@ class sfp_dns(SpiderFootPlugin):
     optdescs = {
         'skipcommononwildcard': "If wildcard DNS is detected, only attempt to look up the first common sub-domain from the common sub-domain list.",
         'reverselookup': "Obtain new URLs and possible affiliates based on reverse-resolved IPs?",
+        'subnetlookup': "If reverse-resolving is enabled, look up all IPs on the same subnet for possible hosts on the same target domain?",
+        'netblocklookup': "If reverse-resolving is enabled, look up all IPs on owned netblocks for possible hosts on the same target domain?",
+        'maxnetblock': "Maximum netblock/subnet size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'lookaside': "For each IP discovered, try and reverse look-up IPs 'next to' that IP.",
+        'lookasidecount': "If look-aside is enabled, the number of IPs on each 'side' of the IP to look up",
         "commonsubs":   "Common sub-domains to try. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
     }
 
@@ -65,7 +76,7 @@ class sfp_dns(SpiderFootPlugin):
         arr = ['RAW_DNS_RECORDS', 'SEARCH_ENGINE_WEB_CONTENT', 'RAW_RIR_DATA',
             'TARGET_WEB_CONTENT', 'LINKED_URL_INTERNAL', 'SUBDOMAIN' ]
         if self.opts['reverselookup']:
-            arr.append('IP_ADDRESS')
+            arr.extend(['IP_ADDRESS', 'NETBLOCK', 'IP_SUBNET'])
         return arr
 
     # What events this module produces
@@ -109,6 +120,51 @@ class sfp_dns(SpiderFootPlugin):
             # Nothing left to do with internal links and raw data
             return None
 
+        if eventName in [ 'NETBLOCK', 'IP_SUBNET' ]:
+            if eventName == 'NETBLOCK' and not self.opts['netblocklookup']:
+                return None
+            if eventName == 'IP_SUBNET' and not self.opts['subnetlookup']:
+                return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                sf.debug("Network size bigger than permitted: " + \
+                    str(IPNetwork(eventData).prefixlen) + " > " + \
+                    str(self.opts['maxnetblock']))
+                return None
+
+            sf.debug("Looking up IPs in " + eventData)
+            for ip in IPNetwork(eventData):
+                if self.checkForStop():
+                    return None
+                ipaddr = str(ip)
+
+                if self.results.has_key(ipaddr):
+                    continue
+
+                try:
+                    addrs = socket.gethostbyaddr(ipaddr)
+                    sf.debug("Found a reversed hostname from " + ipaddr + \
+                        " (" + str(addrs) + ")")
+                    for addr in addrs:
+                        if type(addr) == list:
+                            for host in addr:
+                                # Don't report on anything on the same subnet if
+                                # if doesn't resolve to something on the target
+                                if not host.endswith(self.baseDomain) and \
+                                    eventName == 'IP_SUBNET':
+                                    continue
+                                self.processHost(host, parentEvent)
+                        else:
+                            if not addr.endswith(self.baseDomain) and \
+                                eventName == 'IP_SUBNET':
+                                continue
+                            self.processHost(addr, parentEvent)
+                except Exception as e:
+                    #sf.debug("Exception encountered: " + str(e))
+                    continue
+
+            return None
+
         # Handling SUBDOMAIN and IP_ADDRESS events..
 
         # Don't look up stuff twice
@@ -136,7 +192,38 @@ class sfp_dns(SpiderFootPlugin):
                     self.processHost(host, parentEvent)
             else:
                 self.processHost(addr, parentEvent)
- 
+
+        # Try to reverse-resolve
+        if self.opts['lookaside'] and eventName == 'IP_ADDRESS':
+            ip = IPAddress(eventData)
+            minip = IPAddress(int(ip) - self.opts['lookasidecount'])
+            maxip = IPAddress(int(ip) + self.opts['lookasidecount'])
+            sf.debug("Lookaside max: " + str(maxip) + ", min: " + str(minip))
+            s = int(minip)
+            c = int(maxip)
+            while s <= c:
+                sip = str(IPAddress(s))
+                if self.checkForStop():
+                    return None
+
+                if self.results.has_key(sip):
+                    s = s + 1
+                    continue
+
+                try:
+                    addrs = socket.gethostbyaddr(sip)
+                    for addr in addrs:
+                        if type(addr) == list:
+                            for host in addr:
+                                if host.endswith(self.baseDomain):
+                                    self.processHost(host, parentEvent)
+                        else:
+                            if addr.endswith(self.baseDomain):
+                                self.processHost(addr, parentEvent)
+                except BaseException as e:
+                    sf.debug("Look-aside lookup failed: " + str(e))
+                s = s + 1
+            
         return None
 
     # Resolve a host
@@ -148,7 +235,7 @@ class sfp_dns(SpiderFootPlugin):
             return None
 
     def processHost(self, host, parentEvent=None):
-        sf.info("Found host: " + host)
+        sf.debug("Found host: " + host)
         # If the returned hostname is on a different
         # domain to baseDomain, flag it as an affiliate
         if not host.lower().endswith(self.baseDomain):
