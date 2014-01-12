@@ -153,8 +153,9 @@ class sfp_malcheck(SpiderFootPlugin):
         'tornodes': True,
         'aaacheckaffiliates': True, # prefix with aaa so they appear on the top of the UI list
         'aaacheckcohosts': True,
-        'aaacacheperiod': 48,
-        'aaachecknetblocks': True
+        'aaacacheperiod': 18,
+        'aaachecknetblocks': True,
+        'aaachecksubnets': True
     }
 
     # Option descriptions
@@ -178,7 +179,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'aaacheckaffiliates': "Apply checks to affiliates?",
         'aaacheckcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'aaacacheperiod':  "Hours to cache list data before re-fetching.",
-        'aaachecknetblocks': "Report if any malicious IPs are found within identified netblocks?"
+        'aaachecknetblocks': "Report if any malicious IPs are found within owned netblocks?",
+        'aaachecksubnets': "Check if any malicious IPs are found within the same subnet of the target?"
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -204,7 +206,7 @@ class sfp_malcheck(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "BGP_AS", "SUBDOMAIN", 
+        return ["IP_ADDRESS", "BGP_AS", "SUBDOMAIN", "IP_SUBNET",
             "AFFILIATE_DOMAIN", "AFFILIATE_IPADDR",
             "CO_HOSTED_SITE", "NETBLOCK" ]
 
@@ -213,7 +215,7 @@ class sfp_malcheck(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return [ "MALICIOUS_ASN", "MALICIOUS_IPADDR", "MALICIOUS_SUBDOMAIN",
-            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE" ]
+            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE", "MALICIOUS_SUBNET" ]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
@@ -297,7 +299,8 @@ class sfp_malcheck(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                sf.debug(ip + " found within netblock " + target + " in " + check)
+                                sf.debug(ip + " found within netblock/subnet " + \
+                                    target + " in " + check)
                                 return url
                         except Exception as e:
                                 sf.debug("Error encountered parsing: " + str(e))
@@ -355,6 +358,8 @@ class sfp_malcheck(SpiderFootPlugin):
             return None
         if eventName == 'NETBLOCK' and not self.opts['aaachecknetblocks']:
             return None
+        if eventName == 'IP_SUBNET' and not self.opts['aaachecksubnets']:
+            return None
 
         for check in malchecks.keys():
             cid = malchecks[check]['id']
@@ -383,6 +388,9 @@ class sfp_malcheck(SpiderFootPlugin):
                 if eventName == 'NETBLOCK':
                     typeId = 'netblock'
                     evtType = 'MALICIOUS_NETBLOCK'
+                if eventName == 'IP_SUBNET':
+                    typeId = 'netblock'
+                    evtType = 'MALICIOUS_SUBNET'
 
                 url = self.lookupItem(cid, typeId, eventData)
                 if self.checkForStop():

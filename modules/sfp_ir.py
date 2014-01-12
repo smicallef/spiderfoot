@@ -293,6 +293,11 @@ class sfp_ir(SpiderFootPlugin):
         else:
             # If they don't own the netblock they are serving from, then
             # the netblock owner is their Internet provider.
+
+            # Report the netblock instead as a subnet encapsulating the IP
+            evt = SpiderFootEvent("IP_SUBNET", prefix, self.__name__, event)
+            self.notifyListeners(evt)
+
             ownertext = ''
             for k, v in ownerinfo.iteritems():
                 ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
