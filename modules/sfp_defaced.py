@@ -73,7 +73,7 @@ class sfp_defaced(SpiderFootPlugin):
         found = False
         curDate = time.strftime("%Y%m%d")
         url = "http://www.zone-h.org/archive/" + typeId + "=" + target
-        res = sf.fetchUrl(url)
+        res = sf.fetchUrl(url, useragent=self.opts['_useragent'])
         if res['content'] == None:
             sf.debug("Unable to fetch data from Zone-H for " + target + "(" + typeId + ")")
             return None
