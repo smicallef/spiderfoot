@@ -12,6 +12,7 @@ import json
 import threading
 import cherrypy
 import cgi
+import csv
 import os
 import time
 import urllib2
@@ -21,6 +22,7 @@ from mako.template import Template
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
+from StringIO import StringIO
 
 class SpiderFootWebUi:
     lookup = TemplateLookup(directories=[''])
@@ -51,22 +53,21 @@ class SpiderFootWebUi:
     #
 
     # Get result data in CSV format
-    def scaneventresultexport(self, id, type):
+    def scaneventresultexport(self, id, type, dialect="excel"):
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
-        blob = "\"Updated\",\"Type\",\"Module\",\"Source\",\"Data\"\n"
+        fileobj = StringIO()
+        parser = csv.writer(fileobj, dialect=dialect)
+        parser.writerow(["Updated", "Type", "Module", "Source", "Data"])
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
-            escapedData = cgi.escape(row[1].replace("\n", "#LB#").replace("\r", "#LB#"))
-            escapedSrc = cgi.escape(row[2].replace("\n", "#LB#").replace("\r", "#LB#"))
-            blob = blob + "\"" + lastseen + "\",\"" + row[4] + "\",\""
-            blob = blob + row[3] + "\",\"" + escapedSrc + "\",\"" + escapedData + "\"\n"
+            parser.writerow([lastseen, str(row[4]), str(row[3]), str(row[2]), str(row[1])])
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
-        return blob
+        return fileobj.getvalue()
     scaneventresultexport.exposed = True
-        
+
     # Configuration used for a scan
     def scanopts(self, id):
         ret = dict()
