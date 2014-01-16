@@ -1,0 +1,9 @@
+These people are owed some credit for their contributions to SpiderFoot, be it
+bug fixes or new functionality. Thank you!
+
+- MarioVilas (https://github.com/MarioVilas)
+    - Contributed a fix for CSV exports (issue #35)
+
+- johnnykv (https://github.com/johnnykv)
+    - Contributed improved pip instructions
+
