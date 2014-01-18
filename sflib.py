@@ -155,7 +155,10 @@ class SpiderFoot:
 
     # Return the cache path
     def cachePath(self):
-        return self.myPath() + '/cache'
+        path = self.myPath() + '/cache'
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        return path
 
     # Store data to the cache
     def cachePut(self, label, data):
