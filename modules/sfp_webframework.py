@@ -24,7 +24,8 @@ regexps = dict({
     "Bootstrap":        list(['\/bootstrap\/', 'bootstrap\-', 'bootstrap\.js']),
     "ExtJS":            list(['[\'\"\=]ext\.js', 'extjs', '\/ext\/*\.js']),
     "Mootools":         list(['\/mootools\/', 'mootools\-', 'mootools\.js']),
-    "Dojo":             list(['\/dojo\/', '[\'\"\=]dojo\-', '[\'\"\=]dojo\.js'])
+    "Dojo":             list(['\/dojo\/', '[\'\"\=]dojo\-', '[\'\"\=]dojo\.js']),
+    "Wordpress":        list(['\/wp-includes\/', '\/wp-content\/'])
 })
 
 class sfp_webframework(SpiderFootPlugin):
@@ -63,7 +64,7 @@ class sfp_webframework(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "URL_JAVASCRIPT_FRAMEWORK" ]
+        return [ "URL_WEB_FRAMEWORK" ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -98,7 +99,7 @@ class sfp_webframework(SpiderFootPlugin):
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)
-                    evt = SpiderFootEvent("URL_JAVASCRIPT_FRAMEWORK", regexpGrp, 
+                    evt = SpiderFootEvent("URL_WEB_FRAMEWORK", regexpGrp, 
                         self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)
 

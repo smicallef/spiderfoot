@@ -53,7 +53,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TCP_PORT_OP
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_FORM', 'URL (Form)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_FLASH', 'URL (Uses Flash)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVASCRIPT', 'URL (Uses Javascript)', 0);
-INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVASCRIPT_FRAMEWORK', 'URL (Uses a Javascript Framework)', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_WEB_FRAMEWORK', 'URL (Uses a Web Framework)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVA_APPLET', 'URL (Uses Java Applet)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_STATIC', 'URL (Purely Static)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_PASSWORD', 'URL (Accepts Passwords)', 0);
