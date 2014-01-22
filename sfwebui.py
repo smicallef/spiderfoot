@@ -44,7 +44,9 @@ class SpiderFootWebUi:
         ret = list()
 
         for item in inputList:
-            ret.append(cgi.escape(item))
+            c = cgi.escape(item, True)
+            c = c.replace('\'', '&quot;')
+            ret.append(c)
 
         return ret
 
@@ -166,12 +168,16 @@ class SpiderFootWebUi:
                 self.config = deepcopy(self.defaultConfig) # Clear in memory
             else:
                 useropts = json.loads(allopts)
+                cleanopts = dict()
+                for opt in useropts.keys():
+                    cleanopts[opt] = self.cleanUserInput([useropts[opt]])[0]
+
                 currentopts = deepcopy(self.config)
 
                 # Make a new config where the user options override
                 # the current system config.
                 sf = SpiderFoot(self.config)
-                self.config = sf.configUnserialize(useropts, currentopts)
+                self.config = sf.configUnserialize(cleanopts, currentopts)
 
                 dbh.configSet(sf.configSerialize(currentopts))
         except Exception as e:
