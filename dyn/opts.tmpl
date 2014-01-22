@@ -34,6 +34,7 @@
 <form class="form" action='/savesettings' method='POST'>
 <div style='text-align: left'>
     <input type=hidden id='allopts' name='allopts' value=''>
+    <input type=hidden id='token' name='token' value="${token}">
     <button onClick='clearSettings();' class='btn btn-danger'>Reset to Factory Default</button>
     <button onClick='saveSettings();' class='btn btn-primary'>Save Changes</button>
 <br><br>
