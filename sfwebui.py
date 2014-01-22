@@ -15,6 +15,7 @@ import cgi
 import csv
 import os
 import time
+import random
 import urllib2
 from copy import deepcopy
 from mako.lookup import TemplateLookup
@@ -29,6 +30,7 @@ class SpiderFootWebUi:
     defaultConfig = dict()
     config = dict()
     scanner = None
+    token = None
 
     def __init__(self, config):
         self.defaultConfig = deepcopy(config)
@@ -135,7 +137,8 @@ class SpiderFootWebUi:
     # Settings
     def opts(self):
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
-        return templ.render(opts=self.config, pageid='SETTINGS')
+        self.token = random.randint(0, 99999999)
+        return templ.render(opts=self.config, pageid='SETTINGS', token=self.token)
     opts.exposed = True
 
     # Generic error, but not exposed as not called directly
@@ -159,7 +162,10 @@ class SpiderFootWebUi:
     scandelete.exposed = True
 
     # Save settings, also used to completely reset them to default
-    def savesettings(self, allopts):
+    def savesettings(self, allopts, token):
+        if str(token) != str(self.token):
+            return self.error("Invalid token (" + str(self.token) + ").")
+
         try:
             dbh = SpiderFootDb(self.config)
             # Reset config to default
@@ -184,7 +190,8 @@ class SpiderFootWebUi:
             return self.error("Processing one or more of your inputs failed: " + str(e))
 
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
-        return templ.render(opts=self.config, pageid='SETTINGS', updated=True)
+        self.token = random.randint(0, 99999999)
+        return templ.render(opts=self.config, pageid='SETTINGS', updated=True, token=self.token)
     savesettings.exposed = True
 
     # Initiate a scan
