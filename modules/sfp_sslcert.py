@@ -11,6 +11,7 @@
 
 import sys
 import socket
+import socks
 import ssl
 import time
 import M2Crypto
@@ -95,8 +96,8 @@ class sfp_sslcert(SpiderFootPlugin):
         try:
             s = socket.socket()
             s.settimeout(int(self.opts['ssltimeout']))
+            s.connect((fqdn, 443))
             sock = ssl.wrap_socket(s)
-            sock.connect((fqdn, 443))
             sock.do_handshake()
             rawcert = sock.getpeercert(True)
             cert = ssl.DER_cert_to_PEM_cert(rawcert)
