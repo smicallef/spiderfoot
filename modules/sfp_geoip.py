@@ -13,7 +13,6 @@
 import sys
 import re
 import json
-import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
