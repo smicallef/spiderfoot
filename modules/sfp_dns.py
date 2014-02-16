@@ -12,12 +12,12 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
+import socket
 import sys
 import re
-import socket
 import random
-from netaddr import IPAddress, IPNetwork
 import dns.resolver
+from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
@@ -255,41 +255,50 @@ class sfp_dns(SpiderFootPlugin):
         self.notifyListeners(evt)
 
     def start(self):
-        sf.debug("Gathering MX, SOA and NS records.")
+        sf.debug("Gathering DNS records..")
         # Process the raw data alone
-        recs = [ 'MX', 'NS', 'SOA' ]
         recdata = dict()
+        recs = {
+            'MX': ['\S+ \d+ IN MX \d+ (\S+)\.', 'PROVIDER_MAIL'],
+            'NS': ['\S+ \d+ IN NS (\S+)\.', 'PROVIDER_DNS']
+        }
 
-        for rec in recs:
+        for rec in recs.keys():
             try:
-                recdata[rec] = dns.resolver.query(self.baseDomain, rec)
+                req = dns.message.make_query(self.baseDomain, dns.rdatatype.from_text(rec))
+    
+                if self.opts['_dnsserver'] != "":
+                    n = self.opts['_dnsserver']
+                else:
+                    ns = dns.resolver.get_default_resolver()
+                    n = ns.nameservers[0]
+            
+                res = dns.query.udp(req, n)
+                for x in res.answer:
+                    for rx in recs.keys():
+                        sf.debug("Checking " + str(x) + " + against " + recs[rx][0])
+                        grps = re.findall(recs[rx][0], str(x), re.IGNORECASE|re.DOTALL)
+                        if len(grps) > 0:
+                            for m in grps:
+                                sf.debug("Matched: " +  m)
+                                strdata = unicode(m, 'utf-8', errors='replace')
+                                evt = SpiderFootEvent(recs[rx][1], strdata, 
+                                    self.__name__)
+                                self.notifyListeners(evt)
+                                if not strdata.endswith(self.baseDomain):
+                                    evt = SpiderFootEvent("AFFILIATE", strdata, 
+                                        self.__name__)
+                                    self.notifyListeners(evt)
+                        else:
+                                strdata = unicode(str(x), 'utf-8', errors='replace')
+                                evt = SpiderFootEvent("RAW_DNS_DATA", strdata, 
+                                    self.__name__) 
+                                self.notifyListeners(evt)
             except BaseException as e:
-                sf.error("Failed to obtain " + rec + " data out of DNS: " + str(e), False)
-
-        for key in recdata.keys():
-            strdata = unicode(recdata[key].rrset.to_text(), 'utf-8', errors='replace') 
-            evt = SpiderFootEvent("RAW_DNS_DATA", strdata, self.__name__)
-            self.notifyListeners(evt)
-
-        if recdata.has_key('MX'):
-            for rec in recdata['MX']:
-                item = str(rec.exchange).lower()[0:-1]
-                evt = SpiderFootEvent("PROVIDER_MAIL", item, self.__name__)
-                self.notifyListeners(evt)
-                if not item.endswith(self.baseDomain):
-                    evt = SpiderFootEvent("AFFILIATE", item, self.__name__)
-                    self.notifyListeners(evt)
-
-        if recdata.has_key('NS'):
-            for rec in recdata['NS']:
-                item = str(rec).lower()[0:-1]
-                evt = SpiderFootEvent("PROVIDER_DNS", item, self.__name__)
-                self.notifyListeners(evt)
-                if not item.endswith(self.baseDomain):
-                    evt = SpiderFootEvent("AFFILIATE", item, self.__name__)
-                    self.notifyListeners(evt)
+                sf.error("Failed to obtain DNS response: " + str(e), False)
 
         sublist = self.opts['commonsubs']
+
         # Also look up the base target itself
         sublist.append('')
         # User may have supplied a file or URL containing the subdomains
