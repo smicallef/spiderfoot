@@ -13,7 +13,6 @@
 import sys
 import re
 import json
-import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
@@ -250,11 +249,13 @@ class sfp_ir(SpiderFootPlugin):
 
         ownerinfo = self.asOwnerInfo(asn)
         owned = False
-        for k in ownerinfo.keys():
-            items = ownerinfo[k]
-            for item in items:
-                if self.findName(item.lower()):
-                    owned = True
+
+        if ownerinfo != None:
+            for k in ownerinfo.keys():
+                items = ownerinfo[k]
+                for item in items:
+                    if self.findName(item.lower()):
+                        owned = True
 
         if owned:
             sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
@@ -283,8 +284,9 @@ class sfp_ir(SpiderFootPlugin):
                 for nasn in neighs:
                     ownerinfo = self.asOwnerInfo(nasn)
                     ownertext = ''
-                    for k, v in ownerinfo.iteritems():
-                        ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
+                    if ownerinfo != None:
+                        for k, v in ownerinfo.iteritems():
+                            ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
     
                     if len(ownerinfo) > 0:
                         evt = SpiderFootEvent("PROVIDER_INTERNET", ownertext,
@@ -299,11 +301,12 @@ class sfp_ir(SpiderFootPlugin):
             self.notifyListeners(evt)
 
             ownertext = ''
-            for k, v in ownerinfo.iteritems():
-                ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
-            evt = SpiderFootEvent("PROVIDER_INTERNET", ownertext,
-                self.__name__, event)
-            self.notifyListeners(evt)
+            if ownerinfo != None:
+                for k, v in ownerinfo.iteritems():
+                    ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
+                evt = SpiderFootEvent("PROVIDER_INTERNET", ownertext,
+                    self.__name__, event)
+                self.notifyListeners(evt)
 
         return None
 
