@@ -6,7 +6,7 @@ setup(
     options={
         "py2exe": {
             "packages": ["modules", "dns", "sflib", "sfwebui", "sfdb", "mako", 
-                "cherrypy", "M2Crypto", "netaddr"],
+                "cherrypy", "M2Crypto", "netaddr", "socks"],
             "bundle_files": 1,
             "compressed": True
         }

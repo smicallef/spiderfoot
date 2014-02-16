@@ -8,13 +8,14 @@
 # Copyright:    (c) Steve Micallef 2013
 # License:      GPL
 #-----------------------------------------------------------------
-import dns.resolver
 import json
 import traceback
 import os
 import time
-import urllib2
 import sys
+import socks
+import socket
+import dns.resolver
 from copy import deepcopy
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent
@@ -32,14 +33,6 @@ class SpiderFootScanner:
         self.target = target
         self.moduleList = moduleList
         self.name = name
-
-        # Override the default DNS server
-        if self.config['_dnsserver'] != "":
-            resolver = dns.resolver.Resolver()
-            resolver.nameservers = [ self.config['_dnsserver'] ]
-            dns.resolver.override_system_resolver(resolver)
-        else:
-            dns.resolver.restore_system_resolver()
 
         return
 
@@ -84,7 +77,51 @@ class SpiderFootScanner:
         # moduleList = list of modules the user wants to run
         try:
             # Process global options that point to other places for data
+
+            # If a SOCKS server was specified, set it up
+            if self.config['_socks1type'] != '':
+                socksType = socks.PROXY_TYPE_SOCKS4
+                socksDns = self.config['_socks6dns']
+                socksAddr = self.config['_socks2addr']
+                socksPort = int(self.config['_socks3port'])
+                socksUsername = ''
+                socksPassword = ''
+
+                if self.config['_socks1type'] == '4':
+                    socksType = socks.PROXY_TYPE_SOCKS4
+                if self.config['_socks1type'] == '5':
+                    socksType = socks.PROXY_TYPE_SOCKS5
+                    socksUsername = self.config['_socks4user']
+                    socksPassword = self.config['_socks5pwd']
+                    
+                if self.config['_socks1type'] == 'HTTP':
+                    socksType = socks.PROXY_TYPE_HTTP
+                   
+                self.sf.debug("SOCKS: " + socksAddr + ":" + str(socksPort) + \
+                    "(" + socksUsername + ":" + socksPassword + ")")
+                socks.setdefaultproxy(socksType, socksAddr, socksPort, 
+                    socksDns, socksUsername, socksPassword)
+
+                # Override the default socket and getaddrinfo calls with the 
+                # SOCKS ones
+                socket.socket = socks.socksocket
+                socket.create_connection = socks.create_connection
+                socket.getaddrinfo = socks.getaddrinfo
+
+                self.sf.updateSocket(socket)
+            
+            # Override the default DNS server
+            if self.config['_dnsserver'] != "":
+                resolver = dns.resolver.Resolver()
+                resolver.nameservers = [ self.config['_dnsserver'] ]
+                dns.resolver.override_system_resolver(resolver)
+            else:
+                dns.resolver.restore_system_resolver()
+
+            # Set the user agent
             self.config['_useragent'] = self.sf.optValueToData(self.config['_useragent'])
+
+            # Get internet TLDs
             tlddata = self.sf.cacheGet("internet_tlds", self.config['_internettlds_cache'])
             # If it wasn't loadable from cache, load it from scratch
             if tlddata == None:
@@ -118,6 +155,12 @@ class SpiderFootScanner:
                 mod.clearListeners() # clear any listener relationships from the past
                 mod.setup(self.sf, self.target, modConfig)
                 self.moduleInstances[modName] = mod
+
+                # Override the module's local socket module
+                # to be the SOCKS one.
+                if self.config['_socks1type'] != '':
+                    mod._updateSocket(socket)
+
                 self.sf.status(modName + " module loaded.")
 
             # Register listener modules and then start all modules sequentially

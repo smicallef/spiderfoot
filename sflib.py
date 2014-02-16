@@ -34,6 +34,13 @@ class SpiderFoot:
         self.handle = handle
         self.opts = options
 
+    # Bit of a hack to support SOCKS because of the loading order of
+    # modules. sfscan will call this to update the socket reference
+    # to the SOCKS one.
+    def updateSocket(self, sock):
+        socket = sock
+        urllib2.socket = sock
+
     # Supplied an option value, return the data based on what the
     # value is. If val is a URL, you'll get back the fetched content,
     # if val is a file path it will be loaded and get back the contents,
@@ -718,10 +725,6 @@ class SpiderFoot:
             self.debug(target + " does not have wildcard DNS.")
             return False
 
-    # Is an IP within a CIDR range?
-    def ipInSubnet(self, ipaddr, subnet):
-        pass
-
 #
 # SpiderFoot plug-in module base class
 #
@@ -738,6 +741,12 @@ class SpiderFootPlugin(object):
     # Not really needed in most cases.
     def __init__(self):
         pass
+
+    # Hack to override module's use of socket, replacing it with
+    # one that uses the supplied SOCKS server
+    def _updateSocket(self, sock):
+        socket = sock
+        urllib2.socket = sock
 
     # Used to clear any listener relationships, etc. This is needed because
     # Python seems to cache local variables even between threads.
