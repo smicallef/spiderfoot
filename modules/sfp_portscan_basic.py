@@ -85,6 +85,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
     def tryPort(self, ip, port):
         try:
             sock = socket.create_connection((ip, port), self.opts['timeout'])
+            sock.settimeout(self.opts['timeout'])
             self.portResults[ip + ":" + str(port)] = True
         except Exception as e:
             self.portResults[ip + ":" + str(port)] = False
@@ -96,6 +97,8 @@ class sfp_portscan_basic(SpiderFootPlugin):
         except Exception as e:
             sock.close()
             return
+
+        sock.close()
 
     def tryPortWrapper(self, ip, portList):
         self.portResults = dict()
