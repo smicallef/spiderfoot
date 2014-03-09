@@ -41,6 +41,21 @@ class SpiderFootWebUi:
         sf = SpiderFoot(config)
         self.config = sf.configUnserialize(dbh.configGet(), config)
 
+        if self.config['__webaddr'] == "0.0.0.0":
+            addr = "<IP of this host>"
+        else:
+            addr = self.config['__webaddr']
+
+        print ""
+        print ""
+        print "*************************************************************"
+        print " You can now use SpiderFoot by starting your web browser of"
+        print " choice and browse to http://" + addr + ":" + str(self.config['__webport'])
+        print "*************************************************************"
+        print ""
+        print ""
+
+
     # Sanitize user input
     def cleanUserInput(self, inputList):
         ret = list()
@@ -213,9 +228,9 @@ class SpiderFootWebUi:
         if modulelist != "":
             modlist = modulelist.replace('module_', '').split(',')
         else:
-            types = typelist.replace('type_', '').split(',')
+            typesx = typelist.replace('type_', '').split(',')
             # 1. Find all modules that produce the requested types
-            modlist = sf.modulesProducing(types)
+            modlist = sf.modulesProducing(typesx)
             newmods = deepcopy(modlist)
             newmodcpy = deepcopy(newmods)
             # 2. For each type those modules consume, get modules producing
@@ -278,9 +293,9 @@ class SpiderFootWebUi:
     #
 
     # Scan log data
-    def scanlog(self, id):
+    def scanlog(self, id, limit=None):
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanLogs(id)
+        data = dbh.scanLogs(id, limit)
         retdata = []
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]/1000))
@@ -308,6 +323,18 @@ class SpiderFootWebUi:
             retdata.append([row[0], row[1], row[2], created, started, finished, row[6], row[7]])
         return json.dumps(retdata)
     scanlist.exposed = True
+
+    # Basic information about a scan
+    def scanstatus(self, id):
+        dbh = SpiderFootDb(self.config)
+        data = dbh.scanInstanceGet(id)
+        created = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data[2]))
+        started = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data[3]))
+        ended = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data[4]))
+
+        retdata = [data[0], data[1], created, started, ended, data[5]]
+        return json.dumps(retdata)
+    scanstatus.exposed = True
 
     # Summary of scan results
     def scansummary(self, id):
