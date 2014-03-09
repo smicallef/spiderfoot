@@ -127,6 +127,21 @@ malchecks = {
         'type': 'list',
         'checks': [ 'ip', 'netblock' ],
         'url': 'http://lists.blocklist.de/lists/all.txt'
+    },
+    'Autoshun.org List': {
+        'id': 'autoshun',
+        'type': 'list',
+        'checks': [ 'ip', 'netblock' ],
+        'url': 'http://www.autoshun.org/files/shunlist.csv',
+        'regex': '{0},.*'
+    },
+    'Internet Storm Center': {
+        'id': 'isc',
+        'type': 'query',
+        'checks': [ 'ip' ],
+        'url': 'https://isc.sans.edu/api/ip/{0}',
+        'badregex': [ '.*attacks.*' ],
+        'goodregex': []
     }
 }
 
@@ -150,6 +165,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'phishtank': True,
         'malc0de': True,
         'blocklistde': True,
+        'autoshun': True,
+        'isc': True,
         'tornodes': True,
         'aaacheckaffiliates': True, # prefix with aaa so they appear on the top of the UI list
         'aaacheckcohosts': True,
@@ -176,6 +193,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'malc0de': "Enable malc0de.com check?",
         'blocklistde': 'Enable blocklist.de check?',
         'tornodes': 'Enable TOR exit node check?',
+        'autoshun': 'Enable Autoshun.org check?',
+        'isc': 'Enable Internet Storm Center check?',
         'aaacheckaffiliates': "Apply checks to affiliates?",
         'aaacheckcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'aaacacheperiod':  "Hours to cache list data before re-fetching.",
@@ -243,7 +262,7 @@ class sfp_malcheck(SpiderFootPlugin):
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "query":
-                url = malchecks[check]['url']
+                url = unicode(malchecks[check]['url'])
                 res = sf.fetchUrl(url.format(target), useragent=self.opts['_useragent'])
                 if res['content'] == None:
                     return None
@@ -315,8 +334,8 @@ class sfp_malcheck(SpiderFootPlugin):
                             sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
                 else:
-                    rxDom = malchecks[check]['regex'].format(targetDom)
-                    rxTgt = malchecks[check]['regex'].format(target)
+                    rxDom = unicode(malchecks[check]['regex']).format(targetDom)
+                    rxTgt = unicode(malchecks[check]['regex']).format(target)
                     for line in data['content'].split('\n'):
                         if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                             re.match(rxTgt, line, re.IGNORECASE):
