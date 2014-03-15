@@ -2,10 +2,12 @@
 <h2>${name} &nbsp;<img id=loader src=/static/img/loader.gif></h2>
   <div class="btn-toolbar">
    <div class="btn-group">
+      <a id='btn-status' class="btn" onClick='scanStatusView("${id}")'><i class='icon-eye-open'></i>&nbsp;Status</a>
       <a id='btn-browse' class="btn" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
       <a id='btn-info' class="btn" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-log' class="btn" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
     </div>
+    <button class='btn btn-info disabled' id='scanreminder'>This page automatically reloads data every 3 seconds.</button>
     <div class="btn-group pull-right">
     <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
     <a id='btn-export' rel="tooltip" title="Export Data to CSV" class="btn-info btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
@@ -24,10 +26,23 @@
 
     <script type='text/javascript'>
         var currentType = "ALL";
+        var dataloaders = [];
+        var loadersrunning = false;
         var refresh = function() { browseEventList("${id}"); }
 
+        setInterval(function() {
+            for (var i = 0; i < dataloaders.length; i++) {
+                if (!loadersrunning) {
+                    loadersrunning = true;
+                    dataloaders[i]();
+                    loadersrunning = false;
+                }
+            }
+        }, 5000);
+
         function navTo(target) {
-            var targets = [ "btn-browse", "btn-info", "btn-log", "btn-export", "btn-viz" ]
+            var targets = [ "btn-browse", "btn-info", "btn-log", 
+                "btn-export", "btn-viz", "btn-status" ]
             for (var i = 0; i < targets.length; i++) {
                 if (targets[i] == target) {
                     $("#" + targets[i]).addClass("active");
@@ -38,6 +53,119 @@
 
             $("#breadcrumbs").remove();
             $("#customview").hide();
+            dataloaders = []
+        }
+
+        // Scan status
+        function scanStatusView(instanceId) {
+            grid = "<div id='scansummary-content'>"
+            grid += "<div class='row'>"
+            grid += "<div class='span12'>"
+            grid += "<div class='btn-toolbar' style='text-align: center'>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Total</button>"
+            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='tcounter'>?</button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Unique</button>"
+            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='ucounter'>?</button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Status</button>"
+            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='status'>?</button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Errors</button>"
+            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='errors'>?</button></div>"
+            grid += "</div></div></div><br>"
+            grid += "<div class='row'>"
+            grid += "<div class='span12a' id='vbarsummary' style='height: 480px'></div>"
+            grid += "</div><br>"
+            grid += "<div class='row'>"
+            grid += "<div class='span12' id='logtable'></div>"
+            grid += "</div></div>"
+
+            $("#scansummary-content").remove();
+            $("#loader").show();
+            $("#btn-export").hide();
+            $("#btn-refresh").hide();
+            $("#scanreminder").show();
+            navTo("btn-status");
+
+            $("#mainbody").append(grid);
+
+            // Collect data and populate variables for use later
+            dataloaders.push(
+                function() {
+                    sf.fetchData('/scanstatus', {'id': instanceId}, function(data) {
+                        scanName = data[0];
+                        scanTarget = data[1];
+                        scanStarted = data[2];
+                        scanEnded = data[4];
+                        scanStatus = data[5];
+                    });
+                }
+            );
+
+            dataloaders.push(
+                function() {
+                    sf.fetchData('/scanhistory', {'id': instanceId}, function(data) {
+                        hist = {};
+                        for (i = 0; i < data.length; i++) {
+                        }
+                    });
+                }
+            );
+
+            dataloaders.push(
+                function() {
+                    sf.fetchData('/scansummary', {'id': instanceId}, function(data) {
+                        scanSummary = [];
+                        totalCount = 0;
+                        uniqueCount = 0;
+                        for (i = 0; i < data.length; i++) {
+                            scanSummary[i] = {};
+                            scanSummary[i].scanId = instanceId;
+                            scanSummary[i].id = data[i][0];
+                            scanSummary[i].name = data[i][1];
+                            scanSummary[i].total = data[i][3];
+                            scanSummary[i].counter = data[i][4];
+                            scanSummary[i].link = function(d) { return browseEventData(d.scanId, d.name, d.id, "full"); };
+                            totalCount += data[i][3];
+                            uniqueCount += data[i][4];
+                        }
+
+                        for (x = 0; x < i; x++) {
+                            scanSummary[x].pct = scanSummary[x].counter / uniqueCount;
+                        }
+
+                        $('#ucounter').html(uniqueCount);
+                        $('#tcounter').html(totalCount);
+                        $('#status').html(scanStatus);
+                        $("#vbarsummary").empty();
+                        sf_viz_vbar("#vbarsummary", scanSummary);
+
+                        $("#loader").fadeOut(500);
+                    });
+                }
+            );
+
+            dataloaders.push(
+                function() {
+                    sf.fetchData('/scanlog', {'id': instanceId, 'limit': 10}, function(data) {
+                            var table = "<div class='well'><table id='statuslog-content' class='table table-condensed' style='font-size: 90%'>";
+                            table += "<thead><tr> <th>Time</th> <th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
+                            for (var i = 0; i < data.length; i++) {
+                                table += "<tr";
+                                if (data[i][2] == "ERROR") {
+                                    table += " class='error'"
+                                }
+                                table += "><td>" + data[i][0] + "</a></td>";
+                                table += "<td>" + data[i][1] + "</td>";
+                                table += "<td>" + data[i][2] + "</td>";
+                                table += "<td><pre style='border: 0px; background-color: inherit; font-size: 90%'>" + data[i][3] + "</pre></td>";
+                                table += "</tr>";
+                            }
+                            table += "</tbody></table></div>"
+                            $("#logtable").empty();
+                            $("#logtable").append(table);
+                    });
+                }
+            );
+
         }
 
         // Logs for the scan
@@ -45,6 +173,7 @@
             $("#scansummary-content").remove();
             $("#loader").show();
             $("#btn-export").hide();
+            $("#scanreminder").hide();
             navTo("btn-log");
             refresh = function() { viewScanLog(instanceId); }
             sf.fetchData('/scanlog', {'id': instanceId}, function(data) {
@@ -76,6 +205,8 @@
             navTo("btn-browse");
             $("#loader").show();
             $("#btn-export").show();
+            $("#btn-refresh").show();
+            $("#scanreminder").hide();
             refresh = function() { browseEventList(instanceId); }
             sf.fetchData('/scansummary', {'id': instanceId}, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped tablesorter'>";
@@ -107,7 +238,9 @@
             $("#loader").show();
             navTo("btn-browse");
             $("#btn-export").show();
+            $("#btn-refresh").show();
             $("#customview").show();
+            $("#scanreminder").hide();
             currentType = eventType;
             refresh = function() { browseEventData(instanceId, eventTypeLabel, eventType, format); }
             browseUpdate = function(newformat) { browseEventData(instanceId, eventTypeLabel, eventType, newformat); }
@@ -223,6 +356,8 @@
             $("#scansummary-content").remove();
             $("#loader").show();
             $("#btn-export").hide();
+            $("#btn-refresh").show();
+            $("#scanreminder").hide();
             navTo("btn-info");
             refresh = function() { viewScanConfig(instanceId); }
             sf.fetchData('/scanopts', {'id': instanceId}, function(data) {

@@ -69,10 +69,118 @@ function sf_viz_countLevels(arg, levelsDeep, maxLevels) {
     return [ levels, max ];
 }
 
+function sf_viz_vbar(targetId, gdata) {
+    var margin = {top: 20, right: 20, bottom: 220, left: 60},
+        width = 1160 - margin.left - margin.right,
+        height = 520 - margin.top - margin.bottom;
+
+    var formatPercent = d3.format(".0%");
+
+    var x = d3.scale.ordinal()
+        .rangeRoundBands([0, width], .1);
+
+    var y = d3.scale.linear()
+        .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .tickFormat(formatPercent);
+
+/*    var tip = d3.tip()
+      .attr('class', 'd3-tip')
+      .offset([-10, 0])
+      .html(function(d) {
+        return "<strong>counter Elements:</strong> <span style='color:red'>" + d.counter + "</span>";
+      })
+*/
+    var svg = d3.select(targetId).append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+ //   svg.call(tip);
+
+    data = new Array();
+    for (i = 0; i < gdata.length; i++) {
+        data[i] = sf_viz_vbar_type(gdata[i])
+    }
+    x.domain(data.map(function(d) { return d.name; }));
+    y.domain([0, d3.max(data, function(d) { return d.pct; })]);
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", function(d) {
+                return "rotate(-45)" 
+            });
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", "-50px")
+        .style("text-anchor", "end")
+        .text("Percentage of Unique Elements");
+
+    svg.selectAll(".bar")
+        .data(data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return x(d.name); })
+        .attr("width", x.rangeBand())
+        .attr("y", function(d) { return y(d.pct); })
+        .attr("height", function(d) { return height - y(d.pct); })
+        .on('mousedown', function(d) { showToolTip(" ",0,0,false); d.link(d); } )
+        .on("mouseover", function(d, i) {
+            showToolTip(buildPopupMessage(d), d3.event.pageX+10, d3.event.pageY+10,true);
+        })
+        .on("mouseout", function() {
+            showToolTip(" ",0,0,false);
+        });
+
+
+    function buildPopupMessage(data) {
+        message = "<table>";
+        message += "<tr><td><b>Type:</b></td><td>" + data.name + "</td></tr>";
+        message += "<tr><td><b>Unique Elements:</b></td><td>" + data.counter + "</td></tr>";
+        message += "<tr><td><b>Total Elements:</b></td><td>" + data.total+ "</td></tr>";
+        message += "</table>";
+        return message;
+    }
+
+    function showToolTip(pMessage,pX,pY,pShow) {
+        if (typeof(tooltipDivID)=="undefined") {
+            tooltipDivID =$('<div id="messageToolTipDiv" style="position:absolute;display:block;z-index:10000;border:2px solid black;background-color:rgba(0,0,0,0.8);margin:auto;padding:3px 5px 3px 5px;color:white;font-size:12px;font-family:arial;border-radius: 5px;vertical-align: middle;text-align: center;min-width:50px;overflow:auto;"></div>');
+            $('body').append(tooltipDivID);
+        }
+        if (!pShow) { tooltipDivID.hide(); return;}
+        tooltipDivID.html(pMessage);
+        tooltipDivID.css({top:pY,left:pX});
+        tooltipDivID.show();
+    }
+}
+
+function sf_viz_vbar_type(d) {
+      d.pct = +d.pct;
+      return d;
+}
+
 function sf_viz_dendrogram(targetId, data) {
     var plotData = data['tree'];
     var dataMap = data['data'];
-    console.dir(dataMap);
     var width = sf_viz_countLevels([plotData], 0, 0)[1] * 170;
     var height = sf_viz_countTailNodes([plotData]) * 20;
 

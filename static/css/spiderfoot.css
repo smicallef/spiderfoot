@@ -11,8 +11,6 @@ a.link:hover {
     cursor: pointer;
 }
 
-
-
 .dend-node circle {
 fill: #fff;
 stroke: steelblue;
@@ -29,4 +27,21 @@ stroke: #ccc;
 stroke-width: 1.5px;
 }
 
+.axis path,
+.axis line {
+fill: none;
+stroke: #000;
+shape-rendering: crispEdges;
+}
 
+.bar {
+fill: orange;
+}
+
+.bar:hover {
+fill: orangered ;
+}
+
+.x.axis path {
+display: none;
+}

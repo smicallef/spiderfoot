@@ -344,11 +344,15 @@ class SpiderFootDb:
                 e.args[0])
 
     # Get scan logs
-    def scanLogs(self, instanceId):
+    def scanLogs(self, instanceId, limit=None):
         qry = "SELECT generated AS generated, component, \
             type, message FROM tbl_scan_log WHERE scan_instance_id = ? \
             ORDER BY generated DESC"
         qvars = [instanceId]
+
+        if limit != None:
+            qry = qry + " LIMIT ?"
+            qvars.append(limit)
 
         try:
             self.dbh.execute(qry, qvars)
