@@ -122,7 +122,7 @@ class sfp_bingsearch(SpiderFootPlugin):
         firstPage = sf.fetchUrl(seedUrl, timeout=self.opts['_fetchtimeout'],
             useragent=self.opts['_useragent'])
         if firstPage['code'] == "403":
-            sf.error("Bing doesn't like us right now..")
+            sf.error("Bing doesn't like us right now..", False)
             return None
 
         if firstPage['content'] == None:
@@ -158,7 +158,7 @@ class sfp_bingsearch(SpiderFootPlugin):
             nextPage = sf.fetchUrl('http://www.bing.com' + nextUrl,
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if firstPage['code'] == 403:
-                sf.error("Bing doesn't like us any more..")
+                sf.error("Bing doesn't like us any more..", False)
                 return returnResults
 
             if nextPage['content'] == None:

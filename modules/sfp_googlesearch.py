@@ -77,7 +77,7 @@ class sfp_googlesearch(SpiderFootPlugin):
         firstPage = sf.fetchUrl(seedUrl, timeout=self.opts['_fetchtimeout'],
             useragent=self.opts['_useragent'])
         if firstPage['code'] == "403":
-            sf.error("Google doesn't like us right now..")
+            sf.error("Google doesn't like us right now..", False)
             return None
 
         if firstPage['content'] == None:
@@ -113,7 +113,7 @@ class sfp_googlesearch(SpiderFootPlugin):
             nextPage = sf.fetchUrl('http://www.google.com' + nextUrl,
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if firstPage['code'] == 403:
-                sf.error("Google doesn't like us any more..")
+                sf.error("Google doesn't like us any more..", False)
                 return returnResults
 
             if nextPage['content'] == None:

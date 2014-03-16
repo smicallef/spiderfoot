@@ -79,7 +79,7 @@ class sfp_defaced(SpiderFootPlugin):
             return None
 
         if "<img id='cryptogram' src='/captcha.py'>" in res['content']:
-            sf.debug("CAPTCHA returned from zone-h.org.")
+            sf.error("CAPTCHA returned from zone-h.org.", False)
             return None
 
         rx = "<td>(\d+/\d+/\d+)</td>"
