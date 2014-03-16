@@ -7,7 +7,7 @@
       <a id='btn-info' class="btn" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-log' class="btn" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
     </div>
-    <button class='btn btn-info disabled' id='scanreminder'>This page automatically reloads data every 3 seconds.</button>
+    <button class='btn btn-info disabled' id='scanreminder'>This page automatically reloads data every 5 seconds.</button>
     <div class="btn-group pull-right">
     <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
     <a id='btn-export' rel="tooltip" title="Export Data to CSV" class="btn-info btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
@@ -29,16 +29,6 @@
         var dataloaders = [];
         var loadersrunning = false;
         var refresh = function() { browseEventList("${id}"); }
-
-        setInterval(function() {
-            for (var i = 0; i < dataloaders.length; i++) {
-                if (!loadersrunning) {
-                    loadersrunning = true;
-                    dataloaders[i]();
-                    loadersrunning = false;
-                }
-            }
-        }, 5000);
 
         function navTo(target) {
             var targets = [ "btn-browse", "btn-info", "btn-log", 
@@ -100,12 +90,20 @@
                 }
             );
 
-            dataloaders.push(
+            /*dataloaders.push(
                 function() {
                     sf.fetchData('/scanhistory', {'id': instanceId}, function(data) {
                         hist = {};
                         for (i = 0; i < data.length; i++) {
                         }
+                    });
+                }
+            );*/
+
+            dataloaders.push(
+                function() {
+                    sf.fetchData('/scanerrors', {'id': instanceId}, function(data) {
+                        $("#errors").html(data.length);
                     });
                 }
             );
@@ -166,6 +164,11 @@
                 }
             );
 
+            loadersrunning = true;
+            for (var i = 0; i < dataloaders.length; i++) {
+                dataloaders[i]();
+            }
+            loadersrunning = false;
         }
 
         // Logs for the scan
@@ -404,7 +407,21 @@
             });
         }
 
-        browseEventList("${id}");
+        if ("${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "UNKNOWN") {
+            scanStatusView("${id}");
+        } else {
+            browseEventList("${id}");
+        }
+
+        setInterval(function() {
+            for (var i = 0; i < dataloaders.length; i++) {
+                if (!loadersrunning) {
+                    loadersrunning = true;
+                    dataloaders[i]();
+                    loadersrunning = false;
+                }
+            }
+        }, 5000);
 
     </script>
 <iframe style='display: none' id='exportframe'>

@@ -358,7 +358,25 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching result events: " +
+            sf.error("SQL error encountered when fetching scan logs: " +
+                e.args[0])
+
+    # Get scan errors
+    def scanErrors(self, instanceId, limit=None):
+        qry = "SELECT generated AS generated, component, \
+            message FROM tbl_scan_log WHERE scan_instance_id = ? \
+            AND type = 'ERROR' ORDER BY generated DESC"
+        qvars = [instanceId]
+
+        if limit != None:
+            qry = qry + " LIMIT ?"
+            qvars.append(limit)
+
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            sf.error("SQL error encountered when fetching scan errors: " +
                 e.args[0])
 
     # Delete a scan instance

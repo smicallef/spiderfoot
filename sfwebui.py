@@ -146,7 +146,8 @@ class SpiderFootWebUi:
             return self.error("Scan ID not found.")
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=id, name=res[0], status=res[5], pageid='SCANLIST')
+        return templ.render(id=id, name=res[0], status=res[5], 
+            pageid="SCANLIST")
     scaninfo.exposed = True
 
     # Settings
@@ -173,7 +174,7 @@ class SpiderFootWebUi:
             raise cherrypy.HTTPRedirect("/")
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=id, name=res[0])
+            return templ.render(id=id, name=res[0], pageid="SCANLIST")
     scandelete.exposed = True
 
     # Save settings, also used to completely reset them to default
@@ -206,7 +207,8 @@ class SpiderFootWebUi:
 
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
         self.token = random.randint(0, 99999999)
-        return templ.render(opts=self.config, pageid='SETTINGS', updated=True, token=self.token)
+        return templ.render(opts=self.config, pageid='SETTINGS', updated=True, 
+            token=self.token)
     savesettings.exposed = True
 
     # Initiate a scan
@@ -255,7 +257,7 @@ class SpiderFootWebUi:
                 templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
                 return templ.render(modules=self.config['__modules__'], 
                     alreadyRunning=True, runningScan=thread.name[3:], 
-                    types=types)
+                    types=types, pageid="NEWSCAN")
 
         # Start running a new scan
         self.scanner = SpiderFootScanner(scanname, scantarget.lower(), modlist, 
@@ -263,8 +265,9 @@ class SpiderFootWebUi:
         t = threading.Thread(name="SF_" + scanname, target=self.scanner.startScan)
         t.start()
 
-        templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST',newscan=scanname)
+        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
+        return templ.render(id=self.scanner.myId, name=scanname, 
+            status=self.scanner.status, pageid="SCANLIST")
     startscan.exposed = True
 
     # Stop a scan (id variable is unnecessary for now given that only one simultaneous
@@ -303,6 +306,18 @@ class SpiderFootWebUi:
                 cgi.escape(unicode(row[3], errors='replace'))])
         return json.dumps(retdata)
     scanlog.exposed = True
+
+    # Scan error data
+    def scanerrors(self, id, limit=None):
+        dbh = SpiderFootDb(self.config)
+        data = dbh.scanErrors(id, limit)
+        retdata = []
+        for row in data:
+            generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]/1000))
+            retdata.append([generated, row[1],
+                cgi.escape(unicode(row[2], errors='replace'))])
+        return json.dumps(retdata)
+    scanerrors.exposed = True
 
     # Produce a list of scans
     def scanlist(self):
