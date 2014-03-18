@@ -142,6 +142,19 @@ malchecks = {
         'url': 'https://isc.sans.edu/api/ip/{0}',
         'badregex': [ '.*attacks.*' ],
         'goodregex': []
+    },
+    'AlienVault IP Reputation Database': {
+        'id': 'alienvault',
+        'type': 'list',
+        'checks': [ 'ip', 'netblock' ],
+        'url': 'https://reputation.alienvault.com/reputation.generic',
+        'regex': '{0} #.*'
+    },
+    'OpenBL.org Blacklist': {
+        'id': 'openbl',
+        'type': 'list',
+        'checks': [ 'ip', 'netblock' ],
+        'url': 'http://www.openbl.org/lists/base.txt'
     }
 }
 
@@ -168,6 +181,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'autoshun': True,
         'isc': True,
         'tornodes': True,
+        'alienvault': True,
+        'openbl': True,
         'aaacheckaffiliates': True, # prefix with aaa so they appear on the top of the UI list
         'aaacheckcohosts': True,
         'aaacacheperiod': 18,
@@ -195,6 +210,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'tornodes': 'Enable TOR exit node check?',
         'autoshun': 'Enable Autoshun.org check?',
         'isc': 'Enable Internet Storm Center check?',
+        'alienvault': 'Enable AlienVault IP Reputation check?',
+        'openbl': 'Enable OpenBL.org Blacklist check?',
         'aaacheckaffiliates': "Apply checks to affiliates?",
         'aaacheckcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'aaacacheperiod':  "Hours to cache list data before re-fetching.",
@@ -306,7 +323,7 @@ class sfp_malcheck(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             grp = re.findall(rx, line, re.IGNORECASE)
                             if len(grp) > 0:
-                                sf.debug("Adding " + grp[0] + " to list.")
+                                #sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')

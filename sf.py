@@ -11,10 +11,14 @@
 
 import sys
 
-deps = [ 'M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks']
+deps = [ 'M2Crypto', 'netaddr', 'ext.dns', 'cherrypy', 'mako', 'ext.socks']
 for mod in deps:
     try:
-        __import__(mod)
+        if mod.startswith("ext."):
+            modname = mod.split('.')
+            __import__('ext', fromlist=[modname[1]])
+        else:
+            __import__(mod)
     except ImportError as e:
         print ""
         print "Critical Start-up Failure: " + str(e)

@@ -11,7 +11,7 @@
 
 import sys
 import socket
-import socks
+from ext import socks
 import ssl
 import time
 import M2Crypto

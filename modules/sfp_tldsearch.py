@@ -10,7 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import dns.resolver
 import socket
 import sys
 import re
