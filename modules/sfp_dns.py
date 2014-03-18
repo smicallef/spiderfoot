@@ -16,7 +16,7 @@ import socket
 import sys
 import re
 import random
-from ext.dns import resolver, rdatatype, message, query
+import dns
 from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -265,15 +265,15 @@ class sfp_dns(SpiderFootPlugin):
 
         for rec in recs.keys():
             try:
-                req = message.make_query(self.baseDomain, rdatatype.from_text(rec))
+                req = dns.message.make_query(self.baseDomain, dns.rdatatype.from_text(rec))
     
                 if self.opts['_dnsserver'] != "":
                     n = self.opts['_dnsserver']
                 else:
-                    ns = resolver.get_default_resolver()
+                    ns = dns.resolver.get_default_resolver()
                     n = ns.nameservers[0]
             
-                res = query.udp(req, n)
+                res = dns.query.udp(req, n)
                 for x in res.answer:
                     for rx in recs.keys():
                         sf.debug("Checking " + str(x) + " + against " + recs[rx][0])

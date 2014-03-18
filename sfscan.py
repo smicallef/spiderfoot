@@ -14,8 +14,8 @@ import os
 import time
 import sys
 import socket
-from ext import socks
-from ext.dns import resolver
+import socks
+import dns.resolver
 from copy import deepcopy
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent
@@ -112,11 +112,11 @@ class SpiderFootScanner:
             
             # Override the default DNS server
             if self.config['_dnsserver'] != "":
-                res = resolver.Resolver()
+                res = dns.resolver.Resolver()
                 res.nameservers = [ self.config['_dnsserver'] ]
-                resolver.override_system_resolver(res)
+                dns.resolver.override_system_resolver(res)
             else:
-                resolver.restore_system_resolver()
+                dns.resolver.restore_system_resolver()
 
             # Set the user agent
             self.config['_useragent'] = self.sf.optValueToData(self.config['_useragent'])

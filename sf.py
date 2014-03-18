@@ -10,8 +10,14 @@
 #-------------------------------------------------------------------------------
 
 import sys
+import os, inspect
 
-deps = [ 'M2Crypto', 'netaddr', 'ext.dns', 'cherrypy', 'mako', 'ext.socks']
+# Look under ext ford 3rd party dependencies
+cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0],"ext")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+
+deps = [ 'M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks']
 for mod in deps:
     try:
         if mod.startswith("ext."):
