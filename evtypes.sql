@@ -15,6 +15,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_IPA
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE', 'Defaced Affiliate', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_COHOST', 'Defaced Co-Hosted Site', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_IPADDR', 'Defaced Affiliate IP Address', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEVICE_TYPE', 'Device Type', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INITIAL_TARGET', 'User-Supplied Target', 0);
@@ -31,6 +32,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_A
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_NETBLOCK', 'Malicious IP on Owned Netblock', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_SUBNET', 'Malicious IP on Same Subnet', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK', 'Netblock Ownership', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('OPERATING_SYSTEM', 'Operating System', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_DNS', 'Name Server (DNS ''NS'' Records)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_INTERNET', 'Internet Service Provider', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0);
