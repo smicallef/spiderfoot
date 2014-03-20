@@ -19,6 +19,7 @@ sf = None
 regexps = dict({
     "LinkedIn (Individual)": list(['.*linkedin.com/in/([a-zA-Z0-9_]+$)']),
     "LinkedIn (Company)": list(['.*linkedin.com/company/([a-zA-Z0-9_]+$)']),
+    "Github":           list(['.*github.com/([a-zA-Z0-9_]+)\/']),
     "Google+":          list(['.*plus.google.com/([0-9]+$)']),
     "Facebook":         list(['.*facebook.com/([a-zA-Z0-9_]+$)']),
     "YouTube":          list(['.*youtube.com/([a-zA-Z0-9_]+$)']),
