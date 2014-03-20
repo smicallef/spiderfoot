@@ -54,7 +54,7 @@ class sfp_pastebin(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "SEARCH_ENGINE_WEB_CONTENT" ]
+        return [ "SEARCH_ENGINE_WEB_CONTENT", "PASTEBIN_CONTENT" ]
 
     # Scrape Google for content, starting at startUrl and iterating through
     # results based on options supplied. Will return a dictionary of all pages
@@ -170,5 +170,10 @@ class sfp_pastebin(SpiderFootPlugin):
                     evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT",
                         res['content'], self.__name__)
                     self.notifyListeners(evt)
+
+                    evt = SpiderFootEvent("PASTEBIN_CONTENT",
+                        link, self.__name__)
+                    self.notifyListeners(evt)
+
 
 # End of sfp_pastebin class
