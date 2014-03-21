@@ -282,6 +282,7 @@ class sfp_malcheck(SpiderFootPlugin):
                 url = unicode(malchecks[check]['url'])
                 res = sf.fetchUrl(url.format(target), useragent=self.opts['_useragent'])
                 if res['content'] == None:
+                    sf.error("Unable to fetch " + url.format(target), False)
                     return None
                 if self.contentMalicious(res['content'], 
                     malchecks[check]['goodregex'],
@@ -306,6 +307,7 @@ class sfp_malcheck(SpiderFootPlugin):
                 if data['content'] == None:
                     data = sf.fetchUrl(url, useragent=self.opts['_useragent'])
                     if data['content'] == None:
+                        sf.error("Unable to fetch " + url, False)
                         return None
                     else:
                         sf.cachePut("sfmal_" + cid, data['content'])

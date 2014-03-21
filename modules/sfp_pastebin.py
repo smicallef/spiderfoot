@@ -80,7 +80,7 @@ class sfp_pastebin(SpiderFootPlugin):
             return None
 
         if firstPage['content'] == None:
-            sf.error("Failed to fetch content from Google for PasteBin.")
+            sf.error("Failed to fetch content from Google for PasteBin.", False)
             return None
 
         returnResults[seedUrl] = firstPage['content']
@@ -116,7 +116,8 @@ class sfp_pastebin(SpiderFootPlugin):
                 return returnResults
 
             if nextPage['content'] == None:
-                sf.error("Failed to fetch subsequent content from Google PasteBin search.")
+                sf.error("Failed to fetch subsequent content from Google PasteBin search.", 
+                    False)
                 return returnResults
 
             returnResults[nextUrl] = nextPage['content']

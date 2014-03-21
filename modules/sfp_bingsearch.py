@@ -126,7 +126,7 @@ class sfp_bingsearch(SpiderFootPlugin):
             return None
 
         if firstPage['content'] == None:
-            sf.error("Failed to fetch content from Bing.")
+            sf.error("Failed to fetch content from Bing.", False)
             return None
 
         returnResults[seedUrl] = firstPage['content']
@@ -162,7 +162,7 @@ class sfp_bingsearch(SpiderFootPlugin):
                 return returnResults
 
             if nextPage['content'] == None:
-                sf.error("Failed to fetch subsequent content from Bing.")
+                sf.error("Failed to fetch subsequent content from Bing.", False)
                 return returnResults
 
             returnResults[nextUrl] = nextPage['content']

@@ -81,7 +81,7 @@ class sfp_googlesearch(SpiderFootPlugin):
             return None
 
         if firstPage['content'] == None:
-            sf.error("Failed to fetch content from Google.")
+            sf.error("Failed to fetch content from Google.", False)
             return None
 
         returnResults[seedUrl] = firstPage['content']
@@ -117,7 +117,7 @@ class sfp_googlesearch(SpiderFootPlugin):
                 return returnResults
 
             if nextPage['content'] == None:
-                sf.error("Failed to fetch subsequent content from Google.")
+                sf.error("Failed to fetch subsequent content from Google.", False)
                 return returnResults
 
             returnResults[nextUrl] = nextPage['content']
