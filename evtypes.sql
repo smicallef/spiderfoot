@@ -18,6 +18,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFF
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEVICE_TYPE', 'Device Type', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HUMAN_NAME', 'Human Name', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INITIAL_TARGET', 'User-Supplied Target', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_ADDRESS', 'IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_SUBNET', 'IP Subnet', 0);

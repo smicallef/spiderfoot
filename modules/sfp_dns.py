@@ -339,6 +339,7 @@ class sfp_dns(SpiderFootPlugin):
                 lookup = False
 
             if lookup:
+                self.processHost(name)
                 for addr in addrs:
                     if type(addr) == list:
                         for host in addr:

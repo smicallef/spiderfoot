@@ -91,6 +91,7 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HUMAN_NAME', 'Human Name', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INITIAL_TARGET', 'User-Supplied Target', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_ADDRESS', 'IP Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_SUBNET', 'IP Address - Subnet', 0)",
@@ -142,20 +143,19 @@ class SpiderFootDb:
 
     def __init__(self, opts):
         global sf
+        sf = SpiderFoot(opts)
 
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
         # read and write to such a file.
-        dbh = sqlite3.connect(opts['__database'], timeout=10)
+        dbh = sqlite3.connect(sf.myPath() + "/" + opts['__database'], timeout=10)
         if dbh == None:
             sf.fatal("Could not connect to internal database, and couldn't create " + \
                 opts['__database'])
         dbh.text_factory = str
 
         self.conn = dbh
-
         self.dbh = dbh.cursor()
-        sf = SpiderFoot(opts)
 
         # Now we actually check to ensure the database file has the schema set
         # up correctly.
