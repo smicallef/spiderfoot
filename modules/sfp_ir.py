@@ -270,17 +270,22 @@ class sfp_ir(SpiderFootPlugin):
                 # 2. Find all the netblocks owned by this AS
                 self.nbreported[asn] = True
                 netblocks = self.asNetblocks(asn)
-                for netblock in netblocks:
-                    if netblock == prefix:
-                        continue
-
-                    # Technically this netblock was identified via the AS, not
-                    # the original IP event, so link it to asevt, not event.
-                    evt = SpiderFootEvent("NETBLOCK", netblock, self.__name__, asevt)
-                    self.notifyListeners(evt)
+                if netblocks != None:
+                    for netblock in netblocks:
+                        if netblock == prefix:
+                            continue
+    
+                        # Technically this netblock was identified via the AS, not
+                        # the original IP event, so link it to asevt, not event.
+                        evt = SpiderFootEvent("NETBLOCK", netblock, 
+                            self.__name__, asevt)
+                        self.notifyListeners(evt)
 
                 # 3. Find all the AS neighbors to this AS
                 neighs = self.asNeighbours(asn)
+                if neighs == None:
+                    return None
+
                 for nasn in neighs:
                     ownerinfo = self.asOwnerInfo(nasn)
                     ownertext = ''
