@@ -75,6 +75,10 @@ class sfp_virustotal(SpiderFootPlugin):
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.opts['apikey'] == "":
+            sf.error("You enabled sfp_virustotal but did not set an API key!", False)
+            return None
+
        # Don't look up stuff twice
         if self.results.has_key(eventData):
             sf.debug("Skipping " + eventData + " as already mapped.")
@@ -145,6 +149,10 @@ class sfp_virustotal(SpiderFootPlugin):
         url = "https://www.virustotal.com/vtapi/v2/domain/report?domain="
         res = sf.fetchUrl(url + self.baseDomain + "&apikey=" + self.opts['apikey'],
             timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+
+        if res['code'] == 403:
+            sf.error("VirusTotal API limit reached or invalid API key.", False)
+            return None
 
         if res['content'] == None:
             sf.info("No VirusTotal info found for " + self.baseDomain)

@@ -66,6 +66,10 @@ class sfp_shodan(SpiderFootPlugin):
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.opts['apikey'] == "":
+            sf.error("You enabled sfp_shodan but did not set an API key!", False)
+            return None
+
        # Don't look up stuff twice
         if self.results.has_key(eventData):
             sf.debug("Skipping " + eventData + " as already mapped.")
