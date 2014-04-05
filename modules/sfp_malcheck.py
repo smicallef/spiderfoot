@@ -155,6 +155,22 @@ malchecks = {
         'type': 'list',
         'checks': [ 'ip', 'netblock' ],
         'url': 'http://www.openbl.org/lists/base.txt'
+    },
+    'ThreatExpert.com Database': {
+        'id': 'threatexpert',
+        'type': 'query',
+        'checks': [ 'ip', 'domain' ],
+        'url': 'http://www.threatexpert.com/reports.aspx?find={0}&tf=3',
+        'badregex': [ '.*<strong>Findings</strong>.*' ],
+        'goodregex': []
+    },
+    'TotalHash.com Database': {
+        'id': 'totalhash',
+        'type': 'query',
+        'checks': [ 'ip', 'domain' ],
+        'url': 'http://totalhash.com/search/dnsrr:*{0}%20or%20ip:{0}',
+        'badregex': [ '.*<a href=\"/analysis.*' ],
+        'goodregex': []
     }
 }
 
@@ -183,6 +199,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'tornodes': True,
         'alienvault': True,
         'openbl': True,
+        'totalhash': True,
+        'threatexpert': True,
         'aaacheckaffiliates': True, # prefix with aaa so they appear on the top of the UI list
         'aaacheckcohosts': True,
         'aaacacheperiod': 18,
@@ -212,6 +230,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'isc': 'Enable Internet Storm Center check?',
         'alienvault': 'Enable AlienVault IP Reputation check?',
         'openbl': 'Enable OpenBL.org Blacklist check?',
+        'totalhash': 'Enable totalhash.com check?',
+        'threatexpert': 'Enable threatexpert.com check?',
         'aaacheckaffiliates': "Apply checks to affiliates?",
         'aaacheckcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'aaacacheperiod':  "Hours to cache list data before re-fetching.",

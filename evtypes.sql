@@ -20,6 +20,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', '
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HUMAN_NAME', 'Human Name', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INITIAL_TARGET', 'User-Supplied Target', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERESTING_FILE', 'Interesting File', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_ADDRESS', 'IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_SUBNET', 'IP Subnet', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_INTERNAL', 'Linked URL - Internal', 0);
@@ -51,7 +52,8 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFI
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_MISMATCH', 'SSL Certificate Host Mismatch', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_EXPIRED', 'SSL Certificate Expired', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_EXPIRING', 'SSL Certificate Expiring', 0);
-INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TARGET_WEB_CONTENT', 'Target''s Web Content', 1);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TARGET_WEB_CONTENT', 'Web Content', 1);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TARGET_WEB_COOKIE', 'Cookies', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TCP_PORT_OPEN', 'Open TCP Port', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TCP_PORT_OPEN_BANNER', 'Open TCP Port Banner', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_FORM', 'URL (Form)', 0);
