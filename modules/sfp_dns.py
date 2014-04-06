@@ -35,6 +35,7 @@ class sfp_dns(SpiderFootPlugin):
         'maxnetblock': 24,
         'lookaside': True,
         'lookasidecount': 10,
+        'onlyactive': True,
         "skipcommononwildcard": True,
         "commonsubs":   [ "www", "web", "ns", "mail", "dns", "mx", "gw", "proxy",
                           "ssl", "fw", "gateway", "firewall", "www1", "www2",
@@ -50,6 +51,7 @@ class sfp_dns(SpiderFootPlugin):
         'subnetlookup': "If reverse-resolving is enabled, look up all IPs on the same subnet for possible hosts on the same target domain?",
         'netblocklookup': "If reverse-resolving is enabled, look up all IPs on owned netblocks for possible hosts on the same target domain?",
         'maxnetblock': "Maximum netblock/subnet size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'onlyactive': "Only report sub-domains/hostnames that resolve to an IP.",
         'lookaside': "For each IP discovered, try and reverse look-up IPs 'next to' that IP.",
         'lookasidecount': "If look-aside is enabled, the number of IPs on each 'side' of the IP to look up",
         "commonsubs":   "Common sub-domains to try. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
@@ -240,18 +242,25 @@ class sfp_dns(SpiderFootPlugin):
         # domain to baseDomain, flag it as an affiliate
         if not host.lower().endswith(self.baseDomain):
             if sf.validIP(host):
-                type = "IP_ADDRESS"
+                htype = "IP_ADDRESS"
             else:
-                type = "AFFILIATE"
+                htype = "AFFILIATE"
         else:
-            type = "SUBDOMAIN"
-
+            htype = "SUBDOMAIN"
+                
         if parentEvent != None:
             # Don't report back the same thing that was provided
-            if type == parentEvent.eventType and host == parentEvent.data:
+            if htype == parentEvent.eventType and host == parentEvent.data:
                 return
 
-        evt = SpiderFootEvent(type, host, self.__name__, parentEvent)
+        if htype == "SUBDOMAIN" and self.opts['onlyactive']:
+            try:
+                addrs = socket.gethostbyname_ex(host)
+            except BaseException as e:
+                sf.debug("Unable to resolve " + host + ", skipping.")
+                return None
+
+        evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
         self.notifyListeners(evt)
 
     def start(self):
