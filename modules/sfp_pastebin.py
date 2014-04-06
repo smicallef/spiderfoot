@@ -81,7 +81,7 @@ class sfp_pastebin(SpiderFootPlugin):
             self.notifyListeners(evt)
 
             # Fetch the PasteBin page
-            links = sf.parseLinks(page, pages[page], self.baseDomain)
+            links = sf.parseLinks(page, pages[page], "pastebin.com")
             if len(links) == 0:
                 continue
 
