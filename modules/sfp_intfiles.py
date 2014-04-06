@@ -25,7 +25,7 @@ class sfp_intfiles(SpiderFootPlugin):
     # Default options
     opts = {
         'pages':        20,      # Number of google results pages to iterate
-        'fileexts':     [ "doc", "docx", "ppt", "pptx", "pdf" ],
+        'fileexts':     [ "doc", "docx", "ppt", "pptx", "pdf", 'xls', 'xlsx' ],
         'usegoogle':    True
     }
 

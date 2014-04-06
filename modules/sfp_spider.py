@@ -32,7 +32,8 @@ class sfp_spider(SpiderFootPlugin):
         'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css', 'tar',
                         'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg', 'gz',
                         'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip',
-                        'bin', 'bz2', 'xsl', 'doc', 'docx', 'ppt', 'pptx'],
+                        'bin', 'bz2', 'xsl', 'doc', 'docx', 'ppt', 'pptx', 'xls',
+                        'xlsx', 'csv'],
         'filterusers':  True, # Don't follow /~user directories
         'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
         'nosubs':       False, # Should links to subdomains be ignored?
