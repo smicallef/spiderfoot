@@ -1,6 +1,9 @@
 These people are owed some credit for their contributions to SpiderFoot, be it
 bug fixes or new functionality. Thank you!
 
+- Chris Weber (http://www.casaba.com/blog/author/chris/)
+    - Many recommendations for improvement
+
 - Henri Salo (https://github.com/fgeek)
     - Identified XSS issues (issue #29)
 
