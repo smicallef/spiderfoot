@@ -287,6 +287,9 @@ class sfp_ir(SpiderFootPlugin):
                     return None
 
                 for nasn in neighs:
+                    if self.checkForStop():
+                        return None
+
                     ownerinfo = self.asOwnerInfo(nasn)
                     ownertext = ''
                     if ownerinfo != None:
