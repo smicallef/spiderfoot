@@ -10,6 +10,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
+from netaddr import IPAddress, IPNetwork
 import sys
 import re
 import socket
@@ -32,7 +33,9 @@ class sfp_portscan_basic(SpiderFootPlugin):
                             '990', '992', '993', '995', '1080', '8080', '8888', '9000' ],
         'timeout':          15,
         'maxthreads':       10,
-        'randomize':        True
+        'randomize':        True,
+        'netblockscan':     True,
+        'netblockscanmax':  24
     }
 
     # Option descriptions
@@ -40,7 +43,9 @@ class sfp_portscan_basic(SpiderFootPlugin):
         'maxthreads':   "Number of ports to try to open simultaneously (number of threads to spawn at once.)",
         'ports':    "The TCP ports to scan. Prefix with an '@' to iterate through a file containing ports to try (one per line), e.g. @C:\ports.txt or @/home/bob/ports.txt. Or supply a URL to load the list from there.",
         'timeout':  "Seconds before giving up on a port.",
-        'randomize':    "Randomize the order of ports scanned."
+        'randomize':    "Randomize the order of ports scanned.",
+        'netblockscan': "Port scan all IPs within identified owned netblocks?",
+        'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
     # Target
@@ -74,7 +79,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS']
+        return ['IP_ADDRESS', 'NETBLOCK']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -145,34 +150,50 @@ class sfp_portscan_basic(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        scanIps = list()
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        # Don't look up stuff twice
-        if self.results.has_key(eventData):
-            sf.debug("Skipping " + eventData + " as already scanned.")
-            return None
-        else:
-            self.results[eventData] = True
+        try:
+            if eventName == "NETBLOCK" and self.opts['netblockscan']:
+                net = IPNetwork(eventData)
+                if net.prefixlen < self.opts['netblockscanmax']:
+                    sf.debug("Skipping port scanning of " + eventData + ", too big.")
+                    return None
 
-        i = 0
-        portArr = []
-        for port in self.portlist:
-            if self.checkForStop():
-                return None
-            
-            if i < self.opts['maxthreads']:
-                portArr.append(port)    
-                i += 1
+                for ip in list(net):
+                    scanIps.append(str(ip))
             else:
-                self.sendEvent(self.tryPortWrapper(eventData, portArr), event)
-                i = 1
-                portArr = []
-                portArr.append(port)
+                scanIps.append(eventData)
+        except BaseException as e:
+            sf.error("Strange netblock identified, unable to parse: " + \
+                eventData + " (" + str(e) + ")", False)
+            return None
 
-        # Scan whatever is remaining
-        self.sendEvent(self.tryPortWrapper(eventData, portArr), event)
+        for ipAddr in scanIps:
+            # Don't look up stuff twice
+            if self.results.has_key(ipAddr):
+                sf.debug("Skipping " + ipAddr + " as already scanned.")
+                return None
+            else:
+                self.results[ipAddr] = True
 
-        return None
+            i = 0
+            portArr = []
+            for port in self.portlist:
+                if self.checkForStop():
+                    return None
+                
+                if i < self.opts['maxthreads']:
+                    portArr.append(port)    
+                    i += 1
+                else:
+                    self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)
+                    i = 1
+                    portArr = []
+                    portArr.append(port)
+
+            # Scan whatever is remaining
+            self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)
 
 # End of sfp_portscan_basic class
