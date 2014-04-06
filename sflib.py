@@ -746,7 +746,7 @@ class SpiderFoot:
             "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
-        if firstPage['code'] == "403":
+        if firstPage['code'] == 403 or firstPage['code'] == 503:
             self.error("Google doesn't like us right now..", False)
             return None
 
@@ -778,8 +778,8 @@ class SpiderFoot:
 
             nextPage = self.fetchUrl('http://www.google.com' + nextUrl,
                 timeout=opts['timeout'], useragent=opts['useragent'])
-            if firstPage['code'] == 403:
-                self.error("Google doesn't like us any more..", False)
+            if firstPage['code'] == 403 or firstPage['code'] == 503:
+                self.error("Google doesn't like us right now..", False)
                 return returnResults
 
             if nextPage['content'] == None:

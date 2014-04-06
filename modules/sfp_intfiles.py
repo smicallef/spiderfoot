@@ -1,6 +1,7 @@
 #-------------------------------------------------------------------------------
-# Name:         sfp_files
-# Purpose:      Searches Google for files of potential interest.
+# Name:         sfp_intfiles
+# Purpose:      From Spidering and from searching Google, identifies files of 
+#               potential interest.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -18,20 +19,21 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
-class sfp_files(SpiderFootPlugin):
-    """Files:Identifies potential files of interest, e.g. office documents."""
+class sfp_intfiles(SpiderFootPlugin):
+    """Interesting Files:Identifies potential files of interest, e.g. office documents."""
 
     # Default options
     opts = {
         'pages':        20,      # Number of google results pages to iterate
-        'fileexts':     [ "doc", "docx", "ppt", "pptx", "pdf", "zip", "txt", 
-                        "rtf", "old", "tmp" ]
+        'fileexts':     [ "doc", "docx", "ppt", "pptx", "pdf" ],
+        'usegoogle':    True
     }
 
     # Option descriptions
     optdescs = {
-        'pages':    "Number of search results pages to iterate through.",
-        'fileexts': "File extensions of files you consider interesting."
+        'pages':    "Number of Google search results pages to iterate through if using Google.",
+        'fileexts': "File extensions of files you consider interesting.",
+        'usegoogle': "Use Google to quickly find files. If false, only spidering will be used."
     }
 
     # Target
@@ -50,7 +52,7 @@ class sfp_files(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return None
+        return [ "LINKED_URL_INTERNAL" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -58,7 +60,24 @@ class sfp_files(SpiderFootPlugin):
     def producedEvents(self):
         return [ "SEARCH_ENGINE_WEB_CONTENT", "INTERESTING_FILE" ]
 
+    # Handle events sent to this module
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+
+        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        for fileExt in self.opts['fileexts']:
+            if "." + fileExt in eventData:
+                evt = SpiderFootEvent("INTERESTING_FILE", eventData, self.__name__)
+                self.notifyListeners(evt)
+
+
     def start(self):
+        if not self.opts['usegoogle']:
+            return None
+
         for fileExt in self.opts['fileexts']:
             # Sites hosted on the domain
             pages = sf.googleIterate("site:" + self.baseDomain + "+" + \
@@ -83,7 +102,6 @@ class sfp_files(SpiderFootPlugin):
                 evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], self.__name__)
                 self.notifyListeners(evt)
 
-                # Fetch the PasteBin page
                 links = sf.parseLinks(page, pages[page], self.baseDomain)
                 if len(links) == 0:
                     continue
@@ -94,13 +112,10 @@ class sfp_files(SpiderFootPlugin):
                     else:
                         self.results.append(link)
 
-                    sf.debug("Found a link: " + link)
+                    sf.debug("Found an interesting file: " + link)
                     if sf.urlBaseUrl(link).endswith(self.baseDomain) and \
                         "." + fileExt in link:
-                        if self.checkForStop():
-                            return None
-
                         evt = SpiderFootEvent("INTERESTING_FILE", link, self.__name__)
                         self.notifyListeners(evt)
 
-# End of sfp_files class
+# End of sfp_intfiles class
