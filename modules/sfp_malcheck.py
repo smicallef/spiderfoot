@@ -295,7 +295,8 @@ class sfp_malcheck(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return [ "MALICIOUS_ASN", "MALICIOUS_IPADDR", "MALICIOUS_SUBDOMAIN",
-            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE", "MALICIOUS_SUBNET" ]
+            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE", "MALICIOUS_SUBNET",
+            "MALICIOUS_COHOST" ]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
