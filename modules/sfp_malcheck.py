@@ -171,7 +171,25 @@ malchecks = {
         'url': 'http://totalhash.com/search/dnsrr:*{0}%20or%20ip:{0}',
         'badregex': [ '.*<a href=\"/analysis.*' ],
         'goodregex': []
-    }
+    },
+    'Nothink.org SSH Scanners': {
+        'id': 'nothinkssh',
+        'type': 'list',
+        'checks': [ 'ip', 'netblock', 'domain' ],
+        'url': 'http://www.nothink.org/blacklist/blacklist_ssh_week.txt'
+    },
+    'Nothink.org Malware IRC Traffic': {
+        'id': 'nothinkirc',
+        'type': 'list',
+        'checks': [ 'ip', 'netblock', 'domain' ],
+        'url': 'http://www.nothink.org/blacklist/blacklist_malware_irc.txt'
+    },
+    'Nothink.org Malware HTTP Traffic': {
+        'id': 'nothinkhttp',
+        'type': 'list',
+        'checks': [ 'ip', 'netblock', 'domain' ],
+        'url': 'http://www.nothink.org/blacklist/blacklist_malware_http.txt'
+    }  
 }
 
 class sfp_malcheck(SpiderFootPlugin):
@@ -201,6 +219,9 @@ class sfp_malcheck(SpiderFootPlugin):
         'openbl': True,
         'totalhash': True,
         'threatexpert': True,
+        'nothinkssh': True,
+        'nothinkirc': True,
+        'nothinkhttp': True,
         'aaacheckaffiliates': True, # prefix with aaa so they appear on the top of the UI list
         'aaacheckcohosts': True,
         'aaacacheperiod': 18,
@@ -232,6 +253,9 @@ class sfp_malcheck(SpiderFootPlugin):
         'openbl': 'Enable OpenBL.org Blacklist check?',
         'totalhash': 'Enable totalhash.com check?',
         'threatexpert': 'Enable threatexpert.com check?',
+        'nothinkssh': 'Enable Nothink.org SSH attackers check?',
+        'nothinkirc': 'Enable Nothink.org Malware DNS traffic check?',
+        'nothinkhttp': 'Enable Nothink.org Malware HTTP traffic check?',
         'aaacheckaffiliates': "Apply checks to affiliates?",
         'aaacheckcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'aaacacheperiod':  "Hours to cache list data before re-fetching.",
