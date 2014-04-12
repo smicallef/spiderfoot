@@ -45,7 +45,8 @@ class sfp_ir(SpiderFootPlugin):
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        self.keyword = sf.domainKeyword(self.baseDomain, self.opts['_internettlds']).lower()
+        self.keyword = sf.domainKeyword(self.baseDomain, 
+            self.opts['_internettlds']).lower()
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -213,7 +214,6 @@ class sfp_ir(SpiderFootPlugin):
         keywordList.append(self.keyword.replace('-', ' '))
         keywordList.append(self.keyword.replace('-', '_'))
         keywordList.append(self.keyword.replace('-', ''))
-        # More versions in future..
         for kw in keywordList:
             for r in rx:
                 if re.match(r.format(kw), string, re.IGNORECASE) != None:

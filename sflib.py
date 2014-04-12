@@ -752,7 +752,8 @@ class SpiderFoot:
             "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
-        if firstPage['code'] == 403 or firstPage['code'] == 503:
+        if firstPage['code'] == 403 or firstPage['code'] == 503 \
+            or "name=\"captcha\"" in firstPage['content']:
             self.error("Google doesn't like us right now..", False)
             return None
 
@@ -761,7 +762,8 @@ class SpiderFoot:
             return None
 
         returnResults[seedUrl] = firstPage['content']
-        matches = re.findall("(\/search\S+start=\d+.[^\'\"]*sa=N)", firstPage['content'])
+        matches = re.findall("(\/search\S+start=\d+.[^\'\"]*sa=N)", 
+            firstPage['content'])
 
         while matches > 0 and fetches < limit:
             nextUrl = None
@@ -784,7 +786,8 @@ class SpiderFoot:
 
             nextPage = self.fetchUrl('http://www.google.com' + nextUrl,
                 timeout=opts['timeout'], useragent=opts['useragent'])
-            if firstPage['code'] == 403 or firstPage['code'] == 503:
+            if nextPage['code'] == 403 or nextPage['code'] == 503 \
+                or "name=\"captcha\"" in nextPage['content']:
                 self.error("Google doesn't like us right now..", False)
                 return returnResults
 
@@ -793,10 +796,146 @@ class SpiderFoot:
                 return returnResults
 
             returnResults[nextUrl] = nextPage['content']
-            matches = re.findall("(\/search\S+start=\d+.[^\'\"]*)", nextPage['content'], re.IGNORECASE)
+            matches = re.findall("(\/search\S+start=\d+.[^\'\"]*)", 
+                nextPage['content'], re.IGNORECASE)
 
         return returnResults
 
+    # Scrape Bing for content, starting at startUrl and iterating through
+    # results based on options supplied. Will return a dictionary of all pages
+    # fetched and their contents {page => content}.
+    # Options accepted:
+    # limit: number of search result pages before returning, default is 10
+    # nopause: don't randomly pause between fetches
+    # useragent: User-Agent string to use
+    # timeout: Fetch timeout
+    def bingIterate(self, searchString, opts=dict()):
+        limit = 10
+        fetches = 0
+        returnResults = dict()
+
+        if opts.has_key('limit'):
+            limit = opts['limit']
+
+        # We attempt to make the URL look as authentically human as possible
+        seedUrl = "http://www.bing.com/search?q={0}".format(searchString) + \
+            "&pc=MOZI"
+        firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
+            useragent=opts['useragent'])
+        if firstPage['code'] == 400 or "/challengepic?" in firstPage['content']:
+            self.error("Bing doesn't like us right now..", False)
+            return None
+
+        if firstPage['content'] == None:
+            self.error("Failed to fetch content from Bing.", False)
+            return None
+
+        returnResults[seedUrl] = firstPage['content']
+
+        matches = re.findall("(\/search\S+first=\d+.[^\'\"]*FORM=\S+)", 
+            firstPage['content'])
+        while matches > 0 and fetches < limit:
+            nextUrl = None
+            fetches += 1
+            for match in matches:
+                # Bing moves in increments of 10
+                if "first=" + str((fetches*10)+1) in match:
+                    nextUrl = match.replace("&amp;", "&").replace("%3a", ":")
+
+            if nextUrl == None:
+                self.debug("Nothing left to scan for in Bing results.")
+                return returnResults
+            self.info("Next Bing URL: " + nextUrl)
+
+            # Wait for a random number of seconds between fetches
+            if not opts.has_key('nopause'):
+                pauseSecs = random.randint(4, 15)
+                self.info("Pausing for " + str(pauseSecs))
+                time.sleep(pauseSecs)
+
+            nextPage = self.fetchUrl('http://www.bing.com' + nextUrl,
+                timeout=opts['timeout'], useragent=opts['useragent'])
+            if nextPage['code'] == 400 or "/challengepic?" in nextPage['content']:
+                self.error("Bing doesn't like us any more..", False)
+                return returnResults
+
+            if nextPage['content'] == None:
+                self.error("Failed to fetch subsequent content from Bing.", False)
+                return returnResults
+
+            returnResults[nextUrl] = nextPage['content']
+            matches = re.findall("(\/search\S+first=\d+.[^\'\"]*)", 
+                nextPage['content'], re.IGNORECASE)
+
+        return returnResults
+
+    # Scrape Yahoo for content, starting at startUrl and iterating through
+    # results based on options supplied. Will return a dictionary of all pages
+    # fetched and their contents {page => content}.
+    # Options accepted:
+    # limit: number of search result pages before returning, default is 10
+    # nopause: don't randomly pause between fetches
+    # useragent: User-Agent string to use
+    # timeout: Fetch timeout
+    def yahooIterate(self, searchString, opts=dict()):
+        limit = 10
+        fetches = 0
+        returnResults = dict()
+
+        if opts.has_key('limit'):
+            limit = opts['limit']
+
+        # We attempt to make the URL look as authentically human as possible
+        seedUrl = "https://search.yahoo.com/search?p={0}".format(searchString) + \
+            "&toggle=1&cop=mss&ei=UTF-8"
+        firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
+            useragent=opts['useragent'])
+        if firstPage['code'] == 403:
+            self.error("Yahoo doesn't like us right now..", False)
+            return None
+
+        if firstPage['content'] == None:
+            self.error("Failed to fetch content from Yahoo.", False)
+            return None
+
+        returnResults[seedUrl] = firstPage['content']
+
+        matches = re.findall("(\/search;\S+b=\d+.[^\'\"]*)", 
+            firstPage['content'])
+        while matches > 0 and fetches < limit:
+            nextUrl = None
+            fetches += 1
+            for match in matches:
+                # Yahoo moves in increments of 10
+                if "b=" + str((fetches*10)+1) in match:
+                    nextUrl = "https://search.yahoo.com" + match
+
+            if nextUrl == None:
+                self.debug("Nothing left to scan for in Yahoo results.")
+                return returnResults
+            self.info("Next Yahoo URL: " + nextUrl)
+
+            # Wait for a random number of seconds between fetches
+            if not opts.has_key('nopause'):
+                pauseSecs = random.randint(4, 15)
+                self.info("Pausing for " + str(pauseSecs))
+                time.sleep(pauseSecs)
+
+            nextPage = self.fetchUrl(nextUrl,
+                timeout=opts['timeout'], useragent=opts['useragent'])
+            if nextPage['code'] == 403:
+                self.error("Yahoo doesn't like us any more..", False)
+                return returnResults
+
+            if nextPage['content'] == None:
+                self.error("Failed to fetch subsequent content from Yahoo.", False)
+                return returnResults
+
+            returnResults[nextUrl] = nextPage['content']
+            matches = re.findall("(\/search;\S+b=\d+.[^\'\"]*)",
+                nextPage['content'], re.IGNORECASE)
+
+        return returnResults
 
 #
 # SpiderFoot plug-in module base class
