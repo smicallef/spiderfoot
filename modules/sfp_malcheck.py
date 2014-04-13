@@ -54,6 +54,12 @@ malchecks = {
         'checks': ['ip', 'netblock'],
         'url':  'https://palevotracker.abuse.ch/blocklists.php?download=ipblocklist'
     },
+    'Exploit-DB (Domain)': {
+        'id': 'Exploitdb',
+        'type': 'query',
+        'checks': ['ip',  'domain'],
+        'url':  'http://www.exploit-db.com/archive.tar.bz2'
+    },
     'Google SafeBrowsing (Domain/IP)': {
         'id': 'googledomain',
         'type': 'query',
@@ -203,6 +209,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusespyip': True,
         'abusepalevodomain': True,
         'abusepalevoip': True,
+        'exploitdb': True,
         'googledomain': True,
         'googleasn': True,
         'malwaredomainsdomain': True,
@@ -237,6 +244,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusespyip': "Enable abuse.ch SpeEye IP check?",
         'abusepalevodomain': "Enable abuse.ch Palevo domain check?",
         'abusepalevoip': "Enable abuse.ch Palevo IP check?",
+        'exploitdb': 'Enable exploit-db.com check?',
         'googledomain': "Enable Google Safe Browsing domain check?",
         'googleasn': "Enable Google Safe Browsing ASN check?",
         'malwaredomainsdomain': "Enable malwaredomainlist.com domain check?",
