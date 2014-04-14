@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_intfiles
-# Purpose:      From Spidering and from searching Google, identifies files of 
-#               potential interest.
+# Purpose:      From Spidering and from searching search engines, identifies
+#               files of potential interest.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -14,6 +14,7 @@ import sys
 import random
 import re
 import time
+import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
@@ -24,16 +25,18 @@ class sfp_intfiles(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'pages':        20,      # Number of google results pages to iterate
+        'pages':        20,      # Number of search results pages to iterate
         'fileexts':     [ "doc", "docx", "ppt", "pptx", "pdf", 'xls', 'xlsx' ],
-        'usegoogle':    True
+        'usesearch':    True,
+        'searchengine': "yahoo"
     }
 
     # Option descriptions
     optdescs = {
-        'pages':    "Number of Google search results pages to iterate through if using Google.",
+        'pages':    "Number of search engine results pages to iterate through if using one.",
         'fileexts': "File extensions of files you consider interesting.",
-        'usegoogle': "Use Google to quickly find files. If false, only spidering will be used."
+        'usesearch': "Use search engines to quickly find files. If false, only spidering will be used.",
+        'searchengine': "If using a search engine, which one? google, yahoo or bing."
     }
 
     # Target
@@ -73,19 +76,36 @@ class sfp_intfiles(SpiderFootPlugin):
                 evt = SpiderFootEvent("INTERESTING_FILE", eventData, self.__name__)
                 self.notifyListeners(evt)
 
+    def yahooCleaner(self, string):
+        return " url=\"" + urllib.unquote(string.group(1)) + "\" "
 
     def start(self):
-        if not self.opts['usegoogle']:
+        if not self.opts['usesearch']:
             return None
 
         for fileExt in self.opts['fileexts']:
             # Sites hosted on the domain
-            pages = sf.googleIterate("site:" + self.baseDomain + "+" + \
-                "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
-                useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
+            if self.opts['searchengine'].lower() == "google":
+                pages = sf.googleIterate("site:" + self.baseDomain + "+" + \
+                    "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
+                    useragent=self.opts['_useragent'], 
+                    timeout=self.opts['_fetchtimeout']))
+
+            if self.opts['searchengine'].lower() == "bing":
+                pages = sf.bingIterate("site:" + self.baseDomain + "+" + \
+                    "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
+                    useragent=self.opts['_useragent'], 
+                    timeout=self.opts['_fetchtimeout']))
+
+            if self.opts['searchengine'].lower() == "yahoo":
+                pages = sf.yahooIterate("site:" + self.baseDomain + "+" + \
+                    "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
+                    useragent=self.opts['_useragent'], 
+                    timeout=self.opts['_fetchtimeout']))
 
             if pages == None:
-                sf.info("No results returned from Google for " + fileExt + " files.")
+                sf.info("No results returned from " + self.opts['searchengine'] + \
+                    " for " + fileExt + " files.")
                 continue
 
             for page in pages.keys():
@@ -98,11 +118,17 @@ class sfp_intfiles(SpiderFootPlugin):
                 if self.checkForStop():
                     return None
 
-                # Submit the google results for analysis
+                # Submit the gresults for analysis
                 evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], self.__name__)
                 self.notifyListeners(evt)
 
-                links = sf.parseLinks(page, pages[page], self.baseDomain)
+                if self.opts['searchengine'].lower() == "yahoo":
+                    res = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner,
+                        pages[page], 0)
+                else:
+                    res = pages[page]
+
+                links = sf.parseLinks(page, res, self.baseDomain)
                 if len(links) == 0:
                     continue
 
@@ -112,9 +138,9 @@ class sfp_intfiles(SpiderFootPlugin):
                     else:
                         self.results.append(link)
 
-                    sf.debug("Found an interesting file: " + link)
                     if sf.urlBaseUrl(link).endswith(self.baseDomain) and \
                         "." + fileExt in link:
+                        sf.info("Found an interesting file: " + link)
                         evt = SpiderFootEvent("INTERESTING_FILE", link, self.__name__)
                         self.notifyListeners(evt)
 
