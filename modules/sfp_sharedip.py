@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_sharedip
-# Purpose:      Searches Bing and/or Robex.com for hosts sharing the same IP.
+# Purpose:      Searches Bing and/or Robtex.com for hosts sharing the same IP.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -13,24 +13,29 @@ import sys
 import random
 import re
 import time
+import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # SpiderFoot standard lib (must be initialized in setup)
 sf = None
 
 class sfp_sharedip(SpiderFootPlugin):
-    """Shared IP:Search Bing and/or Robex.com for hosts sharing the same IP."""
+    """Shared IP:Search Bing and/or Robtex.com for hosts sharing the same IP."""
 
     # Default options
     opts = {
         'cohostsamedomain': False,
         'pages': 20,
+        'source': 'robtex',
+        'verify': True
     }
 
     # Option descriptions
     optdescs = {
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
-        'pages': "If using Bing, how many pages to iterate through."
+        'pages': "If using Bing, how many pages to iterate through.",
+        'source': "Source: bing or robtex.",
+        'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP."
     }
 
     # Target
@@ -57,6 +62,23 @@ class sfp_sharedip(SpiderFootPlugin):
     def producedEvents(self):
         return [ "CO_HOSTED_SITE", "SEARCH_ENGINE_WEB_CONTENT" ]
 
+    def validateIP(self, host, ip):
+        try:
+            addrs = socket.gethostbyname_ex(host)
+        except BaseException as e:
+            sf.debug("Unable to resolve " + host + ": " + str(e))
+            return False
+
+        for addr in addrs:
+            if type(addr) == list:
+                for a in addr:
+                    if str(a) == ip:
+                        return True
+            else:
+                if str(addr) == ip:
+                    return True
+        return False
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -73,31 +95,62 @@ class sfp_sharedip(SpiderFootPlugin):
         else:
             self.results.append(eventData)
 
-        results = sf.bingIterate("ip:" + eventData, dict(limit=self.opts['pages'],
-            useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
-        myres = list()
-        if results == None:
-            sf.info("No data returned from Bing.")
-            return None
+        # Robtex
+        if self.opts['source'].lower() == "robtex":
+            res = sf.fetchUrl("https://www.robtex.com/ip/" + eventData + ".html")
+            if res['content'] == None:
+                sf.error("Unable to fetch robtex content.", False)
+                return None
 
-        for key in results.keys():
-            res = results[key]
-            matches = re.findall("<div class=\"sb_meta\"><cite>(\S+)</cite>", 
-                res, re.IGNORECASE)
-            for match in matches:
-                sf.info("Found something on same IP: " + match)
-                site = sf.urlFQDN(match)
-                if site not in myres and site != eventData:
-                    if not self.opts['cohostsamedomain'] and site.endswith(self.baseDomain):
-                        sf.debug("Skipping " + site + " because it is on the same domain.")
-                        continue
-                    evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
-                    self.notifyListeners(evt)
-                    myres.append(site)
+            myres = list()
+            blob = re.findall(".*Pointing to(.[^!]+)shared_pp_pa.*", res['content'],
+                re.IGNORECASE|re.DOTALL)
+            if len(blob) > 0:
+                matches = re.findall("href=\"//www.robtex.com/dns/(.[^\"]*).html",
+                    blob[0], re.IGNORECASE)
+                for m in matches:
+                    sf.info("Found something on same IP: " + m)
+                    if not self.opts['cohostsamedomain'] and m.endswith(self.baseDomain):
+                        sf.debug("Skipping " + m + " because it is on the same domain.")
 
-            # Submit the bing results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key], 
-                self.__name__, event)
-            self.notifyListeners(evt)
+                    if m not in myres and m != eventData:
+                        if self.opts['verify'] and not self.validateIP(m, eventData):
+                            sf.debug("Host no longer resolves to our IP.")
+                            continue
+                        evt = SpiderFootEvent("CO_HOSTED_SITE", m, self.__name__, event)
+                        self.notifyListeners(evt)
+                        myres.append(m)
+
+        # Bing
+        if self.opts['source'].lower() == "bing":
+            results = sf.bingIterate("ip:" + eventData, dict(limit=self.opts['pages'],
+                useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
+            myres = list()
+            if results == None:
+                sf.info("No data returned from Bing.")
+                return None
+
+            for key in results.keys():
+                res = results[key]
+                matches = re.findall("<div class=\"sb_meta\"><cite>(\S+)</cite>", 
+                    res, re.IGNORECASE)
+                for match in matches:
+                    sf.info("Found something on same IP: " + match)
+                    site = sf.urlFQDN(match)
+                    if site not in myres and site != eventData:
+                        if not self.opts['cohostsamedomain'] and site.endswith(self.baseDomain):
+                            sf.debug("Skipping " + site + " because it is on the same domain.")
+                            continue
+                        if self.opts['verify'] and not self.validateIP(m, eventData):
+                            sf.debug("Host no longer resolves to our IP.")
+                            continue
+                        evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
+                        self.notifyListeners(evt)
+                        myres.append(site)
+
+                # Submit the bing results for analysis
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key], 
+                    self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_sharedip class
