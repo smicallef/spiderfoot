@@ -63,7 +63,7 @@ class sfp_blacklist(SpiderFootPlugin):
         },
         "dnsbl-1.uceprotect.net": 'UCEPROTECT - Level 1 (high likelihood)',
         "dnsbl-2.uceprotect.net": 'UCEPROTECT - Level 2 (some false positives)',
-        'zen.spamhaus.net': {
+        'zen.spamhaus.org': {
             '127.0.0.2': "Spamhaus (Zen) - Spammer",
             '127.0.0.3': "Spamhaus (Zen) - Spammer",
             '127.0.0.4': "Spamhaus (Zen) - Proxies, Trojans, etc.",
@@ -119,37 +119,44 @@ class sfp_blacklist(SpiderFootPlugin):
                 sf.debug("Checking Blacklist: " + lookup)
                 addrs = socket.gethostbyname_ex(lookup)
                 sf.debug("Addresses returned: " + str(addrs))
+
+                text = None
                 for addr in addrs:
-                    if  type(addr) == dict:
+                    if type(addr) == list:
                         for a in addr:
                             if type(self.checks[domain]) is str:
                                 text = self.checks[domain]
+                                break
                             else:
                                 if str(a) not in self.checks[domain].keys():
                                     sf.debug("Return code not found in list: " + str(a))
                                     continue
                                 k = str(a)
-                                text = self.checks[k]
+                                text = self.checks[domain][k]
+                                break
 
                     else:
                         if type(self.checks[domain]) is str:
                             text = self.checks[domain]
+                            break
                         else:
                             if str(addr) not in self.checks.keys():
                                 sf.debug("Return code not found in list: " + str(addr))
                                 continue
 
                             k = str(addr)
-                            text = self.checks[k]
-
-                if eventName == "AFFILIATE_IPADDR":
-                    evt = SpiderFootEvent('BLACKLISTED_AFFILIATE_IPADDR',
-                        text, self.__name__, parentEvent)
-                    self.notifyListeners(evt)
-                else:
-                    evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
-                        text, self.__name__, parentEvent)
-                    self.notifyListeners(evt)
+                            text = self.checks[domain][k]
+                            break
+                
+                if text != None:
+                    if eventName == "AFFILIATE_IPADDR":
+                        evt = SpiderFootEvent('BLACKLISTED_AFFILIATE_IPADDR',
+                            text, self.__name__, parentEvent)
+                        self.notifyListeners(evt)
+                    else:
+                        evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
+                            text, self.__name__, parentEvent)
+                        self.notifyListeners(evt)
             except BaseException as e:
                 sf.debug("Unable to resolve " + eventData + " / " + lookup + ": " + str(e))
  
