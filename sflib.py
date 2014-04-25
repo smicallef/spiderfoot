@@ -752,13 +752,16 @@ class SpiderFoot:
             "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
-        if firstPage['code'] == 403 or firstPage['code'] == 503 \
-            or "name=\"captcha\"" in firstPage['content']:
+        if firstPage['code'] == 403 or firstPage['code'] == 503:
             self.error("Google doesn't like us right now..", False)
             return None
 
         if firstPage['content'] == None:
             self.error("Failed to fetch content from Google.", False)
+            return None
+
+        if "name=\"captcha\"" in firstPage['content']:
+            self.error("Google returned a CAPTCHA.", False)
             return None
 
         returnResults[seedUrl] = firstPage['content']
@@ -786,14 +789,17 @@ class SpiderFoot:
 
             nextPage = self.fetchUrl('http://www.google.com' + nextUrl,
                 timeout=opts['timeout'], useragent=opts['useragent'])
-            if nextPage['code'] == 403 or nextPage['code'] == 503 \
-                or "name=\"captcha\"" in nextPage['content']:
+            if nextPage['code'] == 403 or nextPage['code'] == 503:
                 self.error("Google doesn't like us right now..", False)
                 return returnResults
 
             if nextPage['content'] == None:
                 self.error("Failed to fetch subsequent content from Google.", False)
                 return returnResults
+
+            if "name=\"captcha\"" in nextPage['content']:
+                self.error("Google returned a CAPTCHA.", False)
+                return None
 
             returnResults[nextUrl] = nextPage['content']
             matches = re.findall("(\/search\S+start=\d+.[^\'\"]*)", 
@@ -822,12 +828,16 @@ class SpiderFoot:
             "&pc=MOZI"
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
-        if firstPage['code'] == 400 or "/challengepic?" in firstPage['content']:
+        if firstPage['code'] == 400:
             self.error("Bing doesn't like us right now..", False)
             return None
 
         if firstPage['content'] == None:
             self.error("Failed to fetch content from Bing.", False)
+            return None
+
+        if "/challengepic?" in firstPage['content']:
+            self.error("Bing returned a CAPTCHA.", False)
             return None
 
         returnResults[seedUrl] = firstPage['content']
@@ -855,13 +865,17 @@ class SpiderFoot:
 
             nextPage = self.fetchUrl('http://www.bing.com' + nextUrl,
                 timeout=opts['timeout'], useragent=opts['useragent'])
-            if nextPage['code'] == 400 or "/challengepic?" in nextPage['content']:
+            if nextPage['code'] == 400:
                 self.error("Bing doesn't like us any more..", False)
                 return returnResults
 
             if nextPage['content'] == None:
                 self.error("Failed to fetch subsequent content from Bing.", False)
                 return returnResults
+
+            if "/challengepic?" in firstPage['content']:
+                self.error("Bing returned a CAPTCHA.", False)
+                return None
 
             returnResults[nextUrl] = nextPage['content']
             matches = re.findall("(\/search\S+first=\d+.[^\'\"]*)", 
