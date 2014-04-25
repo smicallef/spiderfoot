@@ -168,7 +168,7 @@ malchecks = {
         'id': 'totalhash',
         'type': 'query',
         'checks': [ 'ip', 'domain' ],
-        'url': 'http://totalhash.com/search/dnsrr:*{0}%20or%20ip:{0}',
+        'url': 'http://totalhash.com/search/dnsrr:*{0}%20or%20ip:{1}',
         'badregex': [ '.*<a href=\"/analysis.*' ],
         'goodregex': []
     },
