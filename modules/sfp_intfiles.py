@@ -72,7 +72,7 @@ class sfp_intfiles(SpiderFootPlugin):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         for fileExt in self.opts['fileexts']:
-            if "." + fileExt in eventData:
+            if "." + fileExt.lower() in eventData.lower():
                 evt = SpiderFootEvent("INTERESTING_FILE", eventData, self.__name__)
                 self.notifyListeners(evt)
 
@@ -139,7 +139,7 @@ class sfp_intfiles(SpiderFootPlugin):
                         self.results.append(link)
 
                     if sf.urlBaseUrl(link).endswith(self.baseDomain) and \
-                        "." + fileExt in link:
+                        "." + fileExt.lower() in link.lower():
                         sf.info("Found an interesting file: " + link)
                         evt = SpiderFootEvent("INTERESTING_FILE", link, self.__name__)
                         self.notifyListeners(evt)

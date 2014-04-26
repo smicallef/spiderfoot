@@ -636,7 +636,7 @@ class SpiderFoot:
 
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30, 
-        useragent="SpiderFoot", headers=None):
+        useragent="SpiderFoot", headers=None, dontMangle=False):
         result = {
             'code': None,
             'status': None,
@@ -686,7 +686,10 @@ class SpiderFoot:
             if 'gzip' in result['headers'].get('content-encoding', ''):
                 content = gzip.GzipFile(fileobj=StringIO.StringIO(content)).read()
 
-            result['content'] = unicode(content, 'utf-8', errors='replace')
+            if dontMangle:
+                result['content'] = content
+            else:
+                result['content'] = unicode(content, 'utf-8', errors='replace')
 
             #print "FOR: " + url
             #print "HEADERS: " + str(result['headers'])

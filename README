@@ -19,16 +19,17 @@ https://github.com/smicallef/spiderfoot
 INSTALLING AND RUNNING ON *NIX
 ===============================
 
-SpiderFoot is written in Python (2.6-2.7), so to run on Linux/Solaris/etc. you need Python 2.6 or 2.7 installed, in addition to the netaddr, M2Crypto, CherryPy and Mako modules.
+SpiderFoot is written in Python (2.6-2.7), so to run on Linux/Solaris/etc. you need Python 2.6 or 2.7 installed, in addition to the netaddr, lxml, M2Crypto, CherryPy and Mako modules.
 
 To install the dependencies using PIP (https://pypi.python.org/pypi/pip), do the following:
 
+$ pip install lxml
 $ pip install netaddr
 $ pip install M2Crypto
 $ pip install cherrypy
 $ pip install mako
 
-SpiderFoot was developed against netaddr 0.7.10, M2Crypto 0.20.2, CherryPy 3.2.2 and Mako 0.7.2. If you run into any issues on newer versions, please let me know. 
+SpiderFoot was developed against lxml 3.3.5, netaddr 0.7.10, M2Crypto 0.20.2, CherryPy 3.2.2 and Mako 0.7.2. If you run into any issues on newer versions, please let me know. 
 
 DNSPython (http://www.dnspython.org) is also a dependency but is included in the package under the dns directory, so does *not* need to be installed.
 
