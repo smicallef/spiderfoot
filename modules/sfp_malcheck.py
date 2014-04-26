@@ -168,7 +168,7 @@ malchecks = {
         'id': 'totalhash',
         'type': 'query',
         'checks': [ 'ip', 'domain' ],
-        'url': 'http://totalhash.com/search/dnsrr:*{0}%20or%20ip:{1}',
+        'url': 'http://totalhash.com/search/dnsrr:*{0}%20or%20ip:{0}',
         'badregex': [ '.*<a href=\"/analysis.*' ],
         'goodregex': []
     },
@@ -398,6 +398,7 @@ class sfp_malcheck(SpiderFootPlugin):
                             sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
                 else:
+                    # Check for the domain and the hostname
                     rxDom = unicode(malchecks[check]['regex']).format(targetDom)
                     rxTgt = unicode(malchecks[check]['regex']).format(target)
                     for line in data['content'].split('\n'):
