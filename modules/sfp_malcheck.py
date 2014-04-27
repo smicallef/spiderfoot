@@ -108,7 +108,7 @@ malchecks = {
         'type': 'list',
         'checks': ['domain'],
         'url': 'http://data.phishtank.com/data/online-valid.csv',
-        'regex': '\d+,\w+://[^/]*{0}.*,http://www.phishtank.com/.*'
+        'regex': '\d+,\w+://(.*\.)?[^a-zA-Z0-9]?{0}.*,http://www.phishtank.com/.*'
     },
     'malc0de.com List': {
         'id': 'malc0de',
