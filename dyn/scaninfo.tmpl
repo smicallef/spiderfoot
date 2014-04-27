@@ -264,7 +264,7 @@
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr><td><pre style='border: 0px; background-color: inherit'>";
                                 //table += "<a href='/entityinfo?id=" + data[i][7] + "'>" + data[i][1] + "</a>";
-                                table += data[i][1];
+                                table += sf.replace_sfurltag(data[i][1]);
                                 // for debug
                                 //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
                                 //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
@@ -294,7 +294,8 @@
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
                             table += "<thead><tr> <th>Unique Data Element</th><th>Occurrences</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
+                                table += "<tr><td><pre style='border: 0px; background-color: inherit'>";
+                                table += sf.replace_sfurltag(data[i][0]);
                                 table += "</pre></td><td>" + data[i][2] + "</td>";
                                 table += "</tr>";
                             }
@@ -318,10 +319,10 @@
                         itemList = []
                         for (var i = 0; i < data.length; i++) {
                             if (format == "viz-bubble-source") {
-                                itemList.push(data[i][2]);
+                                itemList.push(sf.remove_sfurltag(data[i][2]));
                             }
                             if (format == "viz-bubble-data") {
-                                itemList.push(data[i][1]);
+                                itemList.push(sf.remove_sfurltag(data[i][1]));
                             }
                         }
                         $("#loader").fadeOut(500);
@@ -339,7 +340,6 @@
 
                         $("#loader").fadeOut(500);
                         $("#mainbody").append(crumbs + "<div id='scansummary-content' style='text-align: center'></div>");
-                        console.dir(data);
                         sf_viz_dendrogram("#scansummary-content", data);
                     });
                 }

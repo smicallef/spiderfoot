@@ -241,9 +241,9 @@ function sf_viz_dendrogram(targetId, data) {
         .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
         .text(function(d) { 
             if (dataMap[d.name][1].length > 20) {
-                return dataMap[d.name][1].substring(0, 20) + "...";
+                return sf.remove_sfurltag(dataMap[d.name][1].substring(0, 20) + "...");
             } else {
-                return dataMap[d.name][1];
+                return sf.remove_sfurltag(dataMap[d.name][1]);
             }
         });
 
@@ -257,7 +257,8 @@ function sf_viz_dendrogram(targetId, data) {
         message = "<table>";
         message += "<tr><td><b>Type:</b></td><td>" + data[10] + "</td></tr>";
         message += "<tr><td><b>Source Module:</b></td><td>" + data[3] + "</td></tr>";
-        message += "<tr><td><b>Data:</b></td><td>" + data[1] + "</td></tr>";
+        message += "<tr><td><b>Data:</b></td><td><pre>" + sf.remove_sfurltag(data[1])
+        message += "</pre></td></tr>";
         message += "</table>";
         return message;
     }
