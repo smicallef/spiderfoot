@@ -482,7 +482,7 @@ class sfp_malcheck(SpiderFootPlugin):
 
                 # Notify other modules of what you've found
                 if url != None:
-                    text = check + " [" + eventData + "]\n" + url
+                    text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
                     evt = SpiderFootEvent(evtType, text, self.__name__, event)
                     self.notifyListeners(evt)
 
@@ -502,7 +502,7 @@ class sfp_malcheck(SpiderFootPlugin):
             if self.opts[cid]:
                 url = self.lookupItem(cid, 'domain', self.baseDomain)
                 if url != None:
-                    text = check + " [" + self.baseDomain + "]\n" + url
+                    text = check + " [" + self.baseDomain + "]\n<SFURL>" + url + "</SFURL>"
                     evt = SpiderFootEvent('MALICIOUS_SUBDOMAIN', text, self.__name__)
                     self.notifyListeners(evt)
 

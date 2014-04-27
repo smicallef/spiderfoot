@@ -100,13 +100,19 @@ class sfp_pastebin(SpiderFootPlugin):
 
                     if res['content'] == None:
                         sf.debug("Ignoring " + link + " as no data returned")
+                        continue
 
                     evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT",
                         res['content'], self.__name__)
                     self.notifyListeners(evt)
 
+                    startIndex = res['content'].index(self.baseDomain)-120
+                    endIndex = startIndex+len(self.baseDomain)+240
+                    data = res['content'][startIndex:endIndex]
+
                     evt = SpiderFootEvent("PASTEBIN_CONTENT",
-                        link, self.__name__)
+                        "<SFURL>" + link + "</SFURL>\n" + "\"... " + data + " ...\"", 
+                        self.__name__)
                     self.notifyListeners(evt)
 
 

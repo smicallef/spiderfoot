@@ -132,8 +132,8 @@ class sfp_virustotal(SpiderFootPlugin):
                 evt = "MALICIOUS_COHOST"
                 infotype = "domain"
 
-            infourl = "https://www.virustotal.com/en/" + infotype + "/" + \
-                eventData + "/information/"
+            infourl = "<SFURL>https://www.virustotal.com/en/" + infotype + "/" + \
+                eventData + "/information/</SFURL>"
 
             # Notify other modules of what you've found
             e = SpiderFootEvent(evt, "VirusTotal [" + eventData + "]\n" + \
@@ -165,8 +165,8 @@ class sfp_virustotal(SpiderFootPlugin):
             return None
 
         if info.has_key('detected_urls'):
-            infourl = "https://www.virustotal.com/en/domain/" + self.baseDomain + \
-                "/information/"
+            infourl = "<SFURL>https://www.virustotal.com/en/domain/" + self.baseDomain + \
+                "/information/</SFURL>"
 
             # Notify other modules of what you've found
             e = SpiderFootEvent("MALICIOUS_SUBDOMAIN", "VirusTotal [" + \

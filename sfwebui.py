@@ -80,7 +80,8 @@ class SpiderFootWebUi:
         parser.writerow(["Updated", "Type", "Module", "Source", "Data"])
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
-            parser.writerow([lastseen, str(row[4]), str(row[3]), str(row[2]), str(row[1])])
+            datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
+            parser.writerow([lastseen, str(row[4]), str(row[3]), str(row[2]), datafield])
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
@@ -264,6 +265,11 @@ class SpiderFootWebUi:
             self.config, modopts)
         t = threading.Thread(name="SF_" + scanname, target=self.scanner.startScan)
         t.start()
+
+        # Spin cycles waiting for the scan ID to be set
+        while self.scanner.myId == None:
+            time.sleep(1)
+            continue
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
         return templ.render(id=self.scanner.myId, name=scanname, 
