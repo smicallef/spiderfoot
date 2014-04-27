@@ -112,6 +112,15 @@ class sfp_sharedip(SpiderFootPlugin):
                     sf.info("Found something on same IP: " + m)
                     if not self.opts['cohostsamedomain'] and m.endswith(self.baseDomain):
                         sf.debug("Skipping " + m + " because it is on the same domain.")
+                        continue
+
+                    if '*' in m:
+                        sf.debug("Skipping wildcard name: " + m)
+                        continue
+
+                    if '.' not in m:
+                        sf.debug("Skipping tld: " + m)
+                        continue
 
                     if m not in myres and m != eventData:
                         if self.opts['verify'] and not self.validateIP(m, eventData):

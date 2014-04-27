@@ -73,6 +73,10 @@ class sfp_intfiles(SpiderFootPlugin):
 
         for fileExt in self.opts['fileexts']:
             if "." + fileExt.lower() in eventData.lower():
+                if eventData in self.results:
+                    continue
+                else:
+                    self.results.append(eventData)
                 evt = SpiderFootEvent("INTERESTING_FILE", eventData, self.__name__)
                 self.notifyListeners(evt)
 
