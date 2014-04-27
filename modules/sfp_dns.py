@@ -115,9 +115,7 @@ class sfp_dns(SpiderFootPlugin):
                     if match.lower().startswith("2f"):
                         continue
 
-                    sf.info("Sub-domain/host found: " + match)
-                    evt = SpiderFootEvent("SUBDOMAIN", match, self.__name__, parentEvent)
-                    self.notifyListeners(evt)
+                    self.processHost(match, parentEvent)
 
             # Nothing left to do with internal links and raw data
             return None
