@@ -9,7 +9,8 @@ setup(
                 "cherrypy", "M2Crypto", "netaddr", "ext.socks", "ext.pyPdf", 
                 "ext.metapdf", "ext.openxmllib" ],
             "bundle_files": 1,
-            "compressed": True
+            "compressed": True,
+            "includes": [ 'lxml._elementpath' ]
         }
     },
     zipfile = None
