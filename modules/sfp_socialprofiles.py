@@ -155,8 +155,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             if pres['content'] == None:
                                 continue
                             else:
-                                if not self.keyword in pres['content'] and \
-                                    not self.baseDomain in pres['content']:
+                                if not self.keyword in pres['content']:
                                     continue
 
                         sf.info("Social Media Profile found at " + site + ": " + match)
