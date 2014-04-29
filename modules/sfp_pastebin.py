@@ -106,6 +106,10 @@ class sfp_pastebin(SpiderFootPlugin):
                         res['content'], self.__name__)
                     self.notifyListeners(evt)
 
+                    # Sometimes pastebin search results false positives
+                    if self.baseDomain not in res['content']:
+                        return None
+
                     startIndex = res['content'].index(self.baseDomain)-120
                     endIndex = startIndex+len(self.baseDomain)+240
                     data = res['content'][startIndex:endIndex]
