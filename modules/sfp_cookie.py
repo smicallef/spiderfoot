@@ -69,6 +69,4 @@ class sfp_cookie(SpiderFootPlugin):
                 self.__name__, parentEvent)
             self.notifyListeners(evt)
 
-            sf.info("Found cookie: " + eventData['set-cookie'] + " (" + eventSource + ")")
-
 # End of sfp_cookie class
