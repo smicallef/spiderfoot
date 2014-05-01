@@ -43,7 +43,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'pages': "Number of search engine pages of identified profiles to iterate through.",
-        'tighten': "Tighten results by expecting to find the keyword of the target domain mentioned in the results?",
+        'tighten': "Tighten results by expecting to find the keyword of the target domain mentioned in the social media profile page results?",
         'method': "Search engine to use: google, yahoo or bing."
     }
 
@@ -155,7 +155,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             if pres['content'] == None:
                                 continue
                             else:
-                                if not self.keyword in pres['content']:
+                                if re.search("[^a-zA-Z\-\_]" + self.keyword + \
+                                    "[^a-zA-Z\-\_]", pres['content'], re.IGNORECASE) == None:
                                     continue
 
                         sf.info("Social Media Profile found at " + site + ": " + match)

@@ -90,6 +90,7 @@ class sfp_pastebin(SpiderFootPlugin):
                     continue
                 else:
                     self.results.append(link)
+
                 sf.debug("Found a link: " + link)
                 if sf.urlBaseUrl(link).endswith("pastebin.com"):
                     if self.checkForStop():
@@ -107,8 +108,9 @@ class sfp_pastebin(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
                     # Sometimes pastebin search results false positives
-                    if self.baseDomain not in res['content']:
-                        return None
+                    if re.search("[^a-zA-Z\-\_]" + re.escape(self.baseDomain) + \
+                        "[^a-zA-Z\-\_]", res['content'], re.IGNORECASE) == None:
+                        continue
 
                     startIndex = res['content'].index(self.baseDomain)-120
                     endIndex = startIndex+len(self.baseDomain)+240
