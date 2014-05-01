@@ -116,6 +116,9 @@ class sfp_filemeta(SpiderFootPlugin):
                     except ValueError as e:
                         sf.error("Unable to parse meta data from: " + \
                             eventData + "(" + str(e) + ")", False)
+                    except lxml.etree.XMLSyntaxError as e:
+                        sf.error("Unable to parse XML within: " + \
+                            eventData + "(" + str(e) + ")", False)
 
                 if meta != None:
                     evt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
