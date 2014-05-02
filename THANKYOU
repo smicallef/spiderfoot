@@ -15,3 +15,9 @@ bug fixes or new functionality. Thank you!
 
 - Russ McRee (@holisticinfosec)
     - Identified XSS/CSRF issues
+
+- Andrea De Pasquale (https://github.com/adepasquale)
+    - Cache directory fix
+
+- Viyat Bhalodia (https://github.com/delta24)
+    - Prettied up README.md
