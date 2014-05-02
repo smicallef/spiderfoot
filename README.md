@@ -1,5 +1,5 @@
 ABOUT
-======
+------
 
 **SpiderFoot** is an open source footprinting tool, created by **Steve Micallef** <steve@binarypool.com>. It is designed to be easy to use, fast and extensible.
 
@@ -7,7 +7,7 @@ Visit the project website at http://www.spiderfoot.net.
 
 
 DOWNLOADING
-============
+------------
 
 To get the packaged and tested **SpiderFoot** releases for your platform:
 https://sourceforge.net/projects/spiderfoot/files
@@ -17,7 +17,7 @@ https://github.com/smicallef/spiderfoot
 
 
 INSTALLING AND RUNNING ON UNIX
-===============================
+-------------------------------
 
 **SpiderFoot** is written in Python (2.6-2.7), so to run on Linux/Solaris/etc. you need Python 2.6 or 2.7 installed, in addition to the netaddr, lxml, M2Crypto, CherryPy and Mako modules.
 
@@ -55,7 +55,7 @@ If port 5001 is used by another application on your system, you can change the p
 
 
 INSTALLING AND RUNNING ON WINDOWS
-==================================
+----------------------------------
 
 **SpiderFoot** for Windows comes as a pre-packaged executable, with no need to install any dependencies. 
 
@@ -65,19 +65,19 @@ For now, there is no installer wizard, so all that's needed is to unzip the pack
 
 
 REPORTING BUGS
-===============
+---------------
 
 All bugs are tracked in github, please visit: https://github.com/smicallef/spiderfoot/issues
 
 
 REQUESTING FEATURES
-====================
+--------------------
 
 A UserVoice instance has been set up for capturing feature requests, please visit: http://spiderfoot.uservoice.com to request new features or vote on other people's requests.
 
 
 GETTING HELP
-=============
+-------------
 
 A user manual is currently work-in-progress, but effort has been made to make the user-interface as simple and self-explanatory as possible. 
 
