@@ -20,13 +20,13 @@ class sfp_names(SpiderFootPlugin):
     """Name Extractor:Attempt to identify human names in fetched content."""
 
     # Default options
-    opts = { }
+    opts = { 
+        'algotune': 50
+    }
 
     # Option descriptions
     optdescs = {
-        # For each option in opts you should have a key/value pair here
-        # describing it. It will end up in the UI to explain the option
-        # to the end-user.
+        'algotune': "A value between 0-100 to tune the sensitivity of the name finder. Less than 40 will give you a lot of junk, over 50 and you'll probably miss things but will have less false positives."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -140,7 +140,7 @@ class sfp_names(SpiderFootPlugin):
 
             name = r[0] + " " + secondOrig
 
-            if p > 30:
+            if p > self.opts['algotune']:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
                 self.notifyListeners(evt)
