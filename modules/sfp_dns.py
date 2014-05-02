@@ -61,6 +61,7 @@ class sfp_dns(SpiderFootPlugin):
     baseDomain = None
     results = dict()
     subresults = dict()
+    resolveCache = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
@@ -68,6 +69,7 @@ class sfp_dns(SpiderFootPlugin):
         sf = sfc
         self.results = dict()
         self.subresults = dict()
+        self.resolveCache = dict()
         self.baseDomain = target
 
         for opt in userOpts.keys():
@@ -140,6 +142,8 @@ class sfp_dns(SpiderFootPlugin):
 
                 if self.results.has_key(ipaddr):
                     continue
+                else:
+                    self.results[ipaddr] = True
 
                 try:
                     addrs = socket.gethostbyaddr(ipaddr)
@@ -177,9 +181,11 @@ class sfp_dns(SpiderFootPlugin):
         try:
             if eventName != 'IP_ADDRESS':
                 if '://' in eventData:
-                    addrs = socket.gethostbyname_ex(sf.urlFQDN(eventData))
+                    addrs = self.resolveHost(sf.urlFQDN(eventData))
                 else:
-                    addrs = socket.gethostbyname_ex(eventData)
+                    addrs = self.resolveHost(eventData)
+                if addrs == None:
+                    return None
             else:
                 addrs = socket.gethostbyaddr(eventData)
         except BaseException as e:
@@ -228,10 +234,16 @@ class sfp_dns(SpiderFootPlugin):
 
     # Resolve a host
     def resolveHost(self, hostname):
+        if self.resolveCache.has_key(hostname):
+            sf.debug("Returning cached result for " + hostname)
+            return self.resolveCache[hostname]
+
         try:
-            return socket.gethostbyname_ex(hostname)
+            ret = socket.gethostbyname_ex(hostname)
+            self.resolveCache[hostname] = ret
+            return ret
         except BaseException as e:
-            sf.info("Unable to resolve " + eventData + " (" + str(e) + ")")
+            sf.info("Unable to resolve " + hostname + " (" + str(e) + ")")
             return None
 
     def processHost(self, host, parentEvent=None):
@@ -252,10 +264,7 @@ class sfp_dns(SpiderFootPlugin):
                 return
 
         if htype == "SUBDOMAIN" and self.opts['onlyactive']:
-            try:
-                addrs = socket.gethostbyname_ex(host)
-            except BaseException as e:
-                sf.debug("Unable to resolve " + host + ", skipping.")
+            if self.resolveHost(host) == None:
                 return None
 
         evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
@@ -338,14 +347,8 @@ class sfp_dns(SpiderFootPlugin):
             else:
                 self.results[name] = True
 
-            try:
-                lookup = True
-                addrs = socket.gethostbyname_ex(name)
-            except BaseException as e:
-                sf.info("Unable to resolve " + name + " (" + str(e) + ")")
-                lookup = False
-
-            if lookup:
+            addrs = self.resolveHost(name)
+            if addrs != None:
                 self.processHost(name)
                 for addr in addrs:
                     if type(addr) == list:
