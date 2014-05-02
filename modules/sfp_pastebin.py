@@ -112,8 +112,13 @@ class sfp_pastebin(SpiderFootPlugin):
                         "[^a-zA-Z\-\_]", res['content'], re.IGNORECASE) == None:
                         continue
 
-                    startIndex = res['content'].index(self.baseDomain)-120
-                    endIndex = startIndex+len(self.baseDomain)+240
+                    try:
+                        startIndex = res['content'].index(self.baseDomain)-120
+                        endIndex = startIndex+len(self.baseDomain)+240
+                    except BaseException as e:
+                        sf.debug("String not found in pastebin content.")
+                        continue
+
                     data = res['content'][startIndex:endIndex]
 
                     evt = SpiderFootEvent("PASTEBIN_CONTENT",
