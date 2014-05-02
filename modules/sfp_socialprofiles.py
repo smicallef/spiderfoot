@@ -37,7 +37,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     opts = {
         'pages': 1,
         'method': "yahoo",
-        'tighten': False
+        'tighten': True
     }
 
     # Option descriptions
