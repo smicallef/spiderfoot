@@ -742,8 +742,7 @@ class SpiderFoot:
     # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
     # timeout: Fetch timeout
-    # cx: Custom Search Engine ID
-    def googleIterate(self, searchString, opts=dict(), cx=None):
+    def googleIterate(self, searchString, opts=dict()):
         limit = 10
         fetches = 0
         returnResults = dict()
@@ -754,9 +753,6 @@ class SpiderFoot:
         # We attempt to make the URL look as authentically human as possible
         seedUrl = "http://www.google.com/search?q={0}".format(searchString) + \
             "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
-
-        if cx != None:
-            seedUrl = seedUrl + "&cx=" + cx
 
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
