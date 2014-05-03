@@ -16,6 +16,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFF
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_COHOST', 'Defaced Co-Hosted Site', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_IPADDR', 'Defaced Affiliate IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEVICE_TYPE', 'Device Type', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DOMAIN_NAME', 'Domain Name', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HUMAN_NAME', 'Human Name', 0);
@@ -28,6 +29,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_ASN', 'Malicious AS', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_IPADDR', 'Malicious IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_COHOST', 'Malicious Co-Hosted Site', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_DOMAIN_NAME', 'Malicious Domain Name', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_SUBDOMAIN', 'Malicious Sub-domain/Host', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_AFFILIATE', 'Malicious Affiliate', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_AFFILIATE_IPADDR', 'Malicious Affiliate IP Address', 0);
