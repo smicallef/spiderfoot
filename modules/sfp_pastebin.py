@@ -32,15 +32,12 @@ class sfp_pastebin(SpiderFootPlugin):
         'pages':    "Number of search results pages to iterate through."
     }
 
-    # Target
-    baseDomain = None
     results = list()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = list()
 
         for opt in userOpts.keys():
@@ -48,7 +45,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return None
+        return [ "DOMAIN_NAME", "IP_ADDRESS", "EMAILADDR" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -56,10 +53,19 @@ class sfp_pastebin(SpiderFootPlugin):
     def producedEvents(self):
         return [ "SEARCH_ENGINE_WEB_CONTENT", "PASTEBIN_CONTENT" ]
 
-    def start(self):
+    def handleEvent(self, event):
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+
+        if eventData in self.results:
+            return None
+        else:
+            self.results.append(eventData)
+
         # Sites hosted on the domain
-        pages = sf.googleIterate("site:pastebin.com+\"" + \
-            self.baseDomain + "\"", dict(limit=self.opts['pages'],
+        pages = sf.googleIterate("site:pastebin.com +\"" + eventData + "\"", 
+            dict(limit=self.opts['pages'],
             useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
 
         if pages == None:
@@ -108,13 +114,13 @@ class sfp_pastebin(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
                     # Sometimes pastebin search results false positives
-                    if re.search("[^a-zA-Z\-\_]" + re.escape(self.baseDomain) + \
-                        "[^a-zA-Z\-\_]", res['content'], re.IGNORECASE) == None:
+                    if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) + \
+                        "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) == None:
                         continue
 
                     try:
-                        startIndex = res['content'].index(self.baseDomain)-120
-                        endIndex = startIndex+len(self.baseDomain)+240
+                        startIndex = res['content'].index(eventData)-120
+                        endIndex = startIndex+len(eventData)+240
                     except BaseException as e:
                         sf.debug("String not found in pastebin content.")
                         continue

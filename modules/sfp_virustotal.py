@@ -39,15 +39,12 @@ class sfp_virustotal(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    # Target
-    baseDomain = None # calculated from the URL in setup
     results = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = dict()
 
         # Clear / reset any other class member variables here
@@ -58,14 +55,14 @@ class sfp_virustotal(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", 
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "DOMAIN_NAME",
             "AFFILIATE_DOMAIN", "CO_HOSTED_SITE"]
 
     # What events this module produces
     def producedEvents(self):
         return ["MALICIOUS_IPADDR", "MALICIOUS_SUBDOMAIN",
             "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE",
-            "MALICIOUS_AFFILIATE_IPADDR"]
+            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_DOMAIN_NAME"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -124,6 +121,10 @@ class sfp_virustotal(SpiderFootPlugin):
                 evt = "MALICIOUS_AFFILIATE_IPADDR"
                 infotype = "ip-address"
 
+            if eventName == "DOMAIN_NAME":
+                evt = "MALICIOUS_DOMAIN_NAME"
+                infotype = "domain"
+
             if eventName == "AFFILIATE_DOMAIN":
                 evt = "MALICIOUS_AFFILIATE"
                 infotype = "domain"
@@ -138,39 +139,6 @@ class sfp_virustotal(SpiderFootPlugin):
             # Notify other modules of what you've found
             e = SpiderFootEvent(evt, "VirusTotal [" + eventData + "]\n" + \
                 infourl, self.__name__, event)
-            self.notifyListeners(e)
-
-    def start(self):
-        if self.baseDomain in self.results.keys():
-            return None
-        else:
-            self.results[self.baseDomain] = True
-
-        url = "https://www.virustotal.com/vtapi/v2/domain/report?domain="
-        res = sf.fetchUrl(url + self.baseDomain + "&apikey=" + self.opts['apikey'],
-            timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
-
-        if res['code'] == 403:
-            sf.error("VirusTotal API limit reached or invalid API key.", False)
-            return None
-
-        if res['content'] == None:
-            sf.info("No VirusTotal info found for " + self.baseDomain)
-            return None
-
-        try:
-            info = json.loads(res['content'])
-        except Exception as e:
-            sf.error("Error processing JSON response from VirusTotal.", False)
-            return None
-
-        if info.has_key('detected_urls'):
-            infourl = "<SFURL>https://www.virustotal.com/en/domain/" + self.baseDomain + \
-                "/information/</SFURL>"
-
-            # Notify other modules of what you've found
-            e = SpiderFootEvent("MALICIOUS_SUBDOMAIN", "VirusTotal [" + \
-                self.baseDomain + "]\n" + infourl, self.__name__)
             self.notifyListeners(e)
 
 # End of sfp_virustotal class

@@ -266,15 +266,12 @@ class sfp_malcheck(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    # Target
-    baseDomain = None # calculated from the URL in setup
     results = list()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = list()
 
         # Clear / reset any other class member variables here
@@ -286,8 +283,8 @@ class sfp_malcheck(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "BGP_AS", "SUBDOMAIN", "IP_SUBNET",
-            "AFFILIATE_DOMAIN", "AFFILIATE_IPADDR",
+        return ["DOMAIN_NAME", "IP_ADDRESS", "BGP_AS", "SUBDOMAIN", 
+            "IP_SUBNET", "AFFILIATE_DOMAIN", "AFFILIATE_IPADDR",
             "CO_HOSTED_SITE", "NETBLOCK" ]
 
     # What events this module produces
@@ -296,7 +293,7 @@ class sfp_malcheck(SpiderFootPlugin):
     def producedEvents(self):
         return [ "MALICIOUS_ASN", "MALICIOUS_IPADDR", "MALICIOUS_SUBDOMAIN",
             "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE", "MALICIOUS_SUBNET",
-            "MALICIOUS_COHOST" ]
+            "MALICIOUS_COHOST", "MALICIOUS_DOMAIN_NAME" ]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
@@ -460,10 +457,13 @@ class sfp_malcheck(SpiderFootPlugin):
                     typeId = 'asn' 
                     evtType = 'MALICIOUS_ASN'
 
-                if eventName in [ 'CO_HOSTED_SITE', 'AFFILIATE_DOMAIN', 'SUBDOMAIN' ]:
+                if eventName in [ 'DOMAIN_NAME', 'CO_HOSTED_SITE', 
+                    'AFFILIATE_DOMAIN', 'SUBDOMAIN' ]:
                     typeId = 'domain'
-                    if eventName == 'SUBDOMAIN':
+                    if eventName  == 'SUBDOMAIN':
                         evtType = 'MALICIOUS_SUBDOMAIN'
+                    if eventName == "DOMAIN_NAME":
+                        evtType = "MALICIOUS_DOMAIN_NAME"
                     if eventName == 'AFFILIATE_DOMAIN':
                         evtType = 'MALICIOUS_AFFILIATE'
                     if eventName == 'CO_HOSTED_SITE':
@@ -487,23 +487,5 @@ class sfp_malcheck(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
         return None
-
-    def start(self):
-        if self.baseDomain in self.results:
-            return None
-        else:
-            self.results.append(self.baseDomain)
-
-        for check in malchecks.keys():
-            if self.checkForStop():
-                return None
-
-            cid = malchecks[check]['id']
-            if self.opts[cid]:
-                url = self.lookupItem(cid, 'domain', self.baseDomain)
-                if url != None:
-                    text = check + " [" + self.baseDomain + "]\n<SFURL>" + url + "</SFURL>"
-                    evt = SpiderFootEvent('MALICIOUS_SUBDOMAIN', text, self.__name__)
-                    self.notifyListeners(evt)
 
 # End of sfp_malcheck class
