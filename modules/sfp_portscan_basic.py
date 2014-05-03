@@ -50,8 +50,6 @@ class sfp_portscan_basic(SpiderFootPlugin):
         'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    # Target
-    baseDomain = None
     results = dict()
     portlist = list()
     portResults = dict()
@@ -60,7 +58,6 @@ class sfp_portscan_basic(SpiderFootPlugin):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = dict()
 
         for opt in userOpts.keys():

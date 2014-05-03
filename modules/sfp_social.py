@@ -42,15 +42,12 @@ class sfp_social(SpiderFootPlugin):
         # to the end-user.
     }
 
-    # Target
-    baseDomain = None # calculated from the URL in setup
     results = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = dict()
 
         for opt in userOpts.keys():
