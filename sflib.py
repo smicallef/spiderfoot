@@ -756,7 +756,7 @@ class SpiderFoot:
             "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
 
         if cx != None:
-            seedUrl = seedUrl + "cx=" + cx
+            seedUrl = seedUrl + "&cx=" + cx
 
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
