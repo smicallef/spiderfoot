@@ -38,12 +38,15 @@ class sfp_defaced(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
+    # Target
+    baseDomain = None # calculated from the URL in setup
     results = list()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
+        self.baseDomain = target
         self.results = list()
 
         # Clear / reset any other class member variables here
@@ -55,7 +58,7 @@ class sfp_defaced(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "IP_ADDRESS", "SUBDOMAIN",
+        return ["IP_ADDRESS", "SUBDOMAIN",
             "AFFILIATE_DOMAIN", "AFFILIATE_IPADDR",
             "CO_HOSTED_SITE" ]
 
@@ -143,4 +146,16 @@ class sfp_defaced(SpiderFootPlugin):
             evt = SpiderFootEvent(evtType, text, self.__name__, event)
             self.notifyListeners(evt)
 
-# End of sfp_defaced class
+        return None
+
+    def start(self):
+        if self.checkForStop():
+            return None
+
+        url = self.lookupItem(self.baseDomain, 'domain')
+        if url != None:
+            text = self.baseDomain + "\n" + url
+            evt = SpiderFootEvent('DEFACED', text, self.__name__)
+            self.notifyListeners(evt)
+
+# End of sfp_malcheck class

@@ -38,6 +38,8 @@ class sfp_honeypot(SpiderFootPlugin):
         'timelimit': "Maximum days old an entry can be. 255 is the maximum, 0 means you'll get nothing."
     }
 
+    # Target
+    baseDomain = None
     results = dict()
 
     # Status codes according to:
@@ -61,6 +63,7 @@ class sfp_honeypot(SpiderFootPlugin):
 
         sf = sfc
         self.results = dict()
+        self.baseDomain = target
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

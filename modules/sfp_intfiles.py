@@ -39,12 +39,15 @@ class sfp_intfiles(SpiderFootPlugin):
         'searchengine': "If using a search engine, which one? google, yahoo or bing."
     }
 
+    # Target
+    baseDomain = None
     results = list()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
+        self.baseDomain = target
         self.results = list()
 
         for opt in userOpts.keys():
@@ -52,16 +55,13 @@ class sfp_intfiles(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME", "LINKED_URL_INTERNAL" ]
+        return [ "LINKED_URL_INTERNAL" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
         return [ "SEARCH_ENGINE_WEB_CONTENT", "INTERESTING_FILE" ]
-
-    def yahooCleaner(self, string):
-        return " url=\"" + urllib.unquote(string.group(1)) + "\" "
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -71,43 +71,38 @@ class sfp_intfiles(SpiderFootPlugin):
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if eventName == "DOMAIN_NAME" and not self.opts['usesearch']:
-            sf.debug("Not using a search engine to find interesting files.")
+        for fileExt in self.opts['fileexts']:
+            if "." + fileExt.lower() in eventData.lower():
+                if eventData in self.results:
+                    continue
+                else:
+                    self.results.append(eventData)
+                evt = SpiderFootEvent("INTERESTING_FILE", eventData, self.__name__)
+                self.notifyListeners(evt)
+
+    def yahooCleaner(self, string):
+        return " url=\"" + urllib.unquote(string.group(1)) + "\" "
+
+    def start(self):
+        if not self.opts['usesearch']:
             return None
 
-        if eventData in self.results:
-            return None
-        else:
-            self.results.append(eventData)
-
-        if eventName == "LINKED_URL_INTERNAL":
-            for fileExt in self.opts['fileexts']:
-                if "." + fileExt.lower() in eventData.lower():
-                    if eventData in self.results:
-                        continue
-                    else:
-                        self.results.append(eventData)
-                    evt = SpiderFootEvent("INTERESTING_FILE", eventData, self.__name__)
-                    self.notifyListeners(evt)
-            return None
-
-        # Handling DOMAIN_NAME event..
         for fileExt in self.opts['fileexts']:
             # Sites hosted on the domain
             if self.opts['searchengine'].lower() == "google":
-                pages = sf.googleIterate("site:" + eventData + "+" + \
+                pages = sf.googleIterate("site:" + self.baseDomain + "+" + \
                     "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
 
             if self.opts['searchengine'].lower() == "bing":
-                pages = sf.bingIterate("site:" + eventData + "+" + \
+                pages = sf.bingIterate("site:" + self.baseDomain + "+" + \
                     "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
 
             if self.opts['searchengine'].lower() == "yahoo":
-                pages = sf.yahooIterate("site:" + eventData + "+" + \
+                pages = sf.yahooIterate("site:" + self.baseDomain + "+" + \
                     "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
@@ -137,7 +132,7 @@ class sfp_intfiles(SpiderFootPlugin):
                 else:
                     res = pages[page]
 
-                links = sf.parseLinks(page, res, eventData)
+                links = sf.parseLinks(page, res, self.baseDomain)
                 if len(links) == 0:
                     continue
 
@@ -147,7 +142,7 @@ class sfp_intfiles(SpiderFootPlugin):
                     else:
                         self.results.append(link)
 
-                    if sf.urlBaseUrl(link).endswith(eventData) and \
+                    if sf.urlBaseUrl(link).endswith(self.baseDomain) and \
                         "." + fileExt.lower() in link.lower():
                         sf.info("Found an interesting file: " + link)
                         evt = SpiderFootEvent("INTERESTING_FILE", link, self.__name__)

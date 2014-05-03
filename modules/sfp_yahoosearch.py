@@ -34,12 +34,15 @@ class sfp_yahoosearch(SpiderFootPlugin):
         'pages':    "Number of Yahoo results pages to iterate through."
     }
 
+    # Target
+    baseDomain = None
     results = list()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
+        self.baseDomain = target
         self.results = list()
 
         for opt in userOpts.keys():
@@ -47,30 +50,21 @@ class sfp_yahoosearch(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME" ]
+        return None
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT" ]
+        return [ "LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT", 
+            "CO_HOSTED_SITE" ]
 
     def yahooCleaner(self, string):
         return " url=\"" + urllib.unquote(string.group(1)) + "\" "
 
-    def handleEvent(self, event):
-        eventName = event.eventType
-        srcModuleName = event.module
-        eventData = event.data
-
-        if eventData in self.results:
-            sf.debug("Already did a search for " + eventData + ", skipping.")
-            return None
-        else:
-            self.results.append(eventData)
-
+    def start(self):
         # Sites hosted on the domain
-        pages = sf.yahooIterate("site:" + eventData, dict(limit=self.opts['pages'],
+        pages = sf.yahooIterate("site:" + self.baseDomain, dict(limit=self.opts['pages'],
             useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
         if pages == None:
             sf.info("No results returned from Yahoo.")
@@ -95,7 +89,7 @@ class sfp_yahoosearch(SpiderFootPlugin):
             # We can optionally fetch links to our domain found in the search
             # results. These may not have been identified through spidering.
             if self.opts['fetchlinks']:
-                links = sf.parseLinks(page, content, eventData)
+                links = sf.parseLinks(page, content, self.baseDomain)
                 if len(links) == 0:
                     continue
 
@@ -104,7 +98,7 @@ class sfp_yahoosearch(SpiderFootPlugin):
                         continue
                     else:
                         self.results.append(link)
-                    if sf.urlBaseUrl(link).endswith(eventData):
+                    if sf.urlBaseUrl(link).endswith(self.baseDomain):
                         sf.debug("Found a link: " + link)
                         if self.checkForStop():
                             return None

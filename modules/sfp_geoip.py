@@ -23,12 +23,16 @@ class sfp_geoip(SpiderFootPlugin):
 
     # Default options
     opts = { }
+
+    # Target
+    baseDomain = None
     results = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
+        self.baseDomain = target
         self.results = dict()
 
         for opt in userOpts.keys():

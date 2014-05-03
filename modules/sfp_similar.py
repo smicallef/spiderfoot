@@ -62,10 +62,14 @@ class sfp_similar(SpiderFootPlugin):
     # Internal results tracking
     results = list()
 
+    # Target
+    baseDomain = None
+
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
+        self.baseDomain = target
         self.results = list()
 
         for opt in userOpts.keys():
@@ -79,7 +83,7 @@ class sfp_similar(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME" ]
+        return None
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -193,6 +197,9 @@ class sfp_similar(SpiderFootPlugin):
 
     # Store the result internally and notify listening modules
     def storeResult(self, source, result):
+        if result == self.baseDomain:
+            return
+
         sf.info("Found a similar domain: " + result)
         self.results.append(result)
 
@@ -212,18 +219,9 @@ class sfp_similar(SpiderFootPlugin):
 
 
     # Search for similar sounding domains
-    def handleEvent(self, event):
-        eventName = event.eventType
-        srcModuleName = event.module
-        eventData = event.data
-
-        if eventData in self.results:
-            return None
-        else:
-            self.results.append(eventData)
-
-        keyword = sf.domainKeyword(eventData, self.opts['_internettlds'])
-        sf.debug("Keyword extracted from " + eventData + ": " + keyword)
+    def start(self):
+        keyword = sf.domainKeyword(self.baseDomain, self.opts['_internettlds'])
+        sf.debug("Keyword extracted from " + self.baseDomain + ": " + keyword)
 
         # No longer seems to work.
         #if "whois" in self.opts['source'] or "ALL" in self.opts['source']:

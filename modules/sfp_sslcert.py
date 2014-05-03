@@ -40,12 +40,15 @@ class sfp_sslcert(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
+    # Target
+    baseDomain = None # calculated from the URL in setup
     results = dict()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
+        self.baseDomain = target
         self.results = dict()
 
         # Clear / reset any other class member variables here

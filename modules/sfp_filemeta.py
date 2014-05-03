@@ -40,12 +40,15 @@ class sfp_filemeta(SpiderFootPlugin):
         'timeout':  "Download timeout for files, in seconds."
     }
 
+    # Target
+    baseDomain = None
     results = list()
 
     def setup(self, sfc, target, userOpts=dict()):
         global sf
 
         sf = sfc
+        self.baseDomain = target
         self.results = list()
 
         for opt in userOpts.keys():

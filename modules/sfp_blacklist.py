@@ -32,6 +32,7 @@ class sfp_blacklist(SpiderFootPlugin):
     }
 
     # Target
+    baseDomain = None
     results = dict()
 
     # Whole bunch here:
@@ -79,6 +80,7 @@ class sfp_blacklist(SpiderFootPlugin):
 
         sf = sfc
         self.results = dict()
+        self.baseDomain = target
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

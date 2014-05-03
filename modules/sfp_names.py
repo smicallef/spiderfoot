@@ -29,6 +29,11 @@ class sfp_names(SpiderFootPlugin):
         'algotune': "A value between 0-100 to tune the sensitivity of the name finder. Less than 40 will give you a lot of junk, over 50 and you'll probably miss things but will have less false positives."
     }
 
+    # Be sure to completely clear any class variables in setup()
+    # or you run the risk of data persisting between scan runs.
+
+    # Target
+    baseDomain = None # calculated from the URL in setup
     results = dict()
     d = None
     n = None
@@ -51,6 +56,7 @@ class sfp_names(SpiderFootPlugin):
         global sf
 
         sf = sfc
+        self.baseDomain = target
         self.results = dict()
 
         d = self.builddict(["english.0", "english.2", "english.4",

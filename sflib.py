@@ -753,7 +753,6 @@ class SpiderFoot:
         # We attempt to make the URL look as authentically human as possible
         seedUrl = "http://www.google.com/search?q={0}".format(searchString) + \
             "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
-
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
         if firstPage['code'] == 403 or firstPage['code'] == 503:
