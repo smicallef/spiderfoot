@@ -41,7 +41,7 @@ class sfp_intfiles(SpiderFootPlugin):
 
     results = list()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -52,7 +52,7 @@ class sfp_intfiles(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME", "LINKED_URL_INTERNAL" ]
+        return [ "INTERNET_NAME", "LINKED_URL_INTERNAL" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -71,7 +71,7 @@ class sfp_intfiles(SpiderFootPlugin):
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if eventName == "DOMAIN_NAME" and not self.opts['usesearch']:
+        if eventName == "INTERNET_NAME" and not self.opts['usesearch']:
             sf.debug("Not using a search engine to find interesting files.")
             return None
 
@@ -91,7 +91,7 @@ class sfp_intfiles(SpiderFootPlugin):
                     self.notifyListeners(evt)
             return None
 
-        # Handling DOMAIN_NAME event..
+        # Handling INTERNET_NAME event..
         for fileExt in self.opts['fileexts']:
             # Sites hosted on the domain
             if self.opts['searchengine'].lower() == "google":
@@ -147,7 +147,7 @@ class sfp_intfiles(SpiderFootPlugin):
                     else:
                         self.results.append(link)
 
-                    if sf.urlBaseUrl(link).endswith(eventData) and \
+                    if sf.urlFQDN(link).endswith(eventData) and \
                         "." + fileExt.lower() in link.lower():
                         sf.info("Found an interesting file: " + link)
                         evt = SpiderFootEvent("INTERESTING_FILE", link, self.__name__)

@@ -268,7 +268,7 @@ class sfp_malcheck(SpiderFootPlugin):
 
     results = list()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -283,17 +283,17 @@ class sfp_malcheck(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "IP_ADDRESS", "BGP_AS", "SUBDOMAIN", 
-            "IP_SUBNET", "AFFILIATE_DOMAIN", "AFFILIATE_IPADDR",
+        return ["INTERNET_NAME", "IP_ADDRESS", "BGP_AS_OWNER",
+            "IP_SUBNET", "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
             "CO_HOSTED_SITE", "NETBLOCK" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "MALICIOUS_ASN", "MALICIOUS_IPADDR", "MALICIOUS_SUBDOMAIN",
-            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE", "MALICIOUS_SUBNET",
-            "MALICIOUS_COHOST", "MALICIOUS_DOMAIN_NAME" ]
+        return [ "MALICIOUS_ASN", "MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
+            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME", 
+            "MALICIOUS_SUBNET", "MALICIOUS_COHOST" ]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
@@ -361,11 +361,12 @@ class sfp_malcheck(SpiderFootPlugin):
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if malchecks[check].has_key('regex'):
-                        rx = rxTgt = malchecks[check]['regex'].replace("{0}", \
+                        rx = malchecks[check]['regex'].replace("{0}", \
                             "(\d+\.\d+\.\d+\.\d+)")
+                        pat = re.compile(rx, re.IGNORECASE)
                         sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):
-                            grp = re.findall(rx, line, re.IGNORECASE)
+                            grp = re.findall(pat, line)
                             if len(grp) > 0:
                                 #sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
@@ -453,19 +454,17 @@ class sfp_malcheck(SpiderFootPlugin):
                     else:
                         evtType = 'MALICIOUS_AFFILIATE_IPADDR'
 
-                if eventName in [ 'BGP_AS' ]:
+                if eventName in [ 'BGP_AS_OWNER' ]:
                     typeId = 'asn' 
                     evtType = 'MALICIOUS_ASN'
 
-                if eventName in [ 'DOMAIN_NAME', 'CO_HOSTED_SITE', 
-                    'AFFILIATE_DOMAIN', 'SUBDOMAIN' ]:
+                if eventName in [ 'INTERNET_NAME', 'CO_HOSTED_SITE', 
+                    'AFFILIATE_INTERNET_NAME', ]:
                     typeId = 'domain'
-                    if eventName  == 'SUBDOMAIN':
-                        evtType = 'MALICIOUS_SUBDOMAIN'
-                    if eventName == "DOMAIN_NAME":
-                        evtType = "MALICIOUS_DOMAIN_NAME"
-                    if eventName == 'AFFILIATE_DOMAIN':
-                        evtType = 'MALICIOUS_AFFILIATE'
+                    if eventName == "INTERNET_NAME":
+                        evtType = "MALICIOUS_INTERNET_NAME"
+                    if eventName == 'AFFILIATE_INTERNET_NAME':
+                        evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
                     if eventName == 'CO_HOSTED_SITE':
                         evtType = 'MALICIOUS_COHOST'
 

@@ -74,7 +74,7 @@ class sfp_blacklist(SpiderFootPlugin):
         }
     }
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc

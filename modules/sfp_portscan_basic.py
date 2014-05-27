@@ -54,7 +54,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
     portlist = list()
     portResults = dict()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -135,8 +135,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
         for cp in resArray:
             if resArray[cp]:
                 sf.info("TCP Port " + cp + " found to be OPEN.")
-                (addr, port) = cp.split(":")
-                evt = SpiderFootEvent("TCP_PORT_OPEN", port, self.__name__, srcEvent)
+                evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
                 self.notifyListeners(evt)
                 if resArray[cp] != "" and resArray[cp] != True:
                     bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", resArray[cp],
@@ -160,8 +159,13 @@ class sfp_portscan_basic(SpiderFootPlugin):
                     sf.debug("Skipping port scanning of " + eventData + ", too big.")
                     return None
 
-                for ip in list(net):
-                    scanIps.append(str(ip))
+                for ip in net:
+                    ipaddr = str(ip)
+                    if ipaddr.split(".")[3] in [ '255', '0']:
+                        continue
+                    if '255' in ipaddr.split("."):
+                        continue
+                    scanIps.append(ipaddr)
             else:
                 scanIps.append(eventData)
         except BaseException as e:

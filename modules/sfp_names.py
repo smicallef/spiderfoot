@@ -47,7 +47,7 @@ class sfp_names(SpiderFootPlugin):
 
         return wd.keys()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -87,7 +87,8 @@ class sfp_names(SpiderFootPlugin):
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Stage 1: Find things that look (very vaguely) like names
-        m = re.findall("([A-Z][a-z]+)\s+.?.?\s?([A-Z][a-zA-Z\'\-]+)", eventData)
+        rx = re.compile("([A-Z][a-z]+)\s+.?.?\s?([A-Z][a-zA-Z\'\-]+)")
+        m = re.findall(rx, eventData)
         for r in m:
             # Start off each match as 0 points.
             p = 0

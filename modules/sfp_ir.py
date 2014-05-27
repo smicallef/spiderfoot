@@ -24,19 +24,16 @@ class sfp_ir(SpiderFootPlugin):
     # Default options
     opts = { }
 
-    # Target
-    baseDomain = None
     results = dict()
     currentEventSrc = None
     memCache = dict()
     nbreported = dict()
-    keyword = None
+    keywords = None
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = dict()
         self.memCache = dict()
         self.currentEventSrc = None
@@ -44,9 +41,6 @@ class sfp_ir(SpiderFootPlugin):
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-        self.keyword = sf.domainKeyword(self.baseDomain, 
-            self.opts['_internettlds']).lower()
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -56,7 +50,7 @@ class sfp_ir(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "NETBLOCK", "RAW_RIR_DATA", "BGP_AS", "PROVIDER_INTERNET" ]
+        return [ "NETBLOCK", "RAW_RIR_DATA", "BGP_AS_OWNER", "PROVIDER_INTERNET" ]
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
@@ -197,8 +191,12 @@ class sfp_ir(SpiderFootPlugin):
     # and the string supplied.
     def findName(self, string):
         # Simplest check to perform..
-        if self.baseDomain in string:
+        if self.getTarget().getValue() in string:
             return True
+
+        if self.keywords == None:
+            self.keywords = sf.domainKeywords(self.getTarget().getNames(),
+                self.opts['_internettlds'])
 
         # Slightly more complex..
         rx = [ 
@@ -209,12 +207,15 @@ class sfp_ir(SpiderFootPlugin):
 
         # Mess with the keyword as a last resort..
         keywordList = list()
-        # Create versions of the keyword, esp. if hyphens are involved.
-        keywordList.append(self.keyword)
-        keywordList.append(self.keyword.replace('-', ' '))
-        keywordList.append(self.keyword.replace('-', '_'))
-        keywordList.append(self.keyword.replace('-', ''))
+        for kw in self.keywords:
+            # Create versions of the keyword, esp. if hyphens are involved.
+            keywordList.append(kw)
+            keywordList.append(kw.replace('-', ' '))
+            keywordList.append(kw.replace('-', '_'))
+            keywordList.append(kw.replace('-', ''))
+
         for kw in keywordList:
+            sf.debug("Looking for keyword: " + kw)
             for r in rx:
                 if re.match(r.format(kw), string, re.IGNORECASE) != None:
                     return True
@@ -261,7 +262,7 @@ class sfp_ir(SpiderFootPlugin):
             sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
             evt = SpiderFootEvent("NETBLOCK", prefix, self.__name__, event)
             self.notifyListeners(evt)
-            asevt = SpiderFootEvent("BGP_AS", asn, self.__name__, event)
+            asevt = SpiderFootEvent("BGP_AS_OWNER", asn, self.__name__, event)
             self.notifyListeners(asevt)
 
             # Don't report additional netblocks from this AS if we've

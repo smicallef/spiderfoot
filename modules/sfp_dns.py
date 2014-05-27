@@ -28,8 +28,6 @@ class sfp_dns(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'reverselookup':    True,    # Reverse-resolve IPs to names for
-                                    # more clues.
         'subnetlookup': True,
         'netblocklookup': True,
         'maxnetblock': 24,
@@ -47,48 +45,96 @@ class sfp_dns(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'skipcommononwildcard': "If wildcard DNS is detected, only attempt to look up the first common sub-domain from the common sub-domain list.",
-        'reverselookup': "Obtain new URLs and possible affiliates based on reverse-resolved IPs?",
-        'subnetlookup': "If reverse-resolving is enabled, look up all IPs on the same subnet for possible hosts on the same target domain?",
-        'netblocklookup': "If reverse-resolving is enabled, look up all IPs on owned netblocks for possible hosts on the same target domain?",
+        'subnetlookup': "Look up all IPs on identified subnets associated with your target for possible hosts on the same target subdomain/domain?",
+        'netblocklookup': "Look up all IPs on netblocks deemed to be 'owned' by your target for possible hosts on the same target subdomain/domain?",
         'maxnetblock': "Maximum netblock/subnet size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'onlyactive': "Only report sub-domains/hostnames that resolve to an IP.",
-        'lookaside': "For each IP discovered, try and reverse look-up IPs 'next to' that IP.",
+        'lookaside': "For each IP discovered, try and reverse look-up IPs 'next to' that IP for potential hostnames on the same subdomain/domain.",
         'lookasidecount': "If look-aside is enabled, the number of IPs on each 'side' of the IP to look up",
-        "commonsubs":   "Common sub-domains to try. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
+        "commonsubs":   "Common sub-domains to try to resolve on the target subdomain/domain. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
     }
 
-    # Target
-    baseDomain = None
-    results = dict()
-    subresults = dict()
+    events = dict()
+    domresults = dict()
+    hostresults = dict()
     resolveCache = dict()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.results = dict()
-        self.subresults = dict()
+        self.events = dict()
+        self.domresults = dict()
+        self.hostresults = dict()
         self.resolveCache = dict()
-        self.baseDomain = target
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
+        self.sublist = self.opts['commonsubs']
+        # User may have supplied a file or URL containing the subdomains
+        if self.opts['commonsubs'][0].startswith("http://") or \
+            self.opts['commonsubs'][0].startswith("https://") or \
+            self.opts['commonsubs'][0].startswith("@"):
+            self.sublist = sf.optValueToData(self.opts['commonsubs'][0])
+
+    def enrichTarget(self, target):
+        ret = None
+        # If it's an IP, get the hostname it reverse resolves to
+        if target.getType() == "IP_ADDRESS":
+            ret = self.resolveIP(target.getValue())
+        if target.getType() == "INTERNET_NAME":
+            ret = self.resolveHost(target.getValue())
+        if target.getType() == "IP_SUBNET":
+            ret = list()
+            for addr in IPNetwork(target.getValue()):
+                ipaddr = str(addr)
+                if ipaddr.split(".")[3] in [ '255', '0']:
+                    continue
+                if '255' in ipaddr.split("."):
+                    continue
+                ret.append(ipaddr)
+                name = self.resolveIP(ipaddr)
+                if name != None:
+                    ret.append(name)
+
+        if ret == None:
+            return None
+
+        for addr in ret:
+            if type(addr) == list:
+                for host in addr:
+                    if sf.validIP(host):
+                        target.setAlias(host, "IP_ADDRESS")
+                    else:
+                        target.setAlias(host, "INTERNET_NAME")
+                        dom = sf.hostDomain(host, self.opts['_internettlds'])
+                        target.setAlias(dom, "INTERNET_NAME")
+            else:
+                if sf.validIP(addr):
+                    target.setAlias(addr, "IP_ADDRESS")
+                else:
+                    target.setAlias(addr, "INTERNET_NAME")
+                    dom = sf.hostDomain(addr, self.opts['_internettlds'])
+                    target.setAlias(dom, "INTERNET_NAME")
+        
+        sf.debug("Aliases identified: " + str(target.getAliases()))
+
+        return target
+
     # What events is this module interested in for input
     def watchedEvents(self):
         arr = ['RAW_DNS_RECORDS', 'SEARCH_ENGINE_WEB_CONTENT', 'RAW_RIR_DATA',
-            'TARGET_WEB_CONTENT', 'LINKED_URL_INTERNAL', 'SUBDOMAIN' ]
-        if self.opts['reverselookup']:
-            arr.extend(['IP_ADDRESS', 'NETBLOCK', 'IP_SUBNET'])
+            'TARGET_WEB_CONTENT', 'LINKED_URL_INTERNAL', 'INTERNET_NAME',
+            'IP_ADDRESS', 'NETBLOCK', 'IP_SUBNET']
         return arr
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "IP_ADDRESS", "SUBDOMAIN", "PROVIDER_MAIL", 
-            "PROVIDER_DNS", "AFFILIATE", "RAW_DNS_RECORDS" ]
+        return [ "IP_ADDRESS", "INTERNET_NAME", "PROVIDER_MAIL", "DOMAIN_NAME",
+            "PROVIDER_DNS", "AFFILIATE_INTERNET_NAME", "RAW_DNS_RECORDS" ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -100,25 +146,24 @@ class sfp_dns(SpiderFootPlugin):
 
         sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.subresults.has_key(eventData):
+        if self.events.has_key(eventData):
             return None
 
-        self.subresults[eventData] = True
+        self.events[eventData] = True
 
+        # Identify potential sub-domains/hostnames
         if eventName in [ "SEARCH_ENGINE_WEB_CONTENT", "TARGET_WEB_CONTENT",
             "LINKED_URL_INTERNAL", "RAW_RIR_DATA", "RAW_DNS_RECORDS" ]:
             # If we've received a link or some raw data, extract potential sub-domains
             # from the data for resolving later.
-            matches = re.findall("([a-zA-Z0-9\-\.]+\." + self.baseDomain + ")", eventData,
-                re.IGNORECASE)
-
-            if matches != None:
-                for match in matches:
-                    if match.lower().startswith("2f"):
-                        continue
-
-                    self.processHost(match, parentEvent)
-
+            for name in self.getTarget().getNames():
+                if self.checkForStop():
+                    return None
+                pat = re.compile("([a-zA-Z0-9\-\.]+\." + name + ")", re.IGNORECASE)
+                matches = re.findall(pat, eventData)
+                if matches != None:
+                    for match in matches:
+                        self.processHost(match, parentEvent)
             # Nothing left to do with internal links and raw data
             return None
 
@@ -136,17 +181,17 @@ class sfp_dns(SpiderFootPlugin):
 
             sf.debug("Looking up IPs in " + eventData)
             for ip in IPNetwork(eventData):
+                ipaddr = str(ip)
+                if ipaddr.split(".")[3] in [ '255', '0']:
+                    continue
+                if '255' in ipaddr.split("."):
+                    continue
+
                 if self.checkForStop():
                     return None
-                ipaddr = str(ip)
+                addrs = self.resolveIP(ipaddr)
 
-                if self.results.has_key(ipaddr):
-                    continue
-                else:
-                    self.results[ipaddr] = True
-
-                try:
-                    addrs = socket.gethostbyaddr(ipaddr)
+                if addrs != None:
                     sf.debug("Found a reversed hostname from " + ipaddr + \
                         " (" + str(addrs) + ")")
                     for addr in addrs:
@@ -154,52 +199,47 @@ class sfp_dns(SpiderFootPlugin):
                             for host in addr:
                                 # Don't report on anything on the same subnet if
                                 # if doesn't resolve to something on the target
-                                if not host.endswith(self.baseDomain) and \
-                                    eventName == 'IP_SUBNET':
+                                # domain/sub-domain.
+                                # e.g. we don't report if 1.2.3.5 (IP next to
+                                # target 1.2.3.4) resolves to a hostname on a
+                                # completely differtent domain.
+                                if not self.getTarget().matches(host) \
+                                    and eventName == 'IP_SUBNET':
                                     continue
-                                self.processHost(host, parentEvent)
+                                # Generate an event for the IP, then
+                                # let the handling by this module take
+                                # care of follow-up processing.
+                                self.processHost(ipaddr, parentEvent)
                         else:
-                            if not addr.endswith(self.baseDomain) and \
-                                eventName == 'IP_SUBNET':
+                            # Same as above comment
+                            if not self.getTarget().matches(addr) \
+                                and eventName == 'IP_SUBNET':
                                 continue
-                            self.processHost(addr, parentEvent)
-                except Exception as e:
-                    #sf.debug("Exception encountered: " + str(e))
-                    continue
+                            self.processHost(ipaddr, parentEvent)
 
             return None
 
-        # Handling SUBDOMAIN and IP_ADDRESS events..
+        # Handling INTERNET_NAME and IP_ADDRESS events..
 
-        # Don't look up stuff twice
-        if self.results.has_key(eventData):
-            sf.debug("Skipping " + eventData + " as already resolved.")
+        if eventName != 'IP_ADDRESS':
+            if '://' in eventData:
+                addrs = self.resolveHost(sf.urlFQDN(eventData))
+            else:
+                addrs = self.resolveHost(eventData)
+        else:
+            addrs = self.resolveIP(eventData)
+
+        if addrs == None:
             return None
         else:
-            self.results[eventData] = True
-
-        try:
-            if eventName != 'IP_ADDRESS':
-                if '://' in eventData:
-                    addrs = self.resolveHost(sf.urlFQDN(eventData))
+            for addr in addrs:
+                if type(addr) == list:
+                    for host in addr:
+                        self.processHost(host, parentEvent)
                 else:
-                    addrs = self.resolveHost(eventData)
-                if addrs == None:
-                    return None
-            else:
-                addrs = socket.gethostbyaddr(eventData)
-        except BaseException as e:
-            sf.info("Unable to resolve " + eventData + " (" + str(e) + ")")
-            return None
+                    self.processHost(addr, parentEvent)
 
-        for addr in addrs:
-            if type(addr) == list:
-                for host in addr:
-                    self.processHost(host, parentEvent)
-            else:
-                self.processHost(addr, parentEvent)
-
-        # Try to reverse-resolve
+        # Try to reverse-resolve IPs 'near' the identified IP
         if self.opts['lookaside'] and eventName == 'IP_ADDRESS':
             ip = IPAddress(eventData)
             minip = IPAddress(int(ip) - self.opts['lookasidecount'])
@@ -212,30 +252,63 @@ class sfp_dns(SpiderFootPlugin):
                 if self.checkForStop():
                     return None
 
-                if self.results.has_key(sip):
+                if self.hostresults.has_key(sip):
                     s = s + 1
                     continue
 
-                try:
-                    addrs = socket.gethostbyaddr(sip)
-                    for addr in addrs:
-                        if type(addr) == list:
-                            for host in addr:
-                                if host.endswith(self.baseDomain):
-                                    self.processHost(host, parentEvent)
-                        else:
-                            if addr.endswith(self.baseDomain):
-                                self.processHost(addr, parentEvent)
-                except BaseException as e:
-                    sf.debug("Look-aside lookup failed: " + str(e))
+                addrs = self.resolveIP(sip)
+                if addrs == None:
+                    sf.debug("Look-aside resolve for " + sip + " failed.")
+                    s = s + 1
+                    continue
+
+                # Report addresses that resolve to hostnames on the same
+                # domain or sub-domain as the target.
+                for addr in addrs:
+                    if type(addr) == list:
+                        for host in addr:
+                            if self.getTarget().matches(host):
+                                # Generate an event for the IP, then
+                                # let the handling by this module take
+                                # care of follow-up processing.
+                                self.processHost(sip, parentEvent)
+                    else:
+                        if self.getTarget().matches(addr):
+                            self.processHost(sip, parentEvent)
                 s = s + 1
             
         return None
 
+    # Resolve an IP
+    def resolveIP(self, ipaddr):
+        ret = list()
+        sf.debug("Performing reverse-resolve of " + ipaddr)
+
+        if self.resolveCache.has_key(ipaddr):
+            sf.debug("Returning cached result for " + ipaddr + " (" + \
+                 str(self.resolveCache[ipaddr]) + ")")
+            return self.resolveCache[ipaddr]
+
+        try:
+            addrs = socket.gethostbyaddr(ipaddr)
+            for addr in addrs:
+                if type(addr) == list:
+                    for host in addr:
+                        ret.append(host)
+                else:
+                    ret.append(addr)
+            self.resolveCache[ipaddr] = ret
+            return ret
+        except BaseException as e:
+            sf.info("Unable to resolve " + ipaddr + " (" + str(e) + ")")
+            self.resolveCache[ipaddr] = None
+            return None
+
     # Resolve a host
     def resolveHost(self, hostname):
         if self.resolveCache.has_key(hostname):
-            sf.debug("Returning cached result for " + hostname)
+            sf.debug("Returning cached result for " + hostname + " (" + \
+                str(self.resolveCache[hostname]) + ")" )
             return self.resolveCache[hostname]
 
         try:
@@ -246,32 +319,61 @@ class sfp_dns(SpiderFootPlugin):
             sf.info("Unable to resolve " + hostname + " (" + str(e) + ")")
             return None
 
-    def processHost(self, host, parentEvent=None):
+    def processHost(self, host, parentEvent):
+        if not self.hostresults.has_key(host):
+            self.hostresults[host] = list(parentEvent.data)
+        else:
+            if parentEvent.data in self.hostresults[host]:
+                sf.debug("Skipping host, " + host + ", already processed.")
+                return None
+            else:
+                self.hostresults[host].append(parentEvent.data)
+
         sf.debug("Found host: " + host)
         # If the returned hostname is on a different
-        # domain to baseDomain, flag it as an affiliate
-        if not host.lower().endswith(self.baseDomain):
+        # domain to the target, flag it as an affiliate
+        if not self.getTarget().matches(host):
+            if sf.validIP(host):
+                htype = "AFFILIATE_IPADDR"
+            else:
+                htype = "AFFILIATE_INTERNET_NAME"
+        else:
             if sf.validIP(host):
                 htype = "IP_ADDRESS"
             else:
-                htype = "AFFILIATE"
-        else:
-            htype = "SUBDOMAIN"
+                htype = "INTERNET_NAME"
                 
         if parentEvent != None:
             # Don't report back the same thing that was provided
             if htype == parentEvent.eventType and host == parentEvent.data:
-                return
+                return None
 
-        if htype == "SUBDOMAIN" and self.opts['onlyactive']:
+        if htype.endswith("INTERNET_NAME") and self.opts['onlyactive']:
             if self.resolveHost(host) == None:
                 return None
 
+        # Report the host
         evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
         self.notifyListeners(evt)
+        # Report the domain for that host
+        if htype == "INTERNET_NAME":
+            dom = sf.hostDomain(host, self.opts['_internettlds'])
+            self.processDomain(dom, evt)
 
-    def start(self):
-        sf.debug("Gathering DNS records..")
+        return evt
+
+    def processDomain(self, domainName, parentEvent):
+        if not self.domresults.has_key(domainName):
+            self.domresults[domainName] = True
+        else:
+            sf.debug("Skipping domain, " + domainName + ", already processed.")
+            return None
+
+        domevt = SpiderFootEvent("DOMAIN_NAME", domainName, self.__name__,
+            parentEvent)
+        self.notifyListeners(domevt)
+
+        sf.debug("Gathering DNS records for " + domainName)
         # Process the raw data alone
         recdata = dict()
         recs = {
@@ -281,7 +383,7 @@ class sfp_dns(SpiderFootPlugin):
 
         for rec in recs.keys():
             try:
-                req = dns.message.make_query(self.baseDomain, dns.rdatatype.from_text(rec))
+                req = dns.message.make_query(domainName, dns.rdatatype.from_text(rec))
     
                 if self.opts['_dnsserver'] != "":
                     n = self.opts['_dnsserver']
@@ -293,7 +395,8 @@ class sfp_dns(SpiderFootPlugin):
                 for x in res.answer:
                     for rx in recs.keys():
                         sf.debug("Checking " + str(x) + " + against " + recs[rx][0])
-                        grps = re.findall(recs[rx][0], str(x), re.IGNORECASE|re.DOTALL)
+                        pat = re.compile(recs[rx][0], re.IGNORECASE|re.DOTALL)
+                        grps = re.findall(pat, str(x))
                         if len(grps) > 0:
                             for m in grps:
                                 sf.debug("Matched: " +  m)
@@ -301,9 +404,9 @@ class sfp_dns(SpiderFootPlugin):
                                 evt = SpiderFootEvent(recs[rx][1], strdata, 
                                     self.__name__)
                                 self.notifyListeners(evt)
-                                if not strdata.endswith(self.baseDomain):
-                                    evt = SpiderFootEvent("AFFILIATE", strdata, 
-                                        self.__name__)
+                                if not strdata.endswith(domainName):
+                                    evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME",
+                                    strdata, self.__name__)
                                     self.notifyListeners(evt)
                         else:
                                 strdata = unicode(str(x), 'utf-8', errors='replace')
@@ -311,23 +414,14 @@ class sfp_dns(SpiderFootPlugin):
                                     self.__name__) 
                                 self.notifyListeners(evt)
             except BaseException as e:
-                sf.error("Failed to obtain DNS response: " + str(e), False)
+                sf.error("Failed to obtain DNS response for " + domainName + \
+                    "(" + rec + "): " + str(e), False)
 
-        sublist = self.opts['commonsubs']
-
-        # Also look up the base target itself
-        sublist.append('')
-        # User may have supplied a file or URL containing the subdomains
-        if self.opts['commonsubs'][0].startswith("http://") or \
-            self.opts['commonsubs'][0].startswith("https://") or \
-            self.opts['commonsubs'][0].startswith("@"):
-            sublist = sf.optValueToData(self.opts['commonsubs'][0])
-            
-        sf.debug("Iterating through possible sub-domains [" + str(sublist) + "]")
+        sf.debug("Iterating through possible sub-domains [" + str(self.sublist) + "]")
         count = 0
-        wildcard = sf.checkDnsWildcard(self.baseDomain)
+        wildcard = sf.checkDnsWildcard(domainName)
         # Try resolving common names
-        for sub in sublist:
+        for sub in self.sublist:
             if wildcard and self.opts['skipcommononwildcard'] and count > 0:
                 sf.debug("Wildcard DNS detected, skipping iterating through remaining hosts.")
                 return None
@@ -337,28 +431,17 @@ class sfp_dns(SpiderFootPlugin):
 
             count += 1
             if sub != "":
-                name = sub + "." + self.baseDomain
+                name = sub + "." + domainName
             else:
-                name = self.baseDomain
-            # Don't look up stuff twice
-            if self.results.has_key(name):
-                sf.debug("Skipping " + name + " as already resolved.")
                 continue
-            else:
-                self.results[name] = True
 
             addrs = self.resolveHost(name)
             if addrs != None:
-                self.processHost(name)
                 for addr in addrs:
                     if type(addr) == list:
                         for host in addr:
-                            if host not in self.results.keys():
-                                self.processHost(host)
-                                self.results[host] = True
+                            self.processHost(host, domevt)
                     else:
-                        if addr not in self.results.keys():
-                            self.processHost(addr)
-                            self.results[addr] = True
+                        self.processHost(addr, domevt)
 
 # End of sfp_dns class

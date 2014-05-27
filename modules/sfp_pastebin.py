@@ -34,7 +34,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
     results = list()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -45,7 +45,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME", "IP_ADDRESS", "EMAILADDR" ]
+        return [ "INTERNET_NAME", "IP_ADDRESS", "EMAILADDR" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events

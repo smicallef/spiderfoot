@@ -44,7 +44,7 @@ class sfp_social(SpiderFootPlugin):
 
     results = dict()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc

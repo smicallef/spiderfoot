@@ -40,7 +40,7 @@ class sfp_defaced(SpiderFootPlugin):
 
     results = list()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -55,15 +55,16 @@ class sfp_defaced(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "IP_ADDRESS", "SUBDOMAIN",
-            "AFFILIATE_DOMAIN", "AFFILIATE_IPADDR",
+        return ["INTERNET_NAME", "IP_ADDRESS",
+            "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
             "CO_HOSTED_SITE" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "DEFACED", "DEFACED_IPADDR", "DEFACED_AFFILIATE", 
+        return [ "DEFACED_INTERNET_NAME", "DEFACED_IPADDR", 
+            "DEFACED_AFFILIATE_INTERNET_NAME", 
             "DEFACED_COHOST", "DEFACED_AFFILIATE_IPADDR" ]
 
     def lookupItem(self, target, typeId):
@@ -79,8 +80,8 @@ class sfp_defaced(SpiderFootPlugin):
             sf.error("CAPTCHA returned from zone-h.org.", False)
             return None
 
-        rx = "<td>(\d+/\d+/\d+)</td>"
-        grps = re.findall(rx, res['content'], re.IGNORECASE|re.DOTALL)
+        rx = re.compile("<td>(\d+/\d+/\d+)</td>", re.IGNORECASE|re.DOTALL)
+        grps = re.findall(rx, res['content'])
         for m in grps:
             sf.debug("Found defaced site: " + target + "(" + typeId + ")")
             found = True
@@ -112,11 +113,11 @@ class sfp_defaced(SpiderFootPlugin):
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
             return None
-        if eventName == 'AFFILIATE_DOMAIN' or eventName == 'AFFILIATE_IPADDR' \
+        if eventName == 'AFFILIATE_INTERNET_NAME' or eventName == 'AFFILIATE_IPADDR' \
             and not self.opts['checkaffiliates']:
             return None
 
-        evtType = 'DEFACED'
+        evtType = 'DEFACED_INTERNET_NAME'
         typeId = 'domain'
 
         if eventName == 'IP_ADDRESS':
@@ -126,8 +127,8 @@ class sfp_defaced(SpiderFootPlugin):
         if eventName == 'CO_HOSTED_SITE':
             evtType = 'DEFACED_COHOST'
 
-        if eventName == 'AFFILIATE_DOMAIN':
-            evtType = 'DEFACED_AFFILIATE'
+        if eventName == 'AFFILIATE_INTERNET_NAME':
+            evtType = 'DEFACED_AFFILIATE_INTERNET_NAME'
 
         if eventName == 'AFFILIATE_IPADDR':
             evtType = 'DEFACED_AFFILIATE_IPADDR'

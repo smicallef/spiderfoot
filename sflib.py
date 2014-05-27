@@ -19,6 +19,7 @@ import random
 import socket
 import sys
 import time
+import netaddr
 import urllib2
 import StringIO
 
@@ -457,6 +458,24 @@ class SpiderFoot:
             return ret.split('.')[-1]
         else:
             return ret
+
+    # Extract the keywords (the domains without the TLD or any subdomains)
+    # from a list of domains.
+    def domainKeywords(self, domainList, tldList):
+        arr = list()
+        for domain in domainList:
+            # Strip off the TLD
+            tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
+            ret = domain.lower().replace('.'+tld, '')
+
+            # If the user supplied a domain with a sub-domain, return the second part
+            if '.' in ret:
+                arr.append(ret.split('.')[-1])
+            else:
+                arr.append(ret)
+
+        self.debug("Keywords: " + str(arr))
+        return arr
         
     # Obtain the domain name for a supplied hostname
     # tldList needs to be an array based on the Mozilla public list
@@ -466,18 +485,7 @@ class SpiderFoot:
 
     # Simple way to verify IPs.
     def validIP(self, address):
-        parts = address.split(".")
-        if parts == None:
-            return False
-
-        if len(parts) != 4:
-            return False
-        for item in parts:
-            if not item.isdigit():
-                return False
-            if not 0 <= int(item) <= 255:
-                return False
-        return True
+        return netaddr.valid_ipv4(address)
 
     # Converts a dictionary of k -> array to a nested
     # tree that can be digested by d3 for visualizations.
@@ -550,7 +558,7 @@ class SpiderFoot:
     # The key will be the *absolute* URL of the link obtained, so for example if
     # the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
     # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
-    def parseLinks(self, url, data, domain):
+    def parseLinks(self, url, data, domains):
         returnLinks = dict()
 
         if data == None or len(data) == 0:
@@ -567,70 +575,71 @@ class SpiderFoot:
             return None
 
         # Find potential links that aren't links (text possibly in comments, etc.)
-        try:
-            # Because we're working with a big blob of text now, don't worry
-            # about clobbering proper links by url decoding them.
-            data = urllib2.unquote(data)
-            regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.'+domain+')', 
-                re.IGNORECASE)
-            urlsRel = urlsRel + regRel.findall(data)
-        except Exception as e:
-            self.error("Error applying regex2 to: " + data)
-        try:
-            # Some links are sitting inside a tag, e.g. Google's use of <cite>
-            regRel = re.compile('(>)('+domain+'/.[^<]+)', re.IGNORECASE)
-            urlsRel = urlsRel + regRel.findall(data)
-        except Exception as e:
-            self.error("Error applying regex3 to: " + data)
+        data = urllib2.unquote(data)
+        for domain in domains:
+            try:
+                # Because we're working with a big blob of text now, don't worry
+                # about clobbering proper links by url decoding them.
+                regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.'+domain+')', 
+                    re.IGNORECASE)
+                urlsRel = urlsRel + regRel.findall(data)
+            except Exception as e:
+                self.error("Error applying regex2 to: " + data)
+            try:
+                # Some links are sitting inside a tag, e.g. Google's use of <cite>
+                regRel = re.compile('(>)('+domain+'/.[^<]+)', re.IGNORECASE)
+                urlsRel = urlsRel + regRel.findall(data)
+            except Exception as e:
+                self.error("Error applying regex3 to: " + data)
 
-        # Loop through all the URLs/links found by the regex
-        for linkTuple in urlsRel:
-            # Remember the regex will return two vars (two groups captured)
-            meta = linkTuple[0]
-            link = linkTuple[1]
-            absLink = None
+            # Loop through all the URLs/links found by the regex
+            for linkTuple in urlsRel:
+                # Remember the regex will return two vars (two groups captured)
+                meta = linkTuple[0]
+                link = linkTuple[1]
+                absLink = None
 
-            # Don't include stuff likely part of some dynamically built incomplete
-            # URL found in Javascript code (character is part of some logic)
-            if link[len(link)-1] == '.' or link[0] == '+' or \
-                'javascript:' in link.lower() or '();' in link:
-                self.debug('unlikely link: ' + link)
-                continue
+                # Don't include stuff likely part of some dynamically built incomplete
+                # URL found in Javascript code (character is part of some logic)
+                if link[len(link)-1] == '.' or link[0] == '+' or \
+                    'javascript:' in link.lower() or '();' in link:
+                    self.debug('unlikely link: ' + link)
+                    continue
 
-            # Filter in-page links
-            if re.match('.*#.[^/]+', link):
-                self.debug('in-page link: ' + link)
-                continue
+                # Filter in-page links
+                if re.match('.*#.[^/]+', link):
+                    self.debug('in-page link: ' + link)
+                    continue
 
-            # Ignore mail links
-            if 'mailto:' in link.lower():
-                self.debug("Ignoring mail link: " + link)
-                continue
+                # Ignore mail links
+                if 'mailto:' in link.lower():
+                    self.debug("Ignoring mail link: " + link)
+                    continue
 
-            # URL decode links
-            if '%2f' in link.lower():
-                link = urllib2.unquote(link)
+                # URL decode links
+                if '%2f' in link.lower():
+                    link = urllib2.unquote(link)
 
-            # Capture the absolute link:
-            # If the link contains ://, it is already an absolute link
-            if '://' in link:
-                absLink = link
+                # Capture the absolute link:
+                # If the link contains ://, it is already an absolute link
+                if '://' in link:
+                    absLink = link
 
-            # If the link starts with a /, the absolute link is off the base URL
-            if link.startswith('/'):
-                absLink = self.urlBaseUrl(url) + link
+                # If the link starts with a /, the absolute link is off the base URL
+                if link.startswith('/'):
+                    absLink = self.urlBaseUrl(url) + link
 
-            # Maybe the domain was just mentioned and not a link, so we make it one
-            if absLink == None and domain.lower() in link.lower():
-                absLink = 'http://' + link
+                # Maybe the domain was just mentioned and not a link, so we make it one
+                if absLink == None and domain.lower() in link.lower():
+                    absLink = 'http://' + link
 
-            # Otherwise, it's a flat link within the current directory
-            if absLink == None:
-                absLink = self.urlBaseDir(url) + link
+                # Otherwise, it's a flat link within the current directory
+                if absLink == None:
+                    absLink = self.urlBaseDir(url) + link
 
-            # Translate any relative pathing (../)
-            absLink = self.urlRelativeToAbsolute(absLink)
-            returnLinks[absLink] = {'source': url, 'original': link}
+                # Translate any relative pathing (../)
+                absLink = self.urlRelativeToAbsolute(absLink)
+                returnLinks[absLink] = {'source': url, 'original': link}
 
         return returnLinks
 
@@ -721,13 +730,11 @@ class SpiderFoot:
     # Check if wildcard DNS is enabled by looking up two random hostnames
     def checkDnsWildcard(self, target):
         randpool = 'bcdfghjklmnpqrstvwxyz3456789'
-        randhost1 = ''.join([random.choice(randpool) for x in range(6)])
-        randhost2 = ''.join([random.choice(randpool) for x in range(10)])
+        randhost = ''.join([random.choice(randpool) for x in range(10)])
 
-        # An exception will be raised if either of the resolutions fail
+        # An exception will be raised if the resolution fails
         try:
-            addrs = socket.gethostbyname_ex(randhost1 + "." + target)
-            addrs = socket.gethostbyname_ex(randhost2 + "." + target)
+            addrs = socket.gethostbyname_ex(randhost + "." + target)
             self.debug(target + " has wildcard DNS.")
             return True
         except BaseException as e:
@@ -769,8 +776,8 @@ class SpiderFoot:
             return None
 
         returnResults[seedUrl] = firstPage['content']
-        matches = re.findall("(\/search\S+start=\d+.[^\'\"]*sa=N)", 
-            firstPage['content'])
+        pat = re.compile("(\/search\S+start=\d+.[^\'\"]*sa=N)", re.IGNORECASE)
+        matches = re.findall(pat, firstPage['content'])
 
         while matches > 0 and fetches < limit:
             nextUrl = None
@@ -806,8 +813,8 @@ class SpiderFoot:
                 return None
 
             returnResults[nextUrl] = nextPage['content']
-            matches = re.findall("(\/search\S+start=\d+.[^\'\"]*)", 
-                nextPage['content'], re.IGNORECASE)
+            pat = re.compile("(\/search\S+start=\d+.[^\'\"]*)", re.IGNORECASE)
+            matches = re.findall(pat, nextPage['content'])
 
         return returnResults
 
@@ -845,9 +852,8 @@ class SpiderFoot:
             return None
 
         returnResults[seedUrl] = firstPage['content']
-
-        matches = re.findall("(\/search\S+first=\d+.[^\'\"]*FORM=\S+)", 
-            firstPage['content'])
+        pat = re.compile("(\/search\S+first=\d+.[^\'\"]*FORM=\S+)", re.IGNORECASE)
+        matches = re.findall(pat, firstPage['content'])
         while matches > 0 and fetches < limit:
             nextUrl = None
             fetches += 1
@@ -882,8 +888,8 @@ class SpiderFoot:
                 return None
 
             returnResults[nextUrl] = nextPage['content']
-            matches = re.findall("(\/search\S+first=\d+.[^\'\"]*)", 
-                nextPage['content'], re.IGNORECASE)
+            pat = re.compile("(\/search\S+first=\d+.[^\'\"]*)", re.IGNORECASE)
+            matches = re.findall(pat, nextPage['content'])
 
         return returnResults
 
@@ -918,8 +924,8 @@ class SpiderFoot:
 
         returnResults[seedUrl] = firstPage['content']
 
-        matches = re.findall("(\/search;\S+b=\d+.[^\'\"]*)", 
-            firstPage['content'])
+        pat = re.compile("(\/search;\S+b=\d+.[^\'\"]*)", re.IGNORECASE)
+        matches = re.findall(pat, firstPage['content'])
         while matches > 0 and fetches < limit:
             nextUrl = None
             fetches += 1
@@ -950,8 +956,8 @@ class SpiderFoot:
                 return returnResults
 
             returnResults[nextUrl] = nextPage['content']
-            matches = re.findall("(\/search;\S+b=\d+.[^\'\"]*)",
-                nextPage['content'], re.IGNORECASE)
+            pat = re.compile("(\/search;\S+b=\d+.[^\'\"]*)", re.IGNORECASE)
+            matches = re.findall(pat, nextPage['content'])
 
         return returnResults
 
@@ -965,6 +971,8 @@ class SpiderFootPlugin(object):
     _listenerModules = list()
     # Current event being processed
     _currentEvent = None
+    # Target currently being acted against
+    _currentTarget = None
     # Name of this module, set at startup time
     __name__ = "module_name_not_set!"
 
@@ -985,8 +993,24 @@ class SpiderFootPlugin(object):
         self._stopScanning = False
 
     # Will always be overriden by the implementer.
-    def setup(self, sf, url, userOpts=dict()):
+    def setup(self, sf, userOpts=dict()):
         pass
+
+    # Hardly used, only in special cases where a module can find
+    # aliases for a target.
+    def enrichTarget(self, target):
+        pass
+
+    # Assigns the current target this module is acting against
+    def setTarget(self, target):
+        self._currentTarget = target
+
+    # Gets the current target this module is acting against
+    def getTarget(self):
+        if self._currentTarget == None:
+            print "Internal Error: Module called getTarget() but no target set."
+            sys.exit(-1)
+        return self._currentTarget
 
     # Listener modules which will get notified once we have data for them to
     # work with.
@@ -1088,6 +1112,112 @@ class SpiderFootPlugin(object):
     def start(self):
         return None
 
+# Class for targets
+class SpiderFootTarget(object):
+    _validTypes = [ "IP_ADDRESS", "IP_SUBNET", "INTERNET_NAME" ]
+    targetType = None
+    targetValue = None
+    targetAliases = list()
+
+    def __init__(self, targetValue, typeName):
+        if typeName in self._validTypes:
+            self.targetType = typeName
+            self.targetValue = targetValue.lower()
+            self.targetAliases = list()
+        else:
+            print "Internal Error: Invalid target type."
+            sys.exit(-1)
+
+    def getType(self):
+        return self.targetType
+
+    def getValue(self):
+        return self.targetValue
+
+    # Specify other hostnames, IPs, etc. that are aliases for
+    # this target.
+    # For instance, if the user searched for an ASN, a module
+    # might supply all the nested subnets as aliases.
+    # Or, if a user searched for an IP address, a module
+    # might supply the hostname as an alias.
+    def setAlias(self, value, typeName):
+        if {'type': typeName, 'value': value} in self.targetAliases:
+            return None
+
+        self.targetAliases.append(
+            { 'type': typeName, 'value': value.lower() }
+        )
+
+    def getAliases(self):
+        return self.targetAliases
+
+    def _getEquivalents(self, typeName):
+        ret = list()
+        for item in self.targetAliases:
+            if item['type'] == typeName:
+                ret.append(item['value'].lower())
+        return ret
+
+    # Get all domains associated with the target
+    def getNames(self):
+        e = self._getEquivalents("INTERNET_NAME")
+        if self.targetType == "INTERNET_NAME":
+            e.append(self.targetValue.lower())
+        return e
+
+    # Get all IP Subnets or IP Addresses associated with the target
+    def getAddresses(self):
+        e = self._getEquivalents("IP_ADDRESS")
+        if self.targetType == "IP_ADDRESS":
+            e.append(self.targetValue)
+        return e
+
+    # Check whether the supplied value is "tightly" related
+    # to the original target.
+    # Tightly in this case means:
+    #   1. If the value is an IP:
+    #       1.1 is it in the list of aliases or the target itself?
+    #       1.2 is it on the target's subnet?
+    #   2. If the value is a name (subdomain, domain, hostname):
+    #       2.1 is it in the list of aliases or the target itself?
+    #       2.2 is it a parent of the aliases of the target (domain/subdomain)
+    #       2.3 is it a child of the aliases of the target (hostname)
+    # Arguments:
+    # * value can be an Internet Name (hostname, subnet, domain)
+    # or an IP address.
+    # * includeParents = True means you consider a value that is
+    # a parent domain of the target to still be a tight relation.
+    # * includeChildren = False means you don't consider a value
+    # that is a child of the target to be a tight relation.
+    def matches(self, value, includeParents=False, includeChildren=True):
+        value = value.lower()
+
+        if netaddr.valid_ipv4(value):
+            # 1.1
+            if value in self.getAddresses():
+                return True
+            # 1.2
+            if self.targetType == "IP_SUBNET":
+                if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
+                    return True
+            if self.targetType == "IP_ADDRESS":
+                if netaddr.IPAddress(value) in \
+                    netaddr.IPNetwork(netaddr.IPAddress(self.targetValue)):
+                    return True
+        else:
+            for name in self.getNames():
+                # 2.1
+                if value == name:
+                    return True
+                # 2.2            
+                if includeParents and name.endswith("." + value):
+                    return True
+                # 2.3
+                if includeChildren and value.endswith("." + name):
+                    return True
+
+        return None
+
 # Class for SpiderFoot Events
 class SpiderFootEvent(object):
     generated = None
@@ -1124,7 +1254,7 @@ class SpiderFootEvent(object):
 
     # Unique hash of this event
     def getHash(self):
-        if self.eventType == "INITIAL_TARGET":
+        if self.module == "SpiderFoot UI":
             return "ROOT"
 
         digestStr = self.__id.encode('raw_unicode_escape')

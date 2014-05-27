@@ -36,7 +36,7 @@ class sfp_googlesearch(SpiderFootPlugin):
     # Target
     results = list()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -47,7 +47,7 @@ class sfp_googlesearch(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME" ]
+        return [ "INTERNET_NAME" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -101,7 +101,7 @@ class sfp_googlesearch(SpiderFootPlugin):
                     else:
                         self.results.append(link)
                     sf.debug("Found a link: " + link)
-                    if sf.urlBaseUrl(link).endswith(eventData):
+                    if sf.urlFQDN(link).endswith(eventData):
                         if self.checkForStop():
                             return None
 

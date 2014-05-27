@@ -38,15 +38,12 @@ class sfp_sharedip(SpiderFootPlugin):
         'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP."
     }
 
-    # Target
-    baseDomain = None
     results = list()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = list()
 
         for opt in userOpts.keys():
@@ -97,22 +94,24 @@ class sfp_sharedip(SpiderFootPlugin):
 
         # Robtex
         if self.opts['source'].lower() == "robtex":
-            res = sf.fetchUrl("https://www.robtex.com/ip/" + eventData + ".html")
+            res = sf.fetchUrl("https://www.robtex.com/shared/" + eventData + ".html")
             if res['content'] == None:
                 sf.error("Unable to fetch robtex content.", False)
                 return None
 
             myres = list()
-            blob = re.findall(".*Pointing to(.[^!]+)shared_pp_pa.*", res['content'],
-                re.IGNORECASE|re.DOTALL)
+            pat = re.compile("Pointing to(.[^!]+)", re.IGNORECASE)
+            blob = re.findall(pat, res['content'])
+
             if len(blob) > 0:
-                matches = re.findall("href=\"//www.robtex.com/dns/(.[^\"]*).html",
-                    blob[0], re.IGNORECASE)
+                pat = re.compile("href=\"//www.robtex.com/dns/(.[^\"]*).html", re.IGNORECASE)
+                matches = re.findall(pat, blob[0])
                 for m in matches:
                     sf.info("Found something on same IP: " + m)
-                    if not self.opts['cohostsamedomain'] and m.endswith(self.baseDomain):
-                        sf.debug("Skipping " + m + " because it is on the same domain.")
-                        continue
+                    if not self.opts['cohostsamedomain']:
+                        if self.getTarget().matches(m, includeParents=True):
+                            sf.debug("Skipping " + m + " because it is on the same domain.")
+                            continue
 
                     if '*' in m:
                         sf.debug("Skipping wildcard name: " + m)
@@ -141,15 +140,16 @@ class sfp_sharedip(SpiderFootPlugin):
 
             for key in results.keys():
                 res = results[key]
-                matches = re.findall("<div class=\"sb_meta\"><cite>(\S+)</cite>", 
-                    res, re.IGNORECASE)
+                pat = re.compile("<div class=\"sb_meta\"><cite>(\S+)</cite>", re.IGNORECASE)
+                matches = re.findall(pat, res)
                 for match in matches:
                     sf.info("Found something on same IP: " + match)
                     site = sf.urlFQDN(match)
                     if site not in myres and site != eventData:
-                        if not self.opts['cohostsamedomain'] and site.endswith(self.baseDomain):
-                            sf.debug("Skipping " + site + " because it is on the same domain.")
-                            continue
+                        if not self.opts['cohostsamedomain']:
+                            if self.getTarget().matches(m, includeParents=True):
+                                sf.debug("Skipping " + site + " because it is on the same domain.")
+                                continue
                         if self.opts['verify'] and not self.validateIP(m, eventData):
                             sf.debug("Host no longer resolves to our IP.")
                             continue

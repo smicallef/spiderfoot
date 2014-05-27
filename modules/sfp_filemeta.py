@@ -42,7 +42,7 @@ class sfp_filemeta(SpiderFootPlugin):
 
     results = list()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc

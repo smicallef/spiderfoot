@@ -42,14 +42,12 @@ class sfp_webframework(SpiderFootPlugin):
     }
 
     # Target
-    baseDomain = None # calculated from the URL in setup
     results = dict()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -86,7 +84,7 @@ class sfp_webframework(SpiderFootPlugin):
             self.results[eventSource] = list()
 
         # We only want web content for pages on the target site
-        if not sf.urlBaseUrl(eventSource).endswith(self.baseDomain):
+        if not self.getTarget().matches(sf.urlFQDN(eventSource)):
             sf.debug("Not collecting web content information for external sites.")
             return None
 
@@ -95,7 +93,8 @@ class sfp_webframework(SpiderFootPlugin):
                 continue
 
             for regex in regexps[regexpGrp]:
-                matches = re.findall(regex, eventData, re.IGNORECASE)
+                pat = re.compile(regex, re.IGNORECASE)
+                matches = re.findall(pat, eventData)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)

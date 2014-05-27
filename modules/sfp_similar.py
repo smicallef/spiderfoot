@@ -62,7 +62,7 @@ class sfp_similar(SpiderFootPlugin):
     # Internal results tracking
     results = list()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -72,14 +72,15 @@ class sfp_similar(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def findDomains(self, keyword, content):
-        matches = re.findall("([a-z0-9\-]*" + keyword + "[a-z0-9\-]*\.[a-z]+)", 
-            content, re.IGNORECASE)
+        pat = re.compile("([a-z0-9\-]*" + keyword + "[a-z0-9\-]*\.[a-z]+)",
+            re.IGNORECASE)
+        matches = re.findall(pat, content)
 
         return matches
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME" ]
+        return [ "INTERNET_NAME" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events

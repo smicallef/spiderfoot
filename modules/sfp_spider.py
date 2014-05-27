@@ -34,9 +34,11 @@ class sfp_spider(SpiderFootPlugin):
                         'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip',
                         'bin', 'bz2', 'xsl', 'doc', 'docx', 'ppt', 'pptx', 'xls',
                         'xlsx', 'csv'],
+        'filterexternal':   True,
         'filterusers':  True, # Don't follow /~user directories
         'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
         'nosubs':       False, # Should links to subdomains be ignored?
+        'noparents':    True
     }
 
     # Option descriptions
@@ -48,16 +50,15 @@ class sfp_spider(SpiderFootPlugin):
         'maxpages':     "Maximum number of pages to fetch per target identified.",
         'maxlevels':    "Maximum levels to traverse per target identified.",
         'filterfiles':  "File extensions to ignore (don't fetch them.)",
+        'filterexternal':   "Don't report any external links that are on the file extension filter list.",
         'filterusers':  "Skip spidering of /~user directories?",
         'noexternal':   "Skip spidering of external sites? (**dangerous if False**)",
-        'nosubs':       "Skip spidering of subdomains of the target?"
+        'nosubs':       "Skip spidering of subdomains of the target?",
+        'noparents':    "Skip spidering of parent domains of your target?"
     }
 
     # If using robots.txt, this will get populated with filter rules
     robotsRules = dict()
-
-    # Target
-    baseDomain = None
 
     # Pages already fetched
     fetchedPages = dict()
@@ -68,11 +69,10 @@ class sfp_spider(SpiderFootPlugin):
     # Tracked cookies per site
     siteCookies = dict()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.fetchedPages = dict()
         self.urlEvents = dict()
         self.siteCookies = dict()
@@ -114,7 +114,7 @@ class sfp_spider(SpiderFootPlugin):
             url = fetched['realurl'] # override the URL if we had a redirect
 
         # Extract links from the content
-        links = sf.parseLinks(url, fetched['content'], self.baseDomain)
+        links = sf.parseLinks(url, fetched['content'], self.getTarget().getNames())
 
         if links == None or len(links) == 0:
             sf.info("No links found at " + url)
@@ -136,15 +136,24 @@ class sfp_spider(SpiderFootPlugin):
 
         for link in links.keys():
             linkBase = sf.urlBaseUrl(link)
+            linkFQDN = sf.urlFQDN(link)
 
             # Optionally skip external sites (typical behaviour..)
-            if self.opts['noexternal'] and not sf.urlBaseUrl(link).endswith(self.baseDomain):
+            if self.opts['noexternal'] and not \
+                self.getTarget().matches(linkFQDN):
                 sf.debug('Ignoring external site: ' + link)
                 continue
 
             # Optionally skip sub-domain sites
-            if self.opts['nosubs'] and not sf.urlBaseUrl(link).endswith('://' + self.baseDomain):
+            if self.opts['nosubs'] and not \
+                self.getTarget().matches(linkFQDN, includeChildren=False):
                 sf.debug("Ignoring subdomain: " + link)
+                continue
+
+            # Optionally skip parent domain sites
+            if self.opts['noparents'] and not \
+                self.getTarget().matches(linkFQDN, includeParents=False):
+                sf.debug("Ignoring parent domain: " + link)
                 continue
 
             # Optionally skip user directories
@@ -159,7 +168,7 @@ class sfp_spider(SpiderFootPlugin):
                 continue
 
             # Filter out certain file types (if user chooses to)
-            checkExts = lambda ext: link.lower().endswith('.' + ext.lower())
+            checkExts = lambda ext: link.lower().split('?')[0].endswith('.' + ext.lower())
             if filter(checkExts, self.opts['filterfiles']):
                 sf.debug('Ignoring filtered extension: ' + link)
                 continue
@@ -172,10 +181,15 @@ class sfp_spider(SpiderFootPlugin):
 
     # Notify listening modules about links
     def linkNotify(self, url, parentEvent=None):
-        if sf.urlBaseUrl(url).endswith(self.baseDomain):
+        if self.getTarget().matches(sf.urlFQDN(url)):
             type = "LINKED_URL_INTERNAL"
         else:
             type = "LINKED_URL_EXTERNAL"
+            # Filter out certain file types (if user chooses to)
+            checkExts = lambda ext: url.lower().split('?')[0].endswith('.' + ext.lower())
+            if self.opts['filterexternal'] and filter(checkExts, self.opts['filterfiles']):
+                sf.debug('Ignoring filtered extension of external link: ' + url)
+                return None
 
         event = SpiderFootEvent(type, url, self.__name__, parentEvent)
         self.notifyListeners(event)
@@ -197,10 +211,10 @@ class sfp_spider(SpiderFootPlugin):
         self.notifyListeners(event)
 
     # Trigger spidering off the following events..
-    # Google search provides LINKED_URL_INTERNAL, and DNS lookups
-    # provide SUBDOMAIN.
+    # Spidering and search engines provide LINKED_URL_INTERNAL, and DNS lookups
+    # provide INTERNET_NAME.
     def watchedEvents(self):
-        return [ "LINKED_URL_INTERNAL", "SUBDOMAIN" ]
+        return [ "LINKED_URL_INTERNAL", "INTERNET_NAME" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -229,8 +243,8 @@ class sfp_spider(SpiderFootPlugin):
         else:
             self.urlEvents[eventData] = event
 
-        # Determine where to start spidering from if it's a SUBDOMAIN event
-        if eventName == "SUBDOMAIN":
+        # Determine where to start spidering from if it's a INTERNET_NAME event
+        if eventName == "INTERNET_NAME":
             for prefix in self.opts['start']:
                 res = sf.fetchUrl(prefix + eventData, timeout=self.opts['_fetchtimeout'], 
                     useragent=self.opts['_useragent'])

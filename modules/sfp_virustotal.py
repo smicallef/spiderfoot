@@ -41,7 +41,7 @@ class sfp_virustotal(SpiderFootPlugin):
 
     results = dict()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -55,14 +55,14 @@ class sfp_virustotal(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "DOMAIN_NAME",
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
             "AFFILIATE_DOMAIN", "CO_HOSTED_SITE"]
 
     # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_SUBDOMAIN",
-            "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE",
-            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_DOMAIN_NAME"]
+        return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
+            "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
+            "MALICIOUS_AFFILIATE_IPADDR"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -89,7 +89,7 @@ class sfp_virustotal(SpiderFootPlugin):
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
             return None
 
-        if eventName in [ "AFFILIATE_DOMAIN", "CO_HOSTED_SITE" ]:
+        if eventName in [ "AFFILIATE_INTERNET_NAME", "CO_HOSTED_SITE" ]:
             url = "https://www.virustotal.com/vtapi/v2/domain/report?domain="
         else:
             url = "https://www.virustotal.com/vtapi/v2/ip-address/report?ip="
@@ -121,12 +121,12 @@ class sfp_virustotal(SpiderFootPlugin):
                 evt = "MALICIOUS_AFFILIATE_IPADDR"
                 infotype = "ip-address"
 
-            if eventName == "DOMAIN_NAME":
-                evt = "MALICIOUS_DOMAIN_NAME"
+            if eventName == "INTERNET_NAME":
+                evt = "MALICIOUS_INTERNET_NAME"
                 infotype = "domain"
 
-            if eventName == "AFFILIATE_DOMAIN":
-                evt = "MALICIOUS_AFFILIATE"
+            if eventName == "AFFILIATE_INTERNET_NAME":
+                evt = "MALICIOUS_AFFILIATE_INTERNET_NAME"
                 infotype = "domain"
 
             if eventName == "CO_HOSTED_SITE":

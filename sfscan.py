@@ -12,13 +12,14 @@ import json
 import traceback
 import os
 import time
+import re
 import sys
 import socket
 import socks
 import dns.resolver
 from copy import deepcopy
 from sfdb import SpiderFootDb
-from sflib import SpiderFoot, SpiderFootEvent
+from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
 
 # Controls all scanning activity
 # Eventually change this to be able to control multiple scan instances
@@ -26,15 +27,31 @@ class SpiderFootScanner:
     moduleInstances = None
     status = "UNKNOWN"
     myId = None
+    targetValue = None
+    targetType = None
 
     def __init__(self, name, target, moduleList, globalOpts, moduleOpts):
         self.config = deepcopy(globalOpts)
         self.sf = SpiderFoot(self.config)
-        self.target = target
+        self.targetValue = target
         self.moduleList = moduleList
         self.name = name
 
-        return
+        regexToType = {
+            "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
+            "^\d+\.\d+\.\d+\.\d+/\d+$": "IP_SUBNET",
+            "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME"
+        }
+
+        # Parse the target and set the targetType
+        for rx in regexToType.keys():
+            if re.match(rx, self.targetValue, re.IGNORECASE):
+                self.targetType = regexToType[rx]
+                break
+
+        # Unrecognized target type
+        if self.targetType == None:
+            raise BaseException()
 
     # Status of the currently running scan (if any)
     def scanStatus(self, id):
@@ -62,12 +79,15 @@ class SpiderFootScanner:
         aborted = False
 
         # Create a unique ID for this scan and create it in the back-end DB.
-        self.config['__guid__'] = dbh.scanInstanceGenGUID(self.target)
+        self.config['__guid__'] = dbh.scanInstanceGenGUID(self.targetValue)
         self.sf.setScanId(self.config['__guid__'])
         self.myId = self.config['__guid__']
-        dbh.scanInstanceCreate(self.config['__guid__'], self.name, self.target)
+        dbh.scanInstanceCreate(self.config['__guid__'], self.name, self.targetValue)
         dbh.scanInstanceSet(self.config['__guid__'], time.time() * 1000, None, 'STARTING')
         self.status = "STARTING"
+
+        # Create our target
+        target = SpiderFootTarget(self.targetValue, self.targetType)
         
         # Save the config current set for this scan
         self.config['_modulesenabled'] = self.moduleList
@@ -153,7 +173,10 @@ class SpiderFootScanner:
                     modConfig[opt] = self.config[opt]
 
                 mod.clearListeners() # clear any listener relationships from the past
-                mod.setup(self.sf, self.target, modConfig)
+                mod.setup(self.sf, modConfig)
+                newTarget = mod.enrichTarget(target)
+                if newTarget != None:
+                    target = newTarget
                 self.moduleInstances[modName] = mod
 
                 # Override the module's local socket module
@@ -165,6 +188,9 @@ class SpiderFootScanner:
 
             # Register listener modules and then start all modules sequentially
             for module in self.moduleInstances.values():
+                # Register the target with the module
+                module.setTarget(target)
+
                 for listenerModule in self.moduleInstances.values():
                     # Careful not to register twice or you will get duplicate events
                     if listenerModule in module._listenerModules:
@@ -179,7 +205,7 @@ class SpiderFootScanner:
             self.status = "RUNNING"
 
             # Create the "ROOT" event which un-triggered modules will link events to
-            rootEvent = SpiderFootEvent("INITIAL_TARGET", self.target, "SpiderFoot UI")
+            rootEvent = SpiderFootEvent(self.targetType, self.targetValue, "SpiderFoot UI")
             dbh.scanEventStore(self.config['__guid__'], rootEvent)
 
             # Start the modules sequentially.
@@ -190,9 +216,10 @@ class SpiderFootScanner:
                     self.status = "ABORTING"
                     aborted = True
                     break
-                # Many modules' start() method will return None, as most will rely on 
-                # notifications during the scan from other modules.
-                module.start()
+
+                # Notify modules with the root event
+                if self.targetType in module.watchedEvents():
+                    module.handleEvent(rootEvent)                   
 
             # Check if any of the modules ended due to being stopped
             for module in self.moduleInstances.values():

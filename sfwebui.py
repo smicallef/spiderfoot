@@ -261,8 +261,12 @@ class SpiderFootWebUi:
                     types=types, pageid="NEWSCAN")
 
         # Start running a new scan
-        self.scanner = SpiderFootScanner(scanname, scantarget.lower(), modlist, 
-            self.config, modopts)
+        try:
+            self.scanner = SpiderFootScanner(scanname, scantarget.lower(), modlist, 
+                self.config, modopts)
+        except BaseException as e:
+            return self.error("Invalid input, so unable to initiate scan.")
+
         t = threading.Thread(name="SF_" + scanname, target=self.scanner.startScan)
         t.start()
 

@@ -31,7 +31,7 @@ class sfp_shodan(SpiderFootPlugin):
 
     results = dict()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -105,7 +105,8 @@ class sfp_shodan(SpiderFootPlugin):
 
             if port != None:
                 # Notify other modules of what you've found
-                evt = SpiderFootEvent("TCP_PORT_OPEN", port, self.__name__, event)
+                cp = eventData + ":" + port
+                evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, event)
                 self.notifyListeners(evt)
 
             if banner != None:

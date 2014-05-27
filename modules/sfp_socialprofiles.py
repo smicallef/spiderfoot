@@ -47,23 +47,17 @@ class sfp_socialprofiles(SpiderFootPlugin):
         'method': "Search engine to use: google, yahoo or bing."
     }
 
-    # Target
-    baseDomain = None
-    keyword = None
+    keywords = None
     results = list()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-        self.keyword = sf.domainKeyword(self.baseDomain, 
-            self.opts['_internettlds']).lower()
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -94,6 +88,10 @@ class sfp_socialprofiles(SpiderFootPlugin):
             return None
         else:
             self.results.append(eventData)
+
+        if self.keywords == None:
+            self.keywords = sf.domainKeywords(self.getTarget().getNames(),
+                self.opts['_internettlds'])
 
         for site in sites.keys():
             searchStr = sites[site][0].format(eventData).replace(" ", "%20")
@@ -155,8 +153,12 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             if pres['content'] == None:
                                 continue
                             else:
-                                if re.search("[^a-zA-Z\-\_]" + self.keyword + \
-                                    "[^a-zA-Z\-\_]", pres['content'], re.IGNORECASE) == None:
+                                found = False
+                                for kw in self.keywords:
+                                    if re.search("[^a-zA-Z\-\_]" + kw + \
+                                        "[^a-zA-Z\-\_]", pres['content'], re.IGNORECASE):
+                                        found = True
+                                if not found:
                                     continue
 
                         sf.info("Social Media Profile found at " + site + ": " + match)

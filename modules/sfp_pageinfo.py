@@ -36,15 +36,12 @@ etc.)"""
     # Default options
     opts = { }
 
-    # Target
-    baseDomain = None # calculated from the URL in setup
     results = dict()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
-        self.baseDomain = target
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -79,7 +76,7 @@ etc.)"""
 
         # We aren't interested in describing pages that are not hosted on
         # our base domain.
-        if not sf.urlBaseUrl(eventSource).endswith(self.baseDomain):
+        if not self.getTarget().matches(sf.urlFQDN(eventSource)):
             sf.debug("Not gathering page info for external site " + eventSource)
             return None
 
@@ -95,11 +92,13 @@ etc.)"""
                 continue
 
             for regex in regexps[regexpGrp]:
-                matches = re.findall(regex, eventData, re.IGNORECASE)
+                rx = re.compile(regex, re.IGNORECASE)
+                matches = re.findall(rx, eventData)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)
-                    evt = SpiderFootEvent(regexpGrp, eventSource, self.__name__, event.sourceEvent)
+                    evt = SpiderFootEvent(regexpGrp, eventSource,
+                        self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)
 
         # If no regexps were matched, consider this a static page
@@ -109,12 +108,14 @@ etc.)"""
             self.notifyListeners(evt)
 
         # Check for externally referenced Javascript pages
-        matches = re.findall("<script.*src=[\'\"]?([^\'\">]*)", eventData, re.IGNORECASE)
+        pat = re.compile("<script.*src=[\'\"]?([^\'\">]*)", re.IGNORECASE)
+        matches = re.findall(pat, eventData)
         if len(matches) > 0:
             for match in matches:
-                if '://' in match and not sf.urlBaseUrl(match).endswith(self.baseDomain):
+                if '://' in match and not self.getTarget().matches(sf.urlFQDN(match)):
                     sf.debug("Externally hosted Javascript found at: " + match)
-                    evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match, self.__name__, event.sourceEvent)
+                    evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match,
+                        self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)
 
         return None

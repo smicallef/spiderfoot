@@ -44,7 +44,7 @@ class sfp_tldsearch(SpiderFootPlugin):
     # Track TLD search results between threads
     tldResults = dict()
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
@@ -55,7 +55,7 @@ class sfp_tldsearch(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME" ]
+        return [ "INTERNET_NAME" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events

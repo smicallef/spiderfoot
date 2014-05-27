@@ -28,7 +28,7 @@ class sfp_stor_print(SpiderFootPlugin):
         "datasize": "Maximum number of bytes to print on the screen for debug."
     }
 
-    def __init__(self, sfc, target, userOpts=dict()):
+    def __init__(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc

@@ -56,7 +56,7 @@ class sfp_honeypot(SpiderFootPlugin):
         "10": "Unknown (10)"
     }
 
-    def setup(self, sfc, target, userOpts=dict()):
+    def setup(self, sfc, userOpts=dict()):
         global sf
 
         sf = sfc
