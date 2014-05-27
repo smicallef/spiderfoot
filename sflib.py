@@ -487,6 +487,17 @@ class SpiderFoot:
     def validIP(self, address):
         return netaddr.valid_ipv4(address)
 
+    # Clean DNS results to be a simple list
+    def normalizeDNS(self, res):
+        ret = list()
+        for addr in res:
+            if type(addr) == list:
+                for host in addr:
+                    ret.append(host)
+            else:
+                ret.append(addr)
+        return ret
+
     # Converts a dictionary of k -> array to a nested
     # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):
