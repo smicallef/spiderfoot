@@ -328,10 +328,10 @@ class sfp_dns(SpiderFootPlugin):
             else:
                 htype = "INTERNET_NAME"
                 
-        if parentEvent != None:
-            # Don't report back the same thing that was provided
-            if htype == parentEvent.eventType and host == parentEvent.data:
-                return None
+        # Don't report back the same thing that was provided
+        #if htype == parentEvent.eventType and host == parentEvent.data:
+        #    print "X: " + htype + " / " + host
+        #    return None
 
         if htype.endswith("INTERNET_NAME") and self.opts['onlyactive']:
             if len(self.resolveHost(host)) == 0:
@@ -424,7 +424,7 @@ class sfp_dns(SpiderFootPlugin):
             if name in self.events.keys():
                 continue
 
-            for host in self.resolveHost(name):
-                self.processHost(host, domevt)
+            if len(self.resolveHost(name)) > 0:
+                self.processHost(name, domevt)
 
 # End of sfp_dns class
