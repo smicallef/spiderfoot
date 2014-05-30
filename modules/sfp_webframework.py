@@ -13,9 +13,6 @@ import re
 import sys
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 regexps = dict({
     "jQuery":           list(['jquery']), # unlikely false positive
     "YUI":              list(['\/yui\/', 'yui\-', 'yui\.']),
@@ -45,9 +42,7 @@ class sfp_webframework(SpiderFootPlugin):
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -78,14 +73,14 @@ class sfp_webframework(SpiderFootPlugin):
         # source of that raw data (e.g. a URL.)
         eventSource = event.sourceEvent.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventSource not in self.results.keys():
             self.results[eventSource] = list()
 
         # We only want web content for pages on the target site
-        if not self.getTarget().matches(sf.urlFQDN(eventSource)):
-            sf.debug("Not collecting web content information for external sites.")
+        if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
+            self.sf.debug("Not collecting web content information for external sites.")
             return None
 
         for regexpGrp in regexps.keys():
@@ -96,7 +91,7 @@ class sfp_webframework(SpiderFootPlugin):
                 pat = re.compile(regex, re.IGNORECASE)
                 matches = re.findall(pat, eventData)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
-                    sf.info("Matched " + regexpGrp + " in content from " + eventSource)
+                    self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)
                     evt = SpiderFootEvent("URL_WEB_FRAMEWORK", regexpGrp, 
                         self.__name__, event.sourceEvent)

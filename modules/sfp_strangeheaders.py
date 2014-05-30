@@ -14,9 +14,6 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 # Standard headers, taken from http://en.wikipedia.org/wiki/List_of_HTTP_header_fields
 headers = [ "access-control-allow-origin","accept-ranges","age","allow","cache-control",
 "connection","content-encoding","content-language","content-length","content-location",
@@ -36,9 +33,7 @@ class sfp_strangeheaders(SpiderFootPlugin):
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -62,14 +57,14 @@ class sfp_strangeheaders(SpiderFootPlugin):
         parentEvent = event.sourceEvent
         eventSource = event.sourceEvent.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
         if self.results.has_key(eventSource):
             return None
         else:
             self.results[eventSource] = True
 
-        if not self.getTarget().matches(sf.urlFQDN(eventSource)):
-            sf.debug("Not collecting header information for external sites.")
+        if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
+            self.sf.debug("Not collecting header information for external sites.")
             return None
 
         for key in eventData:

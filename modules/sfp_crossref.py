@@ -16,9 +16,6 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_crossref(SpiderFootPlugin):
     """Cross-Reference:Identify whether other domains are associated ('Affiliates') of the target."""
 
@@ -37,9 +34,7 @@ class sfp_crossref(SpiderFootPlugin):
     fetched = list()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
         self.fetched = list()
 
@@ -64,7 +59,7 @@ class sfp_crossref(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # The SIMILARDOMAIN and CO_HOSTED_SITE events supply domains, 
         # not URLs. Assume HTTP.
@@ -72,22 +67,22 @@ class sfp_crossref(SpiderFootPlugin):
             eventData = 'http://'+ eventData.lower()
 
         # We are only interested in external sites for the crossref
-        if self.getTarget().matches(sf.urlFQDN(eventData)):
-            sf.debug("Ignoring " + eventData + " as not external")
+        if self.getTarget().matches(self.sf.urlFQDN(eventData)):
+            self.sf.debug("Ignoring " + eventData + " as not external")
             return None
 
         if eventData in self.fetched:
-            sf.debug("Ignoring " + eventData + " as already tested")
+            self.sf.debug("Ignoring " + eventData + " as already tested")
             return
         else:
             self.fetched.append(eventData)
 
-        sf.debug("Testing for affiliation: " + eventData)
-        res = sf.fetchUrl(eventData, timeout=self.opts['_fetchtimeout'], 
+        self.sf.debug("Testing for affiliation: " + eventData)
+        res = self.sf.fetchUrl(eventData, timeout=self.opts['_fetchtimeout'], 
             useragent=self.opts['_useragent'])
 
         if res['content'] == None:
-            sf.debug("Ignoring " + eventData + " as no data returned")
+            self.sf.debug("Ignoring " + eventData + " as no data returned")
             return None
 
         matched = False
@@ -106,13 +101,13 @@ class sfp_crossref(SpiderFootPlugin):
             # fetch the base URL of the affiliate to check for a crossref.
             if eventName == "LINKED_URL_EXTERNAL" and self.opts['checkbase']:
                 # Check the base url to see if there is an affiliation
-                url = sf.urlBaseUrl(eventData)
+                url = self.sf.urlBaseUrl(eventData)
                 if url in self.fetched:
                     return None
                 else:
                     self.fetched.append(url)
 
-                res = sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+                res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                     useragent=self.opts['_useragent'])
                 if res['content'] != None:
                     for name in self.getTarget().getNames():
@@ -124,8 +119,8 @@ class sfp_crossref(SpiderFootPlugin):
                             matched = True
 
         if matched:
-            sf.info("Found affiliate: " + url)
-            evt1 = SpiderFootEvent("AFFILIATE_INTERNET_NAME", sf.urlFQDN(url), 
+            self.sf.info("Found affiliate: " + url)
+            evt1 = SpiderFootEvent("AFFILIATE_INTERNET_NAME", self.sf.urlFQDN(url), 
                 self.__name__, event)
             self.notifyListeners(evt1)
             evt2 = SpiderFootEvent("AFFILIATE_WEB_CONTENT", res['content'],

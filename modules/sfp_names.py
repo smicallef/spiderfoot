@@ -13,9 +13,6 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_names(SpiderFootPlugin):
     """Name Extractor:Attempt to identify human names in fetched content."""
 
@@ -38,7 +35,7 @@ class sfp_names(SpiderFootPlugin):
         wd = dict()
 
         for f in files:
-            wdct = open(sf.myPath() + "/ext/ispell/" + f, 'r')
+            wdct = open(self.sf.myPath() + "/ext/ispell/" + f, 'r')
             dlines = wdct.readlines()
 
             for w in dlines:
@@ -48,9 +45,7 @@ class sfp_names(SpiderFootPlugin):
         return wd.keys()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         d = self.builddict(["english.0", "english.2", "english.4",
@@ -84,7 +79,7 @@ class sfp_names(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Stage 1: Find things that look (very vaguely) like names
         rx = re.compile("([A-Z][a-z]+)\s+.?.?\s?([A-Z][a-zA-Z\'\-]+)")

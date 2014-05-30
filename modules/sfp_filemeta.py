@@ -22,9 +22,6 @@ import openxmllib
 from StringIO import StringIO
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_filemeta(SpiderFootPlugin):
     """File Metadata:Extracts meta data from certain file types."""
 
@@ -43,9 +40,7 @@ class sfp_filemeta(SpiderFootPlugin):
     results = list()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = list()
 
         for opt in userOpts.keys():
@@ -67,7 +62,7 @@ class sfp_filemeta(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventData in self.results:
             return None
@@ -81,15 +76,15 @@ class sfp_filemeta(SpiderFootPlugin):
             if "." + fileExt.lower() in eventData.lower():
                 # Fetch the file, allow much more time given that these files are
                 # typically large.
-                ret = sf.fetchUrl(eventData, timeout=self.opts['timeout'], 
+                ret = self.sf.fetchUrl(eventData, timeout=self.opts['timeout'], 
                     useragent=self.opts['_useragent'], dontMangle=True)
                 if ret['content'] == None:
-                    sf.error("Unable to fetch file for meta analysis: " + \
+                    self.sf.error("Unable to fetch file for meta analysis: " + \
                         eventData, False)
                     return None
 
                 if len(ret['content']) < 1024:
-                    sf.error("Strange content encountered, size of " + \
+                    self.sf.error("Strange content encountered, size of " + \
                         len(res['content']), False)
 
                 meta = None
@@ -98,9 +93,9 @@ class sfp_filemeta(SpiderFootPlugin):
                     try:
                         data = StringIO(ret['content'])
                         meta = str(metapdf.MetaPdfReader().read_metadata(data))
-                        sf.debug("Obtained meta data from " + eventData)
+                        self.sf.debug("Obtained meta data from " + eventData)
                     except BaseException as e:
-                        sf.error("Unable to parse meta data from: " + \
+                        self.sf.error("Unable to parse meta data from: " + \
                             eventData + "(" + str(e) + ")", False)
                         return None
 
@@ -108,13 +103,13 @@ class sfp_filemeta(SpiderFootPlugin):
                     try:
                         mtype = mimetypes.guess_type(eventData)[0]
                         doc = openxmllib.openXmlDocument(data=ret['content'], mime_type=mtype)
-                        sf.debug("Office type: " + doc.mimeType)
+                        self.sf.debug("Office type: " + doc.mimeType)
                         meta = str(doc.allProperties)
                     except ValueError as e:
-                        sf.error("Unable to parse meta data from: " + \
+                        self.sf.error("Unable to parse meta data from: " + \
                             eventData + "(" + str(e) + ")", False)
                     except lxml.etree.XMLSyntaxError as e:
-                        sf.error("Unable to parse XML within: " + \
+                        self.sf.error("Unable to parse XML within: " + \
                             eventData + "(" + str(e) + ")", False)
 
                 if meta != None:

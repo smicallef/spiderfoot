@@ -17,9 +17,6 @@ import time
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_intfiles(SpiderFootPlugin):
     """Interesting Files:Identifies potential files of interest, e.g. office documents."""
 
@@ -42,9 +39,7 @@ class sfp_intfiles(SpiderFootPlugin):
     results = list()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = list()
 
         for opt in userOpts.keys():
@@ -69,10 +64,10 @@ class sfp_intfiles(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventName == "INTERNET_NAME" and not self.opts['usesearch']:
-            sf.debug("Not using a search engine to find interesting files.")
+            self.sf.debug("Not using a search engine to find interesting files.")
             return None
 
         if eventData in self.results:
@@ -95,25 +90,25 @@ class sfp_intfiles(SpiderFootPlugin):
         for fileExt in self.opts['fileexts']:
             # Sites hosted on the domain
             if self.opts['searchengine'].lower() == "google":
-                pages = sf.googleIterate("site:" + eventData + "+" + \
+                pages = self.sf.googleIterate("site:" + eventData + "+" + \
                     "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
 
             if self.opts['searchengine'].lower() == "bing":
-                pages = sf.bingIterate("site:" + eventData + "+" + \
+                pages = self.sf.bingIterate("site:" + eventData + "+" + \
                     "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
 
             if self.opts['searchengine'].lower() == "yahoo":
-                pages = sf.yahooIterate("site:" + eventData + "+" + \
+                pages = self.sf.yahooIterate("site:" + eventData + "+" + \
                     "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
 
             if pages == None:
-                sf.info("No results returned from " + self.opts['searchengine'] + \
+                self.sf.info("No results returned from " + self.opts['searchengine'] + \
                     " for " + fileExt + " files.")
                 continue
 
@@ -137,7 +132,7 @@ class sfp_intfiles(SpiderFootPlugin):
                 else:
                     res = pages[page]
 
-                links = sf.parseLinks(page, res, eventData)
+                links = self.sf.parseLinks(page, res, eventData)
                 if len(links) == 0:
                     continue
 
@@ -147,9 +142,9 @@ class sfp_intfiles(SpiderFootPlugin):
                     else:
                         self.results.append(link)
 
-                    if sf.urlFQDN(link).endswith(eventData) and \
+                    if self.sf.urlFQDN(link).endswith(eventData) and \
                         "." + fileExt.lower() in link.lower():
-                        sf.info("Found an interesting file: " + link)
+                        self.sf.info("Found an interesting file: " + link)
                         evt = SpiderFootEvent("INTERESTING_FILE", link, self.__name__)
                         self.notifyListeners(evt)
 

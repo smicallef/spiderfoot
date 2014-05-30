@@ -17,9 +17,6 @@ import socket
 import random
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_blacklist(SpiderFootPlugin):
     """Blacklist: Query various blacklist database for open relays, open proxies, vulnerable servers, etc."""
 
@@ -75,9 +72,7 @@ class sfp_blacklist(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -104,7 +99,7 @@ class sfp_blacklist(SpiderFootPlugin):
         eventData = event.data
         parentEvent = event
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if self.results.has_key(eventData):
             return None
@@ -114,9 +109,9 @@ class sfp_blacklist(SpiderFootPlugin):
         for domain in self.checks:
             try:
                 lookup = self.reverseAddr(eventData) + "." + domain
-                sf.debug("Checking Blacklist: " + lookup)
+                self.sf.debug("Checking Blacklist: " + lookup)
                 addrs = socket.gethostbyname_ex(lookup)
-                sf.debug("Addresses returned: " + str(addrs))
+                self.sf.debug("Addresses returned: " + str(addrs))
 
                 text = None
                 for addr in addrs:
@@ -127,7 +122,7 @@ class sfp_blacklist(SpiderFootPlugin):
                                 break
                             else:
                                 if str(a) not in self.checks[domain].keys():
-                                    sf.debug("Return code not found in list: " + str(a))
+                                    self.sf.debug("Return code not found in list: " + str(a))
                                     continue
                                 k = str(a)
                                 text = self.checks[domain][k]
@@ -139,7 +134,7 @@ class sfp_blacklist(SpiderFootPlugin):
                             break
                         else:
                             if str(addr) not in self.checks.keys():
-                                sf.debug("Return code not found in list: " + str(addr))
+                                self.sf.debug("Return code not found in list: " + str(addr))
                                 continue
 
                             k = str(addr)
@@ -156,7 +151,7 @@ class sfp_blacklist(SpiderFootPlugin):
                             text, self.__name__, parentEvent)
                         self.notifyListeners(evt)
             except BaseException as e:
-                sf.debug("Unable to resolve " + eventData + " / " + lookup + ": " + str(e))
+                self.sf.debug("Unable to resolve " + eventData + " / " + lookup + ": " + str(e))
  
         return None
 

@@ -13,9 +13,6 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_cookie(SpiderFootPlugin):
     """Cookies:Extract Cookies from HTTP headers."""
 
@@ -25,9 +22,7 @@ class sfp_cookie(SpiderFootPlugin):
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -51,14 +46,14 @@ class sfp_cookie(SpiderFootPlugin):
         parentEvent = event.sourceEvent
         eventSource = event.sourceEvent.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
         if self.results.has_key(eventSource):
             return None
         else:
             self.results[eventSource] = True
 
-        if not self.getTarget().matches(sf.urlFQDN(eventSource)):
-            sf.debug("Not collecting cookies from external sites.")
+        if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
+            self.sf.debug("Not collecting cookies from external sites.")
             return None
 
         if eventData.has_key('set-cookie'):

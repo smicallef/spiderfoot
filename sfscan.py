@@ -17,107 +17,113 @@ import sys
 import socket
 import socks
 import dns.resolver
-from copy import deepcopy
+import threading
+import thread
+import random
+from copy import deepcopy, copy
 from sfdb import SpiderFootDb
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, globalScanStatus
 
-# Controls all scanning activity
 # Eventually change this to be able to control multiple scan instances
-class SpiderFootScanner:
-    moduleInstances = None
-    status = "UNKNOWN"
-    myId = None
-    targetValue = None
-    targetType = None
+class SpiderFootScanner(threading.Thread):
+    # Thread-safe storage
+    ts = None
+    # Temporary storage
+    temp = None
 
-    def __init__(self, name, target, moduleList, globalOpts, moduleOpts):
-        self.config = deepcopy(globalOpts)
-        self.sf = SpiderFoot(self.config)
-        self.targetValue = target
-        self.moduleList = moduleList
-        self.name = name
+    # moduleOpts not yet used
+    def __init__(self, scanName, scanTarget, targetType, scanId, moduleList, 
+        globalOpts, moduleOpts):
 
-        regexToType = {
-            "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
-            "^\d+\.\d+\.\d+\.\d+/\d+$": "IP_SUBNET",
-            "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME"
-        }
+        # Initialize the thread
+        threading.Thread.__init__(self, name="SF_"+scanName+\
+            str(random.randint(100000, 999999)))
 
-        # Parse the target and set the targetType
-        for rx in regexToType.keys():
-            if re.match(rx, self.targetValue, re.IGNORECASE):
-                self.targetType = regexToType[rx]
-                break
+        # Temporary data to be used in startScan
+        self.temp = dict()
+        self.temp['config'] = deepcopy(globalOpts)
+        self.temp['targetValue'] = scanTarget
+        self.temp['targetType'] = targetType
+        self.temp['moduleList'] = moduleList
+        self.temp['scanName'] = scanName
+        self.temp['scanId'] = scanId
 
-        # Unrecognized target type
-        if self.targetType == None:
-            raise BaseException()
+    # Set the status of the currently running scan (if any)
+    def setStatus(self, status, started=None, ended=None):
+        if self.ts == None:
+            print "Internal Error: Status set attempted before " + \
+                "SpiderFootScanner was ready."
+            exit(-1)
 
-    # Status of the currently running scan (if any)
-    def scanStatus(self, id):
-        if id != self.myId:
-            return "UNKNOWN"
-        return self.status  
+        self.ts.status = status
+        self.ts.dbh.scanInstanceSet(self.ts.scanId, started, ended, status)
+        globalScanStatus.setStatus(self.ts.scanId, status)
+        return None
 
-    # Stop a scan (id variable is unnecessary for now given that only one simultaneous
-    # scan is permitted.)
-    def stopScan(self, id):
-        if id != self.myId:
-            return None
+    def run(self):
+        self.startScan()
 
-        if self.moduleInstances == None:
-            return None
-
-        for modName in self.moduleInstances.keys():
-            self.moduleInstances[modName].stopScanning()
+    def getId(self):
+        if hasattr(self.ts, 'scanId'):
+            return self.ts.scanId
+        return None
 
     # Start running a scan
     def startScan(self):
-        self.moduleInstances = dict()
-        dbh = SpiderFootDb(self.config)
-        self.sf.setDbh(dbh)
+        global globalScanStatus
+
+        self.ts = threading.local()
+        self.ts.moduleInstances = dict()
+        self.ts.sf = SpiderFoot(self.temp['config'])
+        self.ts.config = deepcopy(self.temp['config'])
+        self.ts.dbh = SpiderFootDb(self.temp['config'])
+        self.ts.targetValue = self.temp['targetValue']
+        self.ts.targetType = self.temp['targetType']
+        self.ts.moduleList = self.temp['moduleList']
+        self.ts.modconfig = dict()
+        self.ts.scanName = self.temp['scanName']
+        self.ts.scanId = self.temp['scanId']
         aborted = False
+        self.ts.sf.setDbh(self.ts.dbh)
 
         # Create a unique ID for this scan and create it in the back-end DB.
-        self.config['__guid__'] = dbh.scanInstanceGenGUID(self.targetValue)
-        self.sf.setScanId(self.config['__guid__'])
-        self.myId = self.config['__guid__']
-        dbh.scanInstanceCreate(self.config['__guid__'], self.name, self.targetValue)
-        dbh.scanInstanceSet(self.config['__guid__'], time.time() * 1000, None, 'STARTING')
-        self.status = "STARTING"
-
+        self.ts.sf.setGUID(self.ts.scanId)
+        self.ts.dbh.scanInstanceCreate(self.ts.scanId, 
+            self.ts.scanName, self.ts.targetValue)
+        self.setStatus("STARTING", time.time() * 1000, None)
         # Create our target
-        target = SpiderFootTarget(self.targetValue, self.targetType)
+        target = SpiderFootTarget(self.ts.targetValue, self.ts.targetType)
         
         # Save the config current set for this scan
-        self.config['_modulesenabled'] = self.moduleList
-        dbh.scanConfigSet(self.config['__guid__'], self.sf.configSerialize(self.config))
+        self.ts.config['_modulesenabled'] = self.ts.moduleList
+        self.ts.dbh.scanConfigSet(self.ts.scanId, 
+            self.ts.sf.configSerialize(deepcopy(self.ts.config)))
 
-        self.sf.status("Scan [" + self.config['__guid__'] + "] initiated.")
+        self.ts.sf.status("Scan [" + self.ts.scanId + "] initiated.")
         # moduleList = list of modules the user wants to run
         try:
             # Process global options that point to other places for data
 
             # If a SOCKS server was specified, set it up
-            if self.config['_socks1type'] != '':
+            if self.ts.config['_socks1type'] != '':
                 socksType = socks.PROXY_TYPE_SOCKS4
-                socksDns = self.config['_socks6dns']
-                socksAddr = self.config['_socks2addr']
-                socksPort = int(self.config['_socks3port'])
+                socksDns = self.ts.config['_socks6dns']
+                socksAddr = self.ts.config['_socks2addr']
+                socksPort = int(self.ts.config['_socks3port'])
                 socksUsername = ''
                 socksPassword = ''
 
-                if self.config['_socks1type'] == '4':
+                if self.ts.config['_socks1type'] == '4':
                     socksType = socks.PROXY_TYPE_SOCKS4
-                if self.config['_socks1type'] == '5':
+                if self.ts.config['_socks1type'] == '5':
                     socksType = socks.PROXY_TYPE_SOCKS5
-                    socksUsername = self.config['_socks4user']
-                    socksPassword = self.config['_socks5pwd']
+                    socksUsername = self.ts.config['_socks4user']
+                    socksPassword = self.ts.config['_socks5pwd']
                     
-                if self.config['_socks1type'] == 'HTTP':
+                if self.ts.config['_socks1type'] == 'HTTP':
                     socksType = socks.PROXY_TYPE_HTTP
                    
-                self.sf.debug("SOCKS: " + socksAddr + ":" + str(socksPort) + \
+                self.ts.sf.debug("SOCKS: " + socksAddr + ":" + str(socksPort) + \
                     "(" + socksUsername + ":" + socksPassword + ")")
                 socks.setdefaultproxy(socksType, socksAddr, socksPort, 
                     socksDns, socksUsername, socksPassword)
@@ -128,70 +134,71 @@ class SpiderFootScanner:
                 socket.create_connection = socks.create_connection
                 socket.getaddrinfo = socks.getaddrinfo
 
-                self.sf.updateSocket(socket)
+                self.ts.sf.updateSocket(socket)
             
             # Override the default DNS server
-            if self.config['_dnsserver'] != "":
+            if self.ts.config['_dnsserver'] != "":
                 res = dns.resolver.Resolver()
-                res.nameservers = [ self.config['_dnsserver'] ]
+                res.nameservers = [ self.ts.config['_dnsserver'] ]
                 dns.resolver.override_system_resolver(res)
             else:
                 dns.resolver.restore_system_resolver()
 
             # Set the user agent
-            self.config['_useragent'] = self.sf.optValueToData(self.config['_useragent'])
+            self.ts.config['_useragent'] = self.ts.sf.optValueToData(
+                self.ts.config['_useragent'])
 
             # Get internet TLDs
-            tlddata = self.sf.cacheGet("internet_tlds", self.config['_internettlds_cache'])
+            tlddata = self.ts.sf.cacheGet("internet_tlds", 
+                self.ts.config['_internettlds_cache'])
             # If it wasn't loadable from cache, load it from scratch
             if tlddata == None:
-                self.config['_internettlds'] = self.sf.optValueToData(self.config['_internettlds'])
-                self.sf.cachePut("internet_tlds", self.config['_internettlds'])
+                self.ts.config['_internettlds'] = self.ts.sf.optValueToData(
+                    self.ts.config['_internettlds'])
+                self.ts.sf.cachePut("internet_tlds", self.ts.config['_internettlds'])
             else:
-                self.config["_internettlds"] = tlddata.splitlines()
+                self.ts.config["_internettlds"] = tlddata.splitlines()
 
-            for modName in self.moduleList:
+            for modName in self.ts.moduleList:
                 if modName == '':
                     continue
 
-                module = __import__('modules.' + modName, globals(), locals(), [modName])
+                module = __import__('modules.' + modName, globals(), locals(), 
+                    [modName])
                 mod = getattr(module, modName)()
                 mod.__name__ = modName
 
-                # A bit hacky: we pass the database object as part of the config. This
-                # object should only be used by the internal SpiderFoot modules writing
-                # to the database, which at present is only sfp__stor_db.
-                # Individual modules cannot create their own SpiderFootDb instance or
-                # we'll get database locking issues, so it all goes through this.
-                self.config['__sfdb__'] = dbh
-
                 # Set up the module
                 # Configuration is a combined global config with module-specific options
-                #modConfig = deepcopy(self.config)
-                modConfig = self.config['__modules__'][modName]['opts']
-                for opt in self.config.keys():
-                    modConfig[opt] = self.config[opt]
+                self.ts.modconfig[modName] = deepcopy(self.ts.config['__modules__'][modName]['opts'])
+                for opt in self.ts.config.keys():
+                    self.ts.modconfig[modName][opt] = deepcopy(self.ts.config[opt])
 
                 mod.clearListeners() # clear any listener relationships from the past
-                mod.setup(self.sf, modConfig)
+                mod.setup(self.ts.sf, self.ts.modconfig[modName])
+                mod.setDbh(self.ts.dbh)
+                mod.setScanId(self.ts.scanId)
+
+                # Give modules a chance to 'enrich' the original target with
+                # aliases of that target.
                 newTarget = mod.enrichTarget(target)
                 if newTarget != None:
                     target = newTarget
-                self.moduleInstances[modName] = mod
+                self.ts.moduleInstances[modName] = mod
 
                 # Override the module's local socket module
                 # to be the SOCKS one.
-                if self.config['_socks1type'] != '':
+                if self.ts.config['_socks1type'] != '':
                     mod._updateSocket(socket)
 
-                self.sf.status(modName + " module loaded.")
+                self.ts.sf.status(modName + " module loaded.")
 
             # Register listener modules and then start all modules sequentially
-            for module in self.moduleInstances.values():
+            for module in self.ts.moduleInstances.values():
                 # Register the target with the module
                 module.setTarget(target)
 
-                for listenerModule in self.moduleInstances.values():
+                for listenerModule in self.ts.moduleInstances.values():
                     # Careful not to register twice or you will get duplicate events
                     if listenerModule in module._listenerModules:
                         continue
@@ -201,50 +208,44 @@ class SpiderFootScanner:
                     if listenerModule.watchedEvents() != None:
                         module.registerListener(listenerModule)
 
-            dbh.scanInstanceSet(self.config['__guid__'], status='RUNNING')
-            self.status = "RUNNING"
+            # Now we are ready to roll..
+            self.setStatus("RUNNING")
 
             # Create the "ROOT" event which un-triggered modules will link events to
-            rootEvent = SpiderFootEvent(self.targetType, self.targetValue, "SpiderFoot UI")
-            dbh.scanEventStore(self.config['__guid__'], rootEvent)
+            rootEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue, "SpiderFoot UI")
+            self.ts.dbh.scanEventStore(self.ts.scanId, rootEvent)
 
             # Start the modules sequentially.
-            for module in self.moduleInstances.values():
+            for module in self.ts.moduleInstances.values():
                 # Check in case the user requested to stop the scan between modules initializing
                 if module.checkForStop():
-                    dbh.scanInstanceSet(self.config['__guid__'], status='ABORTING')
-                    self.status = "ABORTING"
+                    self.setStatus('ABORTING')
                     aborted = True
                     break
 
                 # Notify modules with the root event
-                if self.targetType in module.watchedEvents():
+                if self.ts.targetType in module.watchedEvents():
                     module.handleEvent(rootEvent)                   
 
             # Check if any of the modules ended due to being stopped
-            for module in self.moduleInstances.values():
+            for module in self.ts.moduleInstances.values():
                 if module.checkForStop():
                     aborted = True
 
             if aborted:
-                self.sf.status("Scan [" + self.config['__guid__'] + "] aborted.")
-                dbh.scanInstanceSet(self.config['__guid__'], None, time.time() * 1000, 'ABORTED')
-                self.status = "ABORTED"
+                self.ts.sf.status("Scan [" + self.ts.scanId + "] aborted.")
+                self.setStatus("ABORTED", None, time.time() * 1000)
             else:
-                self.sf.status("Scan [" + self.config['__guid__'] + "] completed.")
-                dbh.scanInstanceSet(self.config['__guid__'], None, time.time() * 1000, 'FINISHED')
-                self.status = "FINISHED"
+                self.ts.sf.status("Scan [" + self.ts.scanId + "] completed.")
+                self.setStatus("FINISHED", None, time.time() * 1000)
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.sf.error("Unhandled exception (" + e.__class__.__name__ + ") " + \
+            self.ts.sf.error("Unhandled exception (" + e.__class__.__name__ + ") " + \
                 "encountered during scan. Please report this as a bug: " + \
                 repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
-            self.sf.status("Scan [" + self.config['__guid__'] + "] failed: " + str(e))
-            dbh.scanInstanceSet(self.config['__guid__'], None, time.time() * 1000, 'ERROR-FAILED')
-            self.status = "ERROR-FAILED"
+            self.ts.sf.status("Scan [" + self.ts.scanId + "] failed: " + str(e))
+            self.setStatus("ERROR-FAILED", None, time.time() * 1000)
 
-        self.moduleInstances = None
-        dbh.close()
-        self.sf.setDbh(None)
-        self.sf.setScanId(None)
-
+        self.ts.dbh.close()
+        del self.ts
+        del self.temp

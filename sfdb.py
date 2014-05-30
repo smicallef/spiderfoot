@@ -16,10 +16,11 @@ import sys
 import time
 from sflib import SpiderFoot
 
-# SpiderFoot class passed to us
-sf = None
-
 class SpiderFootDb:
+    sf = None
+    dbh = None
+    conn = None
+
     # Queries for creating the SpiderFoot database
     createQueries = [
             "PRAGMA journal_mode=WAL",
@@ -145,15 +146,14 @@ class SpiderFootDb:
     ]
 
     def __init__(self, opts):
-        global sf
-        sf = SpiderFoot(opts)
+        self.sf = SpiderFoot(opts)
 
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
         # read and write to such a file.
-        dbh = sqlite3.connect(sf.myPath() + "/" + opts['__database'], timeout=10)
+        dbh = sqlite3.connect(self.sf.myPath() + "/" + opts['__database'], timeout=10)
         if dbh == None:
-            sf.fatal("Could not connect to internal database, and couldn't create " + \
+            self.sf.fatal("Could not connect to internal database, and couldn't create " + \
                 opts['__database'])
         dbh.text_factory = str
 
@@ -169,7 +169,7 @@ class SpiderFootDb:
             try:
                 self.create()
             except BaseException as e:
-                sf.error("Tried to set up the SpiderFoot database schema, but failed: " + \
+                self.sf.error("Tried to set up the SpiderFoot database schema, but failed: " + \
                     e.args[0])
         return
 
@@ -198,7 +198,7 @@ class SpiderFootDb:
             self.dbh.execute(qry)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when retreiving event types:" +
+            self.sf.error("SQL error encountered when retreiving event types:" +
                 e.args[0])
 
     # Log an event to the database
@@ -217,20 +217,11 @@ class SpiderFootDb:
         except sqlite3.Error as e:
             if "locked" in e.args[0]:
                 # TODO: Do something smarter here to handle locked databases
-                sf.fatal("Unable to log event in DB: " + e.args[0])
+                self.sf.fatal("Unable to log event in DB: " + e.args[0])
             else:
-                sf.fatal("Unable to log event in DB: " + e.args[0])
+                self.sf.fatal("Unable to log event in DB: " + e.args[0])
 
         return True
-
-    # Generate an globally unique ID for this scan
-    def scanInstanceGenGUID(self, scanName):
-        hashStr = hashlib.sha256(
-                scanName +
-                str(time.time() * 1000) +
-                str(random.randint(100000, 999999))
-            ).hexdigest()
-        return hashStr
 
     # Store a scan instance
     def scanInstanceCreate(self, instanceId, scanName, scanTarget):
@@ -243,7 +234,7 @@ class SpiderFootDb:
                 ))
             self.conn.commit()
         except sqlite3.Error as e:
-            sf.fatal("Unable to create instance in DB: " + e.args[0])
+            self.sf.fatal("Unable to create instance in DB: " + e.args[0])
 
         return True
 
@@ -272,7 +263,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             self.conn.commit()
         except sqlite3.Error:
-            sf.fatal("Unable to set information for the scan instance.")
+            self.sf.fatal("Unable to set information for the scan instance.")
 
     # Return info about a scan instance (name, target, created, started,
     # ended, status) - don't need this yet - untested
@@ -285,7 +276,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchone()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when retreiving scan instance:" +
+            self.sf.error("SQL error encountered when retreiving scan instance:" +
                 e.args[0])
 
     # Obtain a summary of the results per event type
@@ -299,7 +290,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching result summary: " +
+            self.sf.error("SQL error encountered when fetching result summary: " +
                 e.args[0])
 
     # Obtain the data for a scan and event type
@@ -327,7 +318,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching result events: " +
+            self.sf.error("SQL error encountered when fetching result events: " +
                 e.args[0])
 
     # Obtain a unique list of elements
@@ -346,7 +337,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching unique result events: " +
+            self.sf.error("SQL error encountered when fetching unique result events: " +
                 e.args[0])
 
     # Get scan logs
@@ -364,7 +355,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching scan logs: " +
+            self.sf.error("SQL error encountered when fetching scan logs: " +
                 e.args[0])
 
     # Get scan errors
@@ -382,7 +373,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching scan errors: " +
+            self.sf.error("SQL error encountered when fetching scan errors: " +
                 e.args[0])
 
     # Delete a scan instance
@@ -399,7 +390,7 @@ class SpiderFootDb:
             self.dbh.execute(qry4, qvars)
             self.conn.commit()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when deleting scan: " +
+            self.sf.error("SQL error encountered when deleting scan: " +
                 e.args[0])
 
     # Store the default configuration
@@ -417,7 +408,7 @@ class SpiderFootDb:
             try:
                 self.dbh.execute(qry, qvals)
             except sqlite3.Error as e:
-                sf.error("SQL error encountered when storing config, aborting: " +
+                self.sf.error("SQL error encountered when storing config, aborting: " +
                     e.args[0])
 
             self.conn.commit()
@@ -436,7 +427,7 @@ class SpiderFootDb:
 
             return retval
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching configuration: " + e.args[0])
+            self.sf.error("SQL error encountered when fetching configuration: " + e.args[0])
 
     # Reset the config to default (clear it from the DB and let the hard-coded
     # settings in the code take effect.)
@@ -446,7 +437,7 @@ class SpiderFootDb:
             self.dbh.execute(qry)
             self.conn.commit()
         except sqlite3.Error as e:
-            sf.error("Unable to clear configuration from the database: " + e.args[0])
+            self.sf.error("Unable to clear configuration from the database: " + e.args[0])
 
     # Store a configuration value for a scan
     def scanConfigSet(self, id, optMap=dict()):
@@ -465,7 +456,7 @@ class SpiderFootDb:
             try:
                 self.dbh.execute(qry, qvals)
             except sqlite3.Error as e:
-                sf.error("SQL error encountered when storing config, aborting: " +
+                self.sf.error("SQL error encountered when storing config, aborting: " +
                     e.args[0])
 
             self.conn.commit()
@@ -485,7 +476,7 @@ class SpiderFootDb:
                     retval[component + ":" + opt] = val
             return retval
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching configuration: " + e.args[0])
+            self.sf.error("SQL error encountered when fetching configuration: " + e.args[0])
 
     # Store an event
     # eventData is a SpiderFootEvent object with the following variables:
@@ -510,7 +501,7 @@ class SpiderFootDb:
                 try:
                     storeData = unicode(str(sfEvent.data), 'utf-8', errors='replace')
                 except BaseException as e:
-                    sf.fatal("Unhandled type detected: " + str(type(sfEvent.data)))
+                    self.sf.fatal("Unhandled type detected: " + str(type(sfEvent.data)))
         else:
             storeData = sfEvent.data
 
@@ -532,7 +523,7 @@ class SpiderFootDb:
             self.conn.commit()
             return None
         except sqlite3.Error as e:
-            sf.fatal("SQL error encountered when storing event data (" + str(self.dbh) + ": " +
+            self.sf.fatal("SQL error encountered when storing event data (" + str(self.dbh) + ": " +
                 e.args[0])
 
     # List of all previously run scans
@@ -554,7 +545,7 @@ class SpiderFootDb:
             self.dbh.execute(qry)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching scan list: " + e.args[0])
+            self.sf.error("SQL error encountered when fetching scan list: " + e.args[0])
 
     # History of data from the scan
     def scanResultHistory(self, instanceId):
@@ -566,7 +557,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when fetching scan history: " + e.args[0])
+            self.sf.error("SQL error encountered when fetching scan history: " + e.args[0])
 
 
     # Get the source IDs, types and data for a set of IDs
@@ -591,6 +582,6 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            sf.error("SQL error encountered when getting source element IDs: " + e.args[0])
+            self.sf.error("SQL error encountered when getting source element IDs: " + e.args[0])
 
 

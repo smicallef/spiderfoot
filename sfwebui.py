@@ -10,6 +10,7 @@
 #-----------------------------------------------------------------
 import json
 import threading
+import thread
 import cherrypy
 import cgi
 import csv
@@ -17,11 +18,12 @@ import os
 import time
 import random
 import urllib2
+import re
 from copy import deepcopy
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from sfdb import SpiderFootDb
-from sflib import SpiderFoot
+from sflib import SpiderFoot, globalScanStatus
 from sfscan import SpiderFootScanner
 from StringIO import StringIO
 
@@ -29,17 +31,16 @@ class SpiderFootWebUi:
     lookup = TemplateLookup(directories=[''])
     defaultConfig = dict()
     config = dict()
-    scanner = None
     token = None
 
     def __init__(self, config):
         self.defaultConfig = deepcopy(config)
-        dbh = SpiderFootDb(config)
+        dbh = SpiderFootDb(self.defaultConfig)
         # 'config' supplied will be the defaults, let's supplement them
         # now with any configuration which may have previously been
         # saved.
-        sf = SpiderFoot(config)
-        self.config = sf.configUnserialize(dbh.configGet(), config)
+        sf = SpiderFoot(self.defaultConfig)
+        self.config = sf.configUnserialize(dbh.configGet(), self.defaultConfig)
 
         if self.config['__webaddr'] == "0.0.0.0":
             addr = "<IP of this host>"
@@ -201,7 +202,6 @@ class SpiderFootWebUi:
                 # the current system config.
                 sf = SpiderFoot(self.config)
                 self.config = sf.configUnserialize(cleanopts, currentopts)
-
                 dbh.configSet(sf.configSerialize(currentopts))
         except Exception as e:
             return self.error("Processing one or more of your inputs failed: " + str(e))
@@ -214,12 +214,16 @@ class SpiderFootWebUi:
 
     # Initiate a scan
     def startscan(self, scanname, scantarget, modulelist, typelist):
+        global globalScanStatus
+
+        # Snapshot the current configuration to be used by the scan
+        cfg = deepcopy(self.config)
         modopts = dict() # Not used yet as module options are set globally
         modlist = list()
-        sf = SpiderFoot(self.config)
-        dbh = SpiderFootDb(self.config)
+        sf = SpiderFoot(cfg)
+        dbh = SpiderFootDb(cfg)
         types = dbh.eventTypes()
-
+        targetType = None
         [scanname, scantarget] = self.cleanUserInput([scanname, scantarget])
 
         if scanname == "" or scantarget == "":
@@ -252,51 +256,57 @@ class SpiderFootWebUi:
             modlist.append("sfp__stor_db")
         modlist.sort()
 
-        # For now we don't permit multiple simultaneous scans
-        for thread in threading.enumerate():
-            if thread.name.startswith("SF_"):
-                templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
-                return templ.render(modules=self.config['__modules__'], 
-                    alreadyRunning=True, runningScan=thread.name[3:], 
-                    types=types, pageid="NEWSCAN")
+        regexToType = {
+            "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
+            "^\d+\.\d+\.\d+\.\d+/\d+$": "IP_SUBNET",
+            "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME"
+        }
+
+        # Parse the target and set the targetType
+        for rx in regexToType.keys():
+            if re.match(rx, scantarget, re.IGNORECASE):
+                targetType = regexToType[rx]
+                break
+
+        if targetType == None:
+            return self.error("Invalid target type. Could not recognize it as " + \
+                "an IP address, IP subnet, domain name or host name.")
 
         # Start running a new scan
-        try:
-            self.scanner = SpiderFootScanner(scanname, scantarget.lower(), modlist, 
-                self.config, modopts)
-        except BaseException as e:
-            return self.error("Invalid input, so unable to initiate scan.")
-
-        t = threading.Thread(name="SF_" + scanname, target=self.scanner.startScan)
+        scanId = sf.genScanInstanceGUID(scanname)
+        t = SpiderFootScanner(scanname, scantarget.lower(), targetType, scanId, 
+            modlist, cfg, modopts)
         t.start()
 
-        # Spin cycles waiting for the scan ID to be set
-        while self.scanner.myId == None:
+        # Wait until the scan has initialized
+        while globalScanStatus.getStatus(scanId) == None:
+            print "[info] Waiting for the scan to initialize..."
             time.sleep(1)
-            continue
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=self.scanner.myId, name=scanname, 
-            status=self.scanner.status, pageid="SCANLIST")
+        return templ.render(id=scanId, name=scanname, 
+            status=globalScanStatus.getStatus(scanId), pageid="SCANLIST")
     startscan.exposed = True
 
     # Stop a scan (id variable is unnecessary for now given that only one simultaneous
     # scan is permitted.)
     def stopscan(self, id):
-        if self.scanner == None:
-            return self.error("There are no scans running. A data consistency " + \
+        global globalScanStatus
+
+        if globalScanStatus.getStatus(id) == None:
+            return self.error("That scan is not actually running. A data consistency " + \
                 "error for this scan probably exists. <a href='/scandelete?id=" + \
                 id + "&confirm=1'>Click here to delete it.</a>")
 
-        if self.scanner.scanStatus(id) == "ABORTED":
+        if globalScanStatus.getStatus(id) == "ABORTED":
             return self.error("The scan is already aborted.")
 
-        if not self.scanner.scanStatus(id) == "RUNNING":
+        if not globalScanStatus.getStatus(id) == "RUNNING":
             return self.error("The running scan is currently in the state '" + \
-                self.scanner.scanStatus(id) + "', please try again later or restart " + \
+                globalScanStatus.getStatus(id) + "', please try again later or restart " + \
                 " SpiderFoot.")
 
-        self.scanner.stopScan(id)
+        globalScanStatus.setStatus(id, "ABORT-REQUESTED")
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
         return templ.render(pageid='SCANLIST',stoppedscan=True)
     stopscan.exposed = True

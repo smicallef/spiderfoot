@@ -15,9 +15,6 @@ import time
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_defaced(SpiderFootPlugin):
     """Defacement Check:Check if an IP or domain appears on the zone-h.org defacement archive."""
 
@@ -41,9 +38,7 @@ class sfp_defaced(SpiderFootPlugin):
     results = list()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = list()
 
         # Clear / reset any other class member variables here
@@ -71,24 +66,24 @@ class sfp_defaced(SpiderFootPlugin):
         found = False
         curDate = time.strftime("%Y%m%d")
         url = "http://www.zone-h.org/archive/" + typeId + "=" + target
-        res = sf.fetchUrl(url, useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
         if res['content'] == None:
-            sf.debug("Unable to fetch data from Zone-H for " + target + "(" + typeId + ")")
+            self.sf.debug("Unable to fetch data from Zone-H for " + target + "(" + typeId + ")")
             return None
 
         if "<img id='cryptogram' src='/captcha.py'>" in res['content']:
-            sf.error("CAPTCHA returned from zone-h.org.", False)
+            self.sf.error("CAPTCHA returned from zone-h.org.", False)
             return None
 
         rx = re.compile("<td>(\d+/\d+/\d+)</td>", re.IGNORECASE|re.DOTALL)
         grps = re.findall(rx, res['content'])
         for m in grps:
-            sf.debug("Found defaced site: " + target + "(" + typeId + ")")
+            self.sf.debug("Found defaced site: " + target + "(" + typeId + ")")
             found = True
             # Zone-H returns in YYYY/MM/DD
             date = m.replace('/', '')
             if int(date) < int(curDate)-30:
-                sf.debug("Defaced site found but too old: " + date)
+                self.sf.debug("Defaced site found but too old: " + date)
                 found = False
                 continue
 
@@ -103,10 +98,10 @@ class sfp_defaced(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventData in self.results:
-            sf.debug("Skipping " + eventData + ", already checked.")
+            self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
             self.results.append(eventData)

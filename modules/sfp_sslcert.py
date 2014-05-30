@@ -17,9 +17,6 @@ import time
 import M2Crypto
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_sslcert(SpiderFootPlugin):
     """SSL:Gather information about SSL certificates used by the target's HTTPS sites."""
 
@@ -43,9 +40,7 @@ class sfp_sslcert(SpiderFootPlugin):
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         # Clear / reset any other class member variables here
@@ -73,10 +68,10 @@ class sfp_sslcert(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventName == "LINKED_URL_INTERNAL":
-            fqdn = sf.urlFQDN(eventData.lower())
+            fqdn = self.sf.urlFQDN(eventData.lower())
         else:
             fqdn = eventData
 
@@ -88,7 +83,7 @@ class sfp_sslcert(SpiderFootPlugin):
         if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
             return None
 
-        sf.debug("Testing SSL for: " + eventData)
+        self.sf.debug("Testing SSL for: " + eventData)
         # Re-fetch the certificate from the site and process
         try:
             s = socket.socket()
@@ -100,7 +95,7 @@ class sfp_sslcert(SpiderFootPlugin):
             cert = ssl.DER_cert_to_PEM_cert(rawcert)
             m2cert = M2Crypto.X509.load_cert_string(cert)
         except BaseException as x:
-            sf.info("Unable to SSL-connect to " + fqdn + ": " + str(x))
+            self.sf.info("Unable to SSL-connect to " + fqdn + ": " + str(x))
             return None
 
         # Generate the event for the raw cert (in text form)
@@ -133,14 +128,14 @@ class sfp_sslcert(SpiderFootPlugin):
 
         # Extract the CN from the issued section
         issued = cert.get_subject().as_text()
-        sf.debug("Checking for " + fqdn + " in " + issued.lower())
+        self.sf.debug("Checking for " + fqdn + " in " + issued.lower())
         if "cn=" + fqdn in issued.lower():
             hosts = 'dns:' + fqdn
 
         try:
             hosts = hosts + " " + cert.get_ext("subjectAltName").get_value().lower()
         except LookupError as e:
-            sf.debug("No alternative name found in certificate.")
+            self.sf.debug("No alternative name found in certificate.")
 
         fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
         if "dns:"+fqdn not in hosts and "dns:*."+fqdn_tld not in hosts:

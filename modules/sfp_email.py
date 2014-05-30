@@ -14,9 +14,6 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_email(SpiderFootPlugin):
     """E-Mail:Identify e-mail addresses in any obtained data."""
 
@@ -32,9 +29,7 @@ class sfp_email(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -59,28 +54,28 @@ class sfp_email(SpiderFootPlugin):
         if eventName == "EMAILADDR":
             return None
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if type(eventData) not in [ str, unicode ]:
-            sf.debug("Unhandled type to find e-mails: " + str(type(eventData)))
+            self.sf.debug("Unhandled type to find e-mails: " + str(type(eventData)))
             return None
 
         pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
         matches = re.findall(pat, eventData)
         for match in matches:
-            sf.debug("Found possible email: " + match)
+            self.sf.debug("Found possible email: " + match)
 
             if len(match) < 4:
-                sf.debug("Likely invalid address.")
+                self.sf.debug("Likely invalid address.")
                 continue
 
             mailDom = match.lower().split('@')[1]
             if not self.opts['includeexternal'] and not \
                 self.getTarget().matches(mailDom):
-                sf.debug("Ignoring e-mail address on an external domain: " + match)
+                self.sf.debug("Ignoring e-mail address on an external domain: " + match)
                 continue
 
-            sf.info("Found e-mail address: " + match)
+            self.sf.info("Found e-mail address: " + match)
             evt = SpiderFootEvent("EMAILADDR", match, self.__name__, parentEvent)
             self.notifyListeners(evt)
 

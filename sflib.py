@@ -22,10 +22,12 @@ import time
 import netaddr
 import urllib2
 import StringIO
+import threading
+from copy import deepcopy
 
 class SpiderFoot:
     dbh = None
-    scanGUID = None
+    GUID = None
 
     # 'options' is a dictionary of options which changes the behaviour
     # of how certain things are done in this module
@@ -33,7 +35,7 @@ class SpiderFoot:
     # SpiderFoot GUI, in which case all feedback should be fed back
     def __init__(self, options, handle=None):
         self.handle = handle
-        self.opts = options
+        self.opts = deepcopy(options)
 
     # Bit of a hack to support SOCKS because of the loading order of
     # modules. sfscan will call this to update the socket reference
@@ -89,11 +91,23 @@ class SpiderFoot:
     def setDbh(self, handle):
         self.dbh = handle
 
-    def setScanId(self, id):
-        self.scanGUID = id
+    # Set the GUID this instance of SpiderFoot is being
+    # used in.
+    def setGUID(self, uid):
+        self.GUID = uid
+
+    # Generate an globally unique ID for this scan
+    def genScanInstanceGUID(self, scanName):
+        hashStr = hashlib.sha256(
+                scanName +
+                str(time.time() * 1000) +
+                str(random.randint(100000, 999999))
+            ).hexdigest()
+        return hashStr
 
     def _dblog(self, level, message, component=None):
-        return self.dbh.scanLogEvent(self.scanGUID, level, message, component)
+        #print str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component)
+        return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, error, exception=True):
         if self.dbh == None:
@@ -108,6 +122,7 @@ class SpiderFoot:
             print '[Fatal] ' + error
         else:
             self._dblog("FATAL", error)
+        print str(inspect.stack())
         exit(-1)
 
     def status(self, message):
@@ -986,6 +1001,11 @@ class SpiderFootPlugin(object):
     _currentTarget = None
     # Name of this module, set at startup time
     __name__ = "module_name_not_set!"
+    # Direct handle to the database - not to be directly used
+    # by modules except the sfp__stor_db module.
+    __sfdb__ = None
+    # ID of the scan the module is running against
+    __scanId__ = None
 
     # Not really needed in most cases.
     def __init__(self):
@@ -1015,6 +1035,19 @@ class SpiderFootPlugin(object):
     # Assigns the current target this module is acting against
     def setTarget(self, target):
         self._currentTarget = target
+
+    # Used to set the database handle, which is only to be used
+    # by modules in very rare/exceptional cases (e.g. sfp__stor_db)
+    def setDbh(self, dbh):
+        self.__sfdb__ = dbh
+
+    # Set the scan ID
+    def setScanId(self, id):
+        self.__scanId__ = id
+
+    # Get the scan ID
+    def getScanId(self):
+        return self.__scanId__
 
     # Gets the current target this module is acting against
     def getTarget(self):
@@ -1083,15 +1116,16 @@ class SpiderFootPlugin(object):
             if self.checkForStop():
                 return None
 
+            #print "EVENT: " + str(sfEvent)
             listener.handleEvent(sfEvent)
-
-    # Called to stop scanning
-    def stopScanning(self):
-        self._stopScanning = True
 
     # For modules to use to check for when they should give back control
     def checkForStop(self):
-        return self._stopScanning
+        global globalScanStatus
+
+        if globalScanStatus.getStatus(self.__scanId__) == "ABORT-REQUESTED":
+            return True
+        return False
 
     # Return a list of the default configuration options for the module.
     def defaultOpts(self):
@@ -1202,6 +1236,9 @@ class SpiderFootTarget(object):
     # that is a child of the target to be a tight relation.
     def matches(self, value, includeParents=False, includeChildren=True):
         value = value.lower()
+
+        if value == None:
+            return False
 
         if netaddr.valid_ipv4(value):
             # 1.1
@@ -1407,3 +1444,27 @@ class PublicSuffixList(object):
 		for i, what in enumerate(hits):
 			if what is not None and what == 0:
 				return '.'.join(parts[i:])
+
+# Class for tracking the status of all running scans. Thread safe.
+class SpiderFootScanStatus:
+    statusTable = dict()
+    lock = threading.Lock()
+
+    def setStatus(self, scanId, status):
+        with self.lock:
+            self.statusTable[scanId] = status
+
+    def getStatus(self, scanId):
+        with self.lock:
+            if self.statusTable.has_key(scanId):
+                return self.statusTable[scanId]
+            return None
+
+    def getStatusAll(self):
+        with self.lock:
+            return self.statusTable
+
+# Global variable accessed by various places to get the status of
+# running scans.
+globalScanStatus = SpiderFootScanStatus()
+

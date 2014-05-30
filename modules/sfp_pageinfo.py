@@ -15,9 +15,6 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 # Indentify pages that use Javascript libs, handle passwords, have forms,
 # permit file uploads and more to come.
 regexps = dict({
@@ -39,9 +36,7 @@ etc.)"""
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -64,7 +59,7 @@ etc.)"""
         # because the spidering module will always provide events with the
         # event.sourceEvent.data set to the URL of the source.
         if "sfp_spider" not in event.module:
-            sf.debug("Ignoring web content from " + event.module)
+            self.sf.debug("Ignoring web content from " + event.module)
             return None
 
         eventName = event.eventType
@@ -72,18 +67,18 @@ etc.)"""
         eventData = event.data
         eventSource = event.sourceEvent.data # will be the URL of the raw data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # We aren't interested in describing pages that are not hosted on
         # our base domain.
-        if not self.getTarget().matches(sf.urlFQDN(eventSource)):
-            sf.debug("Not gathering page info for external site " + eventSource)
+        if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
+            self.sf.debug("Not gathering page info for external site " + eventSource)
             return None
 
         if eventSource not in self.results.keys():
             self.results[eventSource] = list()
         else:
-            sf.debug("Already checked this page for a page type, skipping.")
+            self.sf.debug("Already checked this page for a page type, skipping.")
             return None
 
         # Check the configured regexps to determine the page type
@@ -95,7 +90,7 @@ etc.)"""
                 rx = re.compile(regex, re.IGNORECASE)
                 matches = re.findall(rx, eventData)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
-                    sf.info("Matched " + regexpGrp + " in content from " + eventSource)
+                    self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)
                     evt = SpiderFootEvent(regexpGrp, eventSource,
                         self.__name__, event.sourceEvent)
@@ -103,7 +98,7 @@ etc.)"""
 
         # If no regexps were matched, consider this a static page
         if len(self.results[eventSource]) == 0:
-            sf.info("Treating " + eventSource + " as URL_STATIC")
+            self.sf.info("Treating " + eventSource + " as URL_STATIC")
             evt = SpiderFootEvent("URL_STATIC", eventSource, self.__name__, event.sourceEvent)
             self.notifyListeners(evt)
 
@@ -112,8 +107,8 @@ etc.)"""
         matches = re.findall(pat, eventData)
         if len(matches) > 0:
             for match in matches:
-                if '://' in match and not self.getTarget().matches(sf.urlFQDN(match)):
-                    sf.debug("Externally hosted Javascript found at: " + match)
+                if '://' in match and not self.getTarget().matches(self.sf.urlFQDN(match)):
+                    self.sf.debug("Externally hosted Javascript found at: " + match)
                     evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match,
                         self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)

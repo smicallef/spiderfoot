@@ -15,9 +15,6 @@ import re
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_googlesearch(SpiderFootPlugin):
     """Google:Some light Google scraping to identify sub-domains and links."""
 
@@ -37,9 +34,7 @@ class sfp_googlesearch(SpiderFootPlugin):
     results = list()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = list()
 
         for opt in userOpts.keys():
@@ -61,17 +56,17 @@ class sfp_googlesearch(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            sf.debug("Already did a search for " + eventData + ", skipping.")
+            self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
         else:
             self.results.append(eventData)
 
         # Sites hosted on the domain
-        pages = sf.googleIterate("site:" + eventData, 
+        pages = self.sf.googleIterate("site:" + eventData, 
             dict(limit=self.opts['pages'], useragent=self.opts['_useragent'],
             timeout=self.opts['_fetchtimeout']))
         if pages == None:
-            sf.info("No results returned from Google.")
+            self.sf.info("No results returned from Google.")
             return None
 
         for page in pages.keys():
@@ -91,7 +86,7 @@ class sfp_googlesearch(SpiderFootPlugin):
             # We can optionally fetch links to our domain found in the search
             # results. These may not have been identified through spidering.
             if self.opts['fetchlinks']:
-                links = sf.parseLinks(page, pages[page], eventData)
+                links = self.sf.parseLinks(page, pages[page], eventData)
                 if len(links) == 0:
                     continue
 
@@ -100,8 +95,8 @@ class sfp_googlesearch(SpiderFootPlugin):
                         continue
                     else:
                         self.results.append(link)
-                    sf.debug("Found a link: " + link)
-                    if sf.urlFQDN(link).endswith(eventData):
+                    self.sf.debug("Found a link: " + link)
+                    if self.sf.urlFQDN(link).endswith(eventData):
                         if self.checkForStop():
                             return None
 

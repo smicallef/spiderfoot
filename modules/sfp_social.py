@@ -13,9 +13,6 @@ import re
 import sys
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 regexps = dict({
     "LinkedIn (Individual)": list(['.*linkedin.com/in/([a-zA-Z0-9_]+$)']),
     "LinkedIn (Company)": list(['.*linkedin.com/company/([a-zA-Z0-9_]+$)']),
@@ -45,9 +42,7 @@ class sfp_social(SpiderFootPlugin):
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -70,7 +65,7 @@ class sfp_social(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventData not in self.results.keys():
             self.results[eventData] = True
@@ -81,7 +76,7 @@ class sfp_social(SpiderFootPlugin):
             for regex in regexps[regexpGrp]:
                 bits = re.match(regex, eventData, re.IGNORECASE)
                 if bits != None:
-                    sf.info("Matched " + regexpGrp + " in " + eventData)
+                    self.sf.info("Matched " + regexpGrp + " in " + eventData)
                     evt = SpiderFootEvent("SOCIAL_MEDIA", regexpGrp + ": " + \
                         bits.group(1), self.__name__, event)
                     self.notifyListeners(evt)

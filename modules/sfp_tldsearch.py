@@ -18,9 +18,6 @@ import random
 import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_tldsearch(SpiderFootPlugin):
     """TLD Search:Search all Internet TLDs for domains with the same name as the target (this can be slow.)"""
 
@@ -45,9 +42,7 @@ class sfp_tldsearch(SpiderFootPlugin):
     tldResults = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = list()
 
         for opt in userOpts.keys():
@@ -77,7 +72,7 @@ class sfp_tldsearch(SpiderFootPlugin):
         t = []
 
         # Spawn threads for scanning
-        sf.info("Spawning threads to check TLDs: " + str(tldList))
+        self.sf.info("Spawning threads to check TLDs: " + str(tldList))
         for tld in tldList:
             tn = 'sfp_tldsearch_' + str(random.randint(0,999999999))
             t.append(threading.Thread(name=tn, target=self.tryTld, args=(tld,)))
@@ -100,7 +95,7 @@ class sfp_tldsearch(SpiderFootPlugin):
 
     # Store the result internally and notify listening modules
     def sendEvent(self, source, result):
-        sf.info("Found a TLD with the target's name: " + result)
+        self.sf.info("Found a TLD with the target's name: " + result)
         self.results.append(result)
 
         # Inform listening modules
@@ -108,7 +103,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            pageContent = sf.fetchUrl('http://' + result,
+            pageContent = self.sf.fetchUrl('http://' + result,
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if pageContent['content'] != None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
@@ -128,8 +123,8 @@ class sfp_tldsearch(SpiderFootPlugin):
         else:
             self.results.append(eventData)
 
-        keyword = sf.domainKeyword(eventData, self.opts['_internettlds'])
-        sf.debug("Keyword extracted from " + eventData + ": " + keyword)
+        keyword = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
+        self.sf.debug("Keyword extracted from " + eventData + ": " + keyword)
         targetList = list()
 
         # Look through all TLDs for the existence of this target keyword
@@ -148,7 +143,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             if tld.endswith(".arpa"):
                 continue
 
-            if self.opts['skipwildcards'] and sf.checkDnsWildcard(tld):
+            if self.opts['skipwildcards'] and self.sf.checkDnsWildcard(tld):
                 continue
 
             tryDomain = keyword + "." + tld

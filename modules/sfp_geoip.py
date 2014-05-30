@@ -15,9 +15,6 @@ import re
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_geoip(SpiderFootPlugin):
     """GeoIP:Identifies the physical location of IP addresses identified."""
 
@@ -26,9 +23,7 @@ class sfp_geoip(SpiderFootPlugin):
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -50,26 +45,26 @@ class sfp_geoip(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
         if self.results.has_key(eventData):
-            sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
             self.results[eventData] = True
 
-        res = sf.fetchUrl("http://freegeoip.net/json/" + eventData,
+        res = self.sf.fetchUrl("http://freegeoip.net/json/" + eventData,
             timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] == None:
-            sf.info("No GeoIP info found for " + eventData)
+            self.sf.info("No GeoIP info found for " + eventData)
         try:
             hostip = json.loads(res['content'])
         except Exception as e:
-            sf.debug("Error processing JSON response.")
+            self.sf.debug("Error processing JSON response.")
             return None
 
-        sf.info("Found GeoIP for " + eventData + ": " + hostip['country_name'])
+        self.sf.info("Found GeoIP for " + eventData + ": " + hostip['country_name'])
         countrycity = hostip['country_name']
 
         evt = SpiderFootEvent("GEOINFO", countrycity, self.__name__, event)

@@ -15,9 +15,6 @@ import re
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_ir(SpiderFootPlugin):
     """Internet Registries:Queries Internet Registries to identify netblocks and other info."""
 
@@ -31,9 +28,7 @@ class sfp_ir(SpiderFootPlugin):
     keywords = None
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
         self.memCache = dict()
         self.currentEventSrc = None
@@ -57,7 +52,7 @@ class sfp_ir(SpiderFootPlugin):
         if self.memCache.has_key(url):
             res = self.memCache[url]
         else:
-            res = sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                 useragent=self.opts['_useragent'])
             if res['content'] != None:
                 self.memCache[url] = res
@@ -72,18 +67,18 @@ class sfp_ir(SpiderFootPlugin):
 
         res = self.fetchRir("https://stat.ripe.net/data/network-info/data.json?resource=" + ipaddr)
         if res['content'] == None:
-            sf.debug("No Netblock info found/available for " + ipaddr + " at RIPE.")
+            self.sf.debug("No Netblock info found/available for " + ipaddr + " at RIPE.")
             return None
 
         try:
             j = json.loads(res['content'])
         except Exception as e:
-            sf.debug("Error processing JSON response.")
+            self.sf.debug("Error processing JSON response.")
             return None
 
         prefix = j["data"]["prefix"]
         if prefix == None:
-            sf.debug("Could not identify network prefix.")
+            self.sf.debug("Could not identify network prefix.")
             return None
 
         return prefix
@@ -94,7 +89,7 @@ class sfp_ir(SpiderFootPlugin):
 
         res = self.fetchRir("https://stat.ripe.net/data/whois/data.json?resource=" + prefix)
         if res['content'] == None:
-            sf.debug("No AS info found/available for prefix: " + prefix + " at RIPE.")
+            self.sf.debug("No AS info found/available for prefix: " + prefix + " at RIPE.")
             return None
 
         try:
@@ -104,7 +99,7 @@ class sfp_ir(SpiderFootPlugin):
             else:
                 data = j["data"]["records"][0]
         except Exception as e:
-            sf.debug("Error processing JSON response.")
+            self.sf.debug("Error processing JSON response.")
             return None
 
         for rec in data:
@@ -120,14 +115,14 @@ class sfp_ir(SpiderFootPlugin):
 
         res = self.fetchRir("https://stat.ripe.net/data/whois/data.json?resource=" + asn)
         if res['content'] == None:
-            sf.debug("No info found/available for ASN: " + asn + " at RIPE.")
+            self.sf.debug("No info found/available for ASN: " + asn + " at RIPE.")
             return None
 
         try:
             j = json.loads(res['content'])
             data = j["data"]["records"]
         except Exception as e:
-            sf.debug("Error processing JSON response.")
+            self.sf.debug("Error processing JSON response.")
             return None
 
         for rec in data:
@@ -141,7 +136,7 @@ class sfp_ir(SpiderFootPlugin):
                     else:
                         ownerinfo[d["key"]] = [ d["value"] ]
 
-        sf.debug("Returning ownerinfo: " + str(ownerinfo))
+        self.sf.debug("Returning ownerinfo: " + str(ownerinfo))
         return ownerinfo
 
     # Netblocks owned by an AS
@@ -150,19 +145,19 @@ class sfp_ir(SpiderFootPlugin):
 
         res = self.fetchRir("https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS" + asn)
         if res['content'] == None:
-            sf.debug("No netblocks info found/available for AS" + asn + " at RIPE.")
+            self.sf.debug("No netblocks info found/available for AS" + asn + " at RIPE.")
             return None
 
         try:
             j = json.loads(res['content'])
             data = j["data"]["prefixes"]
         except Exception as e:
-            sf.debug("Error processing JSON response.")
+            self.sf.debug("Error processing JSON response.")
             return None
 
         for rec in data:
             netblocks.append(rec["prefix"])
-            sf.info("Additional netblock found from same AS: " + rec["prefix"])
+            self.sf.info("Additional netblock found from same AS: " + rec["prefix"])
 
         return netblocks
 
@@ -172,14 +167,14 @@ class sfp_ir(SpiderFootPlugin):
 
         res = self.fetchRir("https://stat.ripe.net/data/asn-neighbours/data.json?resource=AS" + asn)
         if res['content'] == None:
-            sf.debug("No neighbour info found/available for AS" + asn + " at RIPE.")
+            self.sf.debug("No neighbour info found/available for AS" + asn + " at RIPE.")
             return None
 
         try:
             j = json.loads(res['content'])
             data = j["data"]["neighbours"]
         except Exception as e:
-            sf.debug("Error processing JSON response.")
+            self.sf.debug("Error processing JSON response.")
             return None
 
         for rec in data:
@@ -195,7 +190,7 @@ class sfp_ir(SpiderFootPlugin):
             return True
 
         if self.keywords == None:
-            self.keywords = sf.domainKeywords(self.getTarget().getNames(),
+            self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
                 self.opts['_internettlds'])
 
         # Slightly more complex..
@@ -215,7 +210,7 @@ class sfp_ir(SpiderFootPlugin):
             keywordList.append(kw.replace('-', ''))
 
         for kw in keywordList:
-            sf.debug("Looking for keyword: " + kw)
+            self.sf.debug("Looking for keyword: " + kw)
             for r in rx:
                 if re.match(r.format(kw), string, re.IGNORECASE) != None:
                     return True
@@ -229,23 +224,23 @@ class sfp_ir(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
         if self.results.has_key(eventData):
-            sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
             self.results[eventData] = True
 
         prefix = self.ipNetblock(eventData)
         if prefix == None:
-            sf.debug("Could not identify network prefix.")
+            self.sf.debug("Could not identify network prefix.")
             return None
 
         asn = self.netblockAs(prefix)
         if asn == None:
-            sf.debug("Could not identify netblock AS.")
+            self.sf.debug("Could not identify netblock AS.")
             return None
 
         ownerinfo = self.asOwnerInfo(asn)
@@ -259,7 +254,7 @@ class sfp_ir(SpiderFootPlugin):
                         owned = True
 
         if owned:
-            sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
+            self.sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
             evt = SpiderFootEvent("NETBLOCK", prefix, self.__name__, event)
             self.notifyListeners(evt)
             asevt = SpiderFootEvent("BGP_AS_OWNER", asn, self.__name__, event)

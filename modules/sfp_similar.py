@@ -39,9 +39,6 @@ whoisUrlN = "http://www.whois.net/domain-keyword-search/{0}/{1}"
 whoisLastPageIndicator = "Next >"
 whoisIncrement = 16
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_similar(SpiderFootPlugin):
     """Similar Domains:Search various sources to identify similar looking domain names."""
 
@@ -63,9 +60,7 @@ class sfp_similar(SpiderFootPlugin):
     results = list()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = list()
 
         for opt in userOpts.keys():
@@ -105,7 +100,7 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            whois = sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
+            whois = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
                 useragent=self.opts['_useragent'])
             if whois['content'] == None:
                 return None
@@ -137,7 +132,7 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            domtool = sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
+            domtool = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
                 useragent=self.opts['_useragent'])
             if domtool['content'] == None:
                 return None
@@ -172,7 +167,7 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            namedrop = sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
+            namedrop = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
                 useragent=self.opts['_useragent'])
             if namedrop['content'] == None:
                 return None
@@ -194,7 +189,7 @@ class sfp_similar(SpiderFootPlugin):
 
     # Store the result internally and notify listening modules
     def storeResult(self, source, result):
-        sf.info("Found a similar domain: " + result)
+        self.sf.info("Found a similar domain: " + result)
         self.results.append(result)
 
         # Inform listening modules
@@ -202,7 +197,7 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            pageContent = sf.fetchUrl('http://' + result, 
+            pageContent = self.sf.fetchUrl('http://' + result, 
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if pageContent['content'] != None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
@@ -223,8 +218,8 @@ class sfp_similar(SpiderFootPlugin):
         else:
             self.results.append(eventData)
 
-        keyword = sf.domainKeyword(eventData, self.opts['_internettlds'])
-        sf.debug("Keyword extracted from " + eventData + ": " + keyword)
+        keyword = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
+        self.sf.debug("Keyword extracted from " + eventData + ": " + keyword)
 
         # No longer seems to work.
         #if "whois" in self.opts['source'] or "ALL" in self.opts['source']:

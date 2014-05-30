@@ -14,9 +14,6 @@ import json
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_virustotal(SpiderFootPlugin):
     """VirusTotal:Obtain information from VirusTotal about identified IP addresses."""
 
@@ -42,9 +39,7 @@ class sfp_virustotal(SpiderFootPlugin):
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         # Clear / reset any other class member variables here
@@ -70,15 +65,15 @@ class sfp_virustotal(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if self.opts['apikey'] == "":
-            sf.error("You enabled sfp_virustotal but did not set an API key!", False)
+            self.sf.error("You enabled sfp_virustotal but did not set an API key!", False)
             return None
 
        # Don't look up stuff twice
         if self.results.has_key(eventData):
-            sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
             self.results[eventData] = True
@@ -94,7 +89,7 @@ class sfp_virustotal(SpiderFootPlugin):
         else:
             url = "https://www.virustotal.com/vtapi/v2/ip-address/report?ip="
 
-        res = sf.fetchUrl(url + eventData + "&apikey=" + self.opts['apikey'],
+        res = self.sf.fetchUrl(url + eventData + "&apikey=" + self.opts['apikey'],
             timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         # Public API is limited to 4 queries per minute
@@ -102,17 +97,17 @@ class sfp_virustotal(SpiderFootPlugin):
             time.sleep(15)
 
         if res['content'] == None:
-            sf.info("No VirusTotal info found for " + eventData)
+            self.sf.info("No VirusTotal info found for " + eventData)
             return None
 
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            sf.error("Error processing JSON response from VirusTotal.", False)
+            self.sf.error("Error processing JSON response from VirusTotal.", False)
             return None
 
         if info.has_key('detected_urls'):
-            sf.info("Found VirusTotal URL data for " + eventData)
+            self.sf.info("Found VirusTotal URL data for " + eventData)
             if eventName == "IP_ADDRESS":
                 evt = "MALICIOUS_IPADDR"
                 infotype = "ip-address"

@@ -16,9 +16,6 @@ import re
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_pastebin(SpiderFootPlugin):
     """PasteBin:PasteBin scraping (via Google) to identify related content."""
 
@@ -35,9 +32,7 @@ class sfp_pastebin(SpiderFootPlugin):
     results = list()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = list()
 
         for opt in userOpts.keys():
@@ -64,12 +59,12 @@ class sfp_pastebin(SpiderFootPlugin):
             self.results.append(eventData)
 
         # Sites hosted on the domain
-        pages = sf.googleIterate("site:pastebin.com +\"" + eventData + "\"", 
+        pages = self.sf.googleIterate("site:pastebin.com +\"" + eventData + "\"", 
             dict(limit=self.opts['pages'],
             useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
 
         if pages == None:
-            sf.info("No results returned from Google PasteBin search.")
+            self.sf.info("No results returned from Google PasteBin search.")
             return None
 
         for page in pages.keys():
@@ -87,7 +82,7 @@ class sfp_pastebin(SpiderFootPlugin):
             self.notifyListeners(evt)
 
             # Fetch the PasteBin page
-            links = sf.parseLinks(page, pages[page], "pastebin.com")
+            links = self.sf.parseLinks(page, pages[page], "pastebin.com")
             if len(links) == 0:
                 continue
 
@@ -97,16 +92,16 @@ class sfp_pastebin(SpiderFootPlugin):
                 else:
                     self.results.append(link)
 
-                sf.debug("Found a link: " + link)
-                if sf.urlBaseUrl(link).endswith("pastebin.com"):
+                self.sf.debug("Found a link: " + link)
+                if self.sf.urlBaseUrl(link).endswith("pastebin.com"):
                     if self.checkForStop():
                         return None
 
-                    res = sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
+                    res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
                         useragent=self.opts['_useragent'])
 
                     if res['content'] == None:
-                        sf.debug("Ignoring " + link + " as no data returned")
+                        self.sf.debug("Ignoring " + link + " as no data returned")
                         continue
 
                     evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT",
@@ -122,7 +117,7 @@ class sfp_pastebin(SpiderFootPlugin):
                         startIndex = res['content'].index(eventData)-120
                         endIndex = startIndex+len(eventData)+240
                     except BaseException as e:
-                        sf.debug("String not found in pastebin content.")
+                        self.sf.debug("String not found in pastebin content.")
                         continue
 
                     data = res['content'][startIndex:endIndex]

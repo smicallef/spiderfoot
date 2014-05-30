@@ -14,9 +14,6 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin
 
-# SpiderFoot standard lib (must be initialized in __init__)
-sf = None
-
 class sfp_stor_print(SpiderFootPlugin):
     # Default options
     opts = {
@@ -29,9 +26,7 @@ class sfp_stor_print(SpiderFootPlugin):
     }
 
     def __init__(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -46,15 +41,15 @@ class sfp_stor_print(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, srcModuleName, eventName, eventSource, eventSourceEvent, eventData):
-        sf.debug("RESULT:")
-        sf.debug("\tSource: " + srcModuleName)
-        sf.debug("\tEvent: " + eventName)
-        sf.debug("\tEvent Source: " + eventSource)
+        self.sf.debug("RESULT:")
+        self.sf.debug("\tSource: " + srcModuleName)
+        self.sf.debug("\tEvent: " + eventName)
+        self.sf.debug("\tEvent Source: " + eventSource)
         if len(eventData) > self.opts['datasize']:
             eventDataStripped = eventData[0:self.opts['datasize']] + '...'
         else:
             eventDataStripped = eventData
-        sf.debug("\tEvent Data: " + eventDataStripped)
+        self.sf.debug("\tEvent Data: " + eventDataStripped)
 
         return None
 

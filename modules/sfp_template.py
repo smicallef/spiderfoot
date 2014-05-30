@@ -12,9 +12,6 @@
 import sys
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_XXX(SpiderFootPlugin):
     """Name:Description"""
 
@@ -35,9 +32,7 @@ class sfp_XXX(SpiderFootPlugin):
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         # Clear / reset any other class member variables here
@@ -66,7 +61,7 @@ class sfp_XXX(SpiderFootPlugin):
         # would get the source of that raw data (e.g. a URL.)
         eventSource = event.sourceEvent.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # DO SOMETHING HERE
 

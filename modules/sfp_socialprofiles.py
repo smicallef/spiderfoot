@@ -16,9 +16,6 @@ import time
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 sites = {
     # Search string to use, domain name the profile will sit on within 
     # those search results.
@@ -51,9 +48,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     results = list()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = list()
 
         for opt in userOpts.keys():
@@ -80,17 +75,17 @@ class sfp_socialprofiles(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
         if eventData in self.results:
-            sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
             self.results.append(eventData)
 
         if self.keywords == None:
-            self.keywords = sf.domainKeywords(self.getTarget().getNames(),
+            self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
                 self.opts['_internettlds'])
 
         for site in sites.keys():
@@ -98,29 +93,29 @@ class sfp_socialprofiles(SpiderFootPlugin):
             searchDom = sites[site][1]
 
             if self.opts['method'].lower() == "google":
-                results = sf.googleIterate(searchStr, dict(limit=self.opts['pages'],
+                results = self.sf.googleIterate(searchStr, dict(limit=self.opts['pages'],
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
 
             if self.opts['method'].lower() == "yahoo":
-                results = sf.yahooIterate(searchStr, dict(limit=self.opts['pages'],
+                results = self.sf.yahooIterate(searchStr, dict(limit=self.opts['pages'],
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
 
             if self.opts['method'].lower() == "bing":
-                results = sf.bingIterate(searchStr, dict(limit=self.opts['pages'],
+                results = self.sf.bingIterate(searchStr, dict(limit=self.opts['pages'],
                     useragent=self.opts['_useragent'],
                     timeout=self.opts['_fetchtimeout']))
 
             if results == None:
-                sf.info("No data returned from " + self.opts['method'] + ".")
+                self.sf.info("No data returned from " + self.opts['method'] + ".")
                 return None
 
             if self.checkForStop():
                 return None
 
             pauseSecs = random.randint(4, 15)
-            sf.debug("Pausing for " + str(pauseSecs))
+            self.sf.debug("Pausing for " + str(pauseSecs))
             time.sleep(pauseSecs)
 
             for key in results.keys():
@@ -147,7 +142,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                         # Fetch the profile page if we are checking
                         # for a firm relationship.
                         if self.opts['tighten']:
-                            pres = sf.fetchUrl(match, timeout=self.opts['_fetchtimeout'],
+                            pres = self.sf.fetchUrl(match, timeout=self.opts['_fetchtimeout'],
                                 useragent=self.opts['_useragent'])
 
                             if pres['content'] == None:
@@ -161,7 +156,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                                 if not found:
                                     continue
 
-                        sf.info("Social Media Profile found at " + site + ": " + match)
+                        self.sf.info("Social Media Profile found at " + site + ": " + match)
                         evt = SpiderFootEvent("SOCIAL_MEDIA", match, 
                             self.__name__, event)
                         self.notifyListeners(evt)

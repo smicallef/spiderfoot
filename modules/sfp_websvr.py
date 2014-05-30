@@ -14,9 +14,6 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_websvr(SpiderFootPlugin):
     """Web Server:Obtain web server banners to identify versions of web servers being used."""
 
@@ -26,9 +23,7 @@ class sfp_websvr(SpiderFootPlugin):
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -52,14 +47,14 @@ class sfp_websvr(SpiderFootPlugin):
         parentEvent = event.sourceEvent
         eventSource = event.sourceEvent.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
         if self.results.has_key(eventSource):
             return None
         else:
             self.results[eventSource] = True
 
-        if not self.getTarget().matches(sf.urlFQDN(eventSource)):
-            sf.debug("Not collecting web server information for external sites.")
+        if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
+            self.sf.debug("Not collecting web server information for external sites.")
             return None
 
         # Could apply some smarts here, for instance looking for certain
@@ -71,7 +66,7 @@ class sfp_websvr(SpiderFootPlugin):
                 self.__name__, parentEvent)
             self.notifyListeners(evt)
 
-            sf.info("Found web server: " + eventData['server'] + " (" + eventSource + ")")
+            self.sf.info("Found web server: " + eventData['server'] + " (" + eventSource + ")")
 
         if eventData.has_key('x-powered-by'):
             evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", eventData['x-powered-by'], 

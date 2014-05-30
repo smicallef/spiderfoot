@@ -16,9 +16,6 @@ import socket
 import random
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_honeypot(SpiderFootPlugin):
     """Honeypot Checker: Query the projecthoneypot.org database for entries."""
 
@@ -57,9 +54,7 @@ class sfp_honeypot(SpiderFootPlugin):
     }
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -103,10 +98,10 @@ class sfp_honeypot(SpiderFootPlugin):
         eventData = event.data
         parentEvent = event
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if self.opts['apikey'] == "":
-            sf.error("You enabled sfp_honeypot but did not set an API key!", False)
+            self.sf.error("You enabled sfp_honeypot but did not set an API key!", False)
             return None
 
         if self.results.has_key(eventData):
@@ -117,9 +112,9 @@ class sfp_honeypot(SpiderFootPlugin):
             lookup = self.opts['apikey'] + "." + \
                 self.reverseAddr(eventData) + ".dnsbl.httpbl.org"
 
-            sf.debug("Checking Honeypot: " + lookup)
+            self.sf.debug("Checking Honeypot: " + lookup)
             addrs = socket.gethostbyname_ex(lookup)
-            sf.debug("Addresses returned: " + str(addrs))
+            self.sf.debug("Addresses returned: " + str(addrs))
 
             text = None
             for addr in addrs:
@@ -147,6 +142,6 @@ class sfp_honeypot(SpiderFootPlugin):
                         text, self.__name__, parentEvent)
                     self.notifyListeners(evt)
         except BaseException as e:
-            sf.debug("Unable to resolve " + eventData + " / " + lookup + ": " + str(e))
+            self.sf.debug("Unable to resolve " + eventData + " / " + lookup + ": " + str(e))
  
 # End of sfp_honeypot class

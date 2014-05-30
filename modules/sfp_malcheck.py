@@ -14,9 +14,6 @@ import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 malchecks = {
     'abuse.ch Zeus Tracker (Domain)': {
         'id': 'abusezeusdomain',
@@ -269,9 +266,7 @@ class sfp_malcheck(SpiderFootPlugin):
     results = list()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = list()
 
         # Clear / reset any other class member variables here
@@ -301,30 +296,30 @@ class sfp_malcheck(SpiderFootPlugin):
         if len(badregex) > 0:
             for rx in badregex:
                 if re.match(rx, content, re.IGNORECASE|re.DOTALL):
-                    sf.debug("Found to be bad")
+                    self.sf.debug("Found to be bad")
                     return True
 
         # Finally, check for good indicators
         if len(goodregex) > 0:
             for rx in goodregex:
                 if re.match(rx, content, re.IGNORECASE|re.DOTALL):
-                    sf.debug("Found to be good")
+                    self.sf.debug("Found to be good")
                     return False
 
         # If nothing was matched, reply None
-        sf.debug("Neither good nor bad, unknown.")
+        self.sf.debug("Neither good nor bad, unknown.")
         return None
 
     # Look up 'query' type sources
     def resourceQuery(self, id, target, targetType):
-        sf.debug("Querying " + id + " for maliciousness of " + target)
+        self.sf.debug("Querying " + id + " for maliciousness of " + target)
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "query":
                 url = unicode(malchecks[check]['url'])
-                res = sf.fetchUrl(url.format(target), useragent=self.opts['_useragent'])
+                res = self.sf.fetchUrl(url.format(target), useragent=self.opts['_useragent'])
                 if res['content'] == None:
-                    sf.error("Unable to fetch " + url.format(target), False)
+                    self.sf.error("Unable to fetch " + url.format(target), False)
                     return None
                 if self.contentMalicious(res['content'], 
                     malchecks[check]['goodregex'],
@@ -338,21 +333,21 @@ class sfp_malcheck(SpiderFootPlugin):
         targetDom = ''
         # Get the base domain if we're supplied a domain
         if targetType == "domain":
-            targetDom = sf.hostDomain(target, self.opts['_internettlds'])
+            targetDom = self.sf.hostDomain(target, self.opts['_internettlds'])
 
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "list":
                 data = dict()
                 url = malchecks[check]['url']
-                data['content'] = sf.cacheGet("sfmal_" + cid, self.opts['aaacacheperiod'])
+                data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts['aaacacheperiod'])
                 if data['content'] == None:
-                    data = sf.fetchUrl(url, useragent=self.opts['_useragent'])
+                    data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
                     if data['content'] == None:
-                        sf.error("Unable to fetch " + url, False)
+                        self.sf.error("Unable to fetch " + url, False)
                         return None
                     else:
-                        sf.cachePut("sfmal_" + cid, data['content'])
+                        self.sf.cachePut("sfmal_" + cid, data['content'])
 
                 # If we're looking at netblocks
                 if targetType == "netblock":
@@ -364,11 +359,11 @@ class sfp_malcheck(SpiderFootPlugin):
                         rx = malchecks[check]['regex'].replace("{0}", \
                             "(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
-                        sf.debug("New regex for " + check + ": " + rx)
+                        self.sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                #sf.debug("Adding " + grp[0] + " to list.")
+                                #self.sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -380,11 +375,11 @@ class sfp_malcheck(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                sf.debug(ip + " found within netblock/subnet " + \
+                                self.sf.debug(ip + " found within netblock/subnet " + \
                                     target + " in " + check)
                                 return url
                         except Exception as e:
-                                sf.debug("Error encountered parsing: " + str(e))
+                                self.sf.debug("Error encountered parsing: " + str(e))
                                 continue
 
                     return None
@@ -393,7 +388,7 @@ class sfp_malcheck(SpiderFootPlugin):
                 if not malchecks[check].has_key('regex'):
                     for line in data['content'].split('\n'):
                         if line == target or (targetType == "domain" and line == targetDom):
-                            sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
                 else:
                     # Check for the domain and the hostname
@@ -402,7 +397,7 @@ class sfp_malcheck(SpiderFootPlugin):
                     for line in data['content'].split('\n'):
                         if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                             re.match(rxTgt, line, re.IGNORECASE):
-                            sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
         return None
 
@@ -410,7 +405,7 @@ class sfp_malcheck(SpiderFootPlugin):
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                sf.debug("Checking maliciousness of " + target + " (" +  \
+                self.sf.debug("Checking maliciousness of " + target + " (" +  \
                     itemType + ") with: " + cid)
                 if malchecks[check]['type'] == "query":
                     return self.resourceQuery(cid, target, itemType)
@@ -425,10 +420,10 @@ class sfp_malcheck(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventData in self.results:
-            sf.debug("Skipping " + eventData + ", already checked.")
+            self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
             self.results.append(eventData)

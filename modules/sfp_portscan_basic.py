@@ -18,9 +18,6 @@ import random
 import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-# SpiderFoot standard lib (must be initialized in setup)
-sf = None
-
 class sfp_portscan_basic(SpiderFootPlugin):
     """Port Scanner:Scans for commonly open TCP ports on Internet-facing systems."""
 
@@ -55,9 +52,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
     portResults = dict()
 
     def setup(self, sfc, userOpts=dict()):
-        global sf
-
-        sf = sfc
+        self.sf = sfc
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -66,7 +61,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
         if self.opts['ports'][0].startswith("http://") or \
             self.opts['ports'][0].startswith("https://") or \
             self.opts['ports'][0].startswith("@"):
-            self.portlist = sf.optValueToData(self.opts['ports'][0])
+            self.portlist = self.sf.optValueToData(self.opts['ports'][0])
         else:
             self.portlist = self.opts['ports']
 
@@ -112,7 +107,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
 
         # Spawn threads for scanning
         while i < len(portList):
-            sf.info("Spawning thread to check port: " + str(portList[i]) + " on " + ip)
+            self.sf.info("Spawning thread to check port: " + str(portList[i]) + " on " + ip)
             t.append(threading.Thread(name='sfp_portscan_basic_' + str(portList[i]), 
                 target=self.tryPort, args=(ip, portList[i])))
             t[i].start()
@@ -134,7 +129,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
     def sendEvent(self, resArray, srcEvent):
         for cp in resArray:
             if resArray[cp]:
-                sf.info("TCP Port " + cp + " found to be OPEN.")
+                self.sf.info("TCP Port " + cp + " found to be OPEN.")
                 evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
                 self.notifyListeners(evt)
                 if resArray[cp] != "" and resArray[cp] != True:
@@ -150,13 +145,13 @@ class sfp_portscan_basic(SpiderFootPlugin):
         eventData = event.data
         scanIps = list()
 
-        sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         try:
             if eventName == "NETBLOCK" and self.opts['netblockscan']:
                 net = IPNetwork(eventData)
                 if net.prefixlen < self.opts['netblockscanmax']:
-                    sf.debug("Skipping port scanning of " + eventData + ", too big.")
+                    self.sf.debug("Skipping port scanning of " + eventData + ", too big.")
                     return None
 
                 for ip in net:
@@ -169,14 +164,14 @@ class sfp_portscan_basic(SpiderFootPlugin):
             else:
                 scanIps.append(eventData)
         except BaseException as e:
-            sf.error("Strange netblock identified, unable to parse: " + \
+            self.sf.error("Strange netblock identified, unable to parse: " + \
                 eventData + " (" + str(e) + ")", False)
             return None
 
         for ipAddr in scanIps:
             # Don't look up stuff twice
             if self.results.has_key(ipAddr):
-                sf.debug("Skipping " + ipAddr + " as already scanned.")
+                self.sf.debug("Skipping " + ipAddr + " as already scanned.")
                 return None
             else:
                 self.results[ipAddr] = True
