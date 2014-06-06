@@ -73,7 +73,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS', 'NETBLOCK']
+        return ['IP_ADDRESS', 'NETBLOCK_OWNER']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -148,7 +148,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         try:
-            if eventName == "NETBLOCK" and self.opts['netblockscan']:
+            if eventName == "NETBLOCK_OWNER" and self.opts['netblockscan']:
                 net = IPNetwork(eventData)
                 if net.prefixlen < self.opts['netblockscanmax']:
                     self.sf.debug("Skipping port scanning of " + eventData + ", too big.")

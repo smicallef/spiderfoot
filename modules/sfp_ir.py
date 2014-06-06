@@ -39,13 +39,15 @@ class sfp_ir(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS']
+        return ['IP_ADDRESS', 'NETBLOCK_MEMBER', 'NETBLOCK_OWNER',
+            'BGP_AS_OWNER', 'BGP_AS_MEMBER' ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "NETBLOCK", "RAW_RIR_DATA", "BGP_AS_OWNER", "PROVIDER_INTERNET" ]
+        return [ "NETBLOCK_MEMBER", "NETBLOCK_OWNER", "BGP_AS_MEMBER",
+            "RAW_RIR_DATA", "BGP_AS_OWNER", "BGP_AS_PEER" ]
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
@@ -129,6 +131,7 @@ class sfp_ir(SpiderFootPlugin):
             for d in rec:
                 if d["key"].lower().startswith("org") or \
                     d["key"].lower().startswith("as") or \
+                    d["key"].lower().startswith("aut") or \
                     d["key"].lower().startswith("descr") and \
                     d["value"].lower() not in [ "null", "none", "none specified" ]:
                     if ownerinfo.has_key(d["key"]):
@@ -217,6 +220,20 @@ class sfp_ir(SpiderFootPlugin):
         
         return False
 
+    # Owns the AS or not?
+    def ownsAs(self, asn):
+        # Determine whether the AS is owned by our target
+        ownerinfo = self.asOwnerInfo(asn)
+        owned = False
+
+        if ownerinfo != None:
+            for k in ownerinfo.keys():
+                items = ownerinfo[k]
+                for item in items:
+                    if self.findName(item.lower()):
+                        owned = True
+        return owned
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -233,83 +250,86 @@ class sfp_ir(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        prefix = self.ipNetblock(eventData)
-        if prefix == None:
-            self.sf.debug("Could not identify network prefix.")
-            return None
+        # BGP AS Owner/Member -> BGP AS Peers
+        if eventName.startswith("BGP_AS_"):
+            neighs = self.asNeighbours(eventData)
+            if neighs == None:
+                self.debug("No neighbors found to AS " + eventData)
+                return None
 
-        asn = self.netblockAs(prefix)
-        if asn == None:
-            self.sf.debug("Could not identify netblock AS.")
-            return None
-
-        ownerinfo = self.asOwnerInfo(asn)
-        owned = False
-
-        if ownerinfo != None:
-            for k in ownerinfo.keys():
-                items = ownerinfo[k]
-                for item in items:
-                    if self.findName(item.lower()):
-                        owned = True
-
-        if owned:
-            self.sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
-            evt = SpiderFootEvent("NETBLOCK", prefix, self.__name__, event)
-            self.notifyListeners(evt)
-            asevt = SpiderFootEvent("BGP_AS_OWNER", asn, self.__name__, event)
-            self.notifyListeners(asevt)
-
-            # Don't report additional netblocks from this AS if we've
-            # already found this AS before.
-            if not self.nbreported.has_key(asn):
-                # 2. Find all the netblocks owned by this AS
-                self.nbreported[asn] = True
-                netblocks = self.asNetblocks(asn)
-                if netblocks != None:
-                    for netblock in netblocks:
-                        if netblock == prefix:
-                            continue
-    
-                        # Technically this netblock was identified via the AS, not
-                        # the original IP event, so link it to asevt, not event.
-                        evt = SpiderFootEvent("NETBLOCK", netblock, 
-                            self.__name__, asevt)
-                        self.notifyListeners(evt)
-
-                # 3. Find all the AS neighbors to this AS
-                neighs = self.asNeighbours(asn)
-                if neighs == None:
+            for nasn in neighs:
+                if self.checkForStop():
                     return None
 
-                for nasn in neighs:
-                    if self.checkForStop():
-                        return None
+                ownerinfo = self.asOwnerInfo(nasn)
+                ownertext = ''
+                if ownerinfo != None:
+                    for k, v in ownerinfo.iteritems():
+                        ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
 
-                    ownerinfo = self.asOwnerInfo(nasn)
-                    ownertext = ''
-                    if ownerinfo != None:
-                        for k, v in ownerinfo.iteritems():
-                            ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
-    
-                    if len(ownerinfo) > 0:
-                        evt = SpiderFootEvent("PROVIDER_INTERNET", ownertext,
-                            self.__name__, asevt)
-                        self.notifyListeners(evt)                           
-        else:
-            # If they don't own the netblock they are serving from, then
-            # the netblock owner is their Internet provider.
+                if len(ownerinfo) > 0:
+                    evt = SpiderFootEvent("BGP_AS_PEER", ownertext,
+                        self.__name__, event)
+                    self.notifyListeners(evt)
 
-            # Report the netblock instead as a subnet encapsulating the IP
-            evt = SpiderFootEvent("IP_SUBNET", prefix, self.__name__, event)
-            self.notifyListeners(evt)
+        # BGP AS Owner -> Other Netblocks
+        if eventName == "BGP_AS_OWNER":
+            # Don't report additional netblocks from this AS if we've
+            # already found this AS before.
+            if not self.nbreported.has_key(eventData):
+                # Find all the netblocks owned by this AS
+                self.nbreported[asn] = True
+                netblocks = self.asNetblocks(eventData)
+                if netblocks != None:
+                    for netblock in netblocks:
+                        if self.results.has_key(netblock):
+                            continue
 
-            ownertext = ''
-            if ownerinfo != None:
-                for k, v in ownerinfo.iteritems():
-                    ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
-                evt = SpiderFootEvent("PROVIDER_INTERNET", ownertext,
-                    self.__name__, event)
+                        # Technically this netblock was identified via the AS, not
+                        # the original IP event, so link it to asevt, not event.
+                        evt = SpiderFootEvent("NETBLOCK_OWNER", netblock,
+                            self.__name__, event)
+                        self.notifyListeners(evt)
+            return None
+
+        # NETBLOCK -> AS and other owned netblocks
+        if eventName.startswith("NETBLOCK_"):
+            # Get the BGP AS the netblock is a part of
+            asn = self.netblockAs(eventData)
+            if asn == None:
+                self.sf.debug("Could not identify BGP AS for " + eventData)
+                return None
+
+            if self.ownsAs(asn):
+                asevt = SpiderFootEvent("BGP_AS_OWNER", asn, self.__name__, event)
+                self.notifyListeners(asevt)
+            else:
+                asevt = SpiderFootEvent("BGP_AS_MEMBER", asn, self.__name__, event)
+                self.notifyListeners(asevt)
+
+            return None
+
+        # IP ADDRESS -> NETBLOCK
+        if eventName == "IP_ADDRESS":
+            # Get the Netblock the IP is a part of
+            prefix = self.ipNetblock(eventData)
+            if prefix == None:
+                self.sf.debug("Could not identify network prefix for " + eventData)
+                return None
+
+            # Get the BGP AS the netblock is a part of
+            asn = self.netblockAs(prefix)
+            if asn == None:
+                self.sf.debug("Could not identify BGP AS for " + prefix)
+                return None
+
+            if self.ownsAs(asn):
+                self.sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
+                evt = SpiderFootEvent("NETBLOCK_OWNER", prefix, self.__name__, event)
+                self.notifyListeners(evt)
+            else:
+                self.sf.info("Netblock found: " + prefix + "(" + asn + ")")
+                evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
                 self.notifyListeners(evt)
 
         return None

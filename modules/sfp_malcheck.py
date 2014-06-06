@@ -278,9 +278,9 @@ class sfp_malcheck(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "IP_ADDRESS", "BGP_AS_OWNER",
-            "IP_SUBNET", "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
-            "CO_HOSTED_SITE", "NETBLOCK" ]
+        return ["INTERNET_NAME", "IP_ADDRESS", "BGP_AS_OWNER", "BGP_AS_MEMBER",
+            "NETBLOCK_MEMBER", "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
+            "CO_HOSTED_SITE", "NETBLOCK_OWNER" ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -288,7 +288,7 @@ class sfp_malcheck(SpiderFootPlugin):
     def producedEvents(self):
         return [ "MALICIOUS_ASN", "MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
             "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME", 
-            "MALICIOUS_SUBNET", "MALICIOUS_COHOST" ]
+            "MALICIOUS_SUBNET", "MALICIOUS_COHOST", "MALICIOUS_NETBLOCK" ]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
@@ -433,9 +433,9 @@ class sfp_malcheck(SpiderFootPlugin):
         if eventName == 'AFFILIATE_DOMAIN' or eventName == 'AFFILIATE_IPADDR' \
             and not self.opts['aaacheckaffiliates']:
             return None
-        if eventName == 'NETBLOCK' and not self.opts['aaachecknetblocks']:
+        if eventName == 'NETBLOCK_OWNER' and not self.opts['aaachecknetblocks']:
             return None
-        if eventName == 'IP_SUBNET' and not self.opts['aaachecksubnets']:
+        if eventName == 'NETBLOCK_MEMBER' and not self.opts['aaachecksubnets']:
             return None
 
         for check in malchecks.keys():
@@ -449,7 +449,7 @@ class sfp_malcheck(SpiderFootPlugin):
                     else:
                         evtType = 'MALICIOUS_AFFILIATE_IPADDR'
 
-                if eventName in [ 'BGP_AS_OWNER' ]:
+                if eventName in [ 'BGP_AS_OWNER', 'BGP_AS_MEMBER' ]:
                     typeId = 'asn' 
                     evtType = 'MALICIOUS_ASN'
 
@@ -463,10 +463,10 @@ class sfp_malcheck(SpiderFootPlugin):
                     if eventName == 'CO_HOSTED_SITE':
                         evtType = 'MALICIOUS_COHOST'
 
-                if eventName == 'NETBLOCK':
+                if eventName == 'NETBLOCK_OWNER':
                     typeId = 'netblock'
                     evtType = 'MALICIOUS_NETBLOCK'
-                if eventName == 'IP_SUBNET':
+                if eventName == 'NETBLOCK_MEMBER':
                     typeId = 'netblock'
                     evtType = 'MALICIOUS_SUBNET'
 

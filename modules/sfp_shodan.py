@@ -11,6 +11,7 @@
 
 import sys
 import json
+from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_shodan(SpiderFootPlugin):
@@ -18,12 +19,16 @@ class sfp_shodan(SpiderFootPlugin):
 
     # Default options
     opts = { 
-        "apikey":   ""
+        "apikey":   "",
+        'netblocklookup': True,
+        'maxnetblock': 24
     }
 
     # Option descriptions
     optdescs = {
-        "apikey":   "Your SHODAN API Key."
+        "apikey":   "Your SHODAN API Key.",
+        'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
+        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
     results = dict()
@@ -40,12 +45,28 @@ class sfp_shodan(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS"]
+        return ["IP_ADDRESS", "NETBLOCK_OWNER"]
 
     # What events this module produces
     def producedEvents(self):
         return ["OPERATING_SYSTEM", "DEVICE_TYPE", 
             "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER"]
+
+    def query(self, qry):
+        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry + \
+            "?key=" + self.opts['apikey'],
+            timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        if res['content'] == None:
+            self.sf.info("No SHODAN info found for " + qry)
+            return None
+
+        try:
+            info = json.loads(res['content'])
+        except Exception as e:
+            self.sf.error("Error processing JSON response from SHODAN.", False)
+            return None
+
+        return info
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -66,48 +87,59 @@ class sfp_shodan(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + eventData + \
-            "?key=" + self.opts['apikey'],
-            timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-        if res['content'] == None:
-            self.sf.info("No SHODAN info found for " + eventData)
-            return None
+        if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                self.sf.debug("Network size bigger than permitted: " + \
+                    str(IPNetwork(eventData).prefixlen) + " > " + \
+                    str(self.opts['maxnetblock']))
+                return None
 
-        try:
-            info = json.loads(res['content'])
-        except Exception as e:
-            self.sf.error("Error processing JSON response from SHODAN.", False)
-            return None
+        qrylist = list()
+        if eventName.startswith("NETBLOCK_"):
+            for ipaddr in IPNetwork(eventData):
+                qrylist.append(str(ipaddr))
+                self.results[str(ipaddr)] = True
+        else:
+            qrylist.append(eventData)
 
-        os = info.get('os')
-        devtype = info.get('devicetype')
+        for addr in qrylist:
+            rec = self.query(addr)
+            if rec == None:
+                continue
 
-        if os != None:
-            # Notify other modules of what you've found
-            evt = SpiderFootEvent("OPERATING_SYSTEM", os, self.__name__, event)
-            self.notifyListeners(evt)
+            if self.checkForStop():
+                return None
 
-        if devtype != None:
-            # Notify other modules of what you've found
-            evt = SpiderFootEvent("DEVICE_TYPE", devtype, self.__name__, event)
-            self.notifyListeners(evt)
-
-
-        self.sf.info("Found SHODAN data for " + eventData)
-        for rec in info['data']:
-            port = str(rec.get('port'))
-            banner = rec.get('banner')
-
-            if port != None:
+            if rec.get('os') != None:
                 # Notify other modules of what you've found
-                cp = eventData + ":" + port
-                evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, event)
+                evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os') + \
+                    " (" + addr +")", self.__name__, event)
                 self.notifyListeners(evt)
 
-            if banner != None:
+            if rec.get('devtype') != None:
                 # Notify other modules of what you've found
-                evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner, self.__name__, event)
+                evt = SpiderFootEvent("DEVICE_TYPE", rec.get('devtype') + \
+                    " (" + addr +")", self.__name__, event)
                 self.notifyListeners(evt)
+
+            if rec.has_key('data'):
+                self.sf.info("Found SHODAN data for " + eventData)
+                for r in rec['data']:
+                    port = str(r.get('port'))
+                    banner = r.get('banner')
+
+                    if port != None:
+                        # Notify other modules of what you've found
+                        cp = addr + ":" + port
+                        evt = SpiderFootEvent("TCP_PORT_OPEN", cp, 
+                            self.__name__, event)
+                        self.notifyListeners(evt)
+
+                    if banner != None:
+                        # Notify other modules of what you've found
+                        evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner, 
+                            self.__name__, event)
+                        self.notifyListeners(evt)
 
         return None
 

@@ -68,6 +68,39 @@ class SpiderFootWebUi:
 
         return ret
 
+    def searchBase(self, id=None, eventType=None, value=None):
+        regex = ""
+        if [id, eventType, value].count('') == 2 or \
+            [id, eventType, value].count(None) == 2:
+            return None
+
+        if value.startswith("/") and value.endswith("/"):
+            regex = value[1:len(value)-1]
+            value = ""
+
+        value = value.replace('*', '%')
+        if value in [ None, "" ] and regex in [ None, "" ]:
+            value = "%"
+            regex = ""
+
+        dbh = SpiderFootDb(self.config)
+        criteria = {
+            'scan_id': None if id == '' else id,
+            'type': None if eventType == '' else eventType,
+            'value': None if value == '' else value,
+            'regex': None if regex == '' else regex
+        }
+        data = dbh.search(criteria)
+        retdata = []
+        for row in data:
+            lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
+            escapeddata = cgi.escape(row[1])
+            escapedsrc = cgi.escape(row[2])
+            retdata.append([lastseen, escapeddata, escapedsrc,
+                row[3], row[5], row[6], row[7], row[8], row[10], row[11], row[4]])
+
+        return retdata
+
     #
     # USER INTERFACE PAGES
     #
@@ -88,6 +121,21 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Pragma'] = "no-cache"
         return fileobj.getvalue()
     scaneventresultexport.exposed = True
+
+    # Get search result data in CSV format
+    def scansearchresultexport(self, id, eventType=None, value=None, dialect="excel"):
+        data = self.searchBase(id, eventType, value)
+        fileobj = StringIO()
+        parser = csv.writer(fileobj, dialect=dialect)
+        parser.writerow(["Updated", "Type", "Module", "Source", "Data"])
+        for row in data:
+            datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
+            parser.writerow([row[0], str(row[10]), str(row[3]), str(row[2]), datafield])
+        cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
+        cherrypy.response.headers['Content-Type'] = "application/csv"
+        cherrypy.response.headers['Pragma'] = "no-cache"
+        return fileobj.getvalue()
+    scansearchresultexport.exposed = True
 
     # Configuration used for a scan
     def scanopts(self, id):
@@ -258,7 +306,7 @@ class SpiderFootWebUi:
 
         regexToType = {
             "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
-            "^\d+\.\d+\.\d+\.\d+/\d+$": "IP_SUBNET",
+            "^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER",
             "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME"
         }
 
@@ -406,6 +454,12 @@ class SpiderFootWebUi:
             retdata.append([escaped, row[1], row[2]])
         return json.dumps(retdata, ensure_ascii=False)
     scaneventresultsunique.exposed = True
+
+    # Search
+    def search(self, id=None, eventType=None, value=None):
+        retdata = self.searchBase(id, eventType, value)
+        return json.dumps(retdata, ensure_ascii=False)
+    search.exposed = True
 
     # Historical data for the scan, graphs will be rendered in JS
     def scanhistory(self, id):

@@ -1159,7 +1159,7 @@ class SpiderFootPlugin(object):
 
 # Class for targets
 class SpiderFootTarget(object):
-    _validTypes = [ "IP_ADDRESS", "IP_SUBNET", "INTERNET_NAME" ]
+    _validTypes = [ "IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME" ]
     targetType = None
     targetValue = None
     targetAliases = list()
@@ -1245,7 +1245,7 @@ class SpiderFootTarget(object):
             if value in self.getAddresses():
                 return True
             # 1.2
-            if self.targetType == "IP_SUBNET":
+            if self.targetType == "NETBLOCK_OWNER":
                 if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
                     return True
             if self.targetType == "IP_ADDRESS":

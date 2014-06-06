@@ -14,6 +14,7 @@ import sys
 import re
 import socket
 import random
+from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_honeypot(SpiderFootPlugin):
@@ -24,7 +25,11 @@ class sfp_honeypot(SpiderFootPlugin):
         'apikey': "",
         'searchengine': False,
         'threatscore': 0,
-        'timelimit': 30
+        'timelimit': 30,
+        'netblocklookup': True,
+        'maxnetblock': 24,
+        'subnetlookup': True,
+        'maxsubnet': 24
     }
 
     # Option descriptions
@@ -32,7 +37,11 @@ class sfp_honeypot(SpiderFootPlugin):
         'apikey': "The API key you obtained from projecthoneypot.org",
         'searchengine': "Include entries considered search engines?",
         'threatscore': "Threat score minimum, 0 being everything and 255 being only the most serious.",
-        'timelimit': "Maximum days old an entry can be. 255 is the maximum, 0 means you'll get nothing."
+        'timelimit': "Maximum days old an entry can be. 255 is the maximum, 0 means you'll get nothing.",
+        'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
+        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
     results = dict()
@@ -62,13 +71,15 @@ class sfp_honeypot(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'IP_ADDRESS', 'AFFILIATE_IPADDR' ]
+        return [ 'IP_ADDRESS', 'AFFILIATE_IPADDR', 'NETBLOCK_OWNER', 
+            'NETBLOCK_MEMBER' ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR" ]
+        return [ "BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK" ]
 
     # Swap 1.2.3.4 to 4.3.2.1
     def reverseAddr(self, ipaddr):
@@ -86,10 +97,47 @@ class sfp_honeypot(SpiderFootPlugin):
         if int(bits[3]) == 0 and self.opts['searchengine']:
             return None
 
-        text = "Honeypotproject: " + self.statuses[bits[3]] + \
+        text = "Honeypotproject ({0}): " + self.statuses[bits[3]] + \
             "\nLast Activity: " + bits[1] + " days ago" + \
             "\nThreat Level: " + bits[2]
         return text
+
+    def queryAddr(self, qaddr, parentEvent):
+        eventName = parentEvent.eventType
+
+        try:
+            lookup = self.opts['apikey'] + "." + \
+                self.reverseAddr(qaddr) + ".dnsbl.httpbl.org"
+
+            self.sf.debug("Checking Honeypot: " + lookup)
+            addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(lookup))
+            self.sf.debug("Addresses returned: " + str(addrs))
+
+            text = None
+            for addr in addrs:
+                text = self.reportIP(addr)
+                if text == None:
+                    continue
+                else:
+                    break
+
+            if text != None:
+                if eventName == "AFFILIATE_IPADDR":
+                    e = "BLACKLISTED_AFFILIATE_IPADDR"
+                if eventName == "IP_ADDRESS":
+                    e = "BLACKLISTED_IPADDR"
+                if eventName == "NETBLOCK_OWNER":
+                    e = "BLACKLISTED_NETBLOCK"
+                if eventName == "NETBLOCK_MEMBER":
+                    e = "BLACKLISTED_SUBNET"
+                
+                evt = SpiderFootEvent(e, text.format(qaddr), self.__name__, 
+                    parentEvent)
+                self.notifyListeners(evt)
+        except BaseException as e:
+            self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
+
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -97,6 +145,7 @@ class sfp_honeypot(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         parentEvent = event
+        addrlist = list()
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -108,40 +157,26 @@ class sfp_honeypot(SpiderFootPlugin):
             return None
         self.results[eventData] = True
 
-        try:
-            lookup = self.opts['apikey'] + "." + \
-                self.reverseAddr(eventData) + ".dnsbl.httpbl.org"
+        if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                self.sf.debug("Network size bigger than permitted: " + \
+                    str(IPNetwork(eventData).prefixlen) + " > " + \
+                    str(self.opts['maxnetblock']))
+                return None
 
-            self.sf.debug("Checking Honeypot: " + lookup)
-            addrs = socket.gethostbyname_ex(lookup)
-            self.sf.debug("Addresses returned: " + str(addrs))
+        if eventName == 'NETBLOCK_MEMBER' and self.opts['subnetlookup']:
+            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                self.sf.debug("Network size bigger than permitted: " + \
+                    str(IPNetwork(eventData).prefixlen) + " > " + \
+                    str(self.opts['maxsubnet']))
+                return None
 
-            text = None
-            for addr in addrs:
-                if type(addr) == list:
-                    for a in addr:
-                        text = self.reportIP(a)
-                        if text == None:
-                            continue
-                        else:
-                            break
-                else:
-                    text = self.reportIP(addr)
-                    if text == None:
-                        continue
-                    else:
-                        break
+        if eventName.startswith("NETBLOCK_"):
+            for addr in IPNetwork(eventData):
+                if self.checkForStop():
+                    return None
+                self.queryAddr(str(addr), parentEvent)
+        else:
+            self.queryAddr(eventData, parentEvent)
 
-            if text != None:
-                if eventName == "AFFILIATE_IPADDR":
-                    evt = SpiderFootEvent('BLACKLISTED_AFFILIATE_IPADDR',
-                        text, self.__name__, parentEvent)
-                    self.notifyListeners(evt)
-                else:
-                    evt = SpiderFootEvent('BLACKLISTED_IPADDR', 
-                        text, self.__name__, parentEvent)
-                    self.notifyListeners(evt)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + eventData + " / " + lookup + ": " + str(e))
- 
 # End of sfp_honeypot class

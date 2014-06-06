@@ -13,8 +13,14 @@ import hashlib
 import random
 import sqlite3
 import sys
+import re
 import time
 from sflib import SpiderFoot
+
+def __dbregex__(qry, data):
+    rx = re.compile(qry, re.IGNORECASE)
+    ret = rx.search(data)
+    return ret is not None
 
 class SpiderFootDb:
     sf = None
@@ -80,8 +86,11 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_OWNER', 'BGP AS Ownership', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_MEMBER', 'BGP AS Membership', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_PEER', 'BGP AS Peer', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_IPADDR', 'Blacklisted IP Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_AFFILIATE_IPADDR', 'Blacklisted Affiliate IP Address', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_SUBNET', 'Blacklisted IP on Same Subnet', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_NETBLOCK', 'Blacklisted IP on Owned Netblock', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('CO_HOSTED_SITE', 'Co-Hosted Site', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_INTERNET_NAME', 'Defaced', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_IPADDR', 'Defaced IP Address', 0)",
@@ -97,8 +106,8 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERESTING_FILE', 'Interesting File', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERNET_NAME', 'Internet Name', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_ADDRESS', 'IP Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_SUBNET', 'IP Address - Subnet', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK', 'Netblock Ownership', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_OWNER', 'Netblock Ownership', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_MEMBER', 'Netblock Membership', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_ASN', 'Malicious AS', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_IPADDR', 'Malicious IP Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_COHOST', 'Malicious Co-Hosted Site', 0)",
@@ -112,7 +121,6 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('OPERATING_SYSTEM', 'Operating System', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PASTEBIN_CONTENT', 'PasteBin Content', 1)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_DNS', 'Name Server (DNS ''NS'' Records)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_INTERNET', 'Internet Service Provider', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_MAIL', 'Email Gateway (DNS ''MX'' Records)', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_RIR_DATA', 'Raw Data from RIRs', 1)",
@@ -164,6 +172,7 @@ class SpiderFootDb:
         # up correctly.
         try:
             self.dbh.execute('SELECT COUNT(*) FROM tbl_scan_config')
+            self.conn.create_function("REGEXP", 2, __dbregex__)           
         except sqlite3.Error:
             # .. If not set up, we set it up.
             try:
@@ -190,6 +199,51 @@ class SpiderFootDb:
     # Close the database handle
     def close(self):
         self.dbh.close()
+
+    # Search results
+    # criteria is search criteria such as:
+    #  - scan_id (search within a scan, if omitted search all)
+    #  - type (search a specific type, if omitted search all)
+    #  - value (search values for a specific string, if omitted search all)
+    #  - regex (search values for a regular expression)
+    # ** at least two criteria must be set **
+    def search(self, criteria):
+        if criteria.values().count(None) == 3:
+            return False
+
+        qvars = list()
+        qry = "SELECT ROUND(c.generated) AS generated, c.data, \
+            s.data as 'source_data', \
+            c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
+            c.source_event_hash, t.event_descr, c.scan_instance_id \
+            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
+            WHERE s.scan_instance_id = c.scan_instance_id AND \
+            t.event = c.type AND c.source_event_hash = s.hash "
+
+        if criteria.get('scan_id') != None:
+            qry += "AND c.scan_instance_id = ? "
+            qvars.append(criteria['scan_id'])
+
+        if criteria.get('type') != None:
+            qry += " AND c.type = ? "
+            qvars.append(criteria['type'])
+
+        if criteria.get('value') != None:
+            qry += " AND c.data LIKE ? "
+            qvars.append(criteria['value'])
+
+        if criteria.get('regex') != None:
+            qry += " AND c.data REGEXP ? "
+            qvars.append(criteria['regex'])
+
+        qry = qry + " ORDER BY c.data"
+
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            self.sf.error("SQL error encountered when fetching search results: " +
+                e.args[0])
 
     # Get event types
     def eventTypes(self):

@@ -6,8 +6,11 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_I
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_OWNER', 'BGP AS Ownership', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_MEMBER', 'BGP AS Membership', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_PEER', 'BGP AS Peer', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_IPADDR', 'Blacklisted IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_AFFILIATE_IPADDR', 'Blacklisted Affiliate IP Address', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_SUBNET', 'Blacklisted IP on Same Subnet', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_NETBLOCK', 'Blacklisted IP on Owned Netblock', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('CO_HOSTED_SITE', 'Co-Hosted Site', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_INTERNET_NAME', 'Defaced', 0);
@@ -23,7 +26,6 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HUMAN_NAME'
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERESTING_FILE', 'Interesting File', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERNET_NAME', 'Internet Name', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_ADDRESS', 'IP Address', 0);
-INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_SUBNET', 'IP Subnet', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_INTERNAL', 'Linked URL - Internal', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_EXTERNAL', 'Linked URL - External', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_ASN', 'Malicious AS', 0);
@@ -34,11 +36,11 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_A
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_AFFILIATE_IPADDR', 'Malicious Affiliate IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_NETBLOCK', 'Malicious IP on Owned Netblock', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_SUBNET', 'Malicious IP on Same Subnet', 0);
-INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK', 'Netblock Ownership', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_OWNER', 'Netblock Ownership', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_MEMBER', 'Netblock Membership', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('OPERATING_SYSTEM', 'Operating System', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PASTEBIN_CONTENT', 'PasteBin Content', 1);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_DNS', 'Name Server (DNS ''NS'' Records)', 0);
-INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_INTERNET', 'Internet Service Provider', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_MAIL', 'Email Gateway (DNS ''MX'' Records)', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_RIR_DATA', 'Raw Data from RIRs', 1);

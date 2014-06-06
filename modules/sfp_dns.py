@@ -25,7 +25,6 @@ class sfp_dns(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'subnetlookup': True,
         'netblocklookup': True,
         'maxnetblock': 24,
         'lookaside': True,
@@ -43,9 +42,8 @@ class sfp_dns(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'skipcommononwildcard': "If wildcard DNS is detected, only attempt to look up the first common sub-domain from the common sub-domain list.",
-        'subnetlookup': "Look up all IPs on identified subnets associated with your target for possible hosts on the same target subdomain/domain?",
-        'netblocklookup': "Look up all IPs on netblocks deemed to be 'owned' by your target for possible hosts on the same target subdomain/domain?",
-        'maxnetblock': "Maximum netblock/subnet size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
+        'maxnetblock': "Maximum owned netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'onlyactive': "Only report sub-domains/hostnames that resolve to an IP.",
         'validatereverse':  "Validate that reverse-resolved hostnames still resolve back to that IP before considering them as aliases of your target.",
         'lookaside': "For each IP discovered, try and reverse look-up IPs 'next to' that IP for potential hostnames on the same subdomain/domain.",
@@ -82,7 +80,7 @@ class sfp_dns(SpiderFootPlugin):
             ret = self.resolveIP(target.getValue())
         if target.getType() == "INTERNET_NAME":
             ret = self.resolveHost(target.getValue())
-        if target.getType() == "IP_SUBNET":
+        if target.getType() == "NETBLOCK_OWNER":
             ret = list()
             for addr in IPNetwork(target.getValue()):
                 ipaddr = str(addr)
@@ -123,7 +121,7 @@ class sfp_dns(SpiderFootPlugin):
     def watchedEvents(self):
         arr = ['RAW_DNS_RECORDS', 'SEARCH_ENGINE_WEB_CONTENT', 'RAW_RIR_DATA',
             'TARGET_WEB_CONTENT', 'LINKED_URL_INTERNAL', 'INTERNET_NAME',
-            'IP_ADDRESS', 'NETBLOCK', 'IP_SUBNET']
+            'IP_ADDRESS', 'NETBLOCK_OWNER']
         return arr
 
     # What events this module produces
@@ -164,19 +162,14 @@ class sfp_dns(SpiderFootPlugin):
             # Nothing left to do with internal links and raw data
             return None
 
-        if eventName in [ 'NETBLOCK', 'IP_SUBNET' ]:
-            if eventName == 'NETBLOCK' and not self.opts['netblocklookup']:
-                return None
-            if eventName == 'IP_SUBNET' and not self.opts['subnetlookup']:
-                return None
-
+        if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.sf.debug("Network size bigger than permitted: " + \
                     str(IPNetwork(eventData).prefixlen) + " > " + \
                     str(self.opts['maxnetblock']))
                 return None
 
-            self.sf.debug("Looking up IPs in " + eventData)
+            self.sf.debug("Looking up IPs in owned netblock: " + eventData)
             for ip in IPNetwork(eventData):
                 ipaddr = str(ip)
                 if ipaddr.split(".")[3] in [ '255', '0']:
@@ -192,15 +185,6 @@ class sfp_dns(SpiderFootPlugin):
                     self.sf.debug("Found a reversed hostname from " + ipaddr + \
                         " (" + str(addrs) + ")")
                     for addr in addrs:
-                        # Don't report on anything on the same subnet if
-                        # if doesn't resolve to something on the target
-                        # domain/sub-domain.
-                        # e.g. we don't report if 1.2.3.5 (IP next to
-                        # target 1.2.3.4) resolves to a hostname on a
-                        # completely differtent domain.
-                        if not self.getTarget().matches(addr) \
-                            and eventName == 'IP_SUBNET':
-                            continue
                         # Generate an event for the IP, then
                         # let the handling by this module take
                         # care of follow-up processing.

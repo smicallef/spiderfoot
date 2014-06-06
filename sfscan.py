@@ -20,6 +20,7 @@ import dns.resolver
 import threading
 import thread
 import random
+from netaddr import IPNetwork
 from copy import deepcopy, copy
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, globalScanStatus

@@ -8,9 +8,15 @@
       <a id='btn-log' class="btn" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
     </div>
     <button class='btn btn-info disabled' id='scanreminder'>This page automatically reloads data every 5 seconds.</button>
+    <div id='btn-search' class='btn-group pull-right input-append'>
+    <input class=span2 id=searchvalue type=text placeholder='Search...' data-toggle='popover' data-html=true data-animation=true data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchstring/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>."> 
+        <button class='btn btn-primary' type=button onClick=$('#btn-search').popover('toggle');searchDirector('${id}')>
+            <i class='icon-search icon-white'></i>
+        </button>
+    </div>
     <div class="btn-group pull-right">
     <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
-    <a id='btn-export' rel="tooltip" title="Export Data to CSV" class="btn-info btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
+    <a id='btn-export' rel="tooltip" title="Export Data to CSV" class="btn-success btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
     </div> 
     <div id='customview' class="btn-group pull-right">
      <a id='btn-fullview' rel="tooltip" data-title="Full Data View" class="btn-inverse btn active" onClick='browseUpdate("full")'><i class='icon-th icon-white'></i></a>
@@ -26,9 +32,14 @@
 
     <script type='text/javascript'>
         var currentType = "ALL";
+        var currentTypeName = "All";
+        var currentSection = "btn-browse";
+        var lastSearchType = "ALL";
+        var lastSearchQuery = "";
         var dataloaders = [];
         var loadersrunning = false;
         var refresh = function() { browseEventList("${id}"); }
+        $('#searchvalue').popover({ 'trigger': 'focus', 'placement': 'bottom'});
 
         function navTo(target) {
             var targets = [ "btn-browse", "btn-info", "btn-log", 
@@ -43,7 +54,73 @@
 
             $("#breadcrumbs").remove();
             $("#customview").hide();
+            currentSection = target
             dataloaders = []
+        }
+
+        function searchDirector(instanceId) {
+            qry = $("#searchvalue").val();
+            if (currentType == "ALL") {
+                searchResults(instanceId, qry);
+            } else {
+                searchResults(instanceId, qry, currentType);
+            }
+        }
+
+        function searchResults(instanceId, query, typeName=null) {
+            // Remove pre-existing tables if they exist
+            $("#scansummary-content").remove();
+            navTo("btn-search");
+            $("#loader").show();
+            $("#btn-export").show();
+            $("#btn-refresh").show();
+            $("#btn-search").show();
+            $("#scanreminder").hide();
+            refresh = function() { searchResults(instanceId, query, typeName); }
+            sf.search(instanceId, query, typeName, function(data) {
+                            lastSearchType = typeName;
+                            lastSearchQuery = query;
+                            var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
+                            crumbs += " <span class='divider'>&gt;</span></li>";
+                            if (typeName != null) {
+                                crumbs += " <li><a class='link' onClick=";
+                                crumbs += "'browseEventData(\"" + instanceId + "\",\"" + currentTypeName + "\",\"" + typeName + "\",\"full\");'>";
+                                crumbs += unescape(currentTypeName) + "</a><span class='divider'>&gt;</span></li>";
+                            }
+                            crumbs += "<li>Search results for '" + query + "'";
+                            crumbs += " (" + data.length + " records)</li></ul>";
+
+                            if (data.length == 0) {
+                                var table = "<div id='scansummary-content'>&nbsp;&nbsp;No results found. Try broadening your search criteria.</div>";
+                            } else {
+                                var table = "<table id='scansummary-content' class='table table-bordered table-striped small'><thead><tr>";
+                                if (typeName == null) {
+                                    table += "<th>Data Element Type</th>";
+                                }
+                                table += "<th>Data Element</th><th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
+                                for (var i = 0; i < data.length; i++) {
+                                    table += "<tr>";
+                                    if (typeName == null) {
+                                        table += "<td>" + data[i][8] + "</td>";
+                                    }
+                                    table += "<td><pre style='border: 0px; background-color: inherit'>";
+                                    //table += "<a href='/entityinfo?id=" + data[i][7] + "'>" + data[i][1] + "</a>";
+                                    table += sf.replace_sfurltag(data[i][1]);
+                                    // for debug
+                                    //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
+                                    //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
+                                    //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
+                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
+                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
+                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
+                                    table += "</pre></td>";
+                                    table += "</tr>";
+                                }
+                                table += "</tbody></table>"
+                            }
+                            $("#loader").fadeOut(500);
+                            $("#mainbody").append(crumbs + table);
+            });
         }
 
         // Scan status
@@ -72,6 +149,7 @@
             $("#loader").show();
             $("#btn-export").hide();
             $("#btn-refresh").hide();
+            $("#btn-search").hide();
             $("#scanreminder").show();
             navTo("btn-status");
 
@@ -202,6 +280,7 @@
         // Summary of event types and counts for a scan
         function browseEventList(instanceId) {
             currentType = "ALL";
+            currentTypeName = "All";
 
             // Remove pre-existing tables if they exist
             $("#scansummary-content").remove();
@@ -209,6 +288,7 @@
             $("#loader").show();
             $("#btn-export").show();
             $("#btn-refresh").show();
+            $("#btn-search").show();
             $("#scanreminder").hide();
             refresh = function() { browseEventList(instanceId); }
             sf.fetchData('/scansummary', {'id': instanceId}, function(data) {
@@ -245,6 +325,7 @@
             $("#customview").show();
             $("#scanreminder").hide();
             currentType = eventType;
+            currentTypeName = eventTypeLabel;
             refresh = function() { browseEventData(instanceId, eventTypeLabel, eventType, format); }
             browseUpdate = function(newformat) { browseEventData(instanceId, eventTypeLabel, eventType, newformat); }
 
@@ -350,7 +431,11 @@
         function exportEventData(instanceId, eventType) {
             $("#loader").show();
             var efr = document.getElementById('exportframe');
-            efr.src = '/scaneventresultexport?id=' + instanceId + '&type=' + eventType;
+            if (currentSection == "btn-search") {
+                efr.src = '/scansearchresultexport?id=' + instanceId + '&eventType=' + lastSearchType + "&value=" + lastSearchQuery;
+            } else {
+                efr.src = '/scaneventresultexport?id=' + instanceId + '&type=' + eventType;
+            }
             $("#loader").fadeOut(500);
         }
 
@@ -360,6 +445,7 @@
             $("#loader").show();
             $("#btn-export").hide();
             $("#btn-refresh").show();
+            $("#btn-search").hide();
             $("#scanreminder").hide();
             navTo("btn-info");
             refresh = function() { viewScanConfig(instanceId); }
