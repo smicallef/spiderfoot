@@ -149,6 +149,8 @@ class sfp_virustotal(SpiderFootPlugin):
                 return None
 
             info = self.query(addr)
+            if info == None:
+                continue
             if info.has_key('detected_urls'):
                 self.sf.info("Found VirusTotal URL data for " + addr)
                 if eventName in [ "IP_ADDRESS" ] or eventName.startswith("NETBLOCK_"):
