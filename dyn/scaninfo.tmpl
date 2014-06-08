@@ -9,8 +9,8 @@
     </div>
     <button class='btn btn-info disabled' id='scanreminder'>This page automatically reloads data every 5 seconds.</button>
     <div id='btn-search' class='btn-group pull-right input-append'>
-    <input class=span2 id=searchvalue type=text placeholder='Search...' data-toggle='popover' data-html=true data-animation=true data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchstring/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>."> 
-        <button class='btn btn-primary' type=button onClick=$('#btn-search').popover('toggle');searchDirector('${id}')>
+    <input class=span2 id=searchvalue type=text placeholder='Search...' data-toggle='popover' data-html=true data-animation=true data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchregex/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>."> 
+        <button class='btn btn-primary' id=searchbutton type=button onClick=$('#btn-search').popover('toggle');searchDirector('${id}')>
             <i class='icon-search icon-white'></i>
         </button>
     </div>
@@ -40,6 +40,11 @@
         var loadersrunning = false;
         var refresh = function() { browseEventList("${id}"); }
         $('#searchvalue').popover({ 'trigger': 'focus', 'placement': 'bottom'});
+        $('#searchvalue').keyup(function(event) {
+            if (event.keyCode == 13) {
+                $('#searchbutton').click();
+            }
+        });
 
         function navTo(target) {
             var targets = [ "btn-browse", "btn-info", "btn-log", 
@@ -432,7 +437,12 @@
             $("#loader").show();
             var efr = document.getElementById('exportframe');
             if (currentSection == "btn-search") {
-                efr.src = '/scansearchresultexport?id=' + instanceId + '&eventType=' + lastSearchType + "&value=" + lastSearchQuery;
+                if (lastSearchType == null || lastSearchType == "ALL") {
+                    type = "";
+                } else {
+                    type = lastSearchType;
+                }
+                efr.src = '/scansearchresultexport?id=' + instanceId + '&eventType=' + type + "&value=" + lastSearchQuery;
             } else {
                 efr.src = '/scaneventresultexport?id=' + instanceId + '&type=' + eventType;
             }
