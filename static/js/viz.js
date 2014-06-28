@@ -51,7 +51,9 @@ function sf_viz_countLevels(arg, levelsDeep, maxLevels) {
             // We've hit a member with children..
             if (p == "children" && data[i].children != null) {
                 levels++;
-                levels, max = sf_viz_countLevels(data[i].children, levels, max);
+                arr = sf_viz_countLevels(data[i].children, levels, max);
+                levels = arr[0];
+                max = arr[1];
             }
 
             if (p == "children" && data[i].children == null) {
