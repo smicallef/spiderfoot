@@ -72,7 +72,7 @@
             }
         }
 
-        function searchResults(instanceId, query, typeName=null) {
+        function searchResults(instanceId, query, typeName) {
             // Remove pre-existing tables if they exist
             $("#scansummary-content").remove();
             navTo("btn-search");
@@ -172,16 +172,6 @@
                     });
                 }
             );
-
-            /*dataloaders.push(
-                function() {
-                    sf.fetchData('/scanhistory', {'id': instanceId}, function(data) {
-                        hist = {};
-                        for (i = 0; i < data.length; i++) {
-                        }
-                    });
-                }
-            );*/
 
             dataloaders.push(
                 function() {

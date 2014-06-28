@@ -35,7 +35,7 @@ sf.remove_sfurltag = function(data) {
     return data;
 }
 
-sf.search = function(scan_id=null, value=null, type=null, postFunc) {
+sf.search = function(scan_id, value, type, postFunc) {
     sf.fetchData("/search", { id: scan_id, eventType: type, value: value }, postFunc);
 }
 

@@ -505,7 +505,7 @@ class SpiderFootWebUi:
                 parentId = row[9]
                 childId = row[8]
                 datamap[childId] = row
-                print childId + " = " + str(row)
+                #print childId + " = " + str(row)
 
                 if pc.has_key(parentId):
                     if childId not in pc[parentId]:
