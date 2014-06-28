@@ -84,7 +84,8 @@ class sfp_yahoosearch(SpiderFootPlugin):
             content = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner, pages[page])
 
             # Submit the yahoo results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", content, self.__name__)
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", content, 
+                self.__name__, event)
             self.notifyListeners(evt)
 
             # We can optionally fetch links to our domain found in the search
@@ -104,7 +105,8 @@ class sfp_yahoosearch(SpiderFootPlugin):
                         if self.checkForStop():
                             return None
 
-                        evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, self.__name__)
+                        evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, 
+                            self.__name__, event)
                         self.notifyListeners(evt)
 
 # End of sfp_yahoosearch class

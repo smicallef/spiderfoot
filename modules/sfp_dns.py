@@ -121,7 +121,7 @@ class sfp_dns(SpiderFootPlugin):
     def watchedEvents(self):
         arr = ['RAW_DNS_RECORDS', 'SEARCH_ENGINE_WEB_CONTENT', 'RAW_RIR_DATA',
             'TARGET_WEB_CONTENT', 'LINKED_URL_INTERNAL', 'INTERNET_NAME',
-            'IP_ADDRESS', 'NETBLOCK_OWNER']
+            'IP_ADDRESS', 'NETBLOCK_OWNER', "DNS_TEXT" ]
         return arr
 
     # What events this module produces
@@ -129,7 +129,8 @@ class sfp_dns(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return [ "IP_ADDRESS", "INTERNET_NAME", "PROVIDER_MAIL", "DOMAIN_NAME",
-            "PROVIDER_DNS", "AFFILIATE_INTERNET_NAME", "RAW_DNS_RECORDS" ]
+            "PROVIDER_DNS", "AFFILIATE_INTERNET_NAME", "RAW_DNS_RECORDS", 
+            "DNS_TEXT", "IPV6_ADDRESS" ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -148,7 +149,7 @@ class sfp_dns(SpiderFootPlugin):
 
         # Identify potential sub-domains/hostnames
         if eventName in [ "SEARCH_ENGINE_WEB_CONTENT", "TARGET_WEB_CONTENT",
-            "LINKED_URL_INTERNAL", "RAW_RIR_DATA", "RAW_DNS_RECORDS" ]:
+            "LINKED_URL_INTERNAL", "RAW_RIR_DATA", "RAW_DNS_RECORDS", "DNS_TEXT" ]:
             # If we've received a link or some raw data, extract potential sub-domains
             # from the data for resolving later.
             for name in self.getTarget().getNames():
@@ -158,7 +159,7 @@ class sfp_dns(SpiderFootPlugin):
                 matches = re.findall(pat, eventData)
                 if matches != None:
                     for match in matches:
-                        self.processHost(match, parentEvent)
+                        self.processHost(match, parentEvent, affiliate=False)
             # Nothing left to do with internal links and raw data
             return None
 
@@ -188,56 +189,60 @@ class sfp_dns(SpiderFootPlugin):
                         # Generate an event for the IP, then
                         # let the handling by this module take
                         # care of follow-up processing.
-                        self.processHost(ipaddr, parentEvent)
+                        self.processHost(ipaddr, parentEvent, affiliate=False)
             return None
 
         # Handling INTERNET_NAME and IP_ADDRESS events..
-
-        if eventName != 'IP_ADDRESS':
-            if '://' in eventData:
-                addrs = self.resolveHost(self.sf.urlFQDN(eventData))
+        if eventName in [ "IP_ADDRESS", "INTERNET_NAME" ]:
+            if eventName != 'IP_ADDRESS':
+                if '://' in eventData:
+                    addrs = self.resolveHost(self.sf.urlFQDN(eventData))
+                else:
+                    addrs = self.resolveHost(eventData)
             else:
-                addrs = self.resolveHost(eventData)
-        else:
-            addrs = self.resolveIP(eventData)
+                addrs = self.resolveIP(eventData)
 
-        for addr in addrs:
-            self.processHost(addr, parentEvent)
+            for addr in addrs:
+                self.processHost(addr, parentEvent, affiliate=False)
 
-        # Try to reverse-resolve IPs 'near' the identified IP
-        if self.opts['lookaside'] and eventName == 'IP_ADDRESS':
-            ip = IPAddress(eventData)
-            minip = IPAddress(int(ip) - self.opts['lookasidecount'])
-            maxip = IPAddress(int(ip) + self.opts['lookasidecount'])
-            self.sf.debug("Lookaside max: " + str(maxip) + ", min: " + str(minip))
-            s = int(minip)
-            c = int(maxip)
-            while s <= c:
-                sip = str(IPAddress(s))
-                if self.checkForStop():
-                    return None
+            # Try to reverse-resolve IPs 'near' the identified IP
+            if self.opts['lookaside'] and eventName == 'IP_ADDRESS':
+                ip = IPAddress(eventData)
+                minip = IPAddress(int(ip) - self.opts['lookasidecount'])
+                maxip = IPAddress(int(ip) + self.opts['lookasidecount'])
+                self.sf.debug("Lookaside max: " + str(maxip) + ", min: " + str(minip))
+                s = int(minip)
+                c = int(maxip)
+                while s <= c:
+                    sip = str(IPAddress(s))
+                    self.sf.debug("Attempting look-aside lookup of: " + sip)
+                    if self.checkForStop():
+                        return None
 
-                if self.hostresults.has_key(sip):
+                    if self.hostresults.has_key(sip):
+                        s = s + 1
+                        continue
+
+                    addrs = self.resolveIP(sip)
+                    if len(addrs) == 0:
+                        self.sf.debug("Look-aside resolve for " + sip + " failed.")
+                        s = s + 1
+                        continue
+
+                    # Report addresses that resolve to hostnames on the same
+                    # domain or sub-domain as the target.
+                    for addr in addrs:
+                        if addr == sip:
+                            continue
+                        if self.getTarget().matches(addr):
+                            # Generate an event for the IP, then
+                            # let the handling by this module take
+                            # care of follow-up processing.
+                            self.processHost(sip, parentEvent, affiliate=False)
+                        else:
+                            self.processHost(sip, parentEvent, affiliate=False)
                     s = s + 1
-                    continue
-
-                addrs = self.resolveIP(sip)
-                if len(addrs) == 0:
-                    self.sf.debug("Look-aside resolve for " + sip + " failed.")
-                    s = s + 1
-                    continue
-
-                # Report addresses that resolve to hostnames on the same
-                # domain or sub-domain as the target.
-                for addr in addrs:
-                    if self.getTarget().matches(addr):
-                        # Generate an event for the IP, then
-                        # let the handling by this module take
-                        # care of follow-up processing.
-                        self.processHost(sip, parentEvent)
-                s = s + 1
-            
-        return None
+            return None
 
     # Resolve an IP
     def resolveIP(self, ipaddr):
@@ -252,6 +257,7 @@ class sfp_dns(SpiderFootPlugin):
         try:
             addrs = self.sf.normalizeDNS(socket.gethostbyaddr(ipaddr))
             self.resolveCache[ipaddr] = addrs
+            self.sf.debug("Resolved " + ipaddr + " to: " + str(addrs))
             return addrs
         except BaseException as e:
             self.sf.info("Unable to resolve " + ipaddr + " (" + str(e) + ")")
@@ -268,16 +274,18 @@ class sfp_dns(SpiderFootPlugin):
         try:
             addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
             self.resolveCache[hostname] = addrs
+            self.sf.debug("Resolved " + hostname + " to: " + str(addrs))
             return addrs
         except BaseException as e:
             self.sf.info("Unable to resolve " + hostname + " (" + str(e) + ")")
             return list()
 
-    def processHost(self, host, parentEvent):
+    # Process a host/IP, parentEvent is the event that represents this entity
+    def processHost(self, host, parentEvent, affiliate=None):
         if not self.hostresults.has_key(host):
             self.hostresults[host] = list(parentEvent.data)
         else:
-            if parentEvent.data in self.hostresults[host]:
+            if parentEvent.data in self.hostresults[host] or parentEvent.data == host:
                 self.sf.debug("Skipping host, " + host + ", already processed.")
                 return None
             else:
@@ -286,15 +294,18 @@ class sfp_dns(SpiderFootPlugin):
         self.sf.debug("Found host: " + host)
         # If the returned hostname is aliaseed to our
         # target in some way, flag it as an affiliate
-        affil = True
-        if self.getTarget().matches(host):
-            affil = False
-        # If the IP the host resolves to is in our
-        # list of aliases, 
-        if not self.sf.validIP(host):
-            for hostip in self.resolveHost(host):
-                if self.getTarget().matches(hostip):
-                    affil = False
+        if affiliate == None:
+            affil = True
+            if self.getTarget().matches(host):
+                affil = False
+            # If the IP the host resolves to is in our
+            # list of aliases, 
+            if not self.sf.validIP(host):
+                for hostip in self.resolveHost(host):
+                    if self.getTarget().matches(hostip):
+                        affil = False
+        else:
+            affil = affiliate
         
         if affil:
             if self.sf.validIP(host):
@@ -307,11 +318,6 @@ class sfp_dns(SpiderFootPlugin):
             else:
                 htype = "INTERNET_NAME"
                 
-        # Don't report back the same thing that was provided
-        #if htype == parentEvent.eventType and host == parentEvent.data:
-        #    print "X: " + htype + " / " + host
-        #    return None
-
         if htype.endswith("INTERNET_NAME") and self.opts['onlyactive']:
             if len(self.resolveHost(host)) == 0:
                 return None
@@ -341,8 +347,9 @@ class sfp_dns(SpiderFootPlugin):
         # Process the raw data alone
         recdata = dict()
         recs = {
-            'MX': ['\S+ \d+ IN MX \d+ (\S+)\.', 'PROVIDER_MAIL'],
-            'NS': ['\S+ \d+ IN NS (\S+)\.', 'PROVIDER_DNS']
+            'MX': ['\S+\s+(?:\d+)?\s+IN\s+MX\s+\d+\s+(\S+)\.', 'PROVIDER_MAIL'],
+            'NS': ['\S+\s+(?:\d+)?\s+IN\s+NS\s+(\S+)\.', 'PROVIDER_DNS'],
+            'TXT': ['\S+\s+TXT\s+\"(.[^\"]*)"', 'DNS_TEXT']
         }
 
         for rec in recs.keys():
@@ -366,16 +373,16 @@ class sfp_dns(SpiderFootPlugin):
                                 self.sf.debug("Matched: " +  m)
                                 strdata = unicode(m, 'utf-8', errors='replace')
                                 evt = SpiderFootEvent(recs[rx][1], strdata, 
-                                    self.__name__)
+                                    self.__name__, domevt)
                                 self.notifyListeners(evt)
-                                if not strdata.endswith(domainName):
+                                if rec != "TXT" and not strdata.endswith(domainName):
                                     evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME",
-                                    strdata, self.__name__)
+                                    strdata, self.__name__, domevt)
                                     self.notifyListeners(evt)
                         else:
                                 strdata = unicode(str(x), 'utf-8', errors='replace')
                                 evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata, 
-                                    self.__name__) 
+                                    self.__name__, domevt) 
                                 self.notifyListeners(evt)
             except BaseException as e:
                 self.sf.error("Failed to obtain DNS response for " + domainName + \
@@ -404,6 +411,6 @@ class sfp_dns(SpiderFootPlugin):
                 continue
 
             if len(self.resolveHost(name)) > 0:
-                self.processHost(name, domevt)
+                self.processHost(name, domevt, affiliate=False)
 
 # End of sfp_dns class

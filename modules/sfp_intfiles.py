@@ -82,7 +82,8 @@ class sfp_intfiles(SpiderFootPlugin):
                         continue
                     else:
                         self.results.append(eventData)
-                    evt = SpiderFootEvent("INTERESTING_FILE", eventData, self.__name__)
+                    evt = SpiderFootEvent("INTERESTING_FILE", eventData, 
+                        self.__name__, event)
                     self.notifyListeners(evt)
             return None
 
@@ -123,7 +124,8 @@ class sfp_intfiles(SpiderFootPlugin):
                     return None
 
                 # Submit the gresults for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], self.__name__)
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], 
+                    self.__name__, event)
                 self.notifyListeners(evt)
 
                 if self.opts['searchengine'].lower() == "yahoo":
@@ -145,7 +147,8 @@ class sfp_intfiles(SpiderFootPlugin):
                     if self.sf.urlFQDN(link).endswith(eventData) and \
                         "." + fileExt.lower() in link.lower():
                         self.sf.info("Found an interesting file: " + link)
-                        evt = SpiderFootEvent("INTERESTING_FILE", link, self.__name__)
+                        evt = SpiderFootEvent("INTERESTING_FILE", link, 
+                            self.__name__, event)
                         self.notifyListeners(evt)
 
 # End of sfp_intfiles class

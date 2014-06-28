@@ -23,7 +23,8 @@ import random
 from netaddr import IPNetwork
 from copy import deepcopy, copy
 from sfdb import SpiderFootDb
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, globalScanStatus
+from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, \
+    SpiderFootPlugin, globalScanStatus
 
 # Eventually change this to be able to control multiple scan instances
 class SpiderFootScanner(threading.Thread):
@@ -212,9 +213,19 @@ class SpiderFootScanner(threading.Thread):
             # Now we are ready to roll..
             self.setStatus("RUNNING")
 
+            # Create a pseudo module for the root event to originate from
+            psMod = SpiderFootPlugin()
+            psMod.__name__ = "SpiderFoot UI"
+            psMod.setTarget(target)
+            psMod.clearListeners()
+            for mod in self.ts.moduleInstances.values():
+                if mod.watchedEvents() != None:
+                    psMod.registerListener(mod)
+
             # Create the "ROOT" event which un-triggered modules will link events to
-            rootEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue, "SpiderFoot UI")
-            self.ts.dbh.scanEventStore(self.ts.scanId, rootEvent)
+            firstEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue, 
+                "SpiderFoot UI", None)
+            psMod.notifyListeners(firstEvent)
 
             # Start the modules sequentially.
             for module in self.ts.moduleInstances.values():
@@ -223,15 +234,6 @@ class SpiderFootScanner(threading.Thread):
                     self.setStatus('ABORTING')
                     aborted = True
                     break
-
-                # Notify modules with the root event
-                if self.ts.targetType in module.watchedEvents():
-                    module.handleEvent(rootEvent)                   
-
-            # Check if any of the modules ended due to being stopped
-            for module in self.ts.moduleInstances.values():
-                if module.checkForStop():
-                    aborted = True
 
             if aborted:
                 self.ts.sf.status("Scan [" + self.ts.scanId + "] aborted.")

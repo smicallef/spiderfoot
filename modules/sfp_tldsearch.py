@@ -65,7 +65,7 @@ class sfp_tldsearch(SpiderFootPlugin):
         except BaseException as e:
             self.tldResults[target] = False
 
-    def tryTldWrapper(self, tldList):
+    def tryTldWrapper(self, tldList, sourceEvent):
         self.tldResults = dict()
         running = True
         i = 0
@@ -91,7 +91,7 @@ class sfp_tldsearch(SpiderFootPlugin):
 
         for res in self.tldResults.keys():
             if self.tldResults[res]:
-                self.sendEvent(None, res)
+                self.sendEvent(sourceEvent, res)
 
     # Store the result internally and notify listening modules
     def sendEvent(self, source, result):
@@ -106,10 +106,10 @@ class sfp_tldsearch(SpiderFootPlugin):
             pageContent = self.sf.fetchUrl('http://' + result,
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if pageContent['content'] != None:
-                evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
+                evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
                 self.notifyListeners(evt)
         else:
-            evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
+            evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
             self.notifyListeners(evt)
 
     # Search for similar sounding domains
@@ -154,12 +154,12 @@ class sfp_tldsearch(SpiderFootPlugin):
             if len(targetList) <= self.opts['maxthreads']:
                 targetList.append(tryDomain)
             else:
-                self.tryTldWrapper(targetList)
+                self.tryTldWrapper(targetList, event)
                 targetList = list()
 
         # Scan whatever may be left over.
         if len(targetList) > 0:
-            self.tryTldWrapper(targetList)
+            self.tryTldWrapper(targetList, event)
 
         return None
 

@@ -497,7 +497,6 @@ class SpiderFootWebUi:
                 nextIds.append(parentId)
 
         while keepGoing:
-            #print "Next IDs: " + str(nextIds)
             parentSet = dbh.scanElementSources(id, nextIds)
             nextIds = list()
             keepGoing = False
@@ -506,11 +505,7 @@ class SpiderFootWebUi:
                 parentId = row[9]
                 childId = row[8]
                 datamap[childId] = row
-
-                # Prevent us from looping at root
-                # 0 = event_hash and 3 = source_event_hash
-                if row[8] == "ROOT" and row[9] == "ROOT":
-                    continue
+                print childId + " = " + str(row)
 
                 if pc.has_key(parentId):
                     if childId not in pc[parentId]:
@@ -519,10 +514,12 @@ class SpiderFootWebUi:
                     pc[parentId] = [ childId ]
                 if parentId not in nextIds:
                     nextIds.append(parentId)
-                # Stop until we've found ROOT
-                # 3 = source_event_hash
-                if row[3] != "ROOT":
+
+                # Prevent us from looping at root
+                if parentId != "ROOT":
                     keepGoing = True
+
+        datamap[parentId] = row
 
         #print pc
         retdata = dict()

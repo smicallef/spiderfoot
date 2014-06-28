@@ -85,7 +85,7 @@ class sfp_similar(SpiderFootPlugin):
 
     # Fetch and loop through Whois.com results, updating our results data. Stop
     # once we've reached the end.
-    def scrapeWhois(self, keyword):
+    def scrapeWhois(self, keyword, sourceEvent):
         reachedEnd = False
         i = 0
         while not reachedEnd:
@@ -111,7 +111,7 @@ class sfp_similar(SpiderFootPlugin):
                 if result in self.results:
                     continue
 
-                self.storeResult(fetchPage, result)
+                self.storeResult(sourceEvent, result)
 
             if not whoisLastPageIndicator in whois['content']:
                 reachedEnd = True
@@ -120,7 +120,7 @@ class sfp_similar(SpiderFootPlugin):
 
             i += 1
 
-    def scrapeDomaintools(self, keyword, position):
+    def scrapeDomaintools(self, keyword, position, sourceEvent):
         reachedEnd = False
         i = 1 # Using 0 will cause the first page to appear twice
         while not reachedEnd:
@@ -146,7 +146,7 @@ class sfp_similar(SpiderFootPlugin):
                 if '.jpg' in result:
                     continue
 
-                self.storeResult(fetchPage, result)
+                self.storeResult(sourceEvent, result)
 
             if not domtoolLastPageIndicator in domtool['content']:
                 reachedEnd = True
@@ -155,7 +155,7 @@ class sfp_similar(SpiderFootPlugin):
 
             i += 1
 
-    def scrapeNamedroppers(self, keyword, position):
+    def scrapeNamedroppers(self, keyword, position, sourceEvent):
         reachedEnd = False
         i = 1 # Using 0 will cause the first page to appear twice
         while not reachedEnd:
@@ -178,7 +178,7 @@ class sfp_similar(SpiderFootPlugin):
                 if result in self.results:
                     continue
 
-                self.storeResult(fetchPage, result)
+                self.storeResult(sourceEvent, result)
 
             if not namedropLastPageIndicator in namedrop['content']:
                 reachedEnd = True
@@ -200,10 +200,10 @@ class sfp_similar(SpiderFootPlugin):
             pageContent = self.sf.fetchUrl('http://' + result, 
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if pageContent['content'] != None:
-                evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
+                evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
                 self.notifyListeners(evt)
         else:
-            evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__)
+            evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
             self.notifyListeners(evt)
 
 
@@ -228,15 +228,15 @@ class sfp_similar(SpiderFootPlugin):
         # Check popular Internet repositories for domains containing our target keyword
         if "domtools" in self.opts['source'] or "ALL" in self.opts['source']:
             if "left" in self.opts['method']:
-                self.scrapeDomaintools(keyword, "LEFT")
+                self.scrapeDomaintools(keyword, "LEFT", event)
             if "right" in self.opts['method']:
-                self.scrapeDomaintools(keyword, "RIGHT")
+                self.scrapeDomaintools(keyword, "RIGHT", event)
 
         if "namedroppers" in self.opts['source'] or "ALL" in self.opts['source']:
             if "left" in self.opts['method']:
-                self.scrapeNamedroppers(keyword, "LEFT")
+                self.scrapeNamedroppers(keyword, "LEFT", event)
             if "right" in self.opts['method']:
-                self.scrapeNamedroppers(keyword, "RIGHT")
+                self.scrapeNamedroppers(keyword, "RIGHT", event)
 
         return None
 

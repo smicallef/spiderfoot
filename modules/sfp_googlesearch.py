@@ -80,7 +80,8 @@ class sfp_googlesearch(SpiderFootPlugin):
                 return None
 
             # Submit the google results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], self.__name__)
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], 
+                self.__name__, event)
             self.notifyListeners(evt)
 
             # We can optionally fetch links to our domain found in the search
@@ -100,7 +101,8 @@ class sfp_googlesearch(SpiderFootPlugin):
                         if self.checkForStop():
                             return None
 
-                        evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, self.__name__)
+                        evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, 
+                            self.__name__, event)
                         self.notifyListeners(evt)
 
 # End of sfp_googlesearch class

@@ -78,7 +78,8 @@ class sfp_pastebin(SpiderFootPlugin):
                 return None
 
             # Submit the google results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], self.__name__)
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], 
+                self.__name__, event)
             self.notifyListeners(evt)
 
             # Fetch the PasteBin page
@@ -105,7 +106,7 @@ class sfp_pastebin(SpiderFootPlugin):
                         continue
 
                     evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT",
-                        res['content'], self.__name__)
+                        res['content'], self.__name__, event)
                     self.notifyListeners(evt)
 
                     # Sometimes pastebin search results false positives
@@ -124,7 +125,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
                     evt = SpiderFootEvent("PASTEBIN_CONTENT",
                         "<SFURL>" + link + "</SFURL>\n" + "\"... " + data + " ...\"", 
-                        self.__name__)
+                        self.__name__, event)
                     self.notifyListeners(evt)
 
 

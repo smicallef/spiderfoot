@@ -11,7 +11,6 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_AFFILIATE_IPADDR', 'Blacklisted Affiliate IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_SUBNET', 'Blacklisted IP on Same Subnet', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_NETBLOCK', 'Blacklisted IP on Owned Netblock', 0);
-INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('CO_HOSTED_SITE', 'Co-Hosted Site', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_INTERNET_NAME', 'Defaced', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_IPADDR', 'Defaced IP Address', 0)
@@ -19,13 +18,16 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFF
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_COHOST', 'Defaced Co-Hosted Site', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_IPADDR', 'Defaced Affiliate IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEVICE_TYPE', 'Device Type', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DNS_TEXT', 'DNS TXT Record', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DOMAIN_NAME', 'Domain Name', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HUMAN_NAME', 'Human Name', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERESTING_FILE', 'Interesting File', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERNET_NAME', 'Internet Name', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_ADDRESS', 'IP Address', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IPV6_ADDRESS', 'IPv6 Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_INTERNAL', 'Linked URL - Internal', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_EXTERNAL', 'Linked URL - External', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_ASN', 'Malicious AS', 0);

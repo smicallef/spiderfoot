@@ -1279,7 +1279,7 @@ class SpiderFootEvent(object):
     sourceEventHash = None
     __id = None
     
-    def __init__(self, eventType, data, module, sourceEvent=None,
+    def __init__(self, eventType, data, module, sourceEvent,
         confidence=100, visibility=100, risk=0):
         self.eventType = eventType
         self.generated = time.time()
@@ -1292,19 +1292,16 @@ class SpiderFootEvent(object):
 
         # "ROOT" is a special "hash" reserved for elements with no
         # actual parent (e.g. the first page spidered.)
-        if sourceEvent != None:
-            self.sourceEventHash = sourceEvent.getHash()
-        else:
+        if self.sourceEvent == None:
             self.sourceEventHash = "ROOT"
+        else:
+            self.sourceEventHash = sourceEvent.getHash()
 
         self.__id = self.eventType + str(self.generated) + self.module + \
             str(random.randint(0, 99999999))
 
     # Unique hash of this event
     def getHash(self):
-        if self.module == "SpiderFoot UI":
-            return "ROOT"
-
         digestStr = self.__id.encode('raw_unicode_escape')
         return hashlib.sha256(digestStr).hexdigest()
 

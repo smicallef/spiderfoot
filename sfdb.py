@@ -98,6 +98,7 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_IPADDR', 'Defaced Affiliate IP Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_COHOST', 'Defaced Co-Hosted Site', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEVICE_TYPE', 'Device Type', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DNS_TEXT', 'DNS TXT Record', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DOMAIN_NAME', 'Domain Name', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0)",
@@ -106,6 +107,7 @@ class SpiderFootDb:
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERESTING_FILE', 'Interesting File', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERNET_NAME', 'Internet Name', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_ADDRESS', 'IP Address', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IPV6_ADDRESS', 'IPv6 Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_OWNER', 'Netblock Ownership', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_MEMBER', 'Netblock Membership', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_ASN', 'Malicious AS', 0)",
@@ -347,6 +349,26 @@ class SpiderFootDb:
             self.sf.error("SQL error encountered when fetching result summary: " +
                 e.args[0])
 
+    # Obtain the ROOT event for a scan: Must be same output as scanResultEvent!
+    def scanRootEvent(self, instanceId):
+        qry = "SELECT ROUND(c.generated) AS generated, c.data, \
+            s.data as 'source_data', \
+            c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
+            c.source_event_hash, t.event_descr \
+            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
+            WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
+            s.scan_instance_id = c.scan_instance_id AND \
+            t.event = c.type AND c.source_event_hash = 'ROOT'"
+
+        qvars = [instanceId]
+
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchone()
+        except sqlite3.Error as e:
+            self.sf.error("SQL error encountered when fetching ROOT event: " +
+                e.args[0])
+
     # Obtain the data for a scan and event type
     def scanResultEvent(self, instanceId, eventType='ALL'):
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
@@ -561,6 +583,9 @@ class SpiderFootDb:
 
         if truncateSize > 0:
             storeData = storeData[0:truncateSize]
+
+        if sfEvent.sourceEventHash in [ "", None]:
+            self.sf.fatal("UNABLE TO CREATE RECORD WITH EMPTY SOURCE EVENT HASH!")
 
         qry = "INSERT INTO tbl_scan_results \
             (scan_instance_id, hash, type, generated, confidence, \

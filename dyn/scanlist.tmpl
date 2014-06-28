@@ -25,6 +25,11 @@
                                 $("#mainbody").append(welcome);
                                 return;
                             }
+                            var buttons = "<div class='btn-toolbar'><div class='btn-group'><a id='btn-status' class='btn' onClick='scanStatusView(\"${id}\")'>";
+                            buttons += "<i class='icon-eye-open'></i>&nbsp;Status</a>";
+                            buttons += "<a id='btn-browse' class='btn' onClick='browseEventList(\"${id}\")'><i class='icon-th-list'></i>&nbsp;Browse</a>";
+                            buttons += "<a id='btn-info' class='btn' onClick='viewScanConfig(\"${id}\")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>";
+                            buttons += "<a id='btn-log' class='btn' onClick='viewScanLog(\"${id}\")'><i class='icon-book'></i>&nbsp;Log</a></div></div>";
                             var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter'>";
                             table += "<thead><tr> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th style='text-align: center'>Status</th> <th style='text-align: center'>Elements</th><th style='text-align: center'>Action</th> </tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
