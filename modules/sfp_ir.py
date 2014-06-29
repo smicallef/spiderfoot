@@ -278,7 +278,7 @@ class sfp_ir(SpiderFootPlugin):
             # already found this AS before.
             if not self.nbreported.has_key(eventData):
                 # Find all the netblocks owned by this AS
-                self.nbreported[asn] = True
+                self.nbreported[eventData] = True
                 netblocks = self.asNetblocks(eventData)
                 if netblocks != None:
                     for netblock in netblocks:
