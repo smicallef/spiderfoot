@@ -784,8 +784,8 @@ class SpiderFoot:
             limit = opts['limit']
 
         # We attempt to make the URL look as authentically human as possible
-        seedUrl = "http://www.google.com/search?q={0}".format(searchString) + \
-            "&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
+        seedUrl = u"http://www.google.com/search?q={0}".format(searchString) + \
+            u"&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
 
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
@@ -824,7 +824,7 @@ class SpiderFoot:
                 self.info("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
 
-            nextPage = self.fetchUrl('http://www.google.com' + nextUrl,
+            nextPage = self.fetchUrl(u'http://www.google.com' + nextUrl,
                 timeout=opts['timeout'], useragent=opts['useragent'])
             if nextPage['code'] == 403 or nextPage['code'] == 503:
                 self.error("Google doesn't like us right now..", False)
@@ -861,8 +861,8 @@ class SpiderFoot:
             limit = opts['limit']
 
         # We attempt to make the URL look as authentically human as possible
-        seedUrl = "http://www.bing.com/search?q={0}".format(searchString) + \
-            "&pc=MOZI"
+        seedUrl = u"http://www.bing.com/search?q={0}".format(searchString) + \
+            u"&pc=MOZI"
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
         if firstPage['code'] == 400:
@@ -899,7 +899,7 @@ class SpiderFoot:
                 self.info("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
 
-            nextPage = self.fetchUrl('http://www.bing.com' + nextUrl,
+            nextPage = self.fetchUrl(u'http://www.bing.com' + nextUrl,
                 timeout=opts['timeout'], useragent=opts['useragent'])
             if nextPage['code'] == 400:
                 self.error("Bing doesn't like us any more..", False)
@@ -936,8 +936,8 @@ class SpiderFoot:
             limit = opts['limit']
 
         # We attempt to make the URL look as authentically human as possible
-        seedUrl = "https://search.yahoo.com/search?p={0}".format(searchString) + \
-            "&toggle=1&cop=mss&ei=UTF-8"
+        seedUrl = u"https://search.yahoo.com/search?p={0}".format(searchString) + \
+            u"&toggle=1&cop=mss&ei=UTF-8"
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
             useragent=opts['useragent'])
         if firstPage['code'] == 403:
@@ -958,7 +958,7 @@ class SpiderFoot:
             for match in matches:
                 # Yahoo moves in increments of 10
                 if "b=" + str((fetches*10)+1) in match:
-                    nextUrl = "https://search.yahoo.com" + match
+                    nextUrl = u"https://search.yahoo.com" + match
 
             if nextUrl == None:
                 self.debug("Nothing left to scan for in Yahoo results.")

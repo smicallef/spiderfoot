@@ -89,8 +89,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 self.opts['_internettlds'])
 
         for site in sites.keys():
-            searchStr = unicode(sites[site][0].format(eventData), 
-                errors="ignore").replace(" ", "%20")
+            s = unicode(sites[site][0]).format(eventData)
+            searchStr = s.replace(" ", "%20")
             searchDom = sites[site][1]
 
             if self.opts['method'].lower() == "google":

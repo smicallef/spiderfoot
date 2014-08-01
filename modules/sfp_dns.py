@@ -240,7 +240,7 @@ class sfp_dns(SpiderFootPlugin):
                             # care of follow-up processing.
                             self.processHost(sip, parentEvent, affiliate=False)
                         else:
-                            self.processHost(sip, parentEvent, affiliate=False)
+                            self.processHost(sip, parentEvent, affiliate=True)
                     s = s + 1
             return None
 
