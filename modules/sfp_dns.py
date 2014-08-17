@@ -203,7 +203,10 @@ class sfp_dns(SpiderFootPlugin):
                 addrs = self.resolveIP(eventData)
 
             for addr in addrs:
-                self.processHost(addr, parentEvent, affiliate=False)
+                if self.getTarget().matches(addr):
+                    self.processHost(addr, parentEvent, affiliate=False)
+                else:
+                    self.processHost(addr, parentEvent, affiliate=True)
 
             # Try to reverse-resolve IPs 'near' the identified IP
             if self.opts['lookaside'] and eventName == 'IP_ADDRESS':
