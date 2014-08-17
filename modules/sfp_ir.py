@@ -254,7 +254,7 @@ class sfp_ir(SpiderFootPlugin):
         if eventName.startswith("BGP_AS_"):
             neighs = self.asNeighbours(eventData)
             if neighs == None:
-                self.debug("No neighbors found to AS " + eventData)
+                self.sf.debug("No neighbors found to AS " + eventData)
                 return None
 
             for nasn in neighs:
@@ -267,10 +267,10 @@ class sfp_ir(SpiderFootPlugin):
                     for k, v in ownerinfo.iteritems():
                         ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
 
-                if len(ownerinfo) > 0:
-                    evt = SpiderFootEvent("BGP_AS_PEER", ownertext,
-                        self.__name__, event)
-                    self.notifyListeners(evt)
+                    if len(ownerinfo) > 0:
+                        evt = SpiderFootEvent("BGP_AS_PEER", ownertext,
+                            self.__name__, event)
+                        self.notifyListeners(evt)
 
         # BGP AS Owner -> Other Netblocks
         if eventName == "BGP_AS_OWNER":
