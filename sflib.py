@@ -123,7 +123,7 @@ class SpiderFoot:
         else:
             self._dblog("FATAL", error)
         print str(inspect.stack())
-        exit(-1)
+        sys.exit(-1)
 
     def status(self, message):
         if self.dbh == None:
