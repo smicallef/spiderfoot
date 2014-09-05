@@ -245,6 +245,9 @@ class sfp_spider(SpiderFootPlugin):
                     useragent=self.opts['_useragent'])
                 if res['content'] != None:
                     spiderTarget = prefix + eventData
+                    evt = SpiderFootEvent("LINKED_URL_INTERNAL", spiderTarget,
+                        self.__name__, event)
+                    self.notifyListeners(evt)
                     break
         else:
             spiderTarget = eventData
