@@ -33,9 +33,9 @@ SpiderFoot was developed against lxml 3.3.5, netaddr 0.7.10, M2Crypto 0.20.2, Ch
 
 DNSPython (http://www.dnspython.org) is also a dependency but is included in the package under the dns directory, so does *not* need to be installed.
 
-Depending on your Linux build, you may also need SWIG installed. If your Linux distribution supports APT, you can install it with:
+Depending on your Linux build, you may also need some typically stock-standard packages installed. If your Linux distribution supports APT, the following should cover such dependencies:
 
-$ sudo apt-get install swig
+$ sudo apt-get install python2.7-dev libxml2-dev libxslt1-dev swig git python python-pip
 
 All other module dependencies, such as SQLite3, are included with Python, so nothing further should be needed.
 
