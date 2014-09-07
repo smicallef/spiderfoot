@@ -1237,7 +1237,7 @@ class SpiderFootTarget(object):
     def matches(self, value, includeParents=False, includeChildren=True):
         value = value.lower()
 
-        if value == None:
+        if value == None or value == "":
             return False
 
         if netaddr.valid_ipv4(value):
