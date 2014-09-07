@@ -87,14 +87,14 @@ malchecks = {
         'badregex': ['.*potentially active malware was detected.*'],
         'goodregex': []
     },
-    'malwaredomains.com IP List': {
-        'id': 'malwaredomainsip',
+    'malwaredomainlist.com IP List': {
+        'id': 'malwaredomainlistip',
         'type': 'list',
         'checks': ['ip', 'netblock'],
         'url': 'http://www.malwaredomainlist.com/hostslist/ip.txt'
     },
-    'malwaredomains.com Domain List': {
-        'id': 'malwaredomainsdomain',
+    'malwaredomainlist.com Domain List': {
+        'id': 'malwaredomainlistdomain',
         'type': 'list',
         'checks': ['domain'],
         'url': 'http://www.malwaredomainlist.com/hostslist/hosts.txt',
@@ -202,8 +202,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusepalevoip': True,
         'googledomain': True,
         'googleasn': True,
-        'malwaredomainsdomain': True,
-        'malwaredomainsip': True,
+        'malwaredomainlistdomain': True,
+        'malwaredomainlistip': True,
         'mcafeedomain': True,
         'avgdomain': True,
         'phishtank': True,
@@ -236,8 +236,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusepalevoip': "Enable abuse.ch Palevo IP check?",
         'googledomain': "Enable Google Safe Browsing domain check?",
         'googleasn': "Enable Google Safe Browsing ASN check?",
-        'malwaredomainsdomain': "Enable malwaredomainlist.com domain check?",
-        'malwaredomainsip': "Enable malwaredomainlist.com IP check?",
+        'malwaredomainlistdomain': "Enable malwaredomainlist.com domain check?",
+        'malwaredomainlistip': "Enable malwaredomainlist.com IP check?",
         'mcafeedomain': "Enable McAfee Site Advisor check?",
         'avgdomain': "Enable AVG Safety check?",
         'phishtank': "Enable PhishTank check?",
