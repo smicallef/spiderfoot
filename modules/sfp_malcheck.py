@@ -186,6 +186,13 @@ malchecks = {
         'type': 'list',
         'checks': [ 'ip', 'netblock', 'domain' ],
         'url': 'http://www.nothink.org/blacklist/blacklist_malware_http.txt'
+    },
+    'malwaredomains.com Domains': {
+        'id': 'malwaredomains',
+        'type': 'list',
+        'checks': [ 'domain' ],
+        'url': 'http://mirror2.malwaredomains.com/files/domains.txt',
+        'regex': '.*\t{0}\t[a-zA-Z].*'
     }  
 }
 
@@ -204,6 +211,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'googleasn': True,
         'malwaredomainlistdomain': True,
         'malwaredomainlistip': True,
+        'malwaredomains': True,
         'mcafeedomain': True,
         'avgdomain': True,
         'phishtank': True,
@@ -238,6 +246,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'googleasn': "Enable Google Safe Browsing ASN check?",
         'malwaredomainlistdomain': "Enable malwaredomainlist.com domain check?",
         'malwaredomainlistip': "Enable malwaredomainlist.com IP check?",
+        'malwaredomains': "Enable malwaredomains.com Domain check?",
         'mcafeedomain': "Enable McAfee Site Advisor check?",
         'avgdomain': "Enable AVG Safety check?",
         'phishtank': "Enable PhishTank check?",
