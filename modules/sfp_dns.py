@@ -55,6 +55,7 @@ class sfp_dns(SpiderFootPlugin):
     domresults = dict()
     hostresults = dict()
     resolveCache = dict()
+    resolveCache6 = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -62,6 +63,7 @@ class sfp_dns(SpiderFootPlugin):
         self.domresults = dict()
         self.hostresults = dict()
         self.resolveCache = dict()
+        self.resolveCache6 = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -283,6 +285,28 @@ class sfp_dns(SpiderFootPlugin):
             self.sf.info("Unable to resolve " + hostname + " (" + str(e) + ")")
             return list()
 
+    # Resolve a host to IPv6
+    def resolveHost6(self, hostname):
+        if self.resolveCache6.has_key(hostname):
+            self.sf.debug("Returning IPv6 cached result for " + hostname + " (" + \
+                str(self.resolveCache6[hostname]) + ")" )
+            return self.resolveCache6[hostname]
+
+        try:
+            addrs = list()
+            res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
+            for addr in res:
+                if addr[4][0] not in addrs:
+                    addrs.append(addr[4][0])
+            if len(addrs) < 1:
+                return None
+            self.resolveCache6[hostname] = addrs
+            self.sf.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
+            return addrs
+        except BaseException as e:
+            self.sf.info("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
+            return list()
+
     # Process a host/IP, parentEvent is the event that represents this entity
     def processHost(self, host, parentEvent, affiliate=None):
         if not self.hostresults.has_key(host):
@@ -332,6 +356,12 @@ class sfp_dns(SpiderFootPlugin):
         if htype == "INTERNET_NAME":
             dom = self.sf.hostDomain(host, self.opts['_internettlds'])
             self.processDomain(dom, evt)
+
+            # Try obtain the IPv6 address
+            for ip6 in self.resolveHost6(host):
+                evt = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, 
+                    evt)
+                self.notifyListeners(evt)
 
         return evt
 
