@@ -99,7 +99,7 @@ class sfp_sharedip(SpiderFootPlugin):
             blob = re.findall(pat, res['content'])
 
             if len(blob) > 0:
-                pat = re.compile("href=\"//www.robtex.com/dns/(.[^\"]*).html", re.IGNORECASE)
+                pat = re.compile("<ol class=\"xbul\"><li><code>(.[^<]*)</code>", re.IGNORECASE)
                 matches = re.findall(pat, blob[0])
                 for m in matches:
                     self.sf.info("Found something on same IP: " + m)
@@ -120,9 +120,9 @@ class sfp_sharedip(SpiderFootPlugin):
                         if self.opts['verify'] and not self.validateIP(m, eventData):
                             self.sf.debug("Host no longer resolves to our IP.")
                             continue
-                        evt = SpiderFootEvent("CO_HOSTED_SITE", m, self.__name__, event)
+                        evt = SpiderFootEvent("CO_HOSTED_SITE", m.lower(), self.__name__, event)
                         self.notifyListeners(evt)
-                        myres.append(m)
+                        myres.append(m.lower())
 
         # Bing
         if self.opts['source'].lower() == "bing":
@@ -135,17 +135,17 @@ class sfp_sharedip(SpiderFootPlugin):
 
             for key in results.keys():
                 res = results[key]
-                pat = re.compile("<div class=\"sb_meta\"><cite>(\S+)</cite>", re.IGNORECASE)
+                pat = re.compile("<h2><a href=\"(\S+)\"", re.IGNORECASE)
                 matches = re.findall(pat, res)
                 for match in matches:
                     self.sf.info("Found something on same IP: " + match)
-                    site = self.sf.urlFQDN(match)
+                    site = self.sf.urlFQDN(match.lower())
                     if site not in myres and site != eventData:
                         if not self.opts['cohostsamedomain']:
-                            if self.getTarget().matches(m, includeParents=True):
+                            if self.getTarget().matches(site, includeParents=True):
                                 self.sf.debug("Skipping " + site + " because it is on the same domain.")
                                 continue
-                        if self.opts['verify'] and not self.validateIP(m, eventData):
+                        if self.opts['verify'] and not self.validateIP(site, eventData):
                             self.sf.debug("Host no longer resolves to our IP.")
                             continue
                         evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
