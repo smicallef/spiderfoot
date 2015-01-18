@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Name:         sfp_portscan_basic
+# Name:         sfp_portscan_tcp
 # Purpose:      SpiderFoot plug-in for performing a basic TCP port scan of IP
 #               addresses identified.
 #
@@ -18,7 +18,7 @@ import random
 import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-class sfp_portscan_basic(SpiderFootPlugin):
+class sfp_portscan_tcp(SpiderFootPlugin):
     """Port Scanner - TCP:Scans for commonly open TCP ports on Internet-facing systems."""
 
     # Default options
@@ -108,7 +108,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
         # Spawn threads for scanning
         while i < len(portList):
             self.sf.info("Spawning thread to check port: " + str(portList[i]) + " on " + ip)
-            t.append(threading.Thread(name='sfp_portscan_basic_' + str(portList[i]), 
+            t.append(threading.Thread(name='sfp_portscan_tcp_' + str(portList[i]), 
                 target=self.tryPort, args=(ip, portList[i])))
             t[i].start()
             i += 1
@@ -117,7 +117,7 @@ class sfp_portscan_basic(SpiderFootPlugin):
         while running:
             found = False
             for rt in threading.enumerate():
-                if rt.name.startswith("sfp_portscan_basic_"):
+                if rt.name.startswith("sfp_portscan_tcp_"):
                     found = True
 
             if not found:
@@ -194,4 +194,4 @@ class sfp_portscan_basic(SpiderFootPlugin):
             # Scan whatever is remaining
             self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)
 
-# End of sfp_portscan_basic class
+# End of sfp_portscan_tcp class
