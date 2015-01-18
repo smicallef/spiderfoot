@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_portscan_basic
-# Purpose:      SpiderFoot plug-in for performing a basic port scan of IP
+# Purpose:      SpiderFoot plug-in for performing a basic TCP port scan of IP
 #               addresses identified.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -19,7 +19,7 @@ import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_portscan_basic(SpiderFootPlugin):
-    """Port Scanner:Scans for commonly open TCP ports on Internet-facing systems."""
+    """Port Scanner - TCP:Scans for commonly open TCP ports on Internet-facing systems."""
 
     # Default options
     opts = {
