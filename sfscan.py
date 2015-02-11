@@ -223,13 +223,15 @@ class SpiderFootScanner(threading.Thread):
                     psMod.registerListener(mod)
 
             # Create the "ROOT" event which un-triggered modules will link events to
+            rootEvent = SpiderFootEvent("ROOT", "", "", None)
+            psMod.notifyListeners(rootEvent)
             firstEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue, 
-                "SpiderFoot UI", None)
+                "SpiderFoot UI", rootEvent)
             psMod.notifyListeners(firstEvent)
 
-            # Start the modules sequentially.
+            # Check in case the user requested to stop the scan between modules 
+            # initializing
             for module in self.ts.moduleInstances.values():
-                # Check in case the user requested to stop the scan between modules initializing
                 if module.checkForStop():
                     self.setStatus('ABORTING')
                     aborted = True

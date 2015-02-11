@@ -520,8 +520,8 @@ class SpiderFootWebUi:
                     keepGoing = True
 
         datamap[parentId] = row
-
-        #print pc
+        # Delete the ROOT key as it adds no value from a viz perspective
+        del pc['ROOT']
         retdata = dict()
         retdata['tree'] = sf.dataParentChildToTree(pc)
         retdata['data'] = datamap

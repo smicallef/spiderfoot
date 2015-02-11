@@ -1292,16 +1292,18 @@ class SpiderFootEvent(object):
 
         # "ROOT" is a special "hash" reserved for elements with no
         # actual parent (e.g. the first page spidered.)
-        if self.sourceEvent == None:
+        if eventType == "ROOT":
             self.sourceEventHash = "ROOT"
-        else:
-            self.sourceEventHash = sourceEvent.getHash()
+            return
 
+        self.sourceEventHash = sourceEvent.getHash()
         self.__id = self.eventType + str(self.generated) + self.module + \
             str(random.randint(0, 99999999))
 
     # Unique hash of this event
     def getHash(self):
+        if self.eventType == "ROOT":
+            return "ROOT"
         digestStr = self.__id.encode('raw_unicode_escape')
         return hashlib.sha256(digestStr).hexdigest()
 
