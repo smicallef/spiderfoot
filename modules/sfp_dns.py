@@ -17,6 +17,7 @@ import sys
 import re
 import random
 import dns
+import urllib2
 from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -148,7 +149,6 @@ class sfp_dns(SpiderFootPlugin):
             return None
 
         self.events[eventData] = True
-
         # Identify potential sub-domains/hostnames
         if eventName in [ "SEARCH_ENGINE_WEB_CONTENT", "TARGET_WEB_CONTENT",
             "LINKED_URL_INTERNAL", "RAW_RIR_DATA", "RAW_DNS_RECORDS", "DNS_TEXT" ]:
@@ -157,11 +157,11 @@ class sfp_dns(SpiderFootPlugin):
             for name in self.getTarget().getNames():
                 if self.checkForStop():
                     return None
-                pat = re.compile("([a-zA-Z0-9\-\.]+\." + name + ")", re.IGNORECASE)
-                matches = re.findall(pat, eventData)
+                pat = re.compile("(%..)?([a-zA-Z0-9\-\.]+\." + name + ")", re.IGNORECASE)
+                matches = re.findall(pat, urllib2.unquote(eventData))
                 if matches != None:
                     for match in matches:
-                        self.processHost(match, parentEvent, affiliate=False)
+                        self.processHost(match[1], parentEvent, affiliate=False)
             # Nothing left to do with internal links and raw data
             return None
 
