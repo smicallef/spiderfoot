@@ -29,11 +29,13 @@ class sfp_adblock(SpiderFootPlugin):
 
     results = list()
     rules = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = list()
         self.rules = None
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -56,12 +58,19 @@ class sfp_adblock(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.errorState:
+            return None
+
         if self.rules == None:
             raw = self.sf.fetchUrl(self.opts['blocklist'], timeout=30)
             if raw['content'] != None:
                 lines = raw['content'].split('\n')
                 self.sf.debug("RULE LINES: " + str(len(lines)))
-                self.rules = adblockparser.AdblockRules(lines)
+                try:
+                    self.rules = adblockparser.AdblockRules(lines)
+                except BaseException as e:
+                    self.errorState = True
+                    self.sf.error("Parsing error handling AdBlock list: " + str(e), False)
             else:
                 self.sf.error("Unable to download AdBlockPlus list: " + \
                     self.opts['blocklist'])
@@ -77,10 +86,14 @@ class sfp_adblock(SpiderFootPlugin):
             self.sf.debug("Already checked this page for AdBlock matching, skipping.")
             return None
 
-        if self.rules.should_block(eventData):
-            evt = SpiderFootEvent("URL_ADBLOCKED" + pagetype, eventData,
-                self.__name__, event.sourceEvent)
-            self.notifyListeners(evt)
+        try:
+            if self.rules and self.rules.should_block(eventData):
+                evt = SpiderFootEvent("URL_ADBLOCKED" + pagetype, eventData,
+                    self.__name__, event.sourceEvent)
+                self.notifyListeners(evt)
+        except BaseException as e:
+            self.sf.error("Parsing error handling AdBlock list: " + str(e), False)
+            self.errorState = True
 
         return None
 
