@@ -1,0 +1,240 @@
+"name","iso_name","iso2","iso3","numcode"
+"Antigua and Barbuda","ANTIGUA AND BARBUDA","AG","ATG",28
+"Bosnia and Herzegovina","BOSNIA AND HERZEGOVINA","BA","BIH",70
+"Cocos (Keeling) Islands","COCOS (KEELING) ISLANDS","CC","\N","\N"
+"Congo, the Democratic Republic of the","CONGO, THE DEMOCRATIC REPUBLIC OF THE","CD","COD",180
+"Cote D'Ivoire","COTE D'IVOIRE","CI","CIV",384
+"Fiji","FIJI","FJ","FJI",242
+"French Southern Territories","FRENCH SOUTHERN TERRITORIES","TF","\N","\N"
+"Heard Island and Mcdonald Islands","HEARD ISLAND AND MCDONALD ISLANDS","HM","\N","\N"
+"Holy See (Vatican City State)","HOLY SEE (VATICAN CITY STATE)","VA","VAT",336
+"Iran, Islamic Republic of","IRAN, ISLAMIC REPUBLIC OF","IR","IRN",364
+"Korea, Democratic People's Republic of","KOREA, DEMOCRATIC PEOPLE'S REPUBLIC OF","KP","PRK",408
+"Korea, Republic of","KOREA, REPUBLIC OF","KR","KOR",410
+"Belarus","BELARUS","BY","BLR",112
+"Lao People's Democratic Republic","LAO PEOPLE'S DEMOCRATIC REPUBLIC","LA","LAO",418
+"Macedonia, the Former Yugoslav Republic of","MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF","MK","MKD",807
+"United States","UNITED STATES","US","USA",840
+"Micronesia, Federated States of","MICRONESIA, FEDERATED STATES OF","FM","FSM",583
+"Moldova, Republic of","MOLDOVA, REPUBLIC OF","MD","MDA",498
+"Palestinian Territory, Occupied","PALESTINIAN TERRITORY, OCCUPIED","PS","\N","\N"
+"Pitcairn","PITCAIRN","PN","PCN",612
+"Reunion","REUNION","RE","REU",638
+"Saint Helena","SAINT HELENA","SH","SHN",654
+"Saint Kitts and Nevis","SAINT KITTS AND NEVIS","KN","KNA",659
+"Saint Pierre and Miquelon","SAINT PIERRE AND MIQUELON","PM","SPM",666
+"Sao Tome and Principe","SAO TOME AND PRINCIPE","ST","STP",678
+"Serbia and Montenegro","SERBIA AND MONTENEGRO","CS","\N","\N"
+"South Georgia and the South Sandwich Islands","SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS","GS","\N","\N"
+"Svalbard and Jan Mayen","SVALBARD AND JAN MAYEN","SJ","SJM",744
+"Syrian Arab Republic","SYRIAN ARAB REPUBLIC","SY","SYR",760
+"Taiwan, Province of China","TAIWAN, PROVINCE OF CHINA","TW","TWN",158
+"Tanzania, United Republic of","TANZANIA, UNITED REPUBLIC OF","TZ","TZA",834
+"Timor-Leste","TIMOR-LESTE","TL","\N","\N"
+"Trinidad and Tobago","TRINIDAD AND TOBAGO","TT","TTO",780
+"Mexico","MEXICO","MX","MEX",484
+"Myanmar","MYANMAR","MM","MMR",104
+"Virgin Islands, British","VIRGIN ISLANDS, BRITISH","VG","VGB",92
+"Virgin Islands, U.s.","VIRGIN ISLANDS, U.S.","VI","VIR",850
+"Wallis and Futuna","WALLIS AND FUTUNA","WF","WLF",876
+"Albania","ALBANIA","AL","ALB",8
+"Algeria","ALGERIA","DZ","DZA",12
+"American Samoa","AMERICAN SAMOA","AS","ASM",16
+"Vanuatu","VANUATU","VU","VUT",548
+"Yemen","YEMEN","YE","YEM",887
+"Andorra","ANDORRA","AD","AND",20
+"Angola","ANGOLA","AO","AGO",24
+"Anguilla","ANGUILLA","AI","AIA",660
+"Argentina","ARGENTINA","AR","ARG",32
+"Armenia","ARMENIA","AM","ARM",51
+"Aruba","ARUBA","AW","ABW",533
+"Australia","AUSTRALIA","AU","AUS",36
+"Austria","AUSTRIA","AT","AUT",40
+"Azerbaijan","AZERBAIJAN","AZ","AZE",31
+"Bahamas","BAHAMAS","BS","BHS",44
+"Bahrain","BAHRAIN","BH","BHR",48
+"Bangladesh","BANGLADESH","BD","BGD",50
+"Barbados","BARBADOS","BB","BRB",52
+"Belgium","BELGIUM","BE","BEL",56
+"Benin","BENIN","BJ","BEN",204
+"Bermuda","BERMUDA","BM","BMU",60
+"Bhutan","BHUTAN","BT","BTN",64
+"Bolivia","BOLIVIA","BO","BOL",68
+"Botswana","BOTSWANA","BW","BWA",72
+"Bouvet Island","BOUVET ISLAND","BV","\N","\N"
+"Brazil","BRAZIL","BR","BRA",76
+"British Indian Ocean Territory","BRITISH INDIAN OCEAN TERRITORY","IO","\N","\N"
+"Brunei Darussalam","BRUNEI DARUSSALAM","BN","BRN",96
+"Bulgaria","BULGARIA","BG","BGR",100
+"Burkina Faso","BURKINA FASO","BF","BFA",854
+"Burundi","BURUNDI","BI","BDI",108
+"Cambodia","CAMBODIA","KH","KHM",116
+"Cameroon","CAMEROON","CM","CMR",120
+"Canada","CANADA","CA","CAN",124
+"Cape Verde","CAPE VERDE","CV","CPV",132
+"Malta","MALTA","MT","MLT",470
+"Cayman Islands","CAYMAN ISLANDS","KY","CYM",136
+"Chad","CHAD","TD","TCD",148
+"Chile","CHILE","CL","CHL",152
+"China","CHINA","CN","CHN",156
+"Christmas Island","CHRISTMAS ISLAND","CX","\N","\N"
+"Colombia","COLOMBIA","CO","COL",170
+"Comoros","COMOROS","KM","COM",174
+"Cook Islands","COOK ISLANDS","CK","COK",184
+"Costa Rica","COSTA RICA","CR","CRI",188
+"Croatia","CROATIA","HR","HRV",191
+"Cuba","CUBA","CU","CUB",192
+"Cyprus","CYPRUS","CY","CYP",196
+"Czech Republic","CZECH REPUBLIC","CZ","CZE",203
+"Denmark","DENMARK","DK","DNK",208
+"Djibouti","DJIBOUTI","DJ","DJI",262
+"Dominica","DOMINICA","DM","DMA",212
+"Dominican Republic","DOMINICAN REPUBLIC","DO","DOM",214
+"Ecuador","ECUADOR","EC","ECU",218
+"Egypt","EGYPT","EG","EGY",818
+"Equatorial Guinea","EQUATORIAL GUINEA","GQ","GNQ",226
+"Eritrea","ERITREA","ER","ERI",232
+"Estonia","ESTONIA","EE","EST",233
+"Ethiopia","ETHIOPIA","ET","ETH",231
+"Faroe Islands","FAROE ISLANDS","FO","FRO",234
+"Finland","FINLAND","FI","FIN",246
+"France","FRANCE","FR","FRA",250
+"French Guiana","FRENCH GUIANA","GF","GUF",254
+"French Polynesia","FRENCH POLYNESIA","PF","PYF",258
+"Gabon","GABON","GA","GAB",266
+"Gambia","GAMBIA","GM","GMB",270
+"Georgia","GEORGIA","GE","GEO",268
+"Germany","GERMANY","DE","DEU",276
+"Ghana","GHANA","GH","GHA",288
+"Gibraltar","GIBRALTAR","GI","GIB",292
+"Greece","GREECE","GR","GRC",300
+"Greenland","GREENLAND","GL","GRL",304
+"Grenada","GRENADA","GD","GRD",308
+"Guadeloupe","GUADELOUPE","GP","GLP",312
+"Guam","GUAM","GU","GUM",316
+"Guatemala","GUATEMALA","GT","GTM",320
+"Guinea","GUINEA","GN","GIN",324
+"Guinea-Bissau","GUINEA-BISSAU","GW","GNB",624
+"Guyana","GUYANA","GY","GUY",328
+"Haiti","HAITI","HT","HTI",332
+"Honduras","HONDURAS","HN","HND",340
+"Hong Kong","HONG KONG","HK","HKG",344
+"Hungary","HUNGARY","HU","HUN",348
+"Iceland","ICELAND","IS","ISL",352
+"India","INDIA","IN","IND",356
+"Indonesia","INDONESIA","ID","IDN",360
+"Iraq","IRAQ","IQ","IRQ",368
+"Israel","ISRAEL","IL","ISR",376
+"Italy","ITALY","IT","ITA",380
+"Jamaica","JAMAICA","JM","JAM",388
+"Japan","JAPAN","JP","JPN",392
+"Jordan","JORDAN","JO","JOR",400
+"Kazakhstan","KAZAKHSTAN","KZ","KAZ",398
+"Kenya","KENYA","KE","KEN",404
+"Kiribati","KIRIBATI","KI","KIR",296
+"Kuwait","KUWAIT","KW","KWT",414
+"Kyrgyzstan","KYRGYZSTAN","KG","KGZ",417
+"Latvia","LATVIA","LV","LVA",428
+"Lesotho","LESOTHO","LS","LSO",426
+"Liberia","LIBERIA","LR","LBR",430
+"Libyan Arab Jamahiriya","LIBYAN ARAB JAMAHIRIYA","LY","LBY",434
+"Lithuania","LITHUANIA","LT","LTU",440
+"Luxembourg","LUXEMBOURG","LU","LUX",442
+"Macao","MACAO","MO","MAC",446
+"Madagascar","MADAGASCAR","MG","MDG",450
+"Malawi","MALAWI","MW","MWI",454
+"Malaysia","MALAYSIA","MY","MYS",458
+"Maldives","MALDIVES","MV","MDV",462
+"Mali","MALI","ML","MLI",466
+"Marshall Islands","MARSHALL ISLANDS","MH","MHL",584
+"Martinique","MARTINIQUE","MQ","MTQ",474
+"Mauritius","MAURITIUS","MU","MUS",480
+"Mayotte","MAYOTTE","YT","\N","\N"
+"Monaco","MONACO","MC","MCO",492
+"Mongolia","MONGOLIA","MN","MNG",496
+"Montserrat","MONTSERRAT","MS","MSR",500
+"Morocco","MOROCCO","MA","MAR",504
+"Mozambique","MOZAMBIQUE","MZ","MOZ",508
+"Namibia","NAMIBIA","NA","NAM",516
+"Nauru","NAURU","NR","NRU",520
+"Nepal","NEPAL","NP","NPL",524
+"Netherlands","NETHERLANDS","NL","NLD",528
+"New Caledonia","NEW CALEDONIA","NC","NCL",540
+"New Zealand","NEW ZEALAND","NZ","NZL",554
+"Nicaragua","NICARAGUA","NI","NIC",558
+"Niger","NIGER","NE","NER",562
+"Nigeria","NIGERIA","NG","NGA",566
+"Niue","NIUE","NU","NIU",570
+"Norfolk Island","NORFOLK ISLAND","NF","NFK",574
+"Northern Mariana Islands","NORTHERN MARIANA ISLANDS","MP","MNP",580
+"Norway","NORWAY","NO","NOR",578
+"Oman","OMAN","OM","OMN",512
+"Pakistan","PAKISTAN","PK","PAK",586
+"Palau","PALAU","PW","PLW",585
+"Panama","PANAMA","PA","PAN",591
+"Paraguay","PARAGUAY","PY","PRY",600
+"Peru","PERU","PE","PER",604
+"Philippines","PHILIPPINES","PH","PHL",608
+"Poland","POLAND","PL","POL",616
+"Portugal","PORTUGAL","PT","PRT",620
+"Puerto Rico","PUERTO RICO","PR","PRI",630
+"Qatar","QATAR","QA","QAT",634
+"Romania","ROMANIA","RO","ROM",642
+"Russian Federation","RUSSIAN FEDERATION","RU","RUS",643
+"Rwanda","RWANDA","RW","RWA",646
+"Saint Lucia","SAINT LUCIA","LC","LCA",662
+"Saint Vincent and the Grenadines","SAINT VINCENT AND THE GRENADINES","VC","VCT",670
+"Samoa","SAMOA","WS","WSM",882
+"San Marino","SAN MARINO","SM","SMR",674
+"Senegal","SENEGAL","SN","SEN",686
+"Seychelles","SEYCHELLES","SC","SYC",690
+"Sierra Leone","SIERRA LEONE","SL","SLE",694
+"Singapore","SINGAPORE","SG","SGP",702
+"Slovakia","SLOVAKIA","SK","SVK",703
+"Slovenia","SLOVENIA","SI","SVN",705
+"Solomon Islands","SOLOMON ISLANDS","SB","SLB",90
+"Somalia","SOMALIA","SO","SOM",706
+"South Africa","SOUTH AFRICA","ZA","ZAF",710
+"Spain","SPAIN","ES","ESP",724
+"Sri Lanka","SRI LANKA","LK","LKA",144
+"Sudan","SUDAN","SD","SDN",736
+"Suriname","SURINAME","SR","SUR",740
+"Swaziland","SWAZILAND","SZ","SWZ",748
+"Sweden","SWEDEN","SE","SWE",752
+"Switzerland","SWITZERLAND","CH","CHE",756
+"Thailand","THAILAND","TH","THA",764
+"Togo","TOGO","TG","TGO",768
+"Tokelau","TOKELAU","TK","TKL",772
+"Tonga","TONGA","TO","TON",776
+"Tunisia","TUNISIA","TN","TUN",788
+"Turkey","TURKEY","TR","TUR",792
+"Turkmenistan","TURKMENISTAN","TM","TKM",795
+"Turks and Caicos Islands","TURKS AND CAICOS ISLANDS","TC","TCA",796
+"Tuvalu","TUVALU","TV","TUV",798
+"Uganda","UGANDA","UG","UGA",800
+"Ukraine","UKRAINE","UA","UKR",804
+"United Kingdom","UNITED KINGDOM","GB","GBR",826
+"United States Minor Outlying Islands","UNITED STATES MINOR OUTLYING ISLANDS","UM","\N","\N"
+"Uruguay","URUGUAY","UY","URY",858
+"Uzbekistan","UZBEKISTAN","UZ","UZB",860
+"Venezuela","VENEZUELA","VE","VEN",862
+"Viet Nam","VIET NAM","VN","VNM",704
+"Western Sahara","WESTERN SAHARA","EH","ESH",732
+"Zambia","ZAMBIA","ZM","ZMB",894
+"Zimbabwe","ZIMBABWE","ZW","ZWE",716
+"Antarctica","ANTARCTICA","AQ","\N","\N"
+"Belize","BELIZE","BZ","BLZ",84
+"Central African Republic","CENTRAL AFRICAN REPUBLIC","CF","CAF",140
+"El Salvador","EL SALVADOR","SV","SLV",222
+"Ireland","IRELAND","IE","IRL",372
+"Lebanon","LEBANON","LB","LBN",422
+"Liechtenstein","LIECHTENSTEIN","LI","LIE",438
+"Mauritania","MAURITANIA","MR","MRT",478
+"Afghanistan","AFGHANISTAN","AF","AFG",4
+"Falkland Islands (Malvinas)","FALKLAND ISLANDS (MALVINAS)","FK","FLK",238
+"Netherlands Antilles","NETHERLANDS ANTILLES","AN","ANT",530
+"Congo","CONGO","CG","COG",178
+"Papua New Guinea","PAPUA NEW GUINEA","PG","PNG",598
+"Saudi Arabia","SAUDI ARABIA","SA","SAU",682
+"Tajikistan","TAJIKISTAN","TJ","TJK",762
+"United Arab Emirates","UNITED ARAB EMIRATES","AE","ARE",784
