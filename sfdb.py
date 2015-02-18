@@ -80,6 +80,8 @@ class SpiderFootDb:
             "CREATE INDEX idx_scan_results_hash ON tbl_scan_results (scan_instance_id, hash)",
             "CREATE INDEX idx_scan_results_srchash ON tbl_scan_results (scan_instance_id, source_event_hash)",
             "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL', 'Account on External Site', 0)",
+            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_SHARED', 'Possible Account Re-use', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_INTERNET_NAME', 'Affiliate - Internet Name', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_IPADDR', 'Affiliate - IP Address', 0)",
             "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_IP_SUBNET', 'Affiliate - IP Address - Subnet', 0)",

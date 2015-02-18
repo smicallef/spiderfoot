@@ -1,6 +1,8 @@
 --
 -- Event types and their descriptions
 --
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL', 'Account on External Site', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_SHARED', 'Possible Account Re-use', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_INTERNET_NAME', 'Affiliate - Internet Name', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_IPADDR', 'Affiliate - IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1);
