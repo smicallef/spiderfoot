@@ -59,7 +59,7 @@ class sfp_accounts(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "ACCOUNT_EXTERNAL", "ACCOUNT_EXTERNAL_SHARED" ]
+        return [ "ACCOUNT_EXTERNAL_OWNED", "ACCOUNT_EXTERNAL_USER_SHARED" ]
 
     def checkSites(self, name):
         global externals
@@ -110,7 +110,7 @@ class sfp_accounts(SpiderFootPlugin):
                 return None
 
             for site in sites:
-                evt = SpiderFootEvent("ACCOUNT_EXTERNAL", site + " (" + kw + ")",
+                evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", kw + " (" + site + ")",
                     self.__name__, event)
                 self.notifyListeners(evt)
             return None
@@ -136,7 +136,7 @@ class sfp_accounts(SpiderFootPlugin):
                     return None
 
                 for site in sites:
-                    evt = SpiderFootEvent("ACCOUNT_EXTERNAL_SHARED", site + " (" + user + ")",
+                    evt = SpiderFootEvent("ACCOUNT_EXTERNAL_USER_SHARED", user + " (" + site + ")",
                         self.__name__, event)
                     self.notifyListeners(evt)
 
