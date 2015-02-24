@@ -85,7 +85,7 @@ class sfp_junkfiles(SpiderFootPlugin):
                     res = self.sf.fetchUrl(fetch, 
                         timeout=self.opts['_fetchtimeout'],
                         useragent=self.opts['_useragent'])
-                    if res['content'] != None:
+                    if res['content'] != None and res['code'] != "404":
                         evt = SpiderFootEvent("JUNK_FILE", fetch, 
                             self.__name__, event)
                         self.notifyListeners(evt)
@@ -104,7 +104,7 @@ class sfp_junkfiles(SpiderFootPlugin):
                     res = self.sf.fetchUrl(fetch,
                         timeout=self.opts['_fetchtimeout'],
                         useragent=self.opts['_useragent'])
-                    if res['content'] != None:
+                    if res['content'] != None and res['code'] != "404":
                         evt = SpiderFootEvent("JUNK_FILE", fetch,
                             self.__name__, event)
                         self.notifyListeners(evt)
@@ -125,7 +125,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             res = self.sf.fetchUrl(fetch,
                 timeout=self.opts['_fetchtimeout'],
                 useragent=self.opts['_useragent'])
-            if res['content'] != None:
+            if res['content'] != None and res['code'] != "404":
                 evt = SpiderFootEvent("JUNK_FILE", fetch,
                     self.__name__, event)
                 self.notifyListeners(evt)
@@ -141,7 +141,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             res = self.sf.fetchUrl(fetch,
                 timeout=self.opts['_fetchtimeout'],
                 useragent=self.opts['_useragent'])
-            if res['content'] != None:
+            if res['content'] != None and res['code'] != "404":
                 evt = SpiderFootEvent("JUNK_FILE", fetch,
                     self.__name__, event)
                 self.notifyListeners(evt)
