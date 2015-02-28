@@ -26,8 +26,8 @@ class sfp_spider(SpiderFootPlugin):
         'maxlevels':    3, # max number of levels to traverse within a site
         'usecookies':   True, # Use cookies?
         'start':        [ 'http://', 'https://' ],
-        'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'js', 'css', 'tar',
-                        'pdf','tif','ico','flv', 'mp4', 'mp3', 'avi', 'mpg', 'gz',
+        'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'tar',
+                        'pdf','ico','flv', 'mp4', 'mp3', 'avi', 'mpg', 'gz',
                         'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip',
                         'bin', 'bz2', 'xsl', 'doc', 'docx', 'ppt', 'pptx', 'xls',
                         'xlsx', 'csv'],
