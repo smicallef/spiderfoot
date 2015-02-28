@@ -93,7 +93,8 @@ class sfp_websvr(SpiderFootPlugin):
         if tech != None and '.php' in eventSource:
             tech = "PHP"
 
-        evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, parentEvent)
-        self.notifyListeners(evt)
+        if tech != None:
+            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, parentEvent)
+            self.notifyListeners(evt)
 
 # End of sfp_websvr class
