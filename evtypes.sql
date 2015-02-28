@@ -62,6 +62,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_FILE_ME
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SEARCH_ENGINE_WEB_CONTENT', 'Search Engine''s Web Content', 1);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOCIAL_MEDIA', 'Social Media Presence', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SIMILARDOMAIN', 'Similar Domain', 0);
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOFTWARE_USED', 'Software Used', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_RAW', 'SSL Certificate - Raw Data', 1);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUED', 'SSL Certificate - Issued to', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUER', 'SSL Certificate - Issued by', 0);

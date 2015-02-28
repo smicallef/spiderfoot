@@ -19,15 +19,16 @@ import mimetypes
 import metapdf
 import pyPdf
 import openxmllib
+import exifread
 from StringIO import StringIO
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_filemeta(SpiderFootPlugin):
-    """File Metadata:Extracts meta data from certain file types."""
+    """File Metadata:Extracts meta data from documents and images."""
 
     # Default options
     opts = {
-        'fileexts':     [ "docx", "pptx", 'xlsx', 'pdf' ],
+        'fileexts':     [ "docx", "pptx", 'xlsx', 'pdf', 'jpg', 'jpeg', 'tiff', 'tif' ],
         'timeout':      300
     }
 
@@ -54,7 +55,7 @@ class sfp_filemeta(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "RAW_FILE_META_DATA" ]
+        return [ "RAW_FILE_META_DATA", "SOFTWARE_USED" ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -83,28 +84,30 @@ class sfp_filemeta(SpiderFootPlugin):
                         eventData, False)
                     return None
 
-                if len(ret['content']) < 1024:
+                if len(ret['content']) < 512:
                     self.sf.error("Strange content encountered, size of " + \
-                        len(ret['content']), False)
+                        str(len(ret['content'])), False)
 
                 meta = None
+                data = None
                 # Based on the file extension, handle it
                 if fileExt.lower() == "pdf":
                     try:
-                        data = StringIO(ret['content'])
-                        meta = str(metapdf.MetaPdfReader().read_metadata(data))
+                        raw = StringIO(ret['content'])
+                        data = metapdf.MetaPdfReader().read_metadata(raw)
+                        meta = str(data)
                         self.sf.debug("Obtained meta data from " + eventData)
                     except BaseException as e:
                         self.sf.error("Unable to parse meta data from: " + \
                             eventData + "(" + str(e) + ")", False)
-                        return None
 
                 if fileExt.lower() in [ "pptx", "docx", "xlsx" ]:
                     try:
                         mtype = mimetypes.guess_type(eventData)[0]
                         doc = openxmllib.openXmlDocument(data=ret['content'], mime_type=mtype)
                         self.sf.debug("Office type: " + doc.mimeType)
-                        meta = str(doc.allProperties)
+                        data = doc.allProperties
+                        meta = str(data)
                     except ValueError as e:
                         self.sf.error("Unable to parse meta data from: " + \
                             eventData + "(" + str(e) + ")", False)
@@ -115,10 +118,41 @@ class sfp_filemeta(SpiderFootPlugin):
                         self.sf.error("Unable to process file: " + \
                             eventData + "(" + str(e) + ")", False)
 
+                if fileExt.lower() in [ "jpg", "jpeg", "tiff" ]:
+                    try:
+                        raw = StringIO(ret['content'])
+                        data = exifread.process_file(raw)
+                        if data == None or len(data) == 0:
+                            return None
+                        meta = str(data)
+                    except BaseException as e:
+                        self.sf.error("Unable to parse meta data from: " + \
+                            eventData + "(" + str(e) + ")", False)
+
                 if meta != None:
                     evt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
                         self.__name__, event)
                     self.notifyListeners(evt)
 
-                
+                    val = None
+                    if data.has_key("/Producer"):
+                        val = data['/Producer']
+
+                    if data.has_key("/Creator"):
+                        if data['/Creator'] != data['/Producer']:
+                            val = data['/Creator']
+
+                    if data.has_key("Application"):
+                        val = data['Application']
+
+                    if data.has_key("Image Software"):
+                        val = str(data['Image Software'])
+
+                    if val != None:
+                        # Strip non-ASCII
+                        val = ''.join([i if ord(i) < 128 else ' ' for i in val])
+                        evt = SpiderFootEvent("SOFTWARE_USED", val,
+                            self.__name__, event)
+                        self.notifyListeners(evt)
+
 # End of sfp_filemeta class
