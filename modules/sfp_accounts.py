@@ -23,8 +23,8 @@ class sfp_accounts(SpiderFootPlugin):
 
     # Default options
     opts = { 
-        "generic":  [ "root", "abuse", "sysadm", "sysadmin", "noc", "support",
-                      "contact", "help", "flame", "test", "info", "sales" ],
+        "generic":  [ "root", "abuse", "sysadm", "sysadmin", "noc", "support", "admin",
+                      "contact", "help", "flame", "test", "info", "sales", "hostmaster" ],
         "ignoredict":   True
     }
 
