@@ -31,7 +31,6 @@ class sfp_spider(SpiderFootPlugin):
                         'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip',
                         'bin', 'bz2', 'xsl', 'doc', 'docx', 'ppt', 'pptx', 'xls',
                         'xlsx', 'csv'],
-        'filterexternal':   True,
         'filterusers':  True, # Don't follow /~user directories
         'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
         'nosubs':       False, # Should links to subdomains be ignored?
@@ -47,7 +46,6 @@ class sfp_spider(SpiderFootPlugin):
         'maxpages':     "Maximum number of pages to fetch per target identified.",
         'maxlevels':    "Maximum levels to traverse per target identified.",
         'filterfiles':  "File extensions to ignore (don't fetch them.)",
-        'filterexternal':   "Don't report any external links that are on the file extension filter list.",
         'filterusers':  "Skip spidering of /~user directories?",
         'noexternal':   "Skip spidering of external sites? (**dangerous if False**)",
         'nosubs':       "Skip spidering of subdomains of the target?",
@@ -180,15 +178,9 @@ class sfp_spider(SpiderFootPlugin):
             type = "LINKED_URL_INTERNAL"
         else:
             type = "LINKED_URL_EXTERNAL"
-            # Filter out certain file types (if user chooses to)
-            checkExts = lambda ext: url.lower().split('?')[0].endswith('.' + ext.lower())
-            if self.opts['filterexternal'] and filter(checkExts, self.opts['filterfiles']):
-                self.sf.debug('Ignoring filtered extension of external link: ' + url)
-                return None
 
         event = SpiderFootEvent(type, url, self.__name__, parentEvent)
         self.notifyListeners(event)
-
         return event
 
     # Notify listening modules about raw data and others
