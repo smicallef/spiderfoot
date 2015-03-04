@@ -48,7 +48,7 @@ class SpiderFootWebUi:
         else:
             addr = self.config['__webaddr']
 
-        self.docroot = self.config['__docroot'].rtrim('/')
+        self.docroot = self.config['__docroot'].rstrip('/')
 
         print ""
         print ""
@@ -188,7 +188,7 @@ class SpiderFootWebUi:
     def index(self):
         # Look for referenced templates in the current directory only
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST', docroot=self.docroot,
+        return templ.render(pageid='SCANLIST', docroot=self.docroot)
     index.exposed = True
 
     # Information about a selected scan
