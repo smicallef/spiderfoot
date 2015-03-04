@@ -54,7 +54,7 @@ class SpiderFootWebUi:
         print ""
         print "*************************************************************"
         print " Use SpiderFoot by starting your web browser of choice and "
-        print " browse to http://" + addr + ":" + str(self.config['__webport']) + self.config['__docroot']
+        print " browse to http://" + addr + ":" + str(self.config['__webport']) + self.docroot
         print "*************************************************************"
         print ""
         print ""
