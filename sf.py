@@ -64,6 +64,7 @@ sfConfig = {
     '__database':        'spiderfoot.db',
     '__webaddr':         '127.0.0.1',
     '__webport':         5001,
+    '__docroot':         '',    # don't put trailing /
     '__modules__':       None, # List of modules. Will be set after start-up.
     '_socks1type':    '',
     '_socks2addr':    '',

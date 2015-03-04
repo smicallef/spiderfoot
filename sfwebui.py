@@ -32,6 +32,7 @@ class SpiderFootWebUi:
     defaultConfig = dict()
     config = dict()
     token = None
+    docroot = ''
 
     def __init__(self, config):
         self.defaultConfig = deepcopy(config)
@@ -47,11 +48,13 @@ class SpiderFootWebUi:
         else:
             addr = self.config['__webaddr']
 
+        self.docroot = self.config['__docroot'].rtrim('/')
+
         print ""
         print ""
         print "*************************************************************"
         print " Use SpiderFoot by starting your web browser of choice and "
-        print " browse to http://" + addr + ":" + str(self.config['__webport'])
+        print " browse to http://" + addr + ":" + str(self.config['__webport']) + self.config['__docroot']
         print "*************************************************************"
         print ""
         print ""
@@ -177,7 +180,7 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.config)
         types = dbh.eventTypes()
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
-        return templ.render(pageid='NEWSCAN', types=types, 
+        return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
             modules=self.config['__modules__'])
     newscan.exposed = True
 
@@ -185,7 +188,7 @@ class SpiderFootWebUi:
     def index(self):
         # Look for referenced templates in the current directory only
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST')
+        return templ.render(pageid='SCANLIST', docroot=self.docroot,
     index.exposed = True
 
     # Information about a selected scan
@@ -196,7 +199,7 @@ class SpiderFootWebUi:
             return self.error("Scan ID not found.")
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=id, name=res[0], status=res[5], 
+        return templ.render(id=id, name=res[0], status=res[5], docroot=self.docroot,
             pageid="SCANLIST")
     scaninfo.exposed = True
 
@@ -204,13 +207,13 @@ class SpiderFootWebUi:
     def opts(self):
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
         self.token = random.randint(0, 99999999)
-        return templ.render(opts=self.config, pageid='SETTINGS', token=self.token)
+        return templ.render(opts=self.config, pageid='SETTINGS', token=self.token, docroot=self.docroot)
     opts.exposed = True
 
     # Generic error, but not exposed as not called directly
     def error(self, message):
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
-        return templ.render(message=message)
+        return templ.render(message=message, docroot=self.docroot)
 
     # Delete a scan
     def scandelete(self, id, confirm=None):
@@ -224,7 +227,7 @@ class SpiderFootWebUi:
             raise cherrypy.HTTPRedirect("/")
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=id, name=res[0], pageid="SCANLIST")
+            return templ.render(id=id, name=res[0], pageid="SCANLIST", docroot=self.docroot)
     scandelete.exposed = True
 
     # Save settings, also used to completely reset them to default
@@ -257,7 +260,7 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
         self.token = random.randint(0, 99999999)
         return templ.render(opts=self.config, pageid='SETTINGS', updated=True, 
-            token=self.token)
+            docroot=self.docroot, token=self.token)
     savesettings.exposed = True
 
     # Initiate a scan
@@ -332,7 +335,7 @@ class SpiderFootWebUi:
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=scanId, name=scanname, 
+        return templ.render(id=scanId, name=scanname, docroot=self.docroot,
             status=globalScanStatus.getStatus(scanId), pageid="SCANLIST")
     startscan.exposed = True
 
@@ -356,7 +359,7 @@ class SpiderFootWebUi:
 
         globalScanStatus.setStatus(id, "ABORT-REQUESTED")
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST',stoppedscan=True)
+        return templ.render(pageid='SCANLIST',stoppedscan=True, docroot=self.docroot)
     stopscan.exposed = True
 
     #
