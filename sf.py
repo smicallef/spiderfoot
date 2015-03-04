@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
     # Enable access to static files via the web directory
     currentDir = os.path.abspath(sf.myPath())
-    conf = { sfConfig['__docroot'] + '/static': { 
+    conf = { '/static': { 
         'tools.staticdir.on': True,
         'tools.staticdir.dir': os.path.join(currentDir, 'static')
     }}
