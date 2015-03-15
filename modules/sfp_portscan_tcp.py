@@ -187,8 +187,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                 else:
                     self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)
                     i = 1
-                    portArr = []
-                    portArr.append(port)
+                    portArr = [port]
 
             # Scan whatever is remaining
             self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)
