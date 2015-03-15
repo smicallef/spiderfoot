@@ -81,7 +81,7 @@ class sfp_crossref(SpiderFootPlugin):
         res = self.sf.fetchUrl(eventData, timeout=self.opts['_fetchtimeout'], 
             useragent=self.opts['_useragent'])
 
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.debug("Ignoring " + eventData + " as no data returned")
             return None
 
@@ -109,7 +109,7 @@ class sfp_crossref(SpiderFootPlugin):
 
                 res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                     useragent=self.opts['_useragent'])
-                if res['content'] != None:
+                if res['content'] is not None:
                     for name in self.getTarget().getNames():
                         pat = re.compile("([\.\'\/\"\ ]" + name + "[\'\/\"\ ])", 
                             re.IGNORECASE)

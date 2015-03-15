@@ -61,9 +61,9 @@ class sfp_adblock(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        if self.rules == None:
+        if self.rules is None:
             raw = self.sf.fetchUrl(self.opts['blocklist'], timeout=30)
-            if raw['content'] != None:
+            if raw['content'] is not None:
                 lines = raw['content'].split('\n')
                 self.sf.debug("RULE LINES: " + str(len(lines)))
                 try:

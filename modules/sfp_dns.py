@@ -159,7 +159,7 @@ class sfp_dns(SpiderFootPlugin):
                     return None
                 pat = re.compile("(%..)?([a-zA-Z0-9\-\.]+\." + name + ")", re.IGNORECASE)
                 matches = re.findall(pat, urllib2.unquote(eventData))
-                if matches != None:
+                if matches is not None:
                     for match in matches:
                         self.processHost(match[1], parentEvent, affiliate=False)
             # Nothing left to do with internal links and raw data
@@ -321,7 +321,7 @@ class sfp_dns(SpiderFootPlugin):
         self.sf.debug("Found host: " + host)
         # If the returned hostname is aliaseed to our
         # target in some way, flag it as an affiliate
-        if affiliate == None:
+        if affiliate is None:
             affil = True
             if self.getTarget().matches(host):
                 affil = False

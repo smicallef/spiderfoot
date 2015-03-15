@@ -56,7 +56,7 @@ class sfp_geoip(SpiderFootPlugin):
 
         res = self.sf.fetchUrl("http://freegeoip.net/json/" + eventData,
             timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.info("No GeoIP info found for " + eventData)
         try:
             hostip = json.loads(res['content'])

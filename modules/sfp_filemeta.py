@@ -79,7 +79,7 @@ class sfp_filemeta(SpiderFootPlugin):
                 # typically large.
                 ret = self.sf.fetchUrl(eventData, timeout=self.opts['timeout'], 
                     useragent=self.opts['_useragent'], dontMangle=True)
-                if ret['content'] == None:
+                if ret['content'] is None:
                     self.sf.error("Unable to fetch file for meta analysis: " + \
                         eventData, False)
                     return None
@@ -122,14 +122,14 @@ class sfp_filemeta(SpiderFootPlugin):
                     try:
                         raw = StringIO(ret['content'])
                         data = exifread.process_file(raw)
-                        if data == None or len(data) == 0:
+                        if data is None or len(data) == 0:
                             return None
                         meta = str(data)
                     except BaseException as e:
                         self.sf.error("Unable to parse meta data from: " + \
                             eventData + "(" + str(e) + ")", False)
 
-                if meta != None:
+                if meta is not None:
                     evt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
                         self.__name__, event)
                     self.notifyListeners(evt)
@@ -148,7 +148,7 @@ class sfp_filemeta(SpiderFootPlugin):
                     if data.has_key("Image Software"):
                         val = str(data['Image Software'])
 
-                    if val != None:
+                    if val is not None:
                         # Strip non-ASCII
                         val = ''.join([i if ord(i) < 128 else ' ' for i in val])
                         evt = SpiderFootEvent("SOFTWARE_USED", val,

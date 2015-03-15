@@ -81,7 +81,7 @@ def from_text(text):
     value = _by_text.get(text.upper())
     if value is None:
         match = _unknown_class_pattern.match(text)
-        if match == None:
+        if match is None:
             raise UnknownRdataclass
         value = int(match.group(1))
         if value < 0 or value > 65535:

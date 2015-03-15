@@ -178,7 +178,7 @@ class SpiderFootDb:
         # at least we can use this opportunity to ensure we have permissions to
         # read and write to such a file.
         dbh = sqlite3.connect(self.sf.myPath() + "/" + opts['__database'], timeout=10)
-        if dbh == None:
+        if dbh is None:
             self.sf.fatal("Could not connect to internal database, and couldn't create " + \
                 opts['__database'])
         dbh.text_factory = str
@@ -238,19 +238,19 @@ class SpiderFootDb:
             WHERE s.scan_instance_id = c.scan_instance_id AND \
             t.event = c.type AND c.source_event_hash = s.hash "
 
-        if criteria.get('scan_id') != None:
+        if criteria.get('scan_id') is not None:
             qry += "AND c.scan_instance_id = ? "
             qvars.append(criteria['scan_id'])
 
-        if criteria.get('type') != None:
+        if criteria.get('type') is not None:
             qry += " AND c.type = ? "
             qvars.append(criteria['type'])
 
-        if criteria.get('value') != None:
+        if criteria.get('value') is not None:
             qry += " AND c.data LIKE ? "
             qvars.append(criteria['value'])
 
-        if criteria.get('regex') != None:
+        if criteria.get('regex') is not None:
             qry += " AND c.data REGEXP ? "
             qvars.append(criteria['regex'])
 
@@ -275,7 +275,7 @@ class SpiderFootDb:
 
     # Log an event to the database
     def scanLogEvent(self, instanceId, classification, message, component=None):
-        if component == None:
+        if component is None:
             component = "SpiderFoot"
 
         qry = "INSERT INTO tbl_scan_log \
@@ -315,15 +315,15 @@ class SpiderFootDb:
         qvars = list()
         qry = "UPDATE tbl_scan_instance SET "
 
-        if started != None:
+        if started is not None:
             qry += " started = ?,"
             qvars.append(started)
 
-        if ended != None:
+        if ended is not None:
             qry += " ended = ?,"
             qvars.append(ended)
 
-        if status != None:
+        if status is not None:
             qry += " status = ?,"
             qvars.append(status)
 
@@ -437,7 +437,7 @@ class SpiderFootDb:
             ORDER BY generated DESC"
         qvars = [instanceId]
 
-        if limit != None:
+        if limit is not None:
             qry += " LIMIT ?"
             qvars.append(limit)
 
@@ -455,7 +455,7 @@ class SpiderFootDb:
             AND type = 'ERROR' ORDER BY generated DESC"
         qvars = [instanceId]
 
-        if limit != None:
+        if limit is not None:
             qry += " LIMIT ?"
             qvars.append(limit)
 

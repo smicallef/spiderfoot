@@ -79,7 +79,7 @@ class sfp_accounts(SpiderFootPlugin):
                 }
             )
 
-            if res['content'] == None:
+            if res['content'] is None:
                 self.sf.debug("Unable to check the status of account " + name \
                     + " on " + site)
             else:
@@ -106,7 +106,7 @@ class sfp_accounts(SpiderFootPlugin):
             kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
 
             sites = self.checkSites(kw)
-            if sites == None:
+            if sites is None:
                 return None
 
             for site in sites:
@@ -132,7 +132,7 @@ class sfp_accounts(SpiderFootPlugin):
                 
             for user in users:
                 sites = self.checkSites(user)
-                if sites == None:
+                if sites is None:
                     return None
 
                 for site in sites:

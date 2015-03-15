@@ -131,7 +131,7 @@ class sfp_blacklist(SpiderFootPlugin):
                         text = self.checks[domain][k] + " (" + qaddr + ")"
                         break
 
-                if text != None:
+                if text is not None:
                     if eventName == "AFFILIATE_IPADDR":
                         e = "BLACKLISTED_AFFILIATE_IPADDR"
                     if eventName == "IP_ADDRESS":

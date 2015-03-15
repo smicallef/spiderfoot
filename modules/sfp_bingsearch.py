@@ -63,7 +63,7 @@ class sfp_bingsearch(SpiderFootPlugin):
         # Sites hosted on the domain
         pages = self.sf.bingIterate("site:" + eventData, dict(limit=self.opts['pages'],
             useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
-        if pages == None:
+        if pages is None:
             self.sf.info("No results returned from Bing.")
             return None
 
