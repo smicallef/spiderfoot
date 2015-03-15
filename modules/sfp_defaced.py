@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_defaced
 # Purpose:      Checks if a domain or IP appears on the zone-h.org defacement
@@ -10,7 +11,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import time
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
@@ -67,7 +67,7 @@ class sfp_defaced(SpiderFootPlugin):
         curDate = time.strftime("%Y%m%d")
         url = "http://www.zone-h.org/archive/" + typeId + "=" + target
         res = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.debug("Unable to fetch data from Zone-H for " + target + "(" + typeId + ")")
             return None
 
@@ -134,7 +134,7 @@ class sfp_defaced(SpiderFootPlugin):
             return None
 
         # Notify other modules of what you've found
-        if url != None:
+        if url is not None:
             text = eventData + "\n" + url
             evt = SpiderFootEvent(evtType, text, self.__name__, event)
             self.notifyListeners(evt)

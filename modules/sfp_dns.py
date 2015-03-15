@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_dns
 # Purpose:      SpiderFoot plug-in for gathering IP addresses from sub-domains
@@ -13,9 +14,7 @@
 #-------------------------------------------------------------------------------
 
 import socket
-import sys
 import re
-import random
 import dns
 import urllib2
 from netaddr import IPAddress, IPNetwork
@@ -159,7 +158,7 @@ class sfp_dns(SpiderFootPlugin):
                     return None
                 pat = re.compile("(%..)?([a-zA-Z0-9\-\.]+\." + name + ")", re.IGNORECASE)
                 matches = re.findall(pat, urllib2.unquote(eventData))
-                if matches != None:
+                if matches is not None:
                     for match in matches:
                         self.processHost(match[1], parentEvent, affiliate=False)
             # Nothing left to do with internal links and raw data
@@ -225,13 +224,13 @@ class sfp_dns(SpiderFootPlugin):
                         return None
 
                     if self.hostresults.has_key(sip):
-                        s = s + 1
+                        s += 1
                         continue
 
                     addrs = self.resolveIP(sip)
                     if len(addrs) == 0:
                         self.sf.debug("Look-aside resolve for " + sip + " failed.")
-                        s = s + 1
+                        s += 1
                         continue
 
                     # Report addresses that resolve to hostnames on the same
@@ -246,7 +245,7 @@ class sfp_dns(SpiderFootPlugin):
                             self.processHost(sip, parentEvent, affiliate=False)
                         else:
                             self.processHost(sip, parentEvent, affiliate=True)
-                    s = s + 1
+                    s += 1
             return None
 
     # Resolve an IP
@@ -321,7 +320,7 @@ class sfp_dns(SpiderFootPlugin):
         self.sf.debug("Found host: " + host)
         # If the returned hostname is aliaseed to our
         # target in some way, flag it as an affiliate
-        if affiliate == None:
+        if affiliate is None:
             affil = True
             if self.getTarget().matches(host):
                 affil = False

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_sharedip
 # Purpose:      Searches Bing and/or Robtex.com for hosts sharing the same IP.
@@ -9,10 +10,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import random
 import re
-import time
 import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -90,7 +88,7 @@ class sfp_sharedip(SpiderFootPlugin):
         # Robtex
         if self.opts['source'].lower() == "robtex":
             res = self.sf.fetchUrl("https://www.robtex.com/shared/" + eventData + ".html")
-            if res['content'] == None:
+            if res['content'] is None:
                 self.sf.error("Unable to fetch robtex content.", False)
                 return None
 
@@ -129,7 +127,7 @@ class sfp_sharedip(SpiderFootPlugin):
             results = self.sf.bingIterate("ip:" + eventData, dict(limit=self.opts['pages'],
                 useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
             myres = list()
-            if results == None:
+            if results is None:
                 self.sf.info("No data returned from Bing.")
                 return None
 

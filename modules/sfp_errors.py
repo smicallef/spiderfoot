@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_errors
 # Purpose:      Identify common error messages in content like SQL errors, etc.
@@ -10,7 +11,6 @@
 #-------------------------------------------------------------------------------
 
 import re
-import sys
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Taken from Google Dorks on exploit-db.com

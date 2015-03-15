@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_bingsearch
 # Purpose:      Searches Bing for content related to the domain in question.
@@ -9,10 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import random
-import re
-import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_bingsearch(SpiderFootPlugin):
@@ -63,7 +60,7 @@ class sfp_bingsearch(SpiderFootPlugin):
         # Sites hosted on the domain
         pages = self.sf.bingIterate("site:" + eventData, dict(limit=self.opts['pages'],
             useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
-        if pages == None:
+        if pages is None:
             self.sf.info("No results returned from Bing.")
             return None
 

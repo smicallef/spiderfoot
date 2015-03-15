@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_portscan_tcp
 # Purpose:      SpiderFoot plug-in for performing a basic TCP port scan of IP
@@ -11,8 +12,6 @@
 #-------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-import sys
-import re
 import socket
 import random
 import threading
@@ -188,8 +187,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                 else:
                     self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)
                     i = 1
-                    portArr = []
-                    portArr.append(port)
+                    portArr = [port]
 
             # Scan whatever is remaining
             self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)

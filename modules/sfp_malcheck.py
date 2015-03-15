@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_malcheck
 # Purpose:      Checks if an ASN, IP or domain is malicious.
@@ -10,7 +11,6 @@
 #-------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -327,7 +327,7 @@ class sfp_malcheck(SpiderFootPlugin):
             if id == cid and malchecks[check]['type'] == "query":
                 url = unicode(malchecks[check]['url'])
                 res = self.sf.fetchUrl(url.format(target), useragent=self.opts['_useragent'])
-                if res['content'] == None:
+                if res['content'] is None:
                     self.sf.error("Unable to fetch " + url.format(target), False)
                     return None
                 if self.contentMalicious(res['content'], 
@@ -350,9 +350,9 @@ class sfp_malcheck(SpiderFootPlugin):
                 data = dict()
                 url = malchecks[check]['url']
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts['aaacacheperiod'])
-                if data['content'] == None:
+                if data['content'] is None:
                     data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
-                    if data['content'] == None:
+                    if data['content'] is None:
                         self.sf.error("Unable to fetch " + url, False)
                         return None
                     else:
@@ -484,7 +484,7 @@ class sfp_malcheck(SpiderFootPlugin):
                     return None
 
                 # Notify other modules of what you've found
-                if url != None:
+                if url is not None:
                     text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
                     evt = SpiderFootEvent(evtType, text, self.__name__, event)
                     self.notifyListeners(evt)

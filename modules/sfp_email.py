@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_email
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
@@ -10,7 +11,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

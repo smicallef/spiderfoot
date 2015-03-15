@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-----------------------------------------------------------------
 # Name:         sfwebui
 # Purpose:      User interface class for use with a web browser
@@ -9,15 +10,11 @@
 # License:      GPL
 #-----------------------------------------------------------------
 import json
-import threading
-import thread
 import cherrypy
 import cgi
 import csv
-import os
 import time
 import random
-import urllib2
 import re
 from copy import deepcopy
 from mako.lookup import TemplateLookup
@@ -195,7 +192,7 @@ class SpiderFootWebUi:
     def scaninfo(self, id):
         dbh = SpiderFootDb(self.config)
         res = dbh.scanInstanceGet(id)
-        if res == None:
+        if res is None:
             return self.error("Scan ID not found.")
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
@@ -219,10 +216,10 @@ class SpiderFootWebUi:
     def scandelete(self, id, confirm=None):
         dbh = SpiderFootDb(self.config)
         res = dbh.scanInstanceGet(id)
-        if res == None:
+        if res is None:
             return self.error("Scan ID not found.")
 
-        if confirm != None:
+        if confirm is not None:
             dbh.scanInstanceDelete(id)
             raise cherrypy.HTTPRedirect("/")
         else:
@@ -319,7 +316,7 @@ class SpiderFootWebUi:
                 targetType = regexToType[rx]
                 break
 
-        if targetType == None:
+        if targetType is None:
             return self.error("Invalid target type. Could not recognize it as " + \
                 "an IP address, IP subnet, domain name or host name.")
 
@@ -330,7 +327,7 @@ class SpiderFootWebUi:
         t.start()
 
         # Wait until the scan has initialized
-        while globalScanStatus.getStatus(scanId) == None:
+        while globalScanStatus.getStatus(scanId) is None:
             print "[info] Waiting for the scan to initialize..."
             time.sleep(1)
 
@@ -344,7 +341,7 @@ class SpiderFootWebUi:
     def stopscan(self, id):
         global globalScanStatus
 
-        if globalScanStatus.getStatus(id) == None:
+        if globalScanStatus.getStatus(id) is None:
             return self.error("That scan is not actually running. A data consistency " + \
                 "error for this scan probably exists. <a href='/scandelete?id=" + \
                 id + "&confirm=1'>Click here to delete it.</a>")

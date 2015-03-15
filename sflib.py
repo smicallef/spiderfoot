@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sflib
 # Purpose:      Common functions used by SpiderFoot modules.
@@ -110,7 +111,7 @@ class SpiderFoot:
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, error, exception=True):
-        if self.dbh == None:
+        if self.dbh is None:
             print '[Error] ' + error
         else:
             self._dblog("ERROR", error)
@@ -118,7 +119,7 @@ class SpiderFoot:
             raise BaseException("Internal Error Encountered: " + error)
 
     def fatal(self, error):
-        if self.dbh == None:
+        if self.dbh is None:
             print '[Fatal] ' + error
         else:
             self._dblog("FATAL", error)
@@ -126,7 +127,7 @@ class SpiderFoot:
         sys.exit(-1)
 
     def status(self, message):
-        if self.dbh == None:
+        if self.dbh is None:
             print "[Status] " + message
         else:
             self._dblog("STATUS", message)
@@ -135,29 +136,29 @@ class SpiderFoot:
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
 
-        if mod == None:
+        if mod is None:
             modName = "Unknown"
         else:
             modName = mod.__name__
 
-        if self.dbh == None:
+        if self.dbh is None:
             print '[' + modName + '] ' + message
         else:
             self._dblog("INFO", message, modName)
         return
 
     def debug(self, message):
-        if self.opts['_debug'] == False:
+        if not self.opts['_debug']:
             return
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
 
-        if mod == None:
+        if mod is None:
             modName = "Unknown"
         else:
             modName = mod.__name__
 
-        if self.dbh == None:
+        if self.dbh is None:
             print '[' + modName + '] ' + message
         else:
             self._dblog("DEBUG", message, modName)
@@ -338,7 +339,7 @@ class SpiderFoot:
     def modulesProducing(self, events):
         modlist = list()
         for mod in self.opts['__modules__'].keys():
-            if self.opts['__modules__'][mod]['provides'] == None:
+            if self.opts['__modules__'][mod]['provides'] is None:
                 continue
 
             for evtype in self.opts['__modules__'][mod]['provides']:
@@ -352,7 +353,7 @@ class SpiderFoot:
     def modulesConsuming(self, events):
         modlist = list()
         for mod in self.opts['__modules__'].keys():
-            if self.opts['__modules__'][mod]['consumes'] == None:
+            if self.opts['__modules__'][mod]['consumes'] is None:
                 continue
 
             for evtype in self.opts['__modules__'][mod]['consumes']:
@@ -367,7 +368,7 @@ class SpiderFoot:
         evtlist = list()
         for mod in modules:
             if mod in self.opts['__modules__'].keys():
-                if self.opts['__modules__'][mod]['provides'] != None:
+                if self.opts['__modules__'][mod]['provides'] is not None:
                     for evt in self.opts['__modules__'][mod]['provides']:
                         evtlist.append(evt)
 
@@ -379,7 +380,7 @@ class SpiderFoot:
         evtlist = list()
         for mod in modules:
             if mod in self.opts['__modules__'].keys():
-                if self.opts['__modules__'][mod]['consumes'] != None:
+                if self.opts['__modules__'][mod]['consumes'] is not None:
                     for evt in self.opts['__modules__'][mod]['consumes']:
                         evtlist.append(evt)
 
@@ -444,7 +445,7 @@ class SpiderFoot:
         else:
             bits = re.match('(.[^/:]*)[:/]', url)
 
-        if bits == None:
+        if bits is None:
             return url.lower()
 
         #self.debug('base url of ' + url + ' is: ' + bits.group(1))
@@ -523,7 +524,7 @@ class SpiderFoot:
             if needle not in haystack.keys():
                 return None
 
-            if haystack[needle] == None:
+            if haystack[needle] is None:
                 return None
 
             for c in haystack[needle]:
@@ -534,12 +535,12 @@ class SpiderFoot:
         # Find the element with no parents, that's our root.
         root = None
         for k in data.keys():
-            if data[k] == None:
+            if data[k] is None:
                 continue
 
             contender = True
             for ck in data.keys():
-                if data[ck] == None:
+                if data[ck] is None:
                     continue
 
                 if k in data[ck]:
@@ -549,7 +550,7 @@ class SpiderFoot:
                 root = k
                 break
 
-        if root == None:
+        if root is None:
             #print "*BUG*: Invalid structure - needs to go back to one root."
             final = { }
         else:
@@ -587,7 +588,7 @@ class SpiderFoot:
     def parseLinks(self, url, data, domains):
         returnLinks = dict()
 
-        if data == None or len(data) == 0:
+        if data is None or len(data) == 0:
             self.debug('parseLinks() called with no data to parse')
             return None
 
@@ -656,11 +657,11 @@ class SpiderFoot:
                     absLink = self.urlBaseUrl(url) + link
 
                 # Maybe the domain was just mentioned and not a link, so we make it one
-                if absLink == None and domain.lower() in link.lower():
+                if absLink is None and domain.lower() in link.lower():
                     absLink = 'http://' + link
 
                 # Otherwise, it's a flat link within the current directory
-                if absLink == None:
+                if absLink is None:
                     absLink = self.urlBaseDir(url) + link
 
                 # Translate any relative pathing (../)
@@ -680,7 +681,7 @@ class SpiderFoot:
             'realurl': None
         }
 
-        if url == None:
+        if url is None:
             self.error('Blank URL supplied to be fetched')
             return result
 
@@ -695,12 +696,12 @@ class SpiderFoot:
                 header['User-Agent'] = useragent
 
             # Add custom headers
-            if headers != None:
+            if headers is not None:
                 for k in headers.keys():
                     header[k] = headers[k]
 
             req = urllib2.Request(url, None, header)
-            if cookies != None:
+            if cookies is not None:
                 req.add_header('cookie', cookies)
                 self.info("Fetching (incl. cookies): " + url + \
                     " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
@@ -793,7 +794,7 @@ class SpiderFoot:
             self.error("Google doesn't like us right now..", False)
             return None
 
-        if firstPage['content'] == None:
+        if firstPage['content'] is None:
             self.error("Failed to fetch content from Google.", False)
             return None
 
@@ -813,7 +814,7 @@ class SpiderFoot:
                 if "start=" + str(fetches*10) in match:
                     nextUrl = match.replace("&amp;", "&")
 
-            if nextUrl == None:
+            if nextUrl is None:
                 self.debug("Nothing left to scan for in Google results.")
                 return returnResults
             self.info("Next Google URL: " + nextUrl)
@@ -830,7 +831,7 @@ class SpiderFoot:
                 self.error("Google doesn't like us right now..", False)
                 return returnResults
 
-            if nextPage['content'] == None:
+            if nextPage['content'] is None:
                 self.error("Failed to fetch subsequent content from Google.", False)
                 return returnResults
 
@@ -869,7 +870,7 @@ class SpiderFoot:
             self.error("Bing doesn't like us right now..", False)
             return None
 
-        if firstPage['content'] == None:
+        if firstPage['content'] is None:
             self.error("Failed to fetch content from Bing.", False)
             return None
 
@@ -888,7 +889,7 @@ class SpiderFoot:
                 if "first=" + str((fetches*10)+1) in match:
                     nextUrl = match.replace("&amp;", "&").replace("%3a", ":")
 
-            if nextUrl == None:
+            if nextUrl is None:
                 self.debug("Nothing left to scan for in Bing results.")
                 return returnResults
             self.info("Next Bing URL: " + nextUrl)
@@ -905,7 +906,7 @@ class SpiderFoot:
                 self.error("Bing doesn't like us any more..", False)
                 return returnResults
 
-            if nextPage['content'] == None:
+            if nextPage['content'] is None:
                 self.error("Failed to fetch subsequent content from Bing.", False)
                 return returnResults
 
@@ -944,7 +945,7 @@ class SpiderFoot:
             self.error("Yahoo doesn't like us right now..", False)
             return None
 
-        if firstPage['content'] == None:
+        if firstPage['content'] is None:
             self.error("Failed to fetch content from Yahoo.", False)
             return None
 
@@ -960,7 +961,7 @@ class SpiderFoot:
                 if "b=" + str((fetches*10)+1) in match:
                     nextUrl = u"https://search.yahoo.com" + match
 
-            if nextUrl == None:
+            if nextUrl is None:
                 self.debug("Nothing left to scan for in Yahoo results.")
                 return returnResults
             self.info("Next Yahoo URL: " + nextUrl)
@@ -977,7 +978,7 @@ class SpiderFoot:
                 self.error("Yahoo doesn't like us any more..", False)
                 return returnResults
 
-            if nextPage['content'] == None:
+            if nextPage['content'] is None:
                 self.error("Failed to fetch subsequent content from Yahoo.", False)
                 return returnResults
 
@@ -1051,7 +1052,7 @@ class SpiderFootPlugin(object):
 
     # Gets the current target this module is acting against
     def getTarget(self):
-        if self._currentTarget == None:
+        if self._currentTarget is None:
             print "Internal Error: Module called getTarget() but no target set."
             sys.exit(-1)
         return self._currentTarget
@@ -1069,7 +1070,7 @@ class SpiderFootPlugin(object):
         eventData = sfEvent.data
         storeOnly = False # Under some conditions, only store and don't notify
 
-        if eventData == None or (type(eventData) is unicode and len(eventData) == 0):
+        if eventData is None or (type(eventData) is unicode and len(eventData) == 0):
             #print "No data to send for " + eventName + " to " + listener.__module__
             return None
 
@@ -1088,8 +1089,8 @@ class SpiderFootPlugin(object):
         # notification from one of the upstream events.
 
         prevEvent = sfEvent.sourceEvent
-        while prevEvent != None:
-            if prevEvent.sourceEvent != None:
+        while prevEvent is not None:
+            if prevEvent.sourceEvent is not None:
                 if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
                     prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
                     #print "Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data
@@ -1237,7 +1238,7 @@ class SpiderFootTarget(object):
     def matches(self, value, includeParents=False, includeChildren=True):
         value = value.lower()
 
-        if value == None or value == "":
+        if value is None or value == "":
             return False
 
         if netaddr.valid_ipv4(value):

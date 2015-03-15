@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sf
 # Purpose:      Main wrapper for calling all SpiderFoot modules
@@ -43,8 +44,6 @@ for mod in deps:
         print ""
         sys.exit(-1)
 
-import imp
-import time
 import os
 import cherrypy
 from sflib import SpiderFoot

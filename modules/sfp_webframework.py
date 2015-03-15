@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_webframework
 # Purpose:      Identify the usage of popular web frameworks.
@@ -10,7 +11,6 @@
 #-------------------------------------------------------------------------------
 
 import re
-import sys
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 regexps = dict({

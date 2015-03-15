@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_junkfiles
 # Purpose:      From Spidering, identifies backup and temporary files.
@@ -9,12 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import random
-import re
-import time
-import urllib
-from urlparse import urlparse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_junkfiles(SpiderFootPlugin):
@@ -85,7 +80,7 @@ class sfp_junkfiles(SpiderFootPlugin):
                     res = self.sf.fetchUrl(fetch, 
                         timeout=self.opts['_fetchtimeout'],
                         useragent=self.opts['_useragent'])
-                    if res['content'] != None and res['code'] != "404":
+                    if res['content'] is not None and res['code'] != "404":
                         evt = SpiderFootEvent("JUNK_FILE", fetch, 
                             self.__name__, event)
                         self.notifyListeners(evt)
@@ -104,7 +99,7 @@ class sfp_junkfiles(SpiderFootPlugin):
                     res = self.sf.fetchUrl(fetch,
                         timeout=self.opts['_fetchtimeout'],
                         useragent=self.opts['_useragent'])
-                    if res['content'] != None and res['code'] != "404":
+                    if res['content'] is not None and res['code'] != "404":
                         evt = SpiderFootEvent("JUNK_FILE", fetch,
                             self.__name__, event)
                         self.notifyListeners(evt)
@@ -125,7 +120,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             res = self.sf.fetchUrl(fetch,
                 timeout=self.opts['_fetchtimeout'],
                 useragent=self.opts['_useragent'])
-            if res['content'] != None and res['code'] != "404":
+            if res['content'] is not None and res['code'] != "404":
                 evt = SpiderFootEvent("JUNK_FILE", fetch,
                     self.__name__, event)
                 self.notifyListeners(evt)
@@ -141,7 +136,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             res = self.sf.fetchUrl(fetch,
                 timeout=self.opts['_fetchtimeout'],
                 useragent=self.opts['_useragent'])
-            if res['content'] != None and res['code'] != "404":
+            if res['content'] is not None and res['code'] != "404":
                 evt = SpiderFootEvent("JUNK_FILE", fetch,
                     self.__name__, event)
                 self.notifyListeners(evt)

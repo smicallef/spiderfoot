@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_XXX
 # Purpose:      Description of the plug-in.
@@ -9,7 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_XXX(SpiderFootPlugin):

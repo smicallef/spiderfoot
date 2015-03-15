@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_sslcert
 # Purpose:      Gather information about SSL certificates behind HTTPS sites.
@@ -9,7 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import socket
 import socks
 import ssl

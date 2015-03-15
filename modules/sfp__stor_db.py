@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_stor_db
 # Purpose:      SpiderFoot plug-in for storing events to the local SpiderFoot
@@ -10,8 +11,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import re
 from sflib import SpiderFoot, SpiderFootPlugin
 
 class sfp__stor_db(SpiderFootPlugin):

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_intfiles
 # Purpose:      From Spidering and from searching search engines, identifies
@@ -10,10 +11,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import random
 import re
-import time
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -108,7 +106,7 @@ class sfp_intfiles(SpiderFootPlugin):
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
 
-            if pages == None:
+            if pages is None:
                 self.sf.info("No results returned from " + self.opts['searchengine'] + \
                     " for " + fileExt + " files.")
                 continue

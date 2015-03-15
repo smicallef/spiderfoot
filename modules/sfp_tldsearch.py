@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_tldsearch
 # Purpose:      SpiderFoot plug-in for identifying the existence of this target
@@ -11,9 +12,6 @@
 #-------------------------------------------------------------------------------
 
 import socket
-import sys
-import re
-import time
 import random
 import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
@@ -105,7 +103,7 @@ class sfp_tldsearch(SpiderFootPlugin):
 
             pageContent = self.sf.fetchUrl('http://' + result,
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-            if pageContent['content'] != None:
+            if pageContent['content'] is not None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
                 self.notifyListeners(evt)
         else:

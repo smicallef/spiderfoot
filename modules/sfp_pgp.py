@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_pgp
 # Purpose:      SpiderFoot plug-in for looking up received e-mails in PGP
@@ -11,7 +12,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -70,7 +70,7 @@ class sfp_pgp(SpiderFootPlugin):
             res = self.sf.fetchUrl(self.opts['keyserver_search'] + eventData,
                     timeout=self.opts['_fetchtimeout'],
                     useragent=self.opts['_useragent'])
-            if res['content'] != None:
+            if res['content'] is not None:
                 pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
                 matches = re.findall(pat, res['content'])
                 for match in matches:
@@ -92,7 +92,7 @@ class sfp_pgp(SpiderFootPlugin):
             res = self.sf.fetchUrl(self.opts['keyserver_fetch'] + eventData,
                     timeout=self.opts['_fetchtimeout'],
                     useragent=self.opts['_useragent'])
-            if res['content'] != None:
+            if res['content'] is not None:
                 pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE|re.DOTALL)
                 matches = re.findall(pat, res['content'])
                 for match in matches:

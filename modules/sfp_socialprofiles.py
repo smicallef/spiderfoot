@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_socialprofiles
 # Purpose:      Obtains social media profiles of any identified human names.
@@ -9,7 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import random
 import re
 import time
@@ -84,7 +84,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
         else:
             self.results.append(eventData)
 
-        if self.keywords == None:
+        if self.keywords is None:
             self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
                 self.opts['_internettlds'])
 
@@ -108,7 +108,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     useragent=self.opts['_useragent'],
                     timeout=self.opts['_fetchtimeout']))
 
-            if results == None:
+            if results is None:
                 self.sf.info("No data returned from " + self.opts['method'] + ".")
                 return None
 
@@ -130,7 +130,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
                 matches = re.findall(searchDom, res, re.IGNORECASE)
 
-                if matches != None:
+                if matches is not None:
                     for match in matches:
                         if match in instances:
                             continue
@@ -146,7 +146,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             pres = self.sf.fetchUrl(match, timeout=self.opts['_fetchtimeout'],
                                 useragent=self.opts['_useragent'])
 
-                            if pres['content'] == None:
+                            if pres['content'] is None:
                                 continue
                             else:
                                 found = False

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_blacklist
 # Purpose:      SpiderFoot plug-in for looking up whether IPs/Netblocks/Domains
@@ -11,11 +12,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import netaddr
-import sys
-import re
 import socket
-import random
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -131,7 +128,7 @@ class sfp_blacklist(SpiderFootPlugin):
                         text = self.checks[domain][k] + " (" + qaddr + ")"
                         break
 
-                if text != None:
+                if text is not None:
                     if eventName == "AFFILIATE_IPADDR":
                         e = "BLACKLISTED_AFFILIATE_IPADDR"
                     if eventName == "IP_ADDRESS":

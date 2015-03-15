@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_virustotal
 # Purpose:      Query VirusTotal for identified IP addresses.
@@ -9,7 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import json
 import time
 from netaddr import IPNetwork
@@ -85,7 +85,7 @@ class sfp_virustotal(SpiderFootPlugin):
         if self.opts['publicapi']:
             time.sleep(15)
 
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.info("No VirusTotal info found for " + qry)
             return None
 
@@ -149,7 +149,7 @@ class sfp_virustotal(SpiderFootPlugin):
                 return None
 
             info = self.query(addr)
-            if info == None:
+            if info is None:
                 continue
             if info.has_key('detected_urls'):
                 self.sf.info("Found VirusTotal URL data for " + addr)

@@ -10,7 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -83,7 +82,7 @@ class sfp_names(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Stage 1: Find things that look (very vaguely) like names
-        rx = re.compile("([A-Z][a-záéíóúäëïöüñÑû]+)\s+.?.?\s?([A-Z][áéíóúäëïöüñÑûa-zA-Z\'\-]+)")
+        rx = re.compile("([A-Z][a-zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]+)\s+.?.?\s?([A-Z][ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½a-zA-Z\'\-]+)")
         m = re.findall(rx, eventData)
         for r in m:
             # Start off each match as 0 points.
@@ -103,31 +102,31 @@ class sfp_names(SpiderFootPlugin):
 
             # If both words are not in the dictionary, add 75 points.
             if first not in self.d and second not in self.d:
-                p = p + 75
+                p += 75
                 notindict = True
 
             # If the first word is a known popular first name, award 50 points.
             if first in self.n:
-                p = p + 50
+                p += 50
 
             # If either word is 2 characters, subtract 50 points.
             if len(first) == 2 or len(second) == 2:
-                p = p - 50
+                p -= 50
 
             # If the first word is in our cue list, knock out more points.
             if first in self.fq:
-                p = p - 50
+                p -= 50
 
             # If the first word is in the dictionary but the second isn't,
             # subtract 40 points.
-            if notindict == False:
+            if not notindict:
                 if first in self.d and second not in self.d:
-                    p = p - 20
+                    p -= 20
 
                 # If the second word is in the dictionary but the first isn't,
                 # reduce 20 points.
                 if first not in self.d and second in self.d:
-                    p = p - 40
+                    p -= 40
 
             name = r[0] + " " + secondOrig
 

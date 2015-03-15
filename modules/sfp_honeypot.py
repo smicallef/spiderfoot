@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_honeypot
 # Purpose:      SpiderFoot plug-in for looking up whether IPs appear in the
@@ -10,10 +11,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import re
 import socket
-import random
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -116,12 +114,12 @@ class sfp_honeypot(SpiderFootPlugin):
             text = None
             for addr in addrs:
                 text = self.reportIP(addr)
-                if text == None:
+                if text is None:
                     continue
                 else:
                     break
 
-            if text != None:
+            if text is not None:
                 if eventName == "AFFILIATE_IPADDR":
                     e = "BLACKLISTED_AFFILIATE_IPADDR"
                 if eventName == "IP_ADDRESS":

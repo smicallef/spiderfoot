@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_pastebin
 # Purpose:      Searches Google for PasteBin content related to the domain in 
@@ -10,10 +11,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import random
 import re
-import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pastebin(SpiderFootPlugin):
@@ -63,7 +61,7 @@ class sfp_pastebin(SpiderFootPlugin):
             dict(limit=self.opts['pages'],
             useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
 
-        if pages == None:
+        if pages is None:
             self.sf.info("No results returned from Google PasteBin search.")
             return None
 
@@ -101,7 +99,7 @@ class sfp_pastebin(SpiderFootPlugin):
                     res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
                         useragent=self.opts['_useragent'])
 
-                    if res['content'] == None:
+                    if res['content'] is None:
                         self.sf.debug("Ignoring " + link + " as no data returned")
                         continue
 
@@ -111,7 +109,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
                     # Sometimes pastebin search results false positives
                     if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) + \
-                        "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) == None:
+                        "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                         continue
 
                     try:
