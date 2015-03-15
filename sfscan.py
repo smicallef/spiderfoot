@@ -52,7 +52,7 @@ class SpiderFootScanner(threading.Thread):
 
     # Set the status of the currently running scan (if any)
     def setStatus(self, status, started=None, ended=None):
-        if self.ts == None:
+        if self.ts is None:
             print "Internal Error: Status set attempted before " + \
                 "SpiderFootScanner was ready."
             exit(-1)
@@ -154,7 +154,7 @@ class SpiderFootScanner(threading.Thread):
             tlddata = self.ts.sf.cacheGet("internet_tlds", 
                 self.ts.config['_internettlds_cache'])
             # If it wasn't loadable from cache, load it from scratch
-            if tlddata == None:
+            if tlddata is None:
                 self.ts.config['_internettlds'] = self.ts.sf.optValueToData(
                     self.ts.config['_internettlds'])
                 self.ts.sf.cachePut("internet_tlds", self.ts.config['_internettlds'])
@@ -184,7 +184,7 @@ class SpiderFootScanner(threading.Thread):
                 # Give modules a chance to 'enrich' the original target with
                 # aliases of that target.
                 newTarget = mod.enrichTarget(target)
-                if newTarget != None:
+                if newTarget is not None:
                     target = newTarget
                 self.ts.moduleInstances[modName] = mod
 
@@ -207,7 +207,7 @@ class SpiderFootScanner(threading.Thread):
                     # Note the absence of a check for whether a module can register
                     # to itself. That is intentional because some modules will
                     # act on their own notifications (e.g. sfp_dns)!
-                    if listenerModule.watchedEvents() != None:
+                    if listenerModule.watchedEvents() is not None:
                         module.registerListener(listenerModule)
 
             # Now we are ready to roll..
@@ -219,7 +219,7 @@ class SpiderFootScanner(threading.Thread):
             psMod.setTarget(target)
             psMod.clearListeners()
             for mod in self.ts.moduleInstances.values():
-                if mod.watchedEvents() != None:
+                if mod.watchedEvents() is not None:
                     psMod.registerListener(mod)
 
             # Create the "ROOT" event which un-triggered modules will link events to

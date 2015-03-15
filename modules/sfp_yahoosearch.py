@@ -67,7 +67,7 @@ class sfp_yahoosearch(SpiderFootPlugin):
         # Sites hosted on the domain
         pages = self.sf.yahooIterate("site:" + eventData, dict(limit=self.opts['pages'],
             useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
-        if pages == None:
+        if pages is None:
             self.sf.info("No results returned from Yahoo.")
             return None
 

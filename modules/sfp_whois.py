@@ -75,7 +75,7 @@ class sfp_whois(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         info = pythonwhois.parse.parse_raw_whois(data, True)
-        if eventName == "DOMAIN_NAME" and info['registrar'] != None:
+        if eventName == "DOMAIN_NAME" and info['registrar'] is not None:
             evt = SpiderFootEvent("DOMAIN_REGISTRAR", info['registrar'][0], 
                 self.__name__, event)
             self.notifyListeners(evt)

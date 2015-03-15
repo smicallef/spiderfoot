@@ -87,13 +87,13 @@ class sfp_websvr(SpiderFootPlugin):
         if eventData.has_key('x-aspnet-version'):
             tech = "ASP.NET"
 
-        if tech != None and '.jsp' in eventSource:
+        if tech is not None and '.jsp' in eventSource:
             tech = "Java/JSP"
 
-        if tech != None and '.php' in eventSource:
+        if tech is not None and '.php' in eventSource:
             tech = "PHP"
 
-        if tech != None:
+        if tech is not None:
             evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, parentEvent)
             self.notifyListeners(evt)
 
