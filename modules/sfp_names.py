@@ -19,12 +19,15 @@ class sfp_names(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'algotune': 50
+        'algotune': 50,
+        'emailtoname': True,
+        'nametoemail': False
     }
 
     # Option descriptions
     optdescs = {
-        'algotune': "A value between 0-100 to tune the sensitivity of the name finder. Less than 40 will give you a lot of junk, over 50 and you'll probably miss things but will have less false positives."
+        'algotune': "A value between 0-100 to tune the sensitivity of the name finder. Less than 40 will give you a lot of junk, over 50 and you'll probably miss things but will have less false positives.",
+        'emailtoname': "Convert e-mail addresses in the form of firstname.surname@target to names?"
     }
 
     results = dict()
@@ -66,7 +69,7 @@ class sfp_names(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["TARGET_WEB_CONTENT"]
+        return ["TARGET_WEB_CONTENT", "EMAILADDR"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -81,6 +84,14 @@ class sfp_names(SpiderFootPlugin):
         eventData = event.data
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if eventName == "EMAILADDR" and self.opts['emailtoname']:
+            if "." in eventData.split("@")[0]:
+                name = " ".join(eventData.split("@")[0].split("."))
+                # Notify other modules of what you've found
+                evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
+                self.notifyListeners(evt)
+                return None
 
         # Stage 1: Find things that look (very vaguely) like names
         rx = re.compile("([A-Z][a-z�������������]+)\s+.?.?\s?([A-Z][�������������a-zA-Z\'\-]+)")
