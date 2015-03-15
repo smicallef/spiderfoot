@@ -45,7 +45,6 @@ to add getaddrinfo, as per http://stackoverflow.com/questions/13184205/dns-over-
 
 import socket
 import struct
-import sys
 
 PROXY_TYPE_SOCKS4 = 1
 PROXY_TYPE_SOCKS5 = 2

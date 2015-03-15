@@ -8,19 +8,14 @@
 # Copyright:    (c) Steve Micallef 2013
 # License:      GPL
 #-----------------------------------------------------------------
-import json
 import traceback
-import os
 import time
-import re
 import sys
 import socket
 import socks
 import dns.resolver
 import threading
-import thread
 import random
-from netaddr import IPNetwork
 from copy import deepcopy, copy
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, \

@@ -9,10 +9,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import random
 import re
-import time
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

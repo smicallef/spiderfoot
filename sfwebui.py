@@ -9,15 +9,11 @@
 # License:      GPL
 #-----------------------------------------------------------------
 import json
-import threading
-import thread
 import cherrypy
 import cgi
 import csv
-import os
 import time
 import random
-import urllib2
 import re
 from copy import deepcopy
 from mako.lookup import TemplateLookup
