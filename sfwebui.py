@@ -151,10 +151,10 @@ class SpiderFootWebUi:
                 ret['configdesc'][key] = self.config['__globaloptdescs__'][key]
             else:
                 [modName, modOpt] = key.split(':')
-                if not modName in self.config['__modules__'].keys():
+                if modName not in self.config['__modules__'].keys():
                     continue
 
-                if not modOpt in self.config['__modules__'][modName]['optdescs'].keys():
+                if modOpt not in self.config['__modules__'][modName]['optdescs'].keys():
                     continue
 
                 ret['configdesc'][key] = self.config['__modules__'][modName]['optdescs'][modOpt]
@@ -507,7 +507,7 @@ class SpiderFootWebUi:
             childId = row[8]
             datamap[childId] = row
 
-            if pc.has_key(parentId):
+            if parentId in pc:
                 if childId not in pc[parentId]:
                     pc[parentId].append(childId)
             else:
@@ -528,7 +528,7 @@ class SpiderFootWebUi:
                 datamap[childId] = row
                 #print childId + " = " + str(row)
 
-                if pc.has_key(parentId):
+                if parentId in pc:
                     if childId not in pc[parentId]:
                         pc[parentId].append(childId)
                 else:

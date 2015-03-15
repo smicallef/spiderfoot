@@ -72,8 +72,7 @@ class sfp_adblock(SpiderFootPlugin):
                     self.errorState = True
                     self.sf.error("Parsing error handling AdBlock list: " + str(e), False)
             else:
-                self.sf.error("Unable to download AdBlockPlus list: " + \
-                              self.opts['blocklist'])
+                self.sf.error("Unable to download AdBlockPlus list: " + self.opts['blocklist'])
 
         if "_EXTERNAL" in eventName:
             pagetype = "_EXTERNAL"

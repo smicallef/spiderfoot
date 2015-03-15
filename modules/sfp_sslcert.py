@@ -76,7 +76,7 @@ class sfp_sslcert(SpiderFootPlugin):
         else:
             fqdn = eventData
 
-        if not self.results.has_key(fqdn):
+        if fqdn not in self.results:
             self.results[fqdn] = True
         else:
             return None

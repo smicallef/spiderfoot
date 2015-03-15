@@ -77,7 +77,7 @@ class sfp_spider(SpiderFootPlugin):
     def processUrl(self, url):
         site = self.sf.urlFQDN(url)
         cookies = None
-        if self.siteCookies.has_key(site):
+        if site in self.siteCookies:
             self.sf.debug("Restoring cookies for " + site + ": " + str(self.siteCookies[site]))
             cookies = self.siteCookies[site]
         # Fetch the contents of the supplied URL (object returned)
@@ -91,7 +91,7 @@ class sfp_spider(SpiderFootPlugin):
                 self.siteCookies[site] = fetched['headers'].get('Set-Cookie')
                 self.sf.debug("Saving cookies for " + site + ": " + str(self.siteCookies[site]))
 
-        if not self.urlEvents.has_key(url):
+        if url not in self.urlEvents:
             self.urlEvents[url] = None
 
         # Notify modules about the content obtained
@@ -262,7 +262,7 @@ class sfp_spider(SpiderFootPlugin):
         targetBase = self.sf.urlBaseUrl(startingPoint)
 
         # Are we respecting robots.txt?
-        if self.opts['robotsonly'] and not self.robotsRules.has_key(targetBase):
+        if self.opts['robotsonly'] and targetBase not in self.robotsRules:
             robotsTxt = self.sf.fetchUrl(targetBase + '/robots.txt',
                                          timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if robotsTxt['content'] is not None:
@@ -307,7 +307,7 @@ class sfp_spider(SpiderFootPlugin):
 
                     totalFetched += 1
                     if totalFetched >= self.opts['maxpages']:
-                        self.sf.info("Maximum number of pages (" + str(self.opts['maxpages']) + \
+                        self.sf.info("Maximum number of pages (" + str(self.opts['maxpages']) +
                                      ") reached.")
                         keepSpidering = False
                         break
@@ -319,7 +319,7 @@ class sfp_spider(SpiderFootPlugin):
             levelsTraversed += 1
             self.sf.info("Now at traversal level: " + str(levelsTraversed))
             if levelsTraversed >= self.opts['maxlevels']:
-                self.sf.info("Maximum number of levels (" + str(self.opts['maxlevels']) + \
+                self.sf.info("Maximum number of levels (" + str(self.opts['maxlevels']) +
                              ") reached.")
                 keepSpidering = False
 

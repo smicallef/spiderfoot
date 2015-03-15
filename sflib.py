@@ -244,7 +244,7 @@ class SpiderFoot:
             if type(opts[opt]) is list:
                 storeopts[opt] = ','.join(opts[opt])
 
-        if not opts.has_key('__modules__'):
+        if '__modules__' not in opts:
             return storeopts
 
         for mod in opts['__modules__']:
@@ -279,7 +279,7 @@ class SpiderFoot:
             if opt.startswith('__') and filterSystem:
                 # Leave out system variables
                 continue
-            if opts.has_key(opt):
+            if opt in opts:
                 if type(referencePoint[opt]) is bool:
                     if opts[opt] == "1":
                         returnOpts[opt] = True
@@ -300,7 +300,7 @@ class SpiderFoot:
                     else:
                         returnOpts[opt] = str(opts[opt]).split(",")
 
-        if not referencePoint.has_key('__modules__'):
+        if '__modules__' not in referencePoint:
             return returnOpts
 
         # Module options
@@ -309,7 +309,7 @@ class SpiderFoot:
             for opt in referencePoint['__modules__'][modName]['opts']:
                 if opt.startswith('_') and filterSystem:
                     continue
-                if opts.has_key(modName + ":" + opt):
+                if modName + ":" + opt in opts:
                     if type(referencePoint['__modules__'][modName]['opts'][opt]) is bool:
                         if opts[modName + ":" + opt] == "1":
                             returnOpts['__modules__'][modName]['opts'][opt] = True
@@ -782,7 +782,7 @@ class SpiderFoot:
         fetches = 0
         returnResults = dict()
 
-        if opts.has_key('limit'):
+        if 'limit' in opts:
             limit = opts['limit']
 
         # We attempt to make the URL look as authentically human as possible
@@ -821,7 +821,7 @@ class SpiderFoot:
             self.info("Next Google URL: " + nextUrl)
 
             # Wait for a random number of seconds between fetches
-            if not opts.has_key('nopause'):
+            if 'nopause' not in opts:
                 pauseSecs = random.randint(4, 15)
                 self.info("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
@@ -859,7 +859,7 @@ class SpiderFoot:
         fetches = 0
         returnResults = dict()
 
-        if opts.has_key('limit'):
+        if 'limit' in opts:
             limit = opts['limit']
 
         # We attempt to make the URL look as authentically human as possible
@@ -896,7 +896,7 @@ class SpiderFoot:
             self.info("Next Bing URL: " + nextUrl)
 
             # Wait for a random number of seconds between fetches
-            if not opts.has_key('nopause'):
+            if 'nopause' not in opts:
                 pauseSecs = random.randint(4, 15)
                 self.info("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
@@ -934,7 +934,7 @@ class SpiderFoot:
         fetches = 0
         returnResults = dict()
 
-        if opts.has_key('limit'):
+        if 'limit' in opts:
             limit = opts['limit']
 
         # We attempt to make the URL look as authentically human as possible
@@ -968,7 +968,7 @@ class SpiderFoot:
             self.info("Next Yahoo URL: " + nextUrl)
 
             # Wait for a random number of seconds between fetches
-            if not opts.has_key('nopause'):
+            if 'nopause' not in opts:
                 pauseSecs = random.randint(4, 15)
                 self.info("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
@@ -1329,14 +1329,14 @@ class SpiderFootEvent(object):
 # Override the default redirectors to re-use cookies
 class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
     def http_error_301(self, req, fp, code, msg, headers):
-        if headers.has_key("Set-Cookie"):
+        if "Set-Cookie" in headers:
             req.add_header('cookie', headers['Set-Cookie'])
         result = urllib2.HTTPRedirectHandler.http_error_301(
             self, req, fp, code, msg, headers)
         return result
 
     def http_error_302(self, req, fp, code, msg, headers):
-        if headers.has_key("Set-Cookie"):
+        if "Set-Cookie" in headers:
             req.add_header('cookie', headers['Set-Cookie'])
         result = urllib2.HTTPRedirectHandler.http_error_302(
             self, req, fp, code, msg, headers)
@@ -1462,7 +1462,7 @@ class SpiderFootScanStatus:
 
     def getStatus(self, scanId):
         with self.lock:
-            if self.statusTable.has_key(scanId):
+            if scanId in self.statusTable:
                 return self.statusTable[scanId]
             return None
 

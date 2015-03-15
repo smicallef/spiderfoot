@@ -85,8 +85,7 @@ class sfp_accounts(SpiderFootPlugin):
                                    )
 
             if res['content'] is None:
-                self.sf.debug("Unable to check the status of account " + name \
-                              + " on " + site)
+                self.sf.debug("Unable to check the status of account " + name + " on " + site)
             else:
                 if "Sorry," in res['content']:
                     ret.append(site)

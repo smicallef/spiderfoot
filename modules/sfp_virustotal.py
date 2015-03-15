@@ -110,8 +110,8 @@ class sfp_virustotal(SpiderFootPlugin):
             self.sf.error("You enabled sfp_virustotal but did not set an API key!", False)
             return None
 
-       # Don't look up stuff twice
-        if self.results.has_key(eventData):
+        # Don't look up stuff twice
+        if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
@@ -125,15 +125,15 @@ class sfp_virustotal(SpiderFootPlugin):
 
         if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " + \
-                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
                               str(self.opts['maxnetblock']))
                 return None
 
         if eventName == 'NETBLOCK_MEMBER' and self.opts['subnetlookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: " + \
-                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
                               str(self.opts['maxsubnet']))
                 return None
 
@@ -152,7 +152,7 @@ class sfp_virustotal(SpiderFootPlugin):
             info = self.query(addr)
             if info is None:
                 continue
-            if info.has_key('detected_urls'):
+            if 'detected_urls' in info:
                 self.sf.info("Found VirusTotal URL data for " + addr)
                 if eventName in ["IP_ADDRESS"] or eventName.startswith("NETBLOCK_"):
                     evt = "MALICIOUS_IPADDR"
@@ -178,7 +178,7 @@ class sfp_virustotal(SpiderFootPlugin):
                           addr + "/information/</SFURL>"
 
                 # Notify other modules of what you've found
-                e = SpiderFootEvent(evt, "VirusTotal [" + addr + "]\n" + \
+                e = SpiderFootEvent(evt, "VirusTotal [" + addr + "]\n" +
                                     infourl, self.__name__, event)
                 self.notifyListeners(e)
 
