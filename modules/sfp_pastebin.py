@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_pastebin
 # Purpose:      Searches Google for PasteBin content related to the domain in 
 #               question.
@@ -9,22 +9,23 @@
 # Created:     20/03/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_pastebin(SpiderFootPlugin):
     """PasteBin:PasteBin scraping (via Google) to identify related content."""
 
     # Default options
     opts = {
-        'pages':        20      # Number of google results pages to iterate
+        'pages': 20  # Number of google results pages to iterate
     }
 
     # Option descriptions
     optdescs = {
-        'pages':    "Number of search results pages to iterate through."
+        'pages': "Number of search results pages to iterate through."
     }
 
     results = list()
@@ -38,13 +39,13 @@ class sfp_pastebin(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "INTERNET_NAME", "IP_ADDRESS", "EMAILADDR" ]
+        return ["INTERNET_NAME", "IP_ADDRESS", "EMAILADDR"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "SEARCH_ENGINE_WEB_CONTENT", "PASTEBIN_CONTENT" ]
+        return ["SEARCH_ENGINE_WEB_CONTENT", "PASTEBIN_CONTENT"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -57,9 +58,9 @@ class sfp_pastebin(SpiderFootPlugin):
             self.results.append(eventData)
 
         # Sites hosted on the domain
-        pages = self.sf.googleIterate("site:pastebin.com +\"" + eventData + "\"", 
-            dict(limit=self.opts['pages'],
-            useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
+        pages = self.sf.googleIterate("site:pastebin.com +\"" + eventData + "\"",
+                                      dict(limit=self.opts['pages'],
+                                           useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
 
         if pages is None:
             self.sf.info("No results returned from Google PasteBin search.")
@@ -76,8 +77,8 @@ class sfp_pastebin(SpiderFootPlugin):
                 return None
 
             # Submit the google results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page], 
-                self.__name__, event)
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page],
+                                  self.__name__, event)
             self.notifyListeners(evt)
 
             # Fetch the PasteBin page
@@ -97,24 +98,24 @@ class sfp_pastebin(SpiderFootPlugin):
                         return None
 
                     res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
-                        useragent=self.opts['_useragent'])
+                                           useragent=self.opts['_useragent'])
 
                     if res['content'] is None:
                         self.sf.debug("Ignoring " + link + " as no data returned")
                         continue
 
                     evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT",
-                        res['content'], self.__name__, event)
+                                          res['content'], self.__name__, event)
                     self.notifyListeners(evt)
 
                     # Sometimes pastebin search results false positives
                     if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) + \
-                        "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                                         "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                         continue
 
                     try:
-                        startIndex = res['content'].index(eventData)-120
-                        endIndex = startIndex+len(eventData)+240
+                        startIndex = res['content'].index(eventData) - 120
+                        endIndex = startIndex + len(eventData) + 240
                     except BaseException as e:
                         self.sf.debug("String not found in pastebin content.")
                         continue
@@ -122,9 +123,8 @@ class sfp_pastebin(SpiderFootPlugin):
                     data = res['content'][startIndex:endIndex]
 
                     evt = SpiderFootEvent("PASTEBIN_CONTENT",
-                        "<SFURL>" + link + "</SFURL>\n" + "\"... " + data + " ...\"", 
-                        self.__name__, event)
+                                          "<SFURL>" + link + "</SFURL>\n" + "\"... " + data + " ...\"",
+                                          self.__name__, event)
                     self.notifyListeners(evt)
-
 
 # End of sfp_pastebin class

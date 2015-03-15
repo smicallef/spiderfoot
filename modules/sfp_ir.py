@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_ir
 # Purpose:      Queries Internet registryes like RIPE (incl. ARIN) to get 
 #               netblocks and other bits of info.
@@ -9,17 +9,18 @@
 # Created:     8/12/2013
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_ir(SpiderFootPlugin):
     """Internet Registries:Queries Internet Registries to identify netblocks and other info."""
 
     # Default options
-    opts = { }
+    opts = {}
 
     results = dict()
     currentEventSrc = None
@@ -40,26 +41,26 @@ class sfp_ir(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         return ['IP_ADDRESS', 'NETBLOCK_MEMBER', 'NETBLOCK_OWNER',
-            'BGP_AS_OWNER', 'BGP_AS_MEMBER' ]
+                'BGP_AS_OWNER', 'BGP_AS_MEMBER']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "NETBLOCK_MEMBER", "NETBLOCK_OWNER", "BGP_AS_MEMBER",
-            "RAW_RIR_DATA", "BGP_AS_OWNER", "BGP_AS_PEER" ]
+        return ["NETBLOCK_MEMBER", "NETBLOCK_OWNER", "BGP_AS_MEMBER",
+                "RAW_RIR_DATA", "BGP_AS_OWNER", "BGP_AS_PEER"]
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
         if self.memCache.has_key(url):
             res = self.memCache[url]
         else:
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
-                useragent=self.opts['_useragent'])
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
+                                   useragent=self.opts['_useragent'])
             if res['content'] is not None:
                 self.memCache[url] = res
-                evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__, 
-                    self.currentEventSrc)
+                evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__,
+                                      self.currentEventSrc)
                 self.notifyListeners(evt)
         return res
 
@@ -130,14 +131,14 @@ class sfp_ir(SpiderFootPlugin):
         for rec in data:
             for d in rec:
                 if d["key"].lower().startswith("org") or \
-                    d["key"].lower().startswith("as") or \
-                    d["key"].lower().startswith("aut") or \
-                    d["key"].lower().startswith("descr") and \
-                    d["value"].lower() not in [ "null", "none", "none specified" ]:
+                        d["key"].lower().startswith("as") or \
+                        d["key"].lower().startswith("aut") or \
+                                d["key"].lower().startswith("descr") and \
+                                        d["value"].lower() not in ["null", "none", "none specified"]:
                     if ownerinfo.has_key(d["key"]):
                         ownerinfo[d["key"]].append(d["value"])
                     else:
-                        ownerinfo[d["key"]] = [ d["value"] ]
+                        ownerinfo[d["key"]] = [d["value"]]
 
         self.sf.debug("Returning ownerinfo: " + str(ownerinfo))
         return ownerinfo
@@ -197,7 +198,7 @@ class sfp_ir(SpiderFootPlugin):
                 self.opts['_internettlds'])
 
         # Slightly more complex..
-        rx = [ 
+        rx = [
             '^{0}[-_/\'\"\\\.,\?\! ]',
             '[-_/\'\"\\\.,\?\! ]{0}$',
             '[-_/\'\"\\\.,\?\! ]{0}[-_/\'\"\\\.,\?\! ]'
@@ -217,7 +218,7 @@ class sfp_ir(SpiderFootPlugin):
             for r in rx:
                 if re.match(r.format(kw), string, re.IGNORECASE) is not None:
                     return True
-        
+
         return False
 
     # Owns the AS or not?
@@ -269,7 +270,7 @@ class sfp_ir(SpiderFootPlugin):
 
                     if len(ownerinfo) > 0:
                         evt = SpiderFootEvent("BGP_AS_PEER", ownertext,
-                            self.__name__, event)
+                                              self.__name__, event)
                         self.notifyListeners(evt)
 
         # BGP AS Owner -> Other Netblocks
@@ -288,7 +289,7 @@ class sfp_ir(SpiderFootPlugin):
                         # Technically this netblock was identified via the AS, not
                         # the original IP event, so link it to asevt, not event.
                         evt = SpiderFootEvent("NETBLOCK_OWNER", netblock,
-                            self.__name__, event)
+                                              self.__name__, event)
                         self.notifyListeners(evt)
             return None
 

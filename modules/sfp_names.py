@@ -1,5 +1,5 @@
 # coding: utf-8
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_names
 # Purpose:      Identify human names in content fetched.
 #
@@ -8,16 +8,17 @@
 # Created:     24/03/2014
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_names(SpiderFootPlugin):
     """Name Extractor:Attempt to identify human names in fetched content."""
 
     # Default options
-    opts = { 
+    opts = {
         'algotune': 50
     }
 
@@ -49,10 +50,10 @@ class sfp_names(SpiderFootPlugin):
         self.results = dict()
 
         d = self.builddict(["english.0", "english.2", "english.4",
-                        "british.0", "british.2", "british.4",
-                        "american.0", "american.2", "american.4"])
+                            "british.0", "british.2", "british.4",
+                            "american.0", "american.2", "american.4"])
         self.n = self.builddict(["names.list"])
-        self.fq = [ "north", "south", "east", "west", "santa", "san", "blog", "sao" ]
+        self.fq = ["north", "south", "east", "west", "santa", "san", "blog", "sao"]
         # Take dictionary words out of the names list to keep things clean
         self.d = list(set(d) - set(self.n))
 
@@ -71,7 +72,7 @@ class sfp_names(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "HUMAN_NAME" ]
+        return ["HUMAN_NAME"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -91,8 +92,8 @@ class sfp_names(SpiderFootPlugin):
 
             # Shouldn't encounter "Firstname's Secondname"
             first = r[0].lower()
-            if first[len(first)-2] == "'" or first[len(first)-1] == "'":
-               continue
+            if first[len(first) - 2] == "'" or first[len(first) - 1] == "'":
+                continue
 
             # Strip off trailing ' or 's
             secondOrig = r[1].replace("'s", "")

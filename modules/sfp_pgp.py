@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_pgp
 # Purpose:      SpiderFoot plug-in for looking up received e-mails in PGP
 #               key servers as well as finding e-mail addresses belonging to
@@ -10,10 +10,11 @@
 # Created:     17/02/2015
 # Copyright:   (c) Steve Micallef 2015
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_pgp(SpiderFootPlugin):
     """PGP Key Look-up:Look up e-mail addresses in PGP public key servers."""
@@ -23,14 +24,14 @@ class sfp_pgp(SpiderFootPlugin):
     # Default options
     opts = {
         # options specific to this module
-        'keyserver_search':  "http://pgp.mit.edu/pks/lookup?op=index&search=",
-        'keyserver_fetch':   "http://pgp.mit.edu/pks/lookup?op=get&search="
+        'keyserver_search': "http://pgp.mit.edu/pks/lookup?op=index&search=",
+        'keyserver_fetch': "http://pgp.mit.edu/pks/lookup?op=get&search="
     }
 
     # Option descriptions
     optdescs = {
         'keyserver_search': "PGP public key server URL to find e-mail addresses on a domain. Domain will get appended.",
-        'keyserver_fetch':  "PGP public key server URL to find the public key for an e-mail address. Email address will get appended."
+        'keyserver_fetch': "PGP public key server URL to find the public key for an e-mail address. Email address will get appended."
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -49,7 +50,7 @@ class sfp_pgp(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "EMAILADDR", "PGP_KEY" ]
+        return ["EMAILADDR", "PGP_KEY"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -68,8 +69,8 @@ class sfp_pgp(SpiderFootPlugin):
         # Get e-mail addresses on this domain
         if eventName == "DOMAIN_NAME":
             res = self.sf.fetchUrl(self.opts['keyserver_search'] + eventData,
-                    timeout=self.opts['_fetchtimeout'],
-                    useragent=self.opts['_useragent'])
+                                   timeout=self.opts['_fetchtimeout'],
+                                   useragent=self.opts['_useragent'])
             if res['content'] is not None:
                 pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
                 matches = re.findall(pat, res['content'])
@@ -90,10 +91,10 @@ class sfp_pgp(SpiderFootPlugin):
 
         if eventName == "EMAILADDR":
             res = self.sf.fetchUrl(self.opts['keyserver_fetch'] + eventData,
-                    timeout=self.opts['_fetchtimeout'],
-                    useragent=self.opts['_useragent'])
+                                   timeout=self.opts['_fetchtimeout'],
+                                   useragent=self.opts['_useragent'])
             if res['content'] is not None:
-                pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE|re.DOTALL)
+                pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE | re.DOTALL)
                 matches = re.findall(pat, res['content'])
                 for match in matches:
                     self.sf.debug("Found public key: " + match)

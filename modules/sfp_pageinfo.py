@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_pageinfo
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
 #               modules (such as sfp_spider) and building up information about
@@ -10,7 +10,7 @@
 # Created:     02/05/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
@@ -18,20 +18,21 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 # Indentify pages that use Javascript libs, handle passwords, have forms,
 # permit file uploads and more to come.
 regexps = dict({
-    'URL_JAVASCRIPT':  list(['text/javascript', '<script ']),
-    'URL_FORM':        list(['<form ', 'method=[PG]', '<input ']),
-    'URL_PASSWORD':    list(['<input.*type=[\"\']*password']),
-    'URL_UPLOAD':      list(['type=[\"\']*file']),
-    'URL_JAVA_APPLET':     list(['<applet ']),
-    'URL_FLASH':    list(['\.swf[ \'\"]'])
+    'URL_JAVASCRIPT': list(['text/javascript', '<script ']),
+    'URL_FORM': list(['<form ', 'method=[PG]', '<input ']),
+    'URL_PASSWORD': list(['<input.*type=[\"\']*password']),
+    'URL_UPLOAD': list(['type=[\"\']*file']),
+    'URL_JAVA_APPLET': list(['<applet ']),
+    'URL_FLASH': list(['\.swf[ \'\"]'])
 })
+
 
 class sfp_pageinfo(SpiderFootPlugin):
     """Page Info:Obtain information about web pages (do they take passwords, do they contain forms,
 etc.)"""
 
     # Default options
-    opts = { }
+    opts = {}
 
     results = dict()
 
@@ -50,8 +51,8 @@ etc.)"""
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "URL_STATIC", "URL_JAVASCRIPT", "URL_FORM", "URL_PASSWORD",
-            "URL_UPLOAD", "URL_JAVA_APPLET", "URL_FLASH", "PROVIDER_JAVASCRIPT" ]
+        return ["URL_STATIC", "URL_JAVASCRIPT", "URL_FORM", "URL_PASSWORD",
+                "URL_UPLOAD", "URL_JAVA_APPLET", "URL_FLASH", "PROVIDER_JAVASCRIPT"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -65,7 +66,7 @@ etc.)"""
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        eventSource = event.sourceEvent.data # will be the URL of the raw data
+        eventSource = event.sourceEvent.data  # will be the URL of the raw data
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -93,7 +94,7 @@ etc.)"""
                     self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)
                     evt = SpiderFootEvent(regexpGrp, eventSource,
-                        self.__name__, event.sourceEvent)
+                                          self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)
 
         # If no regexps were matched, consider this a static page
@@ -110,7 +111,7 @@ etc.)"""
                 if '://' in match and not self.getTarget().matches(self.sf.urlFQDN(match)):
                     self.sf.debug("Externally hosted Javascript found at: " + match)
                     evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match,
-                        self.__name__, event.sourceEvent)
+                                          self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)
 
         return None
