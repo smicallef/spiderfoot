@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_shodan
 # Purpose:      Query SHODAN for identified IP addresses.
 #
@@ -8,25 +8,26 @@
 # Created:     19/03/2014
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_shodan(SpiderFootPlugin):
     """SHODAN:Obtain information from SHODAN about identified IP addresses."""
 
     # Default options
-    opts = { 
-        "apikey":   "",
+    opts = {
+        "apikey": "",
         'netblocklookup': True,
         'maxnetblock': 24
     }
 
     # Option descriptions
     optdescs = {
-        "apikey":   "Your SHODAN API Key.",
+        "apikey": "Your SHODAN API Key.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
@@ -49,13 +50,13 @@ class sfp_shodan(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["OPERATING_SYSTEM", "DEVICE_TYPE", 
-            "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER"]
+        return ["OPERATING_SYSTEM", "DEVICE_TYPE",
+                "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER"]
 
     def query(self, qry):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry + \
-            "?key=" + self.opts['apikey'],
-            timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+                               "?key=" + self.opts['apikey'],
+                               timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
             return None
@@ -80,7 +81,7 @@ class sfp_shodan(SpiderFootPlugin):
             self.sf.error("You enabled sfp_shodan but did not set an API key!", False)
             return None
 
-       # Don't look up stuff twice
+            # Don't look up stuff twice
         if self.results.has_key(eventData):
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
@@ -90,8 +91,8 @@ class sfp_shodan(SpiderFootPlugin):
         if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.sf.debug("Network size bigger than permitted: " + \
-                    str(IPNetwork(eventData).prefixlen) + " > " + \
-                    str(self.opts['maxnetblock']))
+                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                              str(self.opts['maxnetblock']))
                 return None
 
         qrylist = list()
@@ -113,13 +114,13 @@ class sfp_shodan(SpiderFootPlugin):
             if rec.get('os') is not None:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os') + \
-                    " (" + addr +")", self.__name__, event)
+                                      " (" + addr + ")", self.__name__, event)
                 self.notifyListeners(evt)
 
             if rec.get('devtype') is not None:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("DEVICE_TYPE", rec.get('devtype') + \
-                    " (" + addr +")", self.__name__, event)
+                                      " (" + addr + ")", self.__name__, event)
                 self.notifyListeners(evt)
 
             if rec.has_key('data'):
@@ -131,14 +132,14 @@ class sfp_shodan(SpiderFootPlugin):
                     if port is not None:
                         # Notify other modules of what you've found
                         cp = addr + ":" + port
-                        evt = SpiderFootEvent("TCP_PORT_OPEN", cp, 
-                            self.__name__, event)
+                        evt = SpiderFootEvent("TCP_PORT_OPEN", cp,
+                                              self.__name__, event)
                         self.notifyListeners(evt)
 
                     if banner is not None:
                         # Notify other modules of what you've found
-                        evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner, 
-                            self.__name__, event)
+                        evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
+                                              self.__name__, event)
                         self.notifyListeners(evt)
 
         return None

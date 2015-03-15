@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_tldsearch
 # Purpose:      SpiderFoot plug-in for identifying the existence of this target
 #               on other TLDs.
@@ -9,28 +9,29 @@
 # Created:     31/08/2013
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import socket
 import random
 import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_tldsearch(SpiderFootPlugin):
     """TLD Search:Search all Internet TLDs for domains with the same name as the target (this can be slow.)"""
 
     # Default options
     opts = {
-        'activeonly':   True, # Only report domains that have content (try to fetch the page)
-        'skipwildcards':    True,
-        'maxthreads':   100
+        'activeonly': True,  # Only report domains that have content (try to fetch the page)
+        'skipwildcards': True,
+        'maxthreads': 100
     }
 
     # Option descriptions
     optdescs = {
-        'activeonly':   "Only report domains that have content (try to fetch the page)?",
-        "skipwildcards":    "Skip TLDs and sub-TLDs that have wildcard DNS.",
-        "maxthreads":   "Number of simultaneous DNS resolutions to perform at once."
+        'activeonly': "Only report domains that have content (try to fetch the page)?",
+        "skipwildcards": "Skip TLDs and sub-TLDs that have wildcard DNS.",
+        "maxthreads": "Number of simultaneous DNS resolutions to perform at once."
     }
 
     # Internal results tracking
@@ -48,13 +49,13 @@ class sfp_tldsearch(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "INTERNET_NAME" ]
+        return ["INTERNET_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "SIMILARDOMAIN" ]
+        return ["SIMILARDOMAIN"]
 
     def tryTld(self, target):
         try:
@@ -72,7 +73,7 @@ class sfp_tldsearch(SpiderFootPlugin):
         # Spawn threads for scanning
         self.sf.info("Spawning threads to check TLDs: " + str(tldList))
         for tld in tldList:
-            tn = 'sfp_tldsearch_' + str(random.randint(0,999999999))
+            tn = 'sfp_tldsearch_' + str(random.randint(0, 999999999))
             t.append(threading.Thread(name=tn, target=self.tryTld, args=(tld,)))
             t[i].start()
             i += 1
@@ -102,7 +103,7 @@ class sfp_tldsearch(SpiderFootPlugin):
                 return None
 
             pageContent = self.sf.fetchUrl('http://' + result,
-                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                                           timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if pageContent['content'] is not None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
                 self.notifyListeners(evt)

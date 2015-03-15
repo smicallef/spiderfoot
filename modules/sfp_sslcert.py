@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_sslcert
 # Purpose:      Gather information about SSL certificates behind HTTPS sites.
 #
@@ -8,7 +8,7 @@
 # Created:     23/08/2013
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import socket
 import socks
@@ -17,20 +17,21 @@ import time
 import M2Crypto
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_sslcert(SpiderFootPlugin):
     """SSL:Gather information about SSL certificates used by the target's HTTPS sites."""
 
     # Default options
-    opts = { 
-        "tryhttp":  True,
-        "ssltimeout":   5,
+    opts = {
+        "tryhttp": True,
+        "ssltimeout": 5,
         "certexpiringdays": 30
     }
 
     # Option descriptions
-    optdescs = { 
-        "tryhttp":  "Also try to HTTPS-connect to HTTP sites and hostnames.",
-        "ssltimeout":   "Seconds before giving up trying to HTTPS connect.",
+    optdescs = {
+        "tryhttp": "Also try to HTTPS-connect to HTTP sites and hostnames.",
+        "ssltimeout": "Seconds before giving up trying to HTTPS connect.",
         "certexpiringdays": "Number of days in the future a certificate expires to consider it as expiring."
     }
 
@@ -58,9 +59,9 @@ class sfp_sslcert(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
-            "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
-            "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW" ]
+        return ["SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
+                "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
+                "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -138,7 +139,7 @@ class sfp_sslcert(SpiderFootPlugin):
             self.sf.debug("No alternative name found in certificate.")
 
         fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
-        if "dns:"+fqdn not in hosts and "dns:*."+fqdn_tld not in hosts:
+        if "dns:" + fqdn not in hosts and "dns:*." + fqdn_tld not in hosts:
             evt = SpiderFootEvent("SSL_CERTIFICATE_MISMATCH", hosts, self.__name__, sevt)
             self.notifyListeners(evt)
 
@@ -150,14 +151,12 @@ class sfp_sslcert(SpiderFootPlugin):
         warnexp = now + self.opts['certexpiringdays'] * 86400
 
         if exp <= now:
-            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", expstr, self.__name__,
-                sevt)
+            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", expstr, self.__name__, sevt)
             self.notifyListeners(evt)
             return None
-           
+
         if exp <= warnexp:
-            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRING", expstr, self.__name__,
-                sevt)
+            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRING", expstr, self.__name__, sevt)
             self.notifyListeners(evt)
             return None
 

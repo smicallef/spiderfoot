@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_spider
 # Purpose:      SpiderFoot plug-in for spidering sites and returning meta data
 #               for other plug-ins to consume.
@@ -9,46 +9,47 @@
 # Created:     25/03/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_spider(SpiderFootPlugin):
     """Spider:Spidering of web-pages to extract content for searching. """
 
     # Default options
     opts = {
-        'robotsonly':   False, # only follow links specified by robots.txt
-        'pause':        1, # number of seconds to pause between fetches
-        'maxpages':     100, # max number of pages to fetch
-        'maxlevels':    3, # max number of levels to traverse within a site
-        'usecookies':   True, # Use cookies?
-        'start':        [ 'http://', 'https://' ],
-        'filterfiles':  ['png','gif','jpg','jpeg','tiff', 'tif', 'tar',
-                        'pdf','ico','flv', 'mp4', 'mp3', 'avi', 'mpg', 'gz',
+        'robotsonly': False,  # only follow links specified by robots.txt
+        'pause': 1,  # number of seconds to pause between fetches
+        'maxpages': 100,  # max number of pages to fetch
+        'maxlevels': 3,  # max number of levels to traverse within a site
+        'usecookies': True,  # Use cookies?
+        'start': ['http://', 'https://'],
+        'filterfiles': ['png', 'gif', 'jpg', 'jpeg', 'tiff', 'tif', 'tar',
+                        'pdf', 'ico', 'flv', 'mp4', 'mp3', 'avi', 'mpg', 'gz',
                         'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip',
                         'bin', 'bz2', 'xsl', 'doc', 'docx', 'ppt', 'pptx', 'xls',
                         'xlsx', 'csv'],
-        'filterusers':  True, # Don't follow /~user directories
-        'noexternal':   True, # Should links to external sites be ignored? (**dangerous if False**)
-        'nosubs':       False, # Should links to subdomains be ignored?
-        'noparents':    True
+        'filterusers': True,  # Don't follow /~user directories
+        'noexternal': True,  # Should links to external sites be ignored? (**dangerous if False**)
+        'nosubs': False,  # Should links to subdomains be ignored?
+        'noparents': True
     }
 
     # Option descriptions
     optdescs = {
-        'robotsonly':   "Only follow links specified by robots.txt?",
-        'pause':        "Number of seconds to pause between fetches.",
-        'usecookies':   "Accept and use cookies?",
-        'start':        "Prepend targets with these until you get a hit, to start spidering.",
-        'maxpages':     "Maximum number of pages to fetch per target identified.",
-        'maxlevels':    "Maximum levels to traverse per target identified.",
-        'filterfiles':  "File extensions to ignore (don't fetch them.)",
-        'filterusers':  "Skip spidering of /~user directories?",
-        'noexternal':   "Skip spidering of external sites? (**dangerous if False**)",
-        'nosubs':       "Skip spidering of subdomains of the target?",
-        'noparents':    "Skip spidering of parent domains of your target?"
+        'robotsonly': "Only follow links specified by robots.txt?",
+        'pause': "Number of seconds to pause between fetches.",
+        'usecookies': "Accept and use cookies?",
+        'start': "Prepend targets with these until you get a hit, to start spidering.",
+        'maxpages': "Maximum number of pages to fetch per target identified.",
+        'maxlevels': "Maximum levels to traverse per target identified.",
+        'filterfiles': "File extensions to ignore (don't fetch them.)",
+        'filterusers': "Skip spidering of /~user directories?",
+        'noexternal': "Skip spidering of external sites? (**dangerous if False**)",
+        'nosubs': "Skip spidering of subdomains of the target?",
+        'noparents': "Skip spidering of parent domains of your target?"
     }
 
     # If using robots.txt, this will get populated with filter rules
@@ -80,8 +81,8 @@ class sfp_spider(SpiderFootPlugin):
             self.sf.debug("Restoring cookies for " + site + ": " + str(self.siteCookies[site]))
             cookies = self.siteCookies[site]
         # Fetch the contents of the supplied URL (object returned)
-        fetched = self.sf.fetchUrl(url, False, cookies, 
-            self.opts['_fetchtimeout'], self.opts['_useragent'])
+        fetched = self.sf.fetchUrl(url, False, cookies,
+                                   self.opts['_fetchtimeout'], self.opts['_useragent'])
         self.fetchedPages[url] = True
 
         # Track cookies a site has sent, then send the back in subsquent requests
@@ -101,9 +102,9 @@ class sfp_spider(SpiderFootPlugin):
             # Store the content for the redirect so that it isn't fetched again
             self.fetchedPages[fetched['realurl']] = True
             # Notify modules about the new link
-            self.urlEvents[fetched['realurl']] = self.linkNotify(fetched['realurl'], 
-                self.urlEvents[url])
-            url = fetched['realurl'] # override the URL if we had a redirect
+            self.urlEvents[fetched['realurl']] = self.linkNotify(fetched['realurl'],
+                                                                 self.urlEvents[url])
+            url = fetched['realurl']  # override the URL if we had a redirect
 
         # Extract links from the content
         links = self.sf.parseLinks(url, fetched['content'], self.getTarget().getNames())
@@ -132,19 +133,19 @@ class sfp_spider(SpiderFootPlugin):
 
             # Optionally skip external sites (typical behaviour..)
             if self.opts['noexternal'] and not \
-                self.getTarget().matches(linkFQDN):
+                    self.getTarget().matches(linkFQDN):
                 self.sf.debug('Ignoring external site: ' + link)
                 continue
 
             # Optionally skip sub-domain sites
             if self.opts['nosubs'] and not \
-                self.getTarget().matches(linkFQDN, includeChildren=False):
+                    self.getTarget().matches(linkFQDN, includeChildren=False):
                 self.sf.debug("Ignoring subdomain: " + link)
                 continue
 
             # Optionally skip parent domain sites
             if self.opts['noparents'] and not \
-                self.getTarget().matches(linkFQDN, includeParents=False):
+                    self.getTarget().matches(linkFQDN, includeParents=False):
                 self.sf.debug("Ignoring parent domain: " + link)
                 continue
 
@@ -184,30 +185,30 @@ class sfp_spider(SpiderFootPlugin):
 
     # Notify listening modules about raw data and others
     def contentNotify(self, url, httpresult, parentEvent=None):
-        event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'], 
-            self.__name__, parentEvent)
+        event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
+                                self.__name__, parentEvent)
         self.notifyListeners(event)
 
         event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", httpresult['headers'],
-            self.__name__, parentEvent)
+                                self.__name__, parentEvent)
         self.notifyListeners(event)
 
         event = SpiderFootEvent("HTTP_CODE", str(httpresult['code']),
-            self.__name__, parentEvent)
+                                self.__name__, parentEvent)
         self.notifyListeners(event)
 
     # Trigger spidering off the following events..
     # Spidering and search engines provide LINKED_URL_INTERNAL, and DNS lookups
     # provide INTERNET_NAME.
     def watchedEvents(self):
-        return [ "LINKED_URL_INTERNAL", "INTERNET_NAME" ]
+        return ["LINKED_URL_INTERNAL", "INTERNET_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "WEBSERVER_HTTPHEADERS", "HTTP_CODE", "LINKED_URL_INTERNAL",
-            "LINKED_URL_EXTERNAL", "TARGET_WEB_CONTENT" ]
+        return ["WEBSERVER_HTTPHEADERS", "HTTP_CODE", "LINKED_URL_INTERNAL",
+                "LINKED_URL_EXTERNAL", "TARGET_WEB_CONTENT"]
 
     # Some other modules may request we spider things
     def handleEvent(self, event):
@@ -224,7 +225,7 @@ class sfp_spider(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventData in self.urlEvents.keys():
-            self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")           
+            self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")
             return None
         else:
             self.urlEvents[eventData] = event
@@ -232,12 +233,12 @@ class sfp_spider(SpiderFootPlugin):
         # Determine where to start spidering from if it's a INTERNET_NAME event
         if eventName == "INTERNET_NAME":
             for prefix in self.opts['start']:
-                res = self.sf.fetchUrl(prefix + eventData, timeout=self.opts['_fetchtimeout'], 
-                    useragent=self.opts['_useragent'])
+                res = self.sf.fetchUrl(prefix + eventData, timeout=self.opts['_fetchtimeout'],
+                                       useragent=self.opts['_useragent'])
                 if res['content'] is not None:
                     spiderTarget = prefix + eventData
                     evt = SpiderFootEvent("LINKED_URL_INTERNAL", spiderTarget,
-                        self.__name__, event)
+                                          self.__name__, event)
                     self.notifyListeners(evt)
                     break
         else:
@@ -262,8 +263,8 @@ class sfp_spider(SpiderFootPlugin):
 
         # Are we respecting robots.txt?
         if self.opts['robotsonly'] and not self.robotsRules.has_key(targetBase):
-            robotsTxt = self.sf.fetchUrl(targetBase + '/robots.txt', 
-                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+            robotsTxt = self.sf.fetchUrl(targetBase + '/robots.txt',
+                                         timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if robotsTxt['content'] is not None:
                 self.sf.debug('robots.txt contents: ' + robotsTxt['content'])
                 self.robotsRules[targetBase] = self.sf.parseRobotsTxt(robotsTxt['content'])
@@ -307,7 +308,7 @@ class sfp_spider(SpiderFootPlugin):
                     totalFetched += 1
                     if totalFetched >= self.opts['maxpages']:
                         self.sf.info("Maximum number of pages (" + str(self.opts['maxpages']) + \
-                            ") reached.")
+                                     ") reached.")
                         keepSpidering = False
                         break
 
@@ -319,7 +320,7 @@ class sfp_spider(SpiderFootPlugin):
             self.sf.info("Now at traversal level: " + str(levelsTraversed))
             if levelsTraversed >= self.opts['maxlevels']:
                 self.sf.info("Maximum number of levels (" + str(self.opts['maxlevels']) + \
-                    ") reached.")
+                             ") reached.")
                 keepSpidering = False
 
             # We've reached the end of our journey..
@@ -332,4 +333,5 @@ class sfp_spider(SpiderFootPlugin):
                 keepSpidering = False
 
         return
+
 # End of sfp_spider class

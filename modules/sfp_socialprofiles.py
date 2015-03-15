@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_socialprofiles
 # Purpose:      Obtains social media profiles of any identified human names.
 #
@@ -8,7 +8,7 @@
 # Created:     12/04/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import random
 import re
@@ -19,13 +19,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sites = {
     # Search string to use, domain name the profile will sit on within 
     # those search results.
-    "Facebook": ['+intitle:%22{0}%22%20+site:facebook.com', 
-        '"(https?://[a-z\.]*facebook.[a-z\.]+/[^\"<> ]+)"' ],
-    "Google+": ['+intitle:%22{0}%22%20+site:plus.google.com', 
-        '"(https?://plus.google.[a-z\.]+/\d+[^\"<>\/ ]+)"' ],
-    "LinkedIn": ['+intitle:%22{0}%22%20+site:linkedin.com', 
-        '"(https?://[a-z\.]*linkedin.[a-z\.]+/[^\"<> ]+)"' ]
+    "Facebook": ['+intitle:%22{0}%22%20+site:facebook.com',
+                 '"(https?://[a-z\.]*facebook.[a-z\.]+/[^\"<> ]+)"'],
+    "Google+": ['+intitle:%22{0}%22%20+site:plus.google.com',
+                '"(https?://plus.google.[a-z\.]+/\d+[^\"<>\/ ]+)"'],
+    "LinkedIn": ['+intitle:%22{0}%22%20+site:linkedin.com',
+                 '"(https?://[a-z\.]*linkedin.[a-z\.]+/[^\"<> ]+)"']
 }
+
 
 class sfp_socialprofiles(SpiderFootPlugin):
     """Social Media Profiles:Identify the social media profiles for human names identified."""
@@ -56,13 +57,13 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "HUMAN_NAME" ]
+        return ["HUMAN_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "SOCIAL_MEDIA" ]
+        return ["SOCIAL_MEDIA"]
 
     def yahooCleaner(self, string):
         ret = "\"" + urllib.unquote(string.group(1)) + "\""
@@ -95,18 +96,18 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
             if self.opts['method'].lower() == "google":
                 results = self.sf.googleIterate(searchStr, dict(limit=self.opts['pages'],
-                    useragent=self.opts['_useragent'], 
-                    timeout=self.opts['_fetchtimeout']))
+                                                                useragent=self.opts['_useragent'],
+                                                                timeout=self.opts['_fetchtimeout']))
 
             if self.opts['method'].lower() == "yahoo":
                 results = self.sf.yahooIterate(searchStr, dict(limit=self.opts['pages'],
-                    useragent=self.opts['_useragent'], 
-                    timeout=self.opts['_fetchtimeout']))
+                                                               useragent=self.opts['_useragent'],
+                                                               timeout=self.opts['_fetchtimeout']))
 
             if self.opts['method'].lower() == "bing":
                 results = self.sf.bingIterate(searchStr, dict(limit=self.opts['pages'],
-                    useragent=self.opts['_useragent'],
-                    timeout=self.opts['_fetchtimeout']))
+                                                              useragent=self.opts['_useragent'],
+                                                              timeout=self.opts['_fetchtimeout']))
 
             if results is None:
                 self.sf.info("No data returned from " + self.opts['method'] + ".")
@@ -123,8 +124,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 instances = list()
                 # Yahoo requires some additional parsing
                 if self.opts['method'].lower() == "yahoo":
-                    res = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner, 
-                        results[key], 0)
+                    res = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner,
+                                 results[key], 0)
                 else:
                     res = results[key]
 
@@ -144,7 +145,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                         # for a firm relationship.
                         if self.opts['tighten']:
                             pres = self.sf.fetchUrl(match, timeout=self.opts['_fetchtimeout'],
-                                useragent=self.opts['_useragent'])
+                                                    useragent=self.opts['_useragent'])
 
                             if pres['content'] is None:
                                 continue
@@ -152,19 +153,19 @@ class sfp_socialprofiles(SpiderFootPlugin):
                                 found = False
                                 for kw in self.keywords:
                                     if re.search("[^a-zA-Z\-\_]" + kw + \
-                                        "[^a-zA-Z\-\_]", pres['content'], re.IGNORECASE):
+                                                         "[^a-zA-Z\-\_]", pres['content'], re.IGNORECASE):
                                         found = True
                                 if not found:
                                     continue
 
                         self.sf.info("Social Media Profile found at " + site + ": " + match)
-                        evt = SpiderFootEvent("SOCIAL_MEDIA", match, 
-                            self.__name__, event)
+                        evt = SpiderFootEvent("SOCIAL_MEDIA", match,
+                                              self.__name__, event)
                         self.notifyListeners(evt)
 
                 # Submit the bing results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res, 
-                    self.__name__, event)
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res,
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_socialprofiles class

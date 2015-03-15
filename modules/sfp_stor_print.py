@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_stor_print
 # Purpose:      SpiderFoot plug-in for 'storing' events (by printing them to
 #               the screen. This is used for debugging.
@@ -9,14 +9,15 @@
 # Created:     06/04/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin
+
 
 class sfp_stor_print(SpiderFootPlugin):
     # Default options
     opts = {
-        'datasize':     100 # Number of characters to print from event data
+        'datasize': 100  # Number of characters to print from event data
     }
 
     # Option descriptions
