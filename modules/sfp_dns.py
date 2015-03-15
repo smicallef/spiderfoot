@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_dns
 # Purpose:      SpiderFoot plug-in for gathering IP addresses from sub-domains
 #        and hostnames identified, and optionally affiliates.
@@ -11,7 +11,7 @@
 # Created:     16/09/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import socket
 import re
@@ -19,6 +19,7 @@ import dns
 import urllib2
 from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_dns(SpiderFootPlugin):
     """DNS:Performs a number of DNS checks to obtain Sub-domains/Hostnames, IP Addresses and Affiliates."""
@@ -32,10 +33,10 @@ class sfp_dns(SpiderFootPlugin):
         'onlyactive': True,
         'validatereverse': True,
         "skipcommononwildcard": True,
-        "commonsubs":   [ "www", "web", "ns", "mail", "dns", "mx", "gw", "proxy",
-                          "ssl", "fw", "gateway", "firewall", "www1", "www2",
-                          "ns0", "ns1", "ns2", "dns0", "dns1", "dns2", "mx1", "mx2"
-                         ] # Common sub-domains to try.
+        "commonsubs": ["www", "web", "ns", "mail", "dns", "mx", "gw", "proxy",
+                       "ssl", "fw", "gateway", "firewall", "www1", "www2",
+                       "ns0", "ns1", "ns2", "dns0", "dns1", "dns2", "mx1", "mx2"
+                       ]  # Common sub-domains to try.
 
     }
 
@@ -45,10 +46,10 @@ class sfp_dns(SpiderFootPlugin):
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
         'maxnetblock': "Maximum owned netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'onlyactive': "Only report sub-domains/hostnames that resolve to an IP.",
-        'validatereverse':  "Validate that reverse-resolved hostnames still resolve back to that IP before considering them as aliases of your target.",
+        'validatereverse': "Validate that reverse-resolved hostnames still resolve back to that IP before considering them as aliases of your target.",
         'lookaside': "For each IP discovered, try and reverse look-up IPs 'next to' that IP for potential hostnames on the same subdomain/domain.",
         'lookasidecount': "If look-aside is enabled, the number of IPs on each 'side' of the IP to look up",
-        "commonsubs":   "Common sub-domains to try to resolve on the target subdomain/domain. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
+        "commonsubs": "Common sub-domains to try to resolve on the target subdomain/domain. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
     }
 
     events = dict()
@@ -71,8 +72,8 @@ class sfp_dns(SpiderFootPlugin):
         self.sublist = self.opts['commonsubs']
         # User may have supplied a file or URL containing the subdomains
         if self.opts['commonsubs'][0].startswith("http://") or \
-            self.opts['commonsubs'][0].startswith("https://") or \
-            self.opts['commonsubs'][0].startswith("@"):
+                self.opts['commonsubs'][0].startswith("https://") or \
+                self.opts['commonsubs'][0].startswith("@"):
             self.sublist = self.sf.optValueToData(self.opts['commonsubs'][0])
 
     def enrichTarget(self, target):
@@ -86,7 +87,7 @@ class sfp_dns(SpiderFootPlugin):
             ret = list()
             for addr in IPNetwork(target.getValue()):
                 ipaddr = str(addr)
-                if ipaddr.split(".")[3] in [ '255', '0']:
+                if ipaddr.split(".")[3] in ['255', '0']:
                     continue
                 if '255' in ipaddr.split("."):
                     continue
@@ -94,7 +95,7 @@ class sfp_dns(SpiderFootPlugin):
 
                 # Add the reverse-resolved hostnames as aliases too..
                 names = self.resolveIP(ipaddr)
-                 
+
                 if self.opts['validatereverse']:
                     for host in names:
                         chk = self.resolveHost(host)
@@ -114,7 +115,7 @@ class sfp_dns(SpiderFootPlugin):
                 if target.getType() == "INTERNET_NAME":
                     dom = self.sf.hostDomain(host, self.opts['_internettlds'])
                     target.setAlias(dom, "INTERNET_NAME")
-        
+
         self.sf.debug("Aliases identified: " + str(target.getAliases()))
 
         return target
@@ -122,17 +123,17 @@ class sfp_dns(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         arr = ['RAW_DNS_RECORDS', 'SEARCH_ENGINE_WEB_CONTENT', 'RAW_RIR_DATA',
-            'TARGET_WEB_CONTENT', 'LINKED_URL_INTERNAL', 'INTERNET_NAME',
-            'IP_ADDRESS', 'NETBLOCK_OWNER', "DNS_TEXT" ]
+               'TARGET_WEB_CONTENT', 'LINKED_URL_INTERNAL', 'INTERNET_NAME',
+               'IP_ADDRESS', 'NETBLOCK_OWNER', "DNS_TEXT"]
         return arr
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "IP_ADDRESS", "INTERNET_NAME", "PROVIDER_MAIL", "DOMAIN_NAME",
-            "PROVIDER_DNS", "AFFILIATE_INTERNET_NAME", "RAW_DNS_RECORDS", 
-            "DNS_TEXT", "IPV6_ADDRESS" ]
+        return ["IP_ADDRESS", "INTERNET_NAME", "PROVIDER_MAIL", "DOMAIN_NAME",
+                "PROVIDER_DNS", "AFFILIATE_INTERNET_NAME", "RAW_DNS_RECORDS",
+                "DNS_TEXT", "IPV6_ADDRESS"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -149,8 +150,8 @@ class sfp_dns(SpiderFootPlugin):
 
         self.events[eventData] = True
         # Identify potential sub-domains/hostnames
-        if eventName in [ "SEARCH_ENGINE_WEB_CONTENT", "TARGET_WEB_CONTENT",
-            "LINKED_URL_INTERNAL", "RAW_RIR_DATA", "RAW_DNS_RECORDS", "DNS_TEXT" ]:
+        if eventName in ["SEARCH_ENGINE_WEB_CONTENT", "TARGET_WEB_CONTENT",
+                         "LINKED_URL_INTERNAL", "RAW_RIR_DATA", "RAW_DNS_RECORDS", "DNS_TEXT"]:
             # If we've received a link or some raw data, extract potential sub-domains
             # from the data for resolving later.
             for name in self.getTarget().getNames():
@@ -167,14 +168,14 @@ class sfp_dns(SpiderFootPlugin):
         if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.sf.debug("Network size bigger than permitted: " + \
-                    str(IPNetwork(eventData).prefixlen) + " > " + \
-                    str(self.opts['maxnetblock']))
+                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                              str(self.opts['maxnetblock']))
                 return None
 
             self.sf.debug("Looking up IPs in owned netblock: " + eventData)
             for ip in IPNetwork(eventData):
                 ipaddr = str(ip)
-                if ipaddr.split(".")[3] in [ '255', '0']:
+                if ipaddr.split(".")[3] in ['255', '0']:
                     continue
                 if '255' in ipaddr.split("."):
                     continue
@@ -185,7 +186,7 @@ class sfp_dns(SpiderFootPlugin):
 
                 if len(addrs) > 0:
                     self.sf.debug("Found a reversed hostname from " + ipaddr + \
-                        " (" + str(addrs) + ")")
+                                  " (" + str(addrs) + ")")
                     for addr in addrs:
                         # Generate an event for the IP, then
                         # let the handling by this module take
@@ -194,7 +195,7 @@ class sfp_dns(SpiderFootPlugin):
             return None
 
         # Handling INTERNET_NAME and IP_ADDRESS events..
-        if eventName in [ "IP_ADDRESS", "INTERNET_NAME" ]:
+        if eventName in ["IP_ADDRESS", "INTERNET_NAME"]:
             if eventName != 'IP_ADDRESS':
                 if '://' in eventData:
                     addrs = self.resolveHost(self.sf.urlFQDN(eventData))
@@ -255,7 +256,7 @@ class sfp_dns(SpiderFootPlugin):
 
         if self.resolveCache.has_key(ipaddr):
             self.sf.debug("Returning cached result for " + ipaddr + " (" + \
-                 str(self.resolveCache[ipaddr]) + ")")
+                          str(self.resolveCache[ipaddr]) + ")")
             return self.resolveCache[ipaddr]
 
         try:
@@ -272,7 +273,7 @@ class sfp_dns(SpiderFootPlugin):
     def resolveHost(self, hostname):
         if self.resolveCache.has_key(hostname):
             self.sf.debug("Returning cached result for " + hostname + " (" + \
-                str(self.resolveCache[hostname]) + ")" )
+                          str(self.resolveCache[hostname]) + ")")
             return self.resolveCache[hostname]
 
         try:
@@ -288,7 +289,7 @@ class sfp_dns(SpiderFootPlugin):
     def resolveHost6(self, hostname):
         if self.resolveCache6.has_key(hostname):
             self.sf.debug("Returning IPv6 cached result for " + hostname + " (" + \
-                str(self.resolveCache6[hostname]) + ")" )
+                          str(self.resolveCache6[hostname]) + ")")
             return self.resolveCache6[hostname]
 
         try:
@@ -332,7 +333,7 @@ class sfp_dns(SpiderFootPlugin):
                         affil = False
         else:
             affil = affiliate
-        
+
         if affil:
             if self.sf.validIP(host):
                 htype = "AFFILIATE_IPADDR"
@@ -343,7 +344,7 @@ class sfp_dns(SpiderFootPlugin):
                 htype = "IP_ADDRESS"
             else:
                 htype = "INTERNET_NAME"
-                
+
         if htype.endswith("INTERNET_NAME") and self.opts['onlyactive']:
             if len(self.resolveHost(host)) == 0:
                 return None
@@ -358,8 +359,7 @@ class sfp_dns(SpiderFootPlugin):
 
             # Try obtain the IPv6 address
             for ip6 in self.resolveHost6(host):
-                evt = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, 
-                    evt)
+                evt = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
                 self.notifyListeners(evt)
 
         return evt
@@ -371,8 +371,7 @@ class sfp_dns(SpiderFootPlugin):
             self.sf.debug("Skipping domain, " + domainName + ", already processed.")
             return None
 
-        domevt = SpiderFootEvent("DOMAIN_NAME", domainName, self.__name__,
-            parentEvent)
+        domevt = SpiderFootEvent("DOMAIN_NAME", domainName, self.__name__, parentEvent)
         self.notifyListeners(domevt)
 
         self.sf.debug("Gathering DNS records for " + domainName)
@@ -387,38 +386,38 @@ class sfp_dns(SpiderFootPlugin):
         for rec in recs.keys():
             try:
                 req = dns.message.make_query(domainName, dns.rdatatype.from_text(rec))
-    
+
                 if self.opts['_dnsserver'] != "":
                     n = self.opts['_dnsserver']
                 else:
                     ns = dns.resolver.get_default_resolver()
                     n = ns.nameservers[0]
-            
+
                 res = dns.query.udp(req, n)
                 for x in res.answer:
                     for rx in recs.keys():
                         self.sf.debug("Checking " + str(x) + " + against " + recs[rx][0])
-                        pat = re.compile(recs[rx][0], re.IGNORECASE|re.DOTALL)
+                        pat = re.compile(recs[rx][0], re.IGNORECASE | re.DOTALL)
                         grps = re.findall(pat, str(x))
                         if len(grps) > 0:
                             for m in grps:
-                                self.sf.debug("Matched: " +  m)
+                                self.sf.debug("Matched: " + m)
                                 strdata = unicode(m, 'utf-8', errors='replace')
-                                evt = SpiderFootEvent(recs[rx][1], strdata, 
-                                    self.__name__, domevt)
+                                evt = SpiderFootEvent(recs[rx][1], strdata,
+                                                      self.__name__, domevt)
                                 self.notifyListeners(evt)
                                 if rec != "TXT" and not strdata.endswith(domainName):
                                     evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME",
-                                    strdata, self.__name__, domevt)
+                                                          strdata, self.__name__, domevt)
                                     self.notifyListeners(evt)
                         else:
-                                strdata = unicode(str(x), 'utf-8', errors='replace')
-                                evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata, 
-                                    self.__name__, domevt) 
-                                self.notifyListeners(evt)
+                            strdata = unicode(str(x), 'utf-8', errors='replace')
+                            evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata,
+                                                  self.__name__, domevt)
+                            self.notifyListeners(evt)
             except BaseException as e:
                 self.sf.error("Failed to obtain DNS response for " + domainName + \
-                    "(" + rec + "): " + str(e), False)
+                              "(" + rec + "): " + str(e), False)
 
         self.sf.debug("Iterating through possible sub-domains [" + str(self.sublist) + "]")
         count = 0
@@ -428,7 +427,7 @@ class sfp_dns(SpiderFootPlugin):
             if wildcard and self.opts['skipcommononwildcard'] and count > 0:
                 self.sf.debug("Wildcard DNS detected, skipping iterating through remaining hosts.")
                 return None
-                
+
             if self.checkForStop():
                 return None
 

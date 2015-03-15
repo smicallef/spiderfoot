@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_email
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
 #               modules (such as sfp_spider) and identifying e-mail addresses
@@ -9,10 +9,11 @@
 # Created:     06/04/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_email(SpiderFootPlugin):
     """E-Mail:Identify e-mail addresses in any obtained data."""
@@ -20,7 +21,7 @@ class sfp_email(SpiderFootPlugin):
     # Default options
     opts = {
         # options specific to this module
-        'includeexternal':  False # Include e-mail addrs on external domains
+        'includeexternal': False  # Include e-mail addrs on external domains
     }
 
     # Option descriptions
@@ -42,7 +43,7 @@ class sfp_email(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "EMAILADDR" ]
+        return ["EMAILADDR"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -56,7 +57,7 @@ class sfp_email(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if type(eventData) not in [ str, unicode ]:
+        if type(eventData) not in [str, unicode]:
             self.sf.debug("Unhandled type to find e-mails: " + str(type(eventData)))
             return None
 
@@ -71,7 +72,7 @@ class sfp_email(SpiderFootPlugin):
 
             mailDom = match.lower().split('@')[1]
             if not self.opts['includeexternal'] and not \
-                self.getTarget().matches(mailDom):
+                    self.getTarget().matches(mailDom):
                 self.sf.debug("Ignoring e-mail address on an external domain: " + match)
                 continue
 

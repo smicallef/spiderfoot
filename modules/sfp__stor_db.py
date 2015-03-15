@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_stor_db
 # Purpose:      SpiderFoot plug-in for storing events to the local SpiderFoot
 #               SQLite database.
@@ -9,21 +9,22 @@
 # Created:     14/05/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin
+
 
 class sfp__stor_db(SpiderFootPlugin):
     """Storage:Stores scan results into the back-end SpiderFoot database. You will need this."""
 
     # Default options
     opts = {
-        'maxstorage':   1024 # max bytes for any piece of info stored (0 = unlimited)
+        'maxstorage': 1024  # max bytes for any piece of info stored (0 = unlimited)
     }
 
     # Option descriptions
     optdescs = {
-        'maxstorage':   "Maximum bytes to store for any piece of information retreived (0 = unlimited.)"
+        'maxstorage': "Maximum bytes to store for any piece of information retreived (0 = unlimited.)"
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -45,7 +46,7 @@ class sfp__stor_db(SpiderFootPlugin):
                 self.sf.debug("Storing an event: " + sfEvent.eventType)
                 self.__sfdb__.scanEventStore(self.getScanId(), sfEvent, self.opts['maxstorage'])
                 return None
-        
+
         self.sf.debug("Storing an event: " + sfEvent.eventType)
         self.__sfdb__.scanEventStore(self.getScanId(), sfEvent)
 

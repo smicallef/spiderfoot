@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sflib
 # Purpose:      Common functions used by SpiderFoot modules.
 #               Also defines the SpiderFootPlugin abstract class for modules.
@@ -9,7 +9,7 @@
 # Created:     26/03/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import inspect
 import hashlib
@@ -25,6 +25,7 @@ import urllib2
 import StringIO
 import threading
 from copy import deepcopy
+
 
 class SpiderFoot:
     dbh = None
@@ -100,10 +101,10 @@ class SpiderFoot:
     # Generate an globally unique ID for this scan
     def genScanInstanceGUID(self, scanName):
         hashStr = hashlib.sha256(
-                scanName +
-                str(time.time() * 1000) +
-                str(random.randint(100000, 999999))
-            ).hexdigest()
+            scanName +
+            str(time.time() * 1000) +
+            str(random.randint(100000, 999999))
+        ).hexdigest()
         return hashStr
 
     def _dblog(self, level, message, component=None):
@@ -207,7 +208,7 @@ class SpiderFoot:
             if sz == 0:
                 return None
 
-            if mtime > time.time() - timeoutHrs*3600 or timeoutHrs == 0:
+            if mtime > time.time() - timeoutHrs * 3600 or timeoutHrs == 0:
                 fp = file(cacheFile, "r")
                 fileContents = fp.read()
                 fp.close()
@@ -252,7 +253,7 @@ class SpiderFoot:
                     continue
 
                 if type(opts['__modules__'][mod]['opts'][opt]) is int or \
-                    type(opts['__modules__'][mod]['opts'][opt]) is str:
+                                type(opts['__modules__'][mod]['opts'][opt]) is str:
                     storeopts[mod + ":" + opt] = opts['__modules__'][mod]['opts'][opt]
 
                 if type(opts['__modules__'][mod]['opts'][opt]) is bool:
@@ -262,10 +263,10 @@ class SpiderFoot:
                         storeopts[mod + ":" + opt] = 0
                 if type(opts['__modules__'][mod]['opts'][opt]) is list:
                     storeopts[mod + ":" + opt] = ','.join(str(x) \
-                        for x in opts['__modules__'][mod]['opts'][opt])
+                                                          for x in opts['__modules__'][mod]['opts'][opt])
 
         return storeopts
-    
+
     # Take strings, etc. from the database or UI and convert them
     # to a dictionary for Python to process.
     # referencePoint is needed to know the actual types the options
@@ -295,7 +296,7 @@ class SpiderFoot:
                     if type(referencePoint[opt][0]) is int:
                         returnOpts[opt] = list()
                         for x in str(opts[opt]).split(","):
-                             returnOpts[opt].append(int(x))
+                            returnOpts[opt].append(int(x))
                     else:
                         returnOpts[opt] = str(opts[opt]).split(",")
 
@@ -467,7 +468,7 @@ class SpiderFoot:
     def domainKeyword(self, domain, tldList):
         # Strip off the TLD
         tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
-        ret = domain.lower().replace('.'+tld, '')
+        ret = domain.lower().replace('.' + tld, '')
 
         # If the user supplied a domain with a sub-domain, return the second part
         if '.' in ret:
@@ -482,7 +483,7 @@ class SpiderFoot:
         for domain in domainList:
             # Strip off the TLD
             tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
-            ret = domain.lower().replace('.'+tld, '')
+            ret = domain.lower().replace('.' + tld, '')
 
             # If the user supplied a domain with a sub-domain, return the second part
             if '.' in ret:
@@ -492,7 +493,7 @@ class SpiderFoot:
 
         self.debug("Keywords: " + str(arr))
         return arr
-        
+
     # Obtain the domain name for a supplied hostname
     # tldList needs to be an array based on the Mozilla public list
     def hostDomain(self, hostname, tldList):
@@ -529,7 +530,7 @@ class SpiderFoot:
 
             for c in haystack[needle]:
                 #print "found child of " + needle + ": " + c
-                ret.append({ "name": c, "children": get_children(c, haystack) })
+                ret.append({"name": c, "children": get_children(c, haystack)})
             return ret
 
         # Find the element with no parents, that's our root.
@@ -552,9 +553,9 @@ class SpiderFoot:
 
         if root is None:
             #print "*BUG*: Invalid structure - needs to go back to one root."
-            final = { }
+            final = {}
         else:
-            final = { "name": root, "children": get_children(root, data) }
+            final = {"name": root, "children": get_children(root, data)}
 
         return final
 
@@ -595,7 +596,7 @@ class SpiderFoot:
         # Find actual links
         try:
             regRel = re.compile('(href|src|action|url)[:=][ \'\"]*(.[^\'\"<> ]*)',
-                re.IGNORECASE)
+                                re.IGNORECASE)
             urlsRel = regRel.findall(data)
         except Exception as e:
             self.error("Error applying regex to: " + data)
@@ -607,14 +608,14 @@ class SpiderFoot:
             try:
                 # Because we're working with a big blob of text now, don't worry
                 # about clobbering proper links by url decoding them.
-                regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.'+domain+')', 
-                    re.IGNORECASE)
+                regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.' + domain + ')',
+                                    re.IGNORECASE)
                 urlsRel = urlsRel + regRel.findall(data)
             except Exception as e:
                 self.error("Error applying regex2 to: " + data)
             try:
                 # Some links are sitting inside a tag, e.g. Google's use of <cite>
-                regRel = re.compile('(>)('+domain+'/.[^<]+)', re.IGNORECASE)
+                regRel = re.compile('(>)(' + domain + '/.[^<]+)', re.IGNORECASE)
                 urlsRel = urlsRel + regRel.findall(data)
             except Exception as e:
                 self.error("Error applying regex3 to: " + data)
@@ -628,8 +629,8 @@ class SpiderFoot:
 
                 # Don't include stuff likely part of some dynamically built incomplete
                 # URL found in Javascript code (character is part of some logic)
-                if link[len(link)-1] == '.' or link[0] == '+' or \
-                    'javascript:' in link.lower() or '();' in link:
+                if link[len(link) - 1] == '.' or link[0] == '+' or \
+                                'javascript:' in link.lower() or '();' in link:
                     self.debug('unlikely link: ' + link)
                     continue
 
@@ -671,8 +672,8 @@ class SpiderFoot:
         return returnLinks
 
     # Fetch a URL, return the response object
-    def fetchUrl(self, url, fatal=False, cookies=None, timeout=30, 
-        useragent="SpiderFoot", headers=None, dontMangle=False):
+    def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
+                 useragent="SpiderFoot", headers=None, dontMangle=False):
         result = {
             'code': None,
             'status': None,
@@ -704,11 +705,11 @@ class SpiderFoot:
             if cookies is not None:
                 req.add_header('cookie', cookies)
                 self.info("Fetching (incl. cookies): " + url + \
-                    " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
-                    str(timeout) + "]")
+                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                          str(timeout) + "]")
             else:
                 self.info("Fetching: " + url + " [user-agent: " + \
-                    header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
+                          header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
             result['headers'] = dict()
             opener = urllib2.build_opener(SmartRedirectHandler())
@@ -786,10 +787,10 @@ class SpiderFoot:
 
         # We attempt to make the URL look as authentically human as possible
         seedUrl = u"http://www.google.com/search?q={0}".format(searchString) + \
-            u"&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
+                  u"&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
 
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-            useragent=opts['useragent'])
+                                  useragent=opts['useragent'])
         if firstPage['code'] == 403 or firstPage['code'] == 503:
             self.error("Google doesn't like us right now..", False)
             return None
@@ -811,7 +812,7 @@ class SpiderFoot:
             fetches += 1
             for match in matches:
                 # Google moves in increments of 10
-                if "start=" + str(fetches*10) in match:
+                if "start=" + str(fetches * 10) in match:
                     nextUrl = match.replace("&amp;", "&")
 
             if nextUrl is None:
@@ -826,7 +827,7 @@ class SpiderFoot:
                 time.sleep(pauseSecs)
 
             nextPage = self.fetchUrl(u'http://www.google.com' + nextUrl,
-                timeout=opts['timeout'], useragent=opts['useragent'])
+                                     timeout=opts['timeout'], useragent=opts['useragent'])
             if nextPage['code'] == 403 or nextPage['code'] == 503:
                 self.error("Google doesn't like us right now..", False)
                 return returnResults
@@ -863,9 +864,9 @@ class SpiderFoot:
 
         # We attempt to make the URL look as authentically human as possible
         seedUrl = u"http://www.bing.com/search?q={0}".format(searchString) + \
-            u"&pc=MOZI"
+                  u"&pc=MOZI"
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-            useragent=opts['useragent'])
+                                  useragent=opts['useragent'])
         if firstPage['code'] == 400:
             self.error("Bing doesn't like us right now..", False)
             return None
@@ -886,7 +887,7 @@ class SpiderFoot:
             fetches += 1
             for match in matches:
                 # Bing moves in increments of 10
-                if "first=" + str((fetches*10)+1) in match:
+                if "first=" + str((fetches * 10) + 1) in match:
                     nextUrl = match.replace("&amp;", "&").replace("%3a", ":")
 
             if nextUrl is None:
@@ -901,7 +902,7 @@ class SpiderFoot:
                 time.sleep(pauseSecs)
 
             nextPage = self.fetchUrl(u'http://www.bing.com' + nextUrl,
-                timeout=opts['timeout'], useragent=opts['useragent'])
+                                     timeout=opts['timeout'], useragent=opts['useragent'])
             if nextPage['code'] == 400:
                 self.error("Bing doesn't like us any more..", False)
                 return returnResults
@@ -938,9 +939,9 @@ class SpiderFoot:
 
         # We attempt to make the URL look as authentically human as possible
         seedUrl = u"https://search.yahoo.com/search?p={0}".format(searchString) + \
-            u"&toggle=1&cop=mss&ei=UTF-8"
+                  u"&toggle=1&cop=mss&ei=UTF-8"
         firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-            useragent=opts['useragent'])
+                                  useragent=opts['useragent'])
         if firstPage['code'] == 403:
             self.error("Yahoo doesn't like us right now..", False)
             return None
@@ -958,7 +959,7 @@ class SpiderFoot:
             fetches += 1
             for match in matches:
                 # Yahoo moves in increments of 10
-                if "b=" + str((fetches*10)+1) in match:
+                if "b=" + str((fetches * 10) + 1) in match:
                     nextUrl = u"https://search.yahoo.com" + match
 
             if nextUrl is None:
@@ -973,7 +974,7 @@ class SpiderFoot:
                 time.sleep(pauseSecs)
 
             nextPage = self.fetchUrl(nextUrl,
-                timeout=opts['timeout'], useragent=opts['useragent'])
+                                     timeout=opts['timeout'], useragent=opts['useragent'])
             if nextPage['code'] == 403:
                 self.error("Yahoo doesn't like us any more..", False)
                 return returnResults
@@ -987,6 +988,7 @@ class SpiderFoot:
             matches = re.findall(pat, nextPage['content'])
 
         return returnResults
+
 
 #
 # SpiderFoot plug-in module base class
@@ -1068,7 +1070,7 @@ class SpiderFootPlugin(object):
     def notifyListeners(self, sfEvent):
         eventName = sfEvent.eventType
         eventData = sfEvent.data
-        storeOnly = False # Under some conditions, only store and don't notify
+        storeOnly = False  # Under some conditions, only store and don't notify
 
         if eventData is None or (type(eventData) is unicode and len(eventData) == 0):
             #print "No data to send for " + eventName + " to " + listener.__module__
@@ -1092,7 +1094,7 @@ class SpiderFootPlugin(object):
         while prevEvent is not None:
             if prevEvent.sourceEvent is not None:
                 if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
-                    prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
+                                prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
                     #print "Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data
                     storeOnly = True
                     break
@@ -1138,7 +1140,7 @@ class SpiderFootPlugin(object):
     # Will usually be overriden by the implementer, unless it is interested
     # in all events (default behavior).
     def watchedEvents(self):
-        return [ '*' ]
+        return ['*']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -1158,9 +1160,10 @@ class SpiderFootPlugin(object):
     def start(self):
         return None
 
+
 # Class for targets
 class SpiderFootTarget(object):
-    _validTypes = [ "IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME" ]
+    _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME"]
     targetType = None
     targetValue = None
     targetAliases = list()
@@ -1191,7 +1194,7 @@ class SpiderFootTarget(object):
             return None
 
         self.targetAliases.append(
-            { 'type': typeName, 'value': value.lower() }
+            {'type': typeName, 'value': value.lower()}
         )
 
     def getAliases(self):
@@ -1251,7 +1254,7 @@ class SpiderFootTarget(object):
                     return True
             if self.targetType == "IP_ADDRESS":
                 if netaddr.IPAddress(value) in \
-                    netaddr.IPNetwork(netaddr.IPAddress(self.targetValue)):
+                        netaddr.IPNetwork(netaddr.IPAddress(self.targetValue)):
                     return True
         else:
             for name in self.getNames():
@@ -1267,6 +1270,7 @@ class SpiderFootTarget(object):
 
         return None
 
+
 # Class for SpiderFoot Events
 class SpiderFootEvent(object):
     generated = None
@@ -1279,9 +1283,9 @@ class SpiderFootEvent(object):
     sourceEvent = None
     sourceEventHash = None
     __id = None
-    
+
     def __init__(self, eventType, data, module, sourceEvent,
-        confidence=100, visibility=100, risk=0):
+                 confidence=100, visibility=100, risk=0):
         self.eventType = eventType
         self.generated = time.time()
         self.confidence = confidence
@@ -1299,7 +1303,7 @@ class SpiderFootEvent(object):
 
         self.sourceEventHash = sourceEvent.getHash()
         self.__id = self.eventType + str(self.generated) + self.module + \
-            str(random.randint(0, 99999999))
+                    str(random.randint(0, 99999999))
 
     # Unique hash of this event
     def getHash(self):
@@ -1344,106 +1348,108 @@ Public Suffix List module for Python.
 See LICENSE.tp for applicable license.
 """
 
+
 class PublicSuffixList(object):
-	def __init__(self, input_data):
-		"""Reads and parses public suffix list.
-		
-		input_file is a file object or another iterable that returns
-		lines of a public suffix list file. If input_file is None, an
-		UTF-8 encoded file named "publicsuffix.txt" in the same
-		directory as this Python module is used.
-		
-		The file format is described at http://publicsuffix.org/list/
-		"""
+    def __init__(self, input_data):
+        """Reads and parses public suffix list.
 
-		#if input_file is None:
-			#input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
-			#input_file = codecs.open(input_path, "r", "utf8")
+        input_file is a file object or another iterable that returns
+        lines of a public suffix list file. If input_file is None, an
+        UTF-8 encoded file named "publicsuffix.txt" in the same
+        directory as this Python module is used.
 
-		root = self._build_structure(input_data)
-		self.root = self._simplify(root)
+        The file format is described at http://publicsuffix.org/list/
+        """
 
-	def _find_node(self, parent, parts):
-		if not parts:
-			return parent
+        #if input_file is None:
+        #input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
+        #input_file = codecs.open(input_path, "r", "utf8")
 
-		if len(parent) == 1:
-			parent.append({})
+        root = self._build_structure(input_data)
+        self.root = self._simplify(root)
 
-		assert len(parent) == 2
-		negate, children = parent
+    def _find_node(self, parent, parts):
+        if not parts:
+            return parent
 
-		child = parts.pop()
+        if len(parent) == 1:
+            parent.append({})
 
-		child_node = children.get(child, None)
+        assert len(parent) == 2
+        negate, children = parent
 
-		if not child_node:
-			children[child] = child_node = [0]
+        child = parts.pop()
 
-		return self._find_node(child_node, parts)
+        child_node = children.get(child, None)
 
-	def _add_rule(self, root, rule):
-		if rule.startswith('!'):
-			negate = 1
-			rule = rule[1:]
-		else:
-			negate = 0
+        if not child_node:
+            children[child] = child_node = [0]
 
-		parts = rule.split('.')
-		self._find_node(root, parts)[0] = negate
+        return self._find_node(child_node, parts)
 
-	def _simplify(self, node):
-		if len(node) == 1:
-			return node[0]
+    def _add_rule(self, root, rule):
+        if rule.startswith('!'):
+            negate = 1
+            rule = rule[1:]
+        else:
+            negate = 0
 
-		return (node[0], dict((k, self._simplify(v)) for (k, v) in node[1].items()))
+        parts = rule.split('.')
+        self._find_node(root, parts)[0] = negate
 
-	def _build_structure(self, fp):
-		root = [0]
+    def _simplify(self, node):
+        if len(node) == 1:
+            return node[0]
 
-		for line in fp:
-			line = line.strip()
-			if line.startswith('//') or not line:
-				continue
+        return (node[0], dict((k, self._simplify(v)) for (k, v) in node[1].items()))
 
-			self._add_rule(root, line.split()[0].lstrip('.'))
+    def _build_structure(self, fp):
+        root = [0]
 
-		return root
+        for line in fp:
+            line = line.strip()
+            if line.startswith('//') or not line:
+                continue
 
-	def _lookup_node(self, matches, depth, parent, parts):
-		if parent in (0, 1):
-			negate = parent
-			children = None
-		else:
-			negate, children = parent
+            self._add_rule(root, line.split()[0].lstrip('.'))
 
-		matches[-depth] = negate
+        return root
 
-		if depth < len(parts) and children:
-			for name in ('*', parts[-depth]):
-				child = children.get(name, None)
-				if child is not None:
-					self._lookup_node(matches, depth+1, child, parts)
+    def _lookup_node(self, matches, depth, parent, parts):
+        if parent in (0, 1):
+            negate = parent
+            children = None
+        else:
+            negate, children = parent
 
-	def get_public_suffix(self, domain):
-		"""get_public_suffix("www.example.com") -> "example.com"
+        matches[-depth] = negate
 
-		Calling this function with a DNS name will return the
-		public suffix for that name.
+        if depth < len(parts) and children:
+            for name in ('*', parts[-depth]):
+                child = children.get(name, None)
+                if child is not None:
+                    self._lookup_node(matches, depth + 1, child, parts)
 
-		Note that for internationalized domains the list at
-		http://publicsuffix.org uses decoded names, so it is
-		up to the caller to decode any Punycode-encoded names.
-		"""
+    def get_public_suffix(self, domain):
+        """get_public_suffix("www.example.com") -> "example.com"
 
-		parts = domain.lower().lstrip('.').split('.')
-		hits = [None] * len(parts)
+        Calling this function with a DNS name will return the
+        public suffix for that name.
 
-		self._lookup_node(hits, 1, self.root, parts)
+        Note that for internationalized domains the list at
+        http://publicsuffix.org uses decoded names, so it is
+        up to the caller to decode any Punycode-encoded names.
+        """
 
-		for i, what in enumerate(hits):
-			if what is not None and what == 0:
-				return '.'.join(parts[i:])
+        parts = domain.lower().lstrip('.').split('.')
+        hits = [None] * len(parts)
+
+        self._lookup_node(hits, 1, self.root, parts)
+
+        for i, what in enumerate(hits):
+            if what is not None and what == 0:
+                return '.'.join(parts[i:])
+
 
 # Class for tracking the status of all running scans. Thread safe.
 class SpiderFootScanStatus:

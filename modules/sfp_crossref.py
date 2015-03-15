@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_crossref
 # Purpose:      SpiderFoot plug-in for scanning links identified from the
 #               spidering process, and for external links, fetching them to
@@ -11,17 +11,18 @@
 # Created:     06/04/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_crossref(SpiderFootPlugin):
     """Cross-Reference:Identify whether other domains are associated ('Affiliates') of the target."""
 
     # Default options
     opts = {
-        'checkbase':    True 
+        'checkbase': True
     }
 
     # Option descriptions
@@ -49,7 +50,7 @@ class sfp_crossref(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "AFFILIATE_INTERNET_NAME", "AFFILIATE_WEB_CONTENT" ]
+        return ["AFFILIATE_INTERNET_NAME", "AFFILIATE_WEB_CONTENT"]
 
     # Handle events sent to this module
     # In this module's case, eventData will be the URL or a domain which
@@ -63,8 +64,8 @@ class sfp_crossref(SpiderFootPlugin):
 
         # The SIMILARDOMAIN and CO_HOSTED_SITE events supply domains, 
         # not URLs. Assume HTTP.
-        if eventName in [ 'SIMILARDOMAIN', 'CO_HOSTED_SITE' ]:
-            eventData = 'http://'+ eventData.lower()
+        if eventName in ['SIMILARDOMAIN', 'CO_HOSTED_SITE']:
+            eventData = 'http://' + eventData.lower()
 
         # We are only interested in external sites for the crossref
         if self.getTarget().matches(self.sf.urlFQDN(eventData)):
@@ -78,8 +79,8 @@ class sfp_crossref(SpiderFootPlugin):
             self.fetched.append(eventData)
 
         self.sf.debug("Testing for affiliation: " + eventData)
-        res = self.sf.fetchUrl(eventData, timeout=self.opts['_fetchtimeout'], 
-            useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(eventData, timeout=self.opts['_fetchtimeout'],
+                               useragent=self.opts['_useragent'])
 
         if res['content'] is None:
             self.sf.debug("Ignoring " + eventData + " as no data returned")
@@ -107,12 +108,12 @@ class sfp_crossref(SpiderFootPlugin):
                 else:
                     self.fetched.append(url)
 
-                res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
-                    useragent=self.opts['_useragent'])
+                res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
+                                       useragent=self.opts['_useragent'])
                 if res['content'] is not None:
                     for name in self.getTarget().getNames():
-                        pat = re.compile("([\.\'\/\"\ ]" + name + "[\'\/\"\ ])", 
-                            re.IGNORECASE)
+                        pat = re.compile("([\.\'\/\"\ ]" + name + "[\'\/\"\ ])",
+                                         re.IGNORECASE)
                         matches = re.findall(pat, res['content'])
 
                         if len(matches) > 0:
@@ -120,11 +121,11 @@ class sfp_crossref(SpiderFootPlugin):
 
         if matched:
             self.sf.info("Found affiliate: " + url)
-            evt1 = SpiderFootEvent("AFFILIATE_INTERNET_NAME", self.sf.urlFQDN(url), 
-                self.__name__, event)
+            evt1 = SpiderFootEvent("AFFILIATE_INTERNET_NAME", self.sf.urlFQDN(url),
+                                   self.__name__, event)
             self.notifyListeners(evt1)
             evt2 = SpiderFootEvent("AFFILIATE_WEB_CONTENT", res['content'],
-                self.__name__, evt1)
+                                   self.__name__, evt1)
             self.notifyListeners(evt2)
 
 # End of sfp_crossref class

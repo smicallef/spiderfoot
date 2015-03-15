@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_blacklist
 # Purpose:      SpiderFoot plug-in for looking up whether IPs/Netblocks/Domains
 #               appear in various block lists, indicating potential open-relays,
@@ -10,11 +10,12 @@
 # Created:     07/01/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_blacklist(SpiderFootPlugin):
     """Blacklist: Query various blacklist database for open relays, open proxies, vulnerable servers, etc."""
@@ -87,15 +88,15 @@ class sfp_blacklist(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'IP_ADDRESS', 'AFFILIATE_IPADDR', 'NETBLOCK_OWNER', 
-            'NETBLOCK_MEMBER' ]
+        return ['IP_ADDRESS', 'AFFILIATE_IPADDR', 'NETBLOCK_OWNER',
+                'NETBLOCK_MEMBER']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
-            "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK" ]
+        return ["BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
+                "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK"]
 
     # Swap 1.2.3.4 to 4.3.2.1
     def reverseAddr(self, ipaddr):
@@ -163,15 +164,15 @@ class sfp_blacklist(SpiderFootPlugin):
         if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.sf.debug("Network size bigger than permitted: " + \
-                    str(IPNetwork(eventData).prefixlen) + " > " + \
-                    str(self.opts['maxnetblock']))
+                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                              str(self.opts['maxnetblock']))
                 return None
 
         if eventName == 'NETBLOCK_MEMBER' and self.opts['subnetlookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                 self.sf.debug("Network size bigger than permitted: " + \
-                    str(IPNetwork(eventData).prefixlen) + " > " + \
-                    str(self.opts['maxsubnet']))
+                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                              str(self.opts['maxsubnet']))
                 return None
 
         if eventName.startswith("NETBLOCK_"):

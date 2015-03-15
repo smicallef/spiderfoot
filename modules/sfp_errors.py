@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_errors
 # Purpose:      Identify common error messages in content like SQL errors, etc.
 #
@@ -8,28 +8,29 @@
 # Created:     18/01/2015
 # Copyright:   (c) Steve Micallef 2015
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Taken from Google Dorks on exploit-db.com
 regexps = dict({
-    "PHP Error": [ "PHP pase error", "PHP warning", "PHP error", 
-        "unexpected T_VARIABLE", "warning: failed opening", "include_path=" ],
-    "Generic Error": [ "Internal Server Error", "Incorrect syntax" ],
-    "Oracle Error": [ "ORA-\d+", "TNS:.?no listen" ],
-    "ASP Error": [ "NET_SessionId" ],
-    "MySQL Error": [ "mysql_query\(", "mysql_connect\(" ],
-    "ODBC Error": [ "\[ODBC SQL" ]
+    "PHP Error": ["PHP pase error", "PHP warning", "PHP error",
+                  "unexpected T_VARIABLE", "warning: failed opening", "include_path="],
+    "Generic Error": ["Internal Server Error", "Incorrect syntax"],
+    "Oracle Error": ["ORA-\d+", "TNS:.?no listen"],
+    "ASP Error": ["NET_SessionId"],
+    "MySQL Error": ["mysql_query\(", "mysql_connect\("],
+    "ODBC Error": ["\[ODBC SQL"]
 
 })
+
 
 class sfp_errors(SpiderFootPlugin):
     """Errors:Identify common error messages in content like SQL errors, etc."""
 
     # Default options
-    opts = { }
+    opts = {}
 
     # Option descriptions
     optdescs = {
@@ -57,7 +58,7 @@ class sfp_errors(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "ERROR_MESSAGE" ]
+        return ["ERROR_MESSAGE"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -93,8 +94,8 @@ class sfp_errors(SpiderFootPlugin):
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)
-                    evt = SpiderFootEvent("ERROR_MESSAGE", regexpGrp, 
-                        self.__name__, event.sourceEvent)
+                    evt = SpiderFootEvent("ERROR_MESSAGE", regexpGrp,
+                                          self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)
 
         return None
