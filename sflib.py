@@ -18,6 +18,7 @@ import re
 import os
 import random
 import socket
+import ssl
 import sys
 import time
 import netaddr
@@ -38,6 +39,9 @@ class SpiderFoot:
     def __init__(self, options, handle=None):
         self.handle = handle
         self.opts = deepcopy(options)
+        # This is ugly but we don't want any fetches to fail - we expect
+        # to encounter unverified SSL certs!
+        ssl._create_default_https_context = ssl._create_unverified_context
 
     # Bit of a hack to support SOCKS because of the loading order of
     # modules. sfscan will call this to update the socket reference
@@ -73,7 +77,7 @@ class SpiderFoot:
         if val.lower().startswith('http://') or val.lower().startswith('https://'):
             try:
                 self.info("Downloading configuration data from: " + val)
-                res = urllib2.urlopen(val)
+                res = urllib2.urlopen(val, context=ssl._create_unverified_context())
                 data = res.read()
                 if splitLines:
                     return data.splitlines()
