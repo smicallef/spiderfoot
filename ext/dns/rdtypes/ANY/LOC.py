@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2003-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -62,7 +61,7 @@ def _tuple_to_float(what):
     return sign * value
 
 def _encode_size(what, desc):
-    what = long(what)
+    what = long(what);
     exponent = _exponent_of(what, desc) & 0xF
     base = what // pow(10, exponent) & 0xF
     return base * 16 + exponent

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2003-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -245,7 +244,7 @@ def _net_read(sock, count, expiration):
         n = sock.recv(count)
         if n == '':
             raise EOFError
-        count -= len(n)
+        count = count - len(n)
         s = s + n
     return s
 

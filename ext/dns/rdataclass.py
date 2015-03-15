@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2001-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -64,7 +63,7 @@ _metaclasses = {
     ANY : True
     }
 
-_unknown_class_pattern = re.compile('CLASS([0-9]+)$', re.I)
+_unknown_class_pattern = re.compile('CLASS([0-9]+)$', re.I);
 
 class UnknownRdataclass(dns.exception.DNSException):
     """Raised when a class is unknown."""
@@ -82,7 +81,7 @@ def from_text(text):
     value = _by_text.get(text.upper())
     if value is None:
         match = _unknown_class_pattern.match(text)
-        if match is None:
+        if match == None:
             raise UnknownRdataclass
         value = int(match.group(1))
         if value < 0 or value > 65535:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2001-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -176,7 +175,7 @@ _singletons = {
     # CNAME is technically a singleton, but we allow multiple CNAMEs.
     }
 
-_unknown_type_pattern = re.compile('TYPE([0-9]+)$', re.I)
+_unknown_type_pattern = re.compile('TYPE([0-9]+)$', re.I);
 
 class UnknownRdatatype(dns.exception.DNSException):
     """Raised if a type is unknown."""
@@ -193,7 +192,7 @@ def from_text(text):
     value = _by_text.get(text.upper())
     if value is None:
         match = _unknown_type_pattern.match(text)
-        if match is None:
+        if match == None:
             raise UnknownRdatatype
         value = int(match.group(1))
         if value < 0 or value > 65535:
@@ -220,7 +219,7 @@ def is_metatype(rdtype):
     @type rdtype: int
     @rtype: bool"""
 
-    if TKEY <= rdtype <= ANY or _metatypes.has_key(rdtype):
+    if rdtype >= TKEY and rdtype <= ANY or _metatypes.has_key(rdtype):
         return True
     return False
 

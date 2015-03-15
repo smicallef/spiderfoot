@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2001-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -68,7 +67,7 @@ def from_text(text):
 
     if text.isdigit():
         v = int(text)
-        if 0 <= v <= 4095:
+        if v >= 0 and v <= 4095:
             return v
     v = _by_text.get(text.upper())
     if v is None:

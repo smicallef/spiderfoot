@@ -48,6 +48,9 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+import filters
+import utils
+import warnings
 from generic import *
 from utils import readNonWhitespace, readUntilWhitespace, ConvertFunctionsToVirtualList
 
@@ -195,7 +198,7 @@ class PdfFileWriter(object):
     # flag is on.
     def encrypt(self, user_pwd, owner_pwd = None, use_128bit = True):
         import time, random
-        if owner_pwd is None:
+        if owner_pwd == None:
             owner_pwd = user_pwd
         if use_128bit:
             V = 2
@@ -249,7 +252,7 @@ class PdfFileWriter(object):
         # copying in a new copy of the page object.
         for objIndex in xrange(len(self._objects)):
             obj = self._objects[objIndex]
-            if isinstance(obj, PageObject) and obj.indirectRef is not None:
+            if isinstance(obj, PageObject) and obj.indirectRef != None:
                 data = obj.indirectRef
                 if not externalReferenceMap.has_key(data.pdf):
                     externalReferenceMap[data.pdf] = {}
@@ -338,7 +341,7 @@ class PdfFileWriter(object):
                     return data
             else:
                 newobj = externMap.get(data.pdf, {}).get(data.generation, {}).get(data.idnum, None)
-                if newobj is None:
+                if newobj == None:
                     newobj = data.pdf.getObject(data)
                     self._objects.append(None) # placeholder
                     idnum = len(self._objects)
@@ -424,7 +427,7 @@ class PdfFileReader(object):
     # Stability: Added in v1.0, will exist for all v1.x releases.
     # @return Returns an integer.
     def getNumPages(self):
-        if self.flattenedPages is None:
+        if self.flattenedPages == None:
             self._flatten()
         return len(self.flattenedPages)
 
@@ -443,7 +446,7 @@ class PdfFileReader(object):
     def getPage(self, pageNumber):
         ## ensure that we're not trying to access an encrypted PDF
         #assert not self.trailer.has_key("/Encrypt")
-        if self.flattenedPages is None:
+        if self.flattenedPages == None:
             self._flatten()
         return self.flattenedPages[pageNumber]
 
@@ -463,7 +466,7 @@ class PdfFileReader(object):
     # @return Returns a dict which maps names to {@link #Destination
     # destinations}.
     def getNamedDestinations(self, tree=None, retval=None):
-        if retval is None:
+        if retval == None:
             retval = {}
             catalog = self.trailer["/Root"]
             
@@ -475,7 +478,7 @@ class PdfFileReader(object):
                 if names.has_key("/Dests"):
                     tree = names['/Dests']
         
-        if tree is None:
+        if tree == None:
             return retval
 
         if tree.has_key("/Kids"):
@@ -491,7 +494,7 @@ class PdfFileReader(object):
                 if isinstance(val, DictionaryObject) and val.has_key('/D'):
                     val = val['/D']
                 dest = self._buildDestination(key, val)
-                if dest is not None:
+                if dest != None:
                     retval[key] = dest
 
         return retval
@@ -509,7 +512,7 @@ class PdfFileReader(object):
     # Stability: Added in v1.10, will exist for all future v1.x releases.
     # @return Returns a nested list of {@link #Destination destinations}.
     def getOutlines(self, node=None, outlines=None):
-        if outlines is None:
+        if outlines == None:
             outlines = []
             catalog = self.trailer["/Root"]
             
@@ -520,7 +523,7 @@ class PdfFileReader(object):
                     node = lines["/First"]
             self._namedDests = self.getNamedDestinations()
             
-        if node is None:
+        if node == None:
           return outlines
           
         # see if there are any more outlines
@@ -586,9 +589,9 @@ class PdfFileReader(object):
             NameObject("/Resources"), NameObject("/MediaBox"),
             NameObject("/CropBox"), NameObject("/Rotate")
             )
-        if inherit is None:
+        if inherit == None:
             inherit = dict()
-        if pages is None:
+        if pages == None:
             self.flattenedPages = []
             catalog = self.trailer["/Root"].getObject()
             pages = catalog["/Pages"].getObject()
@@ -614,7 +617,7 @@ class PdfFileReader(object):
 
     def getObject(self, indirectReference):
         retval = self.resolvedObjects.get(indirectReference.generation, {}).get(indirectReference.idnum, None)
-        if retval is not None:
+        if retval != None:
             return retval
         if indirectReference.generation == 0 and \
            self.xref_objStm.has_key(indirectReference.idnum):
@@ -957,10 +960,10 @@ def getRectangle(self, name, defaults):
     retval = self.get(name)
     if isinstance(retval, RectangleObject):
         return retval
-    if retval is None:
+    if retval == None:
         for d in defaults:
             retval = self.get(d)
-            if retval is not None:
+            if retval != None:
                 break
     if isinstance(retval, IndirectObject):
         retval = self.pdf.getObject(retval)
@@ -1692,7 +1695,7 @@ class Destination(DictionaryObject):
 def convertToInt(d, size):
     if size > 8:
         raise utils.PdfReadError("invalid size in convertToInt")
-    d += "\x00\x00\x00\x00\x00\x00\x00\x00"
+    d = "\x00\x00\x00\x00\x00\x00\x00\x00" + d
     d = d[-8:]
     return struct.unpack(">q", d)[0]
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its

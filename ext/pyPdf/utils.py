@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # vim: sw=4:expandtab:foldmethod=marker
 #
 # Copyright (c) 2006, Mathieu Fenniak
@@ -79,7 +78,7 @@ class ConvertFunctionsToVirtualList(object):
         len_self = len(self)
         if index < 0:
             # support negative indexes
-            index += len_self
+            index = len_self + index
         if index < 0 or index >= len_self:
             raise IndexError, "sequence index out of range"
         return self.getFunction(index)

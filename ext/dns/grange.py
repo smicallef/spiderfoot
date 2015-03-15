@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2003-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -29,6 +28,7 @@ def from_text(text):
     """
     # TODO, figure out the bounds on start, stop and step.
 
+    import pdb
     step = 1
     cur = ''
     state = 0

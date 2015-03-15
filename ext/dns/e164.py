@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2006, 2007, 2009, 2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -59,7 +58,7 @@ def to_e164(name, origin=public_enum_domain, want_plus_prefix=True):
     dlabels.reverse()
     text = ''.join(dlabels)
     if want_plus_prefix:
-        text += '+'
+        text = '+' + text
     return text
 
 def query(number, domains, resolver=None):

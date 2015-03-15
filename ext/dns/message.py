@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2001-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -17,6 +16,7 @@
 """DNS Messages"""
 
 import cStringIO
+import random
 import struct
 import sys
 import time
@@ -606,7 +606,7 @@ class _WireReader(object):
             (rdtype, rdclass) = \
                      struct.unpack('!HH',
                                    self.wire[self.current:self.current + 4])
-            self.current += 4
+            self.current = self.current + 4
             self.message.find_rrset(self.message.question, qname,
                                     rdclass, rdtype, create=True,
                                     force_unique=True)
@@ -636,7 +636,7 @@ class _WireReader(object):
             (rdtype, rdclass, ttl, rdlen) = \
                      struct.unpack('!HHIH',
                                    self.wire[self.current:self.current + 10])
-            self.current += 10
+            self.current = self.current + 10
             if rdtype == dns.rdatatype.OPT:
                 if not section is self.message.additional or seen_opt:
                     raise BadEDNS
@@ -650,7 +650,7 @@ class _WireReader(object):
                     (otype, olen) = \
                             struct.unpack('!HH',
                                           self.wire[current:current + 4])
-                    current += 4
+                    current = current + 4
                     opt = dns.edns.option_from_wire(otype, self.wire, current, olen)
                     self.message.options.append(opt)
                     current = current + olen
@@ -831,7 +831,8 @@ class _TextReader(object):
                 self.updating = True
         elif what == 'edns':
             self.message.edns = self.tok.get_int()
-            self.message.ednsflags |= self.message.edns << 16
+            self.message.ednsflags = self.message.ednsflags | \
+                                     (self.message.edns << 16)
         elif what == 'eflags':
             if self.message.edns < 0:
                 self.message.edns = 0

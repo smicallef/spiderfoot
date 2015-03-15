@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2003-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -149,7 +148,7 @@ def inet_aton(text):
             if lc > 4:
                 raise dns.exception.SyntaxError
             if lc != 4:
-                c += ('0' * (4 - lc))
+                c = ('0' * (4 - lc)) + c
             canonical.append(c)
     if l < 8 and not seen_empty:
         raise dns.exception.SyntaxError

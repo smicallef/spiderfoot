@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2001-2007, 2009-2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -96,7 +95,7 @@ def _escapify(label):
     for c in label:
         if c in _escaped:
             text += '\\' + c
-        elif 0x20 < ord(c) < 0x7F:
+        elif ord(c) > 0x20 and ord(c) < 0x7F:
             text += c
         else:
             text += '\\%03d' % ord(c)

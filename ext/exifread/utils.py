@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Misc utilities.
 """
@@ -18,7 +17,7 @@ def make_string(seq):
     for c in seq:
         # Screen out non-printing characters
         try:
-            if 32 <= c < 256:
+            if 32 <= c and c < 256:
                 string += chr(c)
         except TypeError:
             pass
@@ -52,7 +51,7 @@ def s2n_intel(string):
     x = 0
     y = 0
     for c in string:
-        x |= ord_(c) << y
+        x = x | (ord_(c) << y)
         y += + 8
     return x
 

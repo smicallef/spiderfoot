@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Makernote (proprietary) tag definitions for Canon.
 

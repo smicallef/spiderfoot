@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2003-2007, 2009, 2011 Nominum, Inc.
 #
 # Permission to use, copy, modify, and distribute this software and its
@@ -104,7 +103,7 @@ def key_id(key, origin=None):
             total += (ord(rdata[2 * i]) << 8) + ord(rdata[2 * i + 1])
         if len(rdata) % 2 != 0:
             total += ord(rdata[len(rdata) - 1]) << 8
-        total += ((total >> 16) & 0xffff)
+        total += ((total >> 16) & 0xffff);
         return total & 0xffff
 
 def make_ds(name, key, algorithm, origin=None):
@@ -287,7 +286,7 @@ def _validate_rrsig(rrset, rrsig, keys, origin=None, now=None):
         rrnamebuf = rrname.to_digestable(origin)
         rrfixed = struct.pack('!HHI', rdataset.rdtype, rdataset.rdclass,
                               rrsig.original_ttl)
-        rrlist = sorted(rdataset)
+        rrlist = sorted(rdataset);
         for rr in rrlist:
             hash.update(rrnamebuf)
             hash.update(rrfixed)
@@ -300,9 +299,9 @@ def _validate_rrsig(rrset, rrsig, keys, origin=None, now=None):
 
         if _is_rsa(rrsig.algorithm):
             # PKCS1 algorithm identifier goop
-            digest += _make_algorithm_id(rrsig.algorithm)
+            digest = _make_algorithm_id(rrsig.algorithm) + digest
             padlen = keylen // 8 - len(digest) - 3
-            digest += chr(0) + chr(1) + chr(0xFF) * padlen + chr(0)
+            digest = chr(0) + chr(1) + chr(0xFF) * padlen + chr(0) + digest
         elif _is_dsa(rrsig.algorithm):
             pass
         else:

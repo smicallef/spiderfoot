@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 import re
 import datetime
 import decimal
 from generic import PdfObject
+from xml.dom import getDOMImplementation
 from xml.dom.minidom import parseString
 
 RDF_NAMESPACE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -66,7 +66,7 @@ class XmpInformation(PdfObject):
         for desc in self.rdfRoot.getElementsByTagNameNS(RDF_NAMESPACE, "Description"):
             if desc.getAttributeNS(RDF_NAMESPACE, "about") == aboutUri:
                 attr = desc.getAttributeNodeNS(namespace, name)
-                if attr is not None:
+                if attr != None:
                     yield attr
                 for element in desc.getElementsByTagNameNS(namespace, name):
                     yield element
@@ -187,7 +187,7 @@ class XmpInformation(PdfObject):
                 else:
                     value = self._getText(element)
                 break
-            if value is not None:
+            if value != None:
                 value = converter(value)
             ns_cache = self.cache.setdefault(namespace, {})
             ns_cache[name] = value
