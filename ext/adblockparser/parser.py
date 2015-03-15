@@ -98,7 +98,7 @@ class AdblockRule(object):
         else:
             self.raw_options = []
             self.options = {}
-        self._options_keys = frozenset(self.options.keys()) - set(['match-case'])
+        self._options_keys = frozenset(self.options.keys()) - {'match-case'}
 
         self.rule_text = rule_text
 
