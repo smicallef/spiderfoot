@@ -10,14 +10,8 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import random
-import re
-import time
-import urllib
 import mimetypes
 import metapdf
-import pyPdf
 import openxmllib
 import exifread
 from StringIO import StringIO

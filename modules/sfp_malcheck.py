@@ -10,7 +10,6 @@
 #-------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

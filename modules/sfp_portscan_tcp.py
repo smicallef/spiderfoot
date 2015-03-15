@@ -11,8 +11,6 @@
 #-------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-import sys
-import re
 import socket
 import random
 import threading

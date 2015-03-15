@@ -10,7 +10,6 @@
 #-------------------------------------------------------------------------------
 
 import re
-import sys
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Taken from Google Dorks on exploit-db.com

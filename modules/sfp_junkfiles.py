@@ -9,12 +9,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import random
-import re
-import time
-import urllib
-from urlparse import urlparse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_junkfiles(SpiderFootPlugin):

@@ -9,10 +9,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import random
-import re
-import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_googlesearch(SpiderFootPlugin):

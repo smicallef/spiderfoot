@@ -10,8 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import re
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

@@ -10,7 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
