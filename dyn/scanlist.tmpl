@@ -1,5 +1,5 @@
 <%include file="HEADER.tmpl"/>
-    <h2>Scans &nbsp;<img id=loader src=/static/img/loader.gif></h2>
+    <h2>Scans &nbsp;<img id=loader src=${docroot}/static/img/loader.gif></h2>
 % if newscan:
 <div class="alert alert-success">
  <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -15,7 +15,7 @@
 </div>
 % endif
     <script type='text/javascript'>
-            sf.fetchData('/scanlist', null, function(data) {
+            sf.fetchData('${docroot}/scanlist', null, function(data) {
                             if (data.length == 0) {
                                 $("#loader").fadeOut(500);
                                 welcome = "<div class='alert alert-info'>";
@@ -33,7 +33,7 @@
                             var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter'>";
                             table += "<thead><tr> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th style='text-align: center'>Status</th> <th style='text-align: center'>Elements</th><th style='text-align: center'>Action</th> </tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr><td><a href=/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
+                                table += "<tr><td><a href=${docroot}/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
                                 table += "<td>" + data[i][2] + "&nbsp;&nbsp;<a rel='tooltip' title='Visit target' target='_new' href='http://" + data[i][2] + "'><i class='icon-share icon-gray' /></a></td>";
                                 table += "<td>" + data[i][3] + "</td>";
                                 table += "<td>" + data[i][5] + "</td>";
@@ -53,9 +53,9 @@
                                 table += "<td style='text-align: center'>" + data[i][7] + "</td>";
                                 table += "<td style='text-align: center'>";
                                 if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED") {
-                                    table += "<a rel='tooltip' title='Stop Scan' href=/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray' /></a></td>";
+                                    table += "<a rel='tooltip' title='Stop Scan' href=${docroot}/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray' /></a></td>";
                                 } else {
-                                    table += "<a rel='tooltip' title='Delete Scan' href=/scandelete?id=" + data[i][0] + "><i class='icon-trash icon-gray' /></a></td>";
+                                    table += "<a rel='tooltip' title='Delete Scan' href=${docroot}/scandelete?id=" + data[i][0] + "><i class='icon-trash icon-gray' /></a></td>";
                                 }
                                 table += "</tr>";
                             }

@@ -64,6 +64,7 @@ sfConfig = {
     '__database':        'spiderfoot.db',
     '__webaddr':         '127.0.0.1',
     '__webport':         5001,
+    '__docroot':         '',    # don't put trailing /
     '__modules__':       None, # List of modules. Will be set after start-up.
     '_socks1type':    '',
     '_socks2addr':    '',
@@ -131,7 +132,7 @@ if __name__ == '__main__':
 
     # Start the web server so you can start looking at results
     print "Starting web server at http://" + sfConfig['__webaddr'] + \
-        ":" + str(sfConfig['__webport']) + "..."
+        ":" + str(sfConfig['__webport']) + sfConfig['__docroot'] + " ..."
 
     cherrypy.config.update({
         'server.socket_host': sfConfig['__webaddr'],
@@ -150,4 +151,4 @@ if __name__ == '__main__':
                         
     # Try starting the web server. If it fails due to a database being
     # missing, start a smaller web server just for setting up the DB.
-    cherrypy.quickstart(SpiderFootWebUi(sfConfig), config=conf)
+    cherrypy.quickstart(SpiderFootWebUi(sfConfig), script_name=sfConfig['__docroot'], config=conf)
