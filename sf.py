@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sf
 # Purpose:      Main wrapper for calling all SpiderFoot modules
 #
@@ -8,18 +8,19 @@
 # Created:     03/04/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import sys
-import os, inspect
+import os
+import inspect
 
 # Look under ext ford 3rd party dependencies
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0],"ext")))
+cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "ext")))
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
-deps = [ 'M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks', 
-    'pyPdf', 'metapdf', 'openxmllib' ]
+deps = ['M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks',
+        'pyPdf', 'metapdf', 'openxmllib']
 for mod in deps:
     try:
         if mod.startswith("ext."):
@@ -53,41 +54,40 @@ from sfwebui import SpiderFootWebUi
 # These can be overriden on a per-module basis, and some will
 # be overridden from saved configuration settings stored in the DB.
 sfConfig = {
-    '_debug':            False, # Debug
-    '__blocknotif':      False, # Block notifications
-    '_useragent':        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0', # User-Agent to use for HTTP requests
-    '_dnsserver':       '', # Override the default resolver
-    '_fetchtimeout':     5, # number of seconds before giving up on a fetch
-    '_internettlds':    'http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1',
-    '_internettlds_cache':  72,
-    '__database':        'spiderfoot.db',
-    '__webaddr':         '127.0.0.1',
-    '__webport':         5001,
-    '__docroot':         '',    # don't put trailing /
-    '__modules__':       None, # List of modules. Will be set after start-up.
-    '_socks1type':    '',
-    '_socks2addr':    '',
-    '_socks3port':    '',
-    '_socks4user':    '',
-    '_socks5pwd':     '',
-    '_socks6dns':     True
+    '_debug': False,  # Debug
+    '__blocknotif': False,  # Block notifications
+    '_useragent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0',  # User-Agent to use for HTTP requests
+    '_dnsserver': '',  # Override the default resolver
+    '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
+    '_internettlds': 'http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1',
+    '_internettlds_cache': 72,
+    '__database': 'spiderfoot.db',
+    '__webaddr': '127.0.0.1',
+    '__webport': 5001,
+    '__docroot': '',  # don't put trailing /
+    '__modules__': None,  # List of modules. Will be set after start-up.
+    '_socks1type': '',
+    '_socks2addr': '',
+    '_socks3port': '',
+    '_socks4user': '',
+    '_socks5pwd': '',
+    '_socks6dns': True
 }
 
 sfOptdescs = {
-    '_debug':       "Enable debugging?",
-    '_internettlds':    "List of Internet TLDs.",
+    '_debug': "Enable debugging?",
+    '_internettlds': "List of Internet TLDs.",
     '_internettlds_cache': "Hours to cache the Internet TLD list. This can safely be quite a long time given that the list doesn't change too often.",
-    '_useragent':   "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
-    '_dnsserver':   "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
-    '_fetchtimeout':    "Number of seconds before giving up on a HTTP request.",
-    '_socks1type':    "SOCKS Server Type. Can be '4', '5' or 'HTTP'",
-    '_socks2addr':    'SOCKS Server IP Address.',
-    '_socks3port':    'SOCKS Server TCP Port. Usually 1080 for 4/5 and 8080 for HTTP.',
-    '_socks4user':    'SOCKS Username. Valid only for SOCKS4 and SOCKS5 servers.',
-    '_socks5pwd':     "SOCKS Password. Valid only for SOCKS5 servers.",
-    '_socks6dns':     "Pass DNS through the SOCKS proxy?",
-    '_modulesenabled':  "Modules enabled for the scan." # This is a hack to get a description for
-                                                         # an option not actually available.
+    '_useragent': "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
+    '_dnsserver': "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
+    '_fetchtimeout': "Number of seconds before giving up on a HTTP request.",
+    '_socks1type': "SOCKS Server Type. Can be '4', '5' or 'HTTP'",
+    '_socks2addr': 'SOCKS Server IP Address.',
+    '_socks3port': 'SOCKS Server TCP Port. Usually 1080 for 4/5 and 8080 for HTTP.',
+    '_socks4user': 'SOCKS Username. Valid only for SOCKS4 and SOCKS5 servers.',
+    '_socks5pwd': "SOCKS Password. Valid only for SOCKS5 servers.",
+    '_socks6dns': "Pass DNS through the SOCKS proxy?",
+    '_modulesenabled': "Modules enabled for the scan."  # This is a hack to get a description for an option not actually available.
 }
 
 if __name__ == '__main__':
@@ -111,8 +111,8 @@ if __name__ == '__main__':
             sfModules[modName] = dict()
             mod = __import__('modules.' + modName, globals(), locals(), [modName])
             sfModules[modName]['object'] = getattr(mod, modName)()
-            sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":",2)[0]
-            sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":",2)[1]
+            sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":", 2)[0]
+            sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":", 2)[1]
             sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
             sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
             if hasattr(sfModules[modName]['object'], 'opts'):
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
     # Start the web server so you can start looking at results
     print "Starting web server at http://" + sfConfig['__webaddr'] + \
-        ":" + str(sfConfig['__webport']) + sfConfig['__docroot'] + " ..."
+          ":" + str(sfConfig['__webport']) + sfConfig['__docroot'] + " ..."
 
     cherrypy.config.update({
         'server.socket_host': sfConfig['__webaddr'],
@@ -143,11 +143,11 @@ if __name__ == '__main__':
 
     # Enable access to static files via the web directory
     currentDir = os.path.abspath(sf.myPath())
-    conf = { '/static': { 
+    conf = {'/static': {
         'tools.staticdir.on': True,
         'tools.staticdir.dir': os.path.join(currentDir, 'static')
     }}
-                        
+
     # Try starting the web server. If it fails due to a database being
     # missing, start a smaller web server just for setting up the DB.
     cherrypy.quickstart(SpiderFootWebUi(sfConfig), script_name=sfConfig['__docroot'], config=conf)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_webframework
 # Purpose:      Identify the usage of popular web frameworks.
 #
@@ -8,28 +8,29 @@
 # Created:     25/05/2013
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 regexps = dict({
-    "jQuery":           list(['jquery']), # unlikely false positive
-    "YUI":              list(['\/yui\/', 'yui\-', 'yui\.']),
-    "Prototype":        list(['\/prototype\/', 'prototype\-', 'prototype\.js']),
-    "ZURB Foundation":  list(['\/foundation\/', 'foundation\-', 'foundation\.js']),
-    "Bootstrap":        list(['\/bootstrap\/', 'bootstrap\-', 'bootstrap\.js']),
-    "ExtJS":            list(['[\'\"\=]ext\.js', 'extjs', '\/ext\/*\.js']),
-    "Mootools":         list(['\/mootools\/', 'mootools\-', 'mootools\.js']),
-    "Dojo":             list(['\/dojo\/', '[\'\"\=]dojo\-', '[\'\"\=]dojo\.js']),
-    "Wordpress":        list(['\/wp-includes\/', '\/wp-content\/'])
+    "jQuery": list(['jquery']),  # unlikely false positive
+    "YUI": list(['\/yui\/', 'yui\-', 'yui\.']),
+    "Prototype": list(['\/prototype\/', 'prototype\-', 'prototype\.js']),
+    "ZURB Foundation": list(['\/foundation\/', 'foundation\-', 'foundation\.js']),
+    "Bootstrap": list(['\/bootstrap\/', 'bootstrap\-', 'bootstrap\.js']),
+    "ExtJS": list(['[\'\"\=]ext\.js', 'extjs', '\/ext\/*\.js']),
+    "Mootools": list(['\/mootools\/', 'mootools\-', 'mootools\.js']),
+    "Dojo": list(['\/dojo\/', '[\'\"\=]dojo\-', '[\'\"\=]dojo\.js']),
+    "Wordpress": list(['\/wp-includes\/', '\/wp-content\/'])
 })
+
 
 class sfp_webframework(SpiderFootPlugin):
     """Web Framework:Identify the usage of popular web frameworks like jQuery, YUI and others."""
 
     # Default options
-    opts = { }
+    opts = {}
 
     # Option descriptions
     optdescs = {
@@ -57,7 +58,7 @@ class sfp_webframework(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "URL_WEB_FRAMEWORK" ]
+        return ["URL_WEB_FRAMEWORK"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -93,8 +94,8 @@ class sfp_webframework(SpiderFootPlugin):
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)
-                    evt = SpiderFootEvent("URL_WEB_FRAMEWORK", regexpGrp, 
-                        self.__name__, event.sourceEvent)
+                    evt = SpiderFootEvent("URL_WEB_FRAMEWORK", regexpGrp,
+                                          self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)
 
         return None

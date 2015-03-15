@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-----------------------------------------------------------------
+# -----------------------------------------------------------------
 # Name:         sfwebui
 # Purpose:      User interface class for use with a web browser
 #
@@ -8,7 +8,7 @@
 # Created:      30/09/2012
 # Copyright:    (c) Steve Micallef 2012
 # License:      GPL
-#-----------------------------------------------------------------
+# -----------------------------------------------------------------
 import json
 import cherrypy
 import cgi
@@ -23,6 +23,7 @@ from sfdb import SpiderFootDb
 from sflib import SpiderFoot, globalScanStatus
 from sfscan import SpiderFootScanner
 from StringIO import StringIO
+
 
 class SpiderFootWebUi:
     lookup = TemplateLookup(directories=[''])
@@ -71,15 +72,15 @@ class SpiderFootWebUi:
     def searchBase(self, id=None, eventType=None, value=None):
         regex = ""
         if [id, eventType, value].count('') == 2 or \
-            [id, eventType, value].count(None) == 2:
+                        [id, eventType, value].count(None) == 2:
             return None
 
         if value.startswith("/") and value.endswith("/"):
-            regex = value[1:len(value)-1]
+            regex = value[1:len(value) - 1]
             value = ""
 
         value = value.replace('*', '%')
-        if value in [ None, "" ] and regex in [ None, "" ]:
+        if value in [None, ""] and regex in [None, ""]:
             value = "%"
             regex = ""
 
@@ -97,7 +98,7 @@ class SpiderFootWebUi:
             escapeddata = cgi.escape(row[1])
             escapedsrc = cgi.escape(row[2])
             retdata.append([lastseen, escapeddata, escapedsrc,
-                row[3], row[5], row[6], row[7], row[8], row[10], row[11], row[4]])
+                            row[3], row[5], row[6], row[7], row[8], row[10], row[11], row[4]])
 
         return retdata
 
@@ -120,6 +121,7 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
         return fileobj.getvalue()
+
     scaneventresultexport.exposed = True
 
     # Get search result data in CSV format
@@ -135,6 +137,7 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
         return fileobj.getvalue()
+
     scansearchresultexport.exposed = True
 
     # Configuration used for a scan
@@ -147,7 +150,7 @@ class SpiderFootWebUi:
             if ':' not in key:
                 ret['configdesc'][key] = self.config['__globaloptdescs__'][key]
             else:
-                [ modName, modOpt ] = key.split(':')
+                [modName, modOpt] = key.split(':')
                 if not modName in self.config['__modules__'].keys():
                     continue
 
@@ -170,6 +173,7 @@ class SpiderFootWebUi:
         ret['meta'] = [meta[0], meta[1], meta[2], started, finished, meta[5]]
 
         return json.dumps(ret)
+
     scanopts.exposed = True
 
     # Configure a new scan
@@ -178,7 +182,8 @@ class SpiderFootWebUi:
         types = dbh.eventTypes()
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
-            modules=self.config['__modules__'])
+                            modules=self.config['__modules__'])
+
     newscan.exposed = True
 
     # Main page listing scans available
@@ -186,6 +191,7 @@ class SpiderFootWebUi:
         # Look for referenced templates in the current directory only
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
         return templ.render(pageid='SCANLIST', docroot=self.docroot)
+
     index.exposed = True
 
     # Information about a selected scan
@@ -197,7 +203,8 @@ class SpiderFootWebUi:
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
         return templ.render(id=id, name=res[0], status=res[5], docroot=self.docroot,
-            pageid="SCANLIST")
+                            pageid="SCANLIST")
+
     scaninfo.exposed = True
 
     # Settings
@@ -205,6 +212,7 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
         self.token = random.randint(0, 99999999)
         return templ.render(opts=self.config, pageid='SETTINGS', token=self.token, docroot=self.docroot)
+
     opts.exposed = True
 
     # Generic error, but not exposed as not called directly
@@ -225,6 +233,7 @@ class SpiderFootWebUi:
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
             return templ.render(id=id, name=res[0], pageid="SCANLIST", docroot=self.docroot)
+
     scandelete.exposed = True
 
     # Save settings, also used to completely reset them to default
@@ -236,8 +245,8 @@ class SpiderFootWebUi:
             dbh = SpiderFootDb(self.config)
             # Reset config to default
             if allopts == "RESET":
-                dbh.configClear() # Clear it in the DB
-                self.config = deepcopy(self.defaultConfig) # Clear in memory
+                dbh.configClear()  # Clear it in the DB
+                self.config = deepcopy(self.defaultConfig)  # Clear in memory
             else:
                 useropts = json.loads(allopts)
                 cleanopts = dict()
@@ -256,8 +265,9 @@ class SpiderFootWebUi:
 
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
         self.token = random.randint(0, 99999999)
-        return templ.render(opts=self.config, pageid='SETTINGS', updated=True, 
-            docroot=self.docroot, token=self.token)
+        return templ.render(opts=self.config, pageid='SETTINGS', updated=True,
+                            docroot=self.docroot, token=self.token)
+
     savesettings.exposed = True
 
     # Initiate a scan
@@ -266,7 +276,7 @@ class SpiderFootWebUi:
 
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
-        modopts = dict() # Not used yet as module options are set globally
+        modopts = dict()  # Not used yet as module options are set globally
         modlist = list()
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
@@ -318,12 +328,12 @@ class SpiderFootWebUi:
 
         if targetType is None:
             return self.error("Invalid target type. Could not recognize it as " + \
-                "an IP address, IP subnet, domain name or host name.")
+                              "an IP address, IP subnet, domain name or host name.")
 
         # Start running a new scan
         scanId = sf.genScanInstanceGUID(scanname)
-        t = SpiderFootScanner(scanname, scantarget.lower(), targetType, scanId, 
-            modlist, cfg, modopts)
+        t = SpiderFootScanner(scanname, scantarget.lower(), targetType, scanId,
+                              modlist, cfg, modopts)
         t.start()
 
         # Wait until the scan has initialized
@@ -333,7 +343,8 @@ class SpiderFootWebUi:
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
         return templ.render(id=scanId, name=scanname, docroot=self.docroot,
-            status=globalScanStatus.getStatus(scanId), pageid="SCANLIST")
+                            status=globalScanStatus.getStatus(scanId), pageid="SCANLIST")
+
     startscan.exposed = True
 
     # Stop a scan (id variable is unnecessary for now given that only one simultaneous
@@ -343,20 +354,21 @@ class SpiderFootWebUi:
 
         if globalScanStatus.getStatus(id) is None:
             return self.error("That scan is not actually running. A data consistency " + \
-                "error for this scan probably exists. <a href='/scandelete?id=" + \
-                id + "&confirm=1'>Click here to delete it.</a>")
+                              "error for this scan probably exists. <a href='/scandelete?id=" + \
+                              id + "&confirm=1'>Click here to delete it.</a>")
 
         if globalScanStatus.getStatus(id) == "ABORTED":
             return self.error("The scan is already aborted.")
 
         if not globalScanStatus.getStatus(id) == "RUNNING":
             return self.error("The running scan is currently in the state '" + \
-                globalScanStatus.getStatus(id) + "', please try again later or restart " + \
-                " SpiderFoot.")
+                              globalScanStatus.getStatus(id) + "', please try again later or restart " + \
+                              " SpiderFoot.")
 
         globalScanStatus.setStatus(id, "ABORT-REQUESTED")
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST',stoppedscan=True, docroot=self.docroot)
+        return templ.render(pageid='SCANLIST', stoppedscan=True, docroot=self.docroot)
+
     stopscan.exposed = True
 
     #
@@ -369,10 +381,11 @@ class SpiderFootWebUi:
         data = dbh.scanLogs(id, limit)
         retdata = []
         for row in data:
-            generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]/1000))
-            retdata.append([generated, row[1], row[2], 
-                cgi.escape(unicode(row[3], errors='replace'))])
+            generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
+            retdata.append([generated, row[1], row[2],
+                            cgi.escape(unicode(row[3], errors='replace'))])
         return json.dumps(retdata)
+
     scanlog.exposed = True
 
     # Scan error data
@@ -381,10 +394,11 @@ class SpiderFootWebUi:
         data = dbh.scanErrors(id, limit)
         retdata = []
         for row in data:
-            generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]/1000))
+            generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
             retdata.append([generated, row[1],
-                cgi.escape(unicode(row[2], errors='replace'))])
+                            cgi.escape(unicode(row[2], errors='replace'))])
         return json.dumps(retdata)
+
     scanerrors.exposed = True
 
     # Produce a list of scans
@@ -405,6 +419,7 @@ class SpiderFootWebUi:
                 finished = "Not yet"
             retdata.append([row[0], row[1], row[2], created, started, finished, row[6], row[7]])
         return json.dumps(retdata)
+
     scanlist.exposed = True
 
     # Basic information about a scan
@@ -417,6 +432,7 @@ class SpiderFootWebUi:
 
         retdata = [data[0], data[1], created, started, ended, data[5]]
         return json.dumps(retdata)
+
     scanstatus.exposed = True
 
     # Summary of scan results
@@ -428,6 +444,7 @@ class SpiderFootWebUi:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[2]))
             retdata.append([row[0], row[1], lastseen, row[3], row[4]])
         return json.dumps(retdata)
+
     scansummary.exposed = True
 
     # Event results for a scan
@@ -439,9 +456,10 @@ class SpiderFootWebUi:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             escapeddata = cgi.escape(row[1])
             escapedsrc = cgi.escape(row[2])
-            retdata.append([lastseen, escapeddata, escapedsrc, 
-                row[3], row[5], row[6], row[7], row[8]])
+            retdata.append([lastseen, escapeddata, escapedsrc,
+                            row[3], row[5], row[6], row[7], row[8]])
         return json.dumps(retdata, ensure_ascii=False)
+
     scaneventresults.exposed = True
 
     # Unique event results for a scan
@@ -453,12 +471,14 @@ class SpiderFootWebUi:
             escaped = cgi.escape(row[0])
             retdata.append([escaped, row[1], row[2]])
         return json.dumps(retdata, ensure_ascii=False)
+
     scaneventresultsunique.exposed = True
 
     # Search
     def search(self, id=None, eventType=None, value=None):
         retdata = self.searchBase(id, eventType, value)
         return json.dumps(retdata, ensure_ascii=False)
+
     search.exposed = True
 
     # Historical data for the scan, graphs will be rendered in JS
@@ -466,6 +486,7 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultHistory(id)
         return json.dumps(data, ensure_ascii=False)
+
     scanhistory.exposed = True
 
     def scanelementtypediscovery(self, id, eventType):
@@ -490,7 +511,7 @@ class SpiderFootWebUi:
                 if childId not in pc[parentId]:
                     pc[parentId].append(childId)
             else:
-                pc[parentId] = [ childId ]
+                pc[parentId] = [childId]
 
             # parents of the leaf set
             if parentId not in nextIds:
@@ -511,7 +532,7 @@ class SpiderFootWebUi:
                     if childId not in pc[parentId]:
                         pc[parentId].append(childId)
                 else:
-                    pc[parentId] = [ childId ]
+                    pc[parentId] = [childId]
                 if parentId not in nextIds:
                     nextIds.append(parentId)
 
@@ -526,4 +547,5 @@ class SpiderFootWebUi:
         retdata['tree'] = sf.dataParentChildToTree(pc)
         retdata['data'] = datamap
         return json.dumps(retdata, ensure_ascii=False)
+
     scanelementtypediscovery.exposed = True

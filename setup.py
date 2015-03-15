@@ -6,13 +6,13 @@ setup(
     console=['sf.py'],
     options={
         "py2exe": {
-            "packages": ["modules", "ext.dns", "sflib", "sfwebui", "sfdb", "mako", 
-                "cherrypy", "M2Crypto", "netaddr", "ext.socks", "ext.pyPdf", 
-                "ext.metapdf", "ext.openxmllib" ],
+            "packages": ["modules", "ext.dns", "sflib", "sfwebui", "sfdb", "mako",
+                         "cherrypy", "M2Crypto", "netaddr", "ext.socks", "ext.pyPdf",
+                         "ext.metapdf", "ext.openxmllib"],
             "bundle_files": 1,
             "compressed": True,
-            "includes": [ 'lxml._elementpath' ]
+            "includes": ['lxml._elementpath']
         }
     },
-    zipfile = None
+    zipfile=None
 )
