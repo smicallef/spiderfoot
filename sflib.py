@@ -81,7 +81,7 @@ class SpiderFoot:
                     return data
             except BaseException as e:
                 if fatal:
-                    self.error("Unable to open option URL, " + val + ".")
+                    self.error("Unable to open option URL, " + val + ": " + str(e))
                 else:
                     return None
 
