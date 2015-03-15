@@ -28,7 +28,6 @@ def from_text(text):
     """
     # TODO, figure out the bounds on start, stop and step.
 
-    import pdb
     step = 1
     cur = ''
     state = 0

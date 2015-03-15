@@ -10,8 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import re
 from sflib import SpiderFoot, SpiderFootPlugin
 
 class sfp__stor_db(SpiderFootPlugin):

@@ -9,8 +9,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import re
-import sys
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

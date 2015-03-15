@@ -9,10 +9,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import hashlib
-import random
 import sqlite3
-import sys
 import re
 import time
 from sflib import SpiderFoot

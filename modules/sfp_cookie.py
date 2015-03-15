@@ -9,8 +9,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_cookie(SpiderFootPlugin):

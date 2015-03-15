@@ -43,8 +43,6 @@ for mod in deps:
         print ""
         sys.exit(-1)
 
-import imp
-import time
 import os
 import cherrypy
 from sflib import SpiderFoot

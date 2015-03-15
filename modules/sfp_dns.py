@@ -13,9 +13,7 @@
 #-------------------------------------------------------------------------------
 
 import socket
-import sys
 import re
-import random
 import dns
 import urllib2
 from netaddr import IPAddress, IPNetwork
