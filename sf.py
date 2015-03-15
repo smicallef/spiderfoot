@@ -59,13 +59,18 @@ sfConfig = {
     '_useragent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0',  # User-Agent to use for HTTP requests
     '_dnsserver': '',  # Override the default resolver
     '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
-    '_internettlds': 'http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1',
+    '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
     '_internettlds_cache': 72,
     '__database': 'spiderfoot.db',
     '__webaddr': '127.0.0.1',
     '__webport': 5001,
     '__docroot': '',  # don't put trailing /
     '__modules__': None,  # List of modules. Will be set after start-up.
+    '__pghost':         '127.0.0.1', # For future PGSQL backend
+    '__pgdb':           'spiderfoot', # For future PGSQL backend
+    '__pgport':         '5432', # For future PGSQL backend
+    '__pguser':         'pgsql', # For future PGSQL backend
+    '__pgpass':         '', # For future PGSQL backend
     '_socks1type': '',
     '_socks2addr': '',
     '_socks3port': '',
