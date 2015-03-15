@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_bingsearch
 # Purpose:      Searches Bing for content related to the domain in question.

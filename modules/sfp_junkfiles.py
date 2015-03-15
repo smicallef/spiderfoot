@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_junkfiles
 # Purpose:      From Spidering, identifies backup and temporary files.

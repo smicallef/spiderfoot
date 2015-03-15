@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_shodan
 # Purpose:      Query SHODAN for identified IP addresses.

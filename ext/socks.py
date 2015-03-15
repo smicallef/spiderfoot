@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """SocksiPy - Python SOCKS module.
 Version 1.00
 

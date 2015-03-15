@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_malcheck
 # Purpose:      Checks if an ASN, IP or domain is malicious.

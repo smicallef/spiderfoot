@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_ir
 # Purpose:      Queries Internet registryes like RIPE (incl. ARIN) to get 

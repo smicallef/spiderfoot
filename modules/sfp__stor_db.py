@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_stor_db
 # Purpose:      SpiderFoot plug-in for storing events to the local SpiderFoot

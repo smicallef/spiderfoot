@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_dns
 # Purpose:      SpiderFoot plug-in for gathering IP addresses from sub-domains

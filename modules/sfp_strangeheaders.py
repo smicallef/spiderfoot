@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_strangeheaders
 # Purpose:      SpiderFoot plug-in for identifying non-standard HTTP headers

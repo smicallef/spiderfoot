@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_similar
 # Purpose:      SpiderFoot plug-in for identifying domains that look similar

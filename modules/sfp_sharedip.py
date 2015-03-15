@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_sharedip
 # Purpose:      Searches Bing and/or Robtex.com for hosts sharing the same IP.

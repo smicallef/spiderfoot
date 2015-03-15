@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-----------------------------------------------------------------
 # Name:         sfwebui
 # Purpose:      User interface class for use with a web browser

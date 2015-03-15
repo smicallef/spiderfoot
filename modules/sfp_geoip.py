@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_geoip
 # Purpose:      SpiderFoot plug-in to identify the Geo-location of IP addresses

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_spider
 # Purpose:      SpiderFoot plug-in for spidering sites and returning meta data

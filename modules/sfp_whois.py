@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_whois
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other

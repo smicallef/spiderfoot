@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_virustotal
 # Purpose:      Query VirusTotal for identified IP addresses.

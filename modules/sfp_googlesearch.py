@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_googlesearch
 # Purpose:      Searches Google for content related to the domain in question.

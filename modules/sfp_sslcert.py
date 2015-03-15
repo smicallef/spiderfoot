@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_sslcert
 # Purpose:      Gather information about SSL certificates behind HTTPS sites.

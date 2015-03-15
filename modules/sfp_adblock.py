@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_adblock
 # Purpose:      SpiderFoot plug-in to test if external/internally linked pages

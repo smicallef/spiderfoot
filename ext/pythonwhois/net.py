@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import socket, re, sys
 from codecs import encode, decode
 from . import shared

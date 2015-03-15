@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_stor_print
 # Purpose:      SpiderFoot plug-in for 'storing' events (by printing them to

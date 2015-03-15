@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_pastebin
 # Purpose:      Searches Google for PasteBin content related to the domain in 

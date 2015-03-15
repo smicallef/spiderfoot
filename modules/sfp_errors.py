@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_errors
 # Purpose:      Identify common error messages in content like SQL errors, etc.

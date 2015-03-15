@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_portscan_tcp
 # Purpose:      SpiderFoot plug-in for performing a basic TCP port scan of IP

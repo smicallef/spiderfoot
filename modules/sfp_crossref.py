@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_crossref
 # Purpose:      SpiderFoot plug-in for scanning links identified from the

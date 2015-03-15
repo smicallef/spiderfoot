@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_defaced
 # Purpose:      Checks if a domain or IP appears on the zone-h.org defacement

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_yahoosearch
 # Purpose:      Searches Yahoo for content related to the domain in question.

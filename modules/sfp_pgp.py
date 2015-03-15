@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_pgp
 # Purpose:      SpiderFoot plug-in for looking up received e-mails in PGP

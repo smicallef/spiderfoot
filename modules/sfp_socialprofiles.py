@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_socialprofiles
 # Purpose:      Obtains social media profiles of any identified human names.

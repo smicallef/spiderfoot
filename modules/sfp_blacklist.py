@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_blacklist
 # Purpose:      SpiderFoot plug-in for looking up whether IPs/Netblocks/Domains

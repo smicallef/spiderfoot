@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_intfiles
 # Purpose:      From Spidering and from searching search engines, identifies

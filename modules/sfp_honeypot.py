@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_honeypot
 # Purpose:      SpiderFoot plug-in for looking up whether IPs appear in the

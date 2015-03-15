@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_tldsearch
 # Purpose:      SpiderFoot plug-in for identifying the existence of this target
