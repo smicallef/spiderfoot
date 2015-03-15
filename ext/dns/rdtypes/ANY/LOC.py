@@ -61,7 +61,7 @@ def _tuple_to_float(what):
     return sign * value
 
 def _encode_size(what, desc):
-    what = long(what);
+    what = long(what)
     exponent = _exponent_of(what, desc) & 0xF
     base = what // pow(10, exponent) & 0xF
     return base * 16 + exponent

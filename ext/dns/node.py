@@ -35,7 +35,7 @@ class Node(object):
         """Initialize a DNS node.
         """
 
-        self.rdatasets = [];
+        self.rdatasets = []
 
     def to_text(self, name, **kw):
         """Convert a node to text format.

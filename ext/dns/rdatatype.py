@@ -175,7 +175,7 @@ _singletons = {
     # CNAME is technically a singleton, but we allow multiple CNAMEs.
     }
 
-_unknown_type_pattern = re.compile('TYPE([0-9]+)$', re.I);
+_unknown_type_pattern = re.compile('TYPE([0-9]+)$', re.I)
 
 class UnknownRdatatype(dns.exception.DNSException):
     """Raised if a type is unknown."""

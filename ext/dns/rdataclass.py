@@ -63,7 +63,7 @@ _metaclasses = {
     ANY : True
     }
 
-_unknown_class_pattern = re.compile('CLASS([0-9]+)$', re.I);
+_unknown_class_pattern = re.compile('CLASS([0-9]+)$', re.I)
 
 class UnknownRdataclass(dns.exception.DNSException):
     """Raised when a class is unknown."""

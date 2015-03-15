@@ -103,7 +103,7 @@ def key_id(key, origin=None):
             total += (ord(rdata[2 * i]) << 8) + ord(rdata[2 * i + 1])
         if len(rdata) % 2 != 0:
             total += ord(rdata[len(rdata) - 1]) << 8
-        total += ((total >> 16) & 0xffff);
+        total += ((total >> 16) & 0xffff)
         return total & 0xffff
 
 def make_ds(name, key, algorithm, origin=None):
@@ -286,7 +286,7 @@ def _validate_rrsig(rrset, rrsig, keys, origin=None, now=None):
         rrnamebuf = rrname.to_digestable(origin)
         rrfixed = struct.pack('!HHI', rdataset.rdtype, rdataset.rdclass,
                               rrsig.original_ttl)
-        rrlist = sorted(rdataset);
+        rrlist = sorted(rdataset)
         for rr in rrlist:
             hash.update(rrnamebuf)
             hash.update(rrfixed)
