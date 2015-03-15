@@ -24,14 +24,18 @@ class sfp_pgp(SpiderFootPlugin):
     # Default options
     opts = {
         # options specific to this module
-        'keyserver_search': "http://pgp.mit.edu/pks/lookup?op=index&search=",
-        'keyserver_fetch': "http://pgp.mit.edu/pks/lookup?op=get&search="
+        'keyserver1_search': "http://pgp.mit.edu/pks/lookup?op=index&search=",
+        'keyserver1_fetch': "http://pgp.mit.edu/pks/lookup?op=get&search=",
+        'keyserver2_search': "https://hkps.pool.sks-keyservers.net/pks/lookup?op=vindex&search=",
+        'keyserver2_fetch': "https://hkps.pool.sks-keyservers.net/pks/lookup?op=get&search="
     }
 
     # Option descriptions
     optdescs = {
-        'keyserver_search': "PGP public key server URL to find e-mail addresses on a domain. Domain will get appended.",
-        'keyserver_fetch': "PGP public key server URL to find the public key for an e-mail address. Email address will get appended."
+        'keyserver1_search': "PGP public key server URL to find e-mail addresses on a domain. Domain will get appended.",
+        'keyserver1_fetch': "PGP public key server URL to find the public key for an e-mail address. Email address will get appended.",
+        'keyserver2_search': "Backup PGP public key server URL to find e-mail addresses on a domain. Domain will get appended.",
+        'keyserver2_fetch': "Backup PGP public key server URL to find the public key for an e-mail address. Email address will get appended."
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -68,9 +72,15 @@ class sfp_pgp(SpiderFootPlugin):
 
         # Get e-mail addresses on this domain
         if eventName == "DOMAIN_NAME":
-            res = self.sf.fetchUrl(self.opts['keyserver_search'] + eventData,
+            res = self.sf.fetchUrl(self.opts['keyserver1_search'] + eventData,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
+
+            if res['content'] is None:
+                res = self.sf.fetchUrl(self.opts['keyserver2_search'] + eventData,
+                                       timeout=self.opts['_fetchtimeout'],
+                                       useragent=self.opts['_useragent'])
+
             if res['content'] is not None:
                 pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
                 matches = re.findall(pat, res['content'])
@@ -90,9 +100,15 @@ class sfp_pgp(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
         if eventName == "EMAILADDR":
-            res = self.sf.fetchUrl(self.opts['keyserver_fetch'] + eventData,
+            res = self.sf.fetchUrl(self.opts['keyserver1_fetch'] + eventData,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
+
+            if res['content'] is None:
+               res = self.sf.fetchUrl(self.opts['keyserver2_fetch'] + eventData,
+                                      timeout=self.opts['_fetchtimeout'],
+                                      useragent=self.opts['_useragent'])
+
             if res['content'] is not None:
                 pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE | re.DOTALL)
                 matches = re.findall(pat, res['content'])
