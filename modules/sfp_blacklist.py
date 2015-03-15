@@ -157,21 +157,21 @@ class sfp_blacklist(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.results.has_key(eventData):
+        if eventData in self.results:
             return None
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " + \
-                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
                               str(self.opts['maxnetblock']))
                 return None
 
         if eventName == 'NETBLOCK_MEMBER' and self.opts['subnetlookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: " + \
-                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
                               str(self.opts['maxsubnet']))
                 return None
 

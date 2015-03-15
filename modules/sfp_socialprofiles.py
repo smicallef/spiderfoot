@@ -152,8 +152,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             else:
                                 found = False
                                 for kw in self.keywords:
-                                    if re.search("[^a-zA-Z\-\_]" + kw + \
-                                                         "[^a-zA-Z\-\_]", pres['content'], re.IGNORECASE):
+                                    if re.search("[^a-zA-Z\-\_]" + kw + "[^a-zA-Z\-\_]", pres['content'], re.IGNORECASE):
                                         found = True
                                 if not found:
                                     continue

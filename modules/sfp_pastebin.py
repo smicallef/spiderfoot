@@ -109,7 +109,7 @@ class sfp_pastebin(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
                     # Sometimes pastebin search results false positives
-                    if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) + \
+                    if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
                                          "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                         continue
 

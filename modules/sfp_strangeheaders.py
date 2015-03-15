@@ -58,7 +58,7 @@ class sfp_strangeheaders(SpiderFootPlugin):
         eventSource = event.sourceEvent.data
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-        if self.results.has_key(eventSource):
+        if eventSource in self.results:
             return None
         else:
             self.results[eventSource] = True

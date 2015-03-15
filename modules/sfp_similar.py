@@ -112,7 +112,7 @@ class sfp_similar(SpiderFootPlugin):
 
                 self.storeResult(sourceEvent, result)
 
-            if not whoisLastPageIndicator in whois['content']:
+            if whoisLastPageIndicator not in whois['content']:
                 reachedEnd = True
             else:
                 time.sleep(random.randint(1, 10))
@@ -147,7 +147,7 @@ class sfp_similar(SpiderFootPlugin):
 
                 self.storeResult(sourceEvent, result)
 
-            if not domtoolLastPageIndicator in domtool['content']:
+            if domtoolLastPageIndicator not in domtool['content']:
                 reachedEnd = True
             else:
                 time.sleep(random.randint(1, 10))
@@ -179,7 +179,7 @@ class sfp_similar(SpiderFootPlugin):
 
                 self.storeResult(sourceEvent, result)
 
-            if not namedropLastPageIndicator in namedrop['content']:
+            if namedropLastPageIndicator not in namedrop['content']:
                 reachedEnd = True
             else:
                 time.sleep(random.randint(1, 10))

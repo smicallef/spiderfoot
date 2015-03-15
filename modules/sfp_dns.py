@@ -145,7 +145,7 @@ class sfp_dns(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.events.has_key(eventData):
+        if eventData in self.events:
             return None
 
         self.events[eventData] = True
@@ -167,8 +167,8 @@ class sfp_dns(SpiderFootPlugin):
 
         if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " + \
-                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
                               str(self.opts['maxnetblock']))
                 return None
 
@@ -185,7 +185,7 @@ class sfp_dns(SpiderFootPlugin):
                 addrs = self.resolveIP(ipaddr)
 
                 if len(addrs) > 0:
-                    self.sf.debug("Found a reversed hostname from " + ipaddr + \
+                    self.sf.debug("Found a reversed hostname from " + ipaddr +
                                   " (" + str(addrs) + ")")
                     for addr in addrs:
                         # Generate an event for the IP, then
@@ -224,7 +224,7 @@ class sfp_dns(SpiderFootPlugin):
                     if self.checkForStop():
                         return None
 
-                    if self.hostresults.has_key(sip):
+                    if sip in self.hostresults:
                         s += 1
                         continue
 
@@ -254,8 +254,8 @@ class sfp_dns(SpiderFootPlugin):
         ret = list()
         self.sf.debug("Performing reverse-resolve of " + ipaddr)
 
-        if self.resolveCache.has_key(ipaddr):
-            self.sf.debug("Returning cached result for " + ipaddr + " (" + \
+        if ipaddr in self.resolveCache:
+            self.sf.debug("Returning cached result for " + ipaddr + " (" +
                           str(self.resolveCache[ipaddr]) + ")")
             return self.resolveCache[ipaddr]
 
@@ -271,8 +271,8 @@ class sfp_dns(SpiderFootPlugin):
 
     # Resolve a host
     def resolveHost(self, hostname):
-        if self.resolveCache.has_key(hostname):
-            self.sf.debug("Returning cached result for " + hostname + " (" + \
+        if hostname in self.resolveCache:
+            self.sf.debug("Returning cached result for " + hostname + " (" +
                           str(self.resolveCache[hostname]) + ")")
             return self.resolveCache[hostname]
 
@@ -287,8 +287,8 @@ class sfp_dns(SpiderFootPlugin):
 
     # Resolve a host to IPv6
     def resolveHost6(self, hostname):
-        if self.resolveCache6.has_key(hostname):
-            self.sf.debug("Returning IPv6 cached result for " + hostname + " (" + \
+        if hostname in self.resolveCache6:
+            self.sf.debug("Returning IPv6 cached result for " + hostname + " (" +
                           str(self.resolveCache6[hostname]) + ")")
             return self.resolveCache6[hostname]
 
@@ -309,7 +309,7 @@ class sfp_dns(SpiderFootPlugin):
 
     # Process a host/IP, parentEvent is the event that represents this entity
     def processHost(self, host, parentEvent, affiliate=None):
-        if not self.hostresults.has_key(host):
+        if host not in self.hostresults:
             self.hostresults[host] = list(parentEvent.data)
         else:
             if parentEvent.data in self.hostresults[host] or parentEvent.data == host:
@@ -365,7 +365,7 @@ class sfp_dns(SpiderFootPlugin):
         return evt
 
     def processDomain(self, domainName, parentEvent):
-        if not self.domresults.has_key(domainName):
+        if domainName not in self.domresults:
             self.domresults[domainName] = True
         else:
             self.sf.debug("Skipping domain, " + domainName + ", already processed.")
@@ -416,7 +416,7 @@ class sfp_dns(SpiderFootPlugin):
                                                   self.__name__, domevt)
                             self.notifyListeners(evt)
             except BaseException as e:
-                self.sf.error("Failed to obtain DNS response for " + domainName + \
+                self.sf.error("Failed to obtain DNS response for " + domainName +
                               "(" + rec + "): " + str(e), False)
 
         self.sf.debug("Iterating through possible sub-domains [" + str(self.sublist) + "]")

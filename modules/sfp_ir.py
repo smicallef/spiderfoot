@@ -52,7 +52,7 @@ class sfp_ir(SpiderFootPlugin):
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
-        if self.memCache.has_key(url):
+        if url in self.memCache:
             res = self.memCache[url]
         else:
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
@@ -135,7 +135,7 @@ class sfp_ir(SpiderFootPlugin):
                         d["key"].lower().startswith("aut") or \
                                 d["key"].lower().startswith("descr") and \
                                         d["value"].lower() not in ["null", "none", "none specified"]:
-                    if ownerinfo.has_key(d["key"]):
+                    if d["key"] in ownerinfo:
                         ownerinfo[d["key"]].append(d["value"])
                     else:
                         ownerinfo[d["key"]] = [d["value"]]
@@ -245,7 +245,7 @@ class sfp_ir(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
-        if self.results.has_key(eventData):
+        if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
@@ -277,13 +277,13 @@ class sfp_ir(SpiderFootPlugin):
         if eventName == "BGP_AS_OWNER":
             # Don't report additional netblocks from this AS if we've
             # already found this AS before.
-            if not self.nbreported.has_key(eventData):
+            if eventData not in self.nbreported:
                 # Find all the netblocks owned by this AS
                 self.nbreported[eventData] = True
                 netblocks = self.asNetblocks(eventData)
                 if netblocks is not None:
                     for netblock in netblocks:
-                        if self.results.has_key(netblock):
+                        if netblock in self.results:
                             continue
 
                         # Technically this netblock was identified via the AS, not

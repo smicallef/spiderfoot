@@ -90,25 +90,25 @@ class sfp_intfiles(SpiderFootPlugin):
         for fileExt in self.opts['fileexts']:
             # Sites hosted on the domain
             if self.opts['searchengine'].lower() == "google":
-                pages = self.sf.googleIterate("site:" + eventData + "+" + \
+                pages = self.sf.googleIterate("site:" + eventData + "+" +
                                               "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                                                                         useragent=self.opts['_useragent'],
                                                                         timeout=self.opts['_fetchtimeout']))
 
             if self.opts['searchengine'].lower() == "bing":
-                pages = self.sf.bingIterate("site:" + eventData + "+" + \
+                pages = self.sf.bingIterate("site:" + eventData + "+" +
                                             "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                                                                       useragent=self.opts['_useragent'],
                                                                       timeout=self.opts['_fetchtimeout']))
 
             if self.opts['searchengine'].lower() == "yahoo":
-                pages = self.sf.yahooIterate("site:" + eventData + "+" + \
+                pages = self.sf.yahooIterate("site:" + eventData + "+" +
                                              "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                                                                        useragent=self.opts['_useragent'],
                                                                        timeout=self.opts['_fetchtimeout']))
 
             if pages is None:
-                self.sf.info("No results returned from " + self.opts['searchengine'] + \
+                self.sf.info("No results returned from " + self.opts['searchengine'] +
                              " for " + fileExt + " files.")
                 continue
 

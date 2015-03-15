@@ -365,8 +365,8 @@ class sfp_malcheck(SpiderFootPlugin):
                     # Get the regex, replace {0} with an IP address matcher to 
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
-                    if malchecks[check].has_key('regex'):
-                        rx = malchecks[check]['regex'].replace("{0}", \
+                    if 'regex' in malchecks[check]:
+                        rx = malchecks[check]['regex'].replace("{0}",
                                                                "(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
                         self.sf.debug("New regex for " + check + ": " + rx)
@@ -385,7 +385,7 @@ class sfp_malcheck(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " + \
+                                self.sf.debug(ip + " found within netblock/subnet " +
                                               target + " in " + check)
                                 return url
                         except Exception as e:
@@ -395,7 +395,7 @@ class sfp_malcheck(SpiderFootPlugin):
                     return None
 
                 # If we're looking at hostnames/domains/IPs
-                if not malchecks[check].has_key('regex'):
+                if 'regex' not in malchecks[check]:
                     for line in data['content'].split('\n'):
                         if line == target or (targetType == "domain" and line == targetDom):
                             self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
@@ -415,7 +415,7 @@ class sfp_malcheck(SpiderFootPlugin):
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" + \
+                self.sf.debug("Checking maliciousness of " + target + " (" +
                               itemType + ") with: " + cid)
                 if malchecks[check]['type'] == "query":
                     return self.resourceQuery(cid, target, itemType)

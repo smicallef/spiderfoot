@@ -47,7 +47,7 @@ class sfp_cookie(SpiderFootPlugin):
         eventSource = event.sourceEvent.data
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-        if self.results.has_key(eventSource):
+        if eventSource in self.results:
             return None
         else:
             self.results[eventSource] = True
@@ -56,7 +56,7 @@ class sfp_cookie(SpiderFootPlugin):
             self.sf.debug("Not collecting cookies from external sites.")
             return None
 
-        if eventData.has_key('set-cookie'):
+        if 'set-cookie' in eventData:
             evt = SpiderFootEvent("TARGET_WEB_COOKIE", eventData['set-cookie'],
                                   self.__name__, parentEvent)
             self.notifyListeners(evt)
