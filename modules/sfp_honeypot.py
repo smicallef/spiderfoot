@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_honeypot
 # Purpose:      SpiderFoot plug-in for looking up whether IPs appear in the
 #               projecthoneypot.org database.
@@ -9,11 +9,12 @@
 # Created:     16/04/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_honeypot(SpiderFootPlugin):
     """Honeypot Checker: Query the projecthoneypot.org database for entries."""
@@ -69,15 +70,15 @@ class sfp_honeypot(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'IP_ADDRESS', 'AFFILIATE_IPADDR', 'NETBLOCK_OWNER', 
-            'NETBLOCK_MEMBER' ]
+        return ['IP_ADDRESS', 'AFFILIATE_IPADDR', 'NETBLOCK_OWNER',
+                'NETBLOCK_MEMBER']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
-            "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK" ]
+        return ["BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
+                "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK"]
 
     # Swap 1.2.3.4 to 4.3.2.1
     def reverseAddr(self, ipaddr):
@@ -96,8 +97,8 @@ class sfp_honeypot(SpiderFootPlugin):
             return None
 
         text = "Honeypotproject ({0}): " + self.statuses[bits[3]] + \
-            "\nLast Activity: " + bits[1] + " days ago" + \
-            "\nThreat Level: " + bits[2]
+               "\nLast Activity: " + bits[1] + " days ago" + \
+               "\nThreat Level: " + bits[2]
         return text
 
     def queryAddr(self, qaddr, parentEvent):
@@ -105,7 +106,7 @@ class sfp_honeypot(SpiderFootPlugin):
 
         try:
             lookup = self.opts['apikey'] + "." + \
-                self.reverseAddr(qaddr) + ".dnsbl.httpbl.org"
+                     self.reverseAddr(qaddr) + ".dnsbl.httpbl.org"
 
             self.sf.debug("Checking Honeypot: " + lookup)
             addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(lookup))
@@ -128,9 +129,8 @@ class sfp_honeypot(SpiderFootPlugin):
                     e = "BLACKLISTED_NETBLOCK"
                 if eventName == "NETBLOCK_MEMBER":
                     e = "BLACKLISTED_SUBNET"
-                
-                evt = SpiderFootEvent(e, text.format(qaddr), self.__name__, 
-                    parentEvent)
+
+                evt = SpiderFootEvent(e, text.format(qaddr), self.__name__, parentEvent)
                 self.notifyListeners(evt)
         except BaseException as e:
             self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
@@ -158,15 +158,15 @@ class sfp_honeypot(SpiderFootPlugin):
         if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.sf.debug("Network size bigger than permitted: " + \
-                    str(IPNetwork(eventData).prefixlen) + " > " + \
-                    str(self.opts['maxnetblock']))
+                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                              str(self.opts['maxnetblock']))
                 return None
 
         if eventName == 'NETBLOCK_MEMBER' and self.opts['subnetlookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                 self.sf.debug("Network size bigger than permitted: " + \
-                    str(IPNetwork(eventData).prefixlen) + " > " + \
-                    str(self.opts['maxsubnet']))
+                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                              str(self.opts['maxsubnet']))
                 return None
 
         if eventName.startswith("NETBLOCK_"):

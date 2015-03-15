@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_whois
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
 #               modules (such as sfp_spider) and identifying e-mail addresses
@@ -9,10 +9,11 @@
 # Created:     06/04/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import pythonwhois
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_whois(SpiderFootPlugin):
     """Whois:Perform a WHOIS look-up on domain names and owned netblocks."""
@@ -43,7 +44,7 @@ class sfp_whois(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "DOMAIN_WHOIS", "NETBLOCK_WHOIS", "DOMAIN_REGISTRAR" ]
+        return ["DOMAIN_WHOIS", "NETBLOCK_WHOIS", "DOMAIN_REGISTRAR"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -75,8 +76,8 @@ class sfp_whois(SpiderFootPlugin):
 
         info = pythonwhois.parse.parse_raw_whois(data, True)
         if eventName == "DOMAIN_NAME" and info['registrar'] is not None:
-            evt = SpiderFootEvent("DOMAIN_REGISTRAR", info['registrar'][0], 
-                self.__name__, event)
+            evt = SpiderFootEvent("DOMAIN_REGISTRAR", info['registrar'][0],
+                                  self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_whois class

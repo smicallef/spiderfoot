@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_portscan_tcp
 # Purpose:      SpiderFoot plug-in for performing a basic TCP port scan of IP
 #               addresses identified.
@@ -9,7 +9,7 @@
 # Created:     20/02/2013
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
 import socket
@@ -17,31 +17,32 @@ import random
 import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_portscan_tcp(SpiderFootPlugin):
     """Port Scanner - TCP:Scans for commonly open TCP ports on Internet-facing systems."""
 
     # Default options
     opts = {
-                            # Commonly used ports on external-facing systems
-        'ports':            [ '21', '22', '23', '25', '53', '79', '80', '81', '88', '110','111', 
-                            '113', '119', '123', '137', '138', '139', '143', '161', '179',
-                            '389', '443', '445', '465', '512', '513', '514', '515', '3306',
-                            '5432', '1521', '2638', '1433', '3389', '5900', '5901', '5902',
-                            '5903', '5631', '631', '636',
-                            '990', '992', '993', '995', '1080', '8080', '8888', '9000' ],
-        'timeout':          15,
-        'maxthreads':       10,
-        'randomize':        True,
-        'netblockscan':     True,
-        'netblockscanmax':  24
+        # Commonly used ports on external-facing systems
+        'ports': ['21', '22', '23', '25', '53', '79', '80', '81', '88', '110', '111',
+                  '113', '119', '123', '137', '138', '139', '143', '161', '179',
+                  '389', '443', '445', '465', '512', '513', '514', '515', '3306',
+                  '5432', '1521', '2638', '1433', '3389', '5900', '5901', '5902',
+                  '5903', '5631', '631', '636',
+                  '990', '992', '993', '995', '1080', '8080', '8888', '9000'],
+        'timeout': 15,
+        'maxthreads': 10,
+        'randomize': True,
+        'netblockscan': True,
+        'netblockscanmax': 24
     }
 
     # Option descriptions
     optdescs = {
-        'maxthreads':   "Number of ports to try to open simultaneously (number of threads to spawn at once.)",
-        'ports':    "The TCP ports to scan. Prefix with an '@' to iterate through a file containing ports to try (one per line), e.g. @C:\ports.txt or @/home/bob/ports.txt. Or supply a URL to load the list from there.",
-        'timeout':  "Seconds before giving up on a port.",
-        'randomize':    "Randomize the order of ports scanned.",
+        'maxthreads': "Number of ports to try to open simultaneously (number of threads to spawn at once.)",
+        'ports': "The TCP ports to scan. Prefix with an '@' to iterate through a file containing ports to try (one per line), e.g. @C:\ports.txt or @/home/bob/ports.txt. Or supply a URL to load the list from there.",
+        'timeout': "Seconds before giving up on a port.",
+        'randomize': "Randomize the order of ports scanned.",
         'netblockscan': "Port scan all IPs within identified owned netblocks?",
         'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
@@ -58,8 +59,8 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
         if self.opts['ports'][0].startswith("http://") or \
-            self.opts['ports'][0].startswith("https://") or \
-            self.opts['ports'][0].startswith("@"):
+                self.opts['ports'][0].startswith("https://") or \
+                self.opts['ports'][0].startswith("@"):
             self.portlist = self.sf.optValueToData(self.opts['ports'][0])
         else:
             self.portlist = self.opts['ports']
@@ -78,7 +79,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER" ]
+        return ["TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER"]
 
     def tryPort(self, ip, port):
         try:
@@ -107,8 +108,8 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         # Spawn threads for scanning
         while i < len(portList):
             self.sf.info("Spawning thread to check port: " + str(portList[i]) + " on " + ip)
-            t.append(threading.Thread(name='sfp_portscan_tcp_' + str(portList[i]), 
-                target=self.tryPort, args=(ip, portList[i])))
+            t.append(threading.Thread(name='sfp_portscan_tcp_' + str(portList[i]),
+                                      target=self.tryPort, args=(ip, portList[i])))
             t[i].start()
             i += 1
 
@@ -133,7 +134,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                 self.notifyListeners(evt)
                 if resArray[cp] != "" and resArray[cp] != True:
                     bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", resArray[cp],
-                        self.__name__, evt)
+                                           self.__name__, evt)
                     self.notifyListeners(bevt)
 
 
@@ -155,7 +156,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
 
                 for ip in net:
                     ipaddr = str(ip)
-                    if ipaddr.split(".")[3] in [ '255', '0']:
+                    if ipaddr.split(".")[3] in ['255', '0']:
                         continue
                     if '255' in ipaddr.split("."):
                         continue
@@ -164,7 +165,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                 scanIps.append(eventData)
         except BaseException as e:
             self.sf.error("Strange netblock identified, unable to parse: " + \
-                eventData + " (" + str(e) + ")", False)
+                          eventData + " (" + str(e) + ")", False)
             return None
 
         for ipAddr in scanIps:
@@ -180,9 +181,9 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             for port in self.portlist:
                 if self.checkForStop():
                     return None
-                
+
                 if i < self.opts['maxthreads']:
-                    portArr.append(port)    
+                    portArr.append(port)
                     i += 1
                 else:
                     self.sendEvent(self.tryPortWrapper(ipAddr, portArr), event)

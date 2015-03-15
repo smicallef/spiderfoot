@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_social`
 # Purpose:      Identify the usage of popular social networks
 #
@@ -8,7 +8,7 @@
 # Created:     26/05/2013
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
@@ -16,21 +16,22 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 regexps = dict({
     "LinkedIn (Individual)": list(['.*linkedin.com/in/([a-zA-Z0-9_]+$)']),
     "LinkedIn (Company)": list(['.*linkedin.com/company/([a-zA-Z0-9_]+$)']),
-    "Github":           list(['.*github.com/([a-zA-Z0-9_]+)\/']),
-    "Google+":          list(['.*plus.google.com/([0-9]+$)']),
-    "Facebook":         list(['.*facebook.com/([a-zA-Z0-9_]+$)']),
-    "YouTube":          list(['.*youtube.com/([a-zA-Z0-9_]+$)']),
-    "Twitter":          list(['.*twitter.com/([a-zA-Z0-9_]{1,15}$)',
-                              '.*twitter.com/#!/([a-zA-Z0-9_]{1,15}$)'
-                        ]),
-    "SlideShare":       list(['.*slideshare.net/([a-zA-Z0-9_]+$)'])
+    "Github": list(['.*github.com/([a-zA-Z0-9_]+)\/']),
+    "Google+": list(['.*plus.google.com/([0-9]+$)']),
+    "Facebook": list(['.*facebook.com/([a-zA-Z0-9_]+$)']),
+    "YouTube": list(['.*youtube.com/([a-zA-Z0-9_]+$)']),
+    "Twitter": list(['.*twitter.com/([a-zA-Z0-9_]{1,15}$)',
+                     '.*twitter.com/#!/([a-zA-Z0-9_]{1,15}$)'
+                     ]),
+    "SlideShare": list(['.*slideshare.net/([a-zA-Z0-9_]+$)'])
 })
+
 
 class sfp_social(SpiderFootPlugin):
     """Social Networks:Identify presence on social media networks such as LinkedIn, Twitter and others."""
 
     # Default options
-    opts = { }
+    opts = {}
 
     # Option descriptions
     optdescs = {
@@ -57,7 +58,7 @@ class sfp_social(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "SOCIAL_MEDIA" ]
+        return ["SOCIAL_MEDIA"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -78,7 +79,7 @@ class sfp_social(SpiderFootPlugin):
                 if bits is not None:
                     self.sf.info("Matched " + regexpGrp + " in " + eventData)
                     evt = SpiderFootEvent("SOCIAL_MEDIA", regexpGrp + ": " + \
-                        bits.group(1), self.__name__, event)
+                                          bits.group(1), self.__name__, event)
                     self.notifyListeners(evt)
 
         return None

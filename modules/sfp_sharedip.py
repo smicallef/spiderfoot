@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_sharedip
 # Purpose:      Searches Bing and/or Robtex.com for hosts sharing the same IP.
 #
@@ -8,11 +8,12 @@
 # Created:     12/04/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_sharedip(SpiderFootPlugin):
     """Shared IP:Search Bing and/or Robtex.com for hosts sharing the same IP."""
@@ -44,13 +45,13 @@ class sfp_sharedip(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "IP_ADDRESS" ]
+        return ["IP_ADDRESS"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "CO_HOSTED_SITE", "SEARCH_ENGINE_WEB_CONTENT" ]
+        return ["CO_HOSTED_SITE", "SEARCH_ENGINE_WEB_CONTENT"]
 
     def validateIP(self, host, ip):
         try:
@@ -125,7 +126,8 @@ class sfp_sharedip(SpiderFootPlugin):
         # Bing
         if self.opts['source'].lower() == "bing":
             results = self.sf.bingIterate("ip:" + eventData, dict(limit=self.opts['pages'],
-                useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
+                                                                  useragent=self.opts['_useragent'],
+                                                                  timeout=self.opts['_fetchtimeout']))
             myres = list()
             if results is None:
                 self.sf.info("No data returned from Bing.")
@@ -151,8 +153,8 @@ class sfp_sharedip(SpiderFootPlugin):
                         myres.append(site)
 
                 # Submit the bing results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key], 
-                    self.__name__, event)
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key],
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_sharedip class

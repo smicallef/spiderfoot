@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_cookie
 # Purpose:      SpiderFoot plug-in for extracting cookies from HTTP headers.
 #
@@ -8,15 +8,16 @@
 # Created:     06/04/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_cookie(SpiderFootPlugin):
     """Cookies:Extract Cookies from HTTP headers."""
 
     # Default options
-    opts = { }
+    opts = {}
 
     results = dict()
 
@@ -35,7 +36,7 @@ class sfp_cookie(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "TARGET_WEB_COOKIE" ]
+        return ["TARGET_WEB_COOKIE"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -56,8 +57,8 @@ class sfp_cookie(SpiderFootPlugin):
             return None
 
         if eventData.has_key('set-cookie'):
-            evt = SpiderFootEvent("TARGET_WEB_COOKIE", eventData['set-cookie'], 
-                self.__name__, parentEvent)
+            evt = SpiderFootEvent("TARGET_WEB_COOKIE", eventData['set-cookie'],
+                                  self.__name__, parentEvent)
             self.notifyListeners(evt)
 
 # End of sfp_cookie class

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_websvr
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
 #               modules (such as sfp_spider) and identifying web servers used
@@ -9,15 +9,16 @@
 # Created:     06/04/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_websvr(SpiderFootPlugin):
     """Web Server:Obtain web server banners to identify versions of web servers being used."""
 
     # Default options
-    opts = { }
+    opts = {}
 
     results = dict()
 
@@ -36,7 +37,7 @@ class sfp_websvr(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "WEBSERVER_BANNER", "WEBSERVER_TECHNOLOGY" ]
+        return ["WEBSERVER_BANNER", "WEBSERVER_TECHNOLOGY"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -61,15 +62,15 @@ class sfp_websvr(SpiderFootPlugin):
         # possibly OS. This could also trigger additional tests, such as 404s
         # and other errors to see what the header looks like.
         if eventData.has_key('server'):
-            evt = SpiderFootEvent("WEBSERVER_BANNER", eventData['server'], 
-                self.__name__, parentEvent)
+            evt = SpiderFootEvent("WEBSERVER_BANNER", eventData['server'],
+                                  self.__name__, parentEvent)
             self.notifyListeners(evt)
 
             self.sf.info("Found web server: " + eventData['server'] + " (" + eventSource + ")")
 
         if eventData.has_key('x-powered-by'):
-            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", eventData['x-powered-by'], 
-                self.__name__, parentEvent)
+            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", eventData['x-powered-by'],
+                                  self.__name__, parentEvent)
             self.notifyListeners(evt)
             return None
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_virustotal
 # Purpose:      Query VirusTotal for identified IP addresses.
 #
@@ -8,22 +8,23 @@
 # Created:     21/03/2014
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 import time
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_virustotal(SpiderFootPlugin):
     """VirusTotal:Obtain information from VirusTotal about identified IP addresses."""
 
     # Default options
-    opts = { 
-        "apikey":   "",
-        "publicapi":    True,
+    opts = {
+        "apikey": "",
+        "publicapi": True,
         "checkcohosts": True,
-        "checkaffiliates":  True,
+        "checkaffiliates": True,
         'netblocklookup': True,
         'maxnetblock': 24,
         'subnetlookup': True,
@@ -32,8 +33,8 @@ class sfp_virustotal(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "apikey":   "Your VirusTotal API Key.",
-        "publicapi":    "Are you using a public key? If so SpiderFoot will pause for 15 seconds after each query to avoid VirusTotal dropping requests.",
+        "apikey": "Your VirusTotal API Key.",
+        "publicapi": "Are you using a public key? If so SpiderFoot will pause for 15 seconds after each query to avoid VirusTotal dropping requests.",
         "checkcohosts": "Check co-hosted sites?",
         "checkaffiliates": "Check affiliates?",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
@@ -60,15 +61,15 @@ class sfp_virustotal(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
-            "AFFILIATE_DOMAIN", "CO_HOSTED_SITE", "NETBLOCK_OWNER",
-            "NETBLOCK_MEMBER"]
+                "AFFILIATE_DOMAIN", "CO_HOSTED_SITE", "NETBLOCK_OWNER",
+                "NETBLOCK_MEMBER"]
 
     # What events this module produces
     def producedEvents(self):
         return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
-            "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-            "MALICIOUS_SUBNET" ]
+                "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
+                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
+                "MALICIOUS_SUBNET"]
 
     def query(self, qry):
         ret = None
@@ -79,7 +80,7 @@ class sfp_virustotal(SpiderFootPlugin):
             url = "https://www.virustotal.com/vtapi/v2/domain/report?domain=" + qry
 
         res = self.sf.fetchUrl(url + "&apikey=" + self.opts['apikey'],
-            timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+                               timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         # Public API is limited to 4 queries per minute
         if self.opts['publicapi']:
@@ -125,15 +126,15 @@ class sfp_virustotal(SpiderFootPlugin):
         if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.sf.debug("Network size bigger than permitted: " + \
-                    str(IPNetwork(eventData).prefixlen) + " > " + \
-                    str(self.opts['maxnetblock']))
+                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                              str(self.opts['maxnetblock']))
                 return None
 
         if eventName == 'NETBLOCK_MEMBER' and self.opts['subnetlookup']:
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                 self.sf.debug("Network size bigger than permitted: " + \
-                    str(IPNetwork(eventData).prefixlen) + " > " + \
-                    str(self.opts['maxsubnet']))
+                              str(IPNetwork(eventData).prefixlen) + " > " + \
+                              str(self.opts['maxsubnet']))
                 return None
 
         qrylist = list()
@@ -153,7 +154,7 @@ class sfp_virustotal(SpiderFootPlugin):
                 continue
             if info.has_key('detected_urls'):
                 self.sf.info("Found VirusTotal URL data for " + addr)
-                if eventName in [ "IP_ADDRESS" ] or eventName.startswith("NETBLOCK_"):
+                if eventName in ["IP_ADDRESS"] or eventName.startswith("NETBLOCK_"):
                     evt = "MALICIOUS_IPADDR"
                     infotype = "ip-address"
 
@@ -174,11 +175,11 @@ class sfp_virustotal(SpiderFootPlugin):
                     infotype = "domain"
 
                 infourl = "<SFURL>https://www.virustotal.com/en/" + infotype + "/" + \
-                    addr + "/information/</SFURL>"
-    
+                          addr + "/information/</SFURL>"
+
                 # Notify other modules of what you've found
                 e = SpiderFootEvent(evt, "VirusTotal [" + addr + "]\n" + \
-                    infourl, self.__name__, event)
+                                    infourl, self.__name__, event)
                 self.notifyListeners(e)
 
 # End of sfp_virustotal class

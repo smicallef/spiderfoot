@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_adblock
 # Purpose:      SpiderFoot plug-in to test if external/internally linked pages
 #               would be blocked by AdBlock Plus.
@@ -9,17 +9,18 @@
 # Created:     22/09/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import adblockparser
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_adblock(SpiderFootPlugin):
     """AdBlock Check: Check if linked pages would be blocked by AdBlock Plus."""
 
     # Default options
-    opts = { 
-        "blocklist": "https://easylist-downloads.adblockplus.org/easylist.txt" 
+    opts = {
+        "blocklist": "https://easylist-downloads.adblockplus.org/easylist.txt"
     }
 
     optdescs = {
@@ -47,7 +48,7 @@ class sfp_adblock(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "URL_ADBLOCKED_INTERNAL", "URL_ADBLOCKED_EXTERNAL" ]
+        return ["URL_ADBLOCKED_INTERNAL", "URL_ADBLOCKED_EXTERNAL"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -72,7 +73,7 @@ class sfp_adblock(SpiderFootPlugin):
                     self.sf.error("Parsing error handling AdBlock list: " + str(e), False)
             else:
                 self.sf.error("Unable to download AdBlockPlus list: " + \
-                    self.opts['blocklist'])
+                              self.opts['blocklist'])
 
         if "_EXTERNAL" in eventName:
             pagetype = "_EXTERNAL"
@@ -88,7 +89,7 @@ class sfp_adblock(SpiderFootPlugin):
         try:
             if self.rules and self.rules.should_block(eventData):
                 evt = SpiderFootEvent("URL_ADBLOCKED" + pagetype, eventData,
-                    self.__name__, event.sourceEvent)
+                                      self.__name__, event.sourceEvent)
                 self.notifyListeners(evt)
         except BaseException as e:
             self.sf.error("Parsing error handling AdBlock list: " + str(e), False)

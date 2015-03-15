@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_yahoosearch
 # Purpose:      Searches Yahoo for content related to the domain in question.
 #
@@ -8,25 +8,26 @@
 # Created:     12/04/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_yahoosearch(SpiderFootPlugin):
     """Yahoo:Some light Yahoo scraping to identify sub-domains and links."""
 
     # Default options
     opts = {
-        'fetchlinks':   True,   # Should we fetch links on the base domain?
-        'pages':        20      # Number of yahoo results pages to iterate
+        'fetchlinks': True,  # Should we fetch links on the base domain?
+        'pages': 20  # Number of yahoo results pages to iterate
     }
 
     # Option descriptions
     optdescs = {
         'fetchlinks': "Fetch links found on the target domain-name?",
-        'pages':    "Number of Yahoo results pages to iterate through."
+        'pages': "Number of Yahoo results pages to iterate through."
     }
 
     results = list()
@@ -40,13 +41,13 @@ class sfp_yahoosearch(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "INTERNET_NAME" ]
+        return ["INTERNET_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT" ]
+        return ["LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT"]
 
     def yahooCleaner(self, string):
         return " url=\"" + urllib.unquote(string.group(1)) + "\" "
@@ -64,7 +65,8 @@ class sfp_yahoosearch(SpiderFootPlugin):
 
         # Sites hosted on the domain
         pages = self.sf.yahooIterate("site:" + eventData, dict(limit=self.opts['pages'],
-            useragent=self.opts['_useragent'], timeout=self.opts['_fetchtimeout']))
+                                                               useragent=self.opts['_useragent'],
+                                                               timeout=self.opts['_fetchtimeout']))
         if pages is None:
             self.sf.info("No results returned from Yahoo.")
             return None
@@ -82,8 +84,8 @@ class sfp_yahoosearch(SpiderFootPlugin):
             content = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner, pages[page])
 
             # Submit the yahoo results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", content, 
-                self.__name__, event)
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", content,
+                                  self.__name__, event)
             self.notifyListeners(evt)
 
             # We can optionally fetch links to our domain found in the search
@@ -103,8 +105,8 @@ class sfp_yahoosearch(SpiderFootPlugin):
                         if self.checkForStop():
                             return None
 
-                        evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, 
-                            self.__name__, event)
+                        evt = SpiderFootEvent("LINKED_URL_INTERNAL", link,
+                                              self.__name__, event)
                         self.notifyListeners(evt)
 
 # End of sfp_yahoosearch class

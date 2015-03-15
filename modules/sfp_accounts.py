@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_accounts`
 # Purpose:      Identify the existence of a given acount on various sites.
 #
@@ -8,23 +8,29 @@
 # Created:     18/02/2015
 # Copyright:   (c) Steve Micallef 2015
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 externals = [
-"YouTube","Wikipedia","LinkedIn","Twitter","Ebay","Tumblr","Pinterest","Blogger","Flickr","Wordpress","DailyMotion","reddit","Cnet","vimeo","SlideShare","ThemeForest","DeviantArt","LiveJournal","Yelp","StumbleUpon","askfm","Sourceforge","WikiHow","soundcloud","Photobucket","weebly","scribd","ImageShack","Disqus","Tagged","tinyurl","TMZ","Elance","Typepad","foursquare","steam","MySpace","Gawker","Gamespot","MetaCafe","LastFM","hi5","myfitnesspal","Delicious","Dribbble","Gravatar","Crunchbase","FriendFeed","Technorati","Slashdot","Metacritic","uservoice","BitLy"
+    "YouTube", "Wikipedia", "LinkedIn", "Twitter", "Ebay", "Tumblr", "Pinterest", "Blogger", "Flickr", "Wordpress",
+    "DailyMotion", "reddit", "Cnet", "vimeo", "SlideShare", "ThemeForest", "DeviantArt", "LiveJournal", "Yelp",
+    "StumbleUpon", "askfm", "Sourceforge", "WikiHow", "soundcloud", "Photobucket", "weebly", "scribd", "ImageShack",
+    "Disqus", "Tagged", "tinyurl", "TMZ", "Elance", "Typepad", "foursquare", "steam", "MySpace", "Gawker", "Gamespot",
+    "MetaCafe", "LastFM", "hi5", "myfitnesspal", "Delicious", "Dribbble", "Gravatar", "Crunchbase", "FriendFeed",
+    "Technorati", "Slashdot", "Metacritic", "uservoice", "BitLy"
 ]
+
 
 class sfp_accounts(SpiderFootPlugin):
     """Accounts:Look for possible associated accounts on over 50 websites like Ebay, Slashdot, reddit, etc."""
 
     # Default options
-    opts = { 
-        "generic":  [ "root", "abuse", "sysadm", "sysadmin", "noc", "support", "admin",
-                      "contact", "help", "flame", "test", "info", "sales", "hostmaster" ],
-        "ignoredict":   True
+    opts = {
+        "generic": ["root", "abuse", "sysadm", "sysadmin", "noc", "support", "admin",
+                    "contact", "help", "flame", "test", "info", "sales", "hostmaster"],
+        "ignoredict": True
     }
 
     # Option descriptions
@@ -58,7 +64,7 @@ class sfp_accounts(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "ACCOUNT_EXTERNAL_OWNED", "ACCOUNT_EXTERNAL_USER_SHARED" ]
+        return ["ACCOUNT_EXTERNAL_OWNED", "ACCOUNT_EXTERNAL_USER_SHARED"]
 
     def checkSites(self, name):
         global externals
@@ -69,18 +75,18 @@ class sfp_accounts(SpiderFootPlugin):
                 return None
 
             url = "http://checkusernames.com/usercheckv2.php?target=" + site + \
-                "&username=" + name + "&time=" + str(int(time.time())*100) + "1"
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
-                useragent=self.opts['_useragent'], 
-                headers={ 
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Referer": "http://www.checkusernames.com/"
-                }
-            )
+                  "&username=" + name + "&time=" + str(int(time.time()) * 100) + "1"
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
+                                   useragent=self.opts['_useragent'],
+                                   headers={
+                                       "X-Requested-With": "XMLHttpRequest",
+                                       "Referer": "http://www.checkusernames.com/"
+                                   }
+                                   )
 
             if res['content'] is None:
                 self.sf.debug("Unable to check the status of account " + name \
-                    + " on " + site)
+                              + " on " + site)
             else:
                 if "Sorry," in res['content']:
                     ret.append(site)
@@ -110,7 +116,7 @@ class sfp_accounts(SpiderFootPlugin):
 
             for site in sites:
                 evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", kw + " (" + site + ")",
-                    self.__name__, event)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
             return None
 
@@ -128,7 +134,7 @@ class sfp_accounts(SpiderFootPlugin):
             if "." in name:
                 # steve.micallef -> smicallef
                 users.append(name[0] + name.split(".")[1])
-                
+
             for user in users:
                 sites = self.checkSites(user)
                 if sites is None:
@@ -136,7 +142,7 @@ class sfp_accounts(SpiderFootPlugin):
 
                 for site in sites:
                     evt = SpiderFootEvent("ACCOUNT_EXTERNAL_USER_SHARED", user + " (" + site + ")",
-                        self.__name__, event)
+                                          self.__name__, event)
                     self.notifyListeners(evt)
 
 # End of sfp_accounts class

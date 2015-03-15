@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_geoip
 # Purpose:      SpiderFoot plug-in to identify the Geo-location of IP addresses
 #               identified by other modules.
@@ -9,16 +9,17 @@
 # Created:     18/02/2013
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_geoip(SpiderFootPlugin):
     """GeoIP:Identifies the physical location of IP addresses identified."""
 
     # Default options
-    opts = { }
+    opts = {}
     results = dict()
 
     def setup(self, sfc, userOpts=dict()):
@@ -36,7 +37,7 @@ class sfp_geoip(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "GEOINFO" ]
+        return ["GEOINFO"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -54,7 +55,7 @@ class sfp_geoip(SpiderFootPlugin):
             self.results[eventData] = True
 
         res = self.sf.fetchUrl("http://freegeoip.net/json/" + eventData,
-            timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                               timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] is None:
             self.sf.info("No GeoIP info found for " + eventData)
         try:

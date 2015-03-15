@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-----------------------------------------------------------------
+# -----------------------------------------------------------------
 # Name:         sfscan
 # Purpose:      Scanning control functionality
 #
@@ -8,7 +8,7 @@
 # Created:      11/03/2013
 # Copyright:    (c) Steve Micallef 2013
 # License:      GPL
-#-----------------------------------------------------------------
+# -----------------------------------------------------------------
 import traceback
 import time
 import sys
@@ -30,12 +30,12 @@ class SpiderFootScanner(threading.Thread):
     temp = None
 
     # moduleOpts not yet used
-    def __init__(self, scanName, scanTarget, targetType, scanId, moduleList, 
-        globalOpts, moduleOpts):
+    def __init__(self, scanName, scanTarget, targetType, scanId, moduleList,
+                 globalOpts, moduleOpts):
 
         # Initialize the thread
-        threading.Thread.__init__(self, name="SF_"+scanName+\
-            str(random.randint(100000, 999999)))
+        threading.Thread.__init__(self, name="SF_" + scanName + \
+                                             str(random.randint(100000, 999999)))
 
         # Temporary data to be used in startScan
         self.temp = dict()
@@ -50,7 +50,7 @@ class SpiderFootScanner(threading.Thread):
     def setStatus(self, status, started=None, ended=None):
         if self.ts is None:
             print "Internal Error: Status set attempted before " + \
-                "SpiderFootScanner was ready."
+                  "SpiderFootScanner was ready."
             exit(-1)
 
         self.ts.status = status
@@ -86,16 +86,16 @@ class SpiderFootScanner(threading.Thread):
 
         # Create a unique ID for this scan and create it in the back-end DB.
         self.ts.sf.setGUID(self.ts.scanId)
-        self.ts.dbh.scanInstanceCreate(self.ts.scanId, 
-            self.ts.scanName, self.ts.targetValue)
+        self.ts.dbh.scanInstanceCreate(self.ts.scanId,
+                                       self.ts.scanName, self.ts.targetValue)
         self.setStatus("STARTING", time.time() * 1000, None)
         # Create our target
         target = SpiderFootTarget(self.ts.targetValue, self.ts.targetType)
-        
+
         # Save the config current set for this scan
         self.ts.config['_modulesenabled'] = self.ts.moduleList
-        self.ts.dbh.scanConfigSet(self.ts.scanId, 
-            self.ts.sf.configSerialize(deepcopy(self.ts.config)))
+        self.ts.dbh.scanConfigSet(self.ts.scanId,
+                                  self.ts.sf.configSerialize(deepcopy(self.ts.config)))
 
         self.ts.sf.status("Scan [" + self.ts.scanId + "] initiated.")
         # moduleList = list of modules the user wants to run
@@ -117,14 +117,14 @@ class SpiderFootScanner(threading.Thread):
                     socksType = socks.PROXY_TYPE_SOCKS5
                     socksUsername = self.ts.config['_socks4user']
                     socksPassword = self.ts.config['_socks5pwd']
-                    
+
                 if self.ts.config['_socks1type'] == 'HTTP':
                     socksType = socks.PROXY_TYPE_HTTP
-                   
+
                 self.ts.sf.debug("SOCKS: " + socksAddr + ":" + str(socksPort) + \
-                    "(" + socksUsername + ":" + socksPassword + ")")
-                socks.setdefaultproxy(socksType, socksAddr, socksPort, 
-                    socksDns, socksUsername, socksPassword)
+                                 "(" + socksUsername + ":" + socksPassword + ")")
+                socks.setdefaultproxy(socksType, socksAddr, socksPort,
+                                      socksDns, socksUsername, socksPassword)
 
                 # Override the default socket and getaddrinfo calls with the 
                 # SOCKS ones
@@ -133,11 +133,11 @@ class SpiderFootScanner(threading.Thread):
                 socket.getaddrinfo = socks.getaddrinfo
 
                 self.ts.sf.updateSocket(socket)
-            
+
             # Override the default DNS server
             if self.ts.config['_dnsserver'] != "":
                 res = dns.resolver.Resolver()
-                res.nameservers = [ self.ts.config['_dnsserver'] ]
+                res.nameservers = [self.ts.config['_dnsserver']]
                 dns.resolver.override_system_resolver(res)
             else:
                 dns.resolver.restore_system_resolver()
@@ -147,8 +147,8 @@ class SpiderFootScanner(threading.Thread):
                 self.ts.config['_useragent'])
 
             # Get internet TLDs
-            tlddata = self.ts.sf.cacheGet("internet_tlds", 
-                self.ts.config['_internettlds_cache'])
+            tlddata = self.ts.sf.cacheGet("internet_tlds",
+                                          self.ts.config['_internettlds_cache'])
             # If it wasn't loadable from cache, load it from scratch
             if tlddata is None:
                 self.ts.config['_internettlds'] = self.ts.sf.optValueToData(
@@ -161,8 +161,8 @@ class SpiderFootScanner(threading.Thread):
                 if modName == '':
                     continue
 
-                module = __import__('modules.' + modName, globals(), locals(), 
-                    [modName])
+                module = __import__('modules.' + modName, globals(), locals(),
+                                    [modName])
                 mod = getattr(module, modName)()
                 mod.__name__ = modName
 
@@ -172,7 +172,7 @@ class SpiderFootScanner(threading.Thread):
                 for opt in self.ts.config.keys():
                     self.ts.modconfig[modName][opt] = deepcopy(self.ts.config[opt])
 
-                mod.clearListeners() # clear any listener relationships from the past
+                mod.clearListeners()  # clear any listener relationships from the past
                 mod.setup(self.ts.sf, self.ts.modconfig[modName])
                 mod.setDbh(self.ts.dbh)
                 mod.setScanId(self.ts.scanId)
@@ -221,8 +221,8 @@ class SpiderFootScanner(threading.Thread):
             # Create the "ROOT" event which un-triggered modules will link events to
             rootEvent = SpiderFootEvent("ROOT", "", "", None)
             psMod.notifyListeners(rootEvent)
-            firstEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue, 
-                "SpiderFoot UI", rootEvent)
+            firstEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue,
+                                         "SpiderFoot UI", rootEvent)
             psMod.notifyListeners(firstEvent)
 
             # Check in case the user requested to stop the scan between modules 
@@ -242,8 +242,8 @@ class SpiderFootScanner(threading.Thread):
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.ts.sf.error("Unhandled exception (" + e.__class__.__name__ + ") " + \
-                "encountered during scan. Please report this as a bug: " + \
-                repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
+                             "encountered during scan. Please report this as a bug: " + \
+                             repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
             self.ts.sf.status("Scan [" + self.ts.scanId + "] failed: " + str(e))
             self.setStatus("ERROR-FAILED", None, time.time() * 1000)
 

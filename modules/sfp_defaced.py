@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_defaced
 # Purpose:      Checks if a domain or IP appears on the zone-h.org defacement
 #               archive.
@@ -9,17 +9,18 @@
 # Created:     09/01/2014
 # Copyright:   (c) Steve Micallef, 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import time
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_defaced(SpiderFootPlugin):
     """Defacement Check:Check if an IP or domain appears on the zone-h.org defacement archive."""
 
     # Default options
-    opts = { 
+    opts = {
         'daysback': 30,
         'checkcohosts': True,
         'checkaffiliates': True
@@ -28,7 +29,7 @@ class sfp_defaced(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'daysback': "Ignore defacements older than this many days.",
-        'checkcohosts': "Check co-hosted sites?",   
+        'checkcohosts': "Check co-hosted sites?",
         'checkaffiliates': "Check affiliates?"
     }
 
@@ -51,16 +52,16 @@ class sfp_defaced(SpiderFootPlugin):
     # * = be notified about all events.
     def watchedEvents(self):
         return ["INTERNET_NAME", "IP_ADDRESS",
-            "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
-            "CO_HOSTED_SITE" ]
+                "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
+                "CO_HOSTED_SITE"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "DEFACED_INTERNET_NAME", "DEFACED_IPADDR", 
-            "DEFACED_AFFILIATE_INTERNET_NAME", 
-            "DEFACED_COHOST", "DEFACED_AFFILIATE_IPADDR" ]
+        return ["DEFACED_INTERNET_NAME", "DEFACED_IPADDR",
+                "DEFACED_AFFILIATE_INTERNET_NAME",
+                "DEFACED_COHOST", "DEFACED_AFFILIATE_IPADDR"]
 
     def lookupItem(self, target, typeId):
         found = False
@@ -75,14 +76,14 @@ class sfp_defaced(SpiderFootPlugin):
             self.sf.error("CAPTCHA returned from zone-h.org.", False)
             return None
 
-        rx = re.compile("<td>(\d+/\d+/\d+)</td>", re.IGNORECASE|re.DOTALL)
+        rx = re.compile("<td>(\d+/\d+/\d+)</td>", re.IGNORECASE | re.DOTALL)
         grps = re.findall(rx, res['content'])
         for m in grps:
             self.sf.debug("Found defaced site: " + target + "(" + typeId + ")")
             found = True
             # Zone-H returns in YYYY/MM/DD
             date = m.replace('/', '')
-            if int(date) < int(curDate)-30:
+            if int(date) < int(curDate) - 30:
                 self.sf.debug("Defaced site found but too old: " + date)
                 found = False
                 continue
@@ -109,7 +110,7 @@ class sfp_defaced(SpiderFootPlugin):
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
             return None
         if eventName == 'AFFILIATE_INTERNET_NAME' or eventName == 'AFFILIATE_IPADDR' \
-            and not self.opts['checkaffiliates']:
+                and not self.opts['checkaffiliates']:
             return None
 
         evtType = 'DEFACED_INTERNET_NAME'

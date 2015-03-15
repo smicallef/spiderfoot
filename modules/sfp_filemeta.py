@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_filemeta
 # Purpose:      From Spidering and from searching search engines, extracts file
 #               meta data from files matching certain file extensions.
@@ -9,7 +9,7 @@
 # Created:     25/04/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import mimetypes
 import metapdf
@@ -18,19 +18,20 @@ import exifread
 from StringIO import StringIO
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_filemeta(SpiderFootPlugin):
     """File Metadata:Extracts meta data from documents and images."""
 
     # Default options
     opts = {
-        'fileexts':     [ "docx", "pptx", 'xlsx', 'pdf', 'jpg', 'jpeg', 'tiff', 'tif' ],
-        'timeout':      300
+        'fileexts': ["docx", "pptx", 'xlsx', 'pdf', 'jpg', 'jpeg', 'tiff', 'tif'],
+        'timeout': 300
     }
 
     # Option descriptions
     optdescs = {
         'fileexts': "File extensions of files you want to analyze the meta data of (only PDF, DOCX, XLSX and PPTX are supported.)",
-        'timeout':  "Download timeout for files, in seconds."
+        'timeout': "Download timeout for files, in seconds."
     }
 
     results = list()
@@ -44,13 +45,13 @@ class sfp_filemeta(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "LINKED_URL_INTERNAL", "INTERESTING_FILE" ]
+        return ["LINKED_URL_INTERNAL", "INTERESTING_FILE"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "RAW_FILE_META_DATA", "SOFTWARE_USED" ]
+        return ["RAW_FILE_META_DATA", "SOFTWARE_USED"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -72,16 +73,16 @@ class sfp_filemeta(SpiderFootPlugin):
             if "." + fileExt.lower() in eventData.lower():
                 # Fetch the file, allow much more time given that these files are
                 # typically large.
-                ret = self.sf.fetchUrl(eventData, timeout=self.opts['timeout'], 
-                    useragent=self.opts['_useragent'], dontMangle=True)
+                ret = self.sf.fetchUrl(eventData, timeout=self.opts['timeout'],
+                                       useragent=self.opts['_useragent'], dontMangle=True)
                 if ret['content'] is None:
                     self.sf.error("Unable to fetch file for meta analysis: " + \
-                        eventData, False)
+                                  eventData, False)
                     return None
 
                 if len(ret['content']) < 512:
                     self.sf.error("Strange content encountered, size of " + \
-                        str(len(ret['content'])), False)
+                                  str(len(ret['content'])), False)
 
                 meta = None
                 data = None
@@ -94,9 +95,9 @@ class sfp_filemeta(SpiderFootPlugin):
                         self.sf.debug("Obtained meta data from " + eventData)
                     except BaseException as e:
                         self.sf.error("Unable to parse meta data from: " + \
-                            eventData + "(" + str(e) + ")", False)
+                                      eventData + "(" + str(e) + ")", False)
 
-                if fileExt.lower() in [ "pptx", "docx", "xlsx" ]:
+                if fileExt.lower() in ["pptx", "docx", "xlsx"]:
                     try:
                         mtype = mimetypes.guess_type(eventData)[0]
                         doc = openxmllib.openXmlDocument(data=ret['content'], mime_type=mtype)
@@ -105,15 +106,15 @@ class sfp_filemeta(SpiderFootPlugin):
                         meta = str(data)
                     except ValueError as e:
                         self.sf.error("Unable to parse meta data from: " + \
-                            eventData + "(" + str(e) + ")", False)
+                                      eventData + "(" + str(e) + ")", False)
                     except lxml.etree.XMLSyntaxError as e:
                         self.sf.error("Unable to parse XML within: " + \
-                            eventData + "(" + str(e) + ")", False)
+                                      eventData + "(" + str(e) + ")", False)
                     except BaseException as e:
                         self.sf.error("Unable to process file: " + \
-                            eventData + "(" + str(e) + ")", False)
+                                      eventData + "(" + str(e) + ")", False)
 
-                if fileExt.lower() in [ "jpg", "jpeg", "tiff" ]:
+                if fileExt.lower() in ["jpg", "jpeg", "tiff"]:
                     try:
                         raw = StringIO(ret['content'])
                         data = exifread.process_file(raw)
@@ -122,11 +123,11 @@ class sfp_filemeta(SpiderFootPlugin):
                         meta = str(data)
                     except BaseException as e:
                         self.sf.error("Unable to parse meta data from: " + \
-                            eventData + "(" + str(e) + ")", False)
+                                      eventData + "(" + str(e) + ")", False)
 
                 if meta is not None:
                     evt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
-                        self.__name__, event)
+                                          self.__name__, event)
                     self.notifyListeners(evt)
 
                     val = None
@@ -147,7 +148,7 @@ class sfp_filemeta(SpiderFootPlugin):
                         # Strip non-ASCII
                         val = ''.join([i if ord(i) < 128 else ' ' for i in val])
                         evt = SpiderFootEvent("SOFTWARE_USED", val,
-                            self.__name__, event)
+                                              self.__name__, event)
                         self.notifyListeners(evt)
 
 # End of sfp_filemeta class

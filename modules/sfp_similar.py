@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_similar
 # Purpose:      SpiderFoot plug-in for identifying domains that look similar
 #               to the one being queried.
@@ -9,7 +9,7 @@
 # Created:     06/04/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 import time
@@ -38,21 +38,22 @@ whoisUrlN = "http://www.whois.net/domain-keyword-search/{0}/{1}"
 whoisLastPageIndicator = "Next >"
 whoisIncrement = 16
 
+
 class sfp_similar(SpiderFootPlugin):
     """Similar Domains:Search various sources to identify similar looking domain names."""
 
     # Default options
     opts = {
-        'source':       'ALL', # domaintools, namedroppers or ALL
-        'method':       'left,right', # left and/or right (doesn't apply to whois.com)
-        'activeonly':   True # Only report domains that have content (try to fetch the page)
+        'source': 'ALL',  # domaintools, namedroppers or ALL
+        'method': 'left,right',  # left and/or right (doesn't apply to whois.com)
+        'activeonly': True  # Only report domains that have content (try to fetch the page)
     }
 
     # Option descriptions
     optdescs = {
-        'source':       "Provider to use: 'domaintools', 'namedroppers' or 'ALL'.",
-        'method':       "Pattern search method to use: 'left,right', 'left' or 'right'.",
-        'activeonly':   "Only report domains that have content (try to fetch the page)?"
+        'source': "Provider to use: 'domaintools', 'namedroppers' or 'ALL'.",
+        'method': "Pattern search method to use: 'left,right', 'left' or 'right'.",
+        'activeonly': "Only report domains that have content (try to fetch the page)?"
     }
 
     # Internal results tracking
@@ -66,21 +67,20 @@ class sfp_similar(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def findDomains(self, keyword, content):
-        pat = re.compile("([a-z0-9\-]*" + keyword + "[a-z0-9\-]*\.[a-z]+)",
-            re.IGNORECASE)
+        pat = re.compile("([a-z0-9\-]*" + keyword + "[a-z0-9\-]*\.[a-z]+)", re.IGNORECASE)
         matches = re.findall(pat, content)
 
         return matches
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "INTERNET_NAME" ]
+        return ["INTERNET_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "SIMILARDOMAIN" ]
+        return ["SIMILARDOMAIN"]
 
     # Fetch and loop through Whois.com results, updating our results data. Stop
     # once we've reached the end.
@@ -99,8 +99,8 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            whois = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
-                useragent=self.opts['_useragent'])
+            whois = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'],
+                                     useragent=self.opts['_useragent'])
             if whois['content'] is None:
                 return None
 
@@ -121,7 +121,7 @@ class sfp_similar(SpiderFootPlugin):
 
     def scrapeDomaintools(self, keyword, position, sourceEvent):
         reachedEnd = False
-        i = 1 # Using 0 will cause the first page to appear twice
+        i = 1  # Using 0 will cause the first page to appear twice
         while not reachedEnd:
             if position == "LEFT":
                 fetchPage = domtoolUrlLeft.format(keyword, i)
@@ -131,8 +131,8 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            domtool = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
-                useragent=self.opts['_useragent'])
+            domtool = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'],
+                                       useragent=self.opts['_useragent'])
             if domtool['content'] is None:
                 return None
 
@@ -156,7 +156,7 @@ class sfp_similar(SpiderFootPlugin):
 
     def scrapeNamedroppers(self, keyword, position, sourceEvent):
         reachedEnd = False
-        i = 1 # Using 0 will cause the first page to appear twice
+        i = 1  # Using 0 will cause the first page to appear twice
         while not reachedEnd:
             if position == "LEFT":
                 fetchPage = namedropUrlLeft.format(keyword, i)
@@ -166,8 +166,8 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            namedrop = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
-                useragent=self.opts['_useragent'])
+            namedrop = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'],
+                                        useragent=self.opts['_useragent'])
             if namedrop['content'] is None:
                 return None
 
@@ -196,8 +196,8 @@ class sfp_similar(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            pageContent = self.sf.fetchUrl('http://' + result, 
-                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+            pageContent = self.sf.fetchUrl('http://' + result,
+                                           timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
             if pageContent['content'] is not None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
                 self.notifyListeners(evt)

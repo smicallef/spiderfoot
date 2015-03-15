@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_malcheck
 # Purpose:      Checks if an ASN, IP or domain is malicious.
 #
@@ -8,7 +8,7 @@
 # Created:     14/12/2013
 # Copyright:   (c) Steve Micallef, 2013
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
 import re
@@ -19,7 +19,7 @@ malchecks = {
         'id': 'abusezeusdomain',
         'type': 'list',
         'checks': ['domain'],
-        'url':  'https://zeustracker.abuse.ch/blocklist.php?download=baddomains'
+        'url': 'https://zeustracker.abuse.ch/blocklist.php?download=baddomains'
     },
     'abuse.ch Zeus Tracker (IP)': {
         'id': 'abusezeusip',
@@ -31,34 +31,34 @@ malchecks = {
         'id': 'abusespydomain',
         'type': 'list',
         'checks': ['domain'],
-        'url':  'https://spyeyetracker.abuse.ch/blocklist.php?download=domainblocklist'
+        'url': 'https://spyeyetracker.abuse.ch/blocklist.php?download=domainblocklist'
     },
     'abuse.ch SpyEye Tracker (IP)': {
         'id': 'abusespyip',
         'type': 'list',
         'checks': ['ip', 'netblock'],
-        'url':  'https://spyeyetracker.abuse.ch/blocklist.php?download=ipblocklist'
+        'url': 'https://spyeyetracker.abuse.ch/blocklist.php?download=ipblocklist'
     },
     'abuse.ch Palevo Tracker (Domain)': {
         'id': 'abusepalevodomain',
         'type': 'list',
         'checks': ['domain'],
-        'url':  'https://palevotracker.abuse.ch/blocklists.php?download=domainblocklist'
+        'url': 'https://palevotracker.abuse.ch/blocklists.php?download=domainblocklist'
     },
     'abuse.ch Palevo Tracker (IP)': {
         'id': 'abusepalevoip',
         'type': 'list',
         'checks': ['ip', 'netblock'],
-        'url':  'https://palevotracker.abuse.ch/blocklists.php?download=ipblocklist'
+        'url': 'https://palevotracker.abuse.ch/blocklists.php?download=ipblocklist'
     },
     'Google SafeBrowsing (Domain/IP)': {
         'id': 'googledomain',
         'type': 'query',
-        'checks': ['domain', 'ip' ],
+        'checks': ['domain', 'ip'],
         'url': 'http://www.google.com/safebrowsing/diagnostic?site={0}',
-        'badregex': [ '.*may harm your computer.*',
-            '.*this site has hosted malicious software.*'
-        ],
+        'badregex': ['.*may harm your computer.*',
+                     '.*this site has hosted malicious software.*'
+                     ],
         'goodregex': []
     },
     'Google SafeBrowsing (ASN)': {
@@ -66,9 +66,9 @@ malchecks = {
         'type': 'query',
         'checks': ['asn'],
         'url': 'http://www.google.com/safebrowsing/diagnostic?site=AS:{0}',
-        'badregex': [ '.*for example.*, that appeared to function as intermediaries.*',
-            '.*this network has hosted sites that have distributed malicious.*'
-        ],
+        'badregex': ['.*for example.*, that appeared to function as intermediaries.*',
+                     '.*this network has hosted sites that have distributed malicious.*'
+                     ],
         'goodregex': []
     },
     'McAfee Site Advisor': {
@@ -116,91 +116,92 @@ malchecks = {
     'TOR Node List': {
         'id': 'tornodes',
         'type': 'list',
-        'checks': [ 'ip', 'netblock' ],
+        'checks': ['ip', 'netblock'],
         'url': 'http://torstatus.blutmagie.de/ip_list_all.php/Tor_ip_list_ALL.csv'
     },
     'blocklist.de List': {
         'id': 'blocklistde',
         'type': 'list',
-        'checks': [ 'ip', 'netblock' ],
+        'checks': ['ip', 'netblock'],
         'url': 'http://lists.blocklist.de/lists/all.txt'
     },
     'Autoshun.org List': {
         'id': 'autoshun',
         'type': 'list',
-        'checks': [ 'ip', 'netblock' ],
+        'checks': ['ip', 'netblock'],
         'url': 'http://www.autoshun.org/files/shunlist.csv',
         'regex': '{0},.*'
     },
     'Internet Storm Center': {
         'id': 'isc',
         'type': 'query',
-        'checks': [ 'ip' ],
+        'checks': ['ip'],
         'url': 'https://isc.sans.edu/api/ip/{0}',
-        'badregex': [ '.*attacks.*' ],
+        'badregex': ['.*attacks.*'],
         'goodregex': []
     },
     'AlienVault IP Reputation Database': {
         'id': 'alienvault',
         'type': 'list',
-        'checks': [ 'ip', 'netblock' ],
+        'checks': ['ip', 'netblock'],
         'url': 'https://reputation.alienvault.com/reputation.generic',
         'regex': '{0} #.*'
     },
     'OpenBL.org Blacklist': {
         'id': 'openbl',
         'type': 'list',
-        'checks': [ 'ip', 'netblock' ],
+        'checks': ['ip', 'netblock'],
         'url': 'http://www.openbl.org/lists/base.txt'
     },
     'ThreatExpert.com Database': {
         'id': 'threatexpert',
         'type': 'query',
-        'checks': [ 'ip', 'domain' ],
+        'checks': ['ip', 'domain'],
         'url': 'http://www.threatexpert.com/reports.aspx?find={0}&tf=3',
-        'badregex': [ '.*<strong>Findings</strong>.*' ],
+        'badregex': ['.*<strong>Findings</strong>.*'],
         'goodregex': []
     },
     'TotalHash.com Database': {
         'id': 'totalhash',
         'type': 'query',
-        'checks': [ 'ip', 'domain' ],
+        'checks': ['ip', 'domain'],
         'url': 'http://totalhash.com/search/dnsrr:*{0}%20or%20ip:{0}',
-        'badregex': [ '.*<a href=\"/analysis.*' ],
+        'badregex': ['.*<a href=\"/analysis.*'],
         'goodregex': []
     },
     'Nothink.org SSH Scanners': {
         'id': 'nothinkssh',
         'type': 'list',
-        'checks': [ 'ip', 'netblock', 'domain' ],
+        'checks': ['ip', 'netblock', 'domain'],
         'url': 'http://www.nothink.org/blacklist/blacklist_ssh_week.txt'
     },
     'Nothink.org Malware IRC Traffic': {
         'id': 'nothinkirc',
         'type': 'list',
-        'checks': [ 'ip', 'netblock', 'domain' ],
+        'checks': ['ip', 'netblock', 'domain'],
         'url': 'http://www.nothink.org/blacklist/blacklist_malware_irc.txt'
     },
     'Nothink.org Malware HTTP Traffic': {
         'id': 'nothinkhttp',
         'type': 'list',
-        'checks': [ 'ip', 'netblock', 'domain' ],
+        'checks': ['ip', 'netblock', 'domain'],
         'url': 'http://www.nothink.org/blacklist/blacklist_malware_http.txt'
     },
     'malwaredomains.com Domains': {
         'id': 'malwaredomains',
         'type': 'list',
-        'checks': [ 'domain' ],
+        'checks': ['domain'],
         'url': 'http://mirror2.malwaredomains.com/files/domains.txt',
         'regex': '.*\t{0}\t[a-zA-Z].*'
-    }  
+    }
 }
+
 
 class sfp_malcheck(SpiderFootPlugin):
     """Malicious Check:Check if a website, IP or ASN is considered malicious by various sources."""
 
     # Default options
-    opts = { 
+    opts = {
         'abusezeusdomain': True,
         'abusezeusip': True,
         'abusespydomain': True,
@@ -227,7 +228,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'nothinkssh': True,
         'nothinkirc': True,
         'nothinkhttp': True,
-        'aaacheckaffiliates': True, # prefix with aaa so they appear on the top of the UI list
+        'aaacheckaffiliates': True,  # prefix with aaa so they appear on the top of the UI list
         'aaacheckcohosts': True,
         'aaacacheperiod': 18,
         'aaachecknetblocks': True,
@@ -264,7 +265,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'nothinkhttp': 'Enable Nothink.org Malware HTTP traffic check?',
         'aaacheckaffiliates': "Apply checks to affiliates?",
         'aaacheckcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
-        'aaacacheperiod':  "Hours to cache list data before re-fetching.",
+        'aaacacheperiod': "Hours to cache list data before re-fetching.",
         'aaachecknetblocks': "Report if any malicious IPs are found within owned netblocks?",
         'aaachecksubnets': "Check if any malicious IPs are found within the same subnet of the target?"
     }
@@ -288,30 +289,30 @@ class sfp_malcheck(SpiderFootPlugin):
     # * = be notified about all events.
     def watchedEvents(self):
         return ["INTERNET_NAME", "IP_ADDRESS", "BGP_AS_OWNER", "BGP_AS_MEMBER",
-            "NETBLOCK_MEMBER", "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
-            "CO_HOSTED_SITE", "NETBLOCK_OWNER" ]
+                "NETBLOCK_MEMBER", "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
+                "CO_HOSTED_SITE", "NETBLOCK_OWNER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "MALICIOUS_ASN", "MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
-            "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME", 
-            "MALICIOUS_SUBNET", "MALICIOUS_COHOST", "MALICIOUS_NETBLOCK" ]
+        return ["MALICIOUS_ASN", "MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
+                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME",
+                "MALICIOUS_SUBNET", "MALICIOUS_COHOST", "MALICIOUS_NETBLOCK"]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
         # First, check for the bad indicators
         if len(badregex) > 0:
             for rx in badregex:
-                if re.match(rx, content, re.IGNORECASE|re.DOTALL):
+                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
                     self.sf.debug("Found to be bad")
                     return True
 
         # Finally, check for good indicators
         if len(goodregex) > 0:
             for rx in goodregex:
-                if re.match(rx, content, re.IGNORECASE|re.DOTALL):
+                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
                     self.sf.debug("Found to be good")
                     return False
 
@@ -330,9 +331,9 @@ class sfp_malcheck(SpiderFootPlugin):
                 if res['content'] is None:
                     self.sf.error("Unable to fetch " + url.format(target), False)
                     return None
-                if self.contentMalicious(res['content'], 
-                    malchecks[check]['goodregex'],
-                    malchecks[check]['badregex']):
+                if self.contentMalicious(res['content'],
+                                         malchecks[check]['goodregex'],
+                                         malchecks[check]['badregex']):
                     return url.format(target)
 
         return None
@@ -366,7 +367,7 @@ class sfp_malcheck(SpiderFootPlugin):
                     # Cycle through each IP and check if it's in the netblock.
                     if malchecks[check].has_key('regex'):
                         rx = malchecks[check]['regex'].replace("{0}", \
-                            "(\d+\.\d+\.\d+\.\d+)")
+                                                               "(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
                         self.sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):
@@ -385,11 +386,11 @@ class sfp_malcheck(SpiderFootPlugin):
                         try:
                             if IPAddress(ip) in IPNetwork(target):
                                 self.sf.debug(ip + " found within netblock/subnet " + \
-                                    target + " in " + check)
+                                              target + " in " + check)
                                 return url
                         except Exception as e:
-                                self.sf.debug("Error encountered parsing: " + str(e))
-                                continue
+                            self.sf.debug("Error encountered parsing: " + str(e))
+                            continue
 
                     return None
 
@@ -405,7 +406,7 @@ class sfp_malcheck(SpiderFootPlugin):
                     rxTgt = unicode(malchecks[check]['regex']).format(target)
                     for line in data['content'].split('\n'):
                         if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
-                            re.match(rxTgt, line, re.IGNORECASE):
+                                re.match(rxTgt, line, re.IGNORECASE):
                             self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                             return url
         return None
@@ -414,8 +415,8 @@ class sfp_malcheck(SpiderFootPlugin):
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" +  \
-                    itemType + ") with: " + cid)
+                self.sf.debug("Checking maliciousness of " + target + " (" + \
+                              itemType + ") with: " + cid)
                 if malchecks[check]['type'] == "query":
                     return self.resourceQuery(cid, target, itemType)
                 if malchecks[check]['type'] == "list":
@@ -440,7 +441,7 @@ class sfp_malcheck(SpiderFootPlugin):
         if eventName == 'CO_HOSTED_SITE' and not self.opts['aaacheckcohosts']:
             return None
         if eventName == 'AFFILIATE_DOMAIN' or eventName == 'AFFILIATE_IPADDR' \
-            and not self.opts['aaacheckaffiliates']:
+                and not self.opts['aaacheckaffiliates']:
             return None
         if eventName == 'NETBLOCK_OWNER' and not self.opts['aaachecknetblocks']:
             return None
@@ -451,19 +452,19 @@ class sfp_malcheck(SpiderFootPlugin):
             cid = malchecks[check]['id']
             # If the module is enabled..
             if self.opts[cid]:
-                if eventName in [ 'IP_ADDRESS', 'AFFILIATE_IPADDR' ]:
+                if eventName in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
                     typeId = 'ip'
                     if eventName == 'IP_ADDRESS':
                         evtType = 'MALICIOUS_IPADDR'
                     else:
                         evtType = 'MALICIOUS_AFFILIATE_IPADDR'
 
-                if eventName in [ 'BGP_AS_OWNER', 'BGP_AS_MEMBER' ]:
-                    typeId = 'asn' 
+                if eventName in ['BGP_AS_OWNER', 'BGP_AS_MEMBER']:
+                    typeId = 'asn'
                     evtType = 'MALICIOUS_ASN'
 
-                if eventName in [ 'INTERNET_NAME', 'CO_HOSTED_SITE', 
-                    'AFFILIATE_INTERNET_NAME', ]:
+                if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE',
+                                 'AFFILIATE_INTERNET_NAME', ]:
                     typeId = 'domain'
                     if eventName == "INTERNET_NAME":
                         evtType = "MALICIOUS_INTERNET_NAME"

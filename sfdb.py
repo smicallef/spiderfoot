@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfdb
 # Purpose:      Common functions for working with the database back-end.
 #
@@ -8,17 +8,19 @@
 # Created:     15/05/2012
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import sqlite3
 import re
 import time
 from sflib import SpiderFoot
 
+
 def __dbregex__(qry, data):
     rx = re.compile(qry, re.IGNORECASE)
     ret = rx.search(data)
     return ret is not None
+
 
 class SpiderFootDb:
     sf = None
@@ -27,146 +29,146 @@ class SpiderFootDb:
 
     # Queries for creating the SpiderFoot database
     createQueries = [
-            "PRAGMA journal_mode=WAL",
-            "CREATE TABLE tbl_event_types ( \
-                event       VARCHAR NOT NULL PRIMARY KEY, \
-                event_descr VARCHAR NOT NULL, \
-                event_raw   INT NOT NULL DEFAULT 0 \
-            )",
-            "CREATE TABLE tbl_config ( \
-                scope   VARCHAR NOT NULL, \
-                opt     VARCHAR NOT NULL, \
-                val     VARCHAR NOT NULL, \
-                PRIMARY KEY (scope, opt) \
-            )",
-            "CREATE TABLE tbl_scan_instance ( \
-                guid        VARCHAR NOT NULL PRIMARY KEY, \
-                name        VARCHAR NOT NULL, \
-                seed_target VARCHAR NOT NULL, \
-                created     INT DEFAULT 0, \
-                started     INT DEFAULT 0, \
-                ended       INT DEFAULT 0, \
-                status      VARCHAR NOT NULL \
-            )",
-            "CREATE TABLE tbl_scan_log ( \
-                scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid), \
-                generated           INT NOT NULL, \
-                component           VARCHAR, \
-                type                VARCHAR NOT NULL, \
-                message             VARCHAR \
-            )",
-            "CREATE TABLE tbl_scan_config ( \
-                scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid), \
-                component           VARCHAR NOT NULL, \
-                opt                 VARCHAR NOT NULL, \
-                val                 VARCHAR NOT NULL \
-            )",
-            "CREATE TABLE tbl_scan_results ( \
-                scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid), \
-                hash                VARCHAR NOT NULL, \
-                type                VARCHAR NOT NULL REFERENCES tbl_event_types(event), \
-                generated           INT NOT NULL, \
-                confidence          INT NOT NULL DEFAULT 100, \
-                visibility          INT NOT NULL DEFAULT 100, \
-                risk                INT NOT NULL DEFAULT 0, \
-                module              VARCHAR NOT NULL, \
-                data                VARCHAR, \
-                source_event_hash  VARCHAR DEFAULT 'ROOT' \
-            )",
-            "CREATE INDEX idx_scan_results_id ON tbl_scan_results (scan_instance_id)",
-            "CREATE INDEX idx_scan_results_type ON tbl_scan_results (scan_instance_id, type)",
-            "CREATE INDEX idx_scan_results_hash ON tbl_scan_results (scan_instance_id, hash)",
-            "CREATE INDEX idx_scan_results_srchash ON tbl_scan_results (scan_instance_id, source_event_hash)",
-            "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_OWNED', 'Account on External Site', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_OWNED_COMPROMISED', 'Hacked Account on External Site', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_USER_SHARED', 'User Account on External Site', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_USER_SHARED_COMPROMISED', 'Hacked User Account on External Site', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_INTERNET_NAME', 'Affiliate - Internet Name', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_IPADDR', 'Affiliate - IP Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_IP_SUBNET', 'Affiliate - IP Address - Subnet', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_OWNER', 'BGP AS Ownership', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_MEMBER', 'BGP AS Membership', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_PEER', 'BGP AS Peer', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_IPADDR', 'Blacklisted IP Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_AFFILIATE_IPADDR', 'Blacklisted Affiliate IP Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_SUBNET', 'Blacklisted IP on Same Subnet', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_NETBLOCK', 'Blacklisted IP on Owned Netblock', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('CO_HOSTED_SITE', 'Co-Hosted Site', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_INTERNET_NAME', 'Defaced', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_IPADDR', 'Defaced IP Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_INTERNET_NAME', 'Defaced Affiliate', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_IPADDR', 'Defaced Affiliate IP Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_COHOST', 'Defaced Co-Hosted Site', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEVICE_TYPE', 'Device Type', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DNS_TEXT', 'DNS TXT Record', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DOMAIN_NAME', 'Domain Name', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DOMAIN_REGISTRAR', 'Domain Registrar', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DOMAIN_WHOIS', 'Domain Whois', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR_COMPROMISED', 'Hacked Email Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ERROR_MESSAGE', 'Error Message', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HUMAN_NAME', 'Human Name', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERESTING_FILE', 'Interesting File', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('JUNK_FILE', 'Junk File', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERNET_NAME', 'Internet Name', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_ADDRESS', 'IP Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IPV6_ADDRESS', 'IPv6 Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_OWNER', 'Netblock Ownership', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_MEMBER', 'Netblock Membership', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_WHOIS', 'Netblock Whois', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_ASN', 'Malicious AS', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_IPADDR', 'Malicious IP Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_COHOST', 'Malicious Co-Hosted Site', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_INTERNET_NAME', 'Malicious Internet Name', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_AFFILIATE_INTERNET_NAME', 'Malicious Affiliate', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_AFFILIATE_IPADDR', 'Malicious Affiliate IP Address', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_NETBLOCK', 'Owned Netblock with Malicious IP', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_SUBNET', 'Malicious IP on Same Subnet', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_INTERNAL', 'Linked URL - Internal', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_EXTERNAL', 'Linked URL - External', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('OPERATING_SYSTEM', 'Operating System', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PASTEBIN_CONTENT', 'PasteBin Content', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PGP_KEY', 'PGP Public Key', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_DNS', 'Name Server (DNS ''NS'' Records)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_MAIL', 'Email Gateway (DNS ''MX'' Records)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_RIR_DATA', 'Raw Data from RIRs', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_DNS_RECORDS', 'Raw DNS Records', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_FILE_META_DATA', 'Raw File Meta Data', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SEARCH_ENGINE_WEB_CONTENT', 'Search Engine''s Web Content', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOCIAL_MEDIA', 'Social Media Presence', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOFTWARE_USED', 'Software Used', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SIMILARDOMAIN', 'Similar Domain', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUED', 'SSL Certificate - Issued to', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUER', 'SSL Certificate - Issued by', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_MISMATCH', 'SSL Certificate Host Mismatch', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_EXPIRED', 'SSL Certificate Expired', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_EXPIRING', 'SSL Certificate Expiring', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_RAW', 'SSL Certificate - Raw Data', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TARGET_WEB_CONTENT', 'Web Content', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TARGET_WEB_COOKIE', 'Cookies', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TCP_PORT_OPEN', 'Open TCP Port', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TCP_PORT_OPEN_BANNER', 'Open TCP Port Banner', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('UDP_PORT_OPEN', 'Open UDP Port', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('UDP_PORT_OPEN_INFO', 'Open UDP Port Information', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_ADBLOCKED_EXTERNAL', 'URL (AdBlocked External)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_ADBLOCKED_INTERNAL', 'URL (AdBlocked Internal)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_FORM', 'URL (Form)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_FLASH', 'URL (Uses Flash)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVASCRIPT', 'URL (Uses Javascript)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_WEB_FRAMEWORK', 'URL (Uses a Web Framework)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVA_APPLET', 'URL (Uses Java applet)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_STATIC', 'URL (Purely Static)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_PASSWORD', 'URL (Accepts Passwords)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_UPLOAD', 'URL (Accepts Uploads)', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_BANNER', 'Web Server', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_HTTPHEADERS', 'HTTP Headers', 1)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_STRANGEHEADER', 'Non-Standard HTTP Header', 0)",
-            "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0)"
+        "PRAGMA journal_mode=WAL",
+        "CREATE TABLE tbl_event_types ( \
+            event       VARCHAR NOT NULL PRIMARY KEY, \
+            event_descr VARCHAR NOT NULL, \
+            event_raw   INT NOT NULL DEFAULT 0 \
+        )",
+        "CREATE TABLE tbl_config ( \
+            scope   VARCHAR NOT NULL, \
+            opt     VARCHAR NOT NULL, \
+            val     VARCHAR NOT NULL, \
+            PRIMARY KEY (scope, opt) \
+        )",
+        "CREATE TABLE tbl_scan_instance ( \
+            guid        VARCHAR NOT NULL PRIMARY KEY, \
+            name        VARCHAR NOT NULL, \
+            seed_target VARCHAR NOT NULL, \
+            created     INT DEFAULT 0, \
+            started     INT DEFAULT 0, \
+            ended       INT DEFAULT 0, \
+            status      VARCHAR NOT NULL \
+        )",
+        "CREATE TABLE tbl_scan_log ( \
+            scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid), \
+            generated           INT NOT NULL, \
+            component           VARCHAR, \
+            type                VARCHAR NOT NULL, \
+            message             VARCHAR \
+        )",
+        "CREATE TABLE tbl_scan_config ( \
+            scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid), \
+            component           VARCHAR NOT NULL, \
+            opt                 VARCHAR NOT NULL, \
+            val                 VARCHAR NOT NULL \
+        )",
+        "CREATE TABLE tbl_scan_results ( \
+            scan_instance_id    VARCHAR NOT NULL REFERENCES tbl_scan_instance(guid), \
+            hash                VARCHAR NOT NULL, \
+            type                VARCHAR NOT NULL REFERENCES tbl_event_types(event), \
+            generated           INT NOT NULL, \
+            confidence          INT NOT NULL DEFAULT 100, \
+            visibility          INT NOT NULL DEFAULT 100, \
+            risk                INT NOT NULL DEFAULT 0, \
+            module              VARCHAR NOT NULL, \
+            data                VARCHAR, \
+            source_event_hash  VARCHAR DEFAULT 'ROOT' \
+        )",
+        "CREATE INDEX idx_scan_results_id ON tbl_scan_results (scan_instance_id)",
+        "CREATE INDEX idx_scan_results_type ON tbl_scan_results (scan_instance_id, type)",
+        "CREATE INDEX idx_scan_results_hash ON tbl_scan_results (scan_instance_id, hash)",
+        "CREATE INDEX idx_scan_results_srchash ON tbl_scan_results (scan_instance_id, source_event_hash)",
+        "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_OWNED', 'Account on External Site', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_OWNED_COMPROMISED', 'Hacked Account on External Site', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_USER_SHARED', 'User Account on External Site', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_USER_SHARED_COMPROMISED', 'Hacked User Account on External Site', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_INTERNET_NAME', 'Affiliate - Internet Name', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_IPADDR', 'Affiliate - IP Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_IP_SUBNET', 'Affiliate - IP Address - Subnet', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_OWNER', 'BGP AS Ownership', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_MEMBER', 'BGP AS Membership', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BGP_AS_PEER', 'BGP AS Peer', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_IPADDR', 'Blacklisted IP Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_AFFILIATE_IPADDR', 'Blacklisted Affiliate IP Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_SUBNET', 'Blacklisted IP on Same Subnet', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_NETBLOCK', 'Blacklisted IP on Owned Netblock', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('CO_HOSTED_SITE', 'Co-Hosted Site', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_INTERNET_NAME', 'Defaced', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_IPADDR', 'Defaced IP Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_INTERNET_NAME', 'Defaced Affiliate', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_IPADDR', 'Defaced Affiliate IP Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_COHOST', 'Defaced Co-Hosted Site', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEVICE_TYPE', 'Device Type', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DNS_TEXT', 'DNS TXT Record', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DOMAIN_NAME', 'Domain Name', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DOMAIN_REGISTRAR', 'Domain Registrar', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DOMAIN_WHOIS', 'Domain Whois', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR', 'Email Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('EMAILADDR_COMPROMISED', 'Hacked Email Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ERROR_MESSAGE', 'Error Message', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('GEOINFO', 'Physical Location', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HTTP_CODE', 'HTTP Status Code', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('HUMAN_NAME', 'Human Name', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERESTING_FILE', 'Interesting File', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('JUNK_FILE', 'Junk File', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('INTERNET_NAME', 'Internet Name', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IP_ADDRESS', 'IP Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('IPV6_ADDRESS', 'IPv6 Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_OWNER', 'Netblock Ownership', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_MEMBER', 'Netblock Membership', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('NETBLOCK_WHOIS', 'Netblock Whois', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_ASN', 'Malicious AS', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_IPADDR', 'Malicious IP Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_COHOST', 'Malicious Co-Hosted Site', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_INTERNET_NAME', 'Malicious Internet Name', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_AFFILIATE_INTERNET_NAME', 'Malicious Affiliate', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_AFFILIATE_IPADDR', 'Malicious Affiliate IP Address', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_NETBLOCK', 'Owned Netblock with Malicious IP', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('MALICIOUS_SUBNET', 'Malicious IP on Same Subnet', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_INTERNAL', 'Linked URL - Internal', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('LINKED_URL_EXTERNAL', 'Linked URL - External', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('OPERATING_SYSTEM', 'Operating System', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PASTEBIN_CONTENT', 'PasteBin Content', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PGP_KEY', 'PGP Public Key', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_DNS', 'Name Server (DNS ''NS'' Records)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_MAIL', 'Email Gateway (DNS ''MX'' Records)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_RIR_DATA', 'Raw Data from RIRs', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_DNS_RECORDS', 'Raw DNS Records', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('RAW_FILE_META_DATA', 'Raw File Meta Data', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SEARCH_ENGINE_WEB_CONTENT', 'Search Engine''s Web Content', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOCIAL_MEDIA', 'Social Media Presence', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SOFTWARE_USED', 'Software Used', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SIMILARDOMAIN', 'Similar Domain', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUED', 'SSL Certificate - Issued to', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_ISSUER', 'SSL Certificate - Issued by', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_MISMATCH', 'SSL Certificate Host Mismatch', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_EXPIRED', 'SSL Certificate Expired', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_EXPIRING', 'SSL Certificate Expiring', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('SSL_CERTIFICATE_RAW', 'SSL Certificate - Raw Data', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TARGET_WEB_CONTENT', 'Web Content', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TARGET_WEB_COOKIE', 'Cookies', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TCP_PORT_OPEN', 'Open TCP Port', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('TCP_PORT_OPEN_BANNER', 'Open TCP Port Banner', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('UDP_PORT_OPEN', 'Open UDP Port', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('UDP_PORT_OPEN_INFO', 'Open UDP Port Information', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_ADBLOCKED_EXTERNAL', 'URL (AdBlocked External)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_ADBLOCKED_INTERNAL', 'URL (AdBlocked Internal)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_FORM', 'URL (Form)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_FLASH', 'URL (Uses Flash)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVASCRIPT', 'URL (Uses Javascript)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_WEB_FRAMEWORK', 'URL (Uses a Web Framework)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_JAVA_APPLET', 'URL (Uses Java applet)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_STATIC', 'URL (Purely Static)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_PASSWORD', 'URL (Accepts Passwords)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('URL_UPLOAD', 'URL (Accepts Uploads)', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_BANNER', 'Web Server', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_HTTPHEADERS', 'HTTP Headers', 1)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_STRANGEHEADER', 'Non-Standard HTTP Header', 0)",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0)"
     ]
 
     def __init__(self, opts):
@@ -177,8 +179,7 @@ class SpiderFootDb:
         # read and write to such a file.
         dbh = sqlite3.connect(self.sf.myPath() + "/" + opts['__database'], timeout=10)
         if dbh is None:
-            self.sf.fatal("Could not connect to internal database, and couldn't create " + \
-                opts['__database'])
+            self.sf.fatal("Could not connect to internal database, and couldn't create " + opts['__database'])
         dbh.text_factory = str
 
         self.conn = dbh
@@ -188,14 +189,13 @@ class SpiderFootDb:
         # up correctly.
         try:
             self.dbh.execute('SELECT COUNT(*) FROM tbl_scan_config')
-            self.conn.create_function("REGEXP", 2, __dbregex__)           
+            self.conn.create_function("REGEXP", 2, __dbregex__)
         except sqlite3.Error:
             # .. If not set up, we set it up.
             try:
                 self.create()
             except BaseException as e:
-                self.sf.error("Tried to set up the SpiderFoot database schema, but failed: " + \
-                    e.args[0])
+                self.sf.error("Tried to set up the SpiderFoot database schema, but failed: " + e.args[0])
         return
 
     #
@@ -209,8 +209,7 @@ class SpiderFootDb:
                 self.dbh.execute(qry)
             self.conn.commit()
         except sqlite3.Error as e:
-            raise BaseException("SQL error encountered when setting up database: " +
-                e.args[0])
+            raise BaseException("SQL error encountered when setting up database: " + e.args[0])
 
     # Close the database handle
     def close(self):
@@ -258,8 +257,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when fetching search results: " +
-                e.args[0])
+            self.sf.error("SQL error encountered when fetching search results: " + e.args[0])
 
     # Get event types
     def eventTypes(self):
@@ -268,8 +266,7 @@ class SpiderFootDb:
             self.dbh.execute(qry)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when retreiving event types:" +
-                e.args[0])
+            self.sf.error("SQL error encountered when retreiving event types:" + e.args[0])
 
     # Log an event to the database
     def scanLogEvent(self, instanceId, classification, message, component=None):
@@ -281,8 +278,8 @@ class SpiderFootDb:
             VALUES (?, ?, ?, ?, ?)"
         try:
             self.dbh.execute(qry, (
-                    instanceId, time.time() * 1000, component, classification, message
-                ))
+                instanceId, time.time() * 1000, component, classification, message
+            ))
             self.conn.commit()
         except sqlite3.Error as e:
             if "locked" in e.args[0]:
@@ -300,8 +297,8 @@ class SpiderFootDb:
             VALUES (?, ?, ?, ?, ?)"
         try:
             self.dbh.execute(qry, (
-                    instanceId, scanName, scanTarget, time.time() * 1000, 'CREATED'
-                ))
+                instanceId, scanName, scanTarget, time.time() * 1000, 'CREATED'
+            ))
             self.conn.commit()
         except sqlite3.Error as e:
             self.sf.fatal("Unable to create instance in DB: " + e.args[0])
@@ -346,8 +343,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchone()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when retreiving scan instance:" +
-                e.args[0])
+            self.sf.error("SQL error encountered when retreiving scan instance:" + e.args[0])
 
     # Obtain a summary of the results per event type
     def scanResultSummary(self, instanceId):
@@ -360,8 +356,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when fetching result summary: " +
-                e.args[0])
+            self.sf.error("SQL error encountered when fetching result summary: " + e.args[0])
 
     # Obtain the ROOT event for a scan: Must be same output as scanResultEvent!
     def scanRootEvent(self, instanceId):
@@ -380,8 +375,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchone()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when fetching ROOT event: " +
-                e.args[0])
+            self.sf.error("SQL error encountered when fetching ROOT event: " + e.args[0])
 
     # Obtain the data for a scan and event type
     def scanResultEvent(self, instanceId, eventType='ALL'):
@@ -406,8 +400,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when fetching result events: " +
-                e.args[0])
+            self.sf.error("SQL error encountered when fetching result events: " + e.args[0])
 
     # Obtain a unique list of elements
     def scanResultEventUnique(self, instanceId, eventType='ALL'):
@@ -425,8 +418,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when fetching unique result events: " +
-                e.args[0])
+            self.sf.error("SQL error encountered when fetching unique result events: " + e.args[0])
 
     # Get scan logs
     def scanLogs(self, instanceId, limit=None):
@@ -443,8 +435,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when fetching scan logs: " +
-                e.args[0])
+            self.sf.error("SQL error encountered when fetching scan logs: " + e.args[0])
 
     # Get scan errors
     def scanErrors(self, instanceId, limit=None):
@@ -461,8 +452,7 @@ class SpiderFootDb:
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when fetching scan errors: " +
-                e.args[0])
+            self.sf.error("SQL error encountered when fetching scan errors: " + e.args[0])
 
     # Delete a scan instance
     def scanInstanceDelete(self, instanceId):
@@ -478,8 +468,7 @@ class SpiderFootDb:
             self.dbh.execute(qry4, qvars)
             self.conn.commit()
         except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when deleting scan: " +
-                e.args[0])
+            self.sf.error("SQL error encountered when deleting scan: " + e.args[0])
 
     # Store the default configuration
     def configSet(self, optMap=dict()):
@@ -488,16 +477,15 @@ class SpiderFootDb:
             # Module option
             if ":" in opt:
                 parts = opt.split(':')
-                qvals = [ parts[0], parts[1], optMap[opt] ]
+                qvals = [parts[0], parts[1], optMap[opt]]
             else:
-            # Global option
-                qvals = [ "GLOBAL", opt, optMap[opt] ]
+                # Global option
+                qvals = ["GLOBAL", opt, optMap[opt]]
 
             try:
                 self.dbh.execute(qry, qvals)
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when storing config, aborting: " +
-                    e.args[0])
+                self.sf.error("SQL error encountered when storing config, aborting: " + e.args[0])
 
             self.conn.commit()
 
@@ -536,16 +524,15 @@ class SpiderFootDb:
             # Module option
             if ":" in opt:
                 parts = opt.split(':')
-                qvals = [ id, parts[0], parts[1], optMap[opt] ]
+                qvals = [id, parts[0], parts[1], optMap[opt]]
             else:
-            # Global option
-                qvals = [ id, "GLOBAL", opt, optMap[opt] ]
+                # Global option
+                qvals = [id, "GLOBAL", opt, optMap[opt]]
 
             try:
                 self.dbh.execute(qry, qvals)
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when storing config, aborting: " +
-                    e.args[0])
+                self.sf.error("SQL error encountered when storing config, aborting: " + e.args[0])
 
             self.conn.commit()
 
@@ -596,16 +583,16 @@ class SpiderFootDb:
         if truncateSize > 0:
             storeData = storeData[0:truncateSize]
 
-        if sfEvent.sourceEventHash in [ "", None]:
+        if sfEvent.sourceEventHash in ["", None]:
             self.sf.fatal("UNABLE TO CREATE RECORD WITH EMPTY SOURCE EVENT HASH!")
 
         qry = "INSERT INTO tbl_scan_results \
             (scan_instance_id, hash, type, generated, confidence, \
             visibility, risk, module, data, source_event_hash) \
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        qvals = [ instanceId, sfEvent.getHash(), sfEvent.eventType, sfEvent.generated,
-            sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
-            sfEvent.module, storeData, sfEvent.sourceEventHash ]
+        qvals = [instanceId, sfEvent.getHash(), sfEvent.eventType, sfEvent.generated,
+                 sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
+                 sfEvent.module, storeData, sfEvent.sourceEventHash]
 
         #print "STORING: " + str(qvals)
 
@@ -614,8 +601,7 @@ class SpiderFootDb:
             self.conn.commit()
             return None
         except sqlite3.Error as e:
-            self.sf.fatal("SQL error encountered when storing event data (" + str(self.dbh) + ": " +
-                e.args[0])
+            self.sf.fatal("SQL error encountered when storing event data (" + str(self.dbh) + ": " + e.args[0])
 
     # List of all previously run scans
     def scanInstanceList(self):
@@ -674,5 +660,3 @@ class SpiderFootDb:
             return self.dbh.fetchall()
         except sqlite3.Error as e:
             self.sf.error("SQL error encountered when getting source element IDs: " + e.args[0])
-
-

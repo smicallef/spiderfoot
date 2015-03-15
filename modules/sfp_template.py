@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_XXX
 # Purpose:      Description of the plug-in.
 #
@@ -8,15 +8,16 @@
 # Created:     Date
 # Copyright:   (c) Name
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_XXX(SpiderFootPlugin):
     """Name:Description"""
 
     # Default options
-    opts = { }
+    opts = {}
 
     # Option descriptions
     optdescs = {

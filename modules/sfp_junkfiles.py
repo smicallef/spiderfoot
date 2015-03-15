@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_junkfiles
 # Purpose:      From Spidering, identifies backup and temporary files.
 #
@@ -8,21 +8,22 @@
 # Created:     23/08/2014
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_junkfiles(SpiderFootPlugin):
     """Junk Files:Looks for old/temporary and other similar files."""
 
     # Default options
     opts = {
-        'fileexts':     [ 'tmp', 'bak', 'old', 'backup', 'new'],
-        'urlextstry':  [ 'html', 'htm', 'php', 'jsp', 'txt', 'js' ],
-        'files':        [ 'x', 'xxx', 'crap', 'old', 'a', 'aaa', 'z', 'zzz', 
-                        'out', 'sql', "passwd", ".htaccess", ".htpasswd", 
-                        "Thumbs.db", "asd", "asdf" ],
-        'dirs':         [ 'zip', 'tar.gz', 'tgz', 'tar' ]
+        'fileexts': ['tmp', 'bak', 'old', 'backup', 'new'],
+        'urlextstry': ['html', 'htm', 'php', 'jsp', 'txt', 'js'],
+        'files': ['x', 'xxx', 'crap', 'old', 'a', 'aaa', 'z', 'zzz',
+                  'out', 'sql', "passwd", ".htaccess", ".htpasswd",
+                  "Thumbs.db", "asd", "asdf"],
+        'dirs': ['zip', 'tar.gz', 'tgz', 'tar']
     }
 
     # Option descriptions
@@ -44,13 +45,13 @@ class sfp_junkfiles(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "LINKED_URL_INTERNAL" ]
+        return ["LINKED_URL_INTERNAL"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return [ "JUNK_FILE" ]
+        return ["JUNK_FILE"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -68,7 +69,7 @@ class sfp_junkfiles(SpiderFootPlugin):
         # http://www/blah/abc.html -> try http://www/blah/abc.html.[fileexts]
         for ext in self.opts['urlextstry']:
             if "." + ext + "?" in eventData or "." + ext + "#" in eventData or \
-                eventData.endswith(ext):
+                    eventData.endswith(ext):
                 bits = eventData.split("?")
                 for x in self.opts['fileexts']:
                     self.sf.debug("Trying " + x + " against " + eventData)
@@ -77,18 +78,18 @@ class sfp_junkfiles(SpiderFootPlugin):
                         self.results.append(fetch)
                     else:
                         continue
-                    res = self.sf.fetchUrl(fetch, 
-                        timeout=self.opts['_fetchtimeout'],
-                        useragent=self.opts['_useragent'])
+                    res = self.sf.fetchUrl(fetch,
+                                           timeout=self.opts['_fetchtimeout'],
+                                           useragent=self.opts['_useragent'])
                     if res['content'] is not None and res['code'] != "404":
-                        evt = SpiderFootEvent("JUNK_FILE", fetch, 
-                            self.__name__, event)
+                        evt = SpiderFootEvent("JUNK_FILE", fetch,
+                                              self.__name__, event)
                         self.notifyListeners(evt)
 
         # http://www or http://www/
         # -> try index pages
         if eventData.endswith("/") or eventData.count("/") == 2:
-            for ext in [ "index.html", "index.htm", "default.htm" ]:
+            for ext in ["index.html", "index.htm", "default.htm"]:
                 self.sf.debug("Trying " + ext + " against " + eventData)
                 for x in self.opts['fileexts']:
                     fetch = eventData + "/" + ext + "." + x
@@ -97,11 +98,11 @@ class sfp_junkfiles(SpiderFootPlugin):
                     else:
                         continue
                     res = self.sf.fetchUrl(fetch,
-                        timeout=self.opts['_fetchtimeout'],
-                        useragent=self.opts['_useragent'])
+                                           timeout=self.opts['_fetchtimeout'],
+                                           useragent=self.opts['_useragent'])
                     if res['content'] is not None and res['code'] != "404":
                         evt = SpiderFootEvent("JUNK_FILE", fetch,
-                            self.__name__, event)
+                                              self.__name__, event)
                         self.notifyListeners(evt)
 
         base = self.sf.urlBaseDir(eventData)
@@ -112,17 +113,17 @@ class sfp_junkfiles(SpiderFootPlugin):
         # http://www/blah/abc.html -> try http://www/blah.[dirs]
         for dirfile in self.opts['dirs']:
             self.sf.debug("Trying " + dirfile + " against " + eventData)
-            fetch = base[0:len(base)-1] + "." + dirfile
+            fetch = base[0:len(base) - 1] + "." + dirfile
             if fetch not in self.results:
                 self.results.append(fetch)
             else:
                 continue
             res = self.sf.fetchUrl(fetch,
-                timeout=self.opts['_fetchtimeout'],
-                useragent=self.opts['_useragent'])
+                                   timeout=self.opts['_fetchtimeout'],
+                                   useragent=self.opts['_useragent'])
             if res['content'] is not None and res['code'] != "404":
                 evt = SpiderFootEvent("JUNK_FILE", fetch,
-                    self.__name__, event)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
         # http://www/blah/abc.html -> try http://www/blah/[files]
@@ -134,11 +135,11 @@ class sfp_junkfiles(SpiderFootPlugin):
             else:
                 continue
             res = self.sf.fetchUrl(fetch,
-                timeout=self.opts['_fetchtimeout'],
-                useragent=self.opts['_useragent'])
+                                   timeout=self.opts['_fetchtimeout'],
+                                   useragent=self.opts['_useragent'])
             if res['content'] is not None and res['code'] != "404":
                 evt = SpiderFootEvent("JUNK_FILE", fetch,
-                    self.__name__, event)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
         return None
