@@ -1,6 +1,7 @@
 --
 -- Event types and their descriptions
 --
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ROOT', 'Internal SpiderFoot Root event', 1);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_OWNED', 'Account on External Site', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_OWNED_COMPROMISED', 'Hacked Account on External Site', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('ACCOUNT_EXTERNAL_USER_SHARED', 'User Account on External Site', 0);
@@ -17,7 +18,7 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('BLACKLISTED_NETBLOCK', 'Blacklisted IP on Owned Netblock', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('CO_HOSTED_SITE', 'Co-Hosted Site', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_INTERNET_NAME', 'Defaced', 0);
-INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_IPADDR', 'Defaced IP Address', 0)
+INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_IPADDR', 'Defaced IP Address', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_INTERNET_NAME', 'Defaced Affiliate', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_COHOST', 'Defaced Co-Hosted Site', 0);
 INSERT INTO tbl_event_types (event, event_descr, event_raw) VALUES ('DEFACED_AFFILIATE_IPADDR', 'Defaced Affiliate IP Address', 0);
