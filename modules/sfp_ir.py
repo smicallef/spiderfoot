@@ -56,7 +56,7 @@ class sfp_ir(SpiderFootPlugin):
         else:
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                 useragent=self.opts['_useragent'])
-            if res['content'] != None:
+            if res['content'] is not None:
                 self.memCache[url] = res
                 evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__, 
                     self.currentEventSrc)
@@ -68,7 +68,7 @@ class sfp_ir(SpiderFootPlugin):
         prefix = None
 
         res = self.fetchRir("https://stat.ripe.net/data/network-info/data.json?resource=" + ipaddr)
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.debug("No Netblock info found/available for " + ipaddr + " at RIPE.")
             return None
 
@@ -79,7 +79,7 @@ class sfp_ir(SpiderFootPlugin):
             return None
 
         prefix = j["data"]["prefix"]
-        if prefix == None:
+        if prefix is None:
             self.sf.debug("Could not identify network prefix.")
             return None
 
@@ -90,7 +90,7 @@ class sfp_ir(SpiderFootPlugin):
         asn = None
 
         res = self.fetchRir("https://stat.ripe.net/data/whois/data.json?resource=" + prefix)
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.debug("No AS info found/available for prefix: " + prefix + " at RIPE.")
             return None
 
@@ -116,7 +116,7 @@ class sfp_ir(SpiderFootPlugin):
         ownerinfo = dict()
 
         res = self.fetchRir("https://stat.ripe.net/data/whois/data.json?resource=" + asn)
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.debug("No info found/available for ASN: " + asn + " at RIPE.")
             return None
 
@@ -147,7 +147,7 @@ class sfp_ir(SpiderFootPlugin):
         netblocks = list()
 
         res = self.fetchRir("https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS" + asn)
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.debug("No netblocks info found/available for AS" + asn + " at RIPE.")
             return None
 
@@ -169,7 +169,7 @@ class sfp_ir(SpiderFootPlugin):
         neighbours = list()
 
         res = self.fetchRir("https://stat.ripe.net/data/asn-neighbours/data.json?resource=AS" + asn)
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.debug("No neighbour info found/available for AS" + asn + " at RIPE.")
             return None
 
@@ -192,7 +192,7 @@ class sfp_ir(SpiderFootPlugin):
         if self.getTarget().getValue() in string:
             return True
 
-        if self.keywords == None:
+        if self.keywords is None:
             self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
                 self.opts['_internettlds'])
 
@@ -215,7 +215,7 @@ class sfp_ir(SpiderFootPlugin):
         for kw in keywordList:
             self.sf.debug("Looking for keyword: " + kw)
             for r in rx:
-                if re.match(r.format(kw), string, re.IGNORECASE) != None:
+                if re.match(r.format(kw), string, re.IGNORECASE) is not None:
                     return True
         
         return False
@@ -226,7 +226,7 @@ class sfp_ir(SpiderFootPlugin):
         ownerinfo = self.asOwnerInfo(asn)
         owned = False
 
-        if ownerinfo != None:
+        if ownerinfo is not None:
             for k in ownerinfo.keys():
                 items = ownerinfo[k]
                 for item in items:
@@ -253,7 +253,7 @@ class sfp_ir(SpiderFootPlugin):
         # BGP AS Owner/Member -> BGP AS Peers
         if eventName.startswith("BGP_AS_"):
             neighs = self.asNeighbours(eventData)
-            if neighs == None:
+            if neighs is None:
                 self.sf.debug("No neighbors found to AS " + eventData)
                 return None
 
@@ -263,7 +263,7 @@ class sfp_ir(SpiderFootPlugin):
 
                 ownerinfo = self.asOwnerInfo(nasn)
                 ownertext = ''
-                if ownerinfo != None:
+                if ownerinfo is not None:
                     for k, v in ownerinfo.iteritems():
                         ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
 
@@ -280,7 +280,7 @@ class sfp_ir(SpiderFootPlugin):
                 # Find all the netblocks owned by this AS
                 self.nbreported[eventData] = True
                 netblocks = self.asNetblocks(eventData)
-                if netblocks != None:
+                if netblocks is not None:
                     for netblock in netblocks:
                         if self.results.has_key(netblock):
                             continue
@@ -296,7 +296,7 @@ class sfp_ir(SpiderFootPlugin):
         if eventName.startswith("NETBLOCK_"):
             # Get the BGP AS the netblock is a part of
             asn = self.netblockAs(eventData)
-            if asn == None:
+            if asn is None:
                 self.sf.debug("Could not identify BGP AS for " + eventData)
                 return None
 
@@ -313,13 +313,13 @@ class sfp_ir(SpiderFootPlugin):
         if eventName == "IP_ADDRESS":
             # Get the Netblock the IP is a part of
             prefix = self.ipNetblock(eventData)
-            if prefix == None:
+            if prefix is None:
                 self.sf.debug("Could not identify network prefix for " + eventData)
                 return None
 
             # Get the BGP AS the netblock is a part of
             asn = self.netblockAs(prefix)
-            if asn == None:
+            if asn is None:
                 self.sf.debug("Could not identify BGP AS for " + prefix)
                 return None
 

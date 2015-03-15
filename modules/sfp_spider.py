@@ -86,7 +86,7 @@ class sfp_spider(SpiderFootPlugin):
         self.fetchedPages[url] = True
 
         # Track cookies a site has sent, then send the back in subsquent requests
-        if self.opts['usecookies'] and fetched['headers'] != None:
+        if self.opts['usecookies'] and fetched['headers'] is not None:
             if fetched['headers'].get('Set-Cookie'):
                 self.siteCookies[site] = fetched['headers'].get('Set-Cookie')
                 self.sf.debug("Saving cookies for " + site + ": " + str(self.siteCookies[site]))
@@ -97,7 +97,7 @@ class sfp_spider(SpiderFootPlugin):
         # Notify modules about the content obtained
         self.contentNotify(url, fetched, self.urlEvents[url])
 
-        if fetched['realurl'] != None and fetched['realurl'] != url:
+        if fetched['realurl'] is not None and fetched['realurl'] != url:
             self.sf.debug("Redirect of " + url + " to " + fetched['realurl'])
             # Store the content for the redirect so that it isn't fetched again
             self.fetchedPages[fetched['realurl']] = True
@@ -109,7 +109,7 @@ class sfp_spider(SpiderFootPlugin):
         # Extract links from the content
         links = self.sf.parseLinks(url, fetched['content'], self.getTarget().getNames())
 
-        if links == None or len(links) == 0:
+        if links is None or len(links) == 0:
             self.sf.info("No links found at " + url)
             return None
 
@@ -235,7 +235,7 @@ class sfp_spider(SpiderFootPlugin):
             for prefix in self.opts['start']:
                 res = self.sf.fetchUrl(prefix + eventData, timeout=self.opts['_fetchtimeout'], 
                     useragent=self.opts['_useragent'])
-                if res['content'] != None:
+                if res['content'] is not None:
                     spiderTarget = prefix + eventData
                     evt = SpiderFootEvent("LINKED_URL_INTERNAL", spiderTarget,
                         self.__name__, event)
@@ -244,7 +244,7 @@ class sfp_spider(SpiderFootPlugin):
         else:
             spiderTarget = eventData
 
-        if spiderTarget == None:
+        if spiderTarget is None:
             return None
 
         self.sf.info("Initiating spider of " + spiderTarget)
@@ -265,7 +265,7 @@ class sfp_spider(SpiderFootPlugin):
         if self.opts['robotsonly'] and not self.robotsRules.has_key(targetBase):
             robotsTxt = self.sf.fetchUrl(targetBase + '/robots.txt', 
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-            if robotsTxt['content'] != None:
+            if robotsTxt['content'] is not None:
                 self.sf.debug('robots.txt contents: ' + robotsTxt['content'])
                 self.robotsRules[targetBase] = self.sf.parseRobotsTxt(robotsTxt['content'])
             else:
@@ -278,7 +278,7 @@ class sfp_spider(SpiderFootPlugin):
         links = self.processUrl(startingPoint)  # fetch first page
 
         # No links from the first fetch means we've got a problem
-        if links == None:
+        if links is None:
             self.sf.error("No links found on the first fetch!", exception=False)
             return
 
@@ -302,7 +302,7 @@ class sfp_spider(SpiderFootPlugin):
                     self.sf.debug("Fetching fresh content from: " + link)
                     time.sleep(self.opts['pause'])
                     freshLinks = self.processUrl(link)
-                    if freshLinks != None:
+                    if freshLinks is not None:
                         links.update(freshLinks)
 
                     totalFetched += 1

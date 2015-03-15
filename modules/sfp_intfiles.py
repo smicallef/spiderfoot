@@ -108,7 +108,7 @@ class sfp_intfiles(SpiderFootPlugin):
                     useragent=self.opts['_useragent'], 
                     timeout=self.opts['_fetchtimeout']))
 
-            if pages == None:
+            if pages is None:
                 self.sf.info("No results returned from " + self.opts['searchengine'] + \
                     " for " + fileExt + " files.")
                 continue

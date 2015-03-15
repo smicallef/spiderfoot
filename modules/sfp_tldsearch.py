@@ -105,7 +105,7 @@ class sfp_tldsearch(SpiderFootPlugin):
 
             pageContent = self.sf.fetchUrl('http://' + result,
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-            if pageContent['content'] != None:
+            if pageContent['content'] is not None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
                 self.notifyListeners(evt)
         else:

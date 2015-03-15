@@ -56,7 +56,7 @@ class sfp_shodan(SpiderFootPlugin):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry + \
             "?key=" + self.opts['apikey'],
             timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
-        if res['content'] == None:
+        if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
             return None
 
@@ -104,19 +104,19 @@ class sfp_shodan(SpiderFootPlugin):
 
         for addr in qrylist:
             rec = self.query(addr)
-            if rec == None:
+            if rec is None:
                 continue
 
             if self.checkForStop():
                 return None
 
-            if rec.get('os') != None:
+            if rec.get('os') is not None:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os') + \
                     " (" + addr +")", self.__name__, event)
                 self.notifyListeners(evt)
 
-            if rec.get('devtype') != None:
+            if rec.get('devtype') is not None:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("DEVICE_TYPE", rec.get('devtype') + \
                     " (" + addr +")", self.__name__, event)
@@ -128,14 +128,14 @@ class sfp_shodan(SpiderFootPlugin):
                     port = str(r.get('port'))
                     banner = r.get('banner')
 
-                    if port != None:
+                    if port is not None:
                         # Notify other modules of what you've found
                         cp = addr + ":" + port
                         evt = SpiderFootEvent("TCP_PORT_OPEN", cp, 
                             self.__name__, event)
                         self.notifyListeners(evt)
 
-                    if banner != None:
+                    if banner is not None:
                         # Notify other modules of what you've found
                         evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner, 
                             self.__name__, event)

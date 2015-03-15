@@ -102,7 +102,7 @@ class sfp_similar(SpiderFootPlugin):
 
             whois = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
                 useragent=self.opts['_useragent'])
-            if whois['content'] == None:
+            if whois['content'] is None:
                 return None
 
             # Extract the similar domains out of the whois content
@@ -134,7 +134,7 @@ class sfp_similar(SpiderFootPlugin):
 
             domtool = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
                 useragent=self.opts['_useragent'])
-            if domtool['content'] == None:
+            if domtool['content'] is None:
                 return None
 
             # Extract the similar domains out of the domain tools content
@@ -169,7 +169,7 @@ class sfp_similar(SpiderFootPlugin):
 
             namedrop = self.sf.fetchUrl(fetchPage, timeout=self.opts['_fetchtimeout'], 
                 useragent=self.opts['_useragent'])
-            if namedrop['content'] == None:
+            if namedrop['content'] is None:
                 return None
 
             # Extract the similar domains out of the namedropper content
@@ -199,7 +199,7 @@ class sfp_similar(SpiderFootPlugin):
 
             pageContent = self.sf.fetchUrl('http://' + result, 
                 timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-            if pageContent['content'] != None:
+            if pageContent['content'] is not None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
                 self.notifyListeners(evt)
         else:

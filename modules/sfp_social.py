@@ -75,7 +75,7 @@ class sfp_social(SpiderFootPlugin):
         for regexpGrp in regexps.keys():
             for regex in regexps[regexpGrp]:
                 bits = re.match(regex, eventData, re.IGNORECASE)
-                if bits != None:
+                if bits is not None:
                     self.sf.info("Matched " + regexpGrp + " in " + eventData)
                     evt = SpiderFootEvent("SOCIAL_MEDIA", regexpGrp + ": " + \
                         bits.group(1), self.__name__, event)
