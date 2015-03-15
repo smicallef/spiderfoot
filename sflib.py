@@ -41,7 +41,8 @@ class SpiderFoot:
         self.opts = deepcopy(options)
         # This is ugly but we don't want any fetches to fail - we expect
         # to encounter unverified SSL certs!
-        ssl._create_default_https_context = ssl._create_unverified_context
+        if sys.version_info >= (2, 7, 9):
+            ssl._create_default_https_context = ssl._create_unverified_context
 
     # Bit of a hack to support SOCKS because of the loading order of
     # modules. sfscan will call this to update the socket reference
