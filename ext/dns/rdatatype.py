@@ -219,7 +219,7 @@ def is_metatype(rdtype):
     @type rdtype: int
     @rtype: bool"""
 
-    if rdtype >= TKEY and rdtype <= ANY or _metatypes.has_key(rdtype):
+    if TKEY <= rdtype <= ANY or _metatypes.has_key(rdtype):
         return True
     return False
 

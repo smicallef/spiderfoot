@@ -53,7 +53,7 @@ def from_text(text):
 
     if text.isdigit():
         value = int(text)
-        if value >= 0 and value <= 15:
+        if 0 <= value <= 15:
             return value
     value = _by_text.get(text.upper())
     if value is None:

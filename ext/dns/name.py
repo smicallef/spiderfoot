@@ -95,7 +95,7 @@ def _escapify(label):
     for c in label:
         if c in _escaped:
             text += '\\' + c
-        elif ord(c) > 0x20 and ord(c) < 0x7F:
+        elif 0x20 < ord(c) < 0x7F:
             text += c
         else:
             text += '\\%03d' % ord(c)

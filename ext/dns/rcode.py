@@ -67,7 +67,7 @@ def from_text(text):
 
     if text.isdigit():
         v = int(text)
-        if v >= 0 and v <= 4095:
+        if 0 <= v <= 4095:
             return v
     v = _by_text.get(text.upper())
     if v is None:
