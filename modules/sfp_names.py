@@ -20,8 +20,7 @@ class sfp_names(SpiderFootPlugin):
     # Default options
     opts = {
         'algotune': 50,
-        'emailtoname': True,
-        'nametoemail': False
+        'emailtoname': True
     }
 
     # Option descriptions
