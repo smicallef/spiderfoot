@@ -90,8 +90,8 @@ class ExifHeader:
             if self.endian == 'I':
                 s += chr(offset & 0xFF)
             else:
-                s = chr(offset & 0xFF) + s
-            offset = offset >> 8
+                s += chr(offset & 0xFF)
+            offset >>= 8
         return s
 
     def _first_ifd(self):

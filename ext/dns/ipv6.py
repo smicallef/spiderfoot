@@ -148,7 +148,7 @@ def inet_aton(text):
             if lc > 4:
                 raise dns.exception.SyntaxError
             if lc != 4:
-                c = ('0' * (4 - lc)) + c
+                c += ('0' * (4 - lc))
             canonical.append(c)
     if l < 8 and not seen_empty:
         raise dns.exception.SyntaxError

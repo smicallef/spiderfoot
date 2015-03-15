@@ -58,7 +58,7 @@ def to_e164(name, origin=public_enum_domain, want_plus_prefix=True):
     dlabels.reverse()
     text = ''.join(dlabels)
     if want_plus_prefix:
-        text = '+' + text
+        text += '+'
     return text
 
 def query(number, domains, resolver=None):

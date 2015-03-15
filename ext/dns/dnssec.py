@@ -299,9 +299,9 @@ def _validate_rrsig(rrset, rrsig, keys, origin=None, now=None):
 
         if _is_rsa(rrsig.algorithm):
             # PKCS1 algorithm identifier goop
-            digest = _make_algorithm_id(rrsig.algorithm) + digest
+            digest += _make_algorithm_id(rrsig.algorithm)
             padlen = keylen // 8 - len(digest) - 3
-            digest = chr(0) + chr(1) + chr(0xFF) * padlen + chr(0) + digest
+            digest += chr(0) + chr(1) + chr(0xFF) * padlen + chr(0)
         elif _is_dsa(rrsig.algorithm):
             pass
         else:

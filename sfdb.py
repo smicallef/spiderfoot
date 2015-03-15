@@ -254,7 +254,7 @@ class SpiderFootDb:
             qry += " AND c.data REGEXP ? "
             qvars.append(criteria['regex'])
 
-        qry = qry + " ORDER BY c.data"
+        qry += " ORDER BY c.data"
 
         try:
             self.dbh.execute(qry, qvars)
@@ -399,10 +399,10 @@ class SpiderFootDb:
         qvars = [instanceId]
 
         if eventType != "ALL":
-            qry = qry + " AND c.type = ?"
+            qry += " AND c.type = ?"
             qvars.append(eventType)
 
-        qry = qry + " ORDER BY c.data"
+        qry += " ORDER BY c.data"
 
         try:
             self.dbh.execute(qry, qvars)
@@ -418,10 +418,10 @@ class SpiderFootDb:
         qvars = [instanceId]
 
         if eventType != "ALL":
-            qry = qry + " AND type = ?"
+            qry += " AND type = ?"
             qvars.append(eventType)
 
-        qry = qry + " GROUP BY type, data ORDER BY COUNT(*)"
+        qry += " GROUP BY type, data ORDER BY COUNT(*)"
 
         try:
             self.dbh.execute(qry, qvars)
@@ -438,7 +438,7 @@ class SpiderFootDb:
         qvars = [instanceId]
 
         if limit != None:
-            qry = qry + " LIMIT ?"
+            qry += " LIMIT ?"
             qvars.append(limit)
 
         try:
@@ -456,7 +456,7 @@ class SpiderFootDb:
         qvars = [instanceId]
 
         if limit != None:
-            qry = qry + " LIMIT ?"
+            qry += " LIMIT ?"
             qvars.append(limit)
 
         try:
@@ -669,7 +669,7 @@ class SpiderFootDb:
 
         for hashId in elementIdList:
             qry = qry + "'" + hashId + "',"
-        qry = qry + "'')"
+        qry += "'')"
 
         try:
             self.dbh.execute(qry, qvars)

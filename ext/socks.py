@@ -228,7 +228,7 @@ class socksocket(socket.socket):
                 # Resolve locally
                 ipaddr = socket.inet_aton(socket.gethostbyname(destaddr))
                 req = req + chr(0x01).encode() + ipaddr
-        req = req + struct.pack(">H", destport)
+        req += struct.pack(">H", destport)
         self.sendall(req)
         # Get the response
         resp = self.__recvall(4)
@@ -297,7 +297,7 @@ class socksocket(socket.socket):
         # The username parameter is considered userid for SOCKS4
         if self.__proxy[4] != None:
             req = req + self.__proxy[4]
-        req = req + chr(0x00).encode()
+        req += chr(0x00).encode()
         # DNS name if remote resolving is required
         # NOTE: This is actually an extension to the SOCKS4 protocol
         # called SOCKS4A and may not be supported in all cases.

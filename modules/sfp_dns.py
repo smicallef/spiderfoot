@@ -225,13 +225,13 @@ class sfp_dns(SpiderFootPlugin):
                         return None
 
                     if self.hostresults.has_key(sip):
-                        s = s + 1
+                        s += 1
                         continue
 
                     addrs = self.resolveIP(sip)
                     if len(addrs) == 0:
                         self.sf.debug("Look-aside resolve for " + sip + " failed.")
-                        s = s + 1
+                        s += 1
                         continue
 
                     # Report addresses that resolve to hostnames on the same
@@ -246,7 +246,7 @@ class sfp_dns(SpiderFootPlugin):
                             self.processHost(sip, parentEvent, affiliate=False)
                         else:
                             self.processHost(sip, parentEvent, affiliate=True)
-                    s = s + 1
+                    s += 1
             return None
 
     # Resolve an IP

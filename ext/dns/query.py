@@ -244,7 +244,7 @@ def _net_read(sock, count, expiration):
         n = sock.recv(count)
         if n == '':
             raise EOFError
-        count = count - len(n)
+        count -= len(n)
         s = s + n
     return s
 

@@ -51,7 +51,7 @@ def s2n_intel(string):
     x = 0
     y = 0
     for c in string:
-        x = x | (ord_(c) << y)
+        x |= ord_(c) << y
         y += + 8
     return x
 
