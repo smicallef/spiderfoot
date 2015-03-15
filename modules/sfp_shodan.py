@@ -9,7 +9,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import json
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

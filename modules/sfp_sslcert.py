@@ -9,7 +9,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import socket
 import socks
 import ssl

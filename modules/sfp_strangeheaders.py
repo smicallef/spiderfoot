@@ -10,8 +10,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Standard headers, taken from http://en.wikipedia.org/wiki/List_of_HTTP_header_fields

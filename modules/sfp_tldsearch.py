@@ -11,9 +11,6 @@
 #-------------------------------------------------------------------------------
 
 import socket
-import sys
-import re
-import time
 import random
 import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

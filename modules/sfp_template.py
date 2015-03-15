@@ -9,7 +9,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_XXX(SpiderFootPlugin):
