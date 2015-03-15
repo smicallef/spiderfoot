@@ -120,7 +120,7 @@ class sfp_names(SpiderFootPlugin):
 
             # If the first word is in the dictionary but the second isn't,
             # subtract 40 points.
-            if notindict == False:
+            if not notindict:
                 if first in self.d and second not in self.d:
                     p -= 20
 

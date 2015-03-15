@@ -438,7 +438,7 @@ def parse_raw_whois(raw_data, normalized=None, never_query_handles=True, handle_
 
 	for segment in raw_data:
 		for rule_key, rule_regexes in grammar['_data'].items():
-			if (rule_key in data) == False:
+			if not (rule_key in data):
 				for line in segment.splitlines():
 					for regex in rule_regexes:
 						result = re.search(regex, line)
@@ -890,11 +890,11 @@ def parse_registrants(data, never_query_handles=True, handle_server=""):
 							if contact["handle"] == data_reference["handle"]:
 								found = True
 								data_reference.update(contact)
-						if found == False:
+						if not found:
 							# The contact definition was not found in the supplied raw WHOIS data. If the
 							# method has been called with never_query_handles=False, we can use the supplied
 							# WHOIS server for looking up the handle information separately.
-							if never_query_handles == False:
+							if not never_query_handles:
 								try:
 									contact = fetch_nic_contact(data_reference["handle"], handle_server)
 									data_reference.update(contact)

@@ -29,7 +29,7 @@ def get_whois_raw(domain, server="", previous=None, rfc3490=True, never_cut=Fals
 				is_exception = True
 				target_server = exc_serv
 				break
-		if is_exception == False:
+		if not is_exception:
 			target_server = get_root_server(domain)
 	else:
 		target_server = server
@@ -57,7 +57,7 @@ def get_whois_raw(domain, server="", previous=None, rfc3490=True, never_cut=Fals
 			if re.search("Domain Name: %s\n" % domain.upper(), record):
 				response = record
 				break
-	if never_cut == False:
+	if not never_cut:
 		new_list = [response] + previous
 	server_list.append(target_server)
 	for line in [x.strip() for x in response.splitlines()]:

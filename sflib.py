@@ -147,7 +147,7 @@ class SpiderFoot:
         return
 
     def debug(self, message):
-        if self.opts['_debug'] == False:
+        if not self.opts['_debug']:
             return
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
