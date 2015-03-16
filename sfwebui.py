@@ -65,6 +65,8 @@ class SpiderFootWebUi:
         for item in inputList:
             c = cgi.escape(item, True)
             c = c.replace('\'', '&quot;')
+            # We don't actually want & translated to &amp;
+            c = c.replace("&amp;", "&")
             ret.append(c)
 
         return ret

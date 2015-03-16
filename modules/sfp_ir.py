@@ -269,7 +269,7 @@ class sfp_ir(SpiderFootPlugin):
                         ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
 
                     if len(ownerinfo) > 0:
-                        evt = SpiderFootEvent("BGP_AS_PEER", ownertext,
+                        evt = SpiderFootEvent("BGP_AS_PEER", nasn,
                                               self.__name__, event)
                         self.notifyListeners(evt)
 
