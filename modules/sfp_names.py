@@ -86,7 +86,7 @@ class sfp_names(SpiderFootPlugin):
 
         if eventName == "EMAILADDR" and self.opts['emailtoname']:
             if "." in eventData.split("@")[0]:
-                name = " ".join(eventData.split("@")[0].split("."))
+                name = " ".join(map(unicode.capitalize, eventData.split("@")[0].split(".")))
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
                 self.notifyListeners(evt)
