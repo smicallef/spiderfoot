@@ -78,7 +78,7 @@ class SpiderFoot:
         if val.lower().startswith('http://') or val.lower().startswith('https://'):
             try:
                 self.info("Downloading configuration data from: " + val)
-                res = urllib2.urlopen(val, context=ssl._create_unverified_context())
+                res = urllib2.urlopen(val)
                 data = res.read()
                 if splitLines:
                     return data.splitlines()
