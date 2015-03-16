@@ -15,6 +15,7 @@ import mimetypes
 import metapdf
 import openxmllib
 import exifread
+import lxml
 from StringIO import StringIO
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
