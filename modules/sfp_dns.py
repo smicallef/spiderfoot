@@ -175,6 +175,8 @@ class sfp_dns(SpiderFootPlugin):
             self.sf.debug("Looking up IPs in owned netblock: " + eventData)
             for ip in IPNetwork(eventData):
                 ipaddr = str(ip)
+                if "::" in ipaddr:
+                    continue
                 if ipaddr.split(".")[3] in ['255', '0']:
                     continue
                 if '255' in ipaddr.split("."):
