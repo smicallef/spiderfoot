@@ -172,6 +172,9 @@ class sfp_dns(SpiderFootPlugin):
                               str(self.opts['maxnetblock']))
                 return None
 
+            if "::" in eventData:
+                return None
+
             self.sf.debug("Looking up IPs in owned netblock: " + eventData)
             for ip in IPNetwork(eventData):
                 ipaddr = str(ip)
