@@ -88,7 +88,7 @@ CREATE TABLE tbl_scan_results (
     visibility          INT NOT NULL DEFAULT 100,
     risk                INT NOT NULL DEFAULT 0,
     module              VARCHAR NOT NULL,
-    data                VARCHAR
+    data                VARCHAR,
     source_event_hash  VARCHAR DEFAULT 'ROOT'
 );
 
