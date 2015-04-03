@@ -219,7 +219,7 @@ class SpiderFootScanner(threading.Thread):
                     psMod.registerListener(mod)
 
             # Create the "ROOT" event which un-triggered modules will link events to
-            rootEvent = SpiderFootEvent("ROOT", "", "", None)
+            rootEvent = SpiderFootEvent("ROOT", self.ts.targetValue, "", None)
             psMod.notifyListeners(rootEvent)
             firstEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue,
                                          "SpiderFoot UI", rootEvent)
