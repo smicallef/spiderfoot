@@ -23,7 +23,8 @@ DROP TABLE tbl_event_types;
 CREATE TABLE tbl_event_types (
     event       VARCHAR NOT NULL PRIMARY KEY,
     event_descr VARCHAR NOT NULL,
-    event_raw   INT NOT NULL DEFAULT 0
+    event_raw   INT NOT NULL DEFAULT 0,
+    event_type  VARCHAR NOT NULL
 );
 
 --
