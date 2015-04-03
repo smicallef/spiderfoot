@@ -142,6 +142,28 @@ class SpiderFootWebUi:
 
     scansearchresultexport.exposed = True
 
+    # Export entities from scan results for visualising
+    def scanviz(self, id, gexf="0"):
+        types = list()
+        dbh = SpiderFootDb(self.config)
+        sf = SpiderFoot(self.config)
+        data = dbh.scanResultEvent(id)
+        if gexf != "0":
+            cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.gexf"
+            cherrypy.response.headers['Content-Type'] = "application/gexf"
+            cherrypy.response.headers['Pragma'] = "no-cache"
+            return sf.buildGraphGexf("SpiderFoot Export", data)
+        else:
+            return sf.buildGraphJson(data)
+        
+    scanviz.exposed = True
+
+    # Export entities results from multiple scans in GEXF format
+    def scansgexf(self, idlist):
+        pass
+
+    scansgexf.exposed = True
+
     # Configuration used for a scan
     def scanopts(self, id):
         ret = dict()

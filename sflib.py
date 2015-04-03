@@ -14,6 +14,8 @@
 import inspect
 import hashlib
 import gzip
+import gexf
+import json
 import re
 import os
 import random
@@ -91,6 +93,132 @@ class SpiderFoot:
                     return None
 
         return val
+
+    # Return a format-agnostic collection of tuples to use as the
+    # basis for building graphs in various formats.
+    def buildGraphData(self, data, flt=list()):
+        mapping = set()
+        entities = dict()
+        parents = dict()
+
+        def get_next_parent_entities(item, pids):
+            ret = list()
+
+            for [parent, id] in parents[item]:
+                if id in pids:
+                    continue
+                if parent in entities:
+                    ret.append(parent)
+                else:
+                    pids.append(id)
+                    for p in get_next_parent_entities(parent, pids):
+                        ret.append(p)
+            return ret
+
+        for row in data:
+            if row[11] == "ENTITY" or row[11] == "INTERNAL":
+                # List of all valid entity values
+                if len(flt) > 0:
+                    if row[4] in flt or row[11] == "INTERNAL":
+                        entities[row[1]] = True
+                else:
+                    entities[row[1]] = True
+
+            if row[1] not in parents:
+                parents[row[1]] = list()
+            parents[row[1]].append([row[2], row[8]])
+
+        for entity in entities:
+            for [parent, id] in parents[entity]:
+                if parent in entities:
+                    if entity != parent:
+                        #print "Adding entity parent: " + parent
+                        mapping.add((entity, parent))
+                else:
+                    ppids = list()
+                    #print "Checking " + parent + " for entityship."
+                    next_parents = get_next_parent_entities(parent, ppids)
+                    for next_parent in next_parents:
+                        if entity != next_parent:
+                            #print "Adding next entity parent: " + next_parent
+                            mapping.add((entity, next_parent))
+        return mapping
+
+    # Convert supplied raw data into GEXF format (e.g. for Gephi)
+    # GEXF produced by PyGEXF doesn't work with SigmaJS because
+    # SJS needs coordinates for each node. 
+    def buildGraphGexf(self, title, data, flt=list()):
+        mapping = self.buildGraphData(data, flt)
+        g = gexf.Gexf(title, title)
+        graph = g.addGraph("undirected", "static", "SpiderFoot Export")
+
+        nodelist = dict()
+        ecounter = 0
+        ncounter = 0
+        for pair in mapping:
+            (dst, src) = pair
+            # Leave out this special case
+            if src == "ROOT" or dst == "ROOT":
+                continue
+            if dst not in nodelist:
+                ncounter = ncounter + 1
+                graph.addNode(str(ncounter), unicode(dst, errors="replace"))    
+                nodelist[dst] = ncounter
+
+            if src not in nodelist:
+                ncounter = ncounter + 1
+                graph.addNode(str(ncounter), unicode(src, errors="replace"))
+                nodelist[src] = ncounter
+
+            ecounter = ecounter + 1
+            graph.addEdge(str(ecounter), str(nodelist[src]), str(nodelist[dst]))
+
+        output = StringIO.StringIO()
+        g.write(output)
+        return output.getvalue()
+
+    # Convert supplied raw data into JSON format for SigmaJS
+    def buildGraphJson(self, data, flt=list()):
+        mapping = self.buildGraphData(data, flt)
+        ret = dict()
+        ret['nodes'] = list()
+        ret['edges'] = list()
+
+        nodelist = dict()
+        ecounter = 0
+        ncounter = 0
+        for pair in mapping:
+            (dst, src) = pair
+            # Leave out this special case
+            if src == "ROOT" or dst == "ROOT":
+                continue
+            if dst not in nodelist:
+                ncounter = ncounter + 1
+                ret['nodes'].append({'id': str(ncounter), 
+                                    'label': unicode(dst, errors="replace"),
+                                    'x': random.randint(1,1000),
+                                    'y': random.randint(1,1000),
+                                    'size': "1"
+                })
+                nodelist[dst] = ncounter
+
+            if src not in nodelist:
+                ncounter = ncounter + 1
+                ret['nodes'].append({'id': str(ncounter), 
+                                    'label': unicode(src, errors="replace"),
+                                    'x': random.randint(1,1000),
+                                    'y': random.randint(1,1000),
+                                    'size': "1"
+                })
+                nodelist[src] = ncounter
+
+            ecounter = ecounter + 1
+            ret['edges'].append({'id': str(ecounter), 
+                                'source': str(nodelist[src]), 
+                                'target': str(nodelist[dst])
+            })
+
+        return json.dumps(ret)
 
     # Called usually some time after instantiation
     # to set up a database handle and scan GUID, used
