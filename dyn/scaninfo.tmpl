@@ -4,6 +4,7 @@
    <div class="btn-group">
       <a id='btn-status' class="btn" onClick='scanStatusView("${id}")'><i class='icon-eye-open'></i>&nbsp;Status</a>
       <a id='btn-browse' class="btn" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
+      <a id='btn-graph' class="btn" onClick='graphEvents("${id}")'><i class='icon-asterisk'></i>&nbsp;Graph</a>
       <a id='btn-info' class="btn" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-log' class="btn" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
     </div>
@@ -16,9 +17,9 @@
     </div>
     <div class="btn-group pull-right">
     <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
-    <a id='btn-export' rel="tooltip" title="Export Data to CSV" class="btn-success btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
+    <a id='btn-export' rel="tooltip" title="Export Data" class="btn-success btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
     </div> 
-    <div id='customview' class="btn-group pull-right">
+    <div id='customtabview' class="btn-group pull-right">
      <a id='btn-fullview' rel="tooltip" data-title="Full Data View" class="btn-inverse btn active" onClick='browseUpdate("full")'><i class='icon-th icon-white'></i></a>
      <a id='btn-uniqueview' rel="tooltip" data-title="Unique Data View" class="btn-inverse btn" onClick='browseUpdate("unique")'><i class='icon-align-justify icon-white'></i></a>
      <a id='btn-vizview' rel="tooltip" data-title="Visualize" class="btn-inverse btn dropdown-toggle" data-toggle="dropdown"><i class='icon-picture icon-white'></i></a>
@@ -28,8 +29,17 @@
         <li><a class='link' onClick='browseUpdate("viz-dendro")'>Discovery Path</a></li>
      </ul>
     </div>
+    <div id='customvizview' class="btn-group pull-right">
+     <a id='btn-random' rel="tooltip" data-title="Random Layout" class="btn-inverse btn active" onClick='vizUpdate("random")'><b>R</b></a>
+     <a id='btn-forceatlas' rel="tooltip" data-title="Force Layout" class="btn-inverse btn" onClick='vizUpdate("force")'><b>F</b></a>
+     <a id='btn-saveimage' rel="tooltip" data-title="Save Image" class="btn-inverse btn dropdown-toggle" onClick='vizUpdate("download")'><i class='icon-picture icon-white'></i></a>
+    </div>
   </div>
-
+    <script src="/static/js/sigma.min.js"></script>
+    <script src="/static/js/sigma.parsers.json.min.js"></script>
+    <script src="/static/js/sigma.plugins.dragNodes.min.js"></script>
+    <script src="/static/js/sigma.layout.forceAtlas2.min.js"></script>
+    <script src="/static/js/sigma.renderers.snapshot.min.js"></script>
     <script type='text/javascript'>
         var currentType = "ALL";
         var currentTypeName = "All";
@@ -37,6 +47,7 @@
         var lastSearchType = "ALL";
         var lastSearchQuery = "";
         var dataloaders = [];
+        var sharedSigma = "";
         var loadersrunning = false;
         var refresh = function() { browseEventList("${id}"); }
         $('#searchvalue').popover({ 'trigger': 'focus', 'placement': 'bottom'});
@@ -48,7 +59,7 @@
 
         function navTo(target) {
             var targets = [ "btn-browse", "btn-info", "btn-log", 
-                "btn-export", "btn-viz", "btn-status" ]
+                "btn-export", "btn-viz", "btn-status", "btn-graph" ]
             for (var i = 0; i < targets.length; i++) {
                 if (targets[i] == target) {
                     $("#" + targets[i]).addClass("active");
@@ -58,7 +69,8 @@
             }
 
             $("#breadcrumbs").remove();
-            $("#customview").hide();
+            $("#customtabview").hide();
+            $("#customvizview").hide();
             currentSection = target
             dataloaders = []
         }
@@ -128,6 +140,62 @@
             });
         }
 
+        // Visualisation
+        function graphEvents(instanceId) {
+            grid = "<div id='scansummary-content'><br>"
+            grid += "<div class='span12' style='height: 650px; width: 100%' id='graph-container'></div>"
+            grid += "</div>"
+
+            $("#scansummary-content").remove();
+            $("#loader").show();
+            $("#btn-export").show();
+            $("#btn-refresh").show();
+            $("#btn-search").hide();
+            $("#btn-graph").show();
+            $("#scanreminder").hide();
+            refresh = function() { graphEvents(instanceId); }
+            navTo("btn-graph");
+            $("#customvizview").show();
+            $("#mainbody").append(grid);
+
+            sigma.renderers.def = sigma.renderers.canvas
+            sigma.parsers.json("/scanviz?id=" + instanceId + "&gexf=0", {
+                container: 'graph-container'
+            }, function(s) { 
+                sharedSigma = s;
+                s.settings({
+                    edgeColor: 'default',
+                    defaultEdgeColor: '#aaa',
+                    maxNodeSize: 5
+                });
+                sigma.plugins.dragNodes(s, s.renderers[0])
+                s.refresh()
+            });
+
+            $("#loader").hide();
+        }
+
+        function vizUpdate(method) {
+            s = sharedSigma
+            if (method == "force") {
+                $("#btn-forceatlas").addClass("active");
+                $("#btn-random").removeClass("active");
+                s.startForceAtlas2();
+                s.refresh();
+                setTimeout(function() { s.stopForceAtlas2() }, 5000);
+            }
+
+            if (method == "random") {
+                $("#btn-forceatlas").removeClass("active");
+                $("#btn-random").addClass("active");
+                refresh();
+            }
+
+            if (method == "download") {
+                s.renderers[0].snapshot({download: true});
+            }
+        }
+
         // Scan status
         function scanStatusView(instanceId) {
             grid = "<div id='scansummary-content'>"
@@ -144,7 +212,7 @@
             grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='errors'>?</button></div>"
             grid += "</div></div></div><br>"
             grid += "<div class='row'>"
-            grid += "<div class='span12a' id='vbarsummary' style='height: 480px'></div>"
+            grid += "<div class='span12' id='vbarsummary' style='height: 480px'></div>"
             grid += "</div><br>"
             grid += "<div class='row'>"
             grid += "<div class='span12' id='logtable'></div>"
@@ -319,7 +387,7 @@
             $("#btn-export").show();
             $("#btn-refresh").show();
             $("#btn-search").show();
-            $("#customview").show();
+            $("#customtabview").show();
             $("#scanreminder").hide();
             currentType = eventType;
             currentTypeName = eventTypeLabel;
@@ -435,9 +503,16 @@
                     type = lastSearchType;
                 }
                 efr.src = '${docroot}/scansearchresultexport?id=' + instanceId + '&eventType=' + type + "&value=" + lastSearchQuery;
-            } else {
+            }
+
+            if (currentSection == "btn-browse") {
                 efr.src = '${docroot}/scaneventresultexport?id=' + instanceId + '&type=' + eventType;
             }
+
+            if (currentSection == "btn-graph") {
+                efr.src = '${docroot}/scanviz?id=' + instanceId + '&gexf=1';
+            }
+
             $("#loader").fadeOut(500);
         }
 
