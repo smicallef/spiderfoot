@@ -157,6 +157,8 @@
             navTo("btn-graph");
             $("#customvizview").show();
             $("#mainbody").append(grid);
+            $("#btn-forceatlas").removeClass("active");
+            $("#btn-random").addClass("active");
 
             sigma.renderers.def = sigma.renderers.canvas
             sigma.parsers.json("/scanviz?id=" + instanceId + "&gexf=0", {
