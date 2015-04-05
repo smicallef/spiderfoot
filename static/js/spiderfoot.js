@@ -88,7 +88,7 @@ sf.simpleTable = function(id, data, cols, linkcol=null, linkstring=null, sortabl
 sf.updateTooltips = function() {
     $(document).ready(function () {
         if ($("[rel=tooltip]").length) {
-            $("[rel=tooltip]").tooltip();
+            $('[rel=tooltip]').tooltip({container: 'body'});
         }
     });
 }
