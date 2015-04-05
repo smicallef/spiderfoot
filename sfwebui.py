@@ -171,13 +171,15 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.config)
         sf = SpiderFoot(self.config)
         data = dbh.scanResultEvent(id)
+        scan = dbh.scanInstanceGet(id)
         if gexf != "0":
             cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.gexf"
             cherrypy.response.headers['Content-Type'] = "application/gexf"
             cherrypy.response.headers['Pragma'] = "no-cache"
             return sf.buildGraphGexf("SpiderFoot Export", data)
         else:
-            return sf.buildGraphJson(data)
+            root = scan[1]
+            return sf.buildGraphJson(root, data)
         
     scanviz.exposed = True
 
@@ -403,7 +405,8 @@ class SpiderFootWebUi:
             raise cherrypy.HTTPRedirect("/")
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=id, name=res[0], pageid="SCANLIST", docroot=self.docroot)
+            return templ.render(id=id, name=res[0], names=list(), ids=list(),
+                                pageid="SCANLIST", docroot=self.docroot)
 
     scandelete.exposed = True
 
