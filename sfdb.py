@@ -110,7 +110,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('EMAILADDR', 'Email Address', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('EMAILADDR_COMPROMISED', 'Hacked Email Address', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ERROR_MESSAGE', 'Error Message', 0, 'DATA')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('GEOINFO', 'Physical Location', 0, 'ENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('GEOINFO', 'Physical Location', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HTTP_CODE', 'HTTP Status Code', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HUMAN_NAME', 'Human Name', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('INTERESTING_FILE', 'Interesting File', 0, 'DESCRIPTOR')",
@@ -245,11 +245,13 @@ class SpiderFootDb:
             qvars.append(criteria['type'])
 
         if criteria.get('value') is not None:
-            qry += " AND c.data LIKE ? "
+            qry += " AND (c.data LIKE ? OR s.data LIKE ?) "
+            qvars.append(criteria['value'])
             qvars.append(criteria['value'])
 
         if criteria.get('regex') is not None:
-            qry += " AND c.data REGEXP ? "
+            qry += " AND (c.data REGEXP ? OR s.data REGEXP ?) "
+            qvars.append(criteria['regex'])
             qvars.append(criteria['regex'])
 
         qry += " ORDER BY c.data"
@@ -645,7 +647,7 @@ class SpiderFootDb:
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
-            c.source_event_hash, t.event_descr \
+            c.source_event_hash, t.event_descr, t.event_type, s.scan_instance_id \
             FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
             s.scan_instance_id = c.scan_instance_id AND \
