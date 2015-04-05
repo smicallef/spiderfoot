@@ -1,5 +1,6 @@
 <%include file="HEADER.tmpl"/>
     <h2>Scans &nbsp;<img id=loader src=${docroot}/static/img/loader.gif></h2>
+<div id="scancontent">
 % if newscan:
 <div class="alert alert-success">
  <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -7,34 +8,185 @@
  Scan '${newscan}' has successfully been initiated. Reload this page for up-to-date status on the scan.
 </div>
 % endif
-% if stoppedscan:
+% if rerunscans:
+<div class="alert alert-success">
+ <button type="button" class="close" data-dismiss="alert">&times;</button>
+ <h4>Success!</h4>
+ Scans have successfully been re-initiated as separate instances. Reload this page for up-to-date status on the scans.
+</div>
+% endif
+% if stoppedscan and len(errors) == 0:
 <div class="alert alert-warning">
  <button type="button" class="close" data-dismiss="alert">&times;</button>
  <h4>Scan aborted.</h4>
  Please allow a minute or two for the scan to cleanly shut itself down.
 </div>
 % endif
+
+% if stoppedscan and len(errors) > 0:
+<div class="alert alert-warning">
+ <button type="button" class="close" data-dismiss="alert">&times;</button>
+ <h4>Error</h4>
+ Some or all of the scans could not be aborted:<br>
+<ul>
+    % for err in errors:
+        <li>${err}</li>
+    % endfor
+</ul>
+</div>
+
+% endif
+
     <script type='text/javascript'>
-            sf.fetchData('${docroot}/scanlist', null, function(data) {
+            globalTypes = null;
+            globalFilter = null;
+
+            function switchSelectAll() {
+                if (!$("#checkall")[0].checked) {
+                    $("input[id*=cb_]").prop('checked', false);
+                } else {
+                    $("input[id*=cb_]").prop('checked', true);
+                }
+            }
+
+            function filter(type) {
+                if (type == "all") {
+                    showlist();
+                    return;
+                }
+                if (type == "running") {
+                    showlist(["RUNNING", "STARTING", "STARTED"], "Running");
+                    return;
+                }
+                if (type == "finished") {
+                    showlist(["FINISHED"], "Finished");
+                    return;
+                }
+                if (type == "failed") {
+                    showlist(["ABORTED", "FAILED"], "Failed/Aborted");
+                    return;
+                }
+            }
+
+            function getSelected() {
+                ids = [];
+                $("input[id*=cb_]").each(function(i, obj) {
+                    if (obj.checked) {
+                        ids[ids.length] = obj.id.replace("cb_", "");
+                    }
+                });
+
+                if (ids.length == 0) {
+                    alert("You need to select at least one scan.");
+                    return false;
+                }
+
+                return ids;
+            }
+
+            function stopSelected() {
+                ids = getSelected();
+
+                if (ids != false) {
+                    window.location.href = '${docroot}/stopscanmulti?ids=' + ids.join(',');
+                }
+            }
+
+            function deleteSelected() {
+                ids = getSelected();
+
+                if (ids != false) {
+                    window.location.href = '${docroot}/scandeletemulti?ids=' + ids.join(',');
+                }
+            }
+
+            function rerunSelected() {
+                ids = getSelected();
+
+                if (ids != false) {
+                    window.location.href = '${docroot}/rerunscanmulti?ids=' + ids.join(',');
+                }
+            }
+
+            function exportSelected(type) {
+                ids = getSelected();
+
+                if (ids != false) {
+                    $("#loader").show();
+                    var efr = document.getElementById('exportframe');
+                    if (type == "gexf") {
+                        efr.src = '${docroot}/scanvizmulti?ids=' + ids.join(',');
+                    } else {
+                        efr.src = '${docroot}/scaneventresultexportmulti?ids=' + ids.join(',');
+                    }
+                    $("#loader").fadeOut(500);
+                }
+            }
+
+            function reload() {
+                showlist(globalTypes, globalFilter);
+                return;
+            }
+
+            function showlist(types, filter) {
+                globalTypes = types;
+                globalFilter = filter;
+                sf.fetchData('${docroot}/scanlist', null, function(data) {
                             if (data.length == 0) {
                                 $("#loader").fadeOut(500);
                                 welcome = "<div class='alert alert-info'>";
                                 welcome += "<h4>No scan history</h4><br>";
                                 welcome += "There is currently no history of previously run scans. Please click 'New Scan' to initiate a new scan."
                                 welcome += "</div>";
-                                $("#mainbody").append(welcome);
+                                $("#scancontent").append(welcome);
                                 return;
                             }
-                            var buttons = "<div class='btn-toolbar'><div class='btn-group'><a id='btn-status' class='btn' onClick='scanStatusView(\"${id}\")'>";
-                            buttons += "<i class='icon-eye-open'></i>&nbsp;Status</a>";
-                            buttons += "<a id='btn-browse' class='btn' onClick='browseEventList(\"${id}\")'><i class='icon-th-list'></i>&nbsp;Browse</a>";
-                            buttons += "<a id='btn-info' class='btn' onClick='viewScanConfig(\"${id}\")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>";
-                            buttons += "<a id='btn-log' class='btn' onClick='viewScanLog(\"${id}\")'><i class='icon-book'></i>&nbsp;Log</a></div></div>";
+
+                            if (filter == null) {
+                                filter = "None";
+                            }
+                            var buttons = "<div class='btn-toolbar'>";
+                            buttons += "<div class='btn-group'>";
+                            buttons += "<button id='btn-filter' class='btn'><i class='icon-filter'></i>&nbsp;Filter: " + filter + "</button>";
+                            buttons += "<button class='btn dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>";
+                            buttons += "<ul class='dropdown-menu'>";
+                            buttons += "<li><a href='javascript:filter(\"all\")'>None</a></li>";
+                            buttons += "<li><a href='javascript:filter(\"running\")'>Running</a></li>";
+                            buttons += "<li><a href='javascript:filter(\"finished\")'>Finished</a></li>";
+                            buttons += "<li><a href='javascript:filter(\"failed\")'>Failed/Aborted</a></li></ul>";
+                            buttons += "</div>";
+
+                            buttons += "<div class='btn-group pull-right'>";
+                            buttons += "<button rel='tooltip' data-title='Delete Selected' id='btn-delete' class='btn btn-inverse' onClick='deleteSelected()'><i class='icon-trash icon-white'></i></button>";
+                            buttons += "</div>";
+
+                            buttons += "<div class='btn-group pull-right'>";
+                            buttons += "<button rel='tooltip' data-title='Stop Selected' id='btn-stop' class='btn btn-inverse' onClick='stopSelected()'>";
+                            buttons += "<i class='icon-stop icon-white'></i></button>";
+                            buttons += "<button rel='tooltip' data-title='Re-run Selected' id='btn-rerun' class='btn btn-inverse' onClick='rerunSelected()'><i class='icon-repeat icon-white'></i></button>";
+                            buttons += "</div>";
+
+                            buttons += "<div class='btn-group pull-right'>";
+                            buttons += "<button rel='tooltip' data-title='Refresh' id='btn-refresh' class='btn btn-success' onClick='reload()'><i class='icon-refresh icon-white'></i></a>";
+                            buttons += "<button rel='tooltip' data-title='Export Selected' id='btn-export' class='btn btn-success'><i class='icon-download-alt icon-white'></i></button>";
+                            buttons += "<button class='btn dropdown-toggle btn-success' data-toggle='dropdown'><span class='caret'></span></button>";
+                            buttons += "<ul class='dropdown-menu'>";
+                            buttons += "<li><a onClick='exportSelected(\"csv\")'>CSV</a></li>";
+                            buttons += "<li><a onClick='exportSelected(\"gexf\")'>GEXF</a></li></ul>";
+                            buttons += "</div>";
+                            
+                            buttons += "</div>";
                             var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter'>";
-                            table += "<thead><tr> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th style='text-align: center'>Status</th> <th style='text-align: center'>Elements</th><th style='text-align: center'>Action</th> </tr></thead><tbody>";
+                            table += "<thead><tr><th style='text-align: center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'></th> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th style='text-align: center'>Status</th> <th style='text-align: center'>Elements</th><th style='text-align: center'>Action</th> </tr></thead><tbody>";
+                            filtered = 0;
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr><td><a href=${docroot}/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
-                                table += "<td>" + data[i][2] + "&nbsp;&nbsp;<a rel='tooltip' title='Visit target' target='_new' href='http://" + data[i][2] + "'><i class='icon-share icon-gray' /></a></td>";
+                                if (types != null && $.inArray(data[i][6], types)) {
+                                    filtered++;
+                                    continue;
+                                }
+                                table += "<tr><td style='text-align: center'><input type='checkbox' onClick='checkboxValidate()' id='cb_" + data[i][0] + "'></td>"
+                                table += "<td><a href=${docroot}/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
+                                table += "<td>" + data[i][2] + "</td>";
                                 table += "<td>" + data[i][3] + "</td>";
                                 table += "<td>" + data[i][5] + "</td>";
                                 if (data[i][6] == "FINISHED") {
@@ -55,15 +207,30 @@
                                 if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED") {
                                     table += "<a rel='tooltip' title='Stop Scan' href=${docroot}/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray' /></a></td>";
                                 } else {
-                                    table += "<a rel='tooltip' title='Delete Scan' href=${docroot}/scandelete?id=" + data[i][0] + "><i class='icon-trash icon-gray' /></a></td>";
+                                    table += "<a rel='tooltip' title='Delete Scan' href=${docroot}/scandelete?id=" + data[i][0] + "><i class='icon-trash icon-gray' /></a>";
+                                    table += "&nbsp;&nbsp;<a rel='tooltip' title='Clone Scan' href=${docroot}/clonescan?id=" + data[i][0] + "><i class='icon-plus-sign icon-gray' /></a>";
+                                    table += "&nbsp;&nbsp;<a rel='tooltip' title='Re-run Scan' href=${docroot}/rerunscan?id=" + data[i][0] + "><i class='icon-repeat icon-gray' /></a></td>";
                                 }
                                 table += "</tr>";
                             }
-                            table += "</tbody></table>";
+                            footer = "<div>Total Scans: <b>" + i + "</b>";
+                            if (filtered > 0) {
+                                footer += "&nbsp;&nbsp;(" + filtered + " filtered out)";
+                            }
+                            footer += "</div>";
+                            table += "</tbody></table>" + footer;
                             $("#loader").fadeOut(500);
-                            $("#mainbody").append(table);                        
+                            $("#scancontent-wrapper").remove();
+                            $("#scancontent").append("<div id='scancontent-wrapper'> " + buttons + table + "</div>");
                             sf.updateTooltips();
-                            $("#scanlist").tablesorter( { headers: { 6: { sorter: false } } });
-            });
+                            $("#scanlist").tablesorter( { headers: { 7: { sorter: false }, 0: { sorter: false } } } );
+                            $("[class^=tooltip]").remove();
+                });
+            }
+
+            showlist();
+
     </script>
+</div>
+<iframe style='display: none' id='exportframe'>
 <%include file="FOOTER.tmpl"/>

@@ -468,6 +468,23 @@ class SpiderFoot:
 
         return returnOpts
 
+    # Return the type for a scan
+    def targetType(self, target):
+        targetType = None
+
+        regexToType = {
+            "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
+            "^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER",
+            "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME"
+        }
+
+        # Parse the target and set the targetType
+        for rx in regexToType.keys():
+            if re.match(rx, target, re.IGNORECASE):
+                targetType = regexToType[rx]
+                break
+        return targetType
+
     # Return an array of module names for returning the
     # types specified.
     def modulesProducing(self, events):

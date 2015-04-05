@@ -35,24 +35,17 @@
 
 </script>
 <h2>New Scan</h2>
-% if alreadyRunning == True:
-<div class="alert alert-error">
-<button type="button" class="close" data-dismiss="alert">&times;</button>
-<h4>Error Encountered</h4>
-Another scan is currently running (${runningScan}). Please either wait for that scan to complete, or abort it before running this one.
-</div>
-% endif
 <form class="form" action='${docroot}/startscan' method='POST'>
         <div class="control-group">
             <label class="control-label" for="scanname">Scan Name</label>
             <div class="controls">
-                <input type="text" id="scanname" name="scanname" placeholder="Descriptive name for this scan.">
+                <input type="text" id="scanname" name="scanname" value="${scanname}" placeholder="Descriptive name for this scan.">
             </div>
         </div>
         <div class="control-group">
             <label class="control-label" for="scantarget">Seed Target</label>
             <div class="controls">
-                <input type="text" data-toggle='popover' data-html=true data-animation=true data-title='Usage' data-content='The <i>Seed Target</i> can be one of the following. SpiderFoot will automatically detect the target type based on the format of your input.<br><br><b>Domain Name</b>: e.g. <i>example.com</i><br><br><b>IP Address</b>: e.g. <i>1.2.3.4</i><br><br><b>Hostname/Sub-domain</b>: e.g. <i>abc.example.com</i><br><br><b>Subnet</b>: e.g. <i>1.2.3.0/24</i>' data-placement='right' id="scantarget" name="scantarget" placeholder="Starting point for the scan.">
+                <input type="text" value="${scantarget}" data-toggle='popover' data-html=true data-animation=true data-title='Usage' data-content='The <i>Seed Target</i> can be one of the following. SpiderFoot will automatically detect the target type based on the format of your input.<br><br><b>Domain Name</b>: e.g. <i>example.com</i><br><br><b>IP Address</b>: e.g. <i>1.2.3.4</i><br><br><b>Hostname/Sub-domain</b>: e.g. <i>abc.example.com</i><br><br><b>Subnet</b>: e.g. <i>1.2.3.0/24</i>' data-placement='right' id="scantarget" name="scantarget" placeholder="Starting point for the scan.">
             </div>
         </div>
 
@@ -97,5 +90,21 @@ Another scan is currently running (${runningScan}). Please either wait for that 
 </form>
 <script type='text/javascript'>
 $('#scantarget').popover({ 'html': true, 'animation': true, 'trigger': 'focus'});
+if ("${selectedmods}" != "") {
+        $("#moduletable").show();
+        $("#moduletab").addClass("active");
+        $("#typetable").hide();
+        $("#typetab").removeClass("active");
+        activeTab = "module";
+        alternateTab = "type";
+
+        $("input[id^=module_]").each(function(id, obj) { 
+            if ("${selectedmods}".indexOf(obj.id.replace("module_", "")) >= 0) {
+                $("#" + obj.id).attr("checked", true);
+            } else {
+                $("#" + obj.id).attr("checked", false);
+            }
+        });
+}
 </script>
 <%include file="FOOTER.tmpl"/>

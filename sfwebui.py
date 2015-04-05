@@ -126,6 +126,29 @@ class SpiderFootWebUi:
 
     scaneventresultexport.exposed = True
 
+    # Get result data in CSV format for multiple scans
+    def scaneventresultexportmulti(self, ids, dialect="excel"):
+        dbh = SpiderFootDb(self.config)
+        scaninfo = dict()
+        data = list()
+        for id in ids.split(','):
+            scaninfo[id] = dbh.scanInstanceGet(id)
+            data = data + dbh.scanResultEvent(id)
+
+        fileobj = StringIO()
+        parser = csv.writer(fileobj, dialect=dialect)
+        parser.writerow(["Scan Name", "Updated", "Type", "Module", "Source", "Data"])
+        for row in data:
+            lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
+            datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
+            parser.writerow([scaninfo[row[12]][0], lastseen, str(row[4]), str(row[3]), str(row[2]), datafield])
+        cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
+        cherrypy.response.headers['Content-Type'] = "application/csv"
+        cherrypy.response.headers['Pragma'] = "no-cache"
+        return fileobj.getvalue()
+
+    scaneventresultexportmulti.exposed = True
+
     # Get search result data in CSV format
     def scansearchresultexport(self, id, eventType=None, value=None, dialect="excel"):
         data = self.searchBase(id, eventType, value)
@@ -159,10 +182,26 @@ class SpiderFootWebUi:
     scanviz.exposed = True
 
     # Export entities results from multiple scans in GEXF format
-    def scansgexf(self, idlist):
-        pass
+    def scanvizmulti(self, ids, gexf="1"):
+        types = list()
+        dbh = SpiderFootDb(self.config)
+        sf = SpiderFoot(self.config)
+        data = list()
+        for id in ids.split(','):
+            data = data + dbh.scanResultEvent(id)
 
-    scansgexf.exposed = True
+        if gexf != "0":
+            cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.gexf"
+            cherrypy.response.headers['Content-Type'] = "application/gexf"
+            cherrypy.response.headers['Pragma'] = "no-cache"
+            return sf.buildGraphGexf("SpiderFoot Export", data)
+        else:
+            # Not implemented yet
+            return None
+            #return sf.buildGraphJson(data)
+
+    scanvizmulti.exposed = True
+
 
     # Configuration used for a scan
     def scanopts(self, id):
@@ -200,15 +239,123 @@ class SpiderFootWebUi:
 
     scanopts.exposed = True
 
+    def rerunscan(self, id):
+        # Snapshot the current configuration to be used by the scan
+        cfg = deepcopy(self.config)
+        modopts = dict() # Not used yet as module options are set globally
+        modlist = list()
+        sf = SpiderFoot(cfg)
+        dbh = SpiderFootDb(cfg)
+        info = dbh.scanInstanceGet(id)
+        scanconfig = dbh.scanConfigGet(id)
+        scanname = info[0]
+        scantarget = info[1]
+        targetType = None
+
+        if len(scanconfig) == 0:
+            return self.error("Something went wrong internally.")
+
+        modlist = scanconfig['_modulesenabled'].split(',')
+
+        targetType = sf.targetType(scantarget)
+        if targetType == None:
+            # Should never be triggered for a re-run scan..
+            return self.error("Invalid target type. Could not recognize it as " + \
+                "an IP address, IP subnet, domain name or host name.")
+
+        # Start running a new scan
+        newId = sf.genScanInstanceGUID(scanname)
+        t = SpiderFootScanner(scanname, scantarget.lower(), targetType, newId,
+            modlist, cfg, modopts)
+        t.start()
+
+        # Wait until the scan has initialized
+        while globalScanStatus.getStatus(newId) == None:
+            print "[info] Waiting for the scan to initialize..."
+            time.sleep(1)
+
+        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
+        return templ.render(id=newId, name=scanname, docroot=self.docroot,
+            status=globalScanStatus.getStatus(newId), pageid="SCANLIST")
+
+    rerunscan.exposed = True
+
+    def rerunscanmulti(self, ids):
+        # Snapshot the current configuration to be used by the scan
+        cfg = deepcopy(self.config)
+        modopts = dict() # Not used yet as module options are set globally
+        modlist = list()
+        sf = SpiderFoot(cfg)
+        dbh = SpiderFootDb(cfg)
+
+        for id in ids.split(","):
+            info = dbh.scanInstanceGet(id)
+            scanconfig = dbh.scanConfigGet(id)
+            scanname = info[0]
+            scantarget = info[1]
+            targetType = None
+
+            if len(scanconfig) == 0:
+                return self.error("Something went wrong internally.")
+
+            modlist = scanconfig['_modulesenabled'].split(',')
+
+            targetType = sf.targetType(scantarget)
+            if targetType == None:
+                # Should never be triggered for a re-run scan..
+                return self.error("Invalid target type. Could not recognize it as " + \
+                                  "an IP address, IP subnet, domain name or host name.")
+
+            # Start running a new scan
+            newId = sf.genScanInstanceGUID(scanname)
+            t = SpiderFootScanner(scanname, scantarget.lower(), targetType, newId,
+                                  modlist, cfg, modopts)
+            t.start()
+
+            # Wait until the scan has initialized
+            while globalScanStatus.getStatus(newId) == None:
+                print "[info] Waiting for the scan to initialize..."
+                time.sleep(1)
+
+        templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
+        return templ.render(rerunscans=True, docroot=self.docroot, pageid="SCANLIST")
+
+    rerunscanmulti.exposed = True
+
+
     # Configure a new scan
     def newscan(self):
         dbh = SpiderFootDb(self.config)
         types = dbh.eventTypes()
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
-                            modules=self.config['__modules__'])
+                            modules=self.config['__modules__'], scanname="",
+                            selectedmods="", scantarget="")
 
     newscan.exposed = True
+
+    
+    # Clone an existing scan (pre-selected options in the newscan page)
+    def clonescan(self, id):
+        dbh = SpiderFootDb(self.config)
+        types = dbh.eventTypes()
+        info = dbh.scanInstanceGet(id)
+        scanconfig = dbh.scanConfigGet(id)
+        scanname = info[0]
+        scantarget = info[1]
+        targetType = None
+
+        if scanname == "" or scantarget == "" or len(scanconfig) == 0:
+            return self.error("Something went wrong internally.")
+
+        modlist = scanconfig['_modulesenabled'].split(',')
+
+        templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
+        return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
+                            modules=self.config['__modules__'], selectedmods=modlist,
+                            scanname=scanname, scantarget=scantarget)
+
+    clonescan.exposed = True
 
     # Main page listing scans available
     def index(self):
@@ -259,6 +406,31 @@ class SpiderFootWebUi:
             return templ.render(id=id, name=res[0], pageid="SCANLIST", docroot=self.docroot)
 
     scandelete.exposed = True
+
+    # Delete a scan
+    def scandeletemulti(self, ids, confirm=None):
+        dbh = SpiderFootDb(self.config)
+        names = list()
+
+        for id in ids.split(','):
+            res = dbh.scanInstanceGet(id)
+            names.append(res[0])
+            if res is None:
+                return self.error("Scan ID not found (" + id + ").")
+
+            if res[5] in [ "RUNNING", "STARTING", "STARTED" ]:
+                return self.error("You cannot delete running scans.")
+
+        if confirm is not None:
+            for id in ids.split(','):
+                dbh.scanInstanceDelete(id)
+            raise cherrypy.HTTPRedirect("/")
+        else:
+            templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
+            return templ.render(id=None, name=None, ids=ids.split(','), names=names, 
+                                pageid="SCANLIST", docroot=self.docroot)
+
+    scandeletemulti.exposed = True
 
     # Save settings, also used to completely reset them to default
     def savesettings(self, allopts, token):
@@ -338,18 +510,7 @@ class SpiderFootWebUi:
             modlist.append("sfp__stor_db")
         modlist.sort()
 
-        regexToType = {
-            "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
-            "^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER",
-            "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME"
-        }
-
-        # Parse the target and set the targetType
-        for rx in regexToType.keys():
-            if re.match(rx, scantarget, re.IGNORECASE):
-                targetType = regexToType[rx]
-                break
-
+        targetType = sf.targetType(scantarget)
         if targetType is None:
             return self.error("Invalid target type. Could not recognize it as " + \
                               "an IP address, IP subnet, domain name or host name.")
@@ -371,8 +532,44 @@ class SpiderFootWebUi:
 
     startscan.exposed = True
 
+
     # Stop a scan (id variable is unnecessary for now given that only one simultaneous
     # scan is permitted.)
+    def stopscanmulti(self, ids):
+        global globalScanStatus # running scans
+        dbh = SpiderFootDb(self.config)
+        error = list()
+
+        for id in ids.split(","):
+            errState = False
+            scaninfo = dbh.scanInstanceGet(id)
+
+            if globalScanStatus.getStatus(id) == "FINISHED" or scaninfo[5] == "FINISHED":
+                error.append("Scan '" + scaninfo[0] + "' is in a finished state. <a href='/scandelete?id=" + \
+                             id + "&confirm=1'>Maybe you want to delete it instead?</a>")
+                errState = True
+
+            if not errState and (globalScanStatus.getStatus(id) == "ABORTED" or scaninfo[5] == "ABORTED"):
+                error.append("Scan '" + scaninfo[0] + "' is already aborted.")
+                errState = True
+
+            if not errState and globalScanStatus.getStatus(id) is None:
+                error.append("Scan '" + scaninfo[0] + "' is not actually running. A data consistency " + \
+                             "error for this scan probably exists. <a href='/scandelete?id=" + \
+                             id + "&confirm=1'>Click here to delete it.</a>")
+                errState = True
+            
+            if not errState:
+                globalScanStatus.setStatus(id, "ABORT-REQUESTED")
+
+        templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
+        return templ.render(pageid='SCANLIST', stoppedscan=True, 
+                            errors=error, docroot=self.docroot)
+
+    stopscanmulti.exposed = True
+
+
+    # Stop a scan.
     def stopscan(self, id):
         global globalScanStatus
 
@@ -391,7 +588,7 @@ class SpiderFootWebUi:
 
         globalScanStatus.setStatus(id, "ABORT-REQUESTED")
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST', stoppedscan=True, docroot=self.docroot)
+        return templ.render(pageid='SCANLIST', stoppedscan=True, docroot=self.docroot, errors=list())
 
     stopscan.exposed = True
 

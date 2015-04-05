@@ -1,8 +1,20 @@
 <%include file="HEADER.tmpl"/>
 <div class="alert alert-error">
 <h4>Confirm Deletion</h4>
-<br><br>
+<br>
+% if id != None:
 Please confirm you wish to delete the scan '${name}'<br><br>
 <a class='btn btn-danger' href='${docroot}/scandelete?id=${id}&confirm=1'>Confirm Deletion</a>
+% endif
+% if ids != None:
+Please confirm you wish to delete the scans:<br>
+<ul>
+% for name in names:
+    <li>${name}</li>
+% endfor
+<% idlist = ','.join(ids) %>
+</ul>
+<a class='btn btn-danger' href='${docroot}/scandeletemulti?ids=${idlist}&confirm=1'>Confirm Deletion</a>
+% endif
 </div>
 <%include file="FOOTER.tmpl"/>
