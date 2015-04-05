@@ -158,7 +158,7 @@ class SpiderFoot:
         for pair in mapping:
             (dst, src) = pair
             # Leave out this special case
-            if src == "ROOT" or dst == "ROOT":
+            if dst == "ROOT":
                 continue
             if dst not in nodelist:
                 ncounter = ncounter + 1
@@ -178,7 +178,7 @@ class SpiderFoot:
         return output.getvalue()
 
     # Convert supplied raw data into JSON format for SigmaJS
-    def buildGraphJson(self, data, flt=list()):
+    def buildGraphJson(self, root, data, flt=list()):
         mapping = self.buildGraphData(data, flt)
         ret = dict()
         ret['nodes'] = list()
@@ -189,26 +189,34 @@ class SpiderFoot:
         ncounter = 0
         for pair in mapping:
             (dst, src) = pair
+            col = "#000"
+
             # Leave out this special case
-            if src == "ROOT" or dst == "ROOT":
+            if dst == "ROOT" or src == "ROOT":
                 continue
             if dst not in nodelist:
                 ncounter = ncounter + 1
+                if dst == root:
+                    col = "#f00"
                 ret['nodes'].append({'id': str(ncounter), 
                                     'label': unicode(dst, errors="replace"),
                                     'x': random.randint(1,1000),
                                     'y': random.randint(1,1000),
-                                    'size': "1"
+                                    'size': "1",
+                                    'color': col
                 })
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
+                if src == root:
+                    col = "#f00"
                 ncounter = ncounter + 1
                 ret['nodes'].append({'id': str(ncounter), 
                                     'label': unicode(src, errors="replace"),
                                     'x': random.randint(1,1000),
                                     'y': random.randint(1,1000),
-                                    'size': "1"
+                                    'size': "1",
+                                    'color': col
                 })
                 nodelist[src] = ncounter
 
