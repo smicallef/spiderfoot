@@ -74,10 +74,16 @@ class sfp_whois(SpiderFootPlugin):
         evt = SpiderFootEvent(typ, '\n'.join(data), self.__name__, event)
         self.notifyListeners(evt)
 
-        info = pythonwhois.parse.parse_raw_whois(data, True)
-        if eventName == "DOMAIN_NAME" and info['registrar'] is not None:
-            evt = SpiderFootEvent("DOMAIN_REGISTRAR", info['registrar'][0],
-                                  self.__name__, event)
-            self.notifyListeners(evt)
+        try:
+            info = pythonwhois.parse.parse_raw_whois(data, True)
+        except BaseException as e:
+            self.sf.debug("Error parsing whois data for " + eventData)
+            return None
+
+        if info.has_key('registrar'):
+            if eventName == "DOMAIN_NAME" and info['registrar'] is not None:
+                evt = SpiderFootEvent("DOMAIN_REGISTRAR", info['registrar'][0],
+                                      self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_whois class
