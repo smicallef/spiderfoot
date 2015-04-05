@@ -116,6 +116,8 @@ class SpiderFootWebUi:
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Updated", "Type", "Module", "Source", "Data"])
         for row in data:
+            if row[4] == "ROOT":
+                continue
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
             parser.writerow([lastseen, str(row[4]), str(row[3]), str(row[2]), datafield])
@@ -139,6 +141,8 @@ class SpiderFootWebUi:
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Scan Name", "Updated", "Type", "Module", "Source", "Data"])
         for row in data:
+            if row[4] == "ROOT":
+                continue
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
             parser.writerow([scaninfo[row[12]][0], lastseen, str(row[4]), str(row[3]), str(row[2]), datafield])
@@ -156,6 +160,8 @@ class SpiderFootWebUi:
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Updated", "Type", "Module", "Source", "Data"])
         for row in data:
+            if row[10] == "ROOT":
+                continue
             datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
             parser.writerow([row[0], str(row[10]), str(row[3]), str(row[2]), datafield])
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
@@ -665,6 +671,8 @@ class SpiderFootWebUi:
         data = dbh.scanResultSummary(id)
         retdata = []
         for row in data:
+            if row[0] == "ROOT":
+                continue
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[2]))
             retdata.append([row[0], row[1], lastseen, row[3], row[4]])
         return json.dumps(retdata)

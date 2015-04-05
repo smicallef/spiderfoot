@@ -614,7 +614,7 @@ class SpiderFootDb:
         qry = "SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
             ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, COUNT(r.type) \
             FROM tbl_scan_instance i, tbl_scan_results r WHERE i.guid = r.scan_instance_id \
-            GROUP BY i.guid \
+            AND r.type <> 'ROOT' GROUP BY i.guid \
             UNION ALL \
             SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
             ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, '0' \
