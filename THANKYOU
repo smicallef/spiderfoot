@@ -21,3 +21,9 @@ bug fixes or new functionality. Thank you!
 
 - Viyat Bhalodia (https://github.com/delta24)
     - Prettied up README.md
+
+- Gormogon (https://github.com/Gormogon)
+    - Huge code clean up for PEP 8 compliance
+
+- Lin Zhemin (https://github.com/miaoski)
+    - Added the ability to use a configurable document root
