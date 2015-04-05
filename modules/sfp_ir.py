@@ -110,6 +110,9 @@ class sfp_ir(SpiderFootPlugin):
                 asn = rec["value"]
                 break
 
+        if asn == None:
+            return None
+
         return str(asn)
 
     # Owner information about an AS

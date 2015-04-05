@@ -196,7 +196,7 @@ class sfp_dns(SpiderFootPlugin):
                         # Generate an event for the IP, then
                         # let the handling by this module take
                         # care of follow-up processing.
-                        self.processHost(ipaddr, parentEvent, affiliate=False)
+                        self.processHost(ipaddr, parentEvent, False)
             return None
 
         # Handling INTERNET_NAME and IP_ADDRESS events..
@@ -211,9 +211,9 @@ class sfp_dns(SpiderFootPlugin):
 
             for addr in addrs:
                 if self.getTarget().matches(addr):
-                    self.processHost(addr, parentEvent, affiliate=False)
+                    self.processHost(addr, parentEvent, False)
                 else:
-                    self.processHost(addr, parentEvent, affiliate=True)
+                    self.processHost(addr, parentEvent, True)
 
             # Try to reverse-resolve IPs 'near' the identified IP
             if self.opts['lookaside'] and eventName == 'IP_ADDRESS':
@@ -223,6 +223,8 @@ class sfp_dns(SpiderFootPlugin):
                 self.sf.debug("Lookaside max: " + str(maxip) + ", min: " + str(minip))
                 s = int(minip)
                 c = int(maxip)
+                parentEventUp = parentEvent.sourceEvent
+
                 while s <= c:
                     sip = str(IPAddress(s))
                     self.sf.debug("Attempting look-aside lookup of: " + sip)
@@ -241,16 +243,33 @@ class sfp_dns(SpiderFootPlugin):
 
                     # Report addresses that resolve to hostnames on the same
                     # domain or sub-domain as the target.
+                    if self.getTarget().matches(sip):
+                        affil = False
+                    else:
+                        affil = True
+
+                    # Generate the event for the look-aside IP, but don't let it re-trigger
+                    # this module by adding it to self.events first.
+                    self.events[sip] = True
+                    ev = self.processHost(sip, parentEventUp, affil)
+
                     for addr in addrs:
                         if addr == sip:
                             continue
+                        # IP Addresses should be linked to whatever provided the IP
+                        if self.sf.validIP(addr):
+                            parent = parentEventUp
+                        else:
+                            # Hostnames from the IP need to be linked to the IP
+                            parent = ev
+
                         if self.getTarget().matches(addr):
                             # Generate an event for the IP, then
                             # let the handling by this module take
                             # care of follow-up processing.
-                            self.processHost(sip, parentEvent, affiliate=False)
+                            self.processHost(addr, parent, False)
                         else:
-                            self.processHost(sip, parentEvent, affiliate=True)
+                            self.processHost(addr, parent, True)
                     s += 1
             return None
 
@@ -364,8 +383,8 @@ class sfp_dns(SpiderFootPlugin):
 
             # Try obtain the IPv6 address
             for ip6 in self.resolveHost6(host):
-                evt = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
-                self.notifyListeners(evt)
+                evt6 = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
+                self.notifyListeners(evt6)
 
         return evt
 
