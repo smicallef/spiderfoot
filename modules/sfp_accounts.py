@@ -14,10 +14,10 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 externals = [
-    "YouTube", "Wikipedia", "LinkedIn", "Twitter", "Ebay", "Tumblr", "Pinterest", "Blogger", "Flickr", "Wordpress",
+    "YouTube", "Wikipedia", "LinkedIn", "Twitter", "Ebay", "Tumblr", "Pinterest", "Blogger", "Flickr",
     "DailyMotion", "reddit", "Cnet", "vimeo", "SlideShare", "ThemeForest", "DeviantArt", "LiveJournal", "Yelp",
     "StumbleUpon", "askfm", "Sourceforge", "WikiHow", "soundcloud", "Photobucket", "weebly", "scribd", "ImageShack",
-    "Disqus", "Tagged", "tinyurl", "TMZ", "Elance", "Typepad", "foursquare", "steam", "MySpace", "Gawker", "Gamespot",
+    "Disqus", "Tagged", "Elance", "Typepad", "foursquare", "steam", "MySpace", "Gawker", "Gamespot",
     "MetaCafe", "LastFM", "hi5", "myfitnesspal", "Delicious", "Dribbble", "Gravatar", "Crunchbase", "FriendFeed",
     "Technorati", "Slashdot", "Metacritic", "uservoice", "BitLy"
 ]
