@@ -157,13 +157,7 @@
                             buttons += "</div>";
 
                             buttons += "<div class='btn-group pull-right'>";
-                            buttons += "<button rel='tooltip' data-title='Delete Selected' id='btn-delete' class='btn btn-inverse' onClick='deleteSelected()'><i class='icon-trash icon-white'></i></button>";
-                            buttons += "</div>";
-
-                            buttons += "<div class='btn-group pull-right'>";
-                            buttons += "<button rel='tooltip' data-title='Stop Selected' id='btn-stop' class='btn btn-inverse' onClick='stopSelected()'>";
-                            buttons += "<i class='icon-stop icon-white'></i></button>";
-                            buttons += "<button rel='tooltip' data-title='Re-run Selected' id='btn-rerun' class='btn btn-inverse' onClick='rerunSelected()'><i class='icon-repeat icon-white'></i></button>";
+                            buttons += "<button rel='tooltip' data-title='Delete Selected' id='btn-delete' class='btn btn-danger' onClick='deleteSelected()'><i class='icon-trash icon-white'></i></button>";
                             buttons += "</div>";
 
                             buttons += "<div class='btn-group pull-right'>";
@@ -171,8 +165,14 @@
                             buttons += "<button rel='tooltip' data-title='Export Selected' id='btn-export' class='btn btn-success'><i class='icon-download-alt icon-white'></i></button>";
                             buttons += "<button class='btn dropdown-toggle btn-success' data-toggle='dropdown'><span class='caret'></span></button>";
                             buttons += "<ul class='dropdown-menu'>";
-                            buttons += "<li><a onClick='exportSelected(\"csv\")'>CSV</a></li>";
-                            buttons += "<li><a onClick='exportSelected(\"gexf\")'>GEXF</a></li></ul>";
+                            buttons += "<li><a href='javascript:exportSelected(\"csv\")'>CSV</a></li>";
+                            buttons += "<li><a href='exportSelected(\"gexf\")'>GEXF</a></li></ul>";
+                            buttons += "</div>";
+
+                            buttons += "<div class='btn-group pull-right'>";
+                            buttons += "<button rel='tooltip' data-title='Re-run Selected' id='btn-rerun' class='btn btn-inverse' onClick='rerunSelected()'><i class='icon-repeat icon-white'></i></button>";
+                            buttons += "<button rel='tooltip' data-title='Stop Selected' id='btn-stop' class='btn btn-inverse' onClick='stopSelected()'>";
+                            buttons += "<i class='icon-stop icon-white'></i></button>";
                             buttons += "</div>";
                             
                             buttons += "</div>";

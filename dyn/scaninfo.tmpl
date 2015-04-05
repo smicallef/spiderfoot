@@ -172,9 +172,8 @@
                 });
                 sigma.plugins.dragNodes(s, s.renderers[0])
                 s.refresh()
+                $("#loader").hide();
             });
-
-            $("#loader").hide();
         }
 
         function vizUpdate(method) {

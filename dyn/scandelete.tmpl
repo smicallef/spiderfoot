@@ -6,11 +6,11 @@
 Please confirm you wish to delete the scan '${name}'<br><br>
 <a class='btn btn-danger' href='${docroot}/scandelete?id=${id}&confirm=1'>Confirm Deletion</a>
 % endif
-% if ids != None:
+% if len(ids) > 0:
 Please confirm you wish to delete the scans:<br>
 <ul>
-% for name in names:
-    <li>${name}</li>
+% for nm in names:
+    <li>${nm}</li>
 % endfor
 <% idlist = ','.join(ids) %>
 </ul>
