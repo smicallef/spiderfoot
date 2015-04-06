@@ -110,7 +110,7 @@ class sfp_ir(SpiderFootPlugin):
                 asn = rec["value"]
                 break
 
-        if asn == None:
+        if asn is None:
             return None
 
         return str(asn)

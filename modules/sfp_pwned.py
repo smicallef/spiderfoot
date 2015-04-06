@@ -99,7 +99,7 @@ class sfp_pwned(SpiderFootPlugin):
             self.results[eventData] = True
 
         data = self.query(eventData)
-        if data == None:
+        if data is None:
             return None
 
         for n in data:

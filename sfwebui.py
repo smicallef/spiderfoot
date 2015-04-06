@@ -266,7 +266,7 @@ class SpiderFootWebUi:
         modlist = scanconfig['_modulesenabled'].split(',')
 
         targetType = sf.targetType(scantarget)
-        if targetType == None:
+        if targetType is None:
             # Should never be triggered for a re-run scan..
             return self.error("Invalid target type. Could not recognize it as " + \
                 "an IP address, IP subnet, domain name or host name.")
@@ -278,7 +278,7 @@ class SpiderFootWebUi:
         t.start()
 
         # Wait until the scan has initialized
-        while globalScanStatus.getStatus(newId) == None:
+        while globalScanStatus.getStatus(newId) is None:
             print "[info] Waiting for the scan to initialize..."
             time.sleep(1)
 
@@ -309,7 +309,7 @@ class SpiderFootWebUi:
             modlist = scanconfig['_modulesenabled'].split(',')
 
             targetType = sf.targetType(scantarget)
-            if targetType == None:
+            if targetType is None:
                 # Should never be triggered for a re-run scan..
                 return self.error("Invalid target type. Could not recognize it as " + \
                                   "an IP address, IP subnet, domain name or host name.")
@@ -321,7 +321,7 @@ class SpiderFootWebUi:
             t.start()
 
             # Wait until the scan has initialized
-            while globalScanStatus.getStatus(newId) == None:
+            while globalScanStatus.getStatus(newId) is None:
                 print "[info] Waiting for the scan to initialize..."
                 time.sleep(1)
 
