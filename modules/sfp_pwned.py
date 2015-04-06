@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_pwned
 # Purpose:      Query haveibeenpwned.com to see if an account has been hacked.
