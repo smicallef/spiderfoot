@@ -166,7 +166,7 @@
                             buttons += "<button class='btn dropdown-toggle btn-success' data-toggle='dropdown'><span class='caret'></span></button>";
                             buttons += "<ul class='dropdown-menu'>";
                             buttons += "<li><a href='javascript:exportSelected(\"csv\")'>CSV</a></li>";
-                            buttons += "<li><a href='exportSelected(\"gexf\")'>GEXF</a></li></ul>";
+                            buttons += "<li><a href='javascript:exportSelected(\"gexf\")'>GEXF</a></li></ul>";
                             buttons += "</div>";
 
                             buttons += "<div class='btn-group pull-right'>";
@@ -205,13 +205,13 @@
                                 table += "<td style='text-align: center'>" + data[i][7] + "</td>";
                                 table += "<td style='text-align: center'>";
                                 if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED") {
-                                    table += "<a rel='tooltip' title='Stop Scan' href=${docroot}/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray' /></a></td>";
+                                    table += "<a rel='tooltip' title='Stop Scan' href=${docroot}/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray' /></a>";
                                 } else {
                                     table += "<a rel='tooltip' title='Delete Scan' href=${docroot}/scandelete?id=" + data[i][0] + "><i class='icon-trash icon-gray' /></a>";
-                                    table += "&nbsp;&nbsp;<a rel='tooltip' title='Clone Scan' href=${docroot}/clonescan?id=" + data[i][0] + "><i class='icon-plus-sign icon-gray' /></a>";
-                                    table += "&nbsp;&nbsp;<a rel='tooltip' title='Re-run Scan' href=${docroot}/rerunscan?id=" + data[i][0] + "><i class='icon-repeat icon-gray' /></a></td>";
+                                    table += "&nbsp;&nbsp;<a rel='tooltip' title='Re-run Scan' href=${docroot}/rerunscan?id=" + data[i][0] + "><i class='icon-repeat icon-gray' /></a>";
                                 }
-                                table += "</tr>";
+                                table += "&nbsp;&nbsp;<a rel='tooltip' title='Clone Scan' href=${docroot}/clonescan?id=" + data[i][0] + "><i class='icon-plus-sign icon-gray' /></a>";
+                                table += "</td></tr>";
                             }
                             footer = "<div>Total Scans: <b>" + i + "</b>";
                             if (filtered > 0) {
