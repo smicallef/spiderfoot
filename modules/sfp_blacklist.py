@@ -37,7 +37,7 @@ class sfp_blacklist(SpiderFootPlugin):
     }
 
     # Target
-    results = dict()
+    results = {}
 
     # Whole bunch here:
     # http://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists
@@ -79,9 +79,9 @@ class sfp_blacklist(SpiderFootPlugin):
         }
     }
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
+        self.results = {}
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

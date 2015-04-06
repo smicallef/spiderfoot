@@ -39,11 +39,11 @@ class sfp_accounts(SpiderFootPlugin):
         "ignoredict": "Don't bother looking up internal names externally that are just stand-alone first names."
     }
 
-    results = dict()
+    results = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
+        self.results = {}
         self.commonnames = list()
 
         for opt in userOpts.keys():

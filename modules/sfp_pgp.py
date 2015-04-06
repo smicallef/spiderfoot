@@ -38,7 +38,7 @@ class sfp_pgp(SpiderFootPlugin):
         'keyserver2_fetch': "Backup PGP public key server URL to find the public key for an e-mail address. Email address will get appended."
     }
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
 
         self.results = list()

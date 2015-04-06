@@ -27,8 +27,8 @@ from StringIO import StringIO
 
 class SpiderFootWebUi:
     lookup = TemplateLookup(directories=[''])
-    defaultConfig = dict()
-    config = dict()
+    defaultConfig = {}
+    config = {}
     token = None
     docroot = ''
 
@@ -131,7 +131,7 @@ class SpiderFootWebUi:
     # Get result data in CSV format for multiple scans
     def scaneventresultexportmulti(self, ids, dialect="excel"):
         dbh = SpiderFootDb(self.config)
-        scaninfo = dict()
+        scaninfo = {}
         data = list()
         for id in ids.split(','):
             scaninfo[id] = dbh.scanInstanceGet(id)
@@ -213,10 +213,10 @@ class SpiderFootWebUi:
 
     # Configuration used for a scan
     def scanopts(self, id):
-        ret = dict()
+        ret = {}
         dbh = SpiderFootDb(self.config)
         ret['config'] = dbh.scanConfigGet(id)
-        ret['configdesc'] = dict()
+        ret['configdesc'] = {}
         for key in ret['config'].keys():
             if ':' not in key:
                 ret['configdesc'][key] = self.config['__globaloptdescs__'][key]
@@ -250,7 +250,7 @@ class SpiderFootWebUi:
     def rerunscan(self, id):
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
-        modopts = dict() # Not used yet as module options are set globally
+        modopts = {}  # Not used yet as module options are set globally
         modlist = list()
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
@@ -291,7 +291,7 @@ class SpiderFootWebUi:
     def rerunscanmulti(self, ids):
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
-        modopts = dict() # Not used yet as module options are set globally
+        modopts = {}  # Not used yet as module options are set globally
         modlist = list()
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
@@ -454,7 +454,7 @@ class SpiderFootWebUi:
                 self.config = deepcopy(self.defaultConfig)  # Clear in memory
             else:
                 useropts = json.loads(allopts)
-                cleanopts = dict()
+                cleanopts = {}
                 for opt in useropts.keys():
                     cleanopts[opt] = self.cleanUserInput([useropts[opt]])[0]
 
@@ -481,7 +481,7 @@ class SpiderFootWebUi:
 
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
-        modopts = dict()  # Not used yet as module options are set globally
+        modopts = {}  # Not used yet as module options are set globally
         modlist = list()
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
@@ -725,8 +725,8 @@ class SpiderFootWebUi:
         keepGoing = True
         sf = SpiderFoot(self.config)
         dbh = SpiderFootDb(self.config)
-        pc = dict()
-        datamap = dict()
+        pc = {}
+        datamap = {}
 
         # Get the events we will be tracing back from
         leafSet = dbh.scanResultEvent(id, eventType)
@@ -775,7 +775,7 @@ class SpiderFootWebUi:
         datamap[parentId] = row
         # Delete the ROOT key as it adds no value from a viz perspective
         del pc['ROOT']
-        retdata = dict()
+        retdata = {}
         retdata['tree'] = sf.dataParentChildToTree(pc)
         retdata['data'] = datamap
         return json.dumps(retdata, ensure_ascii=False)

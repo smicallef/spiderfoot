@@ -22,18 +22,18 @@ class sfp_ir(SpiderFootPlugin):
     # Default options
     opts = {}
 
-    results = dict()
+    results = {}
     currentEventSrc = None
-    memCache = dict()
-    nbreported = dict()
+    memCache = {}
+    nbreported = {}
     keywords = None
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
-        self.memCache = dict()
+        self.results = {}
+        self.memCache = {}
         self.currentEventSrc = None
-        self.nbreported = dict()
+        self.nbreported = {}
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -117,7 +117,7 @@ class sfp_ir(SpiderFootPlugin):
 
     # Owner information about an AS
     def asOwnerInfo(self, asn):
-        ownerinfo = dict()
+        ownerinfo = {}
 
         res = self.fetchRir("https://stat.ripe.net/data/whois/data.json?resource=" + asn)
         if res['content'] is None:

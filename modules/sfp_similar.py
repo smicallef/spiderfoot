@@ -59,7 +59,7 @@ class sfp_similar(SpiderFootPlugin):
     # Internal results tracking
     results = list()
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
         self.results = list()
 

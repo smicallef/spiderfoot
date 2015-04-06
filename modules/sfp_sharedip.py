@@ -36,7 +36,7 @@ class sfp_sharedip(SpiderFootPlugin):
 
     results = list()
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
         self.results = list()
 

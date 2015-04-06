@@ -38,7 +38,7 @@ class SpiderFootScanner(threading.Thread):
                                              str(random.randint(100000, 999999)))
 
         # Temporary data to be used in startScan
-        self.temp = dict()
+        self.temp = {}
         self.temp['config'] = deepcopy(globalOpts)
         self.temp['targetValue'] = scanTarget
         self.temp['targetType'] = targetType
@@ -71,14 +71,14 @@ class SpiderFootScanner(threading.Thread):
         global globalScanStatus
 
         self.ts = threading.local()
-        self.ts.moduleInstances = dict()
+        self.ts.moduleInstances = {}
         self.ts.sf = SpiderFoot(self.temp['config'])
         self.ts.config = deepcopy(self.temp['config'])
         self.ts.dbh = SpiderFootDb(self.temp['config'])
         self.ts.targetValue = self.temp['targetValue']
         self.ts.targetType = self.temp['targetType']
         self.ts.moduleList = self.temp['moduleList']
-        self.ts.modconfig = dict()
+        self.ts.modconfig = {}
         self.ts.scanName = self.temp['scanName']
         self.ts.scanId = self.temp['scanId']
         aborted = False

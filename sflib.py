@@ -98,8 +98,8 @@ class SpiderFoot:
     # basis for building graphs in various formats.
     def buildGraphData(self, data, flt=list()):
         mapping = set()
-        entities = dict()
-        parents = dict()
+        entities = {}
+        parents = {}
 
         def get_next_parent_entities(item, pids):
             ret = list()
@@ -152,7 +152,7 @@ class SpiderFoot:
         g = gexf.Gexf(title, title)
         graph = g.addGraph("undirected", "static", "SpiderFoot Export")
 
-        nodelist = dict()
+        nodelist = {}
         ecounter = 0
         ncounter = 0
         for pair in mapping:
@@ -180,11 +180,11 @@ class SpiderFoot:
     # Convert supplied raw data into JSON format for SigmaJS
     def buildGraphJson(self, root, data, flt=list()):
         mapping = self.buildGraphData(data, flt)
-        ret = dict()
+        ret = {}
         ret['nodes'] = list()
         ret['edges'] = list()
 
-        nodelist = dict()
+        nodelist = {}
         ecounter = 0
         ncounter = 0
         for pair in mapping:
@@ -367,7 +367,7 @@ class SpiderFoot:
     # Convert a Python dictionary to something storable
     # in the database.
     def configSerialize(self, opts, filterSystem=True):
-        storeopts = dict()
+        storeopts = {}
 
         for opt in opts.keys():
             # Filter out system temporary variables like GUID and others
@@ -745,7 +745,7 @@ class SpiderFoot:
     # the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
     # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
     def parseLinks(self, url, data, domains):
-        returnLinks = dict()
+        returnLinks = {}
 
         if data is None or len(data) == 0:
             self.debug('parseLinks() called with no data to parse')
@@ -848,7 +848,7 @@ class SpiderFoot:
         url = url.encode('ascii', 'ignore')
 
         try:
-            header = dict()
+            header = {}
             if type(useragent) is list:
                 header['User-Agent'] = random.choice(useragent)
             else:
@@ -869,7 +869,7 @@ class SpiderFoot:
                 self.info("Fetching: " + url + " [user-agent: " + \
                           header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
-            result['headers'] = dict()
+            result['headers'] = {}
             opener = urllib2.build_opener(SmartRedirectHandler())
             fullPage = opener.open(req, timeout=timeout)
             content = fullPage.read()
@@ -935,10 +935,10 @@ class SpiderFoot:
     # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
     # timeout: Fetch timeout
-    def googleIterate(self, searchString, opts=dict()):
+    def googleIterate(self, searchString, opts={}):
         limit = 10
         fetches = 0
-        returnResults = dict()
+        returnResults = {}
 
         if 'limit' in opts:
             limit = opts['limit']
@@ -1012,10 +1012,10 @@ class SpiderFoot:
     # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
     # timeout: Fetch timeout
-    def bingIterate(self, searchString, opts=dict()):
+    def bingIterate(self, searchString, opts={}):
         limit = 10
         fetches = 0
-        returnResults = dict()
+        returnResults = {}
 
         if 'limit' in opts:
             limit = opts['limit']
@@ -1087,10 +1087,10 @@ class SpiderFoot:
     # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
     # timeout: Fetch timeout
-    def yahooIterate(self, searchString, opts=dict()):
+    def yahooIterate(self, searchString, opts={}):
         limit = 10
         fetches = 0
-        returnResults = dict()
+        returnResults = {}
 
         if 'limit' in opts:
             limit = opts['limit']
@@ -1185,7 +1185,7 @@ class SpiderFootPlugin(object):
         self._stopScanning = False
 
     # Will always be overriden by the implementer.
-    def setup(self, sf, userOpts=dict()):
+    def setup(self, sf, userOpts={}):
         pass
 
     # Hardly used, only in special cases where a module can find
@@ -1611,7 +1611,7 @@ class PublicSuffixList(object):
 
 # Class for tracking the status of all running scans. Thread safe.
 class SpiderFootScanStatus:
-    statusTable = dict()
+    statusTable = {}
     lock = threading.Lock()
 
     def setStatus(self, scanId, status):

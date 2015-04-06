@@ -275,7 +275,7 @@ class sfp_malcheck(SpiderFootPlugin):
 
     results = list()
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
         self.results = list()
 
@@ -348,7 +348,7 @@ class sfp_malcheck(SpiderFootPlugin):
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "list":
-                data = dict()
+                data = {}
                 url = malchecks[check]['url']
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts['aaacacheperiod'])
                 if data['content'] is None:

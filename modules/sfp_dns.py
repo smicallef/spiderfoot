@@ -52,19 +52,19 @@ class sfp_dns(SpiderFootPlugin):
         "commonsubs": "Common sub-domains to try to resolve on the target subdomain/domain. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
     }
 
-    events = dict()
-    domresults = dict()
-    hostresults = dict()
-    resolveCache = dict()
-    resolveCache6 = dict()
+    events = {}
+    domresults = {}
+    hostresults = {}
+    resolveCache = {}
+    resolveCache6 = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.events = dict()
-        self.domresults = dict()
-        self.hostresults = dict()
-        self.resolveCache = dict()
-        self.resolveCache6 = dict()
+        self.events = {}
+        self.domresults = {}
+        self.hostresults = {}
+        self.resolveCache = {}
+        self.resolveCache6 = {}
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -400,7 +400,7 @@ class sfp_dns(SpiderFootPlugin):
 
         self.sf.debug("Gathering DNS records for " + domainName)
         # Process the raw data alone
-        recdata = dict()
+        recdata = {}
         recs = {
             'MX': ['\S+\s+(?:\d+)?\s+IN\s+MX\s+\d+\s+(\S+)\.', 'PROVIDER_MAIL'],
             'NS': ['\S+\s+(?:\d+)?\s+IN\s+NS\s+(\S+)\.', 'PROVIDER_DNS'],

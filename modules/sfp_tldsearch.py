@@ -38,9 +38,9 @@ class sfp_tldsearch(SpiderFootPlugin):
     results = list()
 
     # Track TLD search results between threads
-    tldResults = dict()
+    tldResults = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
         self.results = list()
 
@@ -65,7 +65,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             self.tldResults[target] = False
 
     def tryTldWrapper(self, tldList, sourceEvent):
-        self.tldResults = dict()
+        self.tldResults = {}
         running = True
         i = 0
         t = []

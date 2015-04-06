@@ -102,7 +102,7 @@ if __name__ == '__main__':
         sfConfig['__webport'] = int(port)
 
     sf = SpiderFoot(sfConfig)
-    sfModules = dict()
+    sfModules = {}
 
     # Go through each module in the modules directory with a .py extension
     for filename in os.listdir(sf.myPath() + '/modules/'):
@@ -113,7 +113,7 @@ if __name__ == '__main__':
             modName = filename.split('.')[0]
 
             # Load and instantiate the module
-            sfModules[modName] = dict()
+            sfModules[modName] = {}
             mod = __import__('modules.' + modName, globals(), locals(), [modName])
             sfModules[modName]['object'] = getattr(mod, modName)()
             sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":", 2)[0]

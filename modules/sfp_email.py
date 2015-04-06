@@ -29,7 +29,7 @@ class sfp_email(SpiderFootPlugin):
         'includeexternal': "Report e-mail addresses not on the target base domain-name?"
     }
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
 
         for opt in userOpts.keys():

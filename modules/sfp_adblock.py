@@ -31,7 +31,7 @@ class sfp_adblock(SpiderFootPlugin):
     rules = None
     errorState = False
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
         self.results = list()
         self.rules = None

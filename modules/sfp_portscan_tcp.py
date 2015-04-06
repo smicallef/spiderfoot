@@ -47,13 +47,13 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    results = dict()
+    results = {}
     portlist = list()
-    portResults = dict()
+    portResults = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
+        self.results = {}
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -100,7 +100,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         sock.close()
 
     def tryPortWrapper(self, ip, portList):
-        self.portResults = dict()
+        self.portResults = {}
         running = True
         i = 0
         t = []
