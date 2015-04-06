@@ -65,7 +65,7 @@ class SpiderFoot:
                 f = open(fname, "r")
                 if splitLines:
                     arr = f.readlines()
-                    ret = list()
+                    ret = []
                     for x in arr:
                         ret.append(x.rstrip('\n'))
                 else:
@@ -96,13 +96,13 @@ class SpiderFoot:
 
     # Return a format-agnostic collection of tuples to use as the
     # basis for building graphs in various formats.
-    def buildGraphData(self, data, flt=list()):
+    def buildGraphData(self, data, flt=[]):
         mapping = set()
         entities = {}
         parents = {}
 
         def get_next_parent_entities(item, pids):
-            ret = list()
+            ret = []
 
             for [parent, id] in parents[item]:
                 if id in pids:
@@ -125,7 +125,7 @@ class SpiderFoot:
                     entities[row[1]] = True
 
             if row[1] not in parents:
-                parents[row[1]] = list()
+                parents[row[1]] = []
             parents[row[1]].append([row[2], row[8]])
 
         for entity in entities:
@@ -135,7 +135,7 @@ class SpiderFoot:
                         #print "Adding entity parent: " + parent
                         mapping.add((entity, parent))
                 else:
-                    ppids = list()
+                    ppids = []
                     #print "Checking " + parent + " for entityship."
                     next_parents = get_next_parent_entities(parent, ppids)
                     for next_parent in next_parents:
@@ -147,7 +147,7 @@ class SpiderFoot:
     # Convert supplied raw data into GEXF format (e.g. for Gephi)
     # GEXF produced by PyGEXF doesn't work with SigmaJS because
     # SJS needs coordinates for each node. 
-    def buildGraphGexf(self, title, data, flt=list()):
+    def buildGraphGexf(self, title, data, flt=[]):
         mapping = self.buildGraphData(data, flt)
         g = gexf.Gexf(title, title)
         graph = g.addGraph("undirected", "static", "SpiderFoot Export")
@@ -178,11 +178,11 @@ class SpiderFoot:
         return output.getvalue()
 
     # Convert supplied raw data into JSON format for SigmaJS
-    def buildGraphJson(self, root, data, flt=list()):
+    def buildGraphJson(self, root, data, flt=[]):
         mapping = self.buildGraphData(data, flt)
         ret = {}
-        ret['nodes'] = list()
-        ret['edges'] = list()
+        ret['nodes'] = []
+        ret['edges'] = []
 
         nodelist = {}
         ecounter = 0
@@ -435,7 +435,7 @@ class SpiderFoot:
 
                 if type(referencePoint[opt]) is list:
                     if type(referencePoint[opt][0]) is int:
-                        returnOpts[opt] = list()
+                        returnOpts[opt] = []
                         for x in str(opts[opt]).split(","):
                             returnOpts[opt].append(int(x))
                     else:
@@ -467,7 +467,7 @@ class SpiderFoot:
 
                     if type(referencePoint['__modules__'][modName]['opts'][opt]) is list:
                         if type(referencePoint['__modules__'][modName]['opts'][opt][0]) is int:
-                            returnOpts['__modules__'][modName]['opts'][opt] = list()
+                            returnOpts['__modules__'][modName]['opts'][opt] = []
                             for x in str(opts[modName + ":" + opt]).split(","):
                                 returnOpts['__modules__'][modName]['opts'][opt].append(int(x))
                         else:
@@ -496,7 +496,7 @@ class SpiderFoot:
     # Return an array of module names for returning the
     # types specified.
     def modulesProducing(self, events):
-        modlist = list()
+        modlist = []
         for mod in self.opts['__modules__'].keys():
             if self.opts['__modules__'][mod]['provides'] is None:
                 continue
@@ -510,7 +510,7 @@ class SpiderFoot:
     # Return an array of modules that consume the types
     # specified.
     def modulesConsuming(self, events):
-        modlist = list()
+        modlist = []
         for mod in self.opts['__modules__'].keys():
             if self.opts['__modules__'][mod]['consumes'] is None:
                 continue
@@ -524,7 +524,7 @@ class SpiderFoot:
     # Return an array of types that are produced by the list
     # of modules supplied.
     def eventsFromModules(self, modules):
-        evtlist = list()
+        evtlist = []
         for mod in modules:
             if mod in self.opts['__modules__'].keys():
                 if self.opts['__modules__'][mod]['provides'] is not None:
@@ -536,7 +536,7 @@ class SpiderFoot:
     # Return an array of types that are consumed by the list
     # of modules supplied.
     def eventsToModules(self, modules):
-        evtlist = list()
+        evtlist = []
         for mod in modules:
             if mod in self.opts['__modules__'].keys():
                 if self.opts['__modules__'][mod]['consumes'] is not None:
@@ -551,7 +551,7 @@ class SpiderFoot:
 
     # Turn a relative path into an absolute path
     def urlRelativeToAbsolute(self, url):
-        finalBits = list()
+        finalBits = []
 
         if '..' not in url:
             return url
@@ -637,7 +637,7 @@ class SpiderFoot:
     # Extract the keywords (the domains without the TLD or any subdomains)
     # from a list of domains.
     def domainKeywords(self, domainList, tldList):
-        arr = list()
+        arr = []
         for domain in domainList:
             # Strip off the TLD
             tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
@@ -664,7 +664,7 @@ class SpiderFoot:
 
     # Clean DNS results to be a simple list
     def normalizeDNS(self, res):
-        ret = list()
+        ret = []
         for addr in res:
             if type(addr) == list:
                 for host in addr:
@@ -678,7 +678,7 @@ class SpiderFoot:
     def dataParentChildToTree(self, data):
         def get_children(needle, haystack):
             #print "called"
-            ret = list()
+            ret = []
 
             if needle not in haystack.keys():
                 return None
@@ -724,7 +724,7 @@ class SpiderFoot:
     # Parse the contents of robots.txt, returns a list of patterns
     # which should not be followed
     def parseRobotsTxt(self, robotsTxtData):
-        returnArr = list()
+        returnArr = []
 
         # We don't check the User-Agent rule yet.. probably should at some stage
 
@@ -1155,7 +1155,7 @@ class SpiderFootPlugin(object):
     # Will be set to True by the controller if the user aborts scanning
     _stopScanning = False
     # Modules that will be notified when this module produces events
-    _listenerModules = list()
+    _listenerModules = []
     # Current event being processed
     _currentEvent = None
     # Target currently being acted against
@@ -1181,7 +1181,7 @@ class SpiderFootPlugin(object):
     # Used to clear any listener relationships, etc. This is needed because
     # Python seems to cache local variables even between threads.
     def clearListeners(self):
-        self._listenerModules = list()
+        self._listenerModules = []
         self._stopScanning = False
 
     # Will always be overriden by the implementer.
@@ -1324,13 +1324,13 @@ class SpiderFootTarget(object):
     _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME"]
     targetType = None
     targetValue = None
-    targetAliases = list()
+    targetAliases = []
 
     def __init__(self, targetValue, typeName):
         if typeName in self._validTypes:
             self.targetType = typeName
             self.targetValue = targetValue.lower()
-            self.targetAliases = list()
+            self.targetAliases = []
         else:
             print "Internal Error: Invalid target type."
             sys.exit(-1)
@@ -1359,7 +1359,7 @@ class SpiderFootTarget(object):
         return self.targetAliases
 
     def _getEquivalents(self, typeName):
-        ret = list()
+        ret = []
         for item in self.targetAliases:
             if item['type'] == typeName:
                 ret.append(item['value'].lower())

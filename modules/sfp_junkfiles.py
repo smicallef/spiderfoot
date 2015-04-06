@@ -34,11 +34,11 @@ class sfp_junkfiles(SpiderFootPlugin):
         'dirs': "Try to fetch the containing folder with these extensions."
     }
 
-    results = list()
+    results = []
 
     def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

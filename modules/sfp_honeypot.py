@@ -143,7 +143,7 @@ class sfp_honeypot(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         parentEvent = event
-        addrlist = list()
+        addrlist = []
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

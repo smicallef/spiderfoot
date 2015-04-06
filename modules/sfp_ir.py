@@ -148,7 +148,7 @@ class sfp_ir(SpiderFootPlugin):
 
     # Netblocks owned by an AS
     def asNetblocks(self, asn):
-        netblocks = list()
+        netblocks = []
 
         res = self.fetchRir("https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS" + asn)
         if res['content'] is None:
@@ -170,7 +170,7 @@ class sfp_ir(SpiderFootPlugin):
 
     # Neighbours to an AS
     def asNeighbours(self, asn):
-        neighbours = list()
+        neighbours = []
 
         res = self.fetchRir("https://stat.ripe.net/data/asn-neighbours/data.json?resource=AS" + asn)
         if res['content'] is None:
@@ -208,7 +208,7 @@ class sfp_ir(SpiderFootPlugin):
         ]
 
         # Mess with the keyword as a last resort..
-        keywordList = list()
+        keywordList = []
         for kw in self.keywords:
             # Create versions of the keyword, esp. if hyphens are involved.
             keywordList.append(kw)

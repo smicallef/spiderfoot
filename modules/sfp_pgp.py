@@ -19,7 +19,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_pgp(SpiderFootPlugin):
     """PGP Key Look-up:Look up e-mail addresses in PGP public key servers."""
 
-    results = list()
+    results = []
 
     # Default options
     opts = {
@@ -41,7 +41,7 @@ class sfp_pgp(SpiderFootPlugin):
     def setup(self, sfc, userOpts={}):
         self.sf = sfc
 
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

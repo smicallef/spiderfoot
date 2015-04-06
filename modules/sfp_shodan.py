@@ -95,7 +95,7 @@ class sfp_shodan(SpiderFootPlugin):
                               str(self.opts['maxnetblock']))
                 return None
 
-        qrylist = list()
+        qrylist = []
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))

@@ -227,7 +227,7 @@ class SpiderFootDb:
         if criteria.values().count(None) == 3:
             return False
 
-        qvars = list()
+        qvars = []
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
@@ -310,7 +310,7 @@ class SpiderFootDb:
 
     # Update the start time, end time or status (or all 3) of a scan instance
     def scanInstanceSet(self, instanceId, started=None, ended=None, status=None):
-        qvars = list()
+        qvars = []
         qry = "UPDATE tbl_scan_instance SET "
 
         if started is not None:

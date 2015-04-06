@@ -36,11 +36,11 @@ class sfp_defaced(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = []
 
     def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.

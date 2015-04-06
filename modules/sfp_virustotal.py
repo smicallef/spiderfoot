@@ -137,7 +137,7 @@ class sfp_virustotal(SpiderFootPlugin):
                               str(self.opts['maxsubnet']))
                 return None
 
-        qrylist = list()
+        qrylist = []
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))

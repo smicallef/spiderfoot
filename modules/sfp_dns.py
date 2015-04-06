@@ -77,14 +77,14 @@ class sfp_dns(SpiderFootPlugin):
             self.sublist = self.sf.optValueToData(self.opts['commonsubs'][0])
 
     def enrichTarget(self, target):
-        ret = list()
+        ret = []
         # If it's an IP, get the hostname it reverse resolves to
         if target.getType() == "IP_ADDRESS":
             ret = self.resolveIP(target.getValue())
         if target.getType() == "INTERNET_NAME":
             ret = self.resolveHost(target.getValue())
         if target.getType() == "NETBLOCK_OWNER":
-            ret = list()
+            ret = []
             for addr in IPNetwork(target.getValue()):
                 ipaddr = str(addr)
                 if ipaddr.split(".")[3] in ['255', '0']:
@@ -275,7 +275,7 @@ class sfp_dns(SpiderFootPlugin):
 
     # Resolve an IP
     def resolveIP(self, ipaddr):
-        ret = list()
+        ret = []
         self.sf.debug("Performing reverse-resolve of " + ipaddr)
 
         if ipaddr in self.resolveCache:
@@ -290,7 +290,7 @@ class sfp_dns(SpiderFootPlugin):
             return addrs
         except BaseException as e:
             self.sf.info("Unable to resolve " + ipaddr + " (" + str(e) + ")")
-            self.resolveCache[ipaddr] = list()
+            self.resolveCache[ipaddr] = []
             return ret
 
     # Resolve a host
@@ -317,7 +317,7 @@ class sfp_dns(SpiderFootPlugin):
             return self.resolveCache6[hostname]
 
         try:
-            addrs = list()
+            addrs = []
             res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
             for addr in res:
                 if addr[4][0] not in addrs:

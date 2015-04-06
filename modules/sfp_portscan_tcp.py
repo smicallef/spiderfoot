@@ -48,7 +48,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
     }
 
     results = {}
-    portlist = list()
+    portlist = []
     portResults = {}
 
     def setup(self, sfc, userOpts={}):
@@ -143,7 +143,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        scanIps = list()
+        scanIps = []
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

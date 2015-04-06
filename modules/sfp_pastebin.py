@@ -28,11 +28,11 @@ class sfp_pastebin(SpiderFootPlugin):
         'pages': "Number of search results pages to iterate through."
     }
 
-    results = list()
+    results = []
 
     def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

@@ -60,7 +60,7 @@ class SpiderFootWebUi:
 
     # Sanitize user input
     def cleanUserInput(self, inputList):
-        ret = list()
+        ret = []
 
         for item in inputList:
             c = cgi.escape(item, True)
@@ -132,7 +132,7 @@ class SpiderFootWebUi:
     def scaneventresultexportmulti(self, ids, dialect="excel"):
         dbh = SpiderFootDb(self.config)
         scaninfo = {}
-        data = list()
+        data = []
         for id in ids.split(','):
             scaninfo[id] = dbh.scanInstanceGet(id)
             data = data + dbh.scanResultEvent(id)
@@ -173,7 +173,7 @@ class SpiderFootWebUi:
 
     # Export entities from scan results for visualising
     def scanviz(self, id, gexf="0"):
-        types = list()
+        types = []
         dbh = SpiderFootDb(self.config)
         sf = SpiderFoot(self.config)
         data = dbh.scanResultEvent(id)
@@ -191,10 +191,10 @@ class SpiderFootWebUi:
 
     # Export entities results from multiple scans in GEXF format
     def scanvizmulti(self, ids, gexf="1"):
-        types = list()
+        types = []
         dbh = SpiderFootDb(self.config)
         sf = SpiderFoot(self.config)
-        data = list()
+        data = []
         for id in ids.split(','):
             data = data + dbh.scanResultEvent(id)
 
@@ -251,7 +251,7 @@ class SpiderFootWebUi:
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
         modopts = {}  # Not used yet as module options are set globally
-        modlist = list()
+        modlist = []
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
         info = dbh.scanInstanceGet(id)
@@ -292,7 +292,7 @@ class SpiderFootWebUi:
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
         modopts = {}  # Not used yet as module options are set globally
-        modlist = list()
+        modlist = []
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
 
@@ -411,7 +411,7 @@ class SpiderFootWebUi:
             raise cherrypy.HTTPRedirect("/")
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=id, name=res[0], names=list(), ids=list(),
+            return templ.render(id=id, name=res[0], names=[], ids=[],
                                 pageid="SCANLIST", docroot=self.docroot)
 
     scandelete.exposed = True
@@ -419,7 +419,7 @@ class SpiderFootWebUi:
     # Delete a scan
     def scandeletemulti(self, ids, confirm=None):
         dbh = SpiderFootDb(self.config)
-        names = list()
+        names = []
 
         for id in ids.split(','):
             res = dbh.scanInstanceGet(id)
@@ -482,7 +482,7 @@ class SpiderFootWebUi:
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
         modopts = {}  # Not used yet as module options are set globally
-        modlist = list()
+        modlist = []
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
         types = dbh.eventTypes()
@@ -512,7 +512,7 @@ class SpiderFootWebUi:
                             modlist.append(mod)
                             newmods.append(mod)
                 newmodcpy = deepcopy(newmods)
-                newmods = list()
+                newmods = []
 
         # Add our mandatory storage module..
         if "sfp__stor_db" not in modlist:
@@ -547,7 +547,7 @@ class SpiderFootWebUi:
     def stopscanmulti(self, ids):
         global globalScanStatus # running scans
         dbh = SpiderFootDb(self.config)
-        error = list()
+        error = []
 
         for id in ids.split(","):
             errState = False
@@ -597,7 +597,7 @@ class SpiderFootWebUi:
 
         globalScanStatus.setStatus(id, "ABORT-REQUESTED")
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST', stoppedscan=True, docroot=self.docroot, errors=list())
+        return templ.render(pageid='SCANLIST', stoppedscan=True, docroot=self.docroot, errors=[])
 
     stopscan.exposed = True
 
@@ -732,7 +732,7 @@ class SpiderFootWebUi:
         leafSet = dbh.scanResultEvent(id, eventType)
 
         # Get the first round of source IDs for the leafs
-        nextIds = list()
+        nextIds = []
         for row in leafSet:
             # these must be unique values!
             parentId = row[9]
@@ -751,7 +751,7 @@ class SpiderFootWebUi:
 
         while keepGoing:
             parentSet = dbh.scanElementSources(id, nextIds)
-            nextIds = list()
+            nextIds = []
             keepGoing = False
 
             for row in parentSet:

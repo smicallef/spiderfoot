@@ -77,7 +77,7 @@ class sfp_errors(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventSource not in self.results.keys():
-            self.results[eventSource] = list()
+            self.results[eventSource] = []
 
         # We only want web content for pages on the target site
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):

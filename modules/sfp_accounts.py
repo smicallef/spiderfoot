@@ -44,7 +44,7 @@ class sfp_accounts(SpiderFootPlugin):
     def setup(self, sfc, userOpts={}):
         self.sf = sfc
         self.results = {}
-        self.commonnames = list()
+        self.commonnames = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -68,7 +68,7 @@ class sfp_accounts(SpiderFootPlugin):
 
     def checkSites(self, name):
         global externals
-        ret = list()
+        ret = []
 
         for site in externals:
             if self.checkForStop():
@@ -97,7 +97,7 @@ class sfp_accounts(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        users = list()
+        users = []
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

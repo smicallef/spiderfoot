@@ -46,11 +46,11 @@ class sfp_socialprofiles(SpiderFootPlugin):
     }
 
     keywords = None
-    results = list()
+    results = []
 
     def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -121,7 +121,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
             time.sleep(pauseSecs)
 
             for key in results.keys():
-                instances = list()
+                instances = []
                 # Yahoo requires some additional parsing
                 if self.opts['method'].lower() == "yahoo":
                     res = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner,
