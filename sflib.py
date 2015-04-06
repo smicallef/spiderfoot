@@ -161,16 +161,16 @@ class SpiderFoot:
             if dst == "ROOT":
                 continue
             if dst not in nodelist:
-                ncounter = ncounter + 1
+                ncounter += 1
                 graph.addNode(str(ncounter), unicode(dst, errors="replace"))    
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
-                ncounter = ncounter + 1
+                ncounter += 1
                 graph.addNode(str(ncounter), unicode(src, errors="replace"))
                 nodelist[src] = ncounter
 
-            ecounter = ecounter + 1
+            ecounter += 1
             graph.addEdge(str(ecounter), str(nodelist[src]), str(nodelist[dst]))
 
         output = StringIO.StringIO()
@@ -195,7 +195,7 @@ class SpiderFoot:
             if dst == "ROOT" or src == "ROOT":
                 continue
             if dst not in nodelist:
-                ncounter = ncounter + 1
+                ncounter += 1
                 if dst == root:
                     col = "#f00"
                 ret['nodes'].append({'id': str(ncounter), 
@@ -210,7 +210,7 @@ class SpiderFoot:
             if src not in nodelist:
                 if src == root:
                     col = "#f00"
-                ncounter = ncounter + 1
+                ncounter += 1
                 ret['nodes'].append({'id': str(ncounter), 
                                     'label': unicode(src, errors="replace"),
                                     'x': random.randint(1,1000),
@@ -220,7 +220,7 @@ class SpiderFoot:
                 })
                 nodelist[src] = ncounter
 
-            ecounter = ecounter + 1
+            ecounter += 1
             ret['edges'].append({'id': str(ecounter), 
                                 'source': str(nodelist[src]), 
                                 'target': str(nodelist[dst])
