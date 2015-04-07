@@ -110,7 +110,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
                     # Sometimes pastebin search results false positives
                     if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                                         "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                                 "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                         continue
 
                     try:

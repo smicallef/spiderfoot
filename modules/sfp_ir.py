@@ -136,8 +136,8 @@ class sfp_ir(SpiderFootPlugin):
                 if d["key"].lower().startswith("org") or \
                         d["key"].lower().startswith("as") or \
                         d["key"].lower().startswith("aut") or \
-                                d["key"].lower().startswith("descr") and \
-                                        d["value"].lower() not in ["null", "none", "none specified"]:
+                        d["key"].lower().startswith("descr") and \
+                        d["value"].lower() not in ["null", "none", "none specified"]:
                     if d["key"] in ownerinfo:
                         ownerinfo[d["key"]].append(d["value"])
                     else:

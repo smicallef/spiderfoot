@@ -86,8 +86,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
             self.results.append(eventData)
 
         if self.keywords is None:
-            self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
-                self.opts['_internettlds'])
+            self.keywords = self.sf.domainKeywords(self.getTarget().getNames(), self.opts['_internettlds'])
 
         for site in sites.keys():
             s = unicode(sites[site][0]).format(eventData)

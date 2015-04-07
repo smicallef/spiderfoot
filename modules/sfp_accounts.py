@@ -78,10 +78,8 @@ class sfp_accounts(SpiderFootPlugin):
                   "&username=" + name + "&time=" + str(int(time.time()) * 100) + "1"
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'],
-                                   headers={
-                                       "X-Requested-With": "XMLHttpRequest",
-                                       "Referer": "http://www.checkusernames.com/"
-                                   }
+                                   headers={"X-Requested-With": "XMLHttpRequest",
+                                            "Referer": "http://www.checkusernames.com/"}
                                    )
 
             if res['content'] is None:

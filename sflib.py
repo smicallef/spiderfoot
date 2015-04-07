@@ -199,12 +199,12 @@ class SpiderFoot:
                 if dst == root:
                     col = "#f00"
                 ret['nodes'].append({'id': str(ncounter), 
-                                    'label': unicode(dst, errors="replace"),
-                                    'x': random.randint(1,1000),
-                                    'y': random.randint(1,1000),
-                                    'size': "1",
-                                    'color': col
-                })
+                                     'label': unicode(dst, errors="replace"),
+                                     'x': random.randint(1, 1000),
+                                     'y': random.randint(1, 1000),
+                                     'size': "1",
+                                     'color': col
+                                    })
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
@@ -212,19 +212,19 @@ class SpiderFoot:
                     col = "#f00"
                 ncounter += 1
                 ret['nodes'].append({'id': str(ncounter), 
-                                    'label': unicode(src, errors="replace"),
-                                    'x': random.randint(1,1000),
-                                    'y': random.randint(1,1000),
-                                    'size': "1",
-                                    'color': col
-                })
+                                     'label': unicode(src, errors="replace"),
+                                     'x': random.randint(1, 1000),
+                                     'y': random.randint(1, 1000),
+                                     'size': "1",
+                                     'color': col
+                                    })
                 nodelist[src] = ncounter
 
             ecounter += 1
             ret['edges'].append({'id': str(ecounter), 
-                                'source': str(nodelist[src]), 
-                                'target': str(nodelist[dst])
-            })
+                                 'source': str(nodelist[src]),
+                                 'target': str(nodelist[dst])
+                                })
 
         return json.dumps(ret)
 
@@ -394,7 +394,7 @@ class SpiderFoot:
                     continue
 
                 if type(opts['__modules__'][mod]['opts'][opt]) is int or \
-                                type(opts['__modules__'][mod]['opts'][opt]) is str:
+                        type(opts['__modules__'][mod]['opts'][opt]) is str:
                     storeopts[mod + ":" + opt] = opts['__modules__'][mod]['opts'][opt]
 
                 if type(opts['__modules__'][mod]['opts'][opt]) is bool:
@@ -403,8 +403,7 @@ class SpiderFoot:
                     else:
                         storeopts[mod + ":" + opt] = 0
                 if type(opts['__modules__'][mod]['opts'][opt]) is list:
-                    storeopts[mod + ":" + opt] = ','.join(str(x) \
-                                                          for x in opts['__modules__'][mod]['opts'][opt])
+                    storeopts[mod + ":" + opt] = ','.join(str(x) for x in opts['__modules__'][mod]['opts'][opt])
 
         return storeopts
 
@@ -788,7 +787,7 @@ class SpiderFoot:
                 # Don't include stuff likely part of some dynamically built incomplete
                 # URL found in Javascript code (character is part of some logic)
                 if link[len(link) - 1] == '.' or link[0] == '+' or \
-                                'javascript:' in link.lower() or '();' in link:
+                        'javascript:' in link.lower() or '();' in link:
                     self.debug('unlikely link: ' + link)
                     continue
 
@@ -862,11 +861,11 @@ class SpiderFoot:
             req = urllib2.Request(url, None, header)
             if cookies is not None:
                 req.add_header('cookie', cookies)
-                self.info("Fetching (incl. cookies): " + url + \
-                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                self.info("Fetching (incl. cookies): " + url +
+                          " [user-agent: " + header['User-Agent'] + "] [timeout: " +
                           str(timeout) + "]")
             else:
-                self.info("Fetching: " + url + " [user-agent: " + \
+                self.info("Fetching: " + url + " [user-agent: " +
                           header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
             result['headers'] = {}
@@ -1252,7 +1251,7 @@ class SpiderFootPlugin(object):
         while prevEvent is not None:
             if prevEvent.sourceEvent is not None:
                 if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
-                                prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
+                        prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
                     #print "Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data
                     storeOnly = True
                     break
@@ -1460,8 +1459,7 @@ class SpiderFootEvent(object):
             return
 
         self.sourceEventHash = sourceEvent.getHash()
-        self.__id = self.eventType + str(self.generated) + self.module + \
-                    str(random.randint(0, 99999999))
+        self.__id = self.eventType + str(self.generated) + self.module + str(random.randint(0, 99999999))
 
     # Unique hash of this event
     def getHash(self):

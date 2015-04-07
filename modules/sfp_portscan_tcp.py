@@ -132,11 +132,10 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                 self.sf.info("TCP Port " + cp + " found to be OPEN.")
                 evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
                 self.notifyListeners(evt)
-                if resArray[cp] != "" and resArray[cp] != True:
+                if resArray[cp] is not "" and resArray[cp] is not True:
                     bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", resArray[cp],
                                            self.__name__, evt)
                     self.notifyListeners(bevt)
-
 
     # Handle events sent to this module
     def handleEvent(self, event):

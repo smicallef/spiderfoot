@@ -22,6 +22,7 @@ from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, \
     SpiderFootPlugin, globalScanStatus
 
+
 # Eventually change this to be able to control multiple scan instances
 class SpiderFootScanner(threading.Thread):
     # Thread-safe storage
@@ -34,8 +35,7 @@ class SpiderFootScanner(threading.Thread):
                  globalOpts, moduleOpts):
 
         # Initialize the thread
-        threading.Thread.__init__(self, name="SF_" + scanName + \
-                                             str(random.randint(100000, 999999)))
+        threading.Thread.__init__(self, name="SF_" + scanName + str(random.randint(100000, 999999)))
 
         # Temporary data to be used in startScan
         self.temp = {}
@@ -121,7 +121,7 @@ class SpiderFootScanner(threading.Thread):
                 if self.ts.config['_socks1type'] == 'HTTP':
                     socksType = socks.PROXY_TYPE_HTTP
 
-                self.ts.sf.debug("SOCKS: " + socksAddr + ":" + str(socksPort) + \
+                self.ts.sf.debug("SOCKS: " + socksAddr + ":" + str(socksPort) +
                                  "(" + socksUsername + ":" + socksPassword + ")")
                 socks.setdefaultproxy(socksType, socksAddr, socksPort,
                                       socksDns, socksUsername, socksPassword)
@@ -241,8 +241,8 @@ class SpiderFootScanner(threading.Thread):
                 self.setStatus("FINISHED", None, time.time() * 1000)
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.ts.sf.error("Unhandled exception (" + e.__class__.__name__ + ") " + \
-                             "encountered during scan. Please report this as a bug: " + \
+            self.ts.sf.error("Unhandled exception (" + e.__class__.__name__ + ") " +
+                             "encountered during scan. Please report this as a bug: " +
                              repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
             self.ts.sf.status("Scan [" + self.ts.scanId + "] failed: " + str(e))
             self.setStatus("ERROR-FAILED", None, time.time() * 1000)

@@ -639,7 +639,6 @@ class SpiderFootDb:
         except sqlite3.Error as e:
             self.sf.error("SQL error encountered when fetching scan history: " + e.args[0])
 
-
     # Get the source IDs, types and data for a set of IDs
     def scanElementSources(self, instanceId, elementIdList):
         # the output of this needs to be aligned with scanResultEvent,

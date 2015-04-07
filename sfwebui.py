@@ -57,7 +57,6 @@ class SpiderFootWebUi:
         print ""
         print ""
 
-
     # Sanitize user input
     def cleanUserInput(self, inputList):
         ret = []
@@ -73,8 +72,7 @@ class SpiderFootWebUi:
 
     def searchBase(self, id=None, eventType=None, value=None):
         regex = ""
-        if [id, eventType, value].count('') == 2 or \
-                        [id, eventType, value].count(None) == 2:
+        if [id, eventType, value].count('') == 2 or [id, eventType, value].count(None) == 2:
             return None
 
         if value.startswith("/") and value.endswith("/"):
@@ -210,7 +208,6 @@ class SpiderFootWebUi:
 
     scanvizmulti.exposed = True
 
-
     # Configuration used for a scan
     def scanopts(self, id):
         ret = {}
@@ -268,13 +265,12 @@ class SpiderFootWebUi:
         targetType = sf.targetType(scantarget)
         if targetType is None:
             # Should never be triggered for a re-run scan..
-            return self.error("Invalid target type. Could not recognize it as " + \
-                "an IP address, IP subnet, domain name or host name.")
+            return self.error("Invalid target type. Could not recognize it as " +
+                              "an IP address, IP subnet, domain name or host name.")
 
         # Start running a new scan
         newId = sf.genScanInstanceGUID(scanname)
-        t = SpiderFootScanner(scanname, scantarget.lower(), targetType, newId,
-            modlist, cfg, modopts)
+        t = SpiderFootScanner(scanname, scantarget.lower(), targetType, newId, modlist, cfg, modopts)
         t.start()
 
         # Wait until the scan has initialized
@@ -284,7 +280,7 @@ class SpiderFootWebUi:
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
         return templ.render(id=newId, name=scanname, docroot=self.docroot,
-            status=globalScanStatus.getStatus(newId), pageid="SCANLIST")
+                            status=globalScanStatus.getStatus(newId), pageid="SCANLIST")
 
     rerunscan.exposed = True
 
@@ -311,7 +307,7 @@ class SpiderFootWebUi:
             targetType = sf.targetType(scantarget)
             if targetType is None:
                 # Should never be triggered for a re-run scan..
-                return self.error("Invalid target type. Could not recognize it as " + \
+                return self.error("Invalid target type. Could not recognize it as " +
                                   "an IP address, IP subnet, domain name or host name.")
 
             # Start running a new scan
@@ -330,7 +326,6 @@ class SpiderFootWebUi:
 
     rerunscanmulti.exposed = True
 
-
     # Configure a new scan
     def newscan(self):
         dbh = SpiderFootDb(self.config)
@@ -342,7 +337,6 @@ class SpiderFootWebUi:
 
     newscan.exposed = True
 
-    
     # Clone an existing scan (pre-selected options in the newscan page)
     def clonescan(self, id):
         dbh = SpiderFootDb(self.config)
@@ -427,7 +421,7 @@ class SpiderFootWebUi:
             if res is None:
                 return self.error("Scan ID not found (" + id + ").")
 
-            if res[5] in [ "RUNNING", "STARTING", "STARTED" ]:
+            if res[5] in ["RUNNING", "STARTING", "STARTED"]:
                 return self.error("You cannot delete running scans.")
 
         if confirm is not None:
@@ -521,7 +515,7 @@ class SpiderFootWebUi:
 
         targetType = sf.targetType(scantarget)
         if targetType is None:
-            return self.error("Invalid target type. Could not recognize it as " + \
+            return self.error("Invalid target type. Could not recognize it as " +
                               "an IP address, IP subnet, domain name or host name.")
 
         # Start running a new scan
@@ -541,11 +535,10 @@ class SpiderFootWebUi:
 
     startscan.exposed = True
 
-
     # Stop a scan (id variable is unnecessary for now given that only one simultaneous
     # scan is permitted.)
     def stopscanmulti(self, ids):
-        global globalScanStatus # running scans
+        global globalScanStatus  # running scans
         dbh = SpiderFootDb(self.config)
         error = []
 
@@ -554,7 +547,7 @@ class SpiderFootWebUi:
             scaninfo = dbh.scanInstanceGet(id)
 
             if globalScanStatus.getStatus(id) == "FINISHED" or scaninfo[5] == "FINISHED":
-                error.append("Scan '" + scaninfo[0] + "' is in a finished state. <a href='/scandelete?id=" + \
+                error.append("Scan '" + scaninfo[0] + "' is in a finished state. <a href='/scandelete?id=" +
                              id + "&confirm=1'>Maybe you want to delete it instead?</a>")
                 errState = True
 
@@ -563,8 +556,8 @@ class SpiderFootWebUi:
                 errState = True
 
             if not errState and globalScanStatus.getStatus(id) is None:
-                error.append("Scan '" + scaninfo[0] + "' is not actually running. A data consistency " + \
-                             "error for this scan probably exists. <a href='/scandelete?id=" + \
+                error.append("Scan '" + scaninfo[0] + "' is not actually running. A data consistency " +
+                             "error for this scan probably exists. <a href='/scandelete?id=" +
                              id + "&confirm=1'>Click here to delete it.</a>")
                 errState = True
             
@@ -577,22 +570,21 @@ class SpiderFootWebUi:
 
     stopscanmulti.exposed = True
 
-
     # Stop a scan.
     def stopscan(self, id):
         global globalScanStatus
 
         if globalScanStatus.getStatus(id) is None:
-            return self.error("That scan is not actually running. A data consistency " + \
-                              "error for this scan probably exists. <a href='/scandelete?id=" + \
+            return self.error("That scan is not actually running. A data consistency " +
+                              "error for this scan probably exists. <a href='/scandelete?id=" +
                               id + "&confirm=1'>Click here to delete it.</a>")
 
         if globalScanStatus.getStatus(id) == "ABORTED":
             return self.error("The scan is already aborted.")
 
         if not globalScanStatus.getStatus(id) == "RUNNING":
-            return self.error("The running scan is currently in the state '" + \
-                              globalScanStatus.getStatus(id) + "', please try again later or restart " + \
+            return self.error("The running scan is currently in the state '" +
+                              globalScanStatus.getStatus(id) + "', please try again later or restart " +
                               " SpiderFoot.")
 
         globalScanStatus.setStatus(id, "ABORT-REQUESTED")

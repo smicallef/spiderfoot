@@ -66,11 +66,11 @@ sfConfig = {
     '__webport': 5001,
     '__docroot': '',  # don't put trailing /
     '__modules__': None,  # List of modules. Will be set after start-up.
-    '__pghost':         '127.0.0.1', # For future PGSQL backend
-    '__pgdb':           'spiderfoot', # For future PGSQL backend
-    '__pgport':         '5432', # For future PGSQL backend
-    '__pguser':         'pgsql', # For future PGSQL backend
-    '__pgpass':         '', # For future PGSQL backend
+    '__pghost':         '127.0.0.1',  # For future PGSQL backend
+    '__pgdb':           'spiderfoot',  # For future PGSQL backend
+    '__pgport':         '5432',  # For future PGSQL backend
+    '__pguser':         'pgsql',  # For future PGSQL backend
+    '__pgpass':         '',  # For future PGSQL backend
     '_socks1type': '',
     '_socks2addr': '',
     '_socks3port': '',

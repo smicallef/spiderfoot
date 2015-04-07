@@ -205,7 +205,6 @@ class sfp_similar(SpiderFootPlugin):
             evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
             self.notifyListeners(evt)
 
-
     # Search for similar sounding domains
     def handleEvent(self, event):
         eventName = event.eventType
