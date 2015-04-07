@@ -38,13 +38,8 @@ class SpiderFootScanner(threading.Thread):
         threading.Thread.__init__(self, name="SF_" + scanName + str(random.randint(100000, 999999)))
 
         # Temporary data to be used in startScan
-        self.temp = {}
-        self.temp['config'] = deepcopy(globalOpts)
-        self.temp['targetValue'] = scanTarget
-        self.temp['targetType'] = targetType
-        self.temp['moduleList'] = moduleList
-        self.temp['scanName'] = scanName
-        self.temp['scanId'] = scanId
+        self.temp = {'config': deepcopy(globalOpts), 'targetValue': scanTarget, 'targetType': targetType,
+                     'moduleList': moduleList, 'scanName': scanName, 'scanId': scanId}
 
     # Set the status of the currently running scan (if any)
     def setStatus(self, status, started=None, ended=None):

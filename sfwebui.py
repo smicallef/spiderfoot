@@ -767,9 +767,7 @@ class SpiderFootWebUi:
         datamap[parentId] = row
         # Delete the ROOT key as it adds no value from a viz perspective
         del pc['ROOT']
-        retdata = {}
-        retdata['tree'] = sf.dataParentChildToTree(pc)
-        retdata['data'] = datamap
+        retdata = {'tree': sf.dataParentChildToTree(pc), 'data': datamap}
         return json.dumps(retdata, ensure_ascii=False)
 
     scanelementtypediscovery.exposed = True

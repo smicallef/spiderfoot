@@ -180,9 +180,7 @@ class SpiderFoot:
     # Convert supplied raw data into JSON format for SigmaJS
     def buildGraphJson(self, root, data, flt=[]):
         mapping = self.buildGraphData(data, flt)
-        ret = {}
-        ret['nodes'] = []
-        ret['edges'] = []
+        ret = {'nodes': [], 'edges': []}
 
         nodelist = {}
         ecounter = 0
