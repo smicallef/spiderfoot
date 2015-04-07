@@ -25,7 +25,7 @@ from sfscan import SpiderFootScanner
 from StringIO import StringIO
 
 
-class SpiderFootWebUi:
+class SpiderFootWebUi(object):
     lookup = TemplateLookup(directories=[''])
     defaultConfig = {}
     config = {}
@@ -184,7 +184,7 @@ class SpiderFootWebUi:
         else:
             root = scan[1]
             return sf.buildGraphJson(root, data)
-        
+
     scanviz.exposed = True
 
     # Export entities results from multiple scans in GEXF format
@@ -204,7 +204,7 @@ class SpiderFootWebUi:
         else:
             # Not implemented yet
             return None
-            #return sf.buildGraphJson(data)
+            # return sf.buildGraphJson(data)
 
     scanvizmulti.exposed = True
 
@@ -430,7 +430,7 @@ class SpiderFootWebUi:
             raise cherrypy.HTTPRedirect("/")
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=None, name=None, ids=ids.split(','), names=names, 
+            return templ.render(id=None, name=None, ids=ids.split(','), names=names,
                                 pageid="SCANLIST", docroot=self.docroot)
 
     scandeletemulti.exposed = True
@@ -560,12 +560,12 @@ class SpiderFootWebUi:
                              "error for this scan probably exists. <a href='/scandelete?id=" +
                              id + "&confirm=1'>Click here to delete it.</a>")
                 errState = True
-            
+
             if not errState:
                 globalScanStatus.setStatus(id, "ABORT-REQUESTED")
 
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST', stoppedscan=True, 
+        return templ.render(pageid='SCANLIST', stoppedscan=True,
                             errors=error, docroot=self.docroot)
 
     stopscanmulti.exposed = True
@@ -750,7 +750,7 @@ class SpiderFootWebUi:
                 parentId = row[9]
                 childId = row[8]
                 datamap[childId] = row
-                #print childId + " = " + str(row)
+                # print childId + " = " + str(row)
 
                 if parentId in pc:
                     if childId not in pc[parentId]:

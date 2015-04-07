@@ -22,7 +22,7 @@ def __dbregex__(qry, data):
     return ret is not None
 
 
-class SpiderFootDb:
+class SpiderFootDb(object):
     sf = None
     dbh = None
     conn = None
@@ -218,7 +218,7 @@ class SpiderFootDb:
 
     # Search results
     # criteria is search criteria such as:
-    #  - scan_id (search within a scan, if omitted search all)
+    # - scan_id (search within a scan, if omitted search all)
     #  - type (search a specific type, if omitted search all)
     #  - value (search values for a specific string, if omitted search all)
     #  - regex (search values for a regular expression)

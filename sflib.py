@@ -30,7 +30,7 @@ import threading
 from copy import deepcopy
 
 
-class SpiderFoot:
+class SpiderFoot(object):
     dbh = None
     GUID = None
 
@@ -132,11 +132,11 @@ class SpiderFoot:
             for [parent, id] in parents[entity]:
                 if parent in entities:
                     if entity != parent:
-                        #print "Adding entity parent: " + parent
+                        # print "Adding entity parent: " + parent
                         mapping.add((entity, parent))
                 else:
                     ppids = []
-                    #print "Checking " + parent + " for entityship."
+                    # print "Checking " + parent + " for entityship."
                     next_parents = get_next_parent_entities(parent, ppids)
                     for next_parent in next_parents:
                         if entity != next_parent:
@@ -146,7 +146,7 @@ class SpiderFoot:
 
     # Convert supplied raw data into GEXF format (e.g. for Gephi)
     # GEXF produced by PyGEXF doesn't work with SigmaJS because
-    # SJS needs coordinates for each node. 
+    # SJS needs coordinates for each node.
     def buildGraphGexf(self, title, data, flt=[]):
         mapping = self.buildGraphData(data, flt)
         g = gexf.Gexf(title, title)
@@ -162,7 +162,7 @@ class SpiderFoot:
                 continue
             if dst not in nodelist:
                 ncounter += 1
-                graph.addNode(str(ncounter), unicode(dst, errors="replace"))    
+                graph.addNode(str(ncounter), unicode(dst, errors="replace"))
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
@@ -196,33 +196,33 @@ class SpiderFoot:
                 ncounter += 1
                 if dst == root:
                     col = "#f00"
-                ret['nodes'].append({'id': str(ncounter), 
+                ret['nodes'].append({'id': str(ncounter),
                                      'label': unicode(dst, errors="replace"),
                                      'x': random.randint(1, 1000),
                                      'y': random.randint(1, 1000),
                                      'size': "1",
                                      'color': col
-                                    })
+                                     })
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
                 if src == root:
                     col = "#f00"
                 ncounter += 1
-                ret['nodes'].append({'id': str(ncounter), 
+                ret['nodes'].append({'id': str(ncounter),
                                      'label': unicode(src, errors="replace"),
                                      'x': random.randint(1, 1000),
                                      'y': random.randint(1, 1000),
                                      'size': "1",
                                      'color': col
-                                    })
+                                     })
                 nodelist[src] = ncounter
 
             ecounter += 1
-            ret['edges'].append({'id': str(ecounter), 
+            ret['edges'].append({'id': str(ecounter),
                                  'source': str(nodelist[src]),
                                  'target': str(nodelist[dst])
-                                })
+                                 })
 
         return json.dumps(ret)
 
@@ -247,7 +247,7 @@ class SpiderFoot:
         return hashStr
 
     def _dblog(self, level, message, component=None):
-        #print str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component)
+        # print str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component)
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, error, exception=True):
@@ -392,7 +392,7 @@ class SpiderFoot:
                     continue
 
                 if type(opts['__modules__'][mod]['opts'][opt]) is int or \
-                        type(opts['__modules__'][mod]['opts'][opt]) is str:
+                                type(opts['__modules__'][mod]['opts'][opt]) is str:
                     storeopts[mod + ":" + opt] = opts['__modules__'][mod]['opts'][opt]
 
                 if type(opts['__modules__'][mod]['opts'][opt]) is bool:
@@ -570,7 +570,7 @@ class SpiderFoot:
 
             finalBits.append(chunk)
 
-        #self.debug('xfrmed rel to abs path: ' + url + ' to ' + '/'.join(finalBits))
+        # self.debug('xfrmed rel to abs path: ' + url + ' to ' + '/'.join(finalBits))
         return '/'.join(finalBits)
 
     # Extract the top level directory from a URL
@@ -580,16 +580,16 @@ class SpiderFoot:
 
         # For cases like 'www.somesite.com'
         if len(bits) == 0:
-            #self.debug('base dir of ' + url + ' not identified, using URL as base.')
+            # self.debug('base dir of ' + url + ' not identified, using URL as base.')
             return url + '/'
 
         # For cases like 'http://www.blah.com'
         if '://' in url and url.count('/') < 3:
-            #self.debug('base dir of ' + url + ' is: ' + url + '/')
+            # self.debug('base dir of ' + url + ' is: ' + url + '/')
             return url + '/'
 
         base = '/'.join(bits[:-1])
-        #self.debug('base dir of ' + url + ' is: ' + base + '/')
+        # self.debug('base dir of ' + url + ' is: ' + base + '/')
         return base + '/'
 
     # Extract the scheme and domain from a URL
@@ -604,7 +604,7 @@ class SpiderFoot:
         if bits is None:
             return url.lower()
 
-        #self.debug('base url of ' + url + ' is: ' + bits.group(1))
+        # self.debug('base url of ' + url + ' is: ' + bits.group(1))
         return bits.group(1).lower()
 
     # Extract the FQDN from a URL
@@ -674,7 +674,7 @@ class SpiderFoot:
     # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):
         def get_children(needle, haystack):
-            #print "called"
+            # print "called"
             ret = []
 
             if needle not in haystack.keys():
@@ -707,7 +707,7 @@ class SpiderFoot:
                 break
 
         if root is None:
-            #print "*BUG*: Invalid structure - needs to go back to one root."
+            # print "*BUG*: Invalid structure - needs to go back to one root."
             final = {}
         else:
             final = {"name": root, "children": get_children(root, data)}
@@ -785,7 +785,7 @@ class SpiderFoot:
                 # Don't include stuff likely part of some dynamically built incomplete
                 # URL found in Javascript code (character is part of some logic)
                 if link[len(link) - 1] == '.' or link[0] == '+' or \
-                        'javascript:' in link.lower() or '();' in link:
+                                'javascript:' in link.lower() or '();' in link:
                     self.debug('unlikely link: ' + link)
                     continue
 
@@ -883,7 +883,7 @@ class SpiderFoot:
             else:
                 result['content'] = unicode(content, 'utf-8', errors='replace')
 
-            #print "FOR: " + url
+            # print "FOR: " + url
             #print "HEADERS: " + str(result['headers'])
             result['realurl'] = fullPage.geturl()
             result['code'] = fullPage.getcode()
@@ -1606,7 +1606,7 @@ class PublicSuffixList(object):
 
 
 # Class for tracking the status of all running scans. Thread safe.
-class SpiderFootScanStatus:
+class SpiderFootScanStatus(object):
     statusTable = {}
     lock = threading.Lock()
 
