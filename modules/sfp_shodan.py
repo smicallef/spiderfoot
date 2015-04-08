@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_shodan
 # Purpose:      Query SHODAN for identified IP addresses.
@@ -10,8 +9,7 @@
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import json
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

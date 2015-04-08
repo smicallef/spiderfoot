@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_adblock
 # Purpose:      SpiderFoot plug-in to test if external/internally linked pages
@@ -11,8 +10,7 @@
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import adblockparser
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

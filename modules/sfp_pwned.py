@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-#
-# -------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Name:         sfp_pwned
 # Purpose:      Query haveibeenpwned.com to see if an account has been hacked.
 #
@@ -9,9 +8,8 @@
 # Created:     19/02/2015
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-# -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+#-------------------------------------------------------------------------------
+
 import sys
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

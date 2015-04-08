@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_pastebin
 # Purpose:      Searches Google for PasteBin content related to the domain in 
@@ -11,8 +10,7 @@
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

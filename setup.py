@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
 from distutils.core import setup
 import py2exe
 

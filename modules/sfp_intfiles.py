@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_intfiles
 # Purpose:      From Spidering and from searching search engines, identifies
@@ -11,8 +10,7 @@
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import re
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

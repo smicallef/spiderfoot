@@ -1,5 +1,4 @@
 # coding: utf-8
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_names
 # Purpose:      Identify human names in content fetched.
@@ -10,8 +9,7 @@
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

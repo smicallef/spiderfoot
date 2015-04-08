@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_accounts`
 # Purpose:      Identify the existence of a given acount on various sites.
@@ -10,8 +9,7 @@
 # Copyright:   (c) Steve Micallef 2015
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

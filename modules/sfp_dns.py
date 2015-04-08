@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_dns
 # Purpose:      SpiderFoot plug-in for gathering IP addresses from sub-domains
@@ -13,8 +12,7 @@
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import socket
 import re
 import dns

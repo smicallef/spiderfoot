@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_portscan_tcp
 # Purpose:      SpiderFoot plug-in for performing a basic TCP port scan of IP
@@ -11,8 +10,7 @@
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 from netaddr import IPAddress, IPNetwork
 import socket
 import random

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_webframework
 # Purpose:      Identify the usage of popular web frameworks.
@@ -10,8 +9,7 @@
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sflib
 # Purpose:      Common functions used by SpiderFoot modules.
@@ -11,9 +10,7 @@
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
-from __future__ import print_function
+
 import inspect
 import hashlib
 import gzip
@@ -255,7 +252,7 @@ class SpiderFoot(object):
 
     def error(self, error, exception=True):
         if self.dbh is None:
-            print('[Error] ' + error)
+            print '[Error] ' + error
         else:
             self._dblog("ERROR", error)
         if exception:
@@ -263,15 +260,15 @@ class SpiderFoot(object):
 
     def fatal(self, error):
         if self.dbh is None:
-            print('[Fatal] ' + error)
+            print '[Fatal] ' + error
         else:
             self._dblog("FATAL", error)
-        print(str(inspect.stack()))
+        print str(inspect.stack())
         sys.exit(-1)
 
     def status(self, message):
         if self.dbh is None:
-            print("[Status] " + message)
+            print "[Status] " + message
         else:
             self._dblog("STATUS", message)
 
@@ -285,7 +282,7 @@ class SpiderFoot(object):
             modName = mod.__name__
 
         if self.dbh is None:
-            print('[' + modName + '] ' + message)
+            print '[' + modName + '] ' + message
         else:
             self._dblog("INFO", message, modName)
         return
@@ -302,7 +299,7 @@ class SpiderFoot(object):
             modName = mod.__name__
 
         if self.dbh is None:
-            print('[' + modName + '] ' + message)
+            print '[' + modName + '] ' + message
         else:
             self._dblog("DEBUG", message, modName)
         return
@@ -331,7 +328,7 @@ class SpiderFoot(object):
     def cachePut(self, label, data):
         pathLabel = hashlib.sha224(label).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
-        fp = open(cacheFile, "w")
+        fp = file(cacheFile, "w")
         if type(data) is list:
             for line in data:
                 fp.write(line + '\n')
@@ -351,7 +348,7 @@ class SpiderFoot(object):
                 return None
 
             if mtime > time.time() - timeoutHrs * 3600 or timeoutHrs == 0:
-                fp = open(cacheFile, "r")
+                fp = file(cacheFile, "r")
                 fileContents = fp.read()
                 fp.close()
                 fileContents = fileContents.decode('utf-8')
@@ -1213,7 +1210,7 @@ class SpiderFootPlugin(object):
     # Gets the current target this module is acting against
     def getTarget(self):
         if self._currentTarget is None:
-            print("Internal Error: Module called getTarget() but no target set.")
+            print "Internal Error: Module called getTarget() but no target set."
             sys.exit(-1)
         return self._currentTarget
 
@@ -1332,7 +1329,7 @@ class SpiderFootTarget(object):
             self.targetValue = targetValue.lower()
             self.targetAliases = []
         else:
-            print("Internal Error: Invalid target type.")
+            print "Internal Error: Invalid target type."
             sys.exit(-1)
 
     def getType(self):

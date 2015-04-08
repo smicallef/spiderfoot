@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_whois
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
@@ -11,8 +10,7 @@
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import pythonwhois
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_crossref
 # Purpose:      SpiderFoot plug-in for scanning links identified from the
@@ -13,8 +12,7 @@
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

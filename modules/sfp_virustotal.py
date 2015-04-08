@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_virustotal
 # Purpose:      Query VirusTotal for identified IP addresses.
@@ -10,8 +9,7 @@
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import json
 import time
 from netaddr import IPNetwork

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_googlesearch
 # Purpose:      Searches Google for content related to the domain in question.
@@ -10,8 +9,7 @@
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

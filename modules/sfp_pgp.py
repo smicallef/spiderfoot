@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_pgp
 # Purpose:      SpiderFoot plug-in for looking up received e-mails in PGP
@@ -12,8 +11,7 @@
 # Copyright:   (c) Steve Micallef 2015
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

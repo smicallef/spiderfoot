@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_socialprofiles
 # Purpose:      Obtains social media profiles of any identified human names.
@@ -10,8 +9,7 @@
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import random
 import re
 import time

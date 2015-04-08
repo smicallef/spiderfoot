@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#
 # -------------------------------------------------------------------------------
 # Name:         sfp_ir
 # Purpose:      Queries Internet registryes like RIPE (incl. ARIN) to get 
@@ -11,8 +10,7 @@
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-#
-from __future__ import absolute_import
+
 import re
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
