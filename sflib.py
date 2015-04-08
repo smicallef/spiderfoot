@@ -147,7 +147,9 @@ class SpiderFoot:
     # Convert supplied raw data into GEXF format (e.g. for Gephi)
     # GEXF produced by PyGEXF doesn't work with SigmaJS because
     # SJS needs coordinates for each node. 
-    def buildGraphGexf(self, title, data, flt=list()):
+    # flt is a list of event types to include, if not set everything is
+    # included.
+    def buildGraphGexf(self, root, title, data, flt=[]):
         mapping = self.buildGraphData(data, flt)
         g = gexf.Gexf(title, title)
         graph = g.addGraph("undirected", "static", "SpiderFoot Export")
@@ -157,17 +159,25 @@ class SpiderFoot:
         ncounter = 0
         for pair in mapping:
             (dst, src) = pair
+            col = ["0", "0", "0"]
+
             # Leave out this special case
-            if dst == "ROOT":
+            if dst == "ROOT" or src == "ROOT":
                 continue
             if dst not in nodelist:
                 ncounter = ncounter + 1
-                graph.addNode(str(ncounter), unicode(dst, errors="replace"))    
+                if dst in root:
+                    col = ["255", "0", "0"]
+                graph.addNode(str(ncounter), unicode(dst, errors="replace"),
+                              r=col[0], g=col[1], b=col[2])    
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
                 ncounter = ncounter + 1
-                graph.addNode(str(ncounter), unicode(src, errors="replace"))
+                if src in root:
+                    col = ["255", "0", "0"]
+                graph.addNode(str(ncounter), unicode(src, errors="replace"),
+                              r=col[0], g=col[1], b=col[2])
                 nodelist[src] = ncounter
 
             ecounter = ecounter + 1
@@ -196,7 +206,7 @@ class SpiderFoot:
                 continue
             if dst not in nodelist:
                 ncounter = ncounter + 1
-                if dst == root:
+                if dst in root:
                     col = "#f00"
                 ret['nodes'].append({'id': str(ncounter), 
                                     'label': unicode(dst, errors="replace"),
@@ -208,7 +218,7 @@ class SpiderFoot:
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
-                if src == root:
+                if src in root:
                     col = "#f00"
                 ncounter = ncounter + 1
                 ret['nodes'].append({'id': str(ncounter), 

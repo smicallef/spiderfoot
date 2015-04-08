@@ -178,14 +178,14 @@ class SpiderFootWebUi:
         sf = SpiderFoot(self.config)
         data = dbh.scanResultEvent(id)
         scan = dbh.scanInstanceGet(id)
+        root = scan[1]
         if gexf != "0":
             cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.gexf"
             cherrypy.response.headers['Content-Type'] = "application/gexf"
             cherrypy.response.headers['Pragma'] = "no-cache"
-            return sf.buildGraphGexf("SpiderFoot Export", data)
+            return sf.buildGraphGexf([root], "SpiderFoot Export", data)
         else:
-            root = scan[1]
-            return sf.buildGraphJson(root, data)
+            return sf.buildGraphJson([root], data)
         
     scanviz.exposed = True
 
@@ -195,18 +195,19 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.config)
         sf = SpiderFoot(self.config)
         data = list()
+        roots = list()
         for id in ids.split(','):
             data = data + dbh.scanResultEvent(id)
+            roots.append(dbh.scanInstanceGet(id)[1])
 
         if gexf != "0":
             cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.gexf"
             cherrypy.response.headers['Content-Type'] = "application/gexf"
             cherrypy.response.headers['Pragma'] = "no-cache"
-            return sf.buildGraphGexf("SpiderFoot Export", data)
+            return sf.buildGraphGexf(roots, "SpiderFoot Export", data)
         else:
             # Not implemented yet
             return None
-            #return sf.buildGraphJson(data)
 
     scanvizmulti.exposed = True
 
