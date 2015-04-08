@@ -112,9 +112,9 @@ class sfp_dns(SpiderFootPlugin):
                 # If the target was a hostname/sub-domain, we can
                 # add the domain as an alias for the target. But
                 # not if the target was an IP or subnet.
-                if target.getType() == "INTERNET_NAME":
-                    dom = self.sf.hostDomain(host, self.opts['_internettlds'])
-                    target.setAlias(dom, "INTERNET_NAME")
+                #if target.getType() == "INTERNET_NAME":
+                #    dom = self.sf.hostDomain(host, self.opts['_internettlds'])
+                #    target.setAlias(dom, "INTERNET_NAME")
 
         self.sf.debug("Aliases identified: " + str(target.getAliases()))
 
