@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_bingsearch
 # Purpose:      Searches Bing for content related to the domain in question.
@@ -9,7 +10,8 @@
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

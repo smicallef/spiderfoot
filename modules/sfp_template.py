@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_XXX
 # Purpose:      Description of the plug-in.
@@ -9,7 +10,8 @@
 # Copyright:   (c) Name
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

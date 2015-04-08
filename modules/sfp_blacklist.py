@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_blacklist
 # Purpose:      SpiderFoot plug-in for looking up whether IPs/Netblocks/Domains
@@ -11,7 +12,8 @@
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

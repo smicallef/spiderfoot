@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_cookie
 # Purpose:      SpiderFoot plug-in for extracting cookies from HTTP headers.
@@ -9,7 +10,8 @@
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

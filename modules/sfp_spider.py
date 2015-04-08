@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_spider
 # Purpose:      SpiderFoot plug-in for spidering sites and returning meta data
@@ -10,7 +11,8 @@
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

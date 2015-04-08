@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sf
 # Purpose:      Main wrapper for calling all SpiderFoot modules
@@ -9,7 +10,9 @@
 # Copyright:   (c) Steve Micallef 2012
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import os
 import inspect
@@ -29,20 +32,20 @@ for mod in deps:
         else:
             __import__(mod)
     except ImportError as e:
-        print ""
-        print "Critical Start-up Failure: " + str(e)
-        print "================================="
-        print "It appears you are missing a module required for SpiderFoot"
-        print "to function. Please refer to the README file to get a list of"
-        print "the dependencies and install them."
-        print ""
-        print "Python modules required are: "
+        print("")
+        print("Critical Start-up Failure: " + str(e))
+        print("=================================")
+        print("It appears you are missing a module required for SpiderFoot")
+        print("to function. Please refer to the README file to get a list of")
+        print("the dependencies and install them.")
+        print("")
+        print("Python modules required are: ")
         for mod in deps:
-            print " - " + mod
-        print ""
-        print "If you are running on Windows and getting this error, please"
-        print "report this as a bug to support@spiderfoot.net."
-        print ""
+            print(" - " + mod)
+        print("")
+        print("If you are running on Windows and getting this error, please")
+        print("report this as a bug to support@spiderfoot.net.")
+        print("")
         sys.exit(-1)
 
 import os
@@ -126,7 +129,7 @@ if __name__ == '__main__':
                 sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
 
     if len(sfModules.keys()) < 1:
-        print "No modules found in the modules directory."
+        print("No modules found in the modules directory.")
         sys.exit(-1)
 
     # Add module info to sfConfig so it can be used by the UI
@@ -135,8 +138,8 @@ if __name__ == '__main__':
     sfConfig['__globaloptdescs__'] = sfOptdescs
 
     # Start the web server so you can start looking at results
-    print "Starting web server at http://" + sfConfig['__webaddr'] + \
-          ":" + str(sfConfig['__webport']) + sfConfig['__docroot'] + " ..."
+    print("Starting web server at http://" + sfConfig['__webaddr'] + \
+          ":" + str(sfConfig['__webport']) + sfConfig['__docroot'] + " ...")
 
     cherrypy.config.update({
         'server.socket_host': sfConfig['__webaddr'],

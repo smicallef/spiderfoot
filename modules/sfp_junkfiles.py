@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_junkfiles
 # Purpose:      From Spidering, identifies backup and temporary files.
@@ -9,7 +10,8 @@
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_geoip
 # Purpose:      SpiderFoot plug-in to identify the Geo-location of IP addresses
@@ -10,7 +11,8 @@
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

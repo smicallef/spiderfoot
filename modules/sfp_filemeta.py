@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_filemeta
 # Purpose:      From Spidering and from searching search engines, extracts file
@@ -10,7 +11,8 @@
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 import mimetypes
 import metapdf
 import openxmllib

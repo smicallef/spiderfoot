@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_social`
 # Purpose:      Identify the usage of popular social networks
@@ -9,7 +10,8 @@
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

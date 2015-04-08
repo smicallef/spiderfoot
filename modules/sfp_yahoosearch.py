@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_yahoosearch
 # Purpose:      Searches Yahoo for content related to the domain in question.
@@ -9,7 +10,8 @@
 # Copyright:   (c) Steve Micallef 2014
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 import re
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_tldsearch
 # Purpose:      SpiderFoot plug-in for identifying the existence of this target
@@ -10,7 +11,8 @@
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 import socket
 import random
 import threading

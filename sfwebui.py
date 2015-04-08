@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -----------------------------------------------------------------
 # Name:         sfwebui
 # Purpose:      User interface class for use with a web browser
@@ -9,6 +10,9 @@
 # Copyright:    (c) Steve Micallef 2012
 # License:      GPL
 # -----------------------------------------------------------------
+#
+from __future__ import absolute_import
+from __future__ import print_function
 import json
 import cherrypy
 import cgi
@@ -48,14 +52,14 @@ class SpiderFootWebUi(object):
 
         self.docroot = self.config['__docroot'].rstrip('/')
 
-        print ""
-        print ""
-        print "*************************************************************"
-        print " Use SpiderFoot by starting your web browser of choice and "
-        print " browse to http://" + addr + ":" + str(self.config['__webport']) + self.docroot
-        print "*************************************************************"
-        print ""
-        print ""
+        print("")
+        print("")
+        print("*************************************************************")
+        print(" Use SpiderFoot by starting your web browser of choice and ")
+        print(" browse to http://" + addr + ":" + str(self.config['__webport']) + self.docroot)
+        print("*************************************************************")
+        print("")
+        print("")
 
     # Sanitize user input
     def cleanUserInput(self, inputList):
@@ -275,7 +279,7 @@ class SpiderFootWebUi(object):
 
         # Wait until the scan has initialized
         while globalScanStatus.getStatus(newId) is None:
-            print "[info] Waiting for the scan to initialize..."
+            print("[info] Waiting for the scan to initialize...")
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
@@ -318,7 +322,7 @@ class SpiderFootWebUi(object):
 
             # Wait until the scan has initialized
             while globalScanStatus.getStatus(newId) is None:
-                print "[info] Waiting for the scan to initialize..."
+                print("[info] Waiting for the scan to initialize...")
                 time.sleep(1)
 
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
@@ -526,7 +530,7 @@ class SpiderFootWebUi(object):
 
         # Wait until the scan has initialized
         while globalScanStatus.getStatus(scanId) is None:
-            print "[info] Waiting for the scan to initialize..."
+            print("[info] Waiting for the scan to initialize...")
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)

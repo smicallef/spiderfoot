@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#
 # -------------------------------------------------------------------------------
 # Name:         sfp_malcheck
 # Purpose:      Checks if an ASN, IP or domain is malicious.
@@ -9,7 +10,8 @@
 # Copyright:   (c) Steve Micallef, 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-
+#
+from __future__ import absolute_import
 from netaddr import IPAddress, IPNetwork
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
