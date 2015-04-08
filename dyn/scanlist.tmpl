@@ -40,6 +40,7 @@
     <script type='text/javascript'>
             globalTypes = null;
             globalFilter = null;
+            lastChecked = null;
 
             function switchSelectAll() {
                 if (!$("#checkall")[0].checked) {
@@ -184,7 +185,7 @@
                                     filtered++;
                                     continue;
                                 }
-                                table += "<tr><td style='text-align: center'><input type='checkbox' onClick='checkboxValidate()' id='cb_" + data[i][0] + "'></td>"
+                                table += "<tr><td style='text-align: center'><input type='checkbox' id='cb_" + data[i][0] + "'></td>"
                                 table += "<td><a href=${docroot}/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
                                 table += "<td>" + data[i][2] + "</td>";
                                 table += "<td>" + data[i][3] + "</td>";
@@ -225,7 +226,27 @@
                             sf.updateTooltips();
                             $("#scanlist").tablesorter( { headers: { 7: { sorter: false }, 0: { sorter: false } } } );
                             $("[class^=tooltip]").remove();
-                });
+
+                            $(document).ready(function() {
+                                var $chkboxes = $('input[id*=cb_]');
+                                $chkboxes.click(function(e) {
+                                    if(!lastChecked) {
+                                        lastChecked = this;
+                                        return;
+                                    }
+
+                                    if(e.shiftKey) {
+                                        var start = $chkboxes.index(this);
+                                        var end = $chkboxes.index(lastChecked);
+    
+                                        $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+
+                                    }
+
+                                    lastChecked = this;
+                                });
+                            });
+                    });
             }
 
             showlist();

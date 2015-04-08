@@ -30,7 +30,7 @@ import threading
 from copy import deepcopy
 
 
-class SpiderFoot(object):
+class SpiderFoot:
     dbh = None
     GUID = None
 
@@ -65,7 +65,7 @@ class SpiderFoot(object):
                 f = open(fname, "r")
                 if splitLines:
                     arr = f.readlines()
-                    ret = []
+                    ret = list()
                     for x in arr:
                         ret.append(x.rstrip('\n'))
                 else:
@@ -96,13 +96,13 @@ class SpiderFoot(object):
 
     # Return a format-agnostic collection of tuples to use as the
     # basis for building graphs in various formats.
-    def buildGraphData(self, data, flt=[]):
+    def buildGraphData(self, data, flt=list()):
         mapping = set()
-        entities = {}
-        parents = {}
+        entities = dict()
+        parents = dict()
 
         def get_next_parent_entities(item, pids):
-            ret = []
+            ret = list()
 
             for [parent, id] in parents[item]:
                 if id in pids:
@@ -125,18 +125,18 @@ class SpiderFoot(object):
                     entities[row[1]] = True
 
             if row[1] not in parents:
-                parents[row[1]] = []
+                parents[row[1]] = list()
             parents[row[1]].append([row[2], row[8]])
 
         for entity in entities:
             for [parent, id] in parents[entity]:
                 if parent in entities:
                     if entity != parent:
-                        # print "Adding entity parent: " + parent
+                        #print "Adding entity parent: " + parent
                         mapping.add((entity, parent))
                 else:
-                    ppids = []
-                    # print "Checking " + parent + " for entityship."
+                    ppids = list()
+                    #print "Checking " + parent + " for entityship."
                     next_parents = get_next_parent_entities(parent, ppids)
                     for next_parent in next_parents:
                         if entity != next_parent:
@@ -146,31 +146,41 @@ class SpiderFoot(object):
 
     # Convert supplied raw data into GEXF format (e.g. for Gephi)
     # GEXF produced by PyGEXF doesn't work with SigmaJS because
-    # SJS needs coordinates for each node.
-    def buildGraphGexf(self, title, data, flt=[]):
+    # SJS needs coordinates for each node. 
+    # flt is a list of event types to include, if not set everything is
+    # included.
+    def buildGraphGexf(self, root, title, data, flt=[]):
         mapping = self.buildGraphData(data, flt)
         g = gexf.Gexf(title, title)
         graph = g.addGraph("undirected", "static", "SpiderFoot Export")
 
-        nodelist = {}
+        nodelist = dict()
         ecounter = 0
         ncounter = 0
         for pair in mapping:
             (dst, src) = pair
+            col = ["0", "0", "0"]
+
             # Leave out this special case
-            if dst == "ROOT":
+            if dst == "ROOT" or src == "ROOT":
                 continue
             if dst not in nodelist:
-                ncounter += 1
-                graph.addNode(str(ncounter), unicode(dst, errors="replace"))
+                ncounter = ncounter + 1
+                if dst in root:
+                    col = ["255", "0", "0"]
+                graph.addNode(str(ncounter), unicode(dst, errors="replace"),
+                              r=col[0], g=col[1], b=col[2])    
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
-                ncounter += 1
-                graph.addNode(str(ncounter), unicode(src, errors="replace"))
+                ncounter = ncounter + 1
+                if src in root:
+                    col = ["255", "0", "0"]
+                graph.addNode(str(ncounter), unicode(src, errors="replace"),
+                              r=col[0], g=col[1], b=col[2])
                 nodelist[src] = ncounter
 
-            ecounter += 1
+            ecounter = ecounter + 1
             graph.addEdge(str(ecounter), str(nodelist[src]), str(nodelist[dst]))
 
         output = StringIO.StringIO()
@@ -178,11 +188,13 @@ class SpiderFoot(object):
         return output.getvalue()
 
     # Convert supplied raw data into JSON format for SigmaJS
-    def buildGraphJson(self, root, data, flt=[]):
+    def buildGraphJson(self, root, data, flt=list()):
         mapping = self.buildGraphData(data, flt)
-        ret = {'nodes': [], 'edges': []}
+        ret = dict()
+        ret['nodes'] = list()
+        ret['edges'] = list()
 
-        nodelist = {}
+        nodelist = dict()
         ecounter = 0
         ncounter = 0
         for pair in mapping:
@@ -193,36 +205,36 @@ class SpiderFoot(object):
             if dst == "ROOT" or src == "ROOT":
                 continue
             if dst not in nodelist:
-                ncounter += 1
-                if dst == root:
+                ncounter = ncounter + 1
+                if dst in root:
                     col = "#f00"
-                ret['nodes'].append({'id': str(ncounter),
-                                     'label': unicode(dst, errors="replace"),
-                                     'x': random.randint(1, 1000),
-                                     'y': random.randint(1, 1000),
-                                     'size': "1",
-                                     'color': col
-                                     })
+                ret['nodes'].append({'id': str(ncounter), 
+                                    'label': unicode(dst, errors="replace"),
+                                    'x': random.randint(1,1000),
+                                    'y': random.randint(1,1000),
+                                    'size': "1",
+                                    'color': col
+                })
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
-                if src == root:
+                if src in root:
                     col = "#f00"
-                ncounter += 1
-                ret['nodes'].append({'id': str(ncounter),
-                                     'label': unicode(src, errors="replace"),
-                                     'x': random.randint(1, 1000),
-                                     'y': random.randint(1, 1000),
-                                     'size': "1",
-                                     'color': col
-                                     })
+                ncounter = ncounter + 1
+                ret['nodes'].append({'id': str(ncounter), 
+                                    'label': unicode(src, errors="replace"),
+                                    'x': random.randint(1,1000),
+                                    'y': random.randint(1,1000),
+                                    'size': "1",
+                                    'color': col
+                })
                 nodelist[src] = ncounter
 
-            ecounter += 1
-            ret['edges'].append({'id': str(ecounter),
-                                 'source': str(nodelist[src]),
-                                 'target': str(nodelist[dst])
-                                 })
+            ecounter = ecounter + 1
+            ret['edges'].append({'id': str(ecounter), 
+                                'source': str(nodelist[src]), 
+                                'target': str(nodelist[dst])
+            })
 
         return json.dumps(ret)
 
@@ -247,7 +259,7 @@ class SpiderFoot(object):
         return hashStr
 
     def _dblog(self, level, message, component=None):
-        # print str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component)
+        #print str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component)
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, error, exception=True):
@@ -365,7 +377,7 @@ class SpiderFoot(object):
     # Convert a Python dictionary to something storable
     # in the database.
     def configSerialize(self, opts, filterSystem=True):
-        storeopts = {}
+        storeopts = dict()
 
         for opt in opts.keys():
             # Filter out system temporary variables like GUID and others
@@ -401,7 +413,8 @@ class SpiderFoot(object):
                     else:
                         storeopts[mod + ":" + opt] = 0
                 if type(opts['__modules__'][mod]['opts'][opt]) is list:
-                    storeopts[mod + ":" + opt] = ','.join(str(x) for x in opts['__modules__'][mod]['opts'][opt])
+                    storeopts[mod + ":" + opt] = ','.join(str(x) \
+                                                          for x in opts['__modules__'][mod]['opts'][opt])
 
         return storeopts
 
@@ -432,7 +445,7 @@ class SpiderFoot(object):
 
                 if type(referencePoint[opt]) is list:
                     if type(referencePoint[opt][0]) is int:
-                        returnOpts[opt] = []
+                        returnOpts[opt] = list()
                         for x in str(opts[opt]).split(","):
                             returnOpts[opt].append(int(x))
                     else:
@@ -464,7 +477,7 @@ class SpiderFoot(object):
 
                     if type(referencePoint['__modules__'][modName]['opts'][opt]) is list:
                         if type(referencePoint['__modules__'][modName]['opts'][opt][0]) is int:
-                            returnOpts['__modules__'][modName]['opts'][opt] = []
+                            returnOpts['__modules__'][modName]['opts'][opt] = list()
                             for x in str(opts[modName + ":" + opt]).split(","):
                                 returnOpts['__modules__'][modName]['opts'][opt].append(int(x))
                         else:
@@ -493,7 +506,7 @@ class SpiderFoot(object):
     # Return an array of module names for returning the
     # types specified.
     def modulesProducing(self, events):
-        modlist = []
+        modlist = list()
         for mod in self.opts['__modules__'].keys():
             if self.opts['__modules__'][mod]['provides'] is None:
                 continue
@@ -507,7 +520,7 @@ class SpiderFoot(object):
     # Return an array of modules that consume the types
     # specified.
     def modulesConsuming(self, events):
-        modlist = []
+        modlist = list()
         for mod in self.opts['__modules__'].keys():
             if self.opts['__modules__'][mod]['consumes'] is None:
                 continue
@@ -521,7 +534,7 @@ class SpiderFoot(object):
     # Return an array of types that are produced by the list
     # of modules supplied.
     def eventsFromModules(self, modules):
-        evtlist = []
+        evtlist = list()
         for mod in modules:
             if mod in self.opts['__modules__'].keys():
                 if self.opts['__modules__'][mod]['provides'] is not None:
@@ -533,7 +546,7 @@ class SpiderFoot(object):
     # Return an array of types that are consumed by the list
     # of modules supplied.
     def eventsToModules(self, modules):
-        evtlist = []
+        evtlist = list()
         for mod in modules:
             if mod in self.opts['__modules__'].keys():
                 if self.opts['__modules__'][mod]['consumes'] is not None:
@@ -548,7 +561,7 @@ class SpiderFoot(object):
 
     # Turn a relative path into an absolute path
     def urlRelativeToAbsolute(self, url):
-        finalBits = []
+        finalBits = list()
 
         if '..' not in url:
             return url
@@ -570,7 +583,7 @@ class SpiderFoot(object):
 
             finalBits.append(chunk)
 
-        # self.debug('xfrmed rel to abs path: ' + url + ' to ' + '/'.join(finalBits))
+        #self.debug('xfrmed rel to abs path: ' + url + ' to ' + '/'.join(finalBits))
         return '/'.join(finalBits)
 
     # Extract the top level directory from a URL
@@ -580,16 +593,16 @@ class SpiderFoot(object):
 
         # For cases like 'www.somesite.com'
         if len(bits) == 0:
-            # self.debug('base dir of ' + url + ' not identified, using URL as base.')
+            #self.debug('base dir of ' + url + ' not identified, using URL as base.')
             return url + '/'
 
         # For cases like 'http://www.blah.com'
         if '://' in url and url.count('/') < 3:
-            # self.debug('base dir of ' + url + ' is: ' + url + '/')
+            #self.debug('base dir of ' + url + ' is: ' + url + '/')
             return url + '/'
 
         base = '/'.join(bits[:-1])
-        # self.debug('base dir of ' + url + ' is: ' + base + '/')
+        #self.debug('base dir of ' + url + ' is: ' + base + '/')
         return base + '/'
 
     # Extract the scheme and domain from a URL
@@ -604,7 +617,7 @@ class SpiderFoot(object):
         if bits is None:
             return url.lower()
 
-        # self.debug('base url of ' + url + ' is: ' + bits.group(1))
+        #self.debug('base url of ' + url + ' is: ' + bits.group(1))
         return bits.group(1).lower()
 
     # Extract the FQDN from a URL
@@ -634,7 +647,7 @@ class SpiderFoot(object):
     # Extract the keywords (the domains without the TLD or any subdomains)
     # from a list of domains.
     def domainKeywords(self, domainList, tldList):
-        arr = []
+        arr = list()
         for domain in domainList:
             # Strip off the TLD
             tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
@@ -661,7 +674,7 @@ class SpiderFoot(object):
 
     # Clean DNS results to be a simple list
     def normalizeDNS(self, res):
-        ret = []
+        ret = list()
         for addr in res:
             if type(addr) == list:
                 for host in addr:
@@ -674,8 +687,8 @@ class SpiderFoot(object):
     # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):
         def get_children(needle, haystack):
-            # print "called"
-            ret = []
+            #print "called"
+            ret = list()
 
             if needle not in haystack.keys():
                 return None
@@ -707,7 +720,7 @@ class SpiderFoot(object):
                 break
 
         if root is None:
-            # print "*BUG*: Invalid structure - needs to go back to one root."
+            #print "*BUG*: Invalid structure - needs to go back to one root."
             final = {}
         else:
             final = {"name": root, "children": get_children(root, data)}
@@ -721,7 +734,7 @@ class SpiderFoot(object):
     # Parse the contents of robots.txt, returns a list of patterns
     # which should not be followed
     def parseRobotsTxt(self, robotsTxtData):
-        returnArr = []
+        returnArr = list()
 
         # We don't check the User-Agent rule yet.. probably should at some stage
 
@@ -742,7 +755,7 @@ class SpiderFoot(object):
     # the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
     # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
     def parseLinks(self, url, data, domains):
-        returnLinks = {}
+        returnLinks = dict()
 
         if data is None or len(data) == 0:
             self.debug('parseLinks() called with no data to parse')
@@ -845,7 +858,7 @@ class SpiderFoot(object):
         url = url.encode('ascii', 'ignore')
 
         try:
-            header = {}
+            header = dict()
             if type(useragent) is list:
                 header['User-Agent'] = random.choice(useragent)
             else:
@@ -859,14 +872,14 @@ class SpiderFoot(object):
             req = urllib2.Request(url, None, header)
             if cookies is not None:
                 req.add_header('cookie', cookies)
-                self.info("Fetching (incl. cookies): " + url +
-                          " [user-agent: " + header['User-Agent'] + "] [timeout: " +
+                self.info("Fetching (incl. cookies): " + url + \
+                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
             else:
-                self.info("Fetching: " + url + " [user-agent: " +
+                self.info("Fetching: " + url + " [user-agent: " + \
                           header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
-            result['headers'] = {}
+            result['headers'] = dict()
             opener = urllib2.build_opener(SmartRedirectHandler())
             fullPage = opener.open(req, timeout=timeout)
             content = fullPage.read()
@@ -883,7 +896,7 @@ class SpiderFoot(object):
             else:
                 result['content'] = unicode(content, 'utf-8', errors='replace')
 
-            # print "FOR: " + url
+            #print "FOR: " + url
             #print "HEADERS: " + str(result['headers'])
             result['realurl'] = fullPage.geturl()
             result['code'] = fullPage.getcode()
@@ -932,10 +945,10 @@ class SpiderFoot(object):
     # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
     # timeout: Fetch timeout
-    def googleIterate(self, searchString, opts={}):
+    def googleIterate(self, searchString, opts=dict()):
         limit = 10
         fetches = 0
-        returnResults = {}
+        returnResults = dict()
 
         if 'limit' in opts:
             limit = opts['limit']
@@ -1009,10 +1022,10 @@ class SpiderFoot(object):
     # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
     # timeout: Fetch timeout
-    def bingIterate(self, searchString, opts={}):
+    def bingIterate(self, searchString, opts=dict()):
         limit = 10
         fetches = 0
-        returnResults = {}
+        returnResults = dict()
 
         if 'limit' in opts:
             limit = opts['limit']
@@ -1084,10 +1097,10 @@ class SpiderFoot(object):
     # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
     # timeout: Fetch timeout
-    def yahooIterate(self, searchString, opts={}):
+    def yahooIterate(self, searchString, opts=dict()):
         limit = 10
         fetches = 0
-        returnResults = {}
+        returnResults = dict()
 
         if 'limit' in opts:
             limit = opts['limit']
@@ -1152,7 +1165,7 @@ class SpiderFootPlugin(object):
     # Will be set to True by the controller if the user aborts scanning
     _stopScanning = False
     # Modules that will be notified when this module produces events
-    _listenerModules = []
+    _listenerModules = list()
     # Current event being processed
     _currentEvent = None
     # Target currently being acted against
@@ -1178,11 +1191,11 @@ class SpiderFootPlugin(object):
     # Used to clear any listener relationships, etc. This is needed because
     # Python seems to cache local variables even between threads.
     def clearListeners(self):
-        self._listenerModules = []
+        self._listenerModules = list()
         self._stopScanning = False
 
     # Will always be overriden by the implementer.
-    def setup(self, sf, userOpts={}):
+    def setup(self, sf, userOpts=dict()):
         pass
 
     # Hardly used, only in special cases where a module can find
@@ -1249,7 +1262,7 @@ class SpiderFootPlugin(object):
         while prevEvent is not None:
             if prevEvent.sourceEvent is not None:
                 if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
-                        prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
+                                prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
                     #print "Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data
                     storeOnly = True
                     break
@@ -1321,13 +1334,13 @@ class SpiderFootTarget(object):
     _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME"]
     targetType = None
     targetValue = None
-    targetAliases = []
+    targetAliases = list()
 
     def __init__(self, targetValue, typeName):
         if typeName in self._validTypes:
             self.targetType = typeName
             self.targetValue = targetValue.lower()
-            self.targetAliases = []
+            self.targetAliases = list()
         else:
             print "Internal Error: Invalid target type."
             sys.exit(-1)
@@ -1356,7 +1369,7 @@ class SpiderFootTarget(object):
         return self.targetAliases
 
     def _getEquivalents(self, typeName):
-        ret = []
+        ret = list()
         for item in self.targetAliases:
             if item['type'] == typeName:
                 ret.append(item['value'].lower())
@@ -1457,7 +1470,8 @@ class SpiderFootEvent(object):
             return
 
         self.sourceEventHash = sourceEvent.getHash()
-        self.__id = self.eventType + str(self.generated) + self.module + str(random.randint(0, 99999999))
+        self.__id = self.eventType + str(self.generated) + self.module + \
+                    str(random.randint(0, 99999999))
 
     # Unique hash of this event
     def getHash(self):
@@ -1606,8 +1620,8 @@ class PublicSuffixList(object):
 
 
 # Class for tracking the status of all running scans. Thread safe.
-class SpiderFootScanStatus(object):
-    statusTable = {}
+class SpiderFootScanStatus:
+    statusTable = dict()
     lock = threading.Lock()
 
     def setStatus(self, scanId, status):
