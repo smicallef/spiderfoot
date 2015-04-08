@@ -136,7 +136,10 @@ class sfp_filemeta(SpiderFootPlugin):
                         val = data['/Producer']
 
                     if "/Creator" in data:
-                        if data['/Creator'] != data['/Producer']:
+                        if "/Producer" in data:
+                            if data['/Creator'] != data['/Producer']:
+                                val = data['/Creator']
+                        else:
                             val = data['/Creator']
 
                     if "Application" in data:
