@@ -24,7 +24,7 @@ externals = [
 
 
 class sfp_accounts(SpiderFootPlugin):
-    """Accounts:Look for possible associated accounts on over 50 websites like Ebay, Slashdot, reddit, etc."""
+    """Accounts:Look for possible associated accounts on 50 websites like Ebay, Slashdot, reddit, etc."""
 
     # Default options
     opts = {
