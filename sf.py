@@ -33,8 +33,8 @@ for mod in deps:
         print "Critical Start-up Failure: " + str(e)
         print "================================="
         print "It appears you are missing a module required for SpiderFoot"
-        print "to function. Please refer to the README file to get a list of"
-        print "the dependencies and install them."
+        print "to function. Please refer to the documentation for the list"
+        print "of dependencies and install them."
         print ""
         print "Python modules required are: "
         for mod in deps:
