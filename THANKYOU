@@ -27,3 +27,9 @@ bug fixes or new functionality. Thank you!
 
 - Lin Zhemin (https://github.com/miaoski)
     - Added the ability to use a configurable document root
+
+- Micah Hoffman (https://github.com/WebBreacher)
+    - Comprehensive list of URLs for identifying account usage in modules/sfp_accounts.py
+
+- Michael Pellon (https://github.com/mpellon)
+    - Providing a Dockerfile
