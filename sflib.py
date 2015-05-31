@@ -841,7 +841,7 @@ class SpiderFoot:
 
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
-                 useragent="SpiderFoot", headers=None, dontMangle=False):
+                 useragent="SpiderFoot", headers=None, noLog=False, dontMangle=False):
         result = {
             'code': None,
             'status': None,
@@ -851,8 +851,7 @@ class SpiderFoot:
         }
 
         if url is None:
-            self.error('Blank URL supplied to be fetched')
-            return result
+            return None
 
         # Clean the URL
         url = url.encode('ascii', 'ignore')
@@ -872,11 +871,13 @@ class SpiderFoot:
             req = urllib2.Request(url, None, header)
             if cookies is not None:
                 req.add_header('cookie', cookies)
-                self.info("Fetching (incl. cookies): " + url + \
+                if not noLog:
+                    self.info("Fetching (incl. cookies): " + url + \
                           " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
             else:
-                self.info("Fetching: " + url + " [user-agent: " + \
+                if not noLog:
+                    self.info("Fetching: " + url + " [user-agent: " + \
                           header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
             result['headers'] = dict()
@@ -902,7 +903,8 @@ class SpiderFoot:
             result['code'] = fullPage.getcode()
             result['status'] = 'OK'
         except urllib2.HTTPError as h:
-            self.info("HTTP code " + str(h.code) + " encountered for " + url)
+            if not noLog:
+                self.info("HTTP code " + str(h.code) + " encountered for " + url)
             # Capture the HTTP error code
             result['code'] = h.code
             for k, v in h.info().items():
@@ -910,12 +912,14 @@ class SpiderFoot:
             if fatal:
                 self.fatal('URL could not be fetched (' + h.code + ')')
         except urllib2.URLError as e:
-            self.info("Error fetching " + url + "(" + str(e) + ")")
+            if not noLog:
+                self.info("Error fetching " + url + "(" + str(e) + ")")
             result['status'] = str(e)
             if fatal:
                 self.fatal('URL could not be fetched (' + str(e) + ')')
         except Exception as x:
-            self.info("Unexpected exception occurred fetching: " + url + " (" + str(x) + ")")
+            if not noLog:
+                self.info("Unexpected exception occurred fetching: " + url + " (" + str(x) + ")")
             result['content'] = None
             result['status'] = str(x)
             if fatal:
