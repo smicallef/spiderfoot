@@ -31,13 +31,13 @@ class sfp_crossref(SpiderFootPlugin):
     }
 
     # Internal results tracking
-    results = dict()
-    fetched = list()
+    results = {}
+    fetched = []
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
-        self.fetched = list()
+        self.results = {}
+        self.fetched = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

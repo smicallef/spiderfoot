@@ -35,11 +35,11 @@ class sfp_intfiles(SpiderFootPlugin):
         'searchengine': "If using a search engine, which one? google, yahoo or bing."
     }
 
-    results = list()
+    results = []
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

@@ -39,12 +39,12 @@ class sfp_accounts(SpiderFootPlugin):
         "ignoredict": "Don't bother looking up internal names externally that are just stand-alone first names."
     }
 
-    results = dict()
+    results = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
-        self.commonnames = list()
+        self.results = {}
+        self.commonnames = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -68,7 +68,7 @@ class sfp_accounts(SpiderFootPlugin):
 
     def checkSites(self, name):
         global externals
-        ret = list()
+        ret = []
 
         for site in externals:
             if self.checkForStop():
@@ -78,10 +78,8 @@ class sfp_accounts(SpiderFootPlugin):
                   "&username=" + name + "&time=" + str(int(time.time()) * 100) + "1"
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'],
-                                   headers={
-                                       "X-Requested-With": "XMLHttpRequest",
-                                       "Referer": "http://www.checkusernames.com/"
-                                   }
+                                   headers={"X-Requested-With": "XMLHttpRequest",
+                                            "Referer": "http://www.checkusernames.com/"}
                                    )
 
             if res['content'] is None:
@@ -97,7 +95,7 @@ class sfp_accounts(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        users = list()
+        users = []
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

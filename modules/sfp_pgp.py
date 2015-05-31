@@ -19,7 +19,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_pgp(SpiderFootPlugin):
     """PGP Key Look-up:Look up e-mail addresses in PGP public key servers."""
 
-    results = list()
+    results = []
 
     # Default options
     opts = {
@@ -38,10 +38,10 @@ class sfp_pgp(SpiderFootPlugin):
         'keyserver2_fetch': "Backup PGP public key server URL to find the public key for an e-mail address. Email address will get appended."
     }
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
 
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -105,9 +105,9 @@ class sfp_pgp(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None:
-               res = self.sf.fetchUrl(self.opts['keyserver2_fetch'] + eventData,
-                                      timeout=self.opts['_fetchtimeout'],
-                                      useragent=self.opts['_useragent'])
+                res = self.sf.fetchUrl(self.opts['keyserver2_fetch'] + eventData,
+                                       timeout=self.opts['_fetchtimeout'],
+                                       useragent=self.opts['_useragent'])
 
             if res['content'] is not None:
                 pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE | re.DOTALL)

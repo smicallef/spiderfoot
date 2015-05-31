@@ -43,7 +43,7 @@ class sfp_honeypot(SpiderFootPlugin):
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    results = dict()
+    results = {}
 
     # Status codes according to:
     # http://www.projecthoneypot.org/httpbl_api.php
@@ -61,9 +61,9 @@ class sfp_honeypot(SpiderFootPlugin):
         "10": "Unknown (10)"
     }
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
+        self.results = {}
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -143,7 +143,7 @@ class sfp_honeypot(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         parentEvent = event
-        addrlist = list()
+        addrlist = []
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

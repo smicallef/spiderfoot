@@ -35,14 +35,14 @@ class sfp_tldsearch(SpiderFootPlugin):
     }
 
     # Internal results tracking
-    results = list()
+    results = []
 
     # Track TLD search results between threads
-    tldResults = dict()
+    tldResults = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -65,7 +65,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             self.tldResults[target] = False
 
     def tryTldWrapper(self, tldList, sourceEvent):
-        self.tldResults = dict()
+        self.tldResults = {}
         running = True
         i = 0
         t = []
@@ -124,7 +124,7 @@ class sfp_tldsearch(SpiderFootPlugin):
 
         keyword = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
         self.sf.debug("Keyword extracted from " + eventData + ": " + keyword)
-        targetList = list()
+        targetList = []
 
         # Look through all TLDs for the existence of this target keyword
         for tld in self.opts['_internettlds']:
@@ -154,7 +154,7 @@ class sfp_tldsearch(SpiderFootPlugin):
                 targetList.append(tryDomain)
             else:
                 self.tryTldWrapper(targetList, event)
-                targetList = list()
+                targetList = []
 
         # Scan whatever may be left over.
         if len(targetList) > 0:

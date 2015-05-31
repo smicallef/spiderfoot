@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:         sfp_pwned
 # Purpose:      Query haveibeenpwned.com to see if an account has been hacked.
@@ -12,6 +13,7 @@
 import sys
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_pwned(SpiderFootPlugin):
     """Pwned Password:Check Have I Been Pwned? for hacked accounts identified."""
@@ -29,11 +31,11 @@ class sfp_pwned(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
+        self.results = {}
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -56,7 +58,7 @@ class sfp_pwned(SpiderFootPlugin):
 
         if self.opts['lookupusernames']:
             ret.extend(["ACCOUNT_EXTERNAL_USER_SHARED_COMPROMISED", 
-                "ACCOUNT_EXTERNAL_OWNED_COMPROMISED"])
+                        "ACCOUNT_EXTERNAL_OWNED_COMPROMISED"])
 
         return ret
 
@@ -64,10 +66,10 @@ class sfp_pwned(SpiderFootPlugin):
         ret = None
 
         url = "https://haveibeenpwned.com/api/v2/breachedaccount/" + qry
-        hdrs = { "Accept": "application/vnd.haveibeenpwned.v2+json" }
+        hdrs = {"Accept": "application/vnd.haveibeenpwned.v2+json"}
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
-            useragent="SpiderFoot", headers=hdrs)
+                                    useragent="SpiderFoot", headers=hdrs)
 
         if res['code'] == "404":
             return None
@@ -91,23 +93,22 @@ class sfp_pwned(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
-        if self.results.has_key(eventData):
+        # Don't look up stuff twice
+        if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
             self.results[eventData] = True
 
         data = self.query(eventData)
-        if data == None:
+        if data is None:
             return None
 
         for n in data:
             site = n["Title"]
             evt = eventName + "_COMPROMISED"
             # Notify other modules of what you've found
-            e = SpiderFootEvent(evt, eventData + " [" + site + "]",
-                self.__name__, event)
+            e = SpiderFootEvent(evt, eventData + " [" + site + "]", self.__name__, event)
             self.notifyListeners(e)
 
 # End of sfp_pwned class

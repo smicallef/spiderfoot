@@ -38,11 +38,11 @@ class sfp_sslcert(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
+        self.results = {}
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.

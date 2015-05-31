@@ -47,13 +47,13 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    results = dict()
-    portlist = list()
-    portResults = dict()
+    results = {}
+    portlist = []
+    portResults = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
+        self.results = {}
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -100,7 +100,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         sock.close()
 
     def tryPortWrapper(self, ip, portList):
-        self.portResults = dict()
+        self.portResults = {}
         running = True
         i = 0
         t = []
@@ -132,18 +132,17 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                 self.sf.info("TCP Port " + cp + " found to be OPEN.")
                 evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
                 self.notifyListeners(evt)
-                if resArray[cp] != "" and resArray[cp] != True:
+                if resArray[cp] is not "" and resArray[cp] is not True:
                     bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", resArray[cp],
                                            self.__name__, evt)
                     self.notifyListeners(bevt)
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        scanIps = list()
+        scanIps = []
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

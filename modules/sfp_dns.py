@@ -52,19 +52,19 @@ class sfp_dns(SpiderFootPlugin):
         "commonsubs": "Common sub-domains to try to resolve on the target subdomain/domain. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
     }
 
-    events = dict()
-    domresults = dict()
-    hostresults = dict()
-    resolveCache = dict()
-    resolveCache6 = dict()
+    events = {}
+    domresults = {}
+    hostresults = {}
+    resolveCache = {}
+    resolveCache6 = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.events = dict()
-        self.domresults = dict()
-        self.hostresults = dict()
-        self.resolveCache = dict()
-        self.resolveCache6 = dict()
+        self.events = {}
+        self.domresults = {}
+        self.hostresults = {}
+        self.resolveCache = {}
+        self.resolveCache6 = {}
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -77,14 +77,14 @@ class sfp_dns(SpiderFootPlugin):
             self.sublist = self.sf.optValueToData(self.opts['commonsubs'][0])
 
     def enrichTarget(self, target):
-        ret = list()
+        ret = []
         # If it's an IP, get the hostname it reverse resolves to
         if target.getType() == "IP_ADDRESS":
             ret = self.resolveIP(target.getValue())
         if target.getType() == "INTERNET_NAME":
             ret = self.resolveHost(target.getValue())
         if target.getType() == "NETBLOCK_OWNER":
-            ret = list()
+            ret = []
             for addr in IPNetwork(target.getValue()):
                 ipaddr = str(addr)
                 if ipaddr.split(".")[3] in ['255', '0']:
@@ -275,7 +275,7 @@ class sfp_dns(SpiderFootPlugin):
 
     # Resolve an IP
     def resolveIP(self, ipaddr):
-        ret = list()
+        ret = []
         self.sf.debug("Performing reverse-resolve of " + ipaddr)
 
         if ipaddr in self.resolveCache:
@@ -290,7 +290,7 @@ class sfp_dns(SpiderFootPlugin):
             return addrs
         except BaseException as e:
             self.sf.info("Unable to resolve " + ipaddr + " (" + str(e) + ")")
-            self.resolveCache[ipaddr] = list()
+            self.resolveCache[ipaddr] = []
             return ret
 
     # Resolve a host
@@ -317,7 +317,7 @@ class sfp_dns(SpiderFootPlugin):
             return self.resolveCache6[hostname]
 
         try:
-            addrs = list()
+            addrs = []
             res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
             for addr in res:
                 if addr[4][0] not in addrs:
@@ -400,7 +400,7 @@ class sfp_dns(SpiderFootPlugin):
 
         self.sf.debug("Gathering DNS records for " + domainName)
         # Process the raw data alone
-        recdata = dict()
+        recdata = {}
         recs = {
             'MX': ['\S+\s+(?:\d+)?\s+IN\s+MX\s+\d+\s+(\S+)\.', 'PROVIDER_MAIL'],
             'NS': ['\S+\s+(?:\d+)?\s+IN\s+NS\s+(\S+)\.', 'PROVIDER_DNS'],

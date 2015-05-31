@@ -29,13 +29,13 @@ class sfp_names(SpiderFootPlugin):
         'emailtoname': "Convert e-mail addresses in the form of firstname.surname@target to names?"
     }
 
-    results = dict()
+    results = {}
     d = None
     n = None
     fq = None
 
     def builddict(self, files):
-        wd = dict()
+        wd = {}
 
         for f in files:
             wdct = open(self.sf.myPath() + "/ext/ispell/" + f, 'r')
@@ -47,9 +47,9 @@ class sfp_names(SpiderFootPlugin):
 
         return wd.keys()
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
+        self.results = {}
 
         d = self.builddict(["english.0", "english.2", "english.4",
                             "british.0", "british.2", "british.4",

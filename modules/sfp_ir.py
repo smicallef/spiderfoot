@@ -22,18 +22,18 @@ class sfp_ir(SpiderFootPlugin):
     # Default options
     opts = {}
 
-    results = dict()
+    results = {}
     currentEventSrc = None
-    memCache = dict()
-    nbreported = dict()
+    memCache = {}
+    nbreported = {}
     keywords = None
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = dict()
-        self.memCache = dict()
+        self.results = {}
+        self.memCache = {}
         self.currentEventSrc = None
-        self.nbreported = dict()
+        self.nbreported = {}
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -110,14 +110,14 @@ class sfp_ir(SpiderFootPlugin):
                 asn = rec["value"]
                 break
 
-        if asn == None:
+        if asn is None:
             return None
 
         return str(asn)
 
     # Owner information about an AS
     def asOwnerInfo(self, asn):
-        ownerinfo = dict()
+        ownerinfo = {}
 
         res = self.fetchRir("https://stat.ripe.net/data/whois/data.json?resource=" + asn)
         if res['content'] is None:
@@ -136,8 +136,8 @@ class sfp_ir(SpiderFootPlugin):
                 if d["key"].lower().startswith("org") or \
                         d["key"].lower().startswith("as") or \
                         d["key"].lower().startswith("aut") or \
-                                d["key"].lower().startswith("descr") and \
-                                        d["value"].lower() not in ["null", "none", "none specified"]:
+                        d["key"].lower().startswith("descr") and \
+                        d["value"].lower() not in ["null", "none", "none specified"]:
                     if d["key"] in ownerinfo:
                         ownerinfo[d["key"]].append(d["value"])
                     else:
@@ -148,7 +148,7 @@ class sfp_ir(SpiderFootPlugin):
 
     # Netblocks owned by an AS
     def asNetblocks(self, asn):
-        netblocks = list()
+        netblocks = []
 
         res = self.fetchRir("https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS" + asn)
         if res['content'] is None:
@@ -170,7 +170,7 @@ class sfp_ir(SpiderFootPlugin):
 
     # Neighbours to an AS
     def asNeighbours(self, asn):
-        neighbours = list()
+        neighbours = []
 
         res = self.fetchRir("https://stat.ripe.net/data/asn-neighbours/data.json?resource=AS" + asn)
         if res['content'] is None:
@@ -208,7 +208,7 @@ class sfp_ir(SpiderFootPlugin):
         ]
 
         # Mess with the keyword as a last resort..
-        keywordList = list()
+        keywordList = []
         for kw in self.keywords:
             # Create versions of the keyword, esp. if hyphens are involved.
             keywordList.append(kw)

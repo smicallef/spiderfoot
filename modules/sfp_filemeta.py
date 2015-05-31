@@ -35,11 +35,11 @@ class sfp_filemeta(SpiderFootPlugin):
         'timeout': "Download timeout for files, in seconds."
     }
 
-    results = list()
+    results = []
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

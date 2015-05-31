@@ -46,11 +46,11 @@ class sfp_socialprofiles(SpiderFootPlugin):
     }
 
     keywords = None
-    results = list()
+    results = []
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -86,8 +86,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
             self.results.append(eventData)
 
         if self.keywords is None:
-            self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
-                self.opts['_internettlds'])
+            self.keywords = self.sf.domainKeywords(self.getTarget().getNames(), self.opts['_internettlds'])
 
         for site in sites.keys():
             s = unicode(sites[site][0]).format(eventData)
@@ -121,7 +120,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
             time.sleep(pauseSecs)
 
             for key in results.keys():
-                instances = list()
+                instances = []
                 # Yahoo requires some additional parsing
                 if self.opts['method'].lower() == "yahoo":
                     res = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner,

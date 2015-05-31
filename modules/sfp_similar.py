@@ -57,11 +57,11 @@ class sfp_similar(SpiderFootPlugin):
     }
 
     # Internal results tracking
-    results = list()
+    results = []
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -204,7 +204,6 @@ class sfp_similar(SpiderFootPlugin):
         else:
             evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
             self.notifyListeners(evt)
-
 
     # Search for similar sounding domains
     def handleEvent(self, event):

@@ -28,11 +28,11 @@ class sfp_pastebin(SpiderFootPlugin):
         'pages': "Number of search results pages to iterate through."
     }
 
-    results = list()
+    results = []
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -110,7 +110,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
                     # Sometimes pastebin search results false positives
                     if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                                         "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                                 "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                         continue
 
                     try:

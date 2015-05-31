@@ -53,22 +53,22 @@ class sfp_spider(SpiderFootPlugin):
     }
 
     # If using robots.txt, this will get populated with filter rules
-    robotsRules = dict()
+    robotsRules = {}
 
     # Pages already fetched
-    fetchedPages = dict()
+    fetchedPages = {}
 
     # Events for links identified
-    urlEvents = dict()
+    urlEvents = {}
 
     # Tracked cookies per site
-    siteCookies = dict()
+    siteCookies = {}
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.fetchedPages = dict()
-        self.urlEvents = dict()
-        self.siteCookies = dict()
+        self.fetchedPages = {}
+        self.urlEvents = {}
+        self.siteCookies = {}
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -125,7 +125,7 @@ class sfp_spider(SpiderFootPlugin):
 
     # Clear out links that we don't want to follow
     def cleanLinks(self, links):
-        returnLinks = dict()
+        returnLinks = {}
 
         for link in links.keys():
             linkBase = self.sf.urlBaseUrl(link)
@@ -258,7 +258,7 @@ class sfp_spider(SpiderFootPlugin):
         keepSpidering = True
         totalFetched = 0
         levelsTraversed = 0
-        nextLinks = dict()
+        nextLinks = {}
         targetBase = self.sf.urlBaseUrl(startingPoint)
 
         # Are we respecting robots.txt?
@@ -286,7 +286,7 @@ class sfp_spider(SpiderFootPlugin):
             # Gets hit in the second and subsequent iterations when more links
             # are found
             if len(nextLinks) > 0:
-                links = dict()
+                links = {}
 
                 # Fetch content from the new links
                 for link in nextLinks.keys():

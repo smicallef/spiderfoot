@@ -26,12 +26,12 @@ class sfp_whois(SpiderFootPlugin):
     optdescs = {
     }
 
-    results = list()
+    results = []
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
 
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -80,7 +80,7 @@ class sfp_whois(SpiderFootPlugin):
             self.sf.debug("Error parsing whois data for " + eventData)
             return None
 
-        if info.has_key('registrar'):
+        if 'registrar' in info:
             if eventName == "DOMAIN_NAME" and info['registrar'] is not None:
                 evt = SpiderFootEvent("DOMAIN_REGISTRAR", info['registrar'][0],
                                       self.__name__, event)

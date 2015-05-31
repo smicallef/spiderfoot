@@ -273,11 +273,11 @@ class sfp_malcheck(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = []
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -348,7 +348,7 @@ class sfp_malcheck(SpiderFootPlugin):
         for check in malchecks.keys():
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "list":
-                data = dict()
+                data = {}
                 url = malchecks[check]['url']
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts['aaacacheperiod'])
                 if data['content'] is None:
@@ -361,7 +361,7 @@ class sfp_malcheck(SpiderFootPlugin):
 
                 # If we're looking at netblocks
                 if targetType == "netblock":
-                    iplist = list()
+                    iplist = []
                     # Get the regex, replace {0} with an IP address matcher to 
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.

@@ -22,7 +22,7 @@ def __dbregex__(qry, data):
     return ret is not None
 
 
-class SpiderFootDb:
+class SpiderFootDb(object):
     sf = None
     dbh = None
     conn = None
@@ -218,7 +218,7 @@ class SpiderFootDb:
 
     # Search results
     # criteria is search criteria such as:
-    #  - scan_id (search within a scan, if omitted search all)
+    # - scan_id (search within a scan, if omitted search all)
     #  - type (search a specific type, if omitted search all)
     #  - value (search values for a specific string, if omitted search all)
     #  - regex (search values for a regular expression)
@@ -227,7 +227,7 @@ class SpiderFootDb:
         if criteria.values().count(None) == 3:
             return False
 
-        qvars = list()
+        qvars = []
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
@@ -310,7 +310,7 @@ class SpiderFootDb:
 
     # Update the start time, end time or status (or all 3) of a scan instance
     def scanInstanceSet(self, instanceId, started=None, ended=None, status=None):
-        qvars = list()
+        qvars = []
         qry = "UPDATE tbl_scan_instance SET "
 
         if started is not None:
@@ -474,7 +474,7 @@ class SpiderFootDb:
             self.sf.error("SQL error encountered when deleting scan: " + e.args[0])
 
     # Store the default configuration
-    def configSet(self, optMap=dict()):
+    def configSet(self, optMap={}):
         qry = "REPLACE INTO tbl_config (scope, opt, val) VALUES (?, ?, ?)"
         for opt in optMap.keys():
             # Module option
@@ -496,7 +496,7 @@ class SpiderFootDb:
     def configGet(self):
         qry = "SELECT scope, opt, val FROM tbl_config"
         try:
-            retval = dict()
+            retval = {}
             self.dbh.execute(qry)
             for [scope, opt, val] in self.dbh.fetchall():
                 if scope == "GLOBAL":
@@ -519,7 +519,7 @@ class SpiderFootDb:
             self.sf.error("Unable to clear configuration from the database: " + e.args[0])
 
     # Store a configuration value for a scan
-    def scanConfigSet(self, id, optMap=dict()):
+    def scanConfigSet(self, id, optMap={}):
         qry = "REPLACE INTO tbl_scan_config \
                 (scan_instance_id, component, opt, val) VALUES (?, ?, ?, ?)"
 
@@ -545,7 +545,7 @@ class SpiderFootDb:
                 WHERE scan_instance_id = ? ORDER BY component, opt"
         qvars = [instanceId]
         try:
-            retval = dict()
+            retval = {}
             self.dbh.execute(qry, qvars)
             for [component, opt, val] in self.dbh.fetchall():
                 if component == "GLOBAL":
@@ -638,7 +638,6 @@ class SpiderFootDb:
             return self.dbh.fetchall()
         except sqlite3.Error as e:
             self.sf.error("SQL error encountered when fetching scan history: " + e.args[0])
-
 
     # Get the source IDs, types and data for a set of IDs
     def scanElementSources(self, instanceId, elementIdList):

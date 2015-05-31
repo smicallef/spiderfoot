@@ -27,13 +27,13 @@ class sfp_adblock(SpiderFootPlugin):
         "blocklist": "AdBlockPlus block list."
     }
 
-    results = list()
+    results = []
     rules = None
     errorState = False
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
         self.rules = None
         self.errorState = False
 

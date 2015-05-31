@@ -34,11 +34,11 @@ class sfp_sharedip(SpiderFootPlugin):
         'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP."
     }
 
-    results = list()
+    results = []
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts={}):
         self.sf = sfc
-        self.results = list()
+        self.results = []
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -93,7 +93,7 @@ class sfp_sharedip(SpiderFootPlugin):
                 self.sf.error("Unable to fetch robtex content.", False)
                 return None
 
-            myres = list()
+            myres = []
             pat = re.compile("Pointing to(.[^!]+)", re.IGNORECASE)
             blob = re.findall(pat, res['content'])
 
@@ -128,7 +128,7 @@ class sfp_sharedip(SpiderFootPlugin):
             results = self.sf.bingIterate("ip:" + eventData, dict(limit=self.opts['pages'],
                                                                   useragent=self.opts['_useragent'],
                                                                   timeout=self.opts['_fetchtimeout']))
-            myres = list()
+            myres = []
             if results is None:
                 self.sf.info("No data returned from Bing.")
                 return None
