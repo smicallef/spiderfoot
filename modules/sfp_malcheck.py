@@ -27,17 +27,17 @@ malchecks = {
         'checks': ['ip', 'netblock'],
         'url': 'https://zeustracker.abuse.ch/blocklist.php?download=badips'
     },
-    'abuse.ch SpyEye Tracker (Domain)': {
-        'id': 'abusespydomain',
+    'abuse.ch Feodo Tracker (Domain)': {
+        'id': 'abusefeododomain',
         'type': 'list',
         'checks': ['domain'],
-        'url': 'https://spyeyetracker.abuse.ch/blocklist.php?download=domainblocklist'
+        'url': 'https://feodotracker.abuse.ch/blocklist/?download=domainblocklist'
     },
-    'abuse.ch SpyEye Tracker (IP)': {
-        'id': 'abusespyip',
+    'abuse.ch Feodo Tracker (IP)': {
+        'id': 'abusefeodoip',
         'type': 'list',
         'checks': ['ip', 'netblock'],
-        'url': 'https://spyeyetracker.abuse.ch/blocklist.php?download=ipblocklist'
+        'url': 'https://feodotracker.abuse.ch/blocklist/?download=ipblocklist'
     },
     'abuse.ch Palevo Tracker (Domain)': {
         'id': 'abusepalevodomain',
@@ -204,8 +204,8 @@ class sfp_malcheck(SpiderFootPlugin):
     opts = {
         'abusezeusdomain': True,
         'abusezeusip': True,
-        'abusespydomain': True,
-        'abusespyip': True,
+        'abusefeododomain': True,
+        'abusefeodoip': True,
         'abusepalevodomain': True,
         'abusepalevoip': True,
         'googledomain': True,
@@ -239,8 +239,8 @@ class sfp_malcheck(SpiderFootPlugin):
     optdescs = {
         'abusezeusdomain': "Enable abuse.ch Zeus domain check?",
         'abusezeusip': "Enable abuse.ch Zeus IP check?",
-        'abusespydomain': "Enable abuse.ch SpyEye domain check?",
-        'abusespyip': "Enable abuse.ch SpeEye IP check?",
+        'abusefeododomain': "Enable abuse.ch Feodo domain check?",
+        'abusefeodoip': "Enable abuse.ch Feodo IP check?",
         'abusepalevodomain': "Enable abuse.ch Palevo domain check?",
         'abusepalevoip': "Enable abuse.ch Palevo IP check?",
         'googledomain': "Enable Google Safe Browsing domain check?",
