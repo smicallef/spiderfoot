@@ -8,7 +8,7 @@ setup(
         "py2exe": {
             "packages": ["modules", "ext.dns", "sflib", "sfwebui", "sfdb", "mako",
                          "cherrypy", "M2Crypto", "netaddr", "ext.socks", "ext.pyPdf",
-                         "ext.metapdf", "ext.openxmllib"],
+                         "ext.metapdf", "ext.openxmllib", "ext.stem"],
             "bundle_files": 1,
             "compressed": True,
             "includes": ['lxml._elementpath']

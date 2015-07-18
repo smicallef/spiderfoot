@@ -20,7 +20,7 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
 deps = ['M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks',
-        'pyPdf', 'metapdf', 'openxmllib']
+        'pyPdf', 'metapdf', 'openxmllib', 'stem']
 for mod in deps:
     try:
         if mod.startswith("ext."):
@@ -76,7 +76,8 @@ sfConfig = {
     '_socks3port': '',
     '_socks4user': '',
     '_socks5pwd': '',
-    '_socks6dns': True
+    '_socks6dns': True,
+    '_torctlport': 9051
 }
 
 sfOptdescs = {
@@ -86,12 +87,13 @@ sfOptdescs = {
     '_useragent': "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
     '_dnsserver': "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
     '_fetchtimeout': "Number of seconds before giving up on a HTTP request.",
-    '_socks1type': "SOCKS Server Type. Can be '4', '5' or 'HTTP'",
+    '_socks1type': "SOCKS Server Type. Can be '4', '5', 'HTTP' or 'TOR'",
     '_socks2addr': 'SOCKS Server IP Address.',
-    '_socks3port': 'SOCKS Server TCP Port. Usually 1080 for 4/5 and 8080 for HTTP.',
+    '_socks3port': 'SOCKS Server TCP Port. Usually 1080 for 4/5, 8080 for HTTP and 9050 for TOR.',
     '_socks4user': 'SOCKS Username. Valid only for SOCKS4 and SOCKS5 servers.',
     '_socks5pwd': "SOCKS Password. Valid only for SOCKS5 servers.",
     '_socks6dns': "Pass DNS through the SOCKS proxy?",
+    '_torctlport': "The port TOR is taking control commands on. This is necessary for SpiderFoot to tell TOR to re-circuit when it suspects anonymity is compromised.",
     '_modulesenabled': "Modules enabled for the scan."  # This is a hack to get a description for an option not actually available.
 }
 
