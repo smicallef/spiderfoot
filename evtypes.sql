@@ -30,6 +30,8 @@ INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES (
 INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DEFACED_AFFILIATE_IPADDR', 'Defaced Affiliate IP Address', 0, "DESCRIPTOR");
 INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DEVICE_TYPE', 'Device Type', 0, "DESCRIPTOR");
 INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DNS_TEXT', 'DNS TXT Record', 0, "DATA");
+INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DARKNET_MENTION_URL', 'Darknet Mention URL', 0, "DESCRIPTOR");
+INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DARKNET_MENTION_CONTENT', 'Darknet Mention Web Content', 1, "DATA");
 INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DOMAIN_NAME', 'Domain Name', 0, "ENTITY");
 INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DOMAIN_REGISTRAR', 'Domain Registrar', 0, "ENTITY");
 INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DOMAIN_WHOIS', 'Domain Whois', 1, "DATA");
