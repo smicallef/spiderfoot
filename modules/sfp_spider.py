@@ -272,6 +272,9 @@ class sfp_spider(SpiderFootPlugin):
                 self.sf.error("Unable to fetch robots.txt and you've asked to abide by its contents.")
                 return None
 
+        if self.checkForStop():
+            return None
+
         # First iteration we are starting with links found on the start page
         # Iterations after that are based on links found on those pages,
         # and so on..
