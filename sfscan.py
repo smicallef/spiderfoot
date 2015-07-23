@@ -106,7 +106,7 @@ class SpiderFootScanner(threading.Thread):
             if not hasattr(socket, 'savedsocket'):
                 socket.savedsocket = socket.socket
                 socket.savedcreate_connection = socket.create_connection
-                socket.savedgetaddrinfo = socket.getaddrinfo
+                #socket.savedgetaddrinfo = socket.getaddrinfo
 
             # If a SOCKS server was specified, set it up
             if self.ts.config['_socks1type'] != '':
@@ -151,7 +151,7 @@ class SpiderFootScanner(threading.Thread):
 
                 socket.socket = socks.socksocket
                 socket.create_connection = _create_connection
-                socket.getaddrinfo = socks.getaddrinfo
+                #socket.getaddrinfo = socks.getaddrinfo
                 self.ts.sf.updateSocket(socket)
 	    else:
 		# BUG: If the user had a SOCKS proxy set
@@ -160,7 +160,7 @@ class SpiderFootScanner(threading.Thread):
 		# the SOCKS version of socket.
                 socket.socket = socket.savedsocket
                 socket.create_connection = socket.savedcreate_connection
-                socket.getaddrinfo = socket.savedgetaddrinfo
+                #socket.getaddrinfo = socket.savedgetaddrinfo
                 self.ts.sf.revertSocket()
 
             # Override the default DNS server
