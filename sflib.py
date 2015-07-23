@@ -67,7 +67,7 @@ class SpiderFoot:
             return None
 
         try:
-            self.debug("Re-circuiting TOR...")
+            self.info("Re-circuiting TOR...")
             with Controller.from_port(address=self.opts['_socks2addr'], 
                                       port=self.opts['_torctlport']) as controller:
                 controller.authenticate()
@@ -1099,10 +1099,10 @@ class SpiderFoot:
             if firstPage['content'] is None:
                 self.error("Failed to fetch content from Bing.", False)
                 failed = True
-
-            if "/challengepic?" in firstPage['content']:
-                self.error("Bing returned a CAPTCHA.", False)
-                failed = True
+            else:
+                if "/challengepic?" in firstPage['content']:
+                    self.error("Bing returned a CAPTCHA.", False)
+                    failed = True
 
             if failed:
                 self.refreshTorIdent()
@@ -1147,10 +1147,10 @@ class SpiderFoot:
                 if nextPage['content'] is None:
                     self.error("Failed to fetch subsequent content from Bing.", False)
                     failed = True
-
-                if "/challengepic?" in firstPage['content']:
-                    self.error("Bing returned a CAPTCHA.", False)
-                    failed = True
+                else:
+                    if "/challengepic?" in firstPage['content']:
+                        self.error("Bing returned a CAPTCHA.", False)
+                        failed = True
 
                 if failed:
                     self.refreshTorIdent()
