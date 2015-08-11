@@ -122,7 +122,11 @@ class sfp_historic(SpiderFootPlugin):
                 self.sf.error("Unable to fetch " + url, False)
                 continue
 
-            ret = json.loads(res['content'])
+            try:
+                ret = json.loads(res['content'])
+            except BaseException as e:
+                ret = None
+
             if ret == None:
                 self.sf.error("Unable to process empty response from archive.org: " + \
                               eventData, False)
