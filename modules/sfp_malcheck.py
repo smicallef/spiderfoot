@@ -193,6 +193,27 @@ malchecks = {
         'checks': ['domain'],
         'url': 'http://mirror2.malwaredomains.com/files/domains.txt',
         'regex': '.*\t{0}\t[a-zA-Z].*'
+    },
+    'packetmail.net List': {
+        'id': 'packetmail',
+        'type': 'list',
+        'checks': ['ip', 'netblock'],
+        'url': 'https://www.packetmail.net/iprep.txt',
+        'regex': '{0};.*'
+    },
+    'packetmail.net CARISIRT': {
+        'id': 'packetmailcarisirt',
+        'type': 'list',
+        'checks': ['ip', 'netblock'],
+        'url': 'https://www.packetmail.net/iprep_CARISIRT.txt',
+        'regex': '{0};.*'
+    },
+    'packetmail.net ramnode': {
+        'id': 'packetmailramnode',
+        'type': 'list',
+        'checks': ['ip', 'netblock'],
+        'url': 'https://www.packetmail.net/iprep_ramnode.txt',
+        'regex': '{0};.*'
     }
 }
 
@@ -228,6 +249,9 @@ class sfp_malcheck(SpiderFootPlugin):
         'nothinkssh': True,
         'nothinkirc': True,
         'nothinkhttp': True,
+        'packetmail': True,
+        'packetmailcarisirt': True,
+        'packetmailramnode': True,
         'aaacheckaffiliates': True,  # prefix with aaa so they appear on the top of the UI list
         'aaacheckcohosts': True,
         'aaacacheperiod': 18,
@@ -263,6 +287,9 @@ class sfp_malcheck(SpiderFootPlugin):
         'nothinkssh': 'Enable Nothink.org SSH attackers check?',
         'nothinkirc': 'Enable Nothink.org Malware DNS traffic check?',
         'nothinkhttp': 'Enable Nothink.org Malware HTTP traffic check?',
+        'packetmail': 'Enable packetmail.net honeypot IP reputation list?',
+        'packetmailcarisirt': 'Enable packetmail.net honeypot IP reputation CARISIRT list?',
+        'packetmailramnode': 'Enable packetmail.net honeypot IP reputation ramnode list?',
         'aaacheckaffiliates': "Apply checks to affiliates?",
         'aaacheckcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'aaacacheperiod': "Hours to cache list data before re-fetching.",
