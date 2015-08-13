@@ -63,7 +63,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SOCIAL_MEDIA"]
+        return ["SOCIAL_MEDIA", "SEARCH_ENGINE_WEB_CONTENT"]
 
     def yahooCleaner(self, string):
         ret = "\"" + urllib.unquote(string.group(1)) + "\""

@@ -196,6 +196,9 @@ class sfp_dns(SpiderFootPlugin):
                         # Generate an event for the IP, then
                         # let the handling by this module take
                         # care of follow-up processing.
+                        if self.checkForStop():
+                            return None
+
                         self.processHost(ipaddr, parentEvent, False)
             return None
 
@@ -210,6 +213,9 @@ class sfp_dns(SpiderFootPlugin):
                 addrs = self.resolveIP(eventData)
 
             for addr in addrs:
+                if self.checkForStop():
+                    return None
+
                 if self.getTarget().matches(addr):
                     self.processHost(addr, parentEvent, False)
                 else:
@@ -254,6 +260,9 @@ class sfp_dns(SpiderFootPlugin):
                     ev = self.processHost(sip, parentEventUp, affil)
 
                     for addr in addrs:
+                        if self.checkForStop():
+                            return None
+
                         if addr == sip:
                             continue
                         # IP Addresses should be linked to whatever provided the IP

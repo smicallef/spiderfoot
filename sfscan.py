@@ -12,8 +12,8 @@
 import traceback
 import time
 import sys
-import socket
 import socks
+import socket
 import dns.resolver
 import threading
 import random
@@ -102,6 +102,12 @@ class SpiderFootScanner(threading.Thread):
         try:
             # Process global options that point to other places for data
 
+            # Save default socket methods that will be overridden
+            if not hasattr(socket, 'savedsocket'):
+                socket.savedsocket = socket.socket
+                socket.savedcreate_connection = socket.create_connection
+                #socket.savedgetaddrinfo = socket.getaddrinfo
+
             # If a SOCKS server was specified, set it up
             if self.ts.config['_socks1type'] != '':
                 socksType = socks.PROXY_TYPE_SOCKS4
@@ -121,18 +127,41 @@ class SpiderFootScanner(threading.Thread):
                 if self.ts.config['_socks1type'] == 'HTTP':
                     socksType = socks.PROXY_TYPE_HTTP
 
+                if self.ts.config['_socks1type'] == 'TOR':
+                    socksType = socks.PROXY_TYPE_SOCKS5
+
                 self.ts.sf.debug("SOCKS: " + socksAddr + ":" + str(socksPort) + \
                                  "(" + socksUsername + ":" + socksPassword + ")")
                 socks.setdefaultproxy(socksType, socksAddr, socksPort,
                                       socksDns, socksUsername, socksPassword)
 
                 # Override the default socket and getaddrinfo calls with the 
-                # SOCKS ones
-                socket.socket = socks.socksocket
-                socket.create_connection = socks.create_connection
-                socket.getaddrinfo = socks.getaddrinfo
+                # SOCKS ones. Just ensure we don't also try and SOCKS-proxy
+		# connectivity to the TOR control port.
+		def _create_connection(address, timeout=None, source_address=None):
+		    if socksAddr not in address:
+		        sock = socks.socksocket()
+		        sock.setproxy(socks.PROXY_TYPE_SOCKS5, socksAddr, socksPort)
+		        sock.connect(address)
+		        return sock
+		    else:
+		        sock = socket.socket
+		        sock.connect(address)
+		        return sock
 
+                socket.socket = socks.socksocket
+                socket.create_connection = _create_connection
+                #socket.getaddrinfo = socks.getaddrinfo
                 self.ts.sf.updateSocket(socket)
+	    else:
+		# BUG: If the user had a SOCKS proxy set
+		# and then decided to unset it, the original socket class
+		# is not reverted to its default state - we still have
+		# the SOCKS version of socket.
+                socket.socket = socket.savedsocket
+                socket.create_connection = socket.savedcreate_connection
+                #socket.getaddrinfo = socket.savedgetaddrinfo
+                self.ts.sf.revertSocket()
 
             # Override the default DNS server
             if self.ts.config['_dnsserver'] != "":

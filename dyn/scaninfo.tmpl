@@ -104,7 +104,7 @@
                                 crumbs += "'browseEventData(\"" + instanceId + "\",\"" + currentTypeName + "\",\"" + typeName + "\",\"full\");'>";
                                 crumbs += unescape(currentTypeName) + "</a><span class='divider'>&gt;</span></li>";
                             }
-                            crumbs += "<li>Search results for '" + query + "'";
+                            crumbs += "<li>Search results for '" + $(query).text() + "'";
                             crumbs += " (" + data.length + " records)</li></ul>";
 
                             if (data.length == 0) {

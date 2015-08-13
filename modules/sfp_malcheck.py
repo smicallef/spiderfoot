@@ -27,17 +27,17 @@ malchecks = {
         'checks': ['ip', 'netblock'],
         'url': 'https://zeustracker.abuse.ch/blocklist.php?download=badips'
     },
-    'abuse.ch SpyEye Tracker (Domain)': {
-        'id': 'abusespydomain',
+    'abuse.ch Feodo Tracker (Domain)': {
+        'id': 'abusefeododomain',
         'type': 'list',
         'checks': ['domain'],
-        'url': 'https://spyeyetracker.abuse.ch/blocklist.php?download=domainblocklist'
+        'url': 'https://feodotracker.abuse.ch/blocklist/?download=domainblocklist'
     },
-    'abuse.ch SpyEye Tracker (IP)': {
-        'id': 'abusespyip',
+    'abuse.ch Feodo Tracker (IP)': {
+        'id': 'abusefeodoip',
         'type': 'list',
         'checks': ['ip', 'netblock'],
-        'url': 'https://spyeyetracker.abuse.ch/blocklist.php?download=ipblocklist'
+        'url': 'https://feodotracker.abuse.ch/blocklist/?download=ipblocklist'
     },
     'abuse.ch Palevo Tracker (Domain)': {
         'id': 'abusepalevodomain',
@@ -193,6 +193,27 @@ malchecks = {
         'checks': ['domain'],
         'url': 'http://mirror2.malwaredomains.com/files/domains.txt',
         'regex': '.*\t{0}\t[a-zA-Z].*'
+    },
+    'packetmail.net List': {
+        'id': 'packetmail',
+        'type': 'list',
+        'checks': ['ip', 'netblock'],
+        'url': 'https://www.packetmail.net/iprep.txt',
+        'regex': '{0};.*'
+    },
+    'packetmail.net CARISIRT': {
+        'id': 'packetmailcarisirt',
+        'type': 'list',
+        'checks': ['ip', 'netblock'],
+        'url': 'https://www.packetmail.net/iprep_CARISIRT.txt',
+        'regex': '{0};.*'
+    },
+    'packetmail.net ramnode': {
+        'id': 'packetmailramnode',
+        'type': 'list',
+        'checks': ['ip', 'netblock'],
+        'url': 'https://www.packetmail.net/iprep_ramnode.txt',
+        'regex': '{0};.*'
     }
 }
 
@@ -204,8 +225,8 @@ class sfp_malcheck(SpiderFootPlugin):
     opts = {
         'abusezeusdomain': True,
         'abusezeusip': True,
-        'abusespydomain': True,
-        'abusespyip': True,
+        'abusefeododomain': True,
+        'abusefeodoip': True,
         'abusepalevodomain': True,
         'abusepalevoip': True,
         'googledomain': True,
@@ -228,6 +249,9 @@ class sfp_malcheck(SpiderFootPlugin):
         'nothinkssh': True,
         'nothinkirc': True,
         'nothinkhttp': True,
+        'packetmail': True,
+        'packetmailcarisirt': True,
+        'packetmailramnode': True,
         'aaacheckaffiliates': True,  # prefix with aaa so they appear on the top of the UI list
         'aaacheckcohosts': True,
         'aaacacheperiod': 18,
@@ -239,8 +263,8 @@ class sfp_malcheck(SpiderFootPlugin):
     optdescs = {
         'abusezeusdomain': "Enable abuse.ch Zeus domain check?",
         'abusezeusip': "Enable abuse.ch Zeus IP check?",
-        'abusespydomain': "Enable abuse.ch SpyEye domain check?",
-        'abusespyip': "Enable abuse.ch SpeEye IP check?",
+        'abusefeododomain': "Enable abuse.ch Feodo domain check?",
+        'abusefeodoip': "Enable abuse.ch Feodo IP check?",
         'abusepalevodomain': "Enable abuse.ch Palevo domain check?",
         'abusepalevoip': "Enable abuse.ch Palevo IP check?",
         'googledomain': "Enable Google Safe Browsing domain check?",
@@ -263,6 +287,9 @@ class sfp_malcheck(SpiderFootPlugin):
         'nothinkssh': 'Enable Nothink.org SSH attackers check?',
         'nothinkirc': 'Enable Nothink.org Malware DNS traffic check?',
         'nothinkhttp': 'Enable Nothink.org Malware HTTP traffic check?',
+        'packetmail': 'Enable packetmail.net honeypot IP reputation list?',
+        'packetmailcarisirt': 'Enable packetmail.net honeypot IP reputation CARISIRT list?',
+        'packetmailramnode': 'Enable packetmail.net honeypot IP reputation ramnode list?',
         'aaacheckaffiliates': "Apply checks to affiliates?",
         'aaacheckcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'aaacacheperiod': "Hours to cache list data before re-fetching.",

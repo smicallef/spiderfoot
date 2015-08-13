@@ -363,9 +363,16 @@ class socksocket(socket.socket):
         (identical to socket's connect).
         To select the proxy server use setproxy().
         """
+
         # Do a minimal input check first
         if (not type(destpair) in (list,tuple)) or (len(destpair) < 2) or (type(destpair[0]) != type('')) or (type(destpair[1]) != int):
             raise GeneralProxyError((5, _generalerrors[5]))
+
+        # Don't proxy to ourselves..
+        if destpair[0] == self.__proxy[1]:
+            _orgsocket.connect(self, (destpair[0], destpair[1]))
+            return
+
         if self.__proxy[0] == PROXY_TYPE_SOCKS5:
             if self.__proxy[2] != None:
                 portnum = self.__proxy[2]

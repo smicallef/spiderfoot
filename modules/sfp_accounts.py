@@ -230,12 +230,14 @@ class sfp_accounts(SpiderFootPlugin):
     }
 
     results = dict()
+    reportedUsers = list()
     siteResults = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
-        self.commonnames = list()
+        self.commonNames = list()
+        self.reportedUsers = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -243,7 +245,7 @@ class sfp_accounts(SpiderFootPlugin):
             names = open(self.sf.myPath() + "/ext/ispell/names.list", 'r')
             lines = names.readlines()
             for item in lines:
-                self.commonnames.append(item.strip())
+                self.commonNames.append(item.strip())
             names.close()
 
     # What events is this module interested in for input
@@ -255,7 +257,8 @@ class sfp_accounts(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["ACCOUNT_EXTERNAL_OWNED", "ACCOUNT_EXTERNAL_USER_SHARED"]
+        return ["USERNAME", "ACCOUNT_EXTERNAL_OWNED", 
+                "ACCOUNT_EXTERNAL_USER_SHARED"]
 
     def checkSite(self, name, site):
         url = site['u'].format(name)
@@ -350,7 +353,7 @@ class sfp_accounts(SpiderFootPlugin):
                 self.sf.debug(name + " is a generic account name, skipping.")
                 return None
 
-            if self.opts['ignoredict'] and name in self.commonnames:
+            if self.opts['ignoredict'] and name in self.commonNames:
                 self.sf.debug(name + " is found in our name dictionary, skipping.")
                 return None
 
@@ -360,6 +363,11 @@ class sfp_accounts(SpiderFootPlugin):
                 users.append(name[0] + name.split(".")[1])
 
             for user in users:
+                if user not in self.reportedUsers:
+                    evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
+                    self.notifyListeners(evt)
+                    self.reportedUsers.append(user)
+
                 res = self.batchSites(user)
 
                 for site in res:

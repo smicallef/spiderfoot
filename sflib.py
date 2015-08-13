@@ -11,6 +11,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+from stem import Signal
+from stem.control import Controller
 import inspect
 import hashlib
 import gzip
@@ -27,12 +29,14 @@ import netaddr
 import urllib2
 import StringIO
 import threading
-from copy import deepcopy
+from copy import deepcopy, copy
 
 
 class SpiderFoot:
     dbh = None
     GUID = None
+    savedsock = socket
+    urllib2.savedsock = urllib2.socket
 
     # 'options' is a dictionary of options which changes the behaviour
     # of how certain things are done in this module
@@ -52,6 +56,25 @@ class SpiderFoot:
     def updateSocket(self, sock):
         socket = sock
         urllib2.socket = sock
+
+    def revertSocket(self):
+        socket = self.savedsock
+        urllib2.socket = urllib2.savedsock
+
+    # Tell TOR to re-circuit
+    def refreshTorIdent(self):
+        if self.opts['_socks1type'] != "TOR":
+            return None
+
+        try:
+            self.info("Re-circuiting TOR...")
+            with Controller.from_port(address=self.opts['_socks2addr'], 
+                                      port=self.opts['_torctlport']) as controller:
+                controller.authenticate()
+                controller.signal(Signal.NEWNYM)
+                time.sleep(10)
+        except BaseException as e:
+            self.fatal("Unable to re-circuit TOR: " + str(e))
 
     # Supplied an option value, return the data based on what the
     # value is. If val is a URL, you'll get back the fetched content,
@@ -958,23 +981,36 @@ class SpiderFoot:
             limit = opts['limit']
 
         # We attempt to make the URL look as authentically human as possible
-        seedUrl = u"http://www.google.com/search?q={0}".format(searchString) + \
+        seedUrl = u"https://www.google.com/search?q={0}".format(searchString) + \
                   u"&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
 
-        firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-                                  useragent=opts['useragent'])
-        if firstPage['code'] == 403 or firstPage['code'] == 503:
-            self.error("Google doesn't like us right now..", False)
-            return None
+        attempts = 0
+        failed = False
+        while attempts < 3:
+            firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
+                                      useragent=opts['useragent'])
+            if firstPage['code'] == 403 or firstPage['code'] == 503:
+                self.error("Google doesn't like us right now..", False)
+                failed = True
 
-        if firstPage['content'] is None:
-            self.error("Failed to fetch content from Google.", False)
-            return None
+            if firstPage['content'] is None:
+                self.error("Failed to fetch content from Google.", False)
+                failed = True
+            else:
+                if "name=\"captcha\"" in firstPage['content']:
+                    self.error("Google returned a CAPTCHA.", False)
+                    failed = True
 
-        if "name=\"captcha\"" in firstPage['content']:
-            self.error("Google returned a CAPTCHA.", False)
-            return None
+            if failed:
+                self.refreshTorIdent()
+                attempts += 1
+                failed = False
+            else:
+                break
 
+        if attempts == 3:
+            return None
+                                
         returnResults[seedUrl] = firstPage['content']
         pat = re.compile("(\/search\S+start=\d+.[^\'\"]*sa=N)", re.IGNORECASE)
         matches = re.findall(pat, firstPage['content'])
@@ -998,19 +1034,32 @@ class SpiderFoot:
                 self.info("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
 
-            nextPage = self.fetchUrl(u'http://www.google.com' + nextUrl,
-                                     timeout=opts['timeout'], useragent=opts['useragent'])
-            if nextPage['code'] == 403 or nextPage['code'] == 503:
-                self.error("Google doesn't like us right now..", False)
-                return returnResults
+            attempts = 0
+            failed = False
+            while attempts < 3:
+                nextPage = self.fetchUrl(u'https://www.google.com' + nextUrl,
+                                         timeout=opts['timeout'], useragent=opts['useragent'])
+                if nextPage['code'] == 403 or nextPage['code'] == 503:
+                    self.error("Google doesn't like us right now..", False)
+                    failed = True
 
-            if nextPage['content'] is None:
-                self.error("Failed to fetch subsequent content from Google.", False)
-                return returnResults
+                if nextPage['content'] is None:
+                    self.error("Failed to fetch subsequent content from Google.", False)
+                    failed = True
+                else:
+                    if "name=\"captcha\"" in nextPage['content']:
+                        self.error("Google returned a CAPTCHA.", False)
+                        failed = True
 
-            if "name=\"captcha\"" in nextPage['content']:
-                self.error("Google returned a CAPTCHA.", False)
-                return None
+                if failed:
+                    self.refreshTorIdent()
+                    attempts += 1
+                    failed = False
+                else:
+                    break
+
+            if attempts == 3:
+                return returnResults
 
             returnResults[nextUrl] = nextPage['content']
             pat = re.compile("(\/search\S+start=\d+.[^\'\"]*)", re.IGNORECASE)
@@ -1037,18 +1086,32 @@ class SpiderFoot:
         # We attempt to make the URL look as authentically human as possible
         seedUrl = u"http://www.bing.com/search?q={0}".format(searchString) + \
                   u"&pc=MOZI"
-        firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-                                  useragent=opts['useragent'])
-        if firstPage['code'] == 400:
-            self.error("Bing doesn't like us right now..", False)
-            return None
 
-        if firstPage['content'] is None:
-            self.error("Failed to fetch content from Bing.", False)
-            return None
+        attempts = 0
+        failed = False
+        while attempts < 3:
+            firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
+                                      useragent=opts['useragent'])
+            if firstPage['code'] == 400:
+                self.error("Bing doesn't like us right now..", False)
+                failed = True
 
-        if "/challengepic?" in firstPage['content']:
-            self.error("Bing returned a CAPTCHA.", False)
+            if firstPage['content'] is None:
+                self.error("Failed to fetch content from Bing.", False)
+                failed = True
+            else:
+                if "/challengepic?" in firstPage['content']:
+                    self.error("Bing returned a CAPTCHA.", False)
+                    failed = True
+
+            if failed:
+                self.refreshTorIdent()
+                attempts += 1
+                failed = False
+            else:
+                break
+
+        if attempts == 3:
             return None
 
         returnResults[seedUrl] = firstPage['content']
@@ -1073,19 +1136,31 @@ class SpiderFoot:
                 self.info("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
 
-            nextPage = self.fetchUrl(u'http://www.bing.com' + nextUrl,
-                                     timeout=opts['timeout'], useragent=opts['useragent'])
-            if nextPage['code'] == 400:
-                self.error("Bing doesn't like us any more..", False)
-                return returnResults
+            attempts = 0
+            while attempts < 3:
+                nextPage = self.fetchUrl(u'https://www.bing.com' + nextUrl,
+                                         timeout=opts['timeout'], useragent=opts['useragent'])
+                if nextPage['code'] == 400:
+                    self.error("Bing doesn't like us any more..", False)
+                    failed = True
 
-            if nextPage['content'] is None:
-                self.error("Failed to fetch subsequent content from Bing.", False)
-                return returnResults
+                if nextPage['content'] is None:
+                    self.error("Failed to fetch subsequent content from Bing.", False)
+                    failed = True
+                else:
+                    if "/challengepic?" in firstPage['content']:
+                        self.error("Bing returned a CAPTCHA.", False)
+                        failed = True
 
-            if "/challengepic?" in firstPage['content']:
-                self.error("Bing returned a CAPTCHA.", False)
-                return None
+                if failed:
+                    self.refreshTorIdent()
+                    attempts += 1
+                    failed = False
+                else:
+                    break
+
+            if attempts == 3:
+                return returnReults
 
             returnResults[nextUrl] = nextPage['content']
             pat = re.compile("(\/search\S+first=\d+.[^\'\"]*)", re.IGNORECASE)
@@ -1112,20 +1187,34 @@ class SpiderFoot:
         # We attempt to make the URL look as authentically human as possible
         seedUrl = u"https://search.yahoo.com/search?p={0}".format(searchString) + \
                   u"&toggle=1&cop=mss&ei=UTF-8"
-        firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-                                  useragent=opts['useragent'])
-        if firstPage['code'] == 403:
-            self.error("Yahoo doesn't like us right now..", False)
-            return None
 
-        if firstPage['content'] is None:
-            self.error("Failed to fetch content from Yahoo.", False)
-            return None
+        attempts = 0
+        failed = False
+        while attempts < 3:
+            firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
+                                      useragent=opts['useragent'])
+            if firstPage['code'] == 403:
+                self.error("Yahoo doesn't like us right now..", False)
+                failed = True
 
+            if firstPage['content'] is None:
+                self.error("Failed to fetch content from Yahoo.", False)
+                failed = True
+
+            if failed:
+                self.refreshTorIdent()
+                attempts += 1
+                failed = False
+            else:
+                break
+
+        if attempts == 3:
+            return None
+        
         returnResults[seedUrl] = firstPage['content']
-
         pat = re.compile("(\/search;\S+b=\d+.[^\'\"]*)", re.IGNORECASE)
         matches = re.findall(pat, firstPage['content'])
+
         while matches > 0 and fetches < limit:
             nextUrl = None
             fetches += 1
@@ -1145,14 +1234,28 @@ class SpiderFoot:
                 self.info("Pausing for " + str(pauseSecs))
                 time.sleep(pauseSecs)
 
-            nextPage = self.fetchUrl(nextUrl,
-                                     timeout=opts['timeout'], useragent=opts['useragent'])
-            if nextPage['code'] == 403:
-                self.error("Yahoo doesn't like us any more..", False)
-                return returnResults
+            attempts = 0
+            failed = False
+            while attempts < 3:
+                nextPage = self.fetchUrl(nextUrl, timeout=opts['timeout'], 
+                                         useragent=opts['useragent'])
+                if nextPage['code'] == 403:
+                    self.error("Yahoo doesn't like us any more..", False)
+                    failed = True
 
-            if nextPage['content'] is None:
-                self.error("Failed to fetch subsequent content from Yahoo.", False)
+                if nextPage['content'] is None:
+                    self.error("Failed to fetch subsequent content from Yahoo.", 
+                               False)
+                    failed = True
+
+                if failed:
+                    self.refreshTorIdent()
+                    attempts += 1
+                    failed = False
+                else:
+                    break
+
+            if attempts == 3:
                 return returnResults
 
             returnResults[nextUrl] = nextPage['content']
