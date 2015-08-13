@@ -158,7 +158,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                                     continue
 
                         self.sf.info("Social Media Profile found at " + site + ": " + match)
-                        evt = SpiderFootEvent("SOCIAL_MEDIA", match,
+                        evt = SpiderFootEvent("SOCIAL_MEDIA", site + ": " + match,
                                               self.__name__, event)
                         self.notifyListeners(evt)
 
