@@ -104,9 +104,10 @@ class sfp_coderepo(SpiderFootPlugin):
                           name, False)
             failed = True
 
-        if ret['total_count'] == "0" or len(ret['items']) == 0:
-            self.sf.debug("No Github information for " + name)
-            failed = True
+        if not failed:
+            if ret['total_count'] == "0" or len(ret['items']) == 0:
+                self.sf.debug("No Github information for " + name)
+                failed = True
 
         if not failed:
             evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
@@ -130,15 +131,17 @@ class sfp_coderepo(SpiderFootPlugin):
             self.sf.error("Unable to fetch " + url, False)
             failed = True
 
-        ret = json.loads(res['content'])
-        if ret == None:
-            self.sf.error("Unable to process empty response from Github for: " + \
-                          name, False)
-            failed = True
+        if not failed:
+            ret = json.loads(res['content'])
+            if ret == None:
+                self.sf.error("Unable to process empty response from Github for: " + \
+                              name, False)
+                failed = True
 
-        if ret['total_count'] == "0" or len(ret['items']) == 0:
-            self.sf.debug("No Github information for " + name)
-            failed = True
+        if not failed:
+            if ret['total_count'] == "0" or len(ret['items']) == 0:
+                self.sf.debug("No Github information for " + name)
+                failed = True
 
         if not failed:
             evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
