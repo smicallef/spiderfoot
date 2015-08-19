@@ -53,7 +53,7 @@ class sfp_hosting(SpiderFootPlugin):
 
         data['content'] = self.sf.cacheGet("sfipcat", 48)
         if data['content'] is None:
-            data['content'] = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
+            data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
                 self.sf.error("Unable to fetch " + url, False)
                 return None
