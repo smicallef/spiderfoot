@@ -35,7 +35,6 @@ sites = [
     {"r": "Blogmarks", "u": "http://blogmarks.net/user/{0}", "gRC": "200", "gRT": "<title>Blogmarks : Public marks from", "c": "bookmarks"},
     {"r": "Blogspot", "u": "http://{0}.blogspot.com", "gRC": "200", "gRT": "Blogger Template Style", "c": "blog"},
     {"r": "BodyBuilding.com", "u": "http://bodyspace.bodybuilding.com/{0}/", "gRC": "200", "gRT": "s BodySpace - Bodybuilding.com</title>", "c": "health"},
-    {"r": "Break", "u": "http://www.break.com/user/{0}", "gRC": "200", "gRT": " | Break.com</title>", "c": "video"},
     {"r": "Buzznet", "u": "http://{0}.buzznet.com/user/", "gRC": "200", "gRT": "body class=\"userhome\"", "c": "social"},
     {"r": "cafemom", "u": "http://www.cafemom.com/home/{0}", "gRC": "200", "gRT": "h3 id=\"profile-user\"", "c": "social"},
     {"r": "CarDomain", "u": "http://www.cardomain.com/member/{0}/", "gRC": "200", "gRT": "s Profile in", "c": "hobby"},
@@ -118,7 +117,7 @@ sites = [
     {"r": "Mixlr", "u": "http://mixlr.com/{0}/", "gRC": "200", "gRT": "is on Mixlr. Mixlr is a simple way to share live", "c": "music"},
     {"r": "Mod DB", "u": "http://www.moddb.com/members/{0}", "gRC": "200", "gRT": "View the Mod DB  member ", "c": "gaming"},
     {"r": "Muck Rack", "u": "http://muckrack.com/{0}", "gRC": "200", "gRT": "on Muck Rack</title>", "c": "news"},
-    {"r": "Muzy", "u": "http://{0}.muzy.com/", "gRC": "200", "gRT": "' property='og:title' />", "c": "images"},
+    {"r": "Muzy", "u": "http://{0}.muzy.com/", "gRC": "200", "gRT": "http://muzy-users.s3.amazonaws.com", "c": "images"},
     {"r": "MyAnimeList", "u": "http://myanimelist.net/profile/{0}", "gRC": "200", "gRT": "s Profile - MyAnimeList.net</title>", "c": "hobby"},
     {"r": "MyBuilder.com", "u": "http://www.mybuilder.com/profile/view/{0}", "gRC": "200", "gRT": "s profile</title>", "c": "jobs"},
     {"r": "myfitnesspal", "u": "http://www.myfitnesspal.com/user/{0}/status", "gRC": "200", "gRT": "s profile | MyFitnessPal.com</title>", "c": "health"},
@@ -245,7 +244,7 @@ class sfp_accounts(SpiderFootPlugin):
             names = open(self.sf.myPath() + "/ext/ispell/names.list", 'r')
             lines = names.readlines()
             for item in lines:
-                self.commonNames.append(item.strip())
+                self.commonNames.append(item.strip().lower())
             names.close()
 
     # What events is this module interested in for input
@@ -348,7 +347,7 @@ class sfp_accounts(SpiderFootPlugin):
             return None
 
         if eventName == "EMAILADDR":
-            name = eventData.split("@")[0]
+            name = eventData.split("@")[0].lower()
             if self.opts['generic'] is list() and name in self.opts['generic']:
                 self.sf.debug(name + " is a generic account name, skipping.")
                 return None
@@ -360,7 +359,7 @@ class sfp_accounts(SpiderFootPlugin):
             users.append(name)
             if "." in name:
                 # steve.micallef -> smicallef
-                users.append(name[0] + name.split(".")[1])
+                users.append(str(name[0] + name.split(".")[1]).lower())
 
             for user in users:
                 if user not in self.reportedUsers:
