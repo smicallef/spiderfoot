@@ -18,10 +18,12 @@ class sfp_coderepo(SpiderFootPlugin):
 
     # Default options
     opts = {
+        'namesonly':    True
     }
 
     # Option descriptions
     optdescs = {
+        'namesonly':    "Match repositories by name only, not by their descriptions. Helps reduce false positives."
     }
 
     results = list()
@@ -41,7 +43,7 @@ class sfp_coderepo(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SEARCH_ENGINE_WEB_CONTENT", "PUBLIC_CODE_REPO"]
+        return ["PUBLIC_CODE_REPO"]
 
     # Build up repo info for use as an event
     def buildRepoInfo(self, item):
@@ -110,13 +112,12 @@ class sfp_coderepo(SpiderFootPlugin):
                 failed = True
 
         if not failed:
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
-                                  self.__name__, event)
-            self.notifyListeners(evt)
-
             for item in ret['items']:
                 repo_info = self.buildRepoInfo(item)
                 if repo_info != None:
+                    if self.opts['namesonly'] and name not in item['name']:
+                        continue
+
                     evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info, 
                                           self.__name__, event)
                     self.notifyListeners(evt)
@@ -144,10 +145,6 @@ class sfp_coderepo(SpiderFootPlugin):
                 failed = True
 
         if not failed:
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
-                                  self.__name__, event)
-            self.notifyListeners(evt)
-
             # For each user matching the name, get their repos
             for item in ret['items']:
                 if item['repos_url'] == None:
@@ -168,14 +165,12 @@ class sfp_coderepo(SpiderFootPlugin):
                                   name, False)
                     continue
 
-                # Submit the bing results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
-
                 for item in repret:
                     repo_info = self.buildRepoInfo(item)
                     if repo_info != None:
+                        if self.opts['namesonly'] and name not in item['name']:
+                            continue
+
                         evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info, 
                                               self.__name__, event)
                         self.notifyListeners(evt)
