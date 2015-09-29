@@ -984,6 +984,7 @@ class SpiderFoot:
         # seedUrl = u"https://www.google.com/search?q={0}".format(searchString) + \
         #          u"&ie=utf-8&oe=utf-8"
         seedUrl = u"https://www.google.com/?gws_rd=cr#q={0}".format(searchString)
+        print("Seed URL = {0}".format(seedUrl))
 
         attempts = 0
         failed = False
@@ -1013,8 +1014,7 @@ class SpiderFoot:
             return None
                                 
         returnResults[seedUrl] = firstPage['content']
-        # pat = re.compile("(\/search\S+start=\d+.[^\'\"]*sa=N)", re.IGNORECASE)
-        pat = re.compile("url=https?.*{0}.[\da-f]&".format(searchString), re.IGNORECASE)
+        pat = re.compile("(\/search\S+start=\d+.[^\'\"]*sa=N)", re.IGNORECASE)
         matches = re.findall(pat, firstPage['content'])
 
         while matches > 0 and fetches < limit:
