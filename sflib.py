@@ -786,8 +786,7 @@ class SpiderFoot:
 
         # Find actual links
         try:
-            regRel = re.compile('(href|src|action|url)[:=][ \'\"]*(.[^\'\"<> ]*)',
-                                re.IGNORECASE)
+            regRel = re.compile('(href|src|action|url)[:=][ \'\"]*(.[^\'\"<> ]*)')
             urlsRel = regRel.findall(data)
         except Exception as e:
             self.error("Error applying regex to: " + data)
@@ -984,7 +983,6 @@ class SpiderFoot:
         # seedUrl = u"https://www.google.com/search?q={0}".format(searchString) + \
         #          u"&ie=utf-8&oe=utf-8"
         seedUrl = u"https://www.google.com/?gws_rd=cr#q={0}".format(searchString)
-        print("Seed URL = {0}".format(seedUrl))
 
         attempts = 0
         failed = False
