@@ -51,6 +51,13 @@ malchecks = {
         'checks': ['ip', 'netblock'],
         'url': 'https://palevotracker.abuse.ch/blocklists.php?download=ipblocklist'
     },
+    'abuse.ch SSL Blacklist (IP)': {
+        'id': 'abusesslblip',
+        'type': 'list',
+        'checks': ['ip'],
+        'url': 'https://sslbl.abuse.ch/blacklist/sslipblacklist.csv',
+        'regex': '{0},.*'
+    },
     'Google SafeBrowsing (Domain/IP)': {
         'id': 'googledomain',
         'type': 'query',
@@ -214,12 +221,48 @@ malchecks = {
         'checks': ['ip', 'netblock'],
         'url': 'https://www.packetmail.net/iprep_ramnode.txt',
         'regex': '{0};.*'
+    },
+    'cybercrime-tracker.net Malicious Submissions': {
+        'id': 'cybercrime',
+        'type': 'query',
+        'checks': ['ip', 'domain'],
+        'url': 'http://cybercrime-tracker.net/query.php?url={0}',
+        'badregex': ['.*malicious.*'],
+        'goodregex': []
+    },
+    'hosts-file.net Malicious Hosts': {
+        'id': 'hphosts',
+        'type': 'list',
+        'checks': ['domain'],
+        'url': 'http://hosts-file.net/download/hosts.txt',
+        'regex': '^127.0.0.1\s+{0}$'
+    },
+    'multiproxy.org Open Proxies': {
+        'id': 'multiproxy',
+        'type': 'list',
+        'checks': ['ip'],
+        'url': 'http://multiproxy.org/txt_all/proxy.txt',
+        'regex': '{0}:.*'
+    },
+    'spys.ru Free Proxy List': {
+        'id': 'spysproxy',
+        'type': 'list',
+        'checks': ['ip'],
+        'url': 'http://txt.proxyspy.net/proxy.txt',
+        'regex': '{0}:.*'
+    },
+    'badips.com IP Reptutation List': {
+        'id': 'badips',
+        'type': 'list',
+        'checks': ['ip'],
+        'url': 'https://www.badips.com/get/list/any/1?age=24h',
+        'regex': '{0}'
     }
 }
 
 
 class sfp_malcheck(SpiderFootPlugin):
-    """Malicious Check:Check if a website, IP or ASN is considered malicious by various sources."""
+    """Malicious Check:Check if a website, IP or ASN is considered malicious by various sources. Includes TOR exit nodes and open proxies."""
 
     # Default options
     opts = {
@@ -229,21 +272,27 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusefeodoip': True,
         'abusepalevodomain': True,
         'abusepalevoip': True,
+        'abusesslblip': True,
         'googledomain': True,
         'googleasn': True,
         'malwaredomainlistdomain': True,
         'malwaredomainlistip': True,
         'malwaredomains': True,
         'mcafeedomain': True,
+        'cybercrime': True,
+        'hphosts': True,
         'avgdomain': True,
         'phishtank': True,
         'malc0de': True,
         'blocklistde': True,
         'autoshun': True,
         'isc': True,
+        'badips': True,
         'tornodes': True,
+        'multiproxy': True,
         'alienvault': True,
         'openbl': True,
+        'spysproxy': True,
         'totalhash': True,
         'threatexpert': True,
         'nothinkssh': True,
@@ -267,6 +316,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusefeodoip': "Enable abuse.ch Feodo IP check?",
         'abusepalevodomain': "Enable abuse.ch Palevo domain check?",
         'abusepalevoip': "Enable abuse.ch Palevo IP check?",
+        'abusesslblip': "Enable abuse.ch SSL Backlist IP check?",
         'googledomain': "Enable Google Safe Browsing domain check?",
         'googleasn': "Enable Google Safe Browsing ASN check?",
         'malwaredomainlistdomain': "Enable malwaredomainlist.com domain check?",
@@ -278,6 +328,11 @@ class sfp_malcheck(SpiderFootPlugin):
         'malc0de': "Enable malc0de.com check?",
         'blocklistde': 'Enable blocklist.de check?',
         'tornodes': 'Enable TOR exit node check?',
+        'cybercrime': 'Enable cybercrime-tracker.net Malicious IP check?',
+        'hphosts': 'Enable hosts-file.net Malicious Hosts check?',
+        'spysproxy': 'Enable spys.ru Free Proxy lookup?',
+        'badips': 'Enable badips.com IP lookup?',
+        'multiproxy': 'Enable multiproxy.org Open Proxy lookup?',
         'autoshun': 'Enable Autoshun.org check?',
         'isc': 'Enable Internet Storm Center check?',
         'alienvault': 'Enable AlienVault IP Reputation check?',
