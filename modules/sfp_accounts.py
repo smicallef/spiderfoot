@@ -311,6 +311,9 @@ class sfp_accounts(SpiderFootPlugin):
         for site in sites:
             if i >= self.opts['maxthreads']:
                 data = self.threadSites(name, siteList)
+                if data == None:
+                    return res
+
                 for ret in data.keys():
                     if data[ret]:
                         res.append(ret)
