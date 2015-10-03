@@ -228,18 +228,18 @@
                             $("[class^=tooltip]").remove();
 
                             $(document).ready(function() {
-                                var $chkboxes = $('input[id*=cb_]');
-                                $chkboxes.click(function(e) {
+                                var chkboxes = $('input[id*=cb_]');
+                                chkboxes.click(function(e) {
                                     if(!lastChecked) {
                                         lastChecked = this;
                                         return;
                                     }
 
                                     if(e.shiftKey) {
-                                        var start = $chkboxes.index(this);
-                                        var end = $chkboxes.index(lastChecked);
+                                        var start = chkboxes.index(this);
+                                        var end = chkboxes.index(lastChecked);
     
-                                        $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+                                        chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
 
                                     }
 
