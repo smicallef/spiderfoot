@@ -34,6 +34,13 @@
      <a id='btn-forceatlas' rel="tooltip" data-title="Force Layout" class="btn-inverse btn" onClick='vizUpdate("force")'><b>F</b></a>
      <a id='btn-saveimage' rel="tooltip" data-title="Save Image" class="btn-inverse btn dropdown-toggle" onClick='vizUpdate("download")'><i class='icon-picture icon-white'></i></a>
     </div>
+    <div id='modifyactions' class="btn-group pull-right">
+        <a id='btn-setfp' rel="tooltip" data-title="Set/Unset False Positive flag" class="btn-warning btn dropdown-toggle" data-toggle="dropdown"><i class='icon-ban-circle icon-white'></i></a>
+        <ul class="dropdown-menu">
+            <li><a href='#' class='link' onClick='setFp(1)'>Set False Positive flag</a></li>
+            <li><a href='#' class='link' onClick='setFp(0)'>Unset False Positive flag</a></li>
+        </ul>
+    </div>
   </div>
     <script src="/static/js/sigma.min.js"></script>
     <script src="/static/js/sigma.parsers.json.min.js"></script>
@@ -57,6 +64,49 @@
             }
         });
 
+        function switchSelectAll() {
+            if (!$("#checkall")[0].checked) {
+                $("input[id*=cb_]").prop('checked', false);
+            } else {
+                $("input[id*=cb_]").prop('checked', true);
+            }
+        }
+
+        function getSelected() {
+            ids = [];
+            $("input[id*=cb_]").each(function(i, obj) {
+                if (obj.checked) {
+                    ids[ids.length] = obj.id.replace("cb_", "");
+                }
+            });
+
+            return ids;
+        }
+
+        function setFp(flag) {
+            sel = getSelected();
+            if (sel.length == 0) {
+                alert("You need to select at least one record.");
+                return false;
+            }
+            data = JSON.stringify(sel);
+            $("#loader").show();
+            sf.fetchData('${docroot}/resultsetfp', {'id': '${id}', 'fp': flag, 'resultids': data }, function(ret) {
+                $("#loader").hide();
+                if (ret[0] == "SUCCESS") {
+                    refresh();
+                    return;
+                }
+                if (ret[0] == "WARNING") {
+                    alert(ret[1]);
+                    return;
+                }
+                if (ret[0] == "ERROR") {
+                    alert("There was an error setting false positives because: " + ret[1] + "\nIf you believe this to be an error, please log out and log back in, and if the problem repeats, report this as a bug.");
+                }
+            });
+        }
+
         function navTo(target) {
             var targets = [ "btn-browse", "btn-info", "btn-log", 
                 "btn-export", "btn-viz", "btn-status", "btn-graph" ]
@@ -71,6 +121,7 @@
             $("#breadcrumbs").remove();
             $("#customtabview").hide();
             $("#customvizview").hide();
+            $("#modifyactions").hide();
             currentSection = target
             dataloaders = []
         }
@@ -88,6 +139,7 @@
             // Remove pre-existing tables if they exist
             $("#scansummary-content").remove();
             navTo("btn-search");
+            $("#modifyactions").hide();
             $("#loader").show();
             $("#btn-export").show();
             $("#btn-refresh").show();
@@ -104,7 +156,7 @@
                                 crumbs += "'browseEventData(\"" + instanceId + "\",\"" + currentTypeName + "\",\"" + typeName + "\",\"full\");'>";
                                 crumbs += unescape(currentTypeName) + "</a><span class='divider'>&gt;</span></li>";
                             }
-                            crumbs += "<li>Search results for '" + $(query).text() + "'";
+                            crumbs += "<li>Search results";
                             crumbs += " (" + data.length + " records)</li></ul>";
 
                             if (data.length == 0) {
@@ -127,7 +179,8 @@
                                     //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
                                     //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
                                     //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
-                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
+                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>";
+                                    table += sf.replace_sfurltag(data[i][2]);
                                     table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
                                     table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
                                     table += "</pre></td>";
@@ -380,7 +433,7 @@
         }
 
         // Detailed view of data for an event type for a scan
-        function browseEventData(instanceId, eventTypeLabel, eventType, format) {
+        function browseEventData(instanceId, eventTypeLabel, eventType, format, filterFP=false) {
             $("#scansummary-content").remove();
             $("#breadcrumbs").remove();
             $("#loader").show();
@@ -392,31 +445,69 @@
             $("#scanreminder").hide();
             currentType = eventType;
             currentTypeName = eventTypeLabel;
-            refresh = function() { browseEventData(instanceId, eventTypeLabel, eventType, format); }
-            browseUpdate = function(newformat) { browseEventData(instanceId, eventTypeLabel, eventType, newformat); }
+            refresh = function() { browseEventData(instanceId, eventTypeLabel, eventType, format, filterFP); }
+            browseUpdate = function(newformat) { browseEventData(instanceId, eventTypeLabel, eventType, newformat, filterFP); }
 
             if (format == 'full') {
                 $("#btn-fullview").addClass("active");
                 $("#btn-uniqueview").removeClass("active");
                 $("#btn-vizview").removeClass("active");
+                $("#modifyactions").show();
                 sf.fetchData('${docroot}/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
+                            totalcount = 0;
+                            fpcount = 0;
+                            for (var i = 0; i < data.length; i++) {
+                                totalcount++;
+                                if (data[i][8] == "1") {
+                                    fpcount++;
+                                }
+                            }
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
                             crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
-                            crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
-                            crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
+                            crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"";
+                            crumbs += format + "\", " + filterFP + ");'>";
+                            crumbs += unescape(eventTypeLabel) + "</a></li>";
+                            if (fpcount > 0) {
+                                crumbs += "<li class='pull-right' style='text-align: center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide " + fpcount + " False Positives: ";
+                                crumbs += "<input style='vertical-align: top' type='checkbox' ";
+                                crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
+                                crumbs += ",'" + format + "', ";
+                                if (!filterFP) {
+                                    fp = 1;
+                                    ch = "";
+                                } else {
+                                    fp = 0;
+                                    ch = "checked";
+                                }
+                                crumbs += fp + ")\" " + ch + "></input></li>";
+                            }
+                            crumbs += "</ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
-                            table += "<thead><tr> <th>Data Element</th></th>";
+                            table += "<thead><tr>";
+                            table += "<th style='text-align: center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'>";
+                            table += "</th>";
+                            table += "<th>Data Element</th></th>";
                             table += "<th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr><td><pre style='border: 0px; background-color: inherit'>";
+                                if (filterFP && data[i][8] == "1") {
+                                    continue;
+                                }
+                                table += "<tr>";
+                                table += "<td style='text-align: center'><input type='checkbox' id='cb_" + data[i][7] + "'>";
+                                if (data[i][8] == "1") {
+                                    table += "<br><i class='icon-ban-circle' style='vertical-align: bottom' />";
+                                }
+                                table += "</td>";
+                                table += "<td><pre style='border: 0px; background-color: inherit'>";
                                 //table += "<a href='${docroot}/entityinfo?id=" + data[i][7] + "'>" + data[i][1] + "</a>";
                                 table += sf.replace_sfurltag(data[i][1]);
                                 // for debug
                                 //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
                                 //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
                                 //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][2];
+                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>";
+                                table += sf.replace_sfurltag(data[i][2]);
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
                                 table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
                                 table += "</pre></td>";
@@ -425,6 +516,25 @@
                             table += "</tbody></table>"
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(crumbs + table);
+                            lastChecked = null;
+                            var chkboxes = $('input[id*=cb_]');
+                            chkboxes.click(function(e) {
+                                if(!lastChecked) {
+                                    lastChecked = this;
+                                    return;
+                                }
+
+                                if(e.shiftKey) {
+                                    var start = chkboxes.index(this);
+                                    var end = chkboxes.index(lastChecked);
+
+                                    chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+
+                                }
+
+                                lastChecked = this;
+                            });
+
                 });
             }
 
@@ -432,11 +542,28 @@
                 $("#btn-uniqueview").addClass("active");
                 $("#btn-fullview").removeClass("active");
                 $("#btn-vizview").removeClass("active");
-                sf.fetchData('${docroot}/scaneventresultsunique', {'id': instanceId, 'eventType': eventType }, function(data) {
+                if (filterFP == "0") {
+                    filterFP = null;
+                }
+                sf.fetchData('${docroot}/scaneventresultsunique', {'id': instanceId, 'eventType': eventType, 'filterfp': filterFP }, function(data) {
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
                             crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
-                            crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
-                            crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
+                            crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format;
+                            crumbs += "\", " + filterFP + ");'>";
+                            crumbs += unescape(eventTypeLabel) + "</a></li>";
+                            crumbs += "<li class='pull-right' style='text-align: center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide False Positives: ";
+                            crumbs += "<input style='vertical-align: top' type='checkbox' ";
+                            crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
+                            crumbs += ",'" + format + "', ";
+                            if (!filterFP) {
+                                fp = 1;
+                                ch = "";
+                            } else {
+                                fp = 0;
+                                ch = "checked";
+                            }
+                            crumbs += fp + ")\" " + ch + "></input></li>";
+                            crumbs += "</ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
                             table += "<thead><tr> <th>Unique Data Element</th><th>Occurrences</th></tr></thead><tbody>";

@@ -93,6 +93,7 @@ class SpiderFootWebUi:
             'value': None if value == '' else value,
             'regex': None if regex == '' else regex
         }
+
         data = dbh.search(criteria)
         retdata = []
         for row in data:
@@ -100,7 +101,8 @@ class SpiderFootWebUi:
             escapeddata = cgi.escape(row[1])
             escapedsrc = cgi.escape(row[2])
             retdata.append([lastseen, escapeddata, escapedsrc,
-                            row[3], row[5], row[6], row[7], row[8], row[10], row[11], row[4]])
+                            row[3], row[5], row[6], row[7], row[8], row[10], 
+                            row[11], row[4], row[13], row[14]])
 
         return retdata
 
@@ -114,13 +116,13 @@ class SpiderFootWebUi:
         data = dbh.scanResultEvent(id, type)
         fileobj = StringIO()
         parser = csv.writer(fileobj, dialect=dialect)
-        parser.writerow(["Updated", "Type", "Module", "Source", "Data"])
+        parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
             if row[4] == "ROOT":
                 continue
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
-            parser.writerow([lastseen, str(row[4]), str(row[3]), str(row[2]), datafield])
+            parser.writerow([lastseen, str(row[4]), str(row[3]), str(row[2]), row[13], datafield])
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
@@ -139,13 +141,14 @@ class SpiderFootWebUi:
 
         fileobj = StringIO()
         parser = csv.writer(fileobj, dialect=dialect)
-        parser.writerow(["Scan Name", "Updated", "Type", "Module", "Source", "Data"])
+        parser.writerow(["Scan Name", "Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
             if row[4] == "ROOT":
                 continue
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
-            parser.writerow([scaninfo[row[12]][0], lastseen, str(row[4]), str(row[3]), str(row[2]), datafield])
+            parser.writerow([scaninfo[row[12]][0], lastseen, str(row[4]), str(row[3]), 
+                            str(row[2]), row[13], datafield])
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
@@ -158,12 +161,12 @@ class SpiderFootWebUi:
         data = self.searchBase(id, eventType, value)
         fileobj = StringIO()
         parser = csv.writer(fileobj, dialect=dialect)
-        parser.writerow(["Updated", "Type", "Module", "Source", "Data"])
+        parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
             if row[10] == "ROOT":
                 continue
             datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
-            parser.writerow([row[0], str(row[10]), str(row[3]), str(row[2]), datafield])
+            parser.writerow([row[0], str(row[10]), str(row[3]), str(row[2]), row[13], datafield])
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
@@ -176,7 +179,7 @@ class SpiderFootWebUi:
         types = list()
         dbh = SpiderFootDb(self.config)
         sf = SpiderFoot(self.config)
-        data = dbh.scanResultEvent(id)
+        data = dbh.scanResultEvent(id, filterFp=True)
         scan = dbh.scanInstanceGet(id)
         root = scan[1]
         if gexf != "0":
@@ -197,7 +200,7 @@ class SpiderFootWebUi:
         data = list()
         roots = list()
         for id in ids.split(','):
-            data = data + dbh.scanResultEvent(id)
+            data = data + dbh.scanResultEvent(id, filterFp=True)
             roots.append(dbh.scanInstanceGet(id)[1])
 
         if gexf != "0":
@@ -476,6 +479,44 @@ class SpiderFootWebUi:
 
     savesettings.exposed = True
 
+    # Set a bunch of results (hashes) as false positive
+    def resultsetfp(self, id, resultids, fp):
+        dbh = SpiderFootDb(self.config)
+        if fp not in ["0", "1"]:
+            return json.dumps(["ERROR", "No FP flag set or not set correctly."])
+
+        ids = json.loads(resultids)
+        if not ids:
+            return json.dumps(["ERROR", "No IDs supplied."])
+
+        # Cannot set FPs if a scan is not completed
+        status = dbh.scanInstanceGet(id)
+        if status[5] not in [ "ABORTED", "FINISHED", "ERROR-FAILED" ]:
+            return json.dumps(["WARNING", "Scan must be in a finished state when " + \
+                               "setting False Positives."])
+
+        # Make sure the user doesn't set something as non-FP when the
+        # parent is set as an FP.
+        if fp == "0":
+            data = dbh.scanElementSourcesDirect(id, ids)
+            for row in data:
+                if str(row[14]) == "1":
+                    return json.dumps(["WARNING", 
+                        "You cannot unset an element as False Positive " + \
+                        "if a parent element is still False Positive."]);
+
+        # Set all the children as FPs too.. it's only logical afterall, right?
+        childs = dbh.scanElementChildrenAll(id, ids)
+        allIds = ids + childs
+
+        ret = dbh.scanResultsUpdateFP(id, allIds, fp)
+        if not ret:
+            return json.dumps(["ERROR", "Exception encountered."])
+        else: 
+            return json.dumps(["SUCCESS", ""])
+
+    resultsetfp.exposed = True
+
     # Initiate a scan
     def startscan(self, scanname, scantarget, modulelist, typelist):
         global globalScanStatus
@@ -681,24 +722,25 @@ class SpiderFootWebUi:
     scansummary.exposed = True
 
     # Event results for a scan
-    def scaneventresults(self, id, eventType):
+    def scaneventresults(self, id, eventType, filterfp=False):
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanResultEvent(id, eventType)
+        data = dbh.scanResultEvent(id, eventType, filterfp)
         retdata = []
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             escapeddata = cgi.escape(row[1])
             escapedsrc = cgi.escape(row[2])
             retdata.append([lastseen, escapeddata, escapedsrc,
-                            row[3], row[5], row[6], row[7], row[8]])
+                            row[3], row[5], row[6], row[7], row[8],
+                            row[13], row[14]])
         return json.dumps(retdata, ensure_ascii=False)
 
     scaneventresults.exposed = True
 
     # Unique event results for a scan
-    def scaneventresultsunique(self, id, eventType):
+    def scaneventresultsunique(self, id, eventType, filterfp=False):
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanResultEventUnique(id, eventType)
+        data = dbh.scanResultEventUnique(id, eventType, filterfp)
         retdata = []
         for row in data:
             escaped = cgi.escape(row[0])
@@ -723,7 +765,6 @@ class SpiderFootWebUi:
     scanhistory.exposed = True
 
     def scanelementtypediscovery(self, id, eventType):
-        keepGoing = True
         sf = SpiderFoot(self.config)
         dbh = SpiderFootDb(self.config)
         pc = dict()
@@ -731,54 +772,14 @@ class SpiderFootWebUi:
 
         # Get the events we will be tracing back from
         leafSet = dbh.scanResultEvent(id, eventType)
+        [datamap, pc] = dbh.scanElementSourcesAll(id, leafSet)
 
-        # Get the first round of source IDs for the leafs
-        nextIds = list()
-        for row in leafSet:
-            # these must be unique values!
-            parentId = row[9]
-            childId = row[8]
-            datamap[childId] = row
-
-            if parentId in pc:
-                if childId not in pc[parentId]:
-                    pc[parentId].append(childId)
-            else:
-                pc[parentId] = [childId]
-
-            # parents of the leaf set
-            if parentId not in nextIds:
-                nextIds.append(parentId)
-
-        while keepGoing:
-            parentSet = dbh.scanElementSources(id, nextIds)
-            nextIds = list()
-            keepGoing = False
-
-            for row in parentSet:
-                parentId = row[9]
-                childId = row[8]
-                datamap[childId] = row
-                #print childId + " = " + str(row)
-
-                if parentId in pc:
-                    if childId not in pc[parentId]:
-                        pc[parentId].append(childId)
-                else:
-                    pc[parentId] = [childId]
-                if parentId not in nextIds:
-                    nextIds.append(parentId)
-
-                # Prevent us from looping at root
-                if parentId != "ROOT":
-                    keepGoing = True
-
-        datamap[parentId] = row
         # Delete the ROOT key as it adds no value from a viz perspective
         del pc['ROOT']
         retdata = dict()
         retdata['tree'] = sf.dataParentChildToTree(pc)
         retdata['data'] = datamap
+
         return json.dumps(retdata, ensure_ascii=False)
 
     scanelementtypediscovery.exposed = True

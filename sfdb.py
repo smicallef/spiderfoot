@@ -15,10 +15,14 @@ import re
 import time
 from sflib import SpiderFoot
 
-
+# SQLite doesn't support regex queries, so we create
+# a custom function to do so..
 def __dbregex__(qry, data):
-    rx = re.compile(qry, re.IGNORECASE)
-    ret = rx.search(data)
+    try:
+        rx = re.compile(qry, re.IGNORECASE|re.DOTALL)
+        ret = rx.match(data)
+    except BaseException as e:
+        return False
     return ret is not None
 
 
@@ -74,6 +78,7 @@ class SpiderFootDb:
             risk                INT NOT NULL DEFAULT 0, \
             module              VARCHAR NOT NULL, \
             data                VARCHAR, \
+            false_positive      INT NOT NULL DEFAULT 0, \
             source_event_hash  VARCHAR DEFAULT 'ROOT' \
         )",
         "CREATE INDEX idx_scan_results_id ON tbl_scan_results (scan_instance_id)",
@@ -240,7 +245,7 @@ class SpiderFootDb:
     #  - value (search values for a specific string, if omitted search all)
     #  - regex (search values for a regular expression)
     # ** at least two criteria must be set **
-    def search(self, criteria):
+    def search(self, criteria, filterFp=False):
         if criteria.values().count(None) == 3:
             return False
 
@@ -248,10 +253,14 @@ class SpiderFootDb:
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
-            c.source_event_hash, t.event_descr, c.scan_instance_id \
+            c.source_event_hash, t.event_descr, t.event_type, c.scan_instance_id, \
+            c.false_positive as 'fp', s.false_positive as 'parent_fp' \
             FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
             WHERE s.scan_instance_id = c.scan_instance_id AND \
             t.event = c.type AND c.source_event_hash = s.hash "
+
+        if filterFp:
+            qry += " AND c.false_positive <> 1 "
 
         if criteria.get('scan_id') is not None:
             qry += "AND c.scan_instance_id = ? "
@@ -274,6 +283,8 @@ class SpiderFootDb:
         qry += " ORDER BY c.data"
 
         try:
+            #print qry
+            #print str(qvars)
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
@@ -378,31 +389,13 @@ class SpiderFootDb:
         except sqlite3.Error as e:
             self.sf.error("SQL error encountered when fetching result summary: " + e.args[0])
 
-    # Obtain the ROOT event for a scan: Must be same output as scanResultEvent!
-    def scanRootEvent(self, instanceId):
-        qry = "SELECT ROUND(c.generated) AS generated, c.data, \
-            s.data as 'source_data', \
-            c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
-            c.source_event_hash, t.event_descr, t.event_type, s.scan_instance_id \
-            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
-            WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
-            s.scan_instance_id = c.scan_instance_id AND \
-            t.event = c.type AND c.source_event_hash = 'ROOT'"
-
-        qvars = [instanceId]
-
-        try:
-            self.dbh.execute(qry, qvars)
-            return self.dbh.fetchone()
-        except sqlite3.Error as e:
-            self.sf.error("SQL error encountered when fetching ROOT event: " + e.args[0])
-
     # Obtain the data for a scan and event type
-    def scanResultEvent(self, instanceId, eventType='ALL'):
+    def scanResultEvent(self, instanceId, eventType='ALL', filterFp=False):
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
-            c.source_event_hash, t.event_descr, t.event_type, s.scan_instance_id \
+            c.source_event_hash, t.event_descr, t.event_type, s.scan_instance_id, \
+            c.false_positive as 'fp', s.false_positive as 'parent_fp' \
             FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
             s.scan_instance_id = c.scan_instance_id AND \
@@ -414,6 +407,9 @@ class SpiderFootDb:
             qry += " AND c.type = ?"
             qvars.append(eventType)
 
+        if filterFp:
+            qry += " AND c.false_positive <> 1"
+
         qry += " ORDER BY c.data"
 
         try:
@@ -423,7 +419,7 @@ class SpiderFootDb:
             self.sf.error("SQL error encountered when fetching result events: " + e.args[0])
 
     # Obtain a unique list of elements
-    def scanResultEventUnique(self, instanceId, eventType='ALL'):
+    def scanResultEventUnique(self, instanceId, eventType='ALL', filterFp=False):
         qry = "SELECT DISTINCT data, type, COUNT(*) FROM tbl_scan_results \
             WHERE scan_instance_id = ?"
         qvars = [instanceId]
@@ -431,6 +427,9 @@ class SpiderFootDb:
         if eventType != "ALL":
             qry += " AND type = ?"
             qvars.append(eventType)
+
+        if filterFp:
+            qry += " AND false_positive <> 1"
 
         qry += " GROUP BY type, data ORDER BY COUNT(*)"
 
@@ -489,6 +488,21 @@ class SpiderFootDb:
             self.conn.commit()
         except sqlite3.Error as e:
             self.sf.error("SQL error encountered when deleting scan: " + e.args[0])
+
+    # Set the false positive flag for a result
+    def scanResultsUpdateFP(self, instanceId, resultHashes, fpFlag):
+        for resultHash in resultHashes:
+            qry = "UPDATE tbl_scan_results SET false_positive = ? WHERE \
+                scan_instance_id = ? AND hash = ?"
+            qvars = [fpFlag, instanceId, resultHash]
+            try:
+                self.dbh.execute(qry, qvars)
+            except sqlite3.Error as e:
+                self.sf.error("SQL error encountered when updating F/P: " + e.args[0], False)
+                return False
+
+        self.conn.commit()
+        return True
 
     # Store the default configuration
     def configSet(self, optMap=dict()):
@@ -658,13 +672,14 @@ class SpiderFootDb:
 
 
     # Get the source IDs, types and data for a set of IDs
-    def scanElementSources(self, instanceId, elementIdList):
+    def scanElementSourcesDirect(self, instanceId, elementIdList):
         # the output of this needs to be aligned with scanResultEvent,
         # as other functions call both expecting the same output.
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
-            c.source_event_hash, t.event_descr, t.event_type, s.scan_instance_id \
+            c.source_event_hash, t.event_descr, t.event_type, s.scan_instance_id, \
+            c.false_positive as 'fp', s.false_positive as 'parent_fp' \
             FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
             s.scan_instance_id = c.scan_instance_id AND \
@@ -680,3 +695,111 @@ class SpiderFootDb:
             return self.dbh.fetchall()
         except sqlite3.Error as e:
             self.sf.error("SQL error encountered when getting source element IDs: " + e.args[0])
+
+    # Get the child IDs, types and data for a set of IDs
+    def scanElementChildrenDirect(self, instanceId, elementIdList):
+        # the output of this needs to be aligned with scanResultEvent,
+        # as other functions call both expecting the same output.
+        qry = "SELECT ROUND(c.generated) AS generated, c.data, \
+            s.data as 'source_data', \
+            c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
+            c.source_event_hash, t.event_descr, t.event_type, s.scan_instance_id, \
+            c.false_positive as 'fp', s.false_positive as 'parent_fp' \
+            FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
+            WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
+            s.scan_instance_id = c.scan_instance_id AND \
+            t.event = c.type AND s.hash in ("
+        qvars = [instanceId]
+
+        for hashId in elementIdList:
+            qry = qry + "'" + hashId + "',"
+        qry += "'')"
+
+        try:
+            self.dbh.execute(qry, qvars)
+            return self.dbh.fetchall()
+        except sqlite3.Error as e:
+            self.sf.error("SQL error encountered when getting child element IDs: " + e.args[0])
+
+    # Get the full set of upstream IDs which are parents to the 
+    # supplied set of IDs.
+    # Data has to be in the format of output from scanElementSourcesDirect
+    # and produce output in the same format.
+    def scanElementSourcesAll(self, instanceId, childData):
+        # Get the first round of source IDs for the leafs
+        keepGoing = True
+        nextIds = list()
+        datamap = dict()
+        pc = dict()
+
+        for row in childData:
+            # these must be unique values!
+            parentId = row[9]
+            childId = row[8]
+            datamap[childId] = row
+
+            if parentId in pc:
+                if childId not in pc[parentId]:
+                    pc[parentId].append(childId)
+            else:
+                pc[parentId] = [childId]
+
+            # parents of the leaf set
+            if parentId not in nextIds:
+                nextIds.append(parentId)
+
+        while keepGoing:
+            parentSet = self.scanElementSourcesDirect(instanceId, nextIds)
+            nextIds = list()
+            keepGoing = False
+
+            for row in parentSet:
+                parentId = row[9]
+                childId = row[8]
+                datamap[childId] = row
+                #print childId + " = " + str(row)
+
+                if parentId in pc:
+                    if childId not in pc[parentId]:
+                        pc[parentId].append(childId)
+                else:
+                    pc[parentId] = [childId]
+                if parentId not in nextIds:
+                    nextIds.append(parentId)
+
+                # Prevent us from looping at root
+                if parentId != "ROOT":
+                    keepGoing = True
+
+        datamap[parentId] = row
+        return [datamap, pc]
+
+    # Get the full set of downstream IDs which are children of the 
+    # supplied set of IDs
+    # NOTE FOR NOW THE BEHAVIOR IS NOT THE SAME AS THE scanElementParent*
+    # FUNCTIONS - THIS ONLY RETURNS IDS!!
+    def scanElementChildrenAll(self, instanceId, parentIds):
+        datamap = list()
+        keepGoing = True
+        nextIds = list()
+
+        nextSet = self.scanElementChildrenDirect(instanceId, parentIds)
+        for row in nextSet:
+            datamap.append(row[8])
+
+        for row in nextSet:
+            if row[8] not in nextIds:
+                nextIds.append(row[8])
+
+        while keepGoing:
+            nextSet = self.scanElementChildrenDirect(instanceId, nextIds)
+            if nextSet == None or len(nextSet) == 0:
+                keepGoing = False
+                break
+
+            for row in nextSet:
+                datamap.append(row[8])
+                nextIds = list()
+                nextIds.append(row[8])
+
+        return datamap
