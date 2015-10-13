@@ -75,7 +75,7 @@ class sfp_pwned(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from HaveIBeenPwned?.", False)
+            self.sf.error("Error processing JSON response from HaveIBeenPwned?: " + str(e), False)
             return None
 
         return ret
