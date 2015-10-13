@@ -864,7 +864,8 @@ class SpiderFoot:
 
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
-                 useragent="SpiderFoot", headers=None, noLog=False, dontMangle=False):
+                 useragent="SpiderFoot", headers=None, noLog=False, 
+                 postData=None, dontMangle=False):
         result = {
             'code': None,
             'status': None,
@@ -891,7 +892,7 @@ class SpiderFoot:
                 for k in headers.keys():
                     header[k] = headers[k]
 
-            req = urllib2.Request(url, None, header)
+            req = urllib2.Request(url, postData, header)
             if cookies is not None:
                 req.add_header('cookie', cookies)
                 if not noLog:
