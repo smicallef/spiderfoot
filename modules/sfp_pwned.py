@@ -69,7 +69,7 @@ class sfp_pwned(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot", headers=hdrs)
 
-        if res['code'] == "404":
+        if res['code'] == 404:
             return None
 
         try:
