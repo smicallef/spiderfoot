@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sharedip(SpiderFootPlugin):
-    """Shared IP:Search Bing and/or Robtex.com for hosts sharing the same IP."""
+    """Shared IP:Footprint,Investigate:Search Bing and/or Robtex.com for hosts sharing the same IP."""
 
     # Default options
     opts = {

@@ -14,7 +14,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlesearch(SpiderFootPlugin):
-    """Google:Some light Google scraping to identify sub-domains and links."""
+    """Google:Footprint,Investigate:Some light Google scraping to identify sub-domains and links."""
 
     # Default options
     opts = {

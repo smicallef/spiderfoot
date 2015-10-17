@@ -17,7 +17,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_vuln(SpiderFootPlugin):
-    """Vulnerable:Check external vulnerability scanning services (XSSposed.org, punkspider.org) to see if the target is listed."""
+    """Vulnerable:Footprint,Investigate:Check external vulnerability scanning services (XSSposed.org, punkspider.org) to see if the target is listed."""
 
     # Default options
     opts = {

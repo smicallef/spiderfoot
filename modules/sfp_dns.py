@@ -22,7 +22,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_dns(SpiderFootPlugin):
-    """DNS:Performs a number of DNS checks to obtain Sub-domains/Hostnames, IP Addresses and Affiliates."""
+    """DNS:Footprint,Investigate:Performs a number of DNS checks to obtain Sub-domains/Hostnames, IP Addresses and Affiliates."""
 
     # Default options
     opts = {

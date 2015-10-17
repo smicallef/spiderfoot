@@ -15,7 +15,7 @@ from sflib import SpiderFoot, SpiderFootPlugin
 
 
 class sfp__stor_db(SpiderFootPlugin):
-    """Storage:Stores scan results into the back-end SpiderFoot database. You will need this."""
+    """Storage::Stores scan results into the back-end SpiderFoot database. You will need this."""
 
     # Default options
     opts = {

@@ -18,7 +18,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_blacklist(SpiderFootPlugin):
-    """Blacklist: Query various blacklist database for open relays, open proxies, vulnerable servers, etc."""
+    """Blacklist:Investigate:Query various blacklist database for open relays, open proxies, vulnerable servers, etc."""
 
     # Default options
     opts = {

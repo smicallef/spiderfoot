@@ -40,7 +40,7 @@ whoisIncrement = 16
 
 
 class sfp_similar(SpiderFootPlugin):
-    """Similar Domains:Search various sources to identify similar looking domain names."""
+    """Similar Domains:Footprint:Search various sources to identify similar looking domain names."""
 
     # Default options
     opts = {

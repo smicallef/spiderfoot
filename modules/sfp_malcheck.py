@@ -262,7 +262,7 @@ malchecks = {
 
 
 class sfp_malcheck(SpiderFootPlugin):
-    """Malicious Check:Check if a website, IP or ASN is considered malicious by various sources. Includes TOR exit nodes and open proxies."""
+    """Malicious Check:Investigate:Check if a website, IP or ASN is considered malicious by various sources. Includes TOR exit nodes and open proxies."""
 
     # Default options
     opts = {

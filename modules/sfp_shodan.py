@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_shodan(SpiderFootPlugin):
-    """SHODAN:Obtain information from SHODAN about identified IP addresses."""
+    """SHODAN:Footprint,Investigate:Obtain information from SHODAN about identified IP addresses."""
 
     # Default options
     opts = {

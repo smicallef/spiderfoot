@@ -18,7 +18,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_crossref(SpiderFootPlugin):
-    """Cross-Reference:Identify whether other domains are associated ('Affiliates') of the target."""
+    """Cross-Reference:Footprint:Identify whether other domains are associated ('Affiliates') of the target."""
 
     # Default options
     opts = {

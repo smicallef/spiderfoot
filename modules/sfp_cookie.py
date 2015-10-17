@@ -14,7 +14,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_cookie(SpiderFootPlugin):
-    """Cookies:Extract Cookies from HTTP headers."""
+    """Cookies:Footprint,Investigate:Extract Cookies from HTTP headers."""
 
     # Default options
     opts = {}

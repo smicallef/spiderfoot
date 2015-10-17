@@ -14,7 +14,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_junkfiles(SpiderFootPlugin):
-    """Junk Files:Looks for old/temporary and other similar files."""
+    """Junk Files:Footprint:Looks for old/temporary and other similar files."""
 
     # Default options
     opts = {

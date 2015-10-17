@@ -21,7 +21,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_filemeta(SpiderFootPlugin):
-    """File Metadata:Extracts meta data from documents and images."""
+    """File Metadata:Footprint:Extracts meta data from documents and images."""
 
     # Default options
     opts = {

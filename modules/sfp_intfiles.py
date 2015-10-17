@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_intfiles(SpiderFootPlugin):
-    """Interesting Files:Identifies potential files of interest, e.g. office documents, zip files."""
+    """Interesting Files:Footprint:Identifies potential files of interest, e.g. office documents, zip files."""
 
     # Default options
     opts = {

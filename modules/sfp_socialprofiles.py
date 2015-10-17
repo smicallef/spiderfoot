@@ -29,7 +29,7 @@ sites = {
 
 
 class sfp_socialprofiles(SpiderFootPlugin):
-    """Social Media Profiles:Identify the social media profiles for human names identified."""
+    """Social Media Profiles:Footprint:Identify the social media profiles for human names identified."""
 
     # Default options
     opts = {

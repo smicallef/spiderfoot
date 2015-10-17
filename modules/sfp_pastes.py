@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_pastes(SpiderFootPlugin):
-    """Pastes:PasteBin, Pastie and Notepad.cc scraping (via Google) to identify related content."""
+    """Pastes:Footprint,Investigate:PasteBin, Pastie and Notepad.cc scraping (via Google) to identify related content."""
 
     # Default options
     opts = {
