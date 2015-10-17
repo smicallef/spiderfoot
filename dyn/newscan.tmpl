@@ -1,7 +1,7 @@
 <%include file="HEADER.tmpl"/>
 <script type='text/javascript'>
-    activeTab = "type";
-    alternateTab = "module";
+    tabs = [ "use", "type", "module" ];
+    activeTab = "use";
 
     function submitForm() {
         list = "";
@@ -12,17 +12,24 @@
         });
 
         $("#"+activeTab+"list").val(list);
-        $("#"+alternateTab+"list").val("");
+        for (i = 0; i < tabs.length; tabs++) {
+            if (tabs[i] != activeTab) {
+                $("#"+tabs[i]+"list").val("");
+            }
+        }
     }
 
-    function switchTab() {
+    function switchTab(tabname) {
         $("#"+activeTab+"table").hide();
         $("#"+activeTab+"tab").removeClass("active");
-        $("#"+alternateTab+"table").show();
-        $("#"+alternateTab+"tab").addClass("active");
-        tempTab = alternateTab;
-        alternateTab = activeTab;
-        activeTab = tempTab;
+        $("#"+tabname+"table").show();
+        $("#"+tabname+"tab").addClass("active");
+        activeTab = tabname;
+        if (activeTab == "use") {
+            $("#selectors").hide();
+        } else {
+            $("#selectors").show();
+        }
     }
 
     function selectAll() {
@@ -51,13 +58,22 @@
 
     <div class="control-group">
         <ul class='nav nav-tabs'>
-        <li id='typetab' class="active"><a onClick='switchTab()' href='#'>By Required Data</a></li>
-        <li id='moduletab'><a onClick='switchTab()' href='#'>By Module</a></li>
-        <div style='text-align: right'>
+        <li id='usetab' class="active"><a onClick='switchTab("use")' href='#'>By Use Case</a></li>
+        <li id='typetab'><a onClick='switchTab("type")' href='#'>By Required Data</a></li>
+        <li id='moduletab'><a onClick='switchTab("module")' href='#'>By Module</a></li>
+        <div style='text-align: right; display: none' id='selectors'>
         <button type="button" onClick='selectAll()' class="btn-mini btn-info">Select All</button>&nbsp;&nbsp;
         <button type="button" onClick='deselectAll()' class="btn-mini btn-info">De-Select All</button>
         </div>
         </ul>
+        <table class="table table-striped table-condensed" id="usetable">
+            <tr><td><input type=radio name='usecase' value='all' id="usecase_all" checked></td><td>All</td><td><b>Get anything and everything about the target.</b><br><br>All SpiderFoot modules will be enabled (slow) but every possible piece of information about the target will be obtained and analysed.<br><br></td></tr>
+            <tr><td><input type=radio name='usecase' value='Footprint' id="usecase_footprint"></td><td>Footprint</td><td><b>Understand what information this target exposes to the Internet.</b><br><br>Gain an understanding about the target's network perimeter, associated identities and other information that is obtained through a lot of web crawling and search engine use.
+             <br><br></td></tr>
+            <tr><td><input type=radio name='usecase' value='Investigate' id="usecase_investigate"></td><td>Investigate</td><td><b>Best for when you suspect the target to be malicious but need more information.</b><br><br>Some basic footprinting will be performed in addition to querying of blacklists and other sources that may have information about your target's maliciousness.
+        </td></tr>
+        </table>
+
         <table class="table table-striped table-condensed" id="moduletable" style='display: none'>
             % for item in sorted(modules):
                 % if item != "sfp__stor_db":
@@ -65,7 +81,7 @@
                 % endif
             % endfor
         </table>
-        <table class="table table-striped table-condensed" id="typetable">
+        <table class="table table-striped table-condensed" id="typetable" style='display: none'>
             <% count = 0 %>
             % for item in sorted(types):
                 % if count % 2 == 0:
@@ -91,12 +107,7 @@
 <script type='text/javascript'>
 $('#scantarget').popover({ 'html': true, 'animation': true, 'trigger': 'focus'});
 if ("${selectedmods}" != "") {
-        $("#moduletable").show();
-        $("#moduletab").addClass("active");
-        $("#typetable").hide();
-        $("#typetab").removeClass("active");
-        activeTab = "module";
-        alternateTab = "type";
+        switchTab("module");
 
         $("input[id^=module_]").each(function(id, obj) { 
             if ("${selectedmods}".indexOf(obj.id.replace("module_", "")) >= 0) {

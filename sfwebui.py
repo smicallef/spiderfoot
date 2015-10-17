@@ -518,7 +518,7 @@ class SpiderFootWebUi:
     resultsetfp.exposed = True
 
     # Initiate a scan
-    def startscan(self, scanname, scantarget, modulelist, typelist):
+    def startscan(self, scanname, scantarget, modulelist, typelist, usecase):
         global globalScanStatus
 
         # Snapshot the current configuration to be used by the scan
@@ -534,12 +534,15 @@ class SpiderFootWebUi:
         if scanname == "" or scantarget == "":
             return self.error("Form incomplete.")
 
-        if typelist == "" and modulelist == "":
+        if typelist == "" and modulelist == "" and usecase == "":
             return self.error("Form incomplete.")
 
+        # User selected modules
         if modulelist != "":
             modlist = modulelist.replace('module_', '').split(',')
-        else:
+
+        # User selected types
+        if len(modlist) == 0 and typelist != "":
             typesx = typelist.replace('type_', '').split(',')
             # 1. Find all modules that produce the requested types
             modlist = sf.modulesProducing(typesx)
@@ -555,6 +558,12 @@ class SpiderFootWebUi:
                             newmods.append(mod)
                 newmodcpy = deepcopy(newmods)
                 newmods = list()
+
+        # User selected a use case
+        if len(modlist) == 0 and usecase != "":
+            for mod in self.config['__modules__']:
+                if usecase == 'all' or usecase in self.config['__modules__'][mod]['cats']:
+                    modlist.append(mod)
 
         # Add our mandatory storage module..
         if "sfp__stor_db" not in modlist:

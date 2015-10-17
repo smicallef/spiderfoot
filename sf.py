@@ -119,8 +119,9 @@ if __name__ == '__main__':
             sfModules[modName] = dict()
             mod = __import__('modules.' + modName, globals(), locals(), [modName])
             sfModules[modName]['object'] = getattr(mod, modName)()
-            sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":", 2)[0]
-            sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":", 2)[1]
+            sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":", 3)[0]
+            sfModules[modName]['cats'] = sfModules[modName]['object'].__doc__.split(":", 3)[1].split(",")
+            sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":", 3)[2]
             sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
             sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
             if hasattr(sfModules[modName]['object'], 'opts'):
