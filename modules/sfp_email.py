@@ -61,13 +61,16 @@ class sfp_email(SpiderFootPlugin):
             self.sf.debug("Unhandled type to find e-mails: " + str(type(eventData)))
             return None
 
-        pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
+        pat = re.compile("([\%a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
         matches = re.findall(pat, eventData)
         for match in matches:
-            self.sf.debug("Found possible email: " + match)
-
             if len(match) < 4:
-                self.sf.debug("Likely invalid address.")
+                self.sf.debug("Likely invalid address: " + match)
+                continue
+
+            # Handle messed up encodings
+            if "%" in match:
+                self.sf.debug("Skipped address: " + match)
                 continue
 
             mailDom = match.lower().split('@')[1]
