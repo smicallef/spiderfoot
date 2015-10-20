@@ -717,9 +717,9 @@ class SpiderFootWebUi:
     scanstatus.exposed = True
 
     # Summary of scan results
-    def scansummary(self, id):
+    def scansummary(self, id, by):
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanResultSummary(id)
+        data = dbh.scanResultSummary(id, by)
         retdata = []
         for row in data:
             if row[0] == "ROOT":

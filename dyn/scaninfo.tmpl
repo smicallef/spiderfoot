@@ -8,7 +8,6 @@
       <a id='btn-info' class="btn" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-log' class="btn" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
     </div>
-    <button class='btn btn-info disabled' id='scanreminder'>This page automatically reloads data every 5 seconds.</button>
     <div id='btn-search' class='btn-group pull-right input-append'>
     <input class=span2 id=searchvalue type=text placeholder='Search...' data-toggle='popover' data-html=true data-animation=true data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchregex/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>.<br><br><b>Note</b> that the current scope is what's searched."> 
         <button class='btn btn-primary' id=searchbutton type=button onClick=$('#btn-search').popover('toggle');searchDirector('${id}')>
@@ -305,7 +304,7 @@
 
             dataloaders.push(
                 function() {
-                    sf.fetchData('${docroot}/scansummary', {'id': instanceId}, function(data) {
+                    sf.fetchData('${docroot}/scansummary', {'id': instanceId, 'by': 'type'}, function(data) {
                         scanSummary = [];
                         totalCount = 0;
                         uniqueCount = 0;
@@ -409,7 +408,7 @@
             $("#btn-search").show();
             $("#scanreminder").hide();
             refresh = function() { browseEventList(instanceId); }
-            sf.fetchData('${docroot}/scansummary', {'id': instanceId}, function(data) {
+            sf.fetchData('${docroot}/scansummary', {'id': instanceId, 'by': 'type'}, function(data) {
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped tablesorter'>";
                             table += "<thead><tr> <th>Type</th><th>Unique Data Elements</th> <th>Total Data Elements</th><th>Last Data Element</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {

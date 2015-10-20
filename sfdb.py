@@ -378,11 +378,27 @@ class SpiderFootDb:
             self.sf.error("SQL error encountered when retreiving scan instance:" + e.args[0])
 
     # Obtain a summary of the results per event type
-    def scanResultSummary(self, instanceId):
-        qry = "SELECT r.type, e.event_descr, MAX(ROUND(generated)) AS last_in, \
-            count(*) AS total, count(DISTINCT r.data) as utotal FROM \
-            tbl_scan_results r, tbl_event_types e WHERE e.event = r.type \
-            AND r.scan_instance_id = ? GROUP BY r.type ORDER BY e.event_descr"
+    def scanResultSummary(self, instanceId, by="type"):
+        if by == "type":
+            qry = "SELECT r.type, e.event_descr, MAX(ROUND(generated)) AS last_in, \
+                count(*) AS total, count(DISTINCT r.data) as utotal FROM \
+                tbl_scan_results r, tbl_event_types e WHERE e.event = r.type \
+                AND r.scan_instance_id = ? GROUP BY r.type ORDER BY e.event_descr"
+
+        if by == "module":
+            qry = "SELECT r.module, '', MAX(ROUND(generated)) AS last_in, \
+                count(*) AS total, count(DISTINCT r.data) as utotal FROM \
+                tbl_scan_results r, tbl_event_types e WHERE e.event = r.type \
+                AND r.scan_instance_id = ? GROUP BY r.module ORDER BY r.module DESC"
+
+        if by == "entity":
+            qry = "SELECT r.data, e.event_descr, MAX(ROUND(generated)) AS last_in, \
+                count(*) AS total, count(DISTINCT r.data) as utotal FROM \
+                tbl_scan_results r, tbl_event_types e WHERE e.event = r.type \
+                AND r.scan_instance_id = ? \
+                AND e.event_type in ('ENTITY') \
+                GROUP BY r.data, e.event_descr ORDER BY total DESC limit 50"
+
         qvars = [instanceId]
         try:
             self.dbh.execute(qry, qvars)
