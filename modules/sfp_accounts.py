@@ -15,7 +15,7 @@ import threading
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Sites from recon-ng (https://bitbucket.org/LaNMaSteR53/recon-ng/src/f31164661322ec6b5fb0d014952e03abc34a1b01/data/profiler_sites.json?at=master)
-# Original author Micah Hoffman (@WebReacher)
+# Original author Micah Hoffman (@WebBreacher)
 
 sites = [
     {"r": "about.me", "u": "http://about.me/{0}", "gRC": "200", "gRT": "g.PAGE_USER_NAME =", "c": "social"},
