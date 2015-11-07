@@ -93,6 +93,18 @@ class sfp_websvr(SpiderFootPlugin):
         if tech is not None and '.php' in eventSource:
             tech = "PHP"
 
+        if 'MicrosoftSharePointTeamServices: 12' in eventData:
+            tech = "Microsoft Sharepoint 2007"
+
+        if "MicrosoftSharePointTeamServices: 14" in eventData:
+            tech = "Microsoft SharePoint 2010"
+
+        if "MicrosoftSharePointTeamServices: 15" in eventData:
+            tech = "Microsoft SharePoint 2013"
+
+        if "MicrosoftSharePointTeamServices: 16" in eventData:
+            tech = "Microsoft SharePoint 2016"
+        
         if tech is not None:
             evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, parentEvent)
             self.notifyListeners(evt)
