@@ -48,7 +48,7 @@ class sfp_ripe(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["HUMAN_NAME", "PHONENR"]
+        return ["HUMAN_NAME", "PHONENR", "GEOINFO"]
 
     def query(self, qry):
         try:
@@ -70,6 +70,7 @@ class sfp_ripe(SpiderFootPlugin):
             #init the variables
             personName = None
             phoneNr = None
+            physicalLocation = None
 
             #Loop through the returned objects
             for object in jsonContent['objects']['object']:
@@ -80,9 +81,14 @@ class sfp_ripe(SpiderFootPlugin):
                             personName = attribute['value']
                         if attribute['name'] == "phone":
                             phoneNr = attribute['value']
+                        if attribute['name'] == "address":
+                            if physicalLocation == None:
+                                physicalLocation = attribute['value']
+                            else:
+                                physicalLocation += " " + attribute['value']
 
             #return the variables
-            return personName, phoneNr
+            return personName, phoneNr, physicalLocation
 
         except Exception, e:
             self.sf.info("[+] Caught error while executing query for: " + qry + " - " + str(e))
@@ -109,7 +115,7 @@ class sfp_ripe(SpiderFootPlugin):
         qrylist.append(eventData)
 
         for addr in qrylist:
-            personName, phoneNr = self.query(addr)
+            personName, phoneNr, physicalLocation = self.query(addr)
             if personName is None and phoneNr is None:
                 continue
 
@@ -126,6 +132,12 @@ class sfp_ripe(SpiderFootPlugin):
                 # Notify other modules of what you've found
                 self.sf.info("Found phone number for RIPE Owner for " + eventData)
                 evt = SpiderFootEvent("PHONENR", phoneNr , self.__name__, event)
+                self.notifyListeners(evt)
+
+            if physicalLocation is not None:
+                # Notify other modules of what you've found
+                self.sf.info("Found address for RIPE Owner for " + eventData)
+                evt = SpiderFootEvent("GEOINFO", physicalLocation , self.__name__, event)
                 self.notifyListeners(evt)
 
 
