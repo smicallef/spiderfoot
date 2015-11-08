@@ -48,7 +48,7 @@ class sfp_ripe(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["HUMAN_NAME"]
+        return ["HUMAN_NAME", "PHONENR"]
 
     def query(self, qry):
         try:
@@ -67,6 +67,10 @@ class sfp_ripe(SpiderFootPlugin):
             content = resp.read()
             jsonContent = json.loads(content)
 
+            #init the variables
+            personName = None
+            phoneNr = None
+
             #Loop through the returned objects
             for object in jsonContent['objects']['object']:
                 #If there is an object with type person look for attribute person and return its value
@@ -74,10 +78,11 @@ class sfp_ripe(SpiderFootPlugin):
                     for attribute in object['attributes']['attribute']:
                         if attribute['name'] == "person":
                             personName = attribute['value']
-                            return personName
+                        if attribute['name'] == "phone":
+                            phoneNr = attribute['value']
 
-            else:
-                return None
+            #return the variables
+            return personName, phoneNr
 
         except Exception, e:
             self.sf.info("[+] Caught error while executing query for: " + qry + " - " + str(e))
@@ -104,18 +109,25 @@ class sfp_ripe(SpiderFootPlugin):
         qrylist.append(eventData)
 
         for addr in qrylist:
-            rec = self.query(addr)
-            if rec is None:
+            personName, phoneNr = self.query(addr)
+            if personName is None and phoneNr is None:
                 continue
 
             if self.checkForStop():
                 return None
 
-            if rec is not None:
+            if personName is not None:
                 # Notify other modules of what you've found
                 self.sf.info("Found RIPE Owner for " + eventData)
-                evt = SpiderFootEvent("HUMAN_NAME", rec , self.__name__, event)
+                evt = SpiderFootEvent("HUMAN_NAME", personName , self.__name__, event)
                 self.notifyListeners(evt)
+
+            if phoneNr is not None:
+                # Notify other modules of what you've found
+                self.sf.info("Found phone number for RIPE Owner for " + eventData)
+                evt = SpiderFootEvent("PHONENR", phoneNr , self.__name__, event)
+                self.notifyListeners(evt)
+
 
 
         return None
