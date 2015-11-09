@@ -21,7 +21,7 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
 deps = ['M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks',
-        'pyPdf', 'metapdf', 'openxmllib', 'stem']
+        'pyPdf', 'metapdf', 'openxmllib', 'stem', 'OpenSSL']
 for mod in deps:
     try:
         if mod.startswith("ext."):
@@ -48,8 +48,15 @@ for mod in deps:
 
 import os
 import cherrypy
+import json
+from cherrypy.lib import auth_digest
 from sflib import SpiderFoot
 from sfwebui import SpiderFootWebUi
+from OpenSSL import crypto, SSL
+from socket import gethostname
+from pprint import pprint
+from time import gmtime, mktime
+from os.path import exists, join
 
 # 'Global' configuration options
 # These can be overriden on a per-module basis, and some will
@@ -92,6 +99,47 @@ sfOptdescs = {
     '_torctlport': "The port TOR is taking control commands on. This is necessary for SpiderFoot to tell TOR to re-circuit when it suspects anonymity is compromised.",
     '_modulesenabled': "Modules enabled for the scan."  # This is a hack to get a description for an option not actually available.
 }
+
+#declare an empty dict
+usersDict = {}
+
+#SSL certificate file names
+CERT_FILE = "spiderfoot.crt"
+KEY_FILE = "spiderfoot.key"
+
+#New SSL cert function
+def create_self_signed_cert(cert_dir):
+    """
+    If datacard.crt and datacard.key don't exist in cert_dir, create a new
+    self-signed cert and keypair and write them into that directory.
+    """
+
+    if not exists(join(cert_dir, CERT_FILE)) \
+            or not exists(join(cert_dir, KEY_FILE)):
+
+        # create a key pair
+        k = crypto.PKey()
+        k.generate_key(crypto.TYPE_RSA, 2048)
+
+        # create a self-signed cert
+        cert = crypto.X509()
+        cert.get_subject().C = "US"
+        cert.get_subject().ST = "Alaska"
+        cert.get_subject().L = "Anchorage"
+        cert.get_subject().O = "SpiderFoot"
+        cert.get_subject().OU = "Spiderfoot"
+        cert.get_subject().CN = gethostname()
+        cert.set_serial_number(1000)
+        cert.gmtime_adj_notBefore(0)
+        cert.gmtime_adj_notAfter(10*365*24*60*60)
+        cert.set_issuer(cert.get_subject())
+        cert.set_pubkey(k)
+        cert.sign(k, 'sha256')
+
+        open(join(cert_dir, CERT_FILE), "wt").write(
+            crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+        open(join(cert_dir, KEY_FILE), "wt").write(
+            crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
@@ -145,11 +193,43 @@ if __name__ == '__main__':
     # Disable auto-reloading of content
     cherrypy.engine.autoreload.unsubscribe()
 
-    # Enable access to static files via the web directory
+    # Load the users from the secrets file
+    try:
+        userCounter = 0
+        data = json.loads(open('secrets').read())
+        for user in data["users"]:
+            username = (user["username"]).encode('utf-8')
+            password = (user["password"]).encode('utf-8')
+            usersDict.update({username:password})
+            userCounter += 1
+        print "Loaded " + str(userCounter) + " users from secrets file"
+    except Exception, e:
+        print "Caught error while reading secrets file: " + str(e)
+        print "Using admin admin login"
+        usersDict.update({"admin":"admin"})
+
+    #Create the SSL certificate if you have a valid certificate comment out these lines
+    #and set the path to your certificate and key with certPath and keyPath
+    currentDir = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
+    create_self_signed_cert(currentDir)
+    certPath = currentDir + "/" + CERT_FILE
+    keyPath = currentDir + "/" + KEY_FILE
+
+    #Add the certificates to the server
+    cherrypy.server.ssl_module = 'builtin'
+    cherrypy.server.ssl_certificate = certPath
+    cherrypy.server.ssl_private_key = keyPath
+
+    # Enable access to static files via the web directory and add basic auth
     currentDir = os.path.abspath(sf.myPath())
     conf = {'/static': {
         'tools.staticdir.on': True,
-        'tools.staticdir.dir': os.path.join(currentDir, 'static')
+        'tools.staticdir.dir': os.path.join(currentDir, 'static')},
+        '/': {
+        'tools.auth_digest.on': True,
+        'tools.auth_digest.realm': sfConfig['__webaddr'],
+        'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(usersDict),
+        'tools.auth_digest.key': 'a565c27146791cfb'
     }}
 
     # Try starting the web server. If it fails due to a database being
