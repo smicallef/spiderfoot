@@ -432,7 +432,10 @@
         }
 
         // Detailed view of data for an event type for a scan
-        function browseEventData(instanceId, eventTypeLabel, eventType, format, filterFP=false) {
+        function browseEventData(instanceId, eventTypeLabel, eventType, format, filterFP) {
+            if (filterFP === 'undefined') {
+                filterFP = false;
+            }
             $("#scansummary-content").remove();
             $("#breadcrumbs").remove();
             $("#loader").show();
