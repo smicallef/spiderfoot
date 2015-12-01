@@ -59,7 +59,7 @@ class sfp_vuln(SpiderFootPlugin):
         ret = list()
         base = "https://www.xssposed.org"
         url = "https://www.xssposed.org/search/?search=" + qry + "&type=host"
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=30, 
             useragent="SpiderFoot")
 
         if res['content'] is None:
@@ -147,6 +147,7 @@ class sfp_vuln(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        data = dict()
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -157,7 +158,8 @@ class sfp_vuln(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        data = self.queryXss(eventData) + self.queryPunk(eventData)
+        data.update(self.queryXss(eventData))
+        data.update(self.queryPunk(eventData))
 
         for n in data:
             # Notify other modules of what you've found
