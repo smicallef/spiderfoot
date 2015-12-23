@@ -25,15 +25,18 @@ RUN apt-get update && apt-get install -y \
   python-dev \
   python-lxml \
   swig \
-  --no-install-recommends \
-  && rm -rf /var/lib/apt/lists/* \
+  --no-install-recommends
+
+RUN rm -rf /var/lib/apt/lists/* \
+  && cd /usr/include/openssl/ \
+  && ln -s ../x86_64-linux-gnu/openssl/opensslconf.h . \
   && pip install cherrypy lxml mako M2Crypto netaddr
 
 # Create a dedicated/non-privileged user to run the app.
 RUN addgroup spiderfoot && \
     useradd -r -g spiderfoot -d /home/spiderfoot -s /sbin/nologin -c "SpiderFoot User" spiderfoot
 
-ENV SPIDERFOOT_VERSION 2.6.1
+ENV SPIDERFOOT_VERSION 2.7.0
 
 # Download the specified release.
 WORKDIR /home
