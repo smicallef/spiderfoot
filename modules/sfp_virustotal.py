@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_virustotal(SpiderFootPlugin):
-    """VirusTotal:Investigate:Obtain information from VirusTotal about identified IP addresses."""
+    """VirusTotal:Investigate,Intelligence:Obtain information from VirusTotal about identified IP addresses."""
 
     # Default options
     opts = {
@@ -28,7 +28,11 @@ class sfp_virustotal(SpiderFootPlugin):
         'netblocklookup': True,
         'maxnetblock': 24,
         'subnetlookup': True,
-        'maxsubnet': 24
+        'maxsubnet': 24,
+        'insert_urls': True,
+        'insert_resolve': True,
+        'insert_detected_downloaded_samples': True,
+        'insert_undetected_downloaded_samples': True
     }
 
     # Option descriptions
@@ -40,7 +44,11 @@ class sfp_virustotal(SpiderFootPlugin):
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        "insert_urls": "Add found URLs to database",
+        "insert_resolve": "Add found resolutions to database",        
+        'insert_undetected_downloaded_samples': "Add undetected samples (SHA1 hash) to the database",
+        'insert_detected_downloaded_samples': "Add undetected samples (SHA1 hash) to the database"
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -69,13 +77,14 @@ class sfp_virustotal(SpiderFootPlugin):
         return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
                 "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-                "MALICIOUS_SUBNET"]
+                "MALICIOUS_SUBNET",
+                "FILE_UNDETECTED", "FILE_DETECTED", "DNS_PASSIVE", "URL_MALICIOUS"]
 
     def query(self, qry):
         ret = None
 
         if self.sf.validIP(qry):
-            url = "https://www.virustotal.com/vtapi/v2/ip-address/report?ip=" + qry
+            url = "https://www.virustotal.com/vtapi/v2/ip-address/report?ip=" + qry 
         else:
             url = "https://www.virustotal.com/vtapi/v2/domain/report?domain=" + qry
 
@@ -150,10 +159,11 @@ class sfp_virustotal(SpiderFootPlugin):
                 return None
 
             info = self.query(addr)
+
             if info is None:
                 continue
             if 'detected_urls' in info:
-                self.sf.info("Found VirusTotal URL data for " + addr)
+                self.sf.info("Found VirusTotal URL data (detected_urls) for " + addr)
                 if eventName in ["IP_ADDRESS"] or eventName.startswith("NETBLOCK_"):
                     evt = "MALICIOUS_IPADDR"
                     infotype = "ip-address"
@@ -182,4 +192,49 @@ class sfp_virustotal(SpiderFootPlugin):
                                     infourl, self.__name__, event)
                 self.notifyListeners(e)
 
+                if self.opts['insert_urls']:
+                    detected_urls = info["detected_urls"]
+                    if detected_urls is not None:
+                        evt = "URL_MALICIOUS"
+                        infotype = "domain"                        
+                        for detected_url in detected_urls:    
+                            url = detected_url["url"]
+
+                            e = SpiderFootEvent(evt, url, self.__name__, event)
+                            self.notifyListeners(e)
+
+            if self.opts['insert_resolve']:
+                if 'resolutions' in info:
+                    self.sf.info("Found VirusTotal URL data (resolutions) for " + addr)
+                    evt = "DNS_PASSIVE"
+                    resolutions = info["resolutions"]
+                    if resolutions is not None:
+                        for resolve in resolutions:
+                            try:
+                                domain = resolve["hostname"]
+                                e = SpiderFootEvent(evt, domain, self.__name__, event)
+                                self.notifyListeners(e)
+                            except:
+                                continue
+                                
+            if self.opts['insert_undetected_downloaded_samples']:
+                if 'undetected_downloaded_samples' in info:
+                    self.sf.info("Found VirusTotal URL data (undetected_downloaded_samples) for " + addr)
+                    evt = "FILE_DETECTED"
+                    undetected_downloaded_samples = info["undetected_downloaded_samples"]
+                    if undetected_downloaded_samples is not None:
+                        for sample in undetected_downloaded_samples:
+                            sha256hash = sample["sha256"]
+                            e = SpiderFootEvent(evt, sha256hash, self.__name__, event)
+                            self.notifyListeners(e)     
+            if self.opts['insert_detected_downloaded_samples']:
+                if 'detected_downloaded_samples' in info:
+                    self.sf.info("Found VirusTotal URL data (detected_downloaded_samples) for " + addr)
+                    evt = "FILE_UNDETECTED"
+                    detected_downloaded_samples = info["detected_downloaded_samples"]
+                    if detected_downloaded_samples is not None:
+                        for sample in detected_downloaded_samples:
+                            sha256hash = sample["sha256"]
+                            e = SpiderFootEvent(evt, sha256hash, self.__name__, event)
+                            self.notifyListeners(e)     
 # End of sfp_virustotal class

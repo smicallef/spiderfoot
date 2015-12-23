@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_shodan(SpiderFootPlugin):
-    """SHODAN:Footprint,Investigate:Obtain information from SHODAN about identified IP addresses."""
+    """SHODAN:Footprint,Investigate,Intelligence:Obtain information from SHODAN about identified IP addresses."""
 
     # Default options
     opts = {
@@ -51,7 +51,8 @@ class sfp_shodan(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["OPERATING_SYSTEM", "DEVICE_TYPE",
-                "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER"]
+                "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
+                "DNS_PASSIVE", "GEOINFO"]
 
     def query(self, qry):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
@@ -111,6 +112,34 @@ class sfp_shodan(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
+            if rec.get('country_code') is not None:
+                # Notify other modules of what you've found
+                evt = SpiderFootEvent("GEOINFO", rec.get('country_code'), self.__name__, event)
+                self.notifyListeners(evt)
+
+            if rec.get('country_name') is not None:
+                # Notify other modules of what you've found
+                evt = SpiderFootEvent("GEOINFO", rec.get('country_name'), self.__name__, event)
+                self.notifyListeners(evt)
+
+            if rec.get('asn') is not None:
+                # Notify other modules of what you've found
+                evt = SpiderFootEvent("GEOINFO", rec.get('asn'), self.__name__, event)
+                self.notifyListeners(evt)
+
+            if rec.get('isp') is not None:
+                # Notify other modules of what you've found
+                evt = SpiderFootEvent("GEOINFO", rec.get('isp'), self.__name__, event)
+                self.notifyListeners(evt)
+
+            if rec.get('hostnames') is not None:
+                hostnames = rec.get('hostnames')
+                self.sf.debug("Found hostnames, " + eventName + ", from " + srcModuleName)                        
+                for hostname in hostnames:
+                    # Notify other modules of what you've found
+                    evt = SpiderFootEvent("DNS_PASSIVE", hostname, self.__name__, event)
+                    self.notifyListeners(evt)
+
             if rec.get('os') is not None:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os') +
@@ -127,17 +156,19 @@ class sfp_shodan(SpiderFootPlugin):
                 self.sf.info("Found SHODAN data for " + eventData)
                 for r in rec['data']:
                     port = str(r.get('port'))
-                    banner = r.get('banner')
+                    banner = r.get('data')
 
                     if port is not None:
                         # Notify other modules of what you've found
                         cp = addr + ":" + port
+                        self.sf.debug("Found port " + cp + ", " + eventName + ", from " + srcModuleName)                        
                         evt = SpiderFootEvent("TCP_PORT_OPEN", cp,
                                               self.__name__, event)
                         self.notifyListeners(evt)
 
                     if banner is not None:
                         # Notify other modules of what you've found
+                        self.sf.debug("Found banner " + banner + ", " + eventName + ", from " + srcModuleName)
                         evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
                                               self.__name__, event)
                         self.notifyListeners(evt)
