@@ -1352,6 +1352,9 @@ class SpiderFootPlugin(object):
             #print "No data to send for " + eventName + " to " + listener.__module__
             return None
 
+        if self.checkForStop():
+            return None
+
         # Look back to ensure the original notification for an element
         # is what's linked to children. For instance, sfp_dns may find
         # xyz.abc.com, and then sfp_ripe obtains some raw data for the
