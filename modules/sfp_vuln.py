@@ -104,9 +104,9 @@ class sfp_vuln(SpiderFootPlugin):
     # Query punkspider.org
     def queryPunk(self, qry):
         ret = list()
-        base = "https://www.punkspider.org/#searchkey=url&searchvalue={0}&pagenumber=1&filterType=or&filters=bsqli,sqli,xss,trav,mxi,osci,xpathi"
+        base = "https://www.punkspider.org/#searchkey=url&searchvalue=.{0}&pagenumber=1&filterType=or&filters=bsqli,sqli,xss,trav,mxi,osci,xpathi"
         url = "https://www.punkspider.org/service/search/domain/"
-        post = '{"searchKey":"url","searchValue":"' + qry + '","pageNumber":1,"filterType":"or","filters":["bsqli","mxi","osci","sqli","trav","xpathi","xss"]}\n\r'
+        post = '{"searchKey":"url","searchValue":".' + qry + '","pageNumber":1,"filterType":"or","filters":["bsqli","mxi","osci","sqli","trav","xpathi","xss"]}\n\r'
 
         headers = {
             'X-Requested-With': 'XMLHttpRequest',
@@ -128,7 +128,7 @@ class sfp_vuln(SpiderFootPlugin):
                 data = json.loads(res['content'])
                 for rec in data['output']['domainSummaryDTOs']:
                     if self.opts['cutoff'] == 0:
-                        ret.append("From Punkspider.org: <SFURL>" + base.format(qry) + "</SFURL>")
+                        ret.append("From Punkspider.org: " + rec['url'] + "\n<SFURL>" + base.format(qry) + "</SFURL>")
                     else:
                         ts = rec['timestamp']
                         nts = time.strftime("%s", time.strptime(ts, "%Y-%m-%dT%H:%M:%SZ"))
@@ -136,7 +136,7 @@ class sfp_vuln(SpiderFootPlugin):
                             # Report it
                             #print "calc: " + str(nts) + " > " + str(int(time.time())-(86400*self.opts['cutoff']))
                             #print "MADE IT past cut-off " + str(self.opts['cutoff']) + ": " + str(ts)
-                            ret.append("From Punkspider.org: <SFURL>" + base.format(qry) + "</SFURL>")
+                            ret.append("From Punkspider.org: " + rec['url'] + "\n<SFURL>" + base.format(qry) + "</SFURL>")
             except Exception as e:
                 self.sf.error("Error processing response from Punkspider.org: " + str(e), False)
                 return None
@@ -147,7 +147,7 @@ class sfp_vuln(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        data = dict()
+        data = list()
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -158,8 +158,13 @@ class sfp_vuln(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        data.update(self.queryXss(eventData))
-        data.update(self.queryPunk(eventData))
+        xss = self.queryXss(eventData)
+        if xss:
+            data.extend(xss)
+
+        punk = self.queryPunk(eventData)
+        if punk:
+            data.extend(punk)
 
         for n in data:
             # Notify other modules of what you've found
