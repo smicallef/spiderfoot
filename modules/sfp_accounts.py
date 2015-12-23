@@ -295,6 +295,8 @@ class sfp_accounts(SpiderFootPlugin):
             if not found:
                 running = False
 
+            time.sleep(2) 
+
         # Return once the scanning has completed
         return self.siteResults
 
