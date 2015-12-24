@@ -137,27 +137,27 @@ class SpiderFootScanner(threading.Thread):
 
                 # Override the default socket and getaddrinfo calls with the 
                 # SOCKS ones. Just ensure we don't also try and SOCKS-proxy
-		# connectivity to the TOR control port.
-		def _create_connection(address, timeout=None, source_address=None):
-		    if socksAddr not in address:
-		        sock = socks.socksocket()
-		        sock.setproxy(socks.PROXY_TYPE_SOCKS5, socksAddr, socksPort)
-		        sock.connect(address)
-		        return sock
-		    else:
-		        sock = socket.socket
-		        sock.connect(address)
-		        return sock
+                # connectivity to the TOR control port.
+                def _create_connection(address, timeout=None, source_address=None):
+                    if socksAddr not in address:
+                        sock = socks.socksocket()
+                        sock.setproxy(socks.PROXY_TYPE_SOCKS5, socksAddr, socksPort)
+                        sock.connect(address)
+                        return sock
+                    else:
+                        sock = socket.socket
+                        sock.connect(address)
+                        return sock
 
                 socket.socket = socks.socksocket
                 socket.create_connection = _create_connection
                 #socket.getaddrinfo = socks.getaddrinfo
                 self.ts.sf.updateSocket(socket)
-	    else:
-		# BUG: If the user had a SOCKS proxy set
-		# and then decided to unset it, the original socket class
-		# is not reverted to its default state - we still have
-		# the SOCKS version of socket.
+            else:
+                # BUG: If the user had a SOCKS proxy set
+                # and then decided to unset it, the original socket class
+                # is not reverted to its default state - we still have
+                # the SOCKS version of socket.
                 socket.socket = socket.savedsocket
                 socket.create_connection = socket.savedcreate_connection
                 #socket.getaddrinfo = socket.savedgetaddrinfo
