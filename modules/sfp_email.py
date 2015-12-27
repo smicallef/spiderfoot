@@ -80,7 +80,10 @@ class sfp_email(SpiderFootPlugin):
                 continue
 
             self.sf.info("Found e-mail address: " + match)
-            mail = unicode(match, 'utf-8', errors='replace')
+            if type(match) == str:
+                mail = unicode(match, 'utf-8', errors='replace')
+            else:
+                mail = match
             evt = SpiderFootEvent("EMAILADDR", mail, self.__name__, parentEvent)
             self.notifyListeners(evt)
 
