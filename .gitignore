@@ -43,3 +43,7 @@
 Icon?
 ehthumbs.db
 Thumbs.db
+
+# Modules #
+######################
+modules/token

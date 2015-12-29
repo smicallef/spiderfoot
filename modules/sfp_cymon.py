@@ -67,17 +67,17 @@ class sfp_cymon(SpiderFootPlugin):
                 "MALICIOUS_SUBNET",
                 "FILE_UNDETECTED", "FILE_DETECTED", "DNS_PASSIVE", "URL_MALICIOUS"]
 
-    def query(self, qry, qrytype="domains"):
+    def query(self, qry, querytype="domains"):
         ret = None
-        qrytype = str(qrytype)
-        if qrytype not in ["domains", "urls", "events"]:
-            qrytype = "domains"
+        querytype = str(querytype)
+        if querytype not in ["domains", "urls", "events"]:
+            querytype = "domains"
 
         htoken = "Token " + self.opts['apikey']
         headers = {'Authorization': htoken,}
         pagination_limit = int(self.opts['pagination_limit'])
         pagination_offset = int(self.opts['pagination_offset'])
-        url = "https://cymon.io/api/nexus/v1/ip/" + urllib.quote(qry) + "/" + str(qrytype) + "/?limit=" + str(pagination_limit) + "&offset=" + str(pagination_offset)
+        url = "https://cymon.io/api/nexus/v1/ip/" + urllib.quote(qry) + "/" + str(querytype) + "/?limit=" + str(pagination_limit) + "&offset=" + str(pagination_offset)
         res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
 
         if res['content'] is None:
@@ -122,7 +122,6 @@ class sfp_cymon(SpiderFootPlugin):
         for addr in qrylist:
             rec_domains = self.query(addr, "domains")
             rec_urls = self.query(addr, "urls")
-
             if self.checkForStop():
                 return None
 
