@@ -72,6 +72,9 @@ class sfp_junkfiles(SpiderFootPlugin):
                     eventData.endswith(ext):
                 bits = eventData.split("?")
                 for x in self.opts['fileexts']:
+                    if self.checkForStop():
+                        return None
+
                     self.sf.debug("Trying " + x + " against " + eventData)
                     fetch = bits[0] + "." + x
                     if fetch not in self.results:
@@ -92,6 +95,9 @@ class sfp_junkfiles(SpiderFootPlugin):
             for ext in ["index.html", "index.htm", "default.htm"]:
                 self.sf.debug("Trying " + ext + " against " + eventData)
                 for x in self.opts['fileexts']:
+                    if self.checkForStop():
+                        return None
+
                     fetch = eventData + "/" + ext + "." + x
                     if fetch not in self.results:
                         self.results.append(fetch)
@@ -112,6 +118,9 @@ class sfp_junkfiles(SpiderFootPlugin):
 
         # http://www/blah/abc.html -> try http://www/blah.[dirs]
         for dirfile in self.opts['dirs']:
+            if self.checkForStop():
+                return None
+
             self.sf.debug("Trying " + dirfile + " against " + eventData)
             fetch = base[0:len(base) - 1] + "." + dirfile
             if fetch not in self.results:
@@ -128,6 +137,9 @@ class sfp_junkfiles(SpiderFootPlugin):
 
         # http://www/blah/abc.html -> try http://www/blah/[files]
         for f in self.opts['files']:
+            if self.checkForStop():
+                return None
+
             self.sf.debug("Trying " + f + " against " + eventData)
             fetch = base + f
             if fetch not in self.results:
