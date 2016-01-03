@@ -134,36 +134,36 @@ class sfp_spider(SpiderFootPlugin):
             # Optionally skip external sites (typical behaviour..)
             if self.opts['noexternal'] and not \
                     self.getTarget().matches(linkFQDN):
-                self.sf.debug('Ignoring external site: ' + link)
+                #self.sf.debug('Ignoring external site: ' + link)
                 continue
 
             # Optionally skip sub-domain sites
             if self.opts['nosubs'] and not \
                     self.getTarget().matches(linkFQDN, includeChildren=False):
-                self.sf.debug("Ignoring subdomain: " + link)
+                #self.sf.debug("Ignoring subdomain: " + link)
                 continue
 
             # Optionally skip parent domain sites
             if self.opts['noparents'] and not \
                     self.getTarget().matches(linkFQDN, includeParents=False):
-                self.sf.debug("Ignoring parent domain: " + link)
+                #self.sf.debug("Ignoring parent domain: " + link)
                 continue
 
             # Optionally skip user directories
             if self.opts['filterusers'] and '/~' in link:
-                self.sf.debug("Ignoring user folder: " + link)
+                #self.sf.debug("Ignoring user folder: " + link)
                 continue
 
             # If we are respecting robots.txt, filter those out too
             checkRobots = lambda blocked: str.lower(blocked) in link.lower() or blocked == '*'
             if self.opts['robotsonly'] and filter(checkRobots, self.robotsRules[linkBase]):
-                self.sf.debug("Ignoring page found in robots.txt: " + link)
+                #self.sf.debug("Ignoring page found in robots.txt: " + link)
                 continue
 
             # Filter out certain file types (if user chooses to)
             checkExts = lambda ext: link.lower().split('?')[0].endswith('.' + ext.lower())
             if filter(checkExts, self.opts['filterfiles']):
-                self.sf.debug('Ignoring filtered extension: ' + link)
+                #self.sf.debug('Ignoring filtered extension: ' + link)
                 continue
 
             # All tests passed, add link to be spidered
