@@ -29,8 +29,8 @@ import netaddr
 import urllib2
 import StringIO
 import threading
+from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy, copy
-
 
 class SpiderFoot:
     dbh = None
@@ -777,66 +777,90 @@ class SpiderFoot:
     # The key will be the *absolute* URL of the link obtained, so for example if
     # the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
     # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
-    def parseLinks(self, url, data, domains):
+    def parseLinks(self, url, data, domains, parseText=True):
         returnLinks = dict()
+        urlsRel = []
+
+        tags = {
+                    'a': 'href',
+                    'img': 'src',
+                    'script': 'src',
+                    'link': 'href',
+                    'area': 'href',
+                    'base': 'href',
+                    'form': 'action'
+        }
+
+        try:
+            proto = parseLinks.split(":")[0]
+        except BaseException as e:
+            proto = "http"
+        if proto == None:
+            proto = "http"
 
         if data is None or len(data) == 0:
-            self.debug('parseLinks() called with no data to parse')
+            self.error('parseLinks() called with no data to parse', False)
             return None
 
-        # Find actual links
         try:
-            regRel = re.compile('(href|src|action|url)[:=][ \'\"]*(.[^\'\"<> ]*)',
-                                re.IGNORECASE)
-            urlsRel = regRel.findall(data)
-        except Exception as e:
-            self.error("Error applying regex to: " + data)
+            for t in tags.keys():
+                for lnk in BeautifulSoup(data, "lxml",
+                    parse_only=SoupStrainer(t)).find_all(t):
+                    if lnk.has_attr(tags[t]):
+                        urlsRel.append([None, lnk[tags[t]]])
+        except BaseException as e:
+            self.error("Error parsing with BeautifulSoup: " + str(e), False)
             return None
 
         # Find potential links that aren't links (text possibly in comments, etc.)
         data = urllib2.unquote(data)
         for domain in domains:
-            try:
-                # Because we're working with a big blob of text now, don't worry
-                # about clobbering proper links by url decoding them.
-                regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.' + domain + ')',
-                                    re.IGNORECASE)
-                urlsRel = urlsRel + regRel.findall(data)
-            except Exception as e:
-                self.error("Error applying regex2 to: " + data)
-            try:
-                # Some links are sitting inside a tag, e.g. Google's use of <cite>
-                regRel = re.compile('(>)(' + domain + '/.[^<]+)', re.IGNORECASE)
-                urlsRel = urlsRel + regRel.findall(data)
-            except Exception as e:
-                self.error("Error applying regex3 to: " + data)
+            if parseText:
+                try:
+                    # Because we're working with a big blob of text now, don't worry
+                    # about clobbering proper links by url decoding them.
+                    regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.' + domain + ')',
+                                        re.IGNORECASE)
+                    urlsRel = urlsRel + regRel.findall(data)
+                except Exception as e:
+                    self.error("Error applying regex2 to: " + data)
+                try:
+                    # Some links are sitting inside a tag, e.g. Google's use of <cite>
+                    regRel = re.compile('(>)(' + domain + '/.[^<]+)', re.IGNORECASE)
+                    urlsRel = urlsRel + regRel.findall(data)
+                except Exception as e:
+                    self.error("Error applying regex3 to: " + data)
 
-            # Loop through all the URLs/links found by the regex
+            # Loop through all the URLs/links found
             for linkTuple in urlsRel:
                 # Remember the regex will return two vars (two groups captured)
-                meta = linkTuple[0]
+                junk = linkTuple[0]
                 link = linkTuple[1]
+                linkl = link.lower()
                 absLink = None
+                self.debug("link tuple: " + str(linkTuple))
+
+                if len(link) < 1:
+                    continue
 
                 # Don't include stuff likely part of some dynamically built incomplete
                 # URL found in Javascript code (character is part of some logic)
                 if link[len(link) - 1] == '.' or link[0] == '+' or \
-                                'javascript:' in link.lower() or '();' in link:
+                                'javascript:' in linkl or '()' in link:
                     self.debug('unlikely link: ' + link)
                     continue
-
                 # Filter in-page links
                 if re.match('.*#.[^/]+', link):
                     self.debug('in-page link: ' + link)
                     continue
 
                 # Ignore mail links
-                if 'mailto:' in link.lower():
+                if 'mailto:' in linkl:
                     self.debug("Ignoring mail link: " + link)
                     continue
 
                 # URL decode links
-                if '%2f' in link.lower():
+                if '%2f' in linkl:
                     link = urllib2.unquote(link)
 
                 # Capture the absolute link:
@@ -848,9 +872,13 @@ class SpiderFoot:
                 if link.startswith('/'):
                     absLink = self.urlBaseUrl(url) + link
 
+                # Protocol relative URLs
+                if link.startswith('//'):
+                    absLink = proto + ':' + link
+
                 # Maybe the domain was just mentioned and not a link, so we make it one
                 if absLink is None and domain.lower() in link.lower():
-                    absLink = 'http://' + link
+                    absLink = proto + '://' + link
 
                 # Otherwise, it's a flat link within the current directory
                 if absLink is None:
