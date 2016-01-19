@@ -21,7 +21,7 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
 deps = ['M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks',
-        'pyPdf', 'metapdf', 'openxmllib', 'stem', 'bs4']
+        'pyPdf', 'metapdf', 'openxmllib', 'stem', 'bs4', 'gexf']
 for mod in deps:
     try:
         if mod.startswith("ext."):
