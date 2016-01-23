@@ -92,7 +92,7 @@ class sfp_coderepo(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
-        if res == None:
+        if res['content'] == None:
             self.sf.error("Unable to fetch " + url, False)
             failed = True
 

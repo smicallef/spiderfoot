@@ -66,7 +66,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
-        if res == None:
+        if res['content'] == None:
             self.sf.error("Unable to fetch " + url, False)
             return None
 
