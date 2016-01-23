@@ -94,7 +94,7 @@ class sfp_sslcert(SpiderFootPlugin):
             sock.do_handshake()
             rawcert = sock.getpeercert(True)
             cert = ssl.DER_cert_to_PEM_cert(rawcert)
-            m2cert = M2Crypto.X509.load_cert_string(cert)
+            m2cert = M2Crypto.X509.load_cert_string(str(cert).replace('\r', ''))
         except BaseException as x:
             self.sf.info("Unable to SSL-connect to " + fqdn + ": " + str(x))
             return None
