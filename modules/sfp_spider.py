@@ -178,11 +178,13 @@ class sfp_spider(SpiderFootPlugin):
     # Notify listening modules about links
     def linkNotify(self, url, parentEvent=None):
         if self.getTarget().matches(self.sf.urlFQDN(url)):
-            type = "LINKED_URL_INTERNAL"
+            utype = "LINKED_URL_INTERNAL"
         else:
-            type = "LINKED_URL_EXTERNAL"
+            utype = "LINKED_URL_EXTERNAL"
 
-        event = SpiderFootEvent(type, url, self.__name__, parentEvent)
+        if type(url) != unicode:
+            url = unicode(url, "utf-8", errors='replace')
+        event = SpiderFootEvent(utype, url, self.__name__, parentEvent)
         self.notifyListeners(event)
         return event
 
