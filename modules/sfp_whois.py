@@ -61,7 +61,8 @@ class sfp_whois(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         try:
-            data = pythonwhois.net.get_whois_raw(eventData)
+            x = pythonwhois.net.get_whois_raw(eventData)
+            data = unicode('\n'.join(x), 'utf-8', errors='replace')
         except BaseException as e:
             self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
             return None
@@ -71,7 +72,7 @@ class sfp_whois(SpiderFootPlugin):
         else:
             typ = "NETBLOCK_WHOIS"
 
-        evt = SpiderFootEvent(typ, '\n'.join(data), self.__name__, event)
+        evt = SpiderFootEvent(typ, data, self.__name__, event)
         self.notifyListeners(evt)
 
         try:
