@@ -104,7 +104,9 @@ class sfp_duckduckgo(SpiderFootPlugin):
                 name = "AFFILIATE_" + name
 
             for item in ret['RelatedTopics']:
-                cat = item['Text']
+                cat = None
+                if 'Text' in item:
+                    cat = item['Text']
                 if cat == None or cat == "":
                     self.sf.debug("No category text found from DuckDuckGo.")
                     continue
