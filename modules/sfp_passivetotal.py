@@ -79,15 +79,23 @@ def get_hostname(event):
 class PTClient(object):
 
     def __init__(self):
-        self.clients = {
-            'ssl': SslRequest.from_config(),
-            'dns': DnsRequest.from_config(),
-            'enrichment': EnrichmentRequest.from_config(),
-            'whois': WhoisRequest.from_config(),
-            'attribute': AttributeRequest.from_config(),
-        }
+        try:
+            self.clients = {
+                'ssl': SslRequest.from_config(),
+                'dns': DnsRequest.from_config(),
+                'enrichment': EnrichmentRequest.from_config(),
+                'whois': WhoisRequest.from_config(),
+                'attribute': AttributeRequest.from_config(),
+            }
+        except Exception:
+            self.clients = None
 
     def __getattr__(self, attr):
+        if self.clients is None:
+            raise AttributeError('No PassiveTotal clients available, please '
+                                 'configure passivetotal by running `'
+                                 'sudo pip install passivetotal` and by running'
+                                 ' `pt-config setup`')
         for name, client in self.clients.items():
             if hasattr(client, attr):
                 val = getattr(client, attr)
@@ -114,7 +122,10 @@ class sfp_passivetotal(SpiderFootPlugin):
         self.sf = sfc
         self.results = dict()
         self.client = PTClient()
-
+        if self.client is None:
+            self.sf.error('No PassiveTotal clients available, please configure '
+                          'passivetotal by running `sudo pip install '
+                          'passivetotal` and by running `pt-config setup`')
         # Clear out options so data won't persist.
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -125,6 +136,8 @@ class sfp_passivetotal(SpiderFootPlugin):
 
         Pay attention to IP addresses, SSL certs, domain names, etc.
         '''
+        if self.client is None:
+            return []
         return ['*']
 
     def producedEvents(self):
@@ -132,6 +145,8 @@ class sfp_passivetotal(SpiderFootPlugin):
         The events this module produces, to help the end user in selecting
         modules.
         '''
+        if self.client is None:
+            return []
         return ['INTERNET_NAME', 'IP_ADDRESS', 'EMAILADDR',
                 'SSL_CERTIFICATE_RAW']
 
@@ -182,6 +197,8 @@ class sfp_passivetotal(SpiderFootPlugin):
 
     def handleEvent(self, event):
         ''' Handle events sent to the module '''
+        if self.client is None:
+            return None
         srcModuleName = event.module
         strType = '%s::%s' % (event.eventType, event.data)
         self.sf.debug('Received event %s from %s' % (strType, srcModuleName))
@@ -201,12 +218,5 @@ class sfp_passivetotal(SpiderFootPlugin):
                                       event.sourceEvent)
                 self.notifyListeners(evt)
         return None
-
-    def start(self):
-        ''' Defined so that it doesn't depend on other modules for events '''
-        while True:
-            # User aborted scan.
-            if self.checkForStop():
-                break
 
 # End of sfp_passivetotal class
