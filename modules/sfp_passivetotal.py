@@ -23,6 +23,7 @@ from sflib import (
     SpiderFootEvent,
 )
 
+
 IP_TYPES = (
     'AFFILIATE_IPADDR', 'BLACKLISTED_IPADDR', 'BLACKLISTED_AFFILIATE_IPADDR',
     'DEFACED_IPADDR', 'DEFACED_AFFILIATE_IPADDR', 'IP_ADDRESS',
@@ -136,8 +137,6 @@ class sfp_passivetotal(SpiderFootPlugin):
 
         Pay attention to IP addresses, SSL certs, domain names, etc.
         '''
-        if self.client is None:
-            return []
         return ['*']
 
     def producedEvents(self):
@@ -145,8 +144,6 @@ class sfp_passivetotal(SpiderFootPlugin):
         The events this module produces, to help the end user in selecting
         modules.
         '''
-        if self.client is None:
-            return []
         return ['INTERNET_NAME', 'IP_ADDRESS', 'EMAILADDR',
                 'SSL_CERTIFICATE_RAW']
 
