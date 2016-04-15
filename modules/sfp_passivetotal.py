@@ -11,7 +11,9 @@
 # -------------------------------------------------------------------------------
 
 import re
+import traceback
 from datetime import datetime
+
 from netaddr import IPNetwork
 from passivetotal.libs.ssl import SslRequest
 from passivetotal.libs.dns import DnsRequest
@@ -162,8 +164,14 @@ class sfp_passivetotal(SpiderFootPlugin):
         for result in pdns_results:
             if not result.get('lastSeen'):
                 continue
-            result['lastSeen'] = datetime.strptime(result['lastSeen'],
-                                                   '%Y-%m-%d %H:%M:%S')
+            try:
+                result['lastSeen'] = datetime.strptime(result['lastSeen'],
+                                                       '%Y-%m-%d %H:%M:%S')
+            except Exception:
+                self.sf.debug(traceback.format_exc())
+                self.sf.debug('Couldnt convert lastSeen: %s' %
+                              str(result['lastSeen']))
+                continue
             results += [result]
         # Ensure we take the latest results
         results = sorted(results, key=lambda x: x['lastSeen'],
