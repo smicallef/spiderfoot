@@ -40,6 +40,7 @@ NET_TYPES = (
 NAME_TYPES = (
     'AFFILIATE_INTERNET_NAME', 'DEFACED_INTERNET_NAME',
     'DEFACED_AFFILIATE_INTERNET_NAME', 'DOMAIN_NAME', 'MALICIOUS_INTERNET_NAME',
+    'INTERNET_NAME',
 )
 
 URL_TYPES = (
@@ -52,6 +53,7 @@ URL_TYPES = (
 )
 
 RE_URL_DOMAIN = re.compile(r'^https?://([^/]+)')
+RE_IP = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
 
 SSL_TYPES = (
     'SSL_CERTIFICATE_RAW', 'SSL_CERTIFICATE_ISSUED', 'SSL_CERTIFICATE_ISSUER',
@@ -78,6 +80,15 @@ def get_hostname(event):
     if event.eventType in NAME_TYPES:
         return event.data
     return None
+
+
+class CoercedTarget(object):
+
+    def __init__(self, target):
+        self.module = None
+        self.sourceEvent = None
+        self.data = target.targetValue
+        self.eventType = target.targetType
 
 
 class PTClient(object):
@@ -250,6 +261,9 @@ class sfp_passivetotal(SpiderFootPlugin):
         ''' Handle events sent to the module '''
         if self.client is None:
             return None
+        # Mocks out an event if the event is actually the main target
+        if hasattr(event, 'targetValue'):
+            event = CoercedTarget(event)
         srcModuleName = event.module
         strType = '%s::%s' % (event.eventType, event.data)
         self.sf.debug('Received event %s from %s' % (strType, srcModuleName))
