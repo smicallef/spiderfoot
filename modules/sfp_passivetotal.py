@@ -131,6 +131,7 @@ class sfp_passivetotal(SpiderFootPlugin):
         ''' Performs setup of the module '''
         self.sf = sfc
         self.results = dict()
+        self.dedupe = set()
         self.client = PTClient()
         if self.client is None:
             self.sf.error('No PassiveTotal clients available, please configure '
@@ -157,6 +158,8 @@ class sfp_passivetotal(SpiderFootPlugin):
                 'SSL_CERTIFICATE_RAW']
 
     def handlePDNS(self, q):
+        if ('pdns', q) in self.dedupe:
+            return
         pdns_response = self.client.get_passive_dns(query=q)
         pdns_results = pdns_response.get('results', [])
         results = []
@@ -181,20 +184,44 @@ class sfp_passivetotal(SpiderFootPlugin):
             record['resolve']
             for record in results[:self.opts['MAX_PDNS']]
         }
+        for record in results:
+            self.dedupe.add(('pdns', record['resolve']))
         for resolve in resolves:
             yield 'INTERNET_NAME', resolve
 
     def handleOSINT(self, q):
+        if ('osint', q) in self.dedupe:
+            continue
         osint_response = self.client.get_osint(query=q)
         osint_results = osint_response.get('results', [])
         in_report = set()
         for result in osint_results:
             in_report |= set(result.get('inReport', []))
+        for inrep in in_report:
+            self.dedupe.add(('osint', inrep))
         for inrep in list(in_report)[:self.opts['MAX_OSINT']]:
             if re.match('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', inrep):
                 yield 'IP_ADDRESS', inrep
             else:
                 yield 'INTERNET_NAME', inrep
+
+    def handleWhois(self, q):
+        if ('whois', q) in self.dedupe:
+            continue
+        whois_response = self.client.get_whois_details(query=q) or {}
+        for typ in ('admin', 'billing', 'registrant', 'tech'):
+            if whois_response.get(typ, {}).get('email'):
+                email = whois_response[typ]['email']
+                if ('whois', email) in self.dedupe:
+                    continue
+                yield 'EMAILADDR', email
+                self.dedupe.add(('whois', email))
+        if whois_response.get('contactEmail'):
+            email = whois_response['contactEmail']
+            if ('whois', email) in self.dedupe:
+                continue
+            yield 'EMAILADDR', email
+            self.dedupe.add(('whois', email))
 
     def handleIP(self, ip):
         for x in self.handlePDNS(ip):
@@ -210,14 +237,6 @@ class sfp_passivetotal(SpiderFootPlugin):
         # for sha in shas:
         #     yield 'SSL_CERTIFICATE_RAW', sha
         #
-
-    def handleWhois(self, q):
-        whois_response = self.client.get_whois_details(query=q) or {}
-        for typ in ('admin', 'billing', 'registrant', 'tech'):
-            if whois_response.get(typ, {}).get('email'):
-                yield 'EMAILADDR', whois_response[typ]['email']
-        if whois_response.get('contactEmail'):
-            yield 'EMAILADDR', whois_response['contactEmail']
 
     def handleName(self, name):
         for x in self.handlePDNS(name):
