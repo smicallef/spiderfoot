@@ -11,6 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import re
+from datetime import datetime
 from netaddr import IPNetwork
 from passivetotal.libs.ssl import SslRequest
 from passivetotal.libs.dns import DnsRequest
@@ -110,10 +111,16 @@ class sfp_passivetotal(SpiderFootPlugin):
     '''passivetotal:footprint:Performs lookups against the PassiveTotal API'''
 
     # Default options
-    opts = {}
+    opts = {
+        'MAX_PDNS': 5,
+        'MAX_OSINT': 5,
+    }
 
     # Option descriptions
-    optdescs = {}
+    optdescs = {
+        'MAX_PDNS': 'maximum number of PDNS results to use',
+        'MAX_OSINT': 'maximum number of OSINT results to use',
+    }
 
     # Target
     results = dict()
@@ -147,50 +154,70 @@ class sfp_passivetotal(SpiderFootPlugin):
         return ['INTERNET_NAME', 'IP_ADDRESS', 'EMAILADDR',
                 'SSL_CERTIFICATE_RAW']
 
-    def handleIP(self, ip):
-        pdns_response = self.client.get_passive_dns(query=ip)
+    def handlePDNS(self, q):
+        pdns_response = self.client.get_passive_dns(query=q)
         pdns_results = pdns_response.get('results', [])
-        resolves = {record['resolve'] for record in pdns_results}
+        results = []
+        # Convert timestamp to datetime
+        for result in pdns_results:
+            if not result.get('lastSeen'):
+                continue
+            result['lastSeen'] = datetime.strptime(result['lastSeen'],
+                                                   '%Y-%m-%d %H:%M:%S')
+            results += result
+        # Ensure we take the latest results
+        results = sorted(results, key=lambda x: x['lastSeen'],
+                         reverse=True)
+        # Strip out resolves
+        resolves = {
+            record['resolve']
+            for record in results[:self.opts['MAX_PDNS']]
+        }
         for resolve in resolves:
             yield 'INTERNET_NAME', resolve
-        ssl_response = self.client.get_ssl_certificate_history(query=ip)
-        ssl_results = ssl_response.get('results', [])
-        shas = {record['sha1'] for record in ssl_results}
-        for sha in shas:
-            yield 'SSL_CERTIFICATE_RAW', sha
-        osint_response = self.client.get_osint(query=ip)
+
+    def handleOSINT(self, q):
+        osint_response = self.client.get_osint(query=q)
         osint_results = osint_response.get('results', [])
         in_report = set()
         for result in osint_results:
             in_report |= set(result.get('inReport', []))
-        for inrep in in_report:
+        for inrep in in_report[:self.opts['MAX_OSINT']]:
             if re.match('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', inrep):
                 yield 'IP_ADDRESS', inrep
             else:
                 yield 'INTERNET_NAME', inrep
 
-    def handleName(self, name):
-        pdns_response = self.client.get_passive_dns(query=name)
-        pdns_results = pdns_response.get('results', [])
-        resolves = {record['resolve'] for record in pdns_results}
-        for resolve in resolves:
-            yield 'INTERNET_NAME', resolve
-        whois_response = self.client.get_whois_details(query=name) or {}
+    def handleIP(self, ip):
+        for x in self.handlePDNS(ip):
+            yield x
+        for x in self.handleOSINT(ip):
+            yield x
+        # XXX Disabled since SSL_CERTIFICATE_RAW might be inappropriate for the
+        # sha1 fingerprint of the cert.
+        #
+        # ssl_response = self.client.get_ssl_certificate_history(query=ip)
+        # ssl_results = ssl_response.get('results', [])
+        # shas = {record['sha1'] for record in ssl_results}
+        # for sha in shas:
+        #     yield 'SSL_CERTIFICATE_RAW', sha
+        #
+
+    def handleWhois(self, q):
+        whois_response = self.client.get_whois_details(query=q) or {}
         for typ in ('admin', 'billing', 'registrant', 'tech'):
             if whois_response.get(typ, {}).get('email'):
                 yield 'EMAILADDR', whois_response[typ]['email']
         if whois_response.get('contactEmail'):
             yield 'EMAILADDR', whois_response['contactEmail']
-        osint_response = self.client.get_osint(query=name)
-        osint_results = osint_response.get('results', [])
-        in_report = set()
-        for result in osint_results:
-            in_report |= set(result.get('inReport', []))
-        for inrep in in_report:
-            if re.match('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', inrep):
-                yield 'IP_ADDRESS', inrep
-            else:
-                yield 'INTERNET_NAME', inrep
+
+    def handleName(self, name):
+        for x in self.handlePDNS(name):
+            yield x
+        for x in self.handleOSINT(name):
+            yield x
+        for x in self.handleWhois(name):
+            yield x
 
     def handleEvent(self, event):
         ''' Handle events sent to the module '''
@@ -203,14 +230,14 @@ class sfp_passivetotal(SpiderFootPlugin):
         host = get_hostname(event)
         if ips:
             for ip in ips:
-                self.sf.debug('Found IP %s from %s' % (ip, strType))
                 for typ, data in self.handleIP(ip):
+                    self.sf.debug('Found %s::%s from %s' % (typ, data, ip))
                     evt = SpiderFootEvent(typ, data, self.__name__,
                                           event.sourceEvent)
                     self.notifyListeners(evt)
         if host:
-            self.sf.debug('Found name %s from %s' % (host, strType))
             for typ, data in self.handleName(host):
+                self.sf.debug('Found %s::%s from %s' % (typ, data, host))
                 evt = SpiderFootEvent(typ, data, self.__name__,
                                       event.sourceEvent)
                 self.notifyListeners(evt)
