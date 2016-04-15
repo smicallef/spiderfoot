@@ -191,7 +191,7 @@ class sfp_passivetotal(SpiderFootPlugin):
 
     def handleOSINT(self, q):
         if ('osint', q) in self.dedupe:
-            continue
+            return
         osint_response = self.client.get_osint(query=q)
         osint_results = osint_response.get('results', [])
         in_report = set()
@@ -207,7 +207,7 @@ class sfp_passivetotal(SpiderFootPlugin):
 
     def handleWhois(self, q):
         if ('whois', q) in self.dedupe:
-            continue
+            return
         whois_response = self.client.get_whois_details(query=q) or {}
         for typ in ('admin', 'billing', 'registrant', 'tech'):
             if whois_response.get(typ, {}).get('email'):
@@ -219,7 +219,7 @@ class sfp_passivetotal(SpiderFootPlugin):
         if whois_response.get('contactEmail'):
             email = whois_response['contactEmail']
             if ('whois', email) in self.dedupe:
-                continue
+                return
             yield 'EMAILADDR', email
             self.dedupe.add(('whois', email))
 
