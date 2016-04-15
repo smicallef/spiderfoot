@@ -164,7 +164,7 @@ class sfp_passivetotal(SpiderFootPlugin):
                 continue
             result['lastSeen'] = datetime.strptime(result['lastSeen'],
                                                    '%Y-%m-%d %H:%M:%S')
-            results += result
+            results += [result]
         # Ensure we take the latest results
         results = sorted(results, key=lambda x: x['lastSeen'],
                          reverse=True)
@@ -182,7 +182,7 @@ class sfp_passivetotal(SpiderFootPlugin):
         in_report = set()
         for result in osint_results:
             in_report |= set(result.get('inReport', []))
-        for inrep in in_report[:self.opts['MAX_OSINT']]:
+        for inrep in list(in_report)[:self.opts['MAX_OSINT']]:
             if re.match('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', inrep):
                 yield 'IP_ADDRESS', inrep
             else:
