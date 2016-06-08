@@ -98,7 +98,7 @@ class sfp_junkfiles(SpiderFootPlugin):
                 hashStr = hashlib.sha1(res['content'].encode('raw_unicode_escape')).hexdigest()
                 self.contentHashes.append(hashStr)  
                 if self.opts['skipfake']:
-                    skiphosts.append(host)
+                    self.skiphosts.append(host)
                     return None
 
             self.hosts.append(host)
