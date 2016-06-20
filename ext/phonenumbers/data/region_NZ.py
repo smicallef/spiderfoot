@@ -1,0 +1,26 @@
+"""Auto-generated file, do not edit by hand. NZ metadata"""
+from ..phonemetadata import NumberFormat, PhoneNumberDesc, PhoneMetadata
+
+PHONE_METADATA_NZ = PhoneMetadata(id='NZ', country_code=64, international_prefix='0(?:0|161)',
+    general_desc=PhoneNumberDesc(national_number_pattern='6[235-9]\\d{6}|[2-57-9]\\d{7,10}', possible_number_pattern='\\d{7,11}'),
+    fixed_line=PhoneNumberDesc(national_number_pattern='(?:3[2-79]|[49][2-9]|6[235-9]|7[2-57-9])\\d{6}|24099\\d{3}', possible_number_pattern='\\d{7,8}', example_number='32345678'),
+    mobile=PhoneNumberDesc(national_number_pattern='2(?:[028]\\d{7,8}|1(?:[03]\\d{5,7}|[12457]\\d{5,6}|[689]\\d{5})|[79]\\d{7})', possible_number_pattern='\\d{8,10}', example_number='211234567'),
+    toll_free=PhoneNumberDesc(national_number_pattern='508\\d{6,7}|80\\d{6,8}', possible_number_pattern='\\d{8,10}', example_number='800123456'),
+    premium_rate=PhoneNumberDesc(national_number_pattern='90\\d{7,9}', possible_number_pattern='\\d{9,11}', example_number='900123456'),
+    shared_cost=PhoneNumberDesc(national_number_pattern='NA', possible_number_pattern='NA'),
+    personal_number=PhoneNumberDesc(national_number_pattern='70\\d{7}', possible_number_pattern='\\d{9}', example_number='701234567'),
+    voip=PhoneNumberDesc(national_number_pattern='NA', possible_number_pattern='NA'),
+    pager=PhoneNumberDesc(national_number_pattern='[28]6\\d{6,7}', possible_number_pattern='\\d{8,9}', example_number='26123456'),
+    uan=PhoneNumberDesc(national_number_pattern='NA', possible_number_pattern='NA'),
+    voicemail=PhoneNumberDesc(national_number_pattern='NA', possible_number_pattern='NA'),
+    no_international_dialling=PhoneNumberDesc(national_number_pattern='NA', possible_number_pattern='NA'),
+    preferred_international_prefix='00',
+    national_prefix='0',
+    national_prefix_for_parsing='0',
+    number_format=[NumberFormat(pattern='([34679])(\\d{3})(\\d{4})', format='\\1-\\2 \\3', leading_digits_pattern=['[346]|7[2-57-9]|9[1-9]'], national_prefix_formatting_rule='0\\1'),
+        NumberFormat(pattern='(24099)(\\d{3})', format='\\1 \\2', leading_digits_pattern=['240', '2409', '24099'], national_prefix_formatting_rule='0\\1'),
+        NumberFormat(pattern='(\\d{2})(\\d{3})(\\d{3})', format='\\1 \\2 \\3', leading_digits_pattern=['21'], national_prefix_formatting_rule='0\\1'),
+        NumberFormat(pattern='(\\d{2})(\\d{3})(\\d{3,5})', format='\\1 \\2 \\3', leading_digits_pattern=['2(?:1[1-9]|[69]|7[0-35-9])|70|86'], national_prefix_formatting_rule='0\\1'),
+        NumberFormat(pattern='(2\\d)(\\d{3,4})(\\d{4})', format='\\1 \\2 \\3', leading_digits_pattern=['2[028]'], national_prefix_formatting_rule='0\\1'),
+        NumberFormat(pattern='(\\d{3})(\\d{3})(\\d{3,4})', format='\\1 \\2 \\3', leading_digits_pattern=['2(?:10|74)|5|[89]0'], national_prefix_formatting_rule='0\\1')],
+    mobile_number_portable_region=True)

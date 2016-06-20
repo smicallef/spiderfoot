@@ -144,6 +144,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('NETBLOCK_WHOIS', 'Netblock Whois', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('OPERATING_SYSTEM', 'Operating System', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PASTESITE_CONTENT', 'Paste Site Content', 1, 'DATA')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PHONE_NUMBER', 'Phone Number', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PGP_KEY', 'PGP Public Key', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_DNS', 'Name Server (DNS ''NS'' Records)', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0, 'ENTITY')",
