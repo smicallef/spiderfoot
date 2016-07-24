@@ -222,6 +222,20 @@ malchecks = {
         'url': 'https://www.packetmail.net/iprep_ramnode.txt',
         'regex': '{0};.*'
     },
+    'bitcash.cz Blacklist': {
+        'id': 'bitcash',
+        'type': 'list',
+        'checks': [ 'ip' ],
+        'url': 'http://bitcash.cz/misc/log/blacklist',
+        'regex': '{0}\s+.*'
+    },
+    'maxmind.com Open Proxy List': {
+        'id': 'maxmind',
+        'type': 'list',
+        'checks': [ 'ip' ],
+        'url': 'https://www.maxmind.com/en/proxy-detection-sample-list',
+        'regex': '.*proxy-detection-sample/{0}\".*'
+    },
     'cybercrime-tracker.net Malicious Submissions': {
         'id': 'cybercrime',
         'type': 'query',
@@ -275,6 +289,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusesslblip': True,
         'googledomain': True,
         'googleasn': True,
+        'bitcash': True,
+        'maxmind': True,
         'malwaredomainlistdomain': True,
         'malwaredomainlistip': True,
         'malwaredomains': True,
@@ -319,6 +335,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusesslblip': "Enable abuse.ch SSL Backlist IP check?",
         'googledomain': "Enable Google Safe Browsing domain check?",
         'googleasn': "Enable Google Safe Browsing ASN check?",
+        'bitcash': "Enable bitcash.cz Blocklist check?",
+        'maxmind': "Enable maxmind.com Open Proxy list check?",
         'malwaredomainlistdomain': "Enable malwaredomainlist.com domain check?",
         'malwaredomainlistip': "Enable malwaredomainlist.com IP check?",
         'malwaredomains': "Enable malwaredomains.com Domain check?",
