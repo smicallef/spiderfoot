@@ -96,6 +96,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_DESCRIPTION_CATEGORY', 'Affiliate Description - Category', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_DESCRIPTION_ABSTRACT', 'Affiliate Description - Abstract', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AMAZON_S3_BUCKET', 'Amazon S3 Bucket', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BGP_AS_OWNER', 'BGP AS Ownership', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BGP_AS_MEMBER', 'BGP AS Membership', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BGP_AS_PEER', 'BGP AS Peer', 0, 'ENTITY')",
