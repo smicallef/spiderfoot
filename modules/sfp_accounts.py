@@ -207,7 +207,7 @@ sites = [
 ]
 
 class sfp_accounts(SpiderFootPlugin):
-    """Accounts:Footprint:Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc."""
+    """Accounts:Footprint,Passive:Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc."""
 
     # Default options
     opts = {

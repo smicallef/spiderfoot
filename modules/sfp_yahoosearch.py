@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_yahoosearch(SpiderFootPlugin):
-    """Yahoo:Footprint,Investigate:Some light Yahoo scraping to identify sub-domains and links."""
+    """Yahoo:Footprint,Investigate,Passive:Some light Yahoo scraping to identify sub-domains and links."""
 
     # Default options
     opts = {

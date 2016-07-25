@@ -14,7 +14,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_coderepo(SpiderFootPlugin):
-    """Code Repos:Footprint:Identify associated public code repositories (Github only for now)."""
+    """Code Repos:Footprint,Passive:Identify associated public code repositories (Github only for now)."""
 
     # Default options
     opts = {

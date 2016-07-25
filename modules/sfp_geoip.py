@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_geoip(SpiderFootPlugin):
-    """GeoIP:Footprint,Investigate:Identifies the physical location of IP addresses identified."""
+    """GeoIP:Footprint,Investigate,Passive:Identifies the physical location of IP addresses identified."""
 
     # Default options
     opts = {}

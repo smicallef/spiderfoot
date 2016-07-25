@@ -14,7 +14,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_bingsearch(SpiderFootPlugin):
-    """Bing:Footprint,Investigate:Some light Bing scraping to identify sub-domains and links."""
+    """Bing:Footprint,Investigate,Passive:Some light Bing scraping to identify sub-domains and links."""
 
     # Default options
     opts = {

@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_defaced(SpiderFootPlugin):
-    """Defacement Check:Investigate:Check if an IP or domain appears on the zone-h.org defacement archive."""
+    """Defacement Check:Investigate,Passive:Check if an IP or domain appears on the zone-h.org defacement archive."""
 
     # Default options
     opts = {

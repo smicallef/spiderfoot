@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_virustotal(SpiderFootPlugin):
-    """VirusTotal:Investigate:Obtain information from VirusTotal about identified IP addresses."""
+    """VirusTotal:Investigate,Passive:Obtain information from VirusTotal about identified IP addresses."""
 
     # Default options
     opts = {
