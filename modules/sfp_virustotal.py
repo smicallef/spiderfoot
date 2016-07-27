@@ -69,7 +69,7 @@ class sfp_virustotal(SpiderFootPlugin):
         return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
                 "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-                "MALICIOUS_SUBNET"]
+                "MALICIOUS_SUBNET", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME"]
 
     def query(self, qry):
         ret = None
@@ -181,5 +181,25 @@ class sfp_virustotal(SpiderFootPlugin):
                 e = SpiderFootEvent(evt, "VirusTotal [" + addr + "]\n" +
                                     infourl, self.__name__, event)
                 self.notifyListeners(e)
+
+            # Treat siblings as affiliates if they are of the original target, otherwise
+            # they are additional hosts within the target.
+            if 'domain_siblings' in info:
+                if eventName in [ "IP_ADDRESS", "INTERNET_NAME"]:
+                    for s in info['domain_siblings']:
+                        if self.getTarget().matches(s):
+                            if s not in self.results:
+                                e = SpiderFootEvent("INTERNET_NAME", s, self.__name__, event)
+                                self.notifyListeners(e)
+                        else:
+                            if s not in self.results:
+                                e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", s, self.__name__, event)
+                                self.notifyListeners(e)
+                    
+            if 'subdomains' in info and eventName == "INTERNET_NAME":
+                for n in info['subdomains']:
+                    if n not in self.results:
+                        e = SpiderFootEvent("INTERNET_NAME", n, self.__name__, event)
+                        self.notifyListeners(e)
 
 # End of sfp_virustotal class
