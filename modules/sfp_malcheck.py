@@ -144,7 +144,7 @@ malchecks = {
         'type': 'query',
         'checks': ['ip'],
         'url': 'https://isc.sans.edu/api/ip/{0}',
-        'badregex': ['.*<attacks>.*'],
+        'badregex': ['.*\<attacks\>.*'],
         'goodregex': []
     },
     'AlienVault IP Reputation Database': {
@@ -268,9 +268,23 @@ malchecks = {
     'badips.com IP Reptutation List': {
         'id': 'badips',
         'type': 'list',
-        'checks': ['ip'],
+        'checks': ['ip', 'domain'],
         'url': 'https://www.badips.com/get/list/any/1?age=24h',
         'regex': '{0}'
+    },
+    'VXVault Malicious URL List': {
+        'id': 'vxvault',
+        'type': 'list',
+        'checks': ['ip', 'domain'],
+        'url': 'http://vxvault.net/URL_List.php',
+        'regex': '.*\/{0}/.*'
+    },
+    'VOIPBL Publicly Accessible PBX List': {
+        'id': 'voipbl',
+        'type': 'list',
+        'checks': ['ip', 'netblock'],
+        'url': 'http://www.voipbl.org/update',
+        'regex': '{0}\/'
     }
 }
 
@@ -314,6 +328,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'nothinkssh': True,
         'nothinkirc': True,
         'nothinkhttp': True,
+        'vxvault': True,
+        'voipbl': True,
         'packetmail': True,
         'packetmailcarisirt': True,
         'packetmailramnode': True,
@@ -356,6 +372,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'alienvault': 'Enable AlienVault IP Reputation check?',
         'openbl': 'Enable OpenBL.org Blacklist check?',
         'totalhash': 'Enable totalhash.com check?',
+        'vxvault': 'Enable VXVault Malicious URL check (checks hostnames and IPs)?',
+        'voipbl': 'Enable checking for publicly accessible PBXs in VOIPBL?',
         'threatexpert': 'Enable threatexpert.com check?',
         'nothinkssh': 'Enable Nothink.org SSH attackers check?',
         'nothinkirc': 'Enable Nothink.org Malware DNS traffic check?',
