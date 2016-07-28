@@ -842,7 +842,6 @@ class SpiderFoot:
                 link = linkTuple[1]
                 linkl = link.lower()
                 absLink = None
-                self.debug("link tuple: " + str(linkTuple))
 
                 if len(link) < 1:
                     continue
