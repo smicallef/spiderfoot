@@ -144,7 +144,7 @@ malchecks = {
         'type': 'query',
         'checks': ['ip'],
         'url': 'https://isc.sans.edu/api/ip/{0}',
-        'badregex': ['.*\<attacks\>.*'],
+        'badregex': ['.*<attacks>\d+</attacks>.*'],
         'goodregex': []
     },
     'AlienVault IP Reputation Database': {
@@ -290,7 +290,7 @@ malchecks = {
 
 
 class sfp_malcheck(SpiderFootPlugin):
-    """Malicious Check:Investigate,Passive:Check if a website, IP or ASN is considered malicious by various sources. Includes TOR exit nodes and open proxies."""
+    """Malicious Check:Investigate,Passive:Blacklists:slow:Check if a website, IP or ASN is considered malicious by various sources. Includes TOR exit nodes and open proxies."""
 
     # Default options
     opts = {
@@ -424,14 +424,14 @@ class sfp_malcheck(SpiderFootPlugin):
         if len(badregex) > 0:
             for rx in badregex:
                 if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be bad")
+                    self.sf.debug("Found to be bad against bad regex: " + rx)
                     return True
 
         # Finally, check for good indicators
         if len(goodregex) > 0:
             for rx in goodregex:
                 if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be good")
+                    self.sf.debug("Found to be good againt good regex: " + rx)
                     return False
 
         # If nothing was matched, reply None

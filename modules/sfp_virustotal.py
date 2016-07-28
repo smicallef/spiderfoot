@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_virustotal(SpiderFootPlugin):
-    """VirusTotal:Investigate,Passive:Obtain information from VirusTotal about identified IP addresses."""
+    """VirusTotal:Investigate,Passive:Blacklists:apikey:Obtain information from VirusTotal about identified IP addresses."""
 
     # Default options
     opts = {
@@ -152,7 +152,7 @@ class sfp_virustotal(SpiderFootPlugin):
             info = self.query(addr)
             if info is None:
                 continue
-            if 'detected_urls' in info:
+            if len(info.get('detected_urls', [])) > 0:
                 self.sf.info("Found VirusTotal URL data for " + addr)
                 if eventName in ["IP_ADDRESS"] or eventName.startswith("NETBLOCK_"):
                     evt = "MALICIOUS_IPADDR"
