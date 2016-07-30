@@ -15,7 +15,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 import re
 
 class sfp_darksearch(SpiderFootPlugin):
-    """Darknet:Footprint,Investigate:Search Tor 'Onion City' search engine for mentions of the target domain."""
+    """Darknet:Footprint,Investigate:Search Engines::Search Tor 'Onion City' search engine for mentions of the target domain."""
 
     # Default options
     opts = {

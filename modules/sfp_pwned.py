@@ -14,7 +14,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pwned(SpiderFootPlugin):
-    """Pwned Password:Footprint,Investigate,Passive:Check Have I Been Pwned? for hacked accounts identified."""
+    """Pwned Password:Footprint,Investigate,Passive:Search Engines:errorprone:Check Have I Been Pwned? for hacked accounts identified."""
 
     # Default options
     opts = { 

@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_s3bucket(SpiderFootPlugin):
-    """S3 Bucket Finder:Footprint,Passive:Search for potential S3 buckets associated with the target."""
+    """S3 Bucket Finder:Footprint,Passive:Networking::Search for potential S3 buckets associated with the target."""
 
     # Default options
     opts = {

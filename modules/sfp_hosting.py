@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_hosting(SpiderFootPlugin):
-    """Hosting Providers:Footprint,Investigate,Passive:Find out if any IP addresses identified fall within known 3rd party hosting ranges, e.g. Amazon, Azure, etc."""
+    """Hosting Providers:Footprint,Investigate,Passive:Networking::Find out if any IP addresses identified fall within known 3rd party hosting ranges, e.g. Amazon, Azure, etc."""
 
     # Default options
     opts = {

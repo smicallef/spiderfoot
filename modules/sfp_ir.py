@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_ir(SpiderFootPlugin):
-    """Internet Registries:Footprint,Investigate,Passive:Queries Internet Registries to identify netblocks and other info."""
+    """Internet Registries:Footprint,Investigate,Passive:Networking::Queries Internet Registries to identify netblocks and other info."""
 
     # Default options
     opts = {}

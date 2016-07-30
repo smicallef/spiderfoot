@@ -20,7 +20,7 @@ from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_xforce(SpiderFootPlugin):
-    """XForce Exchange:Investigate,Passive:Obtain information from IBM X-Force Exchange"""
+    """XForce Exchange:Investigate,Passive:Blacklists:apikey:Obtain information from IBM X-Force Exchange"""
 
     # Default options
     opts = {

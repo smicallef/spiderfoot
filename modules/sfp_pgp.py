@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_pgp(SpiderFootPlugin):
-    """PGP Key Look-up:Footprint,Investigate,Passive:Look up e-mail addresses in PGP public key servers."""
+    """PGP Key Look-up:Footprint,Investigate,Passive:Social::Look up e-mail addresses in PGP public key servers."""
 
     results = list()
 

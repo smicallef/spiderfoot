@@ -20,7 +20,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_historic(SpiderFootPlugin):
-    """Historic Files:Footprint:Identifies historic versions of interesting files/pages from the Wayback Machine."""
+    """Historic Files:Footprint:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
 
     # Default options
     opts = {

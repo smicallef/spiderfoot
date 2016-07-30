@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_whois(SpiderFootPlugin):
-    """Whois:Footprint,Investigate,Passive:Perform a WHOIS look-up on domain names and owned netblocks."""
+    """Whois:Footprint,Investigate,Passive:Networking::Perform a WHOIS look-up on domain names and owned netblocks."""
 
     # Default options
     opts = {

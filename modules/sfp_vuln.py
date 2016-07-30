@@ -17,7 +17,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_vuln(SpiderFootPlugin):
-    """Vulnerable:Footprint,Investigate,Passive:Check external vulnerability scanning services (XSSposed.org, punkspider.org) to see if the target is listed."""
+    """Vulnerable:Footprint,Investigate,Passive:Blacklists:errorprone:Check external vulnerability scanning services (XSSposed.org, punkspider.org) to see if the target is listed."""
 
     # Default options
     opts = {
@@ -119,7 +119,7 @@ class sfp_vuln(SpiderFootPlugin):
             self.sf.debug("No content returned from punkspider.org")
             return None
 
-        print "CONTENT: " + res['content']
+        #print "CONTENT: " + res['content']
 
         if "timestamp\":" in res['content']:
             """ Expected:
@@ -128,7 +128,7 @@ class sfp_vuln(SpiderFootPlugin):
 
             try:
                 data = json.loads(res['content'])
-                print "DATA: " + str(data)
+                #print "DATA: " + str(data)
                 for rec in data['output']['domainSummaryDTOs']:
                     if self.opts['cutoff'] == 0:
                         ret.append("From Punkspider.org: " + rec['url'] + "\n<SFURL>" + base.format(qry) + "</SFURL>")

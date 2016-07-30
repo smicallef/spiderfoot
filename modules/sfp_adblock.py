@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_adblock(SpiderFootPlugin):
-    """AdBlock Check:Investigate,Passive:Check if linked pages would be blocked by AdBlock Plus."""
+    """AdBlock Check:Investigate,Passive:Blacklists:errorprone:Check if linked pages would be blocked by AdBlock Plus."""
 
     # Default options
     opts = {
