@@ -670,7 +670,7 @@ class SpiderFootDb:
             SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
             ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, '0' \
             FROM tbl_scan_instance i  WHERE i.guid NOT IN ( \
-            SELECT distinct scan_instance_id FROM tbl_scan_results) \
+            SELECT distinct scan_instance_id FROM tbl_scan_results WHERE type <> 'ROOT') \
             ORDER BY started DESC"
         try:
             self.dbh.execute(qry)
