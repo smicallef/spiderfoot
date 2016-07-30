@@ -785,6 +785,9 @@ class SpiderFoot:
         returnLinks = dict()
         urlsRel = []
 
+        if type(domains) is str:
+            domains = [domains]
+
         tags = {
                     'a': 'href',
                     'img': 'src',
@@ -796,7 +799,7 @@ class SpiderFoot:
         }
 
         try:
-            proto = parseLinks.split(":")[0]
+            proto = url.split(":")[0]
         except BaseException as e:
             proto = "http"
         if proto == None:
@@ -827,13 +830,13 @@ class SpiderFoot:
                                         re.IGNORECASE)
                     urlsRel = urlsRel + regRel.findall(data)
                 except Exception as e:
-                    self.error("Error applying regex2 to: " + data)
+                    self.error("Error applying regex2 to: " + data + "(" + str(e) + ")", False)
                 try:
                     # Some links are sitting inside a tag, e.g. Google's use of <cite>
-                    regRel = re.compile('(>)(' + domain + '/.[^<]+)', re.IGNORECASE)
+                    regRel = re.compile('([>\"])([a-zA-Z0-9\-\.]+\.' + domain + '/.[^<\"]+)', re.IGNORECASE)
                     urlsRel = urlsRel + regRel.findall(data)
                 except Exception as e:
-                    self.error("Error applying regex3 to: " + data)
+                    self.error("Error applying regex3 to: " + data + "(" + str(e) + ")", False)
 
             # Loop through all the URLs/links found
             for linkTuple in urlsRel:
