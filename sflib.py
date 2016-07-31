@@ -833,7 +833,7 @@ class SpiderFoot:
                     self.error("Error applying regex2 to: " + data + "(" + str(e) + ")", False)
                 try:
                     # Some links are sitting inside a tag, e.g. Google's use of <cite>
-                    regRel = re.compile('([>\"])([a-zA-Z0-9\-\.]+\.' + domain + '/.[^<\"]+)', re.IGNORECASE)
+                    regRel = re.compile('([>\"])([a-zA-Z0-9\-\.\:\/]+\.' + domain + '/.[^<\"]+)', re.IGNORECASE)
                     urlsRel = urlsRel + regRel.findall(data)
                 except Exception as e:
                     self.error("Error applying regex3 to: " + data + "(" + str(e) + ")", False)

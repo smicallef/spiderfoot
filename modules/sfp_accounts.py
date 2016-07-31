@@ -116,10 +116,8 @@ class sfp_accounts(SpiderFootPlugin):
         i = 0
         t = []
 
-        for site in self.sites['sites']:
+        for site in siteList:
             if self.checkForStop():
-                return None
-            if 'check_uri' not in site:
                 return None
 
             self.sf.info("Spawning thread to check site: " + site['name'] + \
@@ -150,7 +148,7 @@ class sfp_accounts(SpiderFootPlugin):
         siteList = list()
 
         for site in self.sites['sites']:
-            if not site['valid']:
+            if not site['valid'] or 'check_uri' not in site:
                 continue
             if i >= self.opts['maxthreads']:
                 data = self.threadSites(name, siteList)

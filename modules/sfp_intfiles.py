@@ -122,31 +122,33 @@ class sfp_intfiles(SpiderFootPlugin):
                 if self.checkForStop():
                     return None
 
-                # Submit the gresults for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
-
                 if self.opts['searchengine'].lower() == "yahoo":
-                    res = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner, pages[page], 0)
+                    res = re.sub("RU=(.*?)/RK=", self.yahooCleaner, pages[page])
                 else:
                     res = pages[page]
+
+                # Submit the gresults for analysis
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res,
+                                      self.__name__, event)
+                self.notifyListeners(evt)
 
                 links = self.sf.parseLinks(page, res, eventData)
                 if len(links) == 0:
                     continue
 
-                for link in links:
+                for link in links.keys():
                     if link in self.results:
                         continue
-                    else:
-                        self.results.append(link)
 
-                    if self.sf.urlFQDN(link).endswith(eventData) and \
-                                            "." + fileExt.lower() in link.lower():
-                        self.sf.info("Found an interesting file: " + link)
-                        evt = SpiderFootEvent("INTERESTING_FILE", link,
-                                              self.__name__, event)
-                        self.notifyListeners(evt)
+                    if self.sf.urlFQDN(link).endswith(eventData):
+                        # This for loop might seem redundant but sometimes search engines return results
+                        # for other file extensions.
+                        for fe in self.opts['fileexts']:
+                            if "." + fe.lower() in link.lower():
+                                self.sf.info("Found an interesting file: " + link)
+                                evt = SpiderFootEvent("INTERESTING_FILE", link,
+                                                      self.__name__, event)
+                                self.notifyListeners(evt)
+                                self.results.append(link)
 
 # End of sfp_intfiles class
