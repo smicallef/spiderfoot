@@ -82,7 +82,7 @@ class sfp_cymon(SpiderFootPlugin):
 
         if res['content'] is None:
             self.sf.info("No Cymon info found for " + qry)
-            return None
+            return {} # return {} instead of None ; by bbaugnies  
 
         try:
             info = json.loads(res['content'])
