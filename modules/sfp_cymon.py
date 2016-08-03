@@ -20,7 +20,7 @@ from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_cymon(SpiderFootPlugin):
-    """Cymon:Investigate,Intelligence:Obtain information from Cymon, a tracker of open-source security reports."""
+    """Cymon:Investigate,Passive:Search Engines:apikey:Obtain information from Cymon, a tracker of open-source security reports."""
 
     # Default options
     opts = {

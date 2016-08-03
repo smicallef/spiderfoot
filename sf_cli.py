@@ -24,8 +24,8 @@ Adjust
 '''
 
 sf_host = "192.168.218.21"
-sf_port = "5001"
-sf_usecase = "Intelligence"
+sf_port = "3000"
+sf_usecase = "Passive"
 verbose = False
 
 sf_scanname = sys.argv[1]

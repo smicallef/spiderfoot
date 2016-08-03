@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sansisc(SpiderFootPlugin):
-    """SANS_ISC:Investigate,Intelligence:Obtain information from SANS ISC about identified IP addresses."""
+    """SANS_ISC:Investigate,Passive:Blacklists::Obtain information from SANS ISC about identified IP addresses."""
 
     # Default options
     opts = {

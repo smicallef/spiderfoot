@@ -195,7 +195,11 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_BANNER', 'Web Server', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_HTTPHEADERS', 'HTTP Headers', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_STRANGEHEADER', 'Non-Standard HTTP Header', 0, 'DATA')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0, 'DESCRIPTOR')"
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('URL_MALICIOUS', 'URL hosting malicious data', 0, 'SUBENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DNS_PASSIVE', 'Passive DNS data', 0, 'SUBENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('FILE_DETECTED', 'Hash of detected malicious file', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('FILE_UNDETECTED', 'Hash of undetected malicious file', 0, 'DESCRIPTOR')"
     ]
 
     def __init__(self, opts):

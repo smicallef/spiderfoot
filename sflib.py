@@ -1618,6 +1618,11 @@ class SpiderFootEvent(object):
         self.__id = self.eventType + str(self.generated) + self.module + \
                     str(random.randint(0, 99999999))
 
+    # Update the generated timestamp with the value found 
+    # in the external resource
+    def updateGenerated(self, value):
+        self.generated = value
+        
     # Unique hash of this event
     def getHash(self):
         if self.eventType == "ROOT":

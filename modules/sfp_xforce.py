@@ -13,9 +13,9 @@
 
 import json
 import base64
-from datetime import datetime
+#from datetime import datetime
 import time
-
+import datetime
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -25,12 +25,14 @@ class sfp_xforce(SpiderFootPlugin):
     # Default options
     opts = {
         "xforce_api_key": "",
+        "xforce_pdns": True,        
         "xforce_password": "",
         "age_limit_days": 30
     }
 
     # Option descriptions
     optdescs = {
+        "xforce_pdns": "Include passive DNS from XForce",    
         "xforce_api_key": "The X-Force Exchange API Key",
         "xforce_password": "The X-Force Exchange API Password",
         "age_limit_days": "Ignore any records older than this many days"
@@ -68,7 +70,7 @@ class sfp_xforce(SpiderFootPlugin):
     def query(self, qry, querytype):
         ret = None
 
-        if querytype not in ["ipr/malware", "ipr/history"]:
+        if querytype not in ["ipr/malware", "ipr/history", "resolve"]:
             querytype = "ipr/malware"
 
         xforce_url = "https://api.xforce.ibmcloud.com"
@@ -141,7 +143,7 @@ class sfp_xforce(SpiderFootPlugin):
                         reasonDescription = result.get("reasonDescription", "")
                         created = result.get("created", "")
                         # 2014-11-06T10:45:00.000Z
-                        created_dt = datetime.strptime(created, '%Y-%m-%dT%H:%M:%S.000Z')
+                        created_dt = datetime.datetime.strptime(created, '%Y-%m-%dT%H:%M:%S.000Z')
                         created_ts = int(time.mktime(created_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                         if created_ts < age_limit_ts:
@@ -192,4 +194,29 @@ class sfp_xforce(SpiderFootPlugin):
                         e = SpiderFootEvent(evtType, entry, self.__name__, event)
                         self.notifyListeners(e)
 
+            if self.opts['xforce_pdns']:
+                rec = self.query(addr, "resolve")
+                if rec is not None:
+                    rec_passive = rec.get("Passive", None)
+                    if rec_passive is not None:
+                        rec_precords = rec_passive.get("records", None)
+                        if rec_precords is not None:
+                            self.sf.info("Found PDNS results in XForce")
+                            for result in rec_precords:
+                                print "\n ", result
+                                value = result.get("value", "")
+                                rtype = result.get("recordType", "")
+                                lastseen = result.get("last", "")
+                                firstseen = result.get("first", "")
+                                evt = "DNS_PASSIVE"
+                                entry = value + infield_sep + \
+                                            firstseen + infield_sep + \
+                                            lastseen + infield_sep + \
+                                            rtype
+                                e = SpiderFootEvent(evt, entry, self.__name__, event)
+                                # Timeformats sometimes change, this cuts out what we need
+                                lastseen = lastseen[0:19]
+                                lastseen = time.mktime(datetime.datetime.strptime(lastseen, "%Y-%m-%dT%H:%M:%S").timetuple())
+                                e.updateGenerated(lastseen)
+                                self.notifyListeners(e)
 # End of sfp_xforce class
