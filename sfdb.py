@@ -96,6 +96,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_DESCRIPTION_CATEGORY', 'Affiliate Description - Category', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_DESCRIPTION_ABSTRACT', 'Affiliate Description - Abstract', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AMAZON_S3_BUCKET', 'Amazon S3 Bucket', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BGP_AS_OWNER', 'BGP AS Ownership', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BGP_AS_MEMBER', 'BGP AS Membership', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BGP_AS_PEER', 'BGP AS Peer', 0, 'ENTITY')",
@@ -134,6 +135,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_ASN', 'Malicious AS', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_IPADDR', 'Malicious IP Address', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_COHOST', 'Malicious Co-Hosted Site', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_EMAILADDR', 'Malicious E-mail Address', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_INTERNET_NAME', 'Malicious Internet Name', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_AFFILIATE_INTERNET_NAME', 'Malicious Affiliate', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_AFFILIATE_IPADDR', 'Malicious Affiliate IP Address', 0, 'DESCRIPTOR')",
@@ -144,6 +146,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('NETBLOCK_WHOIS', 'Netblock Whois', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('OPERATING_SYSTEM', 'Operating System', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PASTESITE_CONTENT', 'Paste Site Content', 1, 'DATA')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PHONE_NUMBER', 'Phone Number', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PGP_KEY', 'PGP Public Key', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_DNS', 'Name Server (DNS ''NS'' Records)', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0, 'ENTITY')",
@@ -192,11 +195,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_BANNER', 'Web Server', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_HTTPHEADERS', 'HTTP Headers', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_STRANGEHEADER', 'Non-Standard HTTP Header', 0, 'DATA')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0, 'DESCRIPTOR')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('URL_MALICIOUS', 'URL hosting malicious data', 0, 'SUBENTITY')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DNS_PASSIVE', 'Passive DNS data', 0, 'SUBENTITY')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('FILE_DETECTED', 'Hash of detected malicious file', 0, 'DESCRIPTOR')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('FILE_UNDETECTED', 'Hash of undetected malicious file', 0, 'DESCRIPTOR')"        
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0, 'DESCRIPTOR')"
     ]
 
     def __init__(self, opts):
@@ -671,7 +670,7 @@ class SpiderFootDb:
             SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
             ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, '0' \
             FROM tbl_scan_instance i  WHERE i.guid NOT IN ( \
-            SELECT distinct scan_instance_id FROM tbl_scan_results) \
+            SELECT distinct scan_instance_id FROM tbl_scan_results WHERE type <> 'ROOT') \
             ORDER BY started DESC"
         try:
             self.dbh.execute(qry)

@@ -27,7 +27,7 @@ regexps = dict({
 
 
 class sfp_errors(SpiderFootPlugin):
-    """Errors:Footprint:Identify common error messages in content like SQL errors, etc."""
+    """Errors:Footprint:Data Analysis::Identify common error messages in content like SQL errors, etc."""
 
     # Default options
     opts = {}

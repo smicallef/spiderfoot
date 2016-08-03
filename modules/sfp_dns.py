@@ -20,9 +20,8 @@ import urllib2
 from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-
 class sfp_dns(SpiderFootPlugin):
-    """DNS:Footprint,Investigate:Performs a number of DNS checks to obtain Sub-domains/Hostnames, IP Addresses and Affiliates."""
+    """DNS:Footprint,Investigate:Networking::Performs a number of DNS checks to obtain Sub-domains/Hostnames, IP Addresses and Affiliates."""
 
     # Default options
     opts = {
@@ -49,7 +48,7 @@ class sfp_dns(SpiderFootPlugin):
         'validatereverse': "Validate that reverse-resolved hostnames still resolve back to that IP before considering them as aliases of your target.",
         'lookaside': "For each IP discovered, try and reverse look-up IPs 'next to' that IP for potential hostnames on the same subdomain/domain.",
         'lookasidecount': "If look-aside is enabled, the number of IPs on each 'side' of the IP to look up",
-        "commonsubs": "Common sub-domains to try to resolve on the target subdomain/domain. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
+        'commonsubs': "Common sub-domains to try to resolve on the target subdomain/domain. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
     }
 
     events = dict()
@@ -140,15 +139,16 @@ class sfp_dns(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        eventDataHash = self.sf.hashstring(eventData)
         addrs = None
         parentEvent = event
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if eventData in self.events:
+        if eventDataHash in self.events:
             return None
 
-        self.events[eventData] = True
+        self.events[eventDataHash] = True
         # Identify potential sub-domains/hostnames
         if eventName in ["SEARCH_ENGINE_WEB_CONTENT", "TARGET_WEB_CONTENT",
                          "LINKED_URL_INTERNAL", "RAW_RIR_DATA", "RAW_DNS_RECORDS", "DNS_TEXT"]:
@@ -298,7 +298,7 @@ class sfp_dns(SpiderFootPlugin):
             self.sf.debug("Resolved " + ipaddr + " to: " + str(addrs))
             return addrs
         except BaseException as e:
-            self.sf.info("Unable to resolve " + ipaddr + " (" + str(e) + ")")
+            self.sf.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
             self.resolveCache[ipaddr] = list()
             return ret
 
@@ -315,7 +315,7 @@ class sfp_dns(SpiderFootPlugin):
             self.sf.debug("Resolved " + hostname + " to: " + str(addrs))
             return addrs
         except BaseException as e:
-            self.sf.info("Unable to resolve " + hostname + " (" + str(e) + ")")
+            self.sf.debug("Unable to resolve " + hostname + " (" + str(e) + ")")
             return list()
 
     # Resolve a host to IPv6
@@ -337,19 +337,20 @@ class sfp_dns(SpiderFootPlugin):
             self.sf.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
             return addrs
         except BaseException as e:
-            self.sf.info("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
+            self.sf.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
             return list()
 
     # Process a host/IP, parentEvent is the event that represents this entity
     def processHost(self, host, parentEvent, affiliate=None):
+        parentHash = self.sf.hashstring(parentEvent.data)
         if host not in self.hostresults:
-            self.hostresults[host] = list(parentEvent.data)
+            self.hostresults[host] = list(parentHash)
         else:
-            if parentEvent.data in self.hostresults[host] or parentEvent.data == host:
+            if parentHash in self.hostresults[host] or parentEvent.data == host:
                 self.sf.debug("Skipping host, " + host + ", already processed.")
                 return None
             else:
-                self.hostresults[host].append(parentEvent.data)
+                self.hostresults[host].append(parentHash)
 
         self.sf.debug("Found host: " + host)
         # If the returned hostname is aliaseed to our

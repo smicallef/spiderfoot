@@ -17,18 +17,16 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_defaced(SpiderFootPlugin):
-    """Defacement Check:Intelligence:Investigate:Check if an IP or domain appears on the zone-h.org defacement archive."""
+    """Defacement Check:Investigate,Passive:Search Engines::Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed/"""
 
     # Default options
     opts = {
-        'daysback': 30,
         'checkcohosts': True,
         'checkaffiliates': True
     }
 
     # Option descriptions
     optdescs = {
-        'daysback': "Ignore defacements older than this many days.",
         'checkcohosts': "Check co-hosted sites?",
         'checkaffiliates': "Check affiliates?"
     }
@@ -63,35 +61,14 @@ class sfp_defaced(SpiderFootPlugin):
                 "DEFACED_AFFILIATE_INTERNET_NAME",
                 "DEFACED_COHOST", "DEFACED_AFFILIATE_IPADDR"]
 
-    def lookupItem(self, target, typeId):
-        found = False
-        curDate = time.strftime("%Y%m%d")
-        url = "http://www.zone-h.org/archive/" + typeId + "=" + target
-        res = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
-        if res['content'] is None:
-            self.sf.debug("Unable to fetch data from Zone-H for " + target + "(" + typeId + ")")
-            return None
-
-        if "<img id='cryptogram' src='/captcha.py'>" in res['content']:
-            self.sf.error("CAPTCHA returned from zone-h.org.", False)
-            return None
-
-        rx = re.compile("<td>(\d+/\d+/\d+)</td>", re.IGNORECASE | re.DOTALL)
-        grps = re.findall(rx, res['content'])
+    def lookupItem(self, target, content):
+        grps = re.findall("<title><\!\[CDATA\[(.[^\]]*)\]\]></title>\s+<link><\!\[CDATA\[(.[^\]]*)\]\]></link>", content)
         for m in grps:
-            self.sf.debug("Found defaced site: " + target + "(" + typeId + ")")
-            found = True
-            # Zone-H returns in YYYY/MM/DD
-            date = m.replace('/', '')
-            if int(date) < int(curDate) - 30:
-                self.sf.debug("Defaced site found but too old: " + date)
-                found = False
-                continue
+            if target in m[0]:
+                self.sf.info("Found defaced site: " + m[0])
+                return m[0] + "\n<SFURL>" + m[1] + "</SFURL>"
 
-            if found:
-                return url
-
-        return None
+        return False
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -114,11 +91,9 @@ class sfp_defaced(SpiderFootPlugin):
             return None
 
         evtType = 'DEFACED_INTERNET_NAME'
-        typeId = 'domain'
 
         if eventName == 'IP_ADDRESS':
             evtType = 'DEFACED_IPADDR'
-            typeId = 'ip'
 
         if eventName == 'CO_HOSTED_SITE':
             evtType = 'DEFACED_COHOST'
@@ -128,16 +103,24 @@ class sfp_defaced(SpiderFootPlugin):
 
         if eventName == 'AFFILIATE_IPADDR':
             evtType = 'DEFACED_AFFILIATE_IPADDR'
-            typeId = 'ip'
 
-        url = self.lookupItem(eventData, typeId)
         if self.checkForStop():
             return None
 
-        # Notify other modules of what you've found
-        if url is not None:
-            text = eventData + "\n" + url
-            evt = SpiderFootEvent(evtType, text, self.__name__, event)
+        url = "http://www.zone-h.org/rss/specialdefacements"
+        content = self.sf.cacheGet("sfdefaced", 48)
+        if content is None:
+            data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
+            if data['content'] is None:
+                self.sf.error("Unable to fetch " + url, False)
+                return None
+            else:
+                self.sf.cachePut("sfdefaced", data['content'])
+                content = data['content']
+
+        ret = self.lookupItem(eventData, content)
+        if ret:
+            evt = SpiderFootEvent(evtType, ret, self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_defaced class

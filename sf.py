@@ -21,7 +21,7 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
 deps = ['M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks',
-        'pyPdf', 'metapdf', 'openxmllib', 'stem']
+        'pyPdf', 'metapdf', 'openxmllib', 'stem', 'bs4', 'gexf', 'phonenumbers']
 for mod in deps:
     try:
         if mod.startswith("ext."):
@@ -47,7 +47,10 @@ for mod in deps:
         sys.exit(-1)
 
 import os
+import os.path
 import cherrypy
+import random
+from cherrypy.lib import auth_digest
 from sflib import SpiderFoot
 from sfwebui import SpiderFootWebUi
 
@@ -114,9 +117,11 @@ if __name__ == '__main__':
             sfModules[modName] = dict()
             mod = __import__('modules.' + modName, globals(), locals(), [modName])
             sfModules[modName]['object'] = getattr(mod, modName)()
-            sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":", 3)[0]
-            sfModules[modName]['cats'] = sfModules[modName]['object'].__doc__.split(":", 3)[1].split(",")
-            sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":", 3)[2]
+            sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":", 5)[0]
+            sfModules[modName]['cats'] = sfModules[modName]['object'].__doc__.split(":", 5)[1].split(",")
+            sfModules[modName]['group'] = sfModules[modName]['object'].__doc__.split(":", 5)[2]
+            sfModules[modName]['labels'] = sfModules[modName]['object'].__doc__.split(":", 5)[3].split(",")
+            sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":", 5)[4]
             sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
             sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
             if hasattr(sfModules[modName]['object'], 'opts'):
@@ -151,6 +156,31 @@ if __name__ == '__main__':
         'tools.staticdir.on': True,
         'tools.staticdir.dir': os.path.join(currentDir, 'static')
     }}
+
+    if os.path.isfile(sf.myPath() + '/passwd'):
+        secrets = dict()
+        pw = file(sf.myPath() + '/passwd', 'r')
+        for line in pw.readlines():
+            u, p = line.strip().split(":")
+            if None in [u, p]:
+                print "Incorrect format of passwd file, must be username:password on each line."
+                sys.exit(-1)
+            secrets[u] = p
+
+        print "Enabling authentication based on supplied passwd file."
+        conf['/'] = {
+            'tools.auth_digest.on': True,
+            'tools.auth_digest.realm': sfConfig['__webaddr'],
+            'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(secrets),
+            'tools.auth_digest.key': random.randint(0, 99999999)
+        }
+
+    if os.path.isfile(sf.myPath() + '/spiderfoot.key') and \
+       os.path.isfile(sf.myPath() + '/spiderfoot.crt'):
+        print "Enabling SSL based on supplied key and certificate file."
+        cherrypy.server.ssl_module = 'builtin'
+        cherrypy.server.ssl_certificate = sf.myPath() + '/spiderfoot.crt'
+        cherrypy.server.ssl_private_key = sf.myPath() + '/spiderfoot.key'
 
     # Try starting the web server. If it fails due to a database being
     # missing, start a smaller web server just for setting up the DB.

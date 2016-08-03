@@ -144,7 +144,7 @@ malchecks = {
         'type': 'query',
         'checks': ['ip'],
         'url': 'https://isc.sans.edu/api/ip/{0}',
-        'badregex': ['.*<attacks>.*'],
+        'badregex': ['.*<attacks>\d+</attacks>.*'],
         'goodregex': []
     },
     'AlienVault IP Reputation Database': {
@@ -222,6 +222,20 @@ malchecks = {
         'url': 'https://www.packetmail.net/iprep_ramnode.txt',
         'regex': '{0};.*'
     },
+    'bitcash.cz Blacklist': {
+        'id': 'bitcash',
+        'type': 'list',
+        'checks': [ 'ip' ],
+        'url': 'http://bitcash.cz/misc/log/blacklist',
+        'regex': '{0}\s+.*'
+    },
+    'maxmind.com Open Proxy List': {
+        'id': 'maxmind',
+        'type': 'list',
+        'checks': [ 'ip' ],
+        'url': 'https://www.maxmind.com/en/proxy-detection-sample-list',
+        'regex': '.*proxy-detection-sample/{0}\".*'
+    },
     'cybercrime-tracker.net Malicious Submissions': {
         'id': 'cybercrime',
         'type': 'query',
@@ -254,15 +268,29 @@ malchecks = {
     'badips.com IP Reptutation List': {
         'id': 'badips',
         'type': 'list',
-        'checks': ['ip'],
+        'checks': ['ip', 'domain'],
         'url': 'https://www.badips.com/get/list/any/1?age=24h',
         'regex': '{0}'
+    },
+    'VXVault Malicious URL List': {
+        'id': 'vxvault',
+        'type': 'list',
+        'checks': ['ip', 'domain'],
+        'url': 'http://vxvault.net/URL_List.php',
+        'regex': '.*\/{0}/.*'
+    },
+    'VOIPBL Publicly Accessible PBX List': {
+        'id': 'voipbl',
+        'type': 'list',
+        'checks': ['ip', 'netblock'],
+        'url': 'http://www.voipbl.org/update',
+        'regex': '{0}\/'
     }
 }
 
 
 class sfp_malcheck(SpiderFootPlugin):
-    """Malicious Check:Investigate:Check if a website, IP or ASN is considered malicious by various sources. Includes TOR exit nodes and open proxies."""
+    """Malicious Check:Investigate,Passive:Blacklists:slow:Check if a website, IP or ASN is considered malicious by various sources. Includes TOR exit nodes and open proxies."""
 
     # Default options
     opts = {
@@ -275,6 +303,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusesslblip': True,
         'googledomain': True,
         'googleasn': True,
+        'bitcash': True,
+        'maxmind': True,
         'malwaredomainlistdomain': True,
         'malwaredomainlistip': True,
         'malwaredomains': True,
@@ -298,6 +328,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'nothinkssh': True,
         'nothinkirc': True,
         'nothinkhttp': True,
+        'vxvault': True,
+        'voipbl': True,
         'packetmail': True,
         'packetmailcarisirt': True,
         'packetmailramnode': True,
@@ -319,6 +351,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'abusesslblip': "Enable abuse.ch SSL Backlist IP check?",
         'googledomain': "Enable Google Safe Browsing domain check?",
         'googleasn': "Enable Google Safe Browsing ASN check?",
+        'bitcash': "Enable bitcash.cz Blocklist check?",
+        'maxmind': "Enable maxmind.com Open Proxy list check?",
         'malwaredomainlistdomain': "Enable malwaredomainlist.com domain check?",
         'malwaredomainlistip': "Enable malwaredomainlist.com IP check?",
         'malwaredomains': "Enable malwaredomains.com Domain check?",
@@ -338,6 +372,8 @@ class sfp_malcheck(SpiderFootPlugin):
         'alienvault': 'Enable AlienVault IP Reputation check?',
         'openbl': 'Enable OpenBL.org Blacklist check?',
         'totalhash': 'Enable totalhash.com check?',
+        'vxvault': 'Enable VXVault Malicious URL check (checks hostnames and IPs)?',
+        'voipbl': 'Enable checking for publicly accessible PBXs in VOIPBL?',
         'threatexpert': 'Enable threatexpert.com check?',
         'nothinkssh': 'Enable Nothink.org SSH attackers check?',
         'nothinkirc': 'Enable Nothink.org Malware DNS traffic check?',
@@ -388,14 +424,14 @@ class sfp_malcheck(SpiderFootPlugin):
         if len(badregex) > 0:
             for rx in badregex:
                 if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be bad")
+                    self.sf.debug("Found to be bad against bad regex: " + rx)
                     return True
 
         # Finally, check for good indicators
         if len(goodregex) > 0:
             for rx in goodregex:
                 if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be good")
+                    self.sf.debug("Found to be good againt good regex: " + rx)
                     return False
 
         # If nothing was matched, reply None

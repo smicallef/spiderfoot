@@ -18,7 +18,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_blacklist(SpiderFootPlugin):
-    """Blacklist:Intelligence:Investigate:Query various blacklist database for open relays, open proxies, vulnerable servers, etc."""
+    """Blacklist:Investigate,Passive:Blacklists::Query various blacklist database for open relays, open proxies, vulnerable servers, etc."""
 
     # Default options
     opts = {
@@ -76,7 +76,8 @@ class sfp_blacklist(SpiderFootPlugin):
             '127.0.0.7': "Spamhaus (Zen) - Proxies, Trojans, etc.",
             '127.0.0.10': "Spamhaus (Zen) - Potential Spammer",
             '127.0.0.11': "Spamhaus (Zen) - Potential Spammer"
-        }
+        },
+        "bl.spamcop.net": "SpamCop Blacklist"
     }
 
     def setup(self, sfc, userOpts=dict()):

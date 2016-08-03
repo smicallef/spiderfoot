@@ -127,9 +127,11 @@ class sfp_cymon(SpiderFootPlugin):
 
             if self.opts['query_events']:
                 rec_events = self.query(addr, "events")
-                results = rec_events.get("results", None)
-                count = rec_events.get("count", 0)
-
+                if rec_events is not None:
+                    results = rec_events.get("results", None)
+                    count = rec_events.get("count", 0)
+                else:
+                    results = None
                 if results is not None:
                     self.sf.info("Found " + str(count) + " event results in Cymon")
                     for eventid in results:
@@ -155,8 +157,12 @@ class sfp_cymon(SpiderFootPlugin):
                         e = SpiderFootEvent(evt, entry, self.__name__, event)
                         self.notifyListeners(e) 
 
-            results = rec_domains.get("results", None)
-            count = rec_domains.get("count",0)
+            try:
+                results = rec_domains.get("results", None)
+                count = rec_domains.get("count",0)
+            except:
+                self.sf.error("Domain set empty for Cymon", False)
+                return None
 
             if results is not None:
                 self.sf.info("Found " + str(count) + " domain results in Cymon")

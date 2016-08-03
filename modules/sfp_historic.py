@@ -20,7 +20,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_historic(SpiderFootPlugin):
-    """Historic Files:Footprint:Identifies historic versions of interesting files/pages from the Wayback Machine."""
+    """Historic Files:Footprint:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
 
     # Default options
     opts = {
@@ -118,7 +118,7 @@ class sfp_historic(SpiderFootPlugin):
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                                    useragent=self.opts['_useragent'])
 
-            if res == None:
+            if res['content'] == None:
                 self.sf.error("Unable to fetch " + url, False)
                 continue
 

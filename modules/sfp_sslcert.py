@@ -19,12 +19,12 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sslcert(SpiderFootPlugin):
-    """SSL:Footprint,Investigate:Gather information about SSL certificates used by the target's HTTPS sites."""
+    """SSL:Footprint,Investigate:Web Spidering::Gather information about SSL certificates used by the target's HTTPS sites."""
 
     # Default options
     opts = {
         "tryhttp": True,
-        "ssltimeout": 5,
+        "ssltimeout": 10,
         "certexpiringdays": 30
     }
 
@@ -94,14 +94,16 @@ class sfp_sslcert(SpiderFootPlugin):
             sock.do_handshake()
             rawcert = sock.getpeercert(True)
             cert = ssl.DER_cert_to_PEM_cert(rawcert)
-            m2cert = M2Crypto.X509.load_cert_string(cert)
+            m2cert = M2Crypto.X509.load_cert_string(str(cert).replace('\r', ''))
         except BaseException as x:
             self.sf.info("Unable to SSL-connect to " + fqdn + ": " + str(x))
             return None
 
         # Generate the event for the raw cert (in text form)
         # Cert raw data text contains a lot of gems..
-        rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW", m2cert.as_text(), self.__name__, event)
+        rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW", 
+                                 m2cert.as_text().encode('raw_unicode_escape'), 
+                                 self.__name__, event)
         self.notifyListeners(rawevt)
 
         # Generate events for other cert aspects
@@ -112,13 +114,13 @@ class sfp_sslcert(SpiderFootPlugin):
 
     # Report back who the certificate was issued to
     def getIssued(self, cert, sevt):
-        issued = cert.get_subject().as_text()
+        issued = cert.get_subject().as_text().encode('raw_unicode_escape')
         evt = SpiderFootEvent("SSL_CERTIFICATE_ISSUED", issued, self.__name__, sevt)
         self.notifyListeners(evt)
 
     # Report back the certificate issuer
     def getIssuer(self, cert, sevt):
-        issuer = cert.get_issuer().as_text()
+        issuer = cert.get_issuer().as_text().encode('raw_unicode_escape')
         evt = SpiderFootEvent("SSL_CERTIFICATE_ISSUER", issuer, self.__name__, sevt)
         self.notifyListeners(evt)
 
@@ -128,13 +130,13 @@ class sfp_sslcert(SpiderFootPlugin):
         hosts = ""
 
         # Extract the CN from the issued section
-        issued = cert.get_subject().as_text()
+        issued = cert.get_subject().as_text().encode('raw_unicode_escape')
         self.sf.debug("Checking for " + fqdn + " in " + issued.lower())
         if "cn=" + fqdn in issued.lower():
             hosts = 'dns:' + fqdn
 
         try:
-            hosts = hosts + " " + cert.get_ext("subjectAltName").get_value().lower()
+            hosts = hosts + " " + cert.get_ext("subjectAltName").get_value().encode('raw_unicode_escape').lower()
         except LookupError as e:
             self.sf.debug("No alternative name found in certificate.")
 

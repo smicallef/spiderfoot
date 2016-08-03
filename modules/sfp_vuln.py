@@ -17,7 +17,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_vuln(SpiderFootPlugin):
-    """Vulnerable:Footprint,Investigate:Check external vulnerability scanning services (XSSposed.org, punkspider.org) to see if the target is listed."""
+    """Vulnerable:Footprint,Investigate,Passive:Blacklists:errorprone:Check external vulnerability scanning services (XSSposed.org, punkspider.org) to see if the target is listed."""
 
     # Default options
     opts = {
@@ -89,7 +89,7 @@ class sfp_vuln(SpiderFootPlugin):
                         if m[1] == qry or m[1].endswith("."+qry):
                             ret.append("From XSSposed.org: <SFURL>" + base + m[0] + "</SFURL>")
                     else:
-                        ts = time.strftime("%s", time.strptime(m[2], "%d/%m/%Y"))
+                        ts = time.strftime("%s", time.strptime(m[2], "%d.%m.%Y"))
                         if int(ts) > int(time.time())-(86400*self.opts['cutoff']) and \
                             (m[1] == qry or m[1].endswith("."+qry)):
                             # Report it
@@ -119,6 +119,8 @@ class sfp_vuln(SpiderFootPlugin):
             self.sf.debug("No content returned from punkspider.org")
             return None
 
+        #print "CONTENT: " + res['content']
+
         if "timestamp\":" in res['content']:
             """ Expected:
             {"input": {"searchKey": "url", "filterType": "or", "searchValue": "cnn.com", "pageNumber": 1, "filters": ["bsqli", "mxi", "osci", "sqli", "trav", "xpathi", "xss"]}, "output": {"domainSummaryDTOs": [{"xpathi": "0", "xss": "1", "domain": "www.domain.com", "osci": "0", "title": "Title not found", "url": "www.domain.com", "timestamp": "2014-05-18T12:30:55Z", "exploitabilityLevel": 1, "sqli": "0", "trav": "0", "mxi": "0", "id": "www.domain.com", "bsqli": "0"}], "qTime": 9745, "rowsFound": 1, "numberOfPages": 1}}
@@ -126,6 +128,7 @@ class sfp_vuln(SpiderFootPlugin):
 
             try:
                 data = json.loads(res['content'])
+                #print "DATA: " + str(data)
                 for rec in data['output']['domainSummaryDTOs']:
                     if self.opts['cutoff'] == 0:
                         ret.append("From Punkspider.org: " + rec['url'] + "\n<SFURL>" + base.format(qry) + "</SFURL>")

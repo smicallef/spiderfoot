@@ -14,9 +14,8 @@
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-
 class sfp_spider(SpiderFootPlugin):
-    """Spider:Footprint,Investigate:Spidering of web-pages to extract content for searching. """
+    """Spider:Footprint,Investigate:Web Spidering:slow,invasive:Spidering of web-pages to extract content for searching. """
 
     # Default options
     opts = {
@@ -32,9 +31,9 @@ class sfp_spider(SpiderFootPlugin):
                         'bin', 'bz2', 'xsl', 'doc', 'docx', 'ppt', 'pptx', 'xls',
                         'xlsx', 'csv'],
         'filterusers': True,  # Don't follow /~user directories
-        'noexternal': True,  # Should links to external sites be ignored? (**dangerous if False**)
         'nosubs': False,  # Should links to subdomains be ignored?
-        'noparents': True
+        'reportduplicates': False,
+        'parsetext': True
     }
 
     # Option descriptions
@@ -43,13 +42,13 @@ class sfp_spider(SpiderFootPlugin):
         'pause': "Number of seconds to pause between fetches.",
         'usecookies': "Accept and use cookies?",
         'start': "Prepend targets with these until you get a hit, to start spidering.",
-        'maxpages': "Maximum number of pages to fetch per target identified.",
-        'maxlevels': "Maximum levels to traverse per target identified.",
+        'maxpages': "Maximum number of pages to fetch per starting point identified.",
+        'maxlevels': "Maximum levels to traverse per starting point (e.g. hostname or link identified by another module) identified.",
         'filterfiles': "File extensions to ignore (don't fetch them.)",
         'filterusers': "Skip spidering of /~user directories?",
-        'noexternal': "Skip spidering of external sites? (**dangerous if False**)",
         'nosubs': "Skip spidering of subdomains of the target?",
-        'noparents': "Skip spidering of parent domains of your target?"
+        'reportduplicates': "Report links every time one is found, even if found before?",
+        'parsetext': "Parse content for possible hostnames/links, not just in valid HTML tags?"
     }
 
     # If using robots.txt, this will get populated with filter rules
@@ -92,6 +91,7 @@ class sfp_spider(SpiderFootPlugin):
                 self.sf.debug("Saving cookies for " + site + ": " + str(self.siteCookies[site]))
 
         if url not in self.urlEvents:
+            self.sf.error("Something strange happened - shouldn't get here.", False)
             self.urlEvents[url] = None
 
         # Notify modules about the content obtained
@@ -107,7 +107,9 @@ class sfp_spider(SpiderFootPlugin):
             url = fetched['realurl']  # override the URL if we had a redirect
 
         # Extract links from the content
-        links = self.sf.parseLinks(url, fetched['content'], self.getTarget().getNames())
+        links = self.sf.parseLinks(url, fetched['content'], 
+                                   self.getTarget().getNames(), 
+                                   self.opts['parsetext'])
 
         if links is None or len(links) == 0:
             self.sf.info("No links found at " + url)
@@ -117,6 +119,9 @@ class sfp_spider(SpiderFootPlugin):
         # Aside from the first URL, this will be the first time a new
         # URL is spotted.
         for link in links:
+            if not self.opts['reportduplicates']:
+                if link in self.urlEvents:
+                    continue
             # Supply the SpiderFootEvent of the parent URL as the parent
             self.urlEvents[link] = self.linkNotify(link, self.urlEvents[url])
 
@@ -131,39 +136,37 @@ class sfp_spider(SpiderFootPlugin):
             linkBase = self.sf.urlBaseUrl(link)
             linkFQDN = self.sf.urlFQDN(link)
 
-            # Optionally skip external sites (typical behaviour..)
-            if self.opts['noexternal'] and not \
-                    self.getTarget().matches(linkFQDN):
-                self.sf.debug('Ignoring external site: ' + link)
+            # Skip external sites (typical behaviour..)
+            if not self.getTarget().matches(linkFQDN):
+                #self.sf.debug('Ignoring external site: ' + link)
                 continue
 
             # Optionally skip sub-domain sites
             if self.opts['nosubs'] and not \
                     self.getTarget().matches(linkFQDN, includeChildren=False):
-                self.sf.debug("Ignoring subdomain: " + link)
+                #self.sf.debug("Ignoring subdomain: " + link)
                 continue
 
-            # Optionally skip parent domain sites
-            if self.opts['noparents'] and not \
-                    self.getTarget().matches(linkFQDN, includeParents=False):
-                self.sf.debug("Ignoring parent domain: " + link)
+            # Skip parent domain sites
+            if not self.getTarget().matches(linkFQDN, includeParents=False):
+                #self.sf.debug("Ignoring parent domain: " + link)
                 continue
 
             # Optionally skip user directories
             if self.opts['filterusers'] and '/~' in link:
-                self.sf.debug("Ignoring user folder: " + link)
+                #self.sf.debug("Ignoring user folder: " + link)
                 continue
 
             # If we are respecting robots.txt, filter those out too
             checkRobots = lambda blocked: str.lower(blocked) in link.lower() or blocked == '*'
             if self.opts['robotsonly'] and filter(checkRobots, self.robotsRules[linkBase]):
-                self.sf.debug("Ignoring page found in robots.txt: " + link)
+                #self.sf.debug("Ignoring page found in robots.txt: " + link)
                 continue
 
             # Filter out certain file types (if user chooses to)
             checkExts = lambda ext: link.lower().split('?')[0].endswith('.' + ext.lower())
             if filter(checkExts, self.opts['filterfiles']):
-                self.sf.debug('Ignoring filtered extension: ' + link)
+                #self.sf.debug('Ignoring filtered extension: ' + link)
                 continue
 
             # All tests passed, add link to be spidered
@@ -175,11 +178,13 @@ class sfp_spider(SpiderFootPlugin):
     # Notify listening modules about links
     def linkNotify(self, url, parentEvent=None):
         if self.getTarget().matches(self.sf.urlFQDN(url)):
-            type = "LINKED_URL_INTERNAL"
+            utype = "LINKED_URL_INTERNAL"
         else:
-            type = "LINKED_URL_EXTERNAL"
+            utype = "LINKED_URL_EXTERNAL"
 
-        event = SpiderFootEvent(type, url, self.__name__, parentEvent)
+        if type(url) != unicode:
+            url = unicode(url, "utf-8", errors='replace')
+        event = SpiderFootEvent(utype, url, self.__name__, parentEvent)
         self.notifyListeners(event)
         return event
 
@@ -217,11 +222,6 @@ class sfp_spider(SpiderFootPlugin):
         eventData = event.data
         spiderTarget = None
 
-        # Ignore self-generated events so that we don't end up in a recursive loop
-        if "sfp_spider" in srcModuleName:
-            self.sf.debug("Ignoring event from myself.")
-            return None
-
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventData in self.urlEvents.keys():
@@ -229,6 +229,10 @@ class sfp_spider(SpiderFootPlugin):
             return None
         else:
             self.urlEvents[eventData] = event
+
+        # Don't spider links we find ourselves, obviously
+        if eventName == "LINKED_URL_INTERNAL" and "sfp_spider" in srcModuleName:
+            return None
 
         # Determine where to start spidering from if it's a INTERNET_NAME event
         if eventName == "INTERNET_NAME":
@@ -247,7 +251,7 @@ class sfp_spider(SpiderFootPlugin):
         if spiderTarget is None:
             return None
 
-        self.sf.info("Initiating spider of " + spiderTarget)
+        self.sf.info("Initiating spider of " + spiderTarget + " from " + srcModuleName)
 
         # Link the spidered URL to the event that triggered it
         self.urlEvents[spiderTarget] = event
@@ -282,8 +286,8 @@ class sfp_spider(SpiderFootPlugin):
 
         # No links from the first fetch means we've got a problem
         if links is None:
-            self.sf.error("No links found on the first fetch!", exception=False)
-            return
+            self.sf.error("No links found on the first fetch!", False)
+            return None
 
         while keepSpidering:
             # Gets hit in the second and subsequent iterations when more links
@@ -294,7 +298,7 @@ class sfp_spider(SpiderFootPlugin):
                 # Fetch content from the new links
                 for link in nextLinks.keys():
                     # Always skip links we've already fetched
-                    if (link in self.fetchedPages.keys()):
+                    if (link in self.fetchedPages):
                         self.sf.debug("Already fetched " + link + ", skipping.")
                         continue
 
@@ -320,7 +324,7 @@ class sfp_spider(SpiderFootPlugin):
 
             # We've scanned through another layer of the site
             levelsTraversed += 1
-            self.sf.info("Now at traversal level: " + str(levelsTraversed))
+            self.sf.debug("At level: " + str(levelsTraversed) + ", Pages: " + str(totalFetched))
             if levelsTraversed >= self.opts['maxlevels']:
                 self.sf.info("Maximum number of levels (" + str(self.opts['maxlevels']) +
                              ") reached.")

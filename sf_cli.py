@@ -23,7 +23,7 @@ Adjust
  sf_usecase
 '''
 
-sf_host = "192.168.171.159"
+sf_host = "192.168.218.21"
 sf_port = "5001"
 sf_usecase = "Intelligence"
 verbose = False
@@ -32,7 +32,7 @@ sf_scanname = sys.argv[1]
 sf_scantarget = sys.argv[2]
 sf_modulelist = ""
 sf_typelist = ""
-time_sleep = 10
+time_sleep = 120
 internal_id_str = "Internal ID:"
 internal_id_str_stop = "</td><td>"
 scanid_stop_str = "</td></tr>"

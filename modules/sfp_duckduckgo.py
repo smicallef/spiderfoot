@@ -14,7 +14,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_duckduckgo(SpiderFootPlugin):
-    """DuckDuckGo:Footprint,Investigate:Query DuckDuckGo's API for descriptive information about your target."""
+    """DuckDuckGo:Footprint,Investigate,Passive:Search Engines::Query DuckDuckGo's API for descriptive information about your target."""
 
     # Default options
     opts = {
@@ -66,7 +66,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
-        if res == None:
+        if res['content'] == None:
             self.sf.error("Unable to fetch " + url, False)
             return None
 
@@ -104,7 +104,9 @@ class sfp_duckduckgo(SpiderFootPlugin):
                 name = "AFFILIATE_" + name
 
             for item in ret['RelatedTopics']:
-                cat = item['Text']
+                cat = None
+                if 'Text' in item:
+                    cat = item['Text']
                 if cat == None or cat == "":
                     self.sf.debug("No category text found from DuckDuckGo.")
                     continue

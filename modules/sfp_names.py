@@ -15,7 +15,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_names(SpiderFootPlugin):
-    """Name Extractor:Footprint:Attempt to identify human names in fetched content."""
+    """Name Extractor:Footprint,Passive:Social:errorprone:Attempt to identify human names in fetched content."""
 
     # Default options
     opts = {

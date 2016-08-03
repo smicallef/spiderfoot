@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_email(SpiderFootPlugin):
-    """E-Mail:Footprint,Investigate:Identify e-mail addresses in any obtained data."""
+    """E-Mail:Footprint,Investigate,Passive:Data Analysis::Identify e-mail addresses in any obtained data."""
 
     # Default options
     opts = {
@@ -80,7 +80,11 @@ class sfp_email(SpiderFootPlugin):
                 continue
 
             self.sf.info("Found e-mail address: " + match)
-            evt = SpiderFootEvent("EMAILADDR", match, self.__name__, parentEvent)
+            if type(match) == str:
+                mail = unicode(match, 'utf-8', errors='replace')
+            else:
+                mail = match
+            evt = SpiderFootEvent("EMAILADDR", mail, self.__name__, parentEvent)
             self.notifyListeners(evt)
 
         return None

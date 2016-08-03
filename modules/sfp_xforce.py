@@ -6,63 +6,40 @@
 # Author:      Koen Van Impe
 #
 # Created:     23/12/2015
+# Updated:     26/07/2016, Steve Micallef - re-focused to be reputation-centric
 # Copyright:   (c) Koen Van Impe
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
 import json
+import base64
+from datetime import datetime
 import time
-import glob,os
-import sys
-
-import urllib
-import urllib2
 
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_xforce(SpiderFootPlugin):
-    """XForce Exchange:Investigate,Intelligence:Obtain information from XForce Exchange"""
+    """XForce Exchange:Investigate,Passive:Blacklists:apikey:Obtain information from IBM X-Force Exchange"""
 
     # Default options
     opts = {
-        "xforcetoken": "XFORCEtoken",
-        "xforce_pdns": True,
-        "xforce_history": False,
-        "xforce_malware": True,
-        "xforce_ipr": True,
-        "infield_sep": "; "
+        "xforce_api_key": "",
+        "xforce_password": "",
+        "age_limit_days": 30
     }
 
     # Option descriptions
     optdescs = {
-        "xforcetoken": "The token file for interacting with XForce",
-        "xforce_pdns": "Include passive DNS from XForce",
-        "xforce_history": "Include the history record from XForce (can cause lots of doubles)",
-        "xforce_malware": "Include malware found via XForce",
-        "xforce_ipr": "Include the IP geo info via XForce",
-        "infield_sep": "Separate fields in data found"
+        "xforce_api_key": "The X-Force Exchange API Key",
+        "xforce_password": "The X-Force Exchange API Password",
+        "age_limit_days": "Ignore any records older than this many days"
     }
 
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
     results = dict()
-
-    def xforce_gettoken(self, xforce_url):
-        HOME = os.path.dirname(os.path.realpath(__file__))
-        TOKEN = self.opts['xforcetoken']
-
-        if os.path.isfile("./" + TOKEN):
-            tokenf = open(HOME + "/" + TOKEN ,"r")
-            token = tokenf.readline()
-        else:
-            data = urllib2.urlopen( xforce_url + "/auth/anonymousToken" )
-            t = json.load(data)
-            token = str(t['token'])
-            tokenf = open(HOME + "/token","w")
-            tokenf.write(token)
-        return token
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -86,19 +63,19 @@ class sfp_xforce(SpiderFootPlugin):
                 "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
                 "MALICIOUS_SUBNET",
-                "FILE_UNDETECTED", "FILE_DETECTED", "DNS_PASSIVE", "URL_MALICIOUS"]
+                "DNS_PASSIVE"]
 
-    def query(self, qry, querytype="ipr"):
+    def query(self, qry, querytype):
         ret = None
 
-        querytype = str(querytype)
-        if querytype not in ["ipr", "ipr/history", "ipr/malware", "resolve"]:
-            querytype = "ipr"
+        if querytype not in ["ipr/malware", "ipr/history"]:
+            querytype = "ipr/malware"
 
-        xforce_url = "https://xforce-api.mybluemix.net:443"
-        token = self.xforce_gettoken(xforce_url)
-        htoken = "Bearer "+ token
-        headers = {'Authorization': htoken,}
+        xforce_url = "https://api.xforce.ibmcloud.com"
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': "Basic " + base64.b64encode(self.opts['xforce_api_key'] + ":" + self.opts['xforce_password'])
+        }
         url = xforce_url + "/" + querytype + "/" + qry
         res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
 
@@ -121,7 +98,7 @@ class sfp_xforce(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        infield_sep = self.opts['infield_sep']
+        infield_sep = " ; "
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -141,99 +118,78 @@ class sfp_xforce(SpiderFootPlugin):
             qrylist.append(eventData)
 
         for addr in qrylist:
-
             if self.checkForStop():
                 return None
+
+            if eventName == 'IP_ADDRESS':
+                evtType = 'MALICIOUS_IPADDR'
+            if eventName == "AFFILIATE_IPADDR":
+                evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+            if eventName == "INTERNET_NAME":
+                evtType = "MALICIOUS_INTERNET_NAME"
+            if eventName == 'AFFILIATE_INTERNET_NAME':
+                evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
+            if eventName == 'CO_HOSTED_SITE':
+                evtType = 'MALICIOUS_COHOST'
+
+            rec = self.query(addr, "ipr/history")
+            if rec is not None:
+                rec_history = rec.get("history", None)
+                if rec_history is not None:
+                    self.sf.info("Found history results in XForce")
+                    for result in rec_history:
+                        reasonDescription = result.get("reasonDescription", "")
+                        created = result.get("created", "")
+                        # 2014-11-06T10:45:00.000Z
+                        created_dt = datetime.strptime(created, '%Y-%m-%dT%H:%M:%S.000Z')
+                        created_ts = int(time.mktime(created_dt.timetuple()))
+                        age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
+                        if created_ts < age_limit_ts:
+                            self.sf.info("Record found but too old, skipping.")
+                            continue
+                        reason = result.get("reason", "")
+                        score = result.get("score", 0)
+                        cats = result.get("cats", None)
+                        cats_description = ""
+                        if int(score) < 2:
+                            self.sf.info("Non-malicious results, skipping.")
+                            continue
+                        if cats is not None:
+                            for cat in cats:
+                                cats_description = cats_description + cat + " "
+                        entry = reason + infield_sep + \
+                                    str(score) + infield_sep + \
+                                    created  + infield_sep + \
+                                    cats_description
+                        e = SpiderFootEvent(evtType, entry, self.__name__, event)
+                        self.notifyListeners(e)
                 
-            if self.opts['xforce_ipr']:
-                rec = self.query(addr, "ipr")
-                if rec is not None:
-                    rec_geo = rec.get("geo", None)
-                    if rec_geo is not None:
-                        self.sf.info("Found IPR results in XForce")
-                        evt = "GEOINFO"
-
-                        country = rec_geo.get("country", "")
-                        e = SpiderFootEvent(evt, country, self.__name__, event)
+            rec = self.query(addr, "ipr/malware")
+            if rec is not None:
+                rec_malware = rec.get("malware", None)
+                if rec_malware is not None:
+                    self.sf.info("Found malware results in XForce")
+                    for result in rec_malware:
+                        count = result.get("count", "")
+                        origin = result.get("origin", "")
+                        domain = result.get("domain", "")
+                        uri = result.get("uri", "")
+                        md5 = result.get("md5", "")
+                        lastseen = result.get("last", "")
+                        firstseen = result.get("first", "")
+                        family = result.get("family", None)
+                        family_description = ""
+                        if family is not None:
+                            for f in family:
+                                family_description = family_description + f + " "
+                        entry = origin + infield_sep + \
+                                    family_description + infield_sep + \
+                                    md5 + infield_sep + \
+                                    domain + infield_sep + \
+                                    uri + infield_sep + \
+                                    firstseen + infield_sep + \
+                                    lastseen
+                        e = SpiderFootEvent(evtType, entry, self.__name__, event)
                         self.notifyListeners(e)
-
-                        countrycode = rec_geo.get("countrycode", "")
-                        e = SpiderFootEvent(evt, countrycode, self.__name__, event)
-                        self.notifyListeners(e)
-
-            if self.opts['xforce_history']:
-                rec = self.query(addr, "ipr/history")
-                if rec is not None:
-                    rec_history = rec.get("history", None)
-                    if rec_history is not None:
-                        self.sf.info("Found history results in XForce")
-                        for result in rec_history:
-                            reasonDescription = result.get("reasonDescription", "")
-                            created = result.get("created", "")
-                            reason = result.get("reason", "")
-                            score = result.get("score", 0)
-                            cats = result.get("cats", None)
-                            cats_description = ""
-                            if cats is not None:
-                                for cat in cats:
-                                    cats_description = cats_description + cat + " "
-                            evt = "DESCRIPTION_ABSTRACT"
-                            entry = reason + infield_sep + \
-                                        str(score) + infield_sep + \
-                                        created  + infield_sep + \
-                                        cats_description
-                            e = SpiderFootEvent(evt, entry, self.__name__, event)
-                            self.notifyListeners(e)
-
-            if self.opts['xforce_malware']:
-                rec = self.query(addr, "ipr/malware")
-                if rec is not None:
-                    rec_malware = rec.get("malware", None)
-                    if rec_malware is not None:
-                        self.sf.info("Found malware results in XForce")
-                        for result in rec_malware:
-                            count = result.get("count", "")
-                            origin = result.get("origin", "")
-                            domain = result.get("domain", "")
-                            uri = result.get("uri", "")
-                            md5 = result.get("md5", "")
-                            lastseen = result.get("last", "")
-                            firstseen = result.get("first", "")
-                            family = result.get("family", None)
-                            family_description = ""
-                            if family is not None:
-                                for f in family:
-                                    family_description = family_description + f + " "
-                            evt = "MALICIOUS_IPADDR"
-                            entry = origin + infield_sep + \
-                                        family_description + infield_sep + \
-                                        md5 + infield_sep + \
-                                        domain + infield_sep + \
-                                        uri + infield_sep + \
-                                        firstseen + infield_sep + \
-                                        lastseen
-                            e = SpiderFootEvent(evt, entry, self.__name__, event)
-                            self.notifyListeners(e)
-
-            if self.opts['xforce_pdns']:
-                rec = self.query(addr, "resolve")
-                if rec is not None:
-                    rec_passive = rec.get("Passive", None)
-                    if rec_passive is not None:
-                        rec_precords = rec_passive.get("records", None)
-                        if rec_precords is not None:
-                            self.sf.info("Found PDNS results in XForce")
-                            for result in rec_precords:
-                                value = result.get("value", "")
-                                rtype = result.get("recordType", "")
-                                lastseen = result.get("last", "")
-                                firstseen = result.get("first", "")
-                                evt = "DNS_PASSIVE"
-                                entry = value + infield_sep + \
-                                            firstseen + infield_sep + \
-                                            lastseen + infield_sep + \
-                                            rtype
-                                e = SpiderFootEvent(evt, entry, self.__name__, event)
-                                self.notifyListeners(e)
 
 # End of sfp_xforce class

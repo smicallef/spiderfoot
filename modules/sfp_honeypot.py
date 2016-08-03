@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_honeypot(SpiderFootPlugin):
-    """Honeypot Checker:Intelligence:Investigate:Query the projecthoneypot.org database for entries."""
+    """Honeypot Checker:Investigate,Passive:Blacklists:apikey:Query the projecthoneypot.org database for entries."""
 
     # Default options
     opts = {

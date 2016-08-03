@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sharedip(SpiderFootPlugin):
-    """Shared IP:Footprint,Investigate:Search Bing and/or Robtex.com for hosts sharing the same IP."""
+    """Shared IP:Footprint,Investigate,Passive:Networking:errorprone:Search Bing and/or Robtex.com for hosts sharing the same IP."""
 
     # Default options
     opts = {
@@ -94,11 +94,13 @@ class sfp_sharedip(SpiderFootPlugin):
                 return None
 
             myres = list()
-            pat = re.compile(".*shared DNS of.*", re.IGNORECASE)
-            if pat.match(res['content']):
-                p = re.compile("<li><code>(.[^<]*)</code>", re.IGNORECASE)
+            if "shared DNS of" in res['content']:
+                print "HERE!"
+                p = re.compile("rel=..nofollow.. href=..\?dns=(.[^\"]*)..>(.[^<]*)", re.IGNORECASE)
                 matches = p.findall(res['content'])
-                for m in matches:
+                print str(matches)
+                for mt in matches:
+                    m = mt[1]
                     self.sf.info("Found something on same IP: " + m)
                     if not self.opts['cohostsamedomain']:
                         if self.getTarget().matches(m, includeParents=True):
