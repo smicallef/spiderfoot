@@ -14,7 +14,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_XXX(SpiderFootPlugin):
-    """Name:Profiles:Category:Labels:Description"""
+    """Name:Use Cases:Category:Labels:Description"""
 
     # Default options
     opts = {}
