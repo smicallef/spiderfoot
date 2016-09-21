@@ -20,13 +20,11 @@ class sfp_yahoosearch(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'fetchlinks': True,  # Should we fetch links on the base domain?
         'pages': 20  # Number of yahoo results pages to iterate
     }
 
     # Option descriptions
     optdescs = {
-        'fetchlinks': "Fetch links found on the target domain-name?",
         'pages': "Number of Yahoo results pages to iterate through."
     }
 
@@ -72,41 +70,38 @@ class sfp_yahoosearch(SpiderFootPlugin):
             return None
 
         for page in pages.keys():
+            found = False
             if page in self.results:
                 continue
             else:
                 self.results.append(page)
 
-            # Check if we've been asked to stop
-            if self.checkForStop():
-                return None
-
             content = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner, pages[page])
+            links = self.sf.parseLinks(page, content, eventData)
+            if len(links) == 0:
+                continue
 
-            # Submit the yahoo results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", content,
-                                  self.__name__, event)
-            self.notifyListeners(evt)
+            for link in links:
+                if self.checkForStop():
+                    return None
 
-            # We can optionally fetch links to our domain found in the search
-            # results. These may not have been identified through spidering.
-            if self.opts['fetchlinks']:
-                links = self.sf.parseLinks(page, content, eventData)
-                if len(links) == 0:
+                if link in self.results:
                     continue
+                else:
+                    self.results.append(link)
+                if self.sf.urlFQDN(link).endswith(eventData):
+                    found = True
+                    self.sf.debug("Found a link: " + link)
 
-                for link in links:
-                    if link in self.results:
-                        continue
-                    else:
-                        self.results.append(link)
-                    if self.sf.urlFQDN(link).endswith(eventData):
-                        self.sf.debug("Found a link: " + link)
-                        if self.checkForStop():
-                            return None
+                    evt = SpiderFootEvent("LINKED_URL_INTERNAL", link,
+                                          self.__name__, event)
+                    self.notifyListeners(evt)
 
-                        evt = SpiderFootEvent("LINKED_URL_INTERNAL", link,
-                                              self.__name__, event)
-                        self.notifyListeners(evt)
+            if found:
+                # Submit the yahoo results for analysis
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", content,
+                                      self.__name__, event)
+                self.notifyListeners(evt)
+    
 
 # End of sfp_yahoosearch class
