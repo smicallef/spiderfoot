@@ -23,7 +23,7 @@ class sfp_accounts(SpiderFootPlugin):
         "generic": ["root", "abuse", "sysadm", "sysadmin", "noc", "support", "admin",
                     "contact", "help", "flame", "test", "info", "sales", "hostmaster"],
         "ignoredict": True,
-        "maxthreads": 50
+        "maxthreads": 25
     }
 
     # Option descriptions
@@ -93,19 +93,23 @@ class sfp_accounts(SpiderFootPlugin):
             self.siteResults[retname] = False
             return
 
-        found = False
-        if site['account_existence_code']:
-            if site['account_existence_code'] in [ res['code'], str(res['code']) ]:
-                found = True
-        if site['account_missing_code']: 
-            if site['account_missing_code'] in [ res['code'], str(res['code']) ]:
-                found = False
-        if site['account_existence_string']:
-            if site['account_existence_string'] in res['content']:
-                found = True
-        if site['account_missing_string']:
-            if site['account_missing_string'] in res['content']:
-                found = False
+        try:
+            found = False
+            if site['account_existence_code']:
+                if site['account_existence_code'] in [ res['code'], str(res['code']) ]:
+                    found = True
+            if site['account_missing_code']: 
+                if site['account_missing_code'] in [ res['code'], str(res['code']) ]:
+                    found = False
+            if site['account_existence_string']:
+                if site['account_existence_string'] in res['content']:
+                    found = True
+            if site['account_missing_string']:
+                if site['account_missing_string'] in res['content']:
+                    found = False
+        except BaseException:
+            self.sf.debug("Error parsing configuration: " + str(site))
+            found = False
 
         self.siteResults[retname] = found
 
