@@ -51,7 +51,6 @@ class sfp_whois(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        parentEvent = event.sourceEvent
 
         if eventData in self.results:
             return None

@@ -126,6 +126,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HTTP_CODE', 'HTTP Status Code', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HUMAN_NAME', 'Human Name', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('INTERESTING_FILE', 'Interesting File', 0, 'DESCRIPTOR')",
+         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('INTERESTING_FILE_HISTORIC', 'Historic Interesting File', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('JUNK_FILE', 'Junk File', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('INTERNET_NAME', 'Internet Name', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('IP_ADDRESS', 'IP Address', 0, 'ENTITY')",

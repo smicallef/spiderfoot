@@ -72,7 +72,8 @@ class sfp_adblock(SpiderFootPlugin):
                     self.errorState = True
                     self.sf.error("Parsing error handling AdBlock list: " + str(e), False)
             else:
-                self.sf.error("Unable to download AdBlockPlus list: " + self.opts['blocklist'])
+                self.errorState = True
+                self.sf.error("Unable to download AdBlockPlus list: " + self.opts['blocklist'], False)
 
         if "_EXTERNAL" in eventName:
             pagetype = "_EXTERNAL"
@@ -88,7 +89,7 @@ class sfp_adblock(SpiderFootPlugin):
         try:
             if self.rules and self.rules.should_block(eventData):
                 evt = SpiderFootEvent("URL_ADBLOCKED" + pagetype, eventData,
-                                      self.__name__, event.sourceEvent)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
         except BaseException as e:
             self.sf.error("Parsing error handling AdBlock list: " + str(e), False)

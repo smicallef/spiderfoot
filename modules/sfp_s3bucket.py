@@ -55,7 +55,6 @@ class sfp_s3bucket(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        parentEvent = event.sourceEvent
 
         if eventData in self.results:
             return None
@@ -76,6 +75,9 @@ class sfp_s3bucket(SpiderFootPlugin):
             for e in self.opts['endpoints'].split(','):
                 suffixes = [''] + self.opts['suffixes'].split(',')
                 for s in suffixes:
+                    if self.checkForStop():
+                        return None
+
                     b = t + s + "." + e
                     url = "https://" + b
                     res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot")

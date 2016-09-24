@@ -117,6 +117,11 @@ class sfp_tldsearch(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if eventData in self.results:
+            return None
+        else:
+            self.results.append(eventData)
+
         keyword = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
         self.sf.debug("Keyword extracted from " + eventData + ": " + keyword)
         targetList = list()

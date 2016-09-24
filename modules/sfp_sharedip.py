@@ -95,10 +95,8 @@ class sfp_sharedip(SpiderFootPlugin):
 
             myres = list()
             if "shared DNS of" in res['content']:
-                print "HERE!"
                 p = re.compile("rel=..nofollow.. href=..\?dns=(.[^\"]*)..>(.[^<]*)", re.IGNORECASE)
                 matches = p.findall(res['content'])
-                print str(matches)
                 for mt in matches:
                     m = mt[1]
                     self.sf.info("Found something on same IP: " + m)
