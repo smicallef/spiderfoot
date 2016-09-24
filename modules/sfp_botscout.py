@@ -52,6 +52,10 @@ class sfp_botscout(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.opts['apikey'] == "":
+            self.sf.error("You enabled sfp_botscout but did not set an API key!", False)
+            return None
+
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already searched.")
