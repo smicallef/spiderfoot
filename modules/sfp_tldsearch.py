@@ -14,6 +14,7 @@
 import socket
 import random
 import threading
+import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -87,6 +88,8 @@ class sfp_tldsearch(SpiderFootPlugin):
 
             if not found:
                 running = False
+
+            time.sleep(2)
 
         for res in self.tldResults.keys():
             if self.tldResults[res]:

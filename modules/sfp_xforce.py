@@ -40,6 +40,7 @@ class sfp_xforce(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     results = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -100,7 +101,15 @@ class sfp_xforce(SpiderFootPlugin):
 
         infield_sep = " ; "
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['xforce_api_key'] == "" or self.opts['xforce_password'] == "":
+            self.sf.error("You enabled sfp_xforce but did not set an API key/password!", False)
+            self.errorState = True
+            return None
 
         # Don't look up stuff twice
         if eventData in self.results:

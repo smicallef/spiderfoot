@@ -84,6 +84,7 @@ class sfp_filemeta(SpiderFootPlugin):
                 if len(ret['content']) < 512:
                     self.sf.error("Strange content encountered, size of " +
                                   str(len(ret['content'])), False)
+                    return None
 
                 meta = None
                 data = None

@@ -33,6 +33,7 @@ class sfp_shodan(SpiderFootPlugin):
     }
 
     results = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -75,10 +76,14 @@ class sfp_shodan(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if self.opts['apikey'] == "":
             self.sf.error("You enabled sfp_shodan but did not set an API key!", False)
+            self.errorState = True
             return None
 
             # Don't look up stuff twice

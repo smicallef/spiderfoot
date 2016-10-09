@@ -49,11 +49,12 @@ class sfp_phone(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        hashData = self.sf.hashstring(eventData)
 
-        if eventSource in self.results:
+        if hashData in self.results:
             return None
         else:
-            self.results.append(self.sf.hashstring(eventData))
+            self.results.append(hashData)
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

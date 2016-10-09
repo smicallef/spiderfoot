@@ -44,6 +44,7 @@ class sfp_honeypot(SpiderFootPlugin):
     }
 
     results = dict()
+    errorState = False
 
     # Status codes according to:
     # http://www.projecthoneypot.org/httpbl_api.php
@@ -145,10 +146,14 @@ class sfp_honeypot(SpiderFootPlugin):
         parentEvent = event
         addrlist = list()
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if self.opts['apikey'] == "":
             self.sf.error("You enabled sfp_honeypot but did not set an API key!", False)
+            self.errorState = True
             return None
 
         if eventData in self.results:

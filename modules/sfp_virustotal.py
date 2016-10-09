@@ -47,6 +47,7 @@ class sfp_virustotal(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     results = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -104,10 +105,14 @@ class sfp_virustotal(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if self.opts['apikey'] == "":
             self.sf.error("You enabled sfp_virustotal but did not set an API key!", False)
+            self.errorState = True
             return None
 
         # Don't look up stuff twice
