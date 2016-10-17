@@ -15,7 +15,6 @@ import json
 import base64
 from datetime import datetime
 import time
-
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -63,13 +62,12 @@ class sfp_xforce(SpiderFootPlugin):
         return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
                 "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-                "MALICIOUS_SUBNET",
-                "DNS_PASSIVE"]
+                "MALICIOUS_SUBNET", "CO_HOSTED_SITE"]
 
     def query(self, qry, querytype):
         ret = None
 
-        if querytype not in ["ipr/malware", "ipr/history"]:
+        if querytype not in ["ipr/malware", "ipr/history", "resolve"]:
             querytype = "ipr/malware"
 
         xforce_url = "https://api.xforce.ibmcloud.com"
@@ -79,6 +77,11 @@ class sfp_xforce(SpiderFootPlugin):
         }
         url = xforce_url + "/" + querytype + "/" + qry
         res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
+
+        if res['code'] in [ "401", "403", 401, 403 ]:
+            self.sf.error("XForce API key seems to have been rejected.", False)
+            self.errorState = True
+            return None
 
         if res['content'] is None:
             self.sf.info("No XForce info found for " + qry)
@@ -126,6 +129,25 @@ class sfp_xforce(SpiderFootPlugin):
         else:
             qrylist.append(eventData)
 
+        if eventName == "IP_ADDRESS":
+            evtType = "CO_HOSTED_SITE"
+            ret = self.query(eventData, "resolve")
+            if "Passive" in ret:
+                res = ret["Passive"]['records']
+                for rec in res:
+                    if rec['recordType'] == "A":
+                        last = rec.get("last", "")
+                        last_dt = datetime.strptime(last, '%Y-%m-%dT%H:%M:%SZ')
+                        last_ts = int(time.mktime(last_dt.timetuple()))
+                        age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
+                        host = rec['value']
+                        if last_ts < age_limit_ts:
+                            self.sf.info("Record found but too old, skipping.")
+                            continue
+                        else:
+                            e = SpiderFootEvent(evtType, host, self.__name__, event)
+                            self.notifyListeners(e)
+
         for addr in qrylist:
             if self.checkForStop():
                 return None
@@ -143,8 +165,8 @@ class sfp_xforce(SpiderFootPlugin):
 
             rec = self.query(addr, "ipr/history")
             if rec is not None:
-                rec_history = rec.get("history", None)
-                if rec_history is not None:
+                rec_history = rec.get("history", list())
+                if len(rec_history) > 0:
                     self.sf.info("Found history results in XForce")
                     for result in rec_history:
                         reasonDescription = result.get("reasonDescription", "")
@@ -155,6 +177,7 @@ class sfp_xforce(SpiderFootPlugin):
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                         if created_ts < age_limit_ts:
                             self.sf.info("Record found but too old, skipping.")
+                            print str(rec)
                             continue
                         reason = result.get("reason", "")
                         score = result.get("score", 0)
@@ -175,8 +198,8 @@ class sfp_xforce(SpiderFootPlugin):
                 
             rec = self.query(addr, "ipr/malware")
             if rec is not None:
-                rec_malware = rec.get("malware", None)
-                if rec_malware is not None:
+                rec_malware = rec.get("malware", list())
+                if len(rec_malware) > 0:
                     self.sf.info("Found malware results in XForce")
                     for result in rec_malware:
                         count = result.get("count", "")
