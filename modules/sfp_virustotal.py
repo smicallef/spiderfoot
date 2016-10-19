@@ -62,7 +62,7 @@ class sfp_virustotal(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
-                "AFFILIATE_DOMAIN", "CO_HOSTED_SITE", "NETBLOCK_OWNER",
+                "CO_HOSTED_SITE", "NETBLOCK_OWNER",
                 "NETBLOCK_MEMBER"]
 
     # What events this module produces

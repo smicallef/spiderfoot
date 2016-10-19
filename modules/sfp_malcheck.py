@@ -558,7 +558,7 @@ class sfp_malcheck(SpiderFootPlugin):
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['aaacheckcohosts']:
             return None
-        if eventName == 'AFFILIATE_DOMAIN' or eventName == 'AFFILIATE_IPADDR' \
+        if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts['aaacheckaffiliates']:
             return None
         if eventName == 'NETBLOCK_OWNER' and not self.opts['aaachecknetblocks']:

@@ -54,15 +54,15 @@ class sfp_xforce(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
-                "AFFILIATE_DOMAIN", "CO_HOSTED_SITE", "NETBLOCK_OWNER",
-                "NETBLOCK_MEMBER"]
+                "CO_HOSTED_SITE", "NETBLOCK_OWNER", "NETBLOCK_MEMBER",
+                "AFFILIATE_INTERNET_NAME"]
 
     # What events this module produces
     def producedEvents(self):
         return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
                 "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-                "MALICIOUS_SUBNET", "CO_HOSTED_SITE"]
+                "CO_HOSTED_SITE"]
 
     def query(self, qry, querytype):
         ret = None
@@ -129,6 +129,7 @@ class sfp_xforce(SpiderFootPlugin):
         else:
             qrylist.append(eventData)
 
+        # For IP Addresses, do the additional passive DNS lookup
         if eventName == "IP_ADDRESS":
             evtType = "CO_HOSTED_SITE"
             ret = self.query(eventData, "resolve")
@@ -152,7 +153,7 @@ class sfp_xforce(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            if eventName == 'IP_ADDRESS':
+            if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
                 evtType = 'MALICIOUS_IPADDR'
             if eventName == "AFFILIATE_IPADDR":
                 evtType = 'MALICIOUS_AFFILIATE_IPADDR'
