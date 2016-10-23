@@ -12,6 +12,7 @@
 
 import re
 import socket
+from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -22,7 +23,7 @@ class sfp_sharedip(SpiderFootPlugin):
     opts = {
         'cohostsamedomain': False,
         'pages': 20,
-        'source': 'robtex',
+        'sources': 'robtex',
         'verify': True
     }
 
@@ -30,7 +31,7 @@ class sfp_sharedip(SpiderFootPlugin):
     optdescs = {
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
         'pages': "If using Bing, how many pages to iterate through.",
-        'source': "Source: bing or robtex.",
+        'sources': "Source: 'bing' or 'robtex' or 'bing,robtex'.",
         'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP."
     }
 
@@ -45,7 +46,7 @@ class sfp_sharedip(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS"]
+        return ["IP_ADDRESS", "NETBLOCK_OWNER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -83,76 +84,88 @@ class sfp_sharedip(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
-        else:
-            self.results.append(eventData)
 
-        # Robtex
-        if self.opts['source'].lower() == "robtex":
-            res = self.sf.fetchUrl("https://www.robtex.com/?a=2&dns=" + eventData + "&shared=1")
-            if res['content'] is None:
-                self.sf.error("Unable to fetch robtex content.", False)
+        qrylist = list()
+        if eventName.startswith("NETBLOCK_"):
+            for ipaddr in IPNetwork(eventData):
+                if str(ipaddr) not in self.results:
+                    qrylist.append(str(ipaddr))
+                    self.results.append(str(ipaddr))
+        else:
+            qrylist.append(eventData)
+            self.results.append(eventdata)
+
+        myres = list()
+
+        for ip in qrylist:
+            if self.checkForStop():
                 return None
 
-            myres = list()
-            if "shared DNS of" in res['content']:
-                p = re.compile("rel=..nofollow.. href=..\?dns=(.[^\"]*)..>(.[^<]*)", re.IGNORECASE)
-                matches = p.findall(res['content'])
-                for mt in matches:
-                    m = mt[1]
-                    self.sf.info("Found something on same IP: " + m)
-                    if not self.opts['cohostsamedomain']:
-                        if self.getTarget().matches(m, includeParents=True):
-                            self.sf.debug("Skipping " + m + " because it is on the same domain.")
+            # Robtex
+            if "robtex" in self.opts['sources'].lower():
+                res = self.sf.fetchUrl("https://www.robtex.com/?a=2&dns=" + ip + "&shared=1")
+                if res['content'] is None:
+                    self.sf.error("Unable to fetch robtex content.", False)
+                    return None
+
+                if "shared DNS of" in res['content']:
+                    p = re.compile("<li><a href=..\?dns=(.[^\"]*)..>(.[^<]*)", re.IGNORECASE)
+                    matches = p.findall(res['content'])
+                    for mt in matches:
+                        m = mt[1]
+                        self.sf.info("Found something on same IP: " + m)
+                        if not self.opts['cohostsamedomain']:
+                            if self.getTarget().matches(m, includeParents=True):
+                                self.sf.debug("Skipping " + m + " because it is on the same domain.")
+                                continue
+    
+                        if '*' in m:
+                            self.sf.debug("Skipping wildcard name: " + m)
                             continue
-
-                    if '*' in m:
-                        self.sf.debug("Skipping wildcard name: " + m)
-                        continue
-
-                    if '.' not in m:
-                        self.sf.debug("Skipping tld: " + m)
-                        continue
-
-                    if m not in myres and m != eventData:
-                        if self.opts['verify'] and not self.validateIP(m, eventData):
-                            self.sf.debug("Host no longer resolves to our IP.")
+    
+                        if '.' not in m:
+                            self.sf.debug("Skipping tld: " + m)
                             continue
-                        evt = SpiderFootEvent("CO_HOSTED_SITE", m.lower(), self.__name__, event)
-                        self.notifyListeners(evt)
-                        myres.append(m.lower())
+    
+                        if m not in myres and m != ip:
+                            if self.opts['verify'] and not self.validateIP(m, ip):
+                                self.sf.debug("Host no longer resolves to our IP.")
+                                continue
+                            evt = SpiderFootEvent("CO_HOSTED_SITE", m.lower(), self.__name__, event)
+                            self.notifyListeners(evt)
+                            myres.append(m.lower())
 
-        # Bing
-        if self.opts['source'].lower() == "bing":
-            results = self.sf.bingIterate("ip:" + eventData, dict(limit=self.opts['pages'],
+            # Bing
+            if "bing" in self.opts['sources'].lower():
+                results = self.sf.bingIterate("ip:" + ip, dict(limit=self.opts['pages'],
                                                                   useragent=self.opts['_useragent'],
                                                                   timeout=self.opts['_fetchtimeout']))
-            myres = list()
-            if results is None:
-                self.sf.info("No data returned from Bing.")
-                return None
+                if results is None:
+                    self.sf.info("No data returned from Bing.")
+                    return None
 
-            for key in results.keys():
-                res = results[key]
-                pat = re.compile("<h2><a href=\"(\S+)\"", re.IGNORECASE)
-                matches = re.findall(pat, res)
-                for match in matches:
-                    self.sf.info("Found something on same IP: " + match)
-                    site = self.sf.urlFQDN(match.lower())
-                    if site not in myres and site != eventData:
-                        if not self.opts['cohostsamedomain']:
-                            if self.getTarget().matches(site, includeParents=True):
-                                self.sf.debug("Skipping " + site + " because it is on the same domain.")
+                for key in results.keys():
+                    res = results[key]
+                    pat = re.compile("<h2><a href=\"(\S+)\"", re.IGNORECASE)
+                    matches = re.findall(pat, res)
+                    for match in matches:
+                        self.sf.info("Found something on same IP: " + match)
+                        site = self.sf.urlFQDN(match.lower())
+                        if site not in myres and site != ip:
+                            if not self.opts['cohostsamedomain']:
+                                if self.getTarget().matches(site, includeParents=True):
+                                    self.sf.debug("Skipping " + site + " because it is on the same domain.")
+                                    continue
+                            if self.opts['verify'] and not self.validateIP(site, ip):
+                                self.sf.debug("Host no longer resolves to our IP.")
                                 continue
-                        if self.opts['verify'] and not self.validateIP(site, eventData):
-                            self.sf.debug("Host no longer resolves to our IP.")
-                            continue
-                        evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
-                        self.notifyListeners(evt)
-                        myres.append(site)
+                            evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
+                            self.notifyListeners(evt)
+                            myres.append(site)
 
-                # Submit the bing results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
+                    # Submit the bing results for analysis
+                    evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key],
+                                          self.__name__, event)
+                    self.notifyListeners(evt)
 
 # End of sfp_sharedip class
