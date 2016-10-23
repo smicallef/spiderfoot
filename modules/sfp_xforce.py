@@ -32,7 +32,7 @@ class sfp_xforce(SpiderFootPlugin):
     optdescs = {
         "xforce_api_key": "The X-Force Exchange API Key",
         "xforce_password": "The X-Force Exchange API Password",
-        "age_limit_days": "Ignore any records older than this many days"
+        "age_limit_days": "Ignore any records older than this many days. 0 = unlimited."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -133,7 +133,10 @@ class sfp_xforce(SpiderFootPlugin):
         if eventName == "IP_ADDRESS":
             evtType = "CO_HOSTED_SITE"
             ret = self.query(eventData, "resolve")
-            if "Passive" in ret:
+            if ret is None:
+                self.sf.info("No Passive DNS info for " + eventData)
+            elif "Passive" in ret:
+                self.sf.debug("Found passive DNS results in Xforce")
                 res = ret["Passive"]['records']
                 for rec in res:
                     if rec['recordType'] == "A":
@@ -142,8 +145,8 @@ class sfp_xforce(SpiderFootPlugin):
                         last_ts = int(time.mktime(last_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                         host = rec['value']
-                        if last_ts < age_limit_ts:
-                            self.sf.info("Record found but too old, skipping.")
+                        if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
+                            self.sf.debug("Record found but too old, skipping.")
                             continue
                         else:
                             e = SpiderFootEvent(evtType, host, self.__name__, event)
@@ -168,7 +171,7 @@ class sfp_xforce(SpiderFootPlugin):
             if rec is not None:
                 rec_history = rec.get("history", list())
                 if len(rec_history) > 0:
-                    self.sf.info("Found history results in XForce")
+                    self.sf.debug("Found history results in XForce")
                     for result in rec_history:
                         reasonDescription = result.get("reasonDescription", "")
                         created = result.get("created", "")
@@ -176,16 +179,15 @@ class sfp_xforce(SpiderFootPlugin):
                         created_dt = datetime.strptime(created, '%Y-%m-%dT%H:%M:%S.000Z')
                         created_ts = int(time.mktime(created_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
-                        if created_ts < age_limit_ts:
-                            self.sf.info("Record found but too old, skipping.")
-                            print str(rec)
+                        if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
+                            self.sf.debug("Record found but too old, skipping.")
                             continue
                         reason = result.get("reason", "")
                         score = result.get("score", 0)
                         cats = result.get("cats", None)
                         cats_description = ""
                         if int(score) < 2:
-                            self.sf.info("Non-malicious results, skipping.")
+                            self.sf.debug("Non-malicious results, skipping.")
                             continue
                         if cats is not None:
                             for cat in cats:
@@ -201,7 +203,7 @@ class sfp_xforce(SpiderFootPlugin):
             if rec is not None:
                 rec_malware = rec.get("malware", list())
                 if len(rec_malware) > 0:
-                    self.sf.info("Found malware results in XForce")
+                    self.sf.debug("Found malware results in XForce")
                     for result in rec_malware:
                         count = result.get("count", "")
                         origin = result.get("origin", "")
@@ -222,7 +224,17 @@ class sfp_xforce(SpiderFootPlugin):
                                     uri + infield_sep + \
                                     firstseen + infield_sep + \
                                     lastseen
-                        e = SpiderFootEvent(evtType, entry, self.__name__, event)
-                        self.notifyListeners(e)
+
+                        last = rec.get("last", "")
+                        last_dt = datetime.strptime(last, '%Y-%m-%dT%H:%M:%S.000Z')
+                        last_ts = int(time.mktime(last_dt.timetuple()))
+                        age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
+                        host = rec['value']
+                        if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
+                            self.sf.debug("Record found but too old, skipping.")
+                            continue
+                        else:
+                            e = SpiderFootEvent(evtType, entry, self.__name__, event)
+                            self.notifyListeners(e)
 
 # End of sfp_xforce class
