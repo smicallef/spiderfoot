@@ -38,7 +38,7 @@ class sfp_whois(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "OWNED_NETBLOCK"]
+        return ["DOMAIN_NAME", "NETBLOCK_OWNER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
