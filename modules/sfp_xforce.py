@@ -198,7 +198,11 @@ class sfp_xforce(SpiderFootPlugin):
                                     cats_description
                         e = SpiderFootEvent(evtType, entry, self.__name__, event)
                         self.notifyListeners(e)
-                
+
+            # ipr/malware doesn't support hostnames
+            if eventName in [ "CO_HOSTED_SITE", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME" ]:
+                continue
+
             rec = self.query(addr, "ipr/malware")
             if rec is not None:
                 rec_malware = rec.get("malware", list())
