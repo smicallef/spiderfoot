@@ -76,6 +76,13 @@ class sfp_spider(SpiderFootPlugin):
     def processUrl(self, url):
         site = self.sf.urlFQDN(url)
         cookies = None
+
+        # Filter out certain file types (if user chooses to)
+        checkExts = lambda ext: url.lower().split('?')[0].endswith('.' + ext.lower())
+        if filter(checkExts, self.opts['filterfiles']):
+            #self.sf.debug('Ignoring filtered extension: ' + link)
+            return None
+
         if site in self.siteCookies:
             self.sf.debug("Restoring cookies for " + site + ": " + str(self.siteCookies[site]))
             cookies = self.siteCookies[site]
@@ -161,12 +168,6 @@ class sfp_spider(SpiderFootPlugin):
             checkRobots = lambda blocked: str.lower(blocked) in link.lower() or blocked == '*'
             if self.opts['robotsonly'] and filter(checkRobots, self.robotsRules[linkBase]):
                 #self.sf.debug("Ignoring page found in robots.txt: " + link)
-                continue
-
-            # Filter out certain file types (if user chooses to)
-            checkExts = lambda ext: link.lower().split('?')[0].endswith('.' + ext.lower())
-            if filter(checkExts, self.opts['filterfiles']):
-                #self.sf.debug('Ignoring filtered extension: ' + link)
                 continue
 
             # All tests passed, add link to be spidered

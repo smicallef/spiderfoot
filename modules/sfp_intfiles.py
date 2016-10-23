@@ -71,8 +71,6 @@ class sfp_intfiles(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-        else:
-            self.results.append(eventData)
 
         if eventName == "LINKED_URL_INTERNAL":
             for fileExt in self.opts['fileexts']:
@@ -81,10 +79,14 @@ class sfp_intfiles(SpiderFootPlugin):
                         continue
                     else:
                         self.results.append(eventData)
+
                     evt = SpiderFootEvent("INTERESTING_FILE", eventData,
                                           self.__name__, event)
                     self.notifyListeners(evt)
             return None
+
+        if eventData not in self.results:
+            self.results.append(eventData)
 
         # Handling INTERNET_NAME event..
         for fileExt in self.opts['fileexts']:
