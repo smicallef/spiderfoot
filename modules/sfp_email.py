@@ -63,6 +63,7 @@ class sfp_email(SpiderFootPlugin):
 
         pat = re.compile("([\%a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
         matches = re.findall(pat, eventData)
+        myres = list()
         for match in matches:
             if len(match) < 4:
                 self.sf.debug("Likely invalid address: " + match)
@@ -84,6 +85,12 @@ class sfp_email(SpiderFootPlugin):
                 mail = unicode(match, 'utf-8', errors='replace')
             else:
                 mail = match
+
+            if mail in myres:
+                self.sf.debug("Already found from this source.")
+            else:
+                myres.append(mail)
+
             evt = SpiderFootEvent("EMAILADDR", mail, self.__name__, parentEvent)
             self.notifyListeners(evt)
 
