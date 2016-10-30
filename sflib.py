@@ -806,7 +806,7 @@ class SpiderFoot:
             proto = "http"
 
         if data is None or len(data) == 0:
-            self.error('parseLinks() called with no data to parse', False)
+            self.debug("parseLinks() called with no data to parse.")
             return None
 
         try:
