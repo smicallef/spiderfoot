@@ -11,6 +11,7 @@
 
 import sys
 import json
+import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pwned(SpiderFootPlugin):
@@ -66,11 +67,17 @@ class sfp_pwned(SpiderFootPlugin):
         url = "https://haveibeenpwned.com/api/v2/breachedaccount/" + qry
         hdrs = { "Accept": "application/vnd.haveibeenpwned.v2+json" }
 
+        # https://haveibeenpwned.com/API/v2#RateLimiting
+        time.sleep(1.5)
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot", headers=hdrs)
 
-        if res['code'] == 404:
+        if res['code'] in [ 404, "404" ]:
             return None
+
+        if res['code'] in [ 429, "429" ]:
+            # Back off a little further
+            time.sleep(2)
 
         try:
             ret = json.loads(res['content'])
