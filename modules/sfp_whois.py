@@ -61,7 +61,10 @@ class sfp_whois(SpiderFootPlugin):
 
         try:
             x = pythonwhois.net.get_whois_raw(eventData)
-            data = unicode('\n'.join(x), 'utf-8', errors='replace')
+            try:
+                data = unicode('\n'.join(x), 'utf-8', errors='replace')
+            except BaseException as e:
+                    data = '\n'.join(x)
         except BaseException as e:
             self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
             return None
