@@ -50,9 +50,8 @@ class sfp_email(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        parentEvent = event.sourceEvent
 
-        if eventName == "EMAILADDR":
+        if eventName.startswith("EMAILADDR"):
             return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
@@ -74,7 +73,8 @@ class sfp_email(SpiderFootPlugin):
                 self.sf.debug("Skipped address: " + match)
                 continue
 
-            mailDom = match.lower().split('@')[1]
+            # Get the doain and strip potential ending .
+            mailDom = match.lower().split('@')[1].strip('.')
             if not self.opts['includeexternal'] and not \
                     self.getTarget().matches(mailDom):
                 self.sf.debug("Ignoring e-mail address on an external domain: " + match)
@@ -82,16 +82,17 @@ class sfp_email(SpiderFootPlugin):
 
             self.sf.info("Found e-mail address: " + match)
             if type(match) == str:
-                mail = unicode(match, 'utf-8', errors='replace')
+                mail = unicode(match.strip('.'), 'utf-8', errors='replace')
             else:
-                mail = match
+                mail = match.strip('.')
 
             if mail in myres:
                 self.sf.debug("Already found from this source.")
+                continue
             else:
                 myres.append(mail)
 
-            evt = SpiderFootEvent("EMAILADDR", mail, self.__name__, parentEvent)
+            evt = SpiderFootEvent("EMAILADDR", mail, self.__name__, event)
             self.notifyListeners(evt)
 
         return None
