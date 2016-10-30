@@ -57,7 +57,7 @@ class sfp_pastes(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SEARCH_ENGINE_WEB_CONTENT", "PASTESITE_CONTENT"]
+        return ["PASTESITE_CONTENT"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -92,11 +92,6 @@ class sfp_pastes(SpiderFootPlugin):
                     if self.checkForStop():
                         return None
 
-                    # Submit the google results for analysis
-                    evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page],
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
-
                     # Fetch the paste site content
                     links += self.sf.parseLinks(page, pages[page], target)
 
@@ -117,10 +112,6 @@ class sfp_pastes(SpiderFootPlugin):
                         if res['content'] is None:
                             self.sf.debug("Ignoring " + link + " as no data returned")
                             continue
-
-                        evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT",
-                                              res['content'], self.__name__, event)
-                        self.notifyListeners(evt)
 
                         # Sometimes pastes search results false positives
                         if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
