@@ -93,7 +93,7 @@ class sfp_sharedip(SpiderFootPlugin):
                     self.results.append(str(ipaddr))
         else:
             qrylist.append(eventData)
-            self.results.append(eventdata)
+            self.results.append(eventData)
 
         myres = list()
 
