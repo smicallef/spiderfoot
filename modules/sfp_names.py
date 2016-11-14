@@ -68,7 +68,8 @@ class sfp_names(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["TARGET_WEB_CONTENT", "EMAILADDR"]
+        return ["TARGET_WEB_CONTENT", "EMAILADDR", 
+                "DOMAIN_WHOIS", "NETBLOCK_WHOIS"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -86,7 +87,11 @@ class sfp_names(SpiderFootPlugin):
 
         if eventName == "EMAILADDR" and self.opts['emailtoname']:
             if "." in eventData.split("@")[0]:
-                name = " ".join(map(unicode.capitalize, eventData.split("@")[0].split(".")))
+                if type(eventData) == unicode:
+                    name = " ".join(map(unicode.capitalize, eventData.split("@")[0].split(".")))
+                else:
+                    name = " ".join(map(str.capitalize, eventData.split("@")[0].split(".")))
+                    name = unicode(name, 'utf-8', errors='replace')
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
                 self.notifyListeners(evt)

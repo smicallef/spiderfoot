@@ -11,8 +11,12 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
+try:
+    import re2 as re
+except ImportError:
+    import re
 import phonenumbers
+from string import maketrans
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_phone(SpiderFootPlugin):
@@ -42,26 +46,24 @@ class sfp_phone(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, event):
-        if "sfp_spider" in event.module:
-            eventSource = event.sourceEvent
-        else:
-            eventSource = event
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        hashData = self.sf.hashstring(eventData)
+        sourceData = self.sf.hashstring(eventData)
 
-        if hashData in self.results:
+        if sourceData in self.results:
             return None
         else:
-            self.results.append(hashData)
+            self.results.append(sourceData)
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        for match in phonenumbers.PhoneNumberMatcher(eventData, region=None):
+        # Make potential phone numbers more friendly to parse
+        content = eventData.replace('.','-')
+        for match in phonenumbers.PhoneNumberMatcher(content, region=None):
             n = phonenumbers.format_number(match.number, 
                                            phonenumbers.PhoneNumberFormat.E164)
-            evt = SpiderFootEvent("PHONE_NUMBER", n, self.__name__, eventSource)
+            evt = SpiderFootEvent("PHONE_NUMBER", n, self.__name__, event)
             self.notifyListeners(evt)
 
         return None
