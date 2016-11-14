@@ -16,7 +16,6 @@ try:
 except ImportError:
     import re
 import phonenumbers
-from string import maketrans
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_phone(SpiderFootPlugin):
