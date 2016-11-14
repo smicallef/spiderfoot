@@ -520,7 +520,8 @@ class SpiderFoot:
         regexToType = {
             "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
             "^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER",
-            "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME"
+            "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME",
+            "^.*@.*$": "EMAILADDR"
         }
 
         # Parse the target and set the targetType
@@ -1476,7 +1477,8 @@ class SpiderFootPlugin(object):
 
 # Class for targets
 class SpiderFootTarget(object):
-    _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME"]
+    _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME",
+                   "EMAILADDR" ]
     targetType = None
     targetValue = None
     targetAliases = list()
