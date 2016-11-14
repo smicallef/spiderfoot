@@ -63,9 +63,7 @@ malchecks = {
         'type': 'query',
         'checks': ['domain', 'ip'],
         'url': 'http://www.google.com/safebrowsing/diagnostic?site={0}',
-        'badregex': ['.*may harm your computer.*',
-                     '.*this site has hosted malicious software.*'
-                     ],
+        'badregex': ['.*not safe to visit.*'],
         'goodregex': []
     },
     'Google SafeBrowsing (ASN)': {
