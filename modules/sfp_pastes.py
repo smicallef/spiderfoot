@@ -57,7 +57,7 @@ class sfp_pastes(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["PASTESITE_CONTENT"]
+        return ["LEAKSITE_CONTENT", "LEAKSITE_URL"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -119,17 +119,16 @@ class sfp_pastes(SpiderFootPlugin):
                           continue
 
                         try:
-                            startIndex = res['content'].index(eventData) - 120
-                            endIndex = startIndex + len(eventData) + 240
+                            startIndex = res['content'].index(eventData)
                         except BaseException as e:
                             self.sf.debug("String not found in pastes content.")
                             continue
 
-                        data = res['content'][startIndex:endIndex]
+                        evt1 = SpiderFootEvent("LEAKSITE_URL", link, self.__name__, event)
+                        self.notifyListeners(evt1)
 
-                        evt = SpiderFootEvent("PASTESITE_CONTENT",
-                                              "<SFURL>" + link + "</SFURL>\n" + "\"... " + data + " ...\"",
-                                              self.__name__, event)
-                        self.notifyListeners(evt)
+                        evt2 = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, evt1)
+                        self.notifyListeners(evt2)
+
 
 # End of sfp_pastes class
