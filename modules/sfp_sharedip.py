@@ -17,13 +17,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sharedip(SpiderFootPlugin):
-    """Shared IP:Footprint,Investigate,Passive:Networking:errorprone:Search Bing and/or Robtex.com for hosts sharing the same IP."""
+    """Shared IP:Footprint,Investigate,Passive:Networking:errorprone:Search Bing and/or Robtex.com and/or HackerTarget.com for hosts sharing the same IP."""
 
     # Default options
     opts = {
         'cohostsamedomain': False,
         'pages': 20,
-        'sources': 'robtex',
+        'sources': 'robtex,bing,hackertarget',
         'verify': True
     }
 
@@ -31,7 +31,7 @@ class sfp_sharedip(SpiderFootPlugin):
     optdescs = {
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
         'pages': "If using Bing, how many pages to iterate through.",
-        'sources': "Source: 'bing' or 'robtex' or 'bing,robtex'.",
+        'sources': "Source: 'bing' or 'robtex' or 'hackertarget' or combined, separated by commas (e.g. hackertarget,robtex).",
         'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP."
     }
 
@@ -134,6 +134,30 @@ class sfp_sharedip(SpiderFootPlugin):
                             evt = SpiderFootEvent("CO_HOSTED_SITE", m.lower(), self.__name__, event)
                             self.notifyListeners(evt)
                             myres.append(m.lower())
+
+            # Hackertarget.com
+            if "hackertarget" in self.opts['sources'].lower():
+                res = self.sf.fetchUrl("http://api.hackertarget.com/reverseiplookup/?q=" + eventData)
+                if res['content'] is None:
+                    self.sf.error("Unable to fetch hackertarget.com content.", False)
+                    return None
+
+                if "No records" not in res['content']:
+                    hosts = res['content'].split('\n')
+                    for h in hosts:
+                        self.sf.info("Found something on same IP: " + h)
+                        if not self.opts['cohostsamedomain']:
+                            if self.getTarget().matches(h, includeParents=True):
+                                self.sf.debug("Skipping " + h + " because it is on the same domain.")
+                                continue
+
+                        if h not in myres and h != ip:
+                            if self.opts['verify'] and not self.validateIP(h, ip):
+                                self.sf.debug("Host no longer resolves to our IP.")
+                                continue
+                            evt = SpiderFootEvent("CO_HOSTED_SITE", h.lower(), self.__name__, event)
+                            self.notifyListeners(evt)
+                            myres.append(h.lower())
 
             # Bing
             if "bing" in self.opts['sources'].lower():
