@@ -17,16 +17,14 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_vuln(SpiderFootPlugin):
-    """Vulnerable:Footprint,Investigate,Passive:Blacklists:errorprone:Check external vulnerability scanning services (XSSposed.org, punkspider.org) to see if the target is listed."""
+    """Vulnerable:Footprint,Investigate,Passive:Blacklists:errorprone:Check external vulnerability scanning/reporting services (for now only openbugbounty.org) to see if the target is listed."""
 
     # Default options
     opts = {
-        "cutoff": 0
     }
 
     # Option descriptions
     optdescs = {
-        "cutoff": "The maximum age in days of a vulnerbility for it to be included. 0 = unlimited."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -55,94 +53,26 @@ class sfp_vuln(SpiderFootPlugin):
         return ret
 
     # Query XSSposed.org
-    def queryXss(self, qry):
+    def queryOBB(self, qry):
         ret = list()
-        base = "https://www.xssposed.org"
-        url = "https://www.xssposed.org/search/?search=" + qry + "&type=host"
-        res = self.sf.fetchUrl(url, timeout=30, 
-            useragent="SpiderFoot")
+        base = "https://www.openbugbounty.org"
+        url = "https://www.openbugbounty.org/search/?search=" + qry
+        res = self.sf.fetchUrl(url, timeout=30, useragent="SpiderFoot")
 
         if res['content'] is None:
-            self.sf.debug("No content returned from xssposed.org")
+            self.sf.debug("No content returned from openbugbounty.org")
             return None
 
         try:
-            if "XSS mirror(s) match" in res['content']:
-                """ Expected:
-                        <td>
-                            <div class="cell1"><a href="/incidents/12345/">blah.com</a></div>
-                        </td>
-                        <td>
-                            <div class="cell2"> <i>xxxx</i></div>
-                        </td>
-                        <td>
-                            <div class="cell3">01/01/2010</div>
-                        </td>
-                    </tr>
-                """
-
-                rx = re.compile("class=.cell1.><a href=\"(.[^>]+)\">(.[^<]+).*?cell3.>(.*?)</div>", 
-                    re.IGNORECASE|re.DOTALL)
-                for m in rx.findall(res['content']):
-                    if self.opts['cutoff'] == 0:
-                        # Report it
-                        if m[1] == qry or m[1].endswith("."+qry):
-                            ret.append("From XSSposed.org: <SFURL>" + base + m[0] + "</SFURL>")
-                    else:
-                        ts = time.strftime("%s", time.strptime(m[2], "%d.%m.%Y"))
-                        if int(ts) > int(time.time())-(86400*self.opts['cutoff']) and \
-                            (m[1] == qry or m[1].endswith("."+qry)):
-                            # Report it
-                            #print "calc: " + str(ts) + " > " + str(int(time.time())-(86400*self.opts['cutoff']))
-                            #print "MADE IT past cut-off " + str(self.opts['cutoff']) + ": " + str(m)
-                            ret.append("From XSSposed.org: <SFURL>" + base + m[0] + "</SFURL>")
+            rx = re.compile(".*<div class=.cell1.><a href=.(.*).>(.*" + qry + ").*?</a></div>.*", re.IGNORECASE)
+            for m in rx.findall(res['content']):
+                # Report it
+                print "FOUND MATCH!" + str(m)
+                if m[1] == qry or m[1].endswith("."+qry):
+                    ret.append("From openbugbounty.org: <SFURL>" + base + m[0] + "</SFURL>")
         except Exception as e:
-            self.sf.error("Error processing response from XSSposed.org: " + str(e), False)
+            self.sf.error("Error processing response from openbugbounty.org: " + str(e), False)
             return None
-        return ret
-
-    # Query punkspider.org
-    def queryPunk(self, qry):
-        ret = list()
-        base = "https://www.punkspider.org/#searchkey=url&searchvalue=.{0}&pagenumber=1&filterType=or&filters=bsqli,sqli,xss,trav,mxi,osci,xpathi"
-        url = "https://www.punkspider.org/service/search/domain/"
-        post = '{"searchKey":"url","searchValue":".' + qry + '","pageNumber":1,"filterType":"or","filters":["bsqli","mxi","osci","sqli","trav","xpathi","xss"]}\n\r'
-
-        headers = {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json; charset=UTF-8'
-        }
-        res = self.sf.fetchUrl(url, timeout=60,
-            useragent="SpiderFoot", postData=post, headers=headers)
-
-        if res['content'] is None:
-            self.sf.debug("No content returned from punkspider.org")
-            return None
-
-        #print "CONTENT: " + res['content']
-
-        if "timestamp\":" in res['content']:
-            """ Expected:
-            {"input": {"searchKey": "url", "filterType": "or", "searchValue": "cnn.com", "pageNumber": 1, "filters": ["bsqli", "mxi", "osci", "sqli", "trav", "xpathi", "xss"]}, "output": {"domainSummaryDTOs": [{"xpathi": "0", "xss": "1", "domain": "www.domain.com", "osci": "0", "title": "Title not found", "url": "www.domain.com", "timestamp": "2014-05-18T12:30:55Z", "exploitabilityLevel": 1, "sqli": "0", "trav": "0", "mxi": "0", "id": "www.domain.com", "bsqli": "0"}], "qTime": 9745, "rowsFound": 1, "numberOfPages": 1}}
-            """
-
-            try:
-                data = json.loads(res['content'])
-                #print "DATA: " + str(data)
-                for rec in data['output']['domainSummaryDTOs']:
-                    if self.opts['cutoff'] == 0:
-                        ret.append("From Punkspider.org: " + rec['url'] + "\n<SFURL>" + base.format(qry) + "</SFURL>")
-                    else:
-                        ts = rec['timestamp']
-                        nts = time.strftime("%s", time.strptime(ts, "%Y-%m-%dT%H:%M:%SZ"))
-                        if int(nts) > int(time.time())-(86400*self.opts['cutoff']):
-                            # Report it
-                            #print "calc: " + str(nts) + " > " + str(int(time.time())-(86400*self.opts['cutoff']))
-                            #print "MADE IT past cut-off " + str(self.opts['cutoff']) + ": " + str(ts)
-                            ret.append("From Punkspider.org: " + rec['url'] + "\n<SFURL>" + base.format(qry) + "</SFURL>")
-            except Exception as e:
-                self.sf.error("Error processing response from Punkspider.org: " + str(e), False)
-                return None
         return ret
 
     # Handle events sent to this module
@@ -161,13 +91,9 @@ class sfp_vuln(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        xss = self.queryXss(eventData)
-        if xss:
-            data.extend(xss)
-
-        punk = self.queryPunk(eventData)
-        if punk:
-            data.extend(punk)
+        obb = self.queryOBB(eventData)
+        if obb:
+            data.extend(obb)
 
         for n in data:
             # Notify other modules of what you've found
