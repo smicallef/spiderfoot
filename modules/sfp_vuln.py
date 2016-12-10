@@ -57,7 +57,7 @@ class sfp_vuln(SpiderFootPlugin):
         ret = list()
         base = "https://www.openbugbounty.org"
         url = "https://www.openbugbounty.org/search/?search=" + qry
-        res = self.sf.fetchUrl(url, timeout=30, useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
 
         if res['content'] is None:
             self.sf.debug("No content returned from openbugbounty.org")
@@ -67,7 +67,6 @@ class sfp_vuln(SpiderFootPlugin):
             rx = re.compile(".*<div class=.cell1.><a href=.(.*).>(.*" + qry + ").*?</a></div>.*", re.IGNORECASE)
             for m in rx.findall(res['content']):
                 # Report it
-                print "FOUND MATCH!" + str(m)
                 if m[1] == qry or m[1].endswith("."+qry):
                     ret.append("From openbugbounty.org: <SFURL>" + base + m[0] + "</SFURL>")
         except Exception as e:

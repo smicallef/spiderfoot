@@ -108,7 +108,7 @@ class sfp_sharedip(SpiderFootPlugin):
                     self.sf.error("Unable to fetch robtex content.", False)
                     return None
 
-                if "shared DNS of" in res['content']:
+                if "shared DNS of" in res['content'] or "Pointing to " + ip in res['content']:
                     p = re.compile("<li><a href=..\?dns=(.[^\"]*)..>(.[^<]*)", re.IGNORECASE)
                     matches = p.findall(res['content'])
                     for mt in matches:
