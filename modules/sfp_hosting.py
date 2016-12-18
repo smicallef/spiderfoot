@@ -63,7 +63,10 @@ class sfp_hosting(SpiderFootPlugin):
         for line in data['content'].split('\n'):
             if "," not in line:
                 continue
-            [start,end,title,url] = line.split(",")
+            try:
+                [start,end,title,url] = line.split(",")
+            except BaseException as e:
+                continue
 
             if IPAddress(qaddr) > IPAddress(start) and IPAddress(qaddr) < IPAddress(end):
                 return [title, url]
