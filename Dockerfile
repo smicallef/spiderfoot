@@ -11,7 +11,7 @@
 #   sudo docker run -it -p 8080:8080 spiderfoot
 
 # Pull the base image.
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 # Install pre-requisites.
 RUN apt-get update && apt-get install -y \
@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
   libxslt1-dev \
   python-pip  \
   python-dev \
+  python-setuptools \
   python-lxml \
   swig \
   --no-install-recommends
@@ -36,7 +37,7 @@ RUN rm -rf /var/lib/apt/lists/* \
 RUN addgroup spiderfoot && \
     useradd -r -g spiderfoot -d /home/spiderfoot -s /sbin/nologin -c "SpiderFoot User" spiderfoot
 
-ENV SPIDERFOOT_VERSION 2.7.0
+ENV SPIDERFOOT_VERSION 2.7.1
 
 # Download the specified release.
 WORKDIR /home
