@@ -58,7 +58,7 @@ class sfp_accounts(SpiderFootPlugin):
             url = "https://raw.githubusercontent.com/WebBreacher/WhatsMyName/master/web_accounts_list.json"
             data = self.sf.fetchUrl(url, useragent="SpiderFoot")
             if data['content'] is None:
-                self.sf.error("Unable to fetch " + url)
+                self.sf.error("Unable to fetch " + url, False)
                 return None
             else:
                 self.sf.cachePut("sfaccounts", data['content'])
