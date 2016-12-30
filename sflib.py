@@ -21,6 +21,7 @@ import json
 import re
 import os
 import random
+import requests
 import socket
 import ssl
 import sys
@@ -900,7 +901,7 @@ class SpiderFoot:
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False, 
-                 postData=None, dontMangle=False):
+                 postData=None, dontMangle=False, sizeLimit=None):
         result = {
             'code': None,
             'status': None,
@@ -926,6 +927,12 @@ class SpiderFoot:
             if headers is not None:
                 for k in headers.keys():
                     header[k] = headers[k]
+
+            if sizeLimit:
+                hdr = requests.head(url, headers=header)
+                size = int(hdr.headers.get('content-length', 0))
+                if size > sizeLimit:
+                    return None
 
             req = urllib2.Request(url, postData, header)
             if cookies is not None:
