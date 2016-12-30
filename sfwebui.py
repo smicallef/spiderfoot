@@ -604,6 +604,9 @@ class SpiderFootWebUi:
             errState = False
             scaninfo = dbh.scanInstanceGet(id)
 
+            if scaninfo is None:
+                return self.error("Invalid scan ID specified.")
+
             if globalScanStatus.getStatus(id) == "FINISHED" or scaninfo[5] == "FINISHED":
                 error.append("Scan '" + scaninfo[0] + "' is in a finished state. <a href='/scandelete?id=" + \
                              id + "&confirm=1'>Maybe you want to delete it instead?</a>")
@@ -632,6 +635,11 @@ class SpiderFootWebUi:
     # Stop a scan.
     def stopscan(self, id):
         global globalScanStatus
+
+        dbh = SpiderFootDb(self.config)
+        scaninfo = dbh.scanInstanceGet(id)
+        if scaninfo is None:
+            return self.error("Inalid scan ID.")
 
         if globalScanStatus.getStatus(id) is None:
             return self.error("That scan is not actually running. A data consistency " + \
