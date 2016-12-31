@@ -639,7 +639,7 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.config)
         scaninfo = dbh.scanInstanceGet(id)
         if scaninfo is None:
-            return self.error("Inalid scan ID.")
+            return self.error("Invalid scan ID.")
 
         if globalScanStatus.getStatus(id) is None:
             return self.error("That scan is not actually running. A data consistency " + \
