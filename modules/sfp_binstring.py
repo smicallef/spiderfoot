@@ -24,7 +24,7 @@ class sfp_binstring(SpiderFootPlugin):
         'maxfilesize': 1000000,
         'usedict': True,
         'fileexts': ['png', 'gif', 'jpg', 'jpeg', 'tiff', 'tif',
-                    'ico', 'flv', 'mp4', 'mp3', 'avi', 'mpg'
+                    'ico', 'flv', 'mp4', 'mp3', 'avi', 'mpg',
                     'mpeg', 'dat', 'mov', 'swf', 'exe', 'bin'],
         'filterchars': '#}{|%^&*()=+,;[]~'
     }
