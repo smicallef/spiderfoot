@@ -315,7 +315,15 @@ class SpiderFoot:
         if mod is None:
             modName = "Unknown"
         else:
-            modName = mod.__name__
+            if mod.__name__ == "sflib":
+                frm = inspect.stack()[2]
+                mod = inspect.getmodule(frm[0])
+                if mod is None:
+                    modName = "Unknown"
+                else:
+                    modName = mod.__name__
+            else:
+                modName = mod.__name__
 
         if self.dbh is None:
             print '[' + modName + '] ' + message
