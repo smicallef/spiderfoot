@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
-import hashlib
 import random
 
 class sfp_junkfiles(SpiderFootPlugin):
@@ -20,7 +19,7 @@ class sfp_junkfiles(SpiderFootPlugin):
     # Default options
     opts = {
         'fileexts': ['tmp', 'bak', 'old', 'backup', 'new'],
-        'urlextstry': ['html', 'htm', 'php', 'jsp', 'txt', 'js'],
+        'urlextstry': ['asp', 'php', 'jsp',],
         'files': ['x', 'xxx', 'crap', 'old', 'a', 'aaa', 'z', 'zzz',
                   'out', 'sql', "passwd", ".htaccess", ".htpasswd",
                   "Thumbs.db", "asd", "asdf"],
@@ -38,16 +37,16 @@ class sfp_junkfiles(SpiderFootPlugin):
     }
 
     results = list()
-    contentHashes = list()
     hosts = list()
     skiphosts = list()
+    bases = list()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = list()
-        self.contentHashes = list()
         self.hosts = list()
         self.skiphosts = list()
+        self.bases = list()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -61,16 +60,6 @@ class sfp_junkfiles(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["JUNK_FILE"]
-
-    # Check if contents are standard contents
-    def isGeneric(self, content):
-        hashStr = hashlib.sha1(content.encode('raw_unicode_escape')).hexdigest()
-        if hashStr in self.contentHashes:
-            self.sf.debug("Skipping due to looking like a generic page.")
-            return True
-        else:
-            self.contentHashes.append(hashStr)
-            return False
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -86,27 +75,25 @@ class sfp_junkfiles(SpiderFootPlugin):
         else:
             self.results.append(eventData)
 
-        if host in self.skiphosts:
+        if self.opts['skipfake'] and host in self.skiphosts:
+            self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
             return None
 
-        # Try and fetch an obviously missing page, store the hash
-        if host not in self.hosts:
-            res = self.sf.fetchUrl(host + "/" + str(random.randint(0, 99999999)) + ".html",
+        # Try and fetch an obviously missing page
+        if host not in self.hosts and self.opts['skipfake']:
+            fetch = host + "/" + str(random.randint(0, 99999999)) + ".html"
+            res = self.sf.fetchUrl(fetch, headOnly=True,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
-            if res['content'] != None:
-                hashStr = hashlib.sha1(res['content'].encode('raw_unicode_escape')).hexdigest()
-                self.contentHashes.append(hashStr)  
-                if self.opts['skipfake']:
-                    self.skiphosts.append(host)
-                    return None
+            if res['code'] not in [ 404, "404"]:
+                self.skiphosts.append(host)
 
             self.hosts.append(host)
 
-        # http://www/blah/abc.html -> try http://www/blah/abc.html.[fileexts]
+        # http://www/blah/abc.php -> try http://www/blah/abc.php.[fileexts]
         for ext in self.opts['urlextstry']:
             if "." + ext + "?" in eventData or "." + ext + "#" in eventData or \
-                    eventData.endswith(ext):
+                    eventData.endswith("." + ext):
                 bits = eventData.split("?")
                 for x in self.opts['fileexts']:
                     if self.checkForStop():
@@ -119,40 +106,24 @@ class sfp_junkfiles(SpiderFootPlugin):
                     else:
                         self.sf.debug("Skipping, already fetched.")
                         continue
-                    res = self.sf.fetchUrl(fetch,
+                    res = self.sf.fetchUrl(fetch, headOnly=True,
                                            timeout=self.opts['_fetchtimeout'],
-                                           useragent=self.opts['_useragent'])
-                    if res['content'] is not None and res['code'] in ["200", 200]:
-                        if not self.isGeneric(res['content']):
-                            evt = SpiderFootEvent("JUNK_FILE", fetch,
-                                                  self.__name__, event)
-                            self.notifyListeners(evt)
-
-        # http://www or http://www/
-        # -> try index pages
-        if eventData.endswith("/") or eventData.count("/") == 2:
-            for ext in ["index.html", "index.htm", "default.htm"]:
-                self.sf.debug("Trying " + ext + " against " + eventData)
-                for x in self.opts['fileexts']:
-                    if self.checkForStop():
-                        return None
-
-                    fetch = eventData + "/" + ext + "." + x
-                    if fetch not in self.results:
-                        self.results.append(fetch)
-                    else:
-                        self.sf.debug("Skipping, already fetched.")
+                                           useragent=self.opts['_useragent'],
+                                           sizeLimit=10000000)
+                    if res['realurl'] != fetch:
+                        self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                         continue
-                    res = self.sf.fetchUrl(fetch,
-                                           timeout=self.opts['_fetchtimeout'],
-                                           useragent=self.opts['_useragent'])
-                    if res['content'] is not None and res['code'] in [ "200", 200]:
-                        if not self.isGeneric(res['content']):
-                            evt = SpiderFootEvent("JUNK_FILE", fetch,
-                                                  self.__name__, event)
-                            self.notifyListeners(evt)
+                    if res['code'] in ["200", 200]:
+                        evt = SpiderFootEvent("JUNK_FILE", fetch,
+                                              self.__name__, event)
+                        self.notifyListeners(evt)
 
         base = self.sf.urlBaseDir(eventData)
+        if base in self.bases:
+            return None
+        else:
+            self.bases.append(base)
+
         # don't do anything with the root directory of a site
         self.sf.debug("Base: " + base + ", event: " + eventData)
         if base == eventData + "/" or base == eventData:
@@ -163,7 +134,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            if base.count('/') < 4:
+            if base.count('/') == 3:
                 self.sf.debug("Skipping base url.")
                 continue
 
@@ -174,14 +145,16 @@ class sfp_junkfiles(SpiderFootPlugin):
             else:
                 self.sf.debug("Skipping, already fetched.")
                 continue
-            res = self.sf.fetchUrl(fetch,
+            res = self.sf.fetchUrl(fetch, headOnly=True,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
-            if res['content'] is not None and res['code'] in ["200", 200]:
-                if not self.isGeneric(res['content']):
-                    evt = SpiderFootEvent("JUNK_FILE", fetch,
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
+            if res['realurl'] != fetch:
+                self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
+                continue
+            if res['code'] in ["200", 200]:
+                evt = SpiderFootEvent("JUNK_FILE", fetch,
+                                      self.__name__, event)
+                self.notifyListeners(evt)
 
         # http://www/blah/abc.html -> try http://www/blah/[files]
         for f in self.opts['files']:
@@ -195,14 +168,16 @@ class sfp_junkfiles(SpiderFootPlugin):
             else:
                 self.sf.debug("Skipping, already fetched.")
                 continue
-            res = self.sf.fetchUrl(fetch,
+            res = self.sf.fetchUrl(fetch, headOnly=True,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
-            if res['content'] is not None and res['code'] in ["200", 200]:
-                if not self.isGeneric(res['content']):
-                    evt = SpiderFootEvent("JUNK_FILE", fetch,
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
+            if res['realurl'] != fetch:
+                self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
+                continue
+            if res['code'] in ["200", 200]:
+                evt = SpiderFootEvent("JUNK_FILE", fetch,
+                                      self.__name__, event)
+                self.notifyListeners(evt)
 
         return None
 
