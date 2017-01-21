@@ -195,6 +195,10 @@ class SpiderFootScanner(threading.Thread):
                 mod = getattr(module, modName)()
                 mod.__name__ = modName
 
+                # Module may have been renamed or removed
+                if modName not in self.ts.config['__modules__']:
+                    continue
+
                 # Set up the module
                 # Configuration is a combined global config with module-specific options
                 self.ts.modconfig[modName] = deepcopy(self.ts.config['__modules__'][modName]['opts'])
