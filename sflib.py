@@ -917,13 +917,14 @@ class SpiderFoot:
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False, 
-                 postData=None, dontMangle=False, sizeLimit=None):
+                 postData=None, dontMangle=False, sizeLimit=None,
+                 headOnly=False):
         result = {
             'code': None,
             'status': None,
             'content': None,
             'headers': None,
-            'realurl': None
+            'realurl': url
         }
 
         if url is None:
@@ -944,11 +945,36 @@ class SpiderFoot:
                 for k in headers.keys():
                     header[k] = headers[k]
 
-            if sizeLimit:
+            if sizeLimit or headOnly:
+                if not noLog:
+                    self.info("Fetching (HEAD only): " + url + \
+                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                          str(timeout) + "]")
+
                 hdr = requests.head(url, headers=header)
                 size = int(hdr.headers.get('content-length', 0))
+                result['realurl'] = hdr.headers.get('location', url)
+                result['code'] = hdr.status_code
+
+                if headOnly:
+                    return result
+
                 if size > sizeLimit:
-                    return None
+                    return result
+
+                if result['realurl'] != url:
+                    if not noLog:
+                       self.info("Fetching (HEAD only): " + url + \
+                              " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                              str(timeout) + "]")
+
+                    hdr = requests.head(result['realurl'], headers=header)
+                    size = int(hdr.headers.get('content-length', 0))
+                    result['realurl'] = hdr.headers.get('location', result['realurl'])
+                    result['code'] = hdr.status_code
+
+                    if size > sizeLimit:
+                        return result
 
             req = urllib2.Request(url, postData, header)
             if cookies is not None:
