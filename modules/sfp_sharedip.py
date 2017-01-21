@@ -103,13 +103,13 @@ class sfp_sharedip(SpiderFootPlugin):
 
             # Robtex
             if "robtex" in self.opts['sources'].lower():
-                res = self.sf.fetchUrl("https://www.robtex.com/?a=2&dns=" + ip + "&shared=1")
+                res = self.sf.fetchUrl("https://www.robtex.com/?a=2&ip=" + ip + "&shared=1")
                 if res['content'] is None:
                     self.sf.error("Unable to fetch robtex content.", False)
                     return None
 
-                if "shared DNS of" in res['content'] or "Pointing to " + ip in res['content']:
-                    p = re.compile("<li><a href=..\?dns=(.[^\"]*)..>(.[^<]*)", re.IGNORECASE)
+                if "shared DNS of" in res['content'] or "Pointing to " in res['content']:
+                    p = re.compile("<li><a href=(.*?/dns-lookup/.*?)..>(.[^<]*)", re.IGNORECASE)
                     matches = p.findall(res['content'])
                     for mt in matches:
                         m = mt[1]
@@ -145,6 +145,8 @@ class sfp_sharedip(SpiderFootPlugin):
                 if "No records" not in res['content']:
                     hosts = res['content'].split('\n')
                     for h in hosts:
+                        if " " in h:
+                            continue
                         self.sf.info("Found something on same IP: " + h)
                         if not self.opts['cohostsamedomain']:
                             if self.getTarget().matches(h, includeParents=True):
