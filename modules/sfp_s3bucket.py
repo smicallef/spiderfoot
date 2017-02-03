@@ -64,7 +64,7 @@ class sfp_s3bucket(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventName == "LINKED_URL_EXTERNAL":
-            if "s3.amazonaws.com" in eventData:
+            if ".amazonaws.com" in eventData:
                 b = self.sf.urlFQDN(eventData)
                 evt = SpiderFootEvent("AMAZON_S3_BUCKET", b, self.__name__, event)
                 self.notifyListeners(evt)
