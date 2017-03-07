@@ -64,6 +64,9 @@ class sfp_cymon(SpiderFootPlugin):
     def query(self, qry, querytype):
         ret = None
 
+        if self.errorState:
+            return None
+
         if querytype == "ipblacklist":
             querytype = "ip/{0}"
         if querytype == "passive":
