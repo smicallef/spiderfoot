@@ -155,7 +155,7 @@ class sfp_censys(SpiderFootPlugin):
                     self.notifyListeners(e)
 
                 if 'autonomous_system' in rec:
-                    dat = rec['autonomous_system']['asn']
+                    dat = str(rec['autonomous_system']['asn'])
                     e = SpiderFootEvent("BGP_AS_MEMBER", dat, self.__name__, event)
                     self.notifyListeners(e)
                     dat = rec['autonomous_system']['routed_prefix']
