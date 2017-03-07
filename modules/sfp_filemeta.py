@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import mimetypes
-import metapdf
+import PyPDF2
 import openxmllib
 import exifread
 import lxml
@@ -75,7 +75,8 @@ class sfp_filemeta(SpiderFootPlugin):
                 # Fetch the file, allow much more time given that these files are
                 # typically large.
                 ret = self.sf.fetchUrl(eventData, timeout=self.opts['timeout'],
-                                       useragent=self.opts['_useragent'], dontMangle=True)
+                                       useragent=self.opts['_useragent'], dontMangle=True,
+                                       sizeLimit=10000000)
                 if ret['content'] is None:
                     self.sf.error("Unable to fetch file for meta analysis: " +
                                   eventData, False)
@@ -92,7 +93,9 @@ class sfp_filemeta(SpiderFootPlugin):
                 if fileExt.lower() == "pdf":
                     try:
                         raw = StringIO(ret['content'])
-                        data = metapdf.MetaPdfReader().read_metadata(raw)
+                        #data = metapdf.MetaPdfReader().read_metadata(raw)
+                        pdf = PyPDF2.PdfFileReader(raw, strict=False)
+                        data = pdf.getDocumentInfo()
                         meta = str(data)
                         self.sf.debug("Obtained meta data from " + eventData)
                     except BaseException as e:
@@ -127,7 +130,7 @@ class sfp_filemeta(SpiderFootPlugin):
                         self.sf.error("Unable to parse meta data from: " +
                                       eventData + "(" + str(e) + ")", False)
 
-                if meta is not None:
+                if meta is not None and data is not None:
                     evt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
                                           self.__name__, event)
                     self.notifyListeners(evt)
