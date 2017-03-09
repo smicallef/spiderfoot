@@ -44,21 +44,6 @@ class sfp_binstring(SpiderFootPlugin):
     n = None
     fq = None
 
-    def builddict(self, files):
-        wd = dict()
-
-        for f in files:
-            wdct = open(self.sf.myPath() + "/ext/ispell/" + f, 'r')
-            dlines = wdct.readlines()
-
-            for w in dlines:
-                w = w.strip().lower()
-                # Leave out a, to, on, at, etc.
-                if len(w) >= 3:
-                    wd[w.split('/')[0]] = True
-
-        return wd.keys()
-
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = list()
