@@ -63,9 +63,7 @@ class sfp_binstring(SpiderFootPlugin):
         self.sf = sfc
         self.results = list()
 
-        self.d = self.builddict(["english.0", "english.2", "english.4",
-                            "british.0", "british.2", "british.4",
-                            "american.0", "american.2", "american.4"])
+        self.d = self.sf.dictwords()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

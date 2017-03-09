@@ -728,6 +728,39 @@ class SpiderFoot:
                 ret.append(addr)
         return ret
 
+    # Return dictionary words and/or names
+    def dictwords(self):
+        wd = dict()
+
+        dicts = [ "english", "german", "french", "spanish" ]
+
+        for d in dicts:
+            wdct = open(self.myPath() + "/ext/ispell/" + d + ".dict", 'r')
+            dlines = wdct.readlines()
+
+            for w in dlines:
+                w = w.strip().lower()
+                wd[w.split('/')[0]] = True
+
+        return wd.keys()
+
+    # Return dictionary names
+    def dictnames(self):
+        wd = dict()
+
+        dicts = [ "names" ]
+
+        for d in dicts:
+            wdct = open(self.myPath() + "/ext/ispell/" + d + ".dict", 'r')
+            dlines = wdct.readlines()
+
+            for w in dlines:
+                w = w.strip().lower()
+                wd[w.split('/')[0]] = True
+
+        return wd.keys()
+
+
     # Converts a dictionary of k -> array to a nested
     # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):

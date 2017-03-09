@@ -32,32 +32,15 @@ class sfp_names(SpiderFootPlugin):
     results = dict()
     d = None
     n = None
-    fq = None
-
-    def builddict(self, files):
-        wd = dict()
-
-        for f in files:
-            wdct = open(self.sf.myPath() + "/ext/ispell/" + f, 'r')
-            dlines = wdct.readlines()
-
-            for w in dlines:
-                w = w.strip().lower()
-                wd[w.split('/')[0]] = True
-
-        return wd.keys()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
 
-        d = self.builddict(["english.0", "english.2", "english.4",
-                            "british.0", "british.2", "british.4",
-                            "american.0", "american.2", "american.4"])
-        self.n = self.builddict(["names.list"])
-        self.fq = ["north", "south", "east", "west", "santa", "san", "blog", "sao"]
+        d = self.sf.dictwords()
+        self.n = self.sf.dictnames()
         # Take dictionary words out of the names list to keep things clean
-        self.d = list(set(d) - set(self.n))
+        self.d = set(set(d) - set(self.n))
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -127,10 +110,6 @@ class sfp_names(SpiderFootPlugin):
 
             # If either word is 2 characters, subtract 50 points.
             if len(first) == 2 or len(second) == 2:
-                p -= 50
-
-            # If the first word is in our cue list, knock out more points.
-            if first in self.fq:
                 p -= 50
 
             # If the first word is in the dictionary but the second isn't,
