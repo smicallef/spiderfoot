@@ -26,6 +26,8 @@ RUN apt-get update && apt-get install -y \
   python-setuptools \
   python-lxml \
   python-m2crypto \
+  python-bs4 \
+  python-requests \
   swig \
   --no-install-recommends
 
