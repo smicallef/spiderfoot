@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_pwned
-# Purpose:      Query haveibeenpwned.com to see if an account has been hacked.
+# Purpose:      Query haveibeenpwned.com to see if an e-mail account has been hacked.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -15,16 +15,14 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pwned(SpiderFootPlugin):
-    """Pwned Password:Footprint,Investigate,Passive:Search Engines:errorprone:Check Have I Been Pwned? for hacked accounts identified."""
+    """Pwned Password:Footprint,Investigate,Passive:Search Engines:errorprone:Check Have I Been Pwned? for hacked e-mail addresses identified."""
 
     # Default options
     opts = { 
-        "lookupusernames": True
     }
 
     # Option descriptions
     optdescs = {
-        "lookupusernames": "Also look up usernames, not just e-mail addresses. More prone to false positives for common names."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -44,40 +42,31 @@ class sfp_pwned(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        ret = ["EMAILADDR"]
-
-        if self.opts['lookupusernames']:
-            ret.extend(["ACCOUNT_EXTERNAL_USER_SHARED", "ACCOUNT_EXTERNAL_OWNED"])
-
-        return ret
+        return ["EMAILADDR"]
 
     # What events this module produces
     def producedEvents(self):
-        ret = ["EMAILADDR_COMPROMISED"]
-
-        if self.opts['lookupusernames']:
-            ret.extend(["ACCOUNT_EXTERNAL_USER_SHARED_COMPROMISED", 
-                "ACCOUNT_EXTERNAL_OWNED_COMPROMISED"])
-
-        return ret
+        return ["EMAILADDR_COMPROMISED"]
 
     def query(self, qry):
         ret = None
-
         url = "https://haveibeenpwned.com/api/v2/breachedaccount/" + qry
         hdrs = { "Accept": "application/vnd.haveibeenpwned.v2+json" }
+        retry = 0
 
-        # https://haveibeenpwned.com/API/v2#RateLimiting
-        time.sleep(1.5)
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
-            useragent="SpiderFoot", headers=hdrs)
+        while retry < 2:
+            # https://haveibeenpwned.com/API/v2#RateLimiting
+            time.sleep(1.5)
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+                                   useragent="SpiderFoot", headers=hdrs)
 
-        if res['code'] in [ 404, "404" ]:
-            return None
+            if res['code'] in [ 404, "404" ]:
+                return None
 
-        if res['code'] in [ 429, "429" ]:
-            # Back off a little further
-            time.sleep(2)
+            if res['code'] in [ 429, "429" ]:
+                # Back off a little further
+                time.sleep(2)
+            retry += 1
 
         try:
             ret = json.loads(res['content'])
@@ -91,15 +80,12 @@ class sfp_pwned(SpiderFootPlugin):
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
-        if "ACCOUNT" in eventName:
-            eventData = event.data.split(" ")[0]
-        else:
-            eventData = event.data
+        eventData = event.data
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
        # Don't look up stuff twice
-        if self.results.has_key(eventData):
+        if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
@@ -114,7 +100,7 @@ class sfp_pwned(SpiderFootPlugin):
             evt = eventName + "_COMPROMISED"
             # Notify other modules of what you've found
             e = SpiderFootEvent(evt, eventData + " [" + site + "]",
-                self.__name__, event)
+                                self.__name__, event)
             self.notifyListeners(e)
 
 # End of sfp_pwned class

@@ -32,11 +32,11 @@ class sfp_binstring(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'minwordsize': "Upon finding a string in a binary, ensure it is at least this length. Helps weed out false positives.",
-        'usedict': "Use the English dictionary to further reduce false positives - any string found must contain a word from the dictionary (can be very slow, especially for larger files).",
+        'usedict': "Use the dictionary to further reduce false positives - any string found must contain a word from the dictionary (can be very slow, especially for larger files).",
         'fileexts': "File types to fetch and analyse.",
-        'maxfilesize': "Maximum file size to download for analysis.",
-        'maxwords': "Stop reporting strings after this many are found.",
-        'filterchars': "Ignore lines with these characters."
+        'maxfilesize': "Maximum file size in bytes to download for analysis.",
+        'maxwords': "Stop reporting strings from a single binary after this many are found.",
+        'filterchars': "Ignore strings with these characters, as they may just be garbage ASCII."
     }
 
     results = list()
