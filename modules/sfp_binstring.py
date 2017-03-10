@@ -48,7 +48,7 @@ class sfp_binstring(SpiderFootPlugin):
         self.sf = sfc
         self.results = list()
 
-        self.d = self.sf.dictwords()
+        self.d = set(self.sf.dictwords())
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

@@ -22,14 +22,18 @@ class sfp_accounts(SpiderFootPlugin):
     opts = {
         "generic": ["root", "abuse", "sysadm", "sysadmin", "noc", "support", "admin",
                     "contact", "help", "flame", "test", "info", "sales", "hostmaster"],
-        "ignoredict": True,
+        "ignorenamedict": True,
+        "ignoreworddict": True,
+        "musthavename": True,
         "maxthreads": 25
     }
 
     # Option descriptions
     optdescs = {
         "generic": "Generic internal accounts to not bother looking up externally.",
-        "ignoredict": "Don't bother looking up names that are just stand-alone first names (too many false positives).",
+        "ignorenamedict": "Don't bother looking up names that are just stand-alone first names (too many false positives).",
+        "ignoreworddict": "Don't bother looking up names that appear in the dictionary.",
+        "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
         "maxthreads": "Maximum number of simultaneous threads (one thread per site the account is being checked on.)"
     }
 
@@ -47,11 +51,8 @@ class sfp_accounts(SpiderFootPlugin):
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-            names = open(self.sf.myPath() + "/ext/ispell/names.list", 'r')
-            lines = names.readlines()
-            for item in lines:
-                self.commonNames.append(item.strip().lower())
-            names.close()
+        self.commonNames = set(self.sf.dictnames())
+        self.words = set(self.sf.dictwords())
 
         content = self.sf.cacheGet("sfaccounts", 48)
         if content is None:
@@ -110,6 +111,10 @@ class sfp_accounts(SpiderFootPlugin):
         except BaseException:
             self.sf.debug("Error parsing configuration: " + str(site))
             found = False
+
+        if found and self.opts['musthavename']:
+            if name not in res['content']:
+                found = False
 
         self.siteResults[retname] = found
 
@@ -200,8 +205,12 @@ class sfp_accounts(SpiderFootPlugin):
                 self.sf.debug(name + " is a generic account name, skipping.")
                 return None
 
-            if self.opts['ignoredict'] and name in self.commonNames:
+            if self.opts['ignorenamedict'] and name in self.commonNames:
                 self.sf.debug(name + " is found in our name dictionary, skipping.")
+                return None
+
+            if self.opts['ignoreworddict'] and name in self.words:
+                self.sf.debug(name + " is found in our word dictionary, skipping.")
                 return None
 
             users.append(name)
