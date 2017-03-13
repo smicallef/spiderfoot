@@ -42,7 +42,7 @@ class sfp_psbdmp(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        ret = ["EMAILADDR", "DOMAIN_NAME"]
+        ret = ["EMAILADDR", "DOMAIN_NAME", "INTERNET_NAME"]
 
         return ret
 

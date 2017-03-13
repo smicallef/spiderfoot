@@ -44,7 +44,7 @@ class sfp_hunter(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME" ]
+        return [ "DOMAIN_NAME", "INTERNET_NAME" ]
 
     # What events this module produces
     def producedEvents(self):
