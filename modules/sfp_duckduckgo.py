@@ -37,7 +37,8 @@ class sfp_duckduckgo(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME"]
+        return ["DOMAIN_NAME", "DOMAIN_NAME_PARENT",
+                "INTERNET_NAME", "AFFILIATE_INTERNET_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
