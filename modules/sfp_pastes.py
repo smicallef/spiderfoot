@@ -51,7 +51,7 @@ class sfp_pastes(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "EMAILADDR"]
+        return ["DOMAIN_NAME", "INTERNET_NAME", "EMAILADDR"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events

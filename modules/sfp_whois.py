@@ -38,7 +38,7 @@ class sfp_whois(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "NETBLOCK_OWNER"]
+        return ["DOMAIN_NAME", "DOMAIN_NAME_PARENT", "NETBLOCK_OWNER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -69,7 +69,7 @@ class sfp_whois(SpiderFootPlugin):
             self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
             return None
 
-        if eventName == "DOMAIN_NAME":
+        if eventName.startswith("DOMAIN_NAME"):
             typ = "DOMAIN_WHOIS"
         else:
             typ = "NETBLOCK_WHOIS"
@@ -84,7 +84,7 @@ class sfp_whois(SpiderFootPlugin):
             return None
 
         if info.has_key('registrar'):
-            if eventName == "DOMAIN_NAME" and info['registrar'] is not None:
+            if eventName.startswith("DOMAIN_NAME") and info['registrar'] is not None:
                 evt = SpiderFootEvent("DOMAIN_REGISTRAR", info['registrar'][0],
                                       self.__name__, event)
                 self.notifyListeners(evt)
