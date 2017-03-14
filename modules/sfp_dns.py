@@ -479,7 +479,7 @@ class sfp_dns(SpiderFootPlugin):
                                                   self.__name__, parentEvent)
                             self.notifyListeners(evt)
             except BaseException as e:
-                self.sf.error("Failed to obtain DNS response for " + parentEvent +
+                self.sf.error("Failed to obtain DNS response for " + entity +
                               "(" + rec + "): " + str(e), False)
 
         if not iterate:
