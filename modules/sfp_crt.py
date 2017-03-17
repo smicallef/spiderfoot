@@ -13,6 +13,7 @@
 
 import json
 import re
+import M2Crypto
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -38,7 +39,19 @@ class sfp_crt(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["INTERNET_NAME"]
+        return ["INTERNET_NAME", "SSL_CERTIFICATE_ISSUED", 
+                "SSL_CERTIFICATE_ISSUER", "SSL_CERTIFICATE_RAW"]
+
+    def getIssued(self, cert, sevt):
+        issued = cert.get_subject().as_text().encode('raw_unicode_escape')
+        evt = SpiderFootEvent("SSL_CERTIFICATE_ISSUED", issued, self.__name__, sevt)
+        self.notifyListeners(evt)
+
+    # Report back the certificate issuer
+    def getIssuer(self, cert, sevt):
+        issuer = cert.get_issuer().as_text().encode('raw_unicode_escape')
+        evt = SpiderFootEvent("SSL_CERTIFICATE_ISSUER", issuer, self.__name__, sevt)
+        self.notifyListeners(evt)
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -64,8 +77,21 @@ class sfp_crt(SpiderFootPlugin):
         try:
             evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'], self.__name__, event)
             self.notifyListeners(evt)
+
+            matches = re.findall("\"min_cert_id\":(\d+),", res['content'], re.IGNORECASE)
+            for m in matches:
+                dat = self.sf.fetchUrl("https://crt.sh/?d=" + m, timeout=self.opts['_fetchtimeout'], 
+                                       useragent=self.opts['_useragent'])
+
+                m2cert = M2Crypto.X509.load_cert_string(str(dat['content']).replace('\r', ''))
+                rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW",
+                                         m2cert.as_text().encode('raw_unicode_escape'),
+                                         self.__name__, event)
+                self.notifyListeners(rawevt)
+                self.getIssuer(m2cert, evt)
+                self.getIssued(m2cert, evt)
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug("Error processing JSON response: " + str(e))
             return None
 
         return None
