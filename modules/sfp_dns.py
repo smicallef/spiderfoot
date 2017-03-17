@@ -125,7 +125,7 @@ class sfp_dns(SpiderFootPlugin):
     def watchedEvents(self):
         arr = ['RAW_DNS_RECORDS', 'SEARCH_ENGINE_WEB_CONTENT', 'RAW_RIR_DATA',
                'TARGET_WEB_CONTENT', 'LINKED_URL_INTERNAL', 'INTERNET_NAME',
-               'IP_ADDRESS', 'NETBLOCK_OWNER', "DNS_TEXT"]
+               'IP_ADDRESS', 'NETBLOCK_OWNER', "DNS_TEXT", "SSL_CERTIFICATE_RAW"]
         return arr
 
     # What events this module produces
@@ -152,7 +152,7 @@ class sfp_dns(SpiderFootPlugin):
 
         self.events[eventDataHash] = True
         # Identify potential sub-domains/hostnames
-        if eventName in ["SEARCH_ENGINE_WEB_CONTENT", "TARGET_WEB_CONTENT",
+        if eventName in ["SEARCH_ENGINE_WEB_CONTENT", "TARGET_WEB_CONTENT", "SSL_CERTIFICATE_RAW",
                          "LINKED_URL_INTERNAL", "RAW_RIR_DATA", "RAW_DNS_RECORDS", "DNS_TEXT"]:
             # If we've received a link or some raw data, extract potential sub-domains
             # from the data for resolving later.
