@@ -96,11 +96,12 @@ class sfp_accounts(SpiderFootPlugin):
 
         try:
             found = False
+            site['account_existence_code'] = str(site['account_existence_code'])
             if site['account_existence_code']:
-                if site['account_existence_code'] in [ res['code'], str(res['code']) ]:
+                if site['account_existence_code'] == res['code']:
                     found = True
             if site['account_missing_code']: 
-                if site['account_missing_code'] in [ res['code'], str(res['code']) ]:
+                if site['account_missing_code'] == res['code']:
                     found = False
             if site['account_existence_string']:
                 if site['account_existence_string'] in res['content']:

@@ -58,7 +58,7 @@ class sfp_hunter(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot")
 
-        if res['code'] in [ 404, "404" ]:
+        if res['code'] == "404":
             return None
 
         try:

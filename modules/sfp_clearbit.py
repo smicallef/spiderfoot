@@ -61,7 +61,7 @@ class sfp_clearbit(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot", headers=headers)
 
-        if res['code'] not in [ 200, "200" ]:
+        if res['code'] != "200":
             self.sf.error("Return code indicates no results or potential API key failure.", 
                        False)
             return None

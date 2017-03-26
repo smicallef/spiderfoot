@@ -60,10 +60,10 @@ class sfp_pwned(SpiderFootPlugin):
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                                    useragent="SpiderFoot", headers=hdrs)
 
-            if res['code'] in [ 404, "404" ]:
+            if res['code'] == "404":
                 return None
 
-            if res['code'] in [ 429, "429" ]:
+            if res['code'] == "429":
                 # Back off a little further
                 time.sleep(2)
             retry += 1

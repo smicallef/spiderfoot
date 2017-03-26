@@ -75,7 +75,7 @@ class sfp_censys(SpiderFootPlugin):
         res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], 
                                useragent="SpiderFoot", headers=headers)
 
-        if res['code'] in [ "400", "429", "500", "403", 400, 429, 500, 403 ]:
+        if res['code'] in [ "400", "429", "500", "403" ]:
             self.sf.error("Censys.io API key seems to have been rejected or you have exceeded usage limits for the month.", False)
             self.errorState = True
             return None

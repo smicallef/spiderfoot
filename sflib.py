@@ -987,7 +987,7 @@ class SpiderFoot:
                 hdr = requests.head(url, headers=header, verify=False)
                 size = int(hdr.headers.get('content-length', 0))
                 result['realurl'] = hdr.headers.get('location', url)
-                result['code'] = hdr.status_code
+                result['code'] = str(hdr.status_code)
 
                 if headOnly:
                     return result
@@ -1004,7 +1004,7 @@ class SpiderFoot:
                     hdr = requests.head(result['realurl'], headers=header, verify=False)
                     size = int(hdr.headers.get('content-length', 0))
                     result['realurl'] = hdr.headers.get('location', result['realurl'])
-                    result['code'] = hdr.status_code
+                    result['code'] = str(hdr.status_code)
 
                     if size > sizeLimit:
                         return result
@@ -1041,17 +1041,17 @@ class SpiderFoot:
             #print "FOR: " + url
             #print "HEADERS: " + str(result['headers'])
             result['realurl'] = fullPage.geturl()
-            result['code'] = fullPage.getcode()
+            result['code'] = str(fullPage.getcode())
             result['status'] = 'OK'
         except urllib2.HTTPError as h:
             if not noLog:
                 self.info("HTTP code " + str(h.code) + " encountered for " + url)
             # Capture the HTTP error code
-            result['code'] = h.code
+            result['code'] = str(h.code)
             for k, v in h.info().items():
                 result['headers'][k.lower()] = v
             if fatal:
-                self.fatal('URL could not be fetched (' + h.code + ')')
+                self.fatal('URL could not be fetched (' + str(h.code) + ')')
         except urllib2.URLError as e:
             if not noLog:
                 self.info("Error fetching " + url + "(" + str(e) + ")")
@@ -1107,7 +1107,7 @@ class SpiderFoot:
         while attempts < 3:
             firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
                                       useragent=opts['useragent'])
-            if firstPage['code'] == 403 or firstPage['code'] == 503:
+            if firstPage['code'] == "403" or firstPage['code'] == "503":
                 self.error("Google doesn't like us right now..", False)
                 failed = True
 
@@ -1157,7 +1157,7 @@ class SpiderFoot:
             while attempts < 3:
                 nextPage = self.fetchUrl(u'https://www.google.com' + nextUrl,
                                          timeout=opts['timeout'], useragent=opts['useragent'])
-                if nextPage['code'] == 403 or nextPage['code'] == 503:
+                if nextPage['code'] == "403" or nextPage['code'] == "503":
                     self.error("Google doesn't like us right now..", False)
                     failed = True
 
@@ -1210,7 +1210,7 @@ class SpiderFoot:
         while attempts < 3:
             firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
                                       useragent=opts['useragent'])
-            if firstPage['code'] == 400:
+            if firstPage['code'] == "400":
                 self.error("Bing doesn't like us right now..", False)
                 failed = True
 
@@ -1258,7 +1258,7 @@ class SpiderFoot:
             while attempts < 3:
                 nextPage = self.fetchUrl(u'https://www.bing.com' + nextUrl,
                                          timeout=opts['timeout'], useragent=opts['useragent'])
-                if nextPage['code'] == 400:
+                if nextPage['code'] == "400":
                     self.error("Bing doesn't like us any more..", False)
                     failed = True
 
@@ -1311,7 +1311,7 @@ class SpiderFoot:
         while attempts < 3:
             firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
                                       useragent=opts['useragent'])
-            if firstPage['code'] == 403:
+            if firstPage['code'] == "403":
                 self.error("Yahoo doesn't like us right now..", False)
                 failed = True
 
@@ -1357,7 +1357,7 @@ class SpiderFoot:
             while attempts < 3:
                 nextPage = self.fetchUrl(nextUrl, timeout=opts['timeout'], 
                                          useragent=opts['useragent'])
-                if nextPage['code'] == 403:
+                if nextPage['code'] == "403":
                     self.error("Yahoo doesn't like us any more..", False)
                     failed = True
 

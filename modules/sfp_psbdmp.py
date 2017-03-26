@@ -63,7 +63,7 @@ class sfp_psbdmp(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot")
 
-        if res['code'] == 403:
+        if res['code'] == "403":
             self.sf.info("Unable to fetch data from psbdmp.com right now.")
             return None
 
