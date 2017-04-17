@@ -18,7 +18,7 @@ from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_alienvault(SpiderFootPlugin):
-    """AlienVault OTX Exchange:Investigate,Passive:Blacklists:apikey:Obtain information from AlienVault OTX"""
+    """AlienVault OTX:Investigate,Passive:Blacklists:apikey:Obtain information from AlienVault Open Threat Exchange (OTX)"""
 
     # Default options
     opts = {
