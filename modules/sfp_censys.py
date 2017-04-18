@@ -164,6 +164,8 @@ class sfp_censys(SpiderFootPlugin):
 
                 if 'protocols' in rec:
                     for p in rec['protocols']:
+                        if 'ip' not in rec:
+                            continue
                         dat = rec['ip'] + ":" + p.split("/")[0]
                         e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, event)
                         self.notifyListeners(e)

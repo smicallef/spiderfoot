@@ -113,7 +113,7 @@ class sfp_junkfiles(SpiderFootPlugin):
                     if res['realurl'] != fetch:
                         self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                         continue
-                    if res['code'] != "200":
+                    if res['code'] == "200":
                         evt = SpiderFootEvent("JUNK_FILE", fetch,
                                               self.__name__, event)
                         self.notifyListeners(evt)
@@ -151,7 +151,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             if res['realurl'] != fetch:
                 self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                 continue
-            if res['code'] != "200":
+            if res['code'] == "200":
                 evt = SpiderFootEvent("JUNK_FILE", fetch,
                                       self.__name__, event)
                 self.notifyListeners(evt)
@@ -174,7 +174,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             if res['realurl'] != fetch:
                 self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                 continue
-            if res['code'] != "200":
+            if res['code'] == "200":
                 evt = SpiderFootEvent("JUNK_FILE", fetch,
                                       self.__name__, event)
                 self.notifyListeners(evt)

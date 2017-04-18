@@ -92,7 +92,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             time.sleep(2)
 
         for res in self.tldResults.keys():
-            if self.tldResults[res]:
+            if self.tldResults[res] and res not in self.results:
                 self.sendEvent(sourceEvent, res)
 
     # Store the result internally and notify listening modules

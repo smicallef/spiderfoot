@@ -145,17 +145,19 @@ class sfp_alienvault(SpiderFootPlugin):
                 res = ret["passive_dns"]
                 for rec in res:
                     if "hostname" in rec:
-                        last = rec.get("last", "")
-                        last_dt = datetime.strptime(last, '%Y-%m-%d %H:%M:%S')
-                        last_ts = int(time.mktime(last_dt.timetuple()))
-                        age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                         host = rec['hostname']
-                        if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
-                            self.sf.debug("Record found but too old, skipping.")
-                            continue
-                        else:
-                            e = SpiderFootEvent(evtType, host, self.__name__, event)
-                            self.notifyListeners(e)
+                        try:
+                            last = rec.get("last", "")
+                            last_dt = datetime.strptime(last, '%Y-%m-%d %H:%M:%S')
+                            last_ts = int(time.mktime(last_dt.timetuple()))
+                            age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
+                            if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
+                                self.sf.debug("Record found but too old, skipping.")
+                                continue
+                        except BaseException as e:
+                            self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
+                        e = SpiderFootEvent(evtType, host, self.__name__, event)
+                        self.notifyListeners(e)
 
         for addr in qrylist:
             if self.checkForStop():
@@ -185,14 +187,15 @@ class sfp_alienvault(SpiderFootPlugin):
                         descr += "\n - " + result.get("name", "")
                         created = result.get("last_date", "")
                         # 2014-11-06T10:45:00.000
-                        created_dt = datetime.strptime(created, '%Y-%m-%dT%H:%M:%S')
-                        created_ts = int(time.mktime(created_dt.timetuple()))
-                        age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
-                        if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                            self.sf.debug("Record found but too old, skipping.")
-                            continue
-                        cats_description = ""
-
+                        try:
+                            created_dt = datetime.strptime(created, '%Y-%m-%dT%H:%M:%S')
+                            created_ts = int(time.mktime(created_dt.timetuple()))
+                            age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
+                            if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
+                                self.sf.debug("Record found but too old, skipping.")
+                                continue
+                        except BaseException as e:
+                            self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
                     e = SpiderFootEvent(evtType, descr, self.__name__, event)
                     self.notifyListeners(e)
 
