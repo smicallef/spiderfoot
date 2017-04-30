@@ -456,7 +456,7 @@ class sfp_dns(SpiderFootPlugin):
                     ns = dns.resolver.get_default_resolver()
                     n = ns.nameservers[0]
 
-                res = dns.query.udp(req, n)
+                res = dns.query.udp(req, n, timeout=30)
                 for x in res.answer:
                     for rx in recs.keys():
                         self.sf.debug("Checking " + str(x) + " + against " + recs[rx][0])
