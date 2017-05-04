@@ -517,8 +517,46 @@ class SpiderFootWebUi:
 
     resultsetfp.exposed = True
 
+    # For the CLI to fetch a list of event types.
+    def eventtypes(self):
+        dbh = SpiderFootDb(self.config)
+        types = dbh.eventTypes()
+
+        return json.dumps(types)
+
+    eventtypes.exposed = True
+
+    # For the CLI to fetch a list of modules.
+    def modules(self):
+        modinfo = self.config['__modules__'].keys()
+        return json.dumps(modinfo)
+
+    modules.exposed = True
+
+    # For the CLI to test connectivity to this server.
+    def ping(self):
+        return json.dumps(["SUCCESS", ""])
+
+    ping.exposed = True
+
+    # For the CLI to run queries against the database.
+    def query(self, query):
+        data = None
+        dbh = SpiderFootDb(cfg)
+        if not query.startswith("SELECT"):
+            return json_dumps(["ERROR", "Non-SELECTs are unpredictable and not recommended."])
+        try:
+            ret = dbh.execute(query)
+            data = ret.fetchall()
+        except BaseException as e:
+            return json_dumps(["ERROR", str(e)])
+
+        return json_dumps(data)
+
+    query.exposed = True
+
     # Initiate a scan
-    def startscan(self, scanname, scantarget, modulelist, typelist, usecase):
+    def startscan(self, scanname, scantarget, modulelist, typelist, usecase, cli=None):
         global globalScanStatus
 
         # Snapshot the current configuration to be used by the scan
@@ -532,10 +570,17 @@ class SpiderFootWebUi:
         [scanname, scantarget] = self.cleanUserInput([scanname, scantarget])
 
         if scanname == "" or scantarget == "":
-            return self.error("Form incomplete.")
+            if not cli:
+                return self.error("Form incomplete.")
+            else:
+                return json.dumps(["ERROR", "Incorrect usage."])
 
         if typelist == "" and modulelist == "" and usecase == "":
-            return self.error("Form incomplete.")
+            if not cli:
+                return self.error("Form incomplete.")
+            else:
+                return json.dumps(["ERROR", "Incorrect usage."])
+
 
         # User selected modules
         if modulelist != "":
@@ -572,8 +617,12 @@ class SpiderFootWebUi:
 
         targetType = sf.targetType(scantarget)
         if targetType is None:
-            return self.error("Invalid target type. Could not recognize it as " + \
-                              "an IP address, IP subnet, domain name or host name.")
+            if not cli:
+                return self.error("Invalid target type. Could not recognize it as " + \
+                                  "an IP address, IP subnet, domain name or host name.")
+            else:
+                return json.dumps(["ERROR", "Unrecognised target type."])
+
 
         # Start running a new scan
         scanId = sf.genScanInstanceGUID(scanname)
@@ -586,9 +635,12 @@ class SpiderFootWebUi:
             print "[info] Waiting for the scan to initialize..."
             time.sleep(1)
 
-        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=scanId, name=scanname, docroot=self.docroot,
-                            status=globalScanStatus.getStatus(scanId), pageid="SCANLIST")
+        if not cli:
+            templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
+            return templ.render(id=scanId, name=scanname, docroot=self.docroot,
+                                status=globalScanStatus.getStatus(scanId), pageid="SCANLIST")
+        else:
+            return json.dumps(["SUCCESS", scanId])
 
     startscan.exposed = True
 
@@ -633,30 +685,46 @@ class SpiderFootWebUi:
 
 
     # Stop a scan.
-    def stopscan(self, id):
+    def stopscan(self, id, cli=None):
         global globalScanStatus
 
         dbh = SpiderFootDb(self.config)
         scaninfo = dbh.scanInstanceGet(id)
         if scaninfo is None:
-            return self.error("Invalid scan ID.")
+            if not cli:
+                return self.error("Invalid scan ID.")
+            else:
+                return json.dumps(["ERROR", "Invalid scan ID."])
 
         if globalScanStatus.getStatus(id) is None:
-            return self.error("That scan is not actually running. A data consistency " + \
-                              "error for this scan probably exists. <a href='/scandelete?id=" + \
-                              id + "&confirm=1'>Click here to delete it.</a>")
+            if not cli:
+                return self.error("That scan is not actually running. A data consistency " + \
+                                  "error for this scan probably exists. <a href='/scandelete?id=" + \
+                                  id + "&confirm=1'>Click here to delete it.</a>")
+            else:
+                return json.dumps(["ERROR", "Scan is still running."])
 
         if globalScanStatus.getStatus(id) == "ABORTED":
-            return self.error("The scan is already aborted.")
+            if not cli:
+                return self.error("The scan is already aborted.")
+            else:
+                return json.dumps(["ERROR", "Scan already aborted."])
+
 
         if not globalScanStatus.getStatus(id) == "RUNNING":
-            return self.error("The running scan is currently in the state '" + \
-                              globalScanStatus.getStatus(id) + "', please try again later or restart " + \
-                              " SpiderFoot.")
+            if not cli:
+                return self.error("The running scan is currently in the state '" + \
+                                  globalScanStatus.getStatus(id) + "', please try again later or restart " + \
+                                  " SpiderFoot.")
+            else:
+                return json.dumps(["ERROR", "Scan in an invalid state for stopping."])
 
         globalScanStatus.setStatus(id, "ABORT-REQUESTED")
-        templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST', stoppedscan=True, docroot=self.docroot, errors=list())
+        if not cli:
+            templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
+            return templ.render(pageid='SCANLIST', stoppedscan=True, docroot=self.docroot, errors=list())
+        else:
+            return json.dumps(["SUCCESS", ""])
 
     stopscan.exposed = True
 

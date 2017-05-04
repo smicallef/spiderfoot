@@ -134,7 +134,7 @@ class sfp_dns(SpiderFootPlugin):
     def producedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "PROVIDER_MAIL", "DOMAIN_NAME",
                 "PROVIDER_DNS", "AFFILIATE_INTERNET_NAME", "RAW_DNS_RECORDS",
-                "DNS_TEXT", "IPV6_ADDRESS", "DOMAIN_NAME_PARENT"]
+                "DNS_TEXT", "DNS_SPF", "IPV6_ADDRESS", "DOMAIN_NAME_PARENT"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -473,6 +473,11 @@ class sfp_dns(SpiderFootPlugin):
                                     evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME",
                                                           strdata, self.__name__, parentEvent)
                                     self.notifyListeners(evt)
+                                if rec == "TXT" and "v=spf" in strdata:
+                                    evt = SpiderFootEvent("DNS_SPF", strdata,
+                                                          self.__name__, parentEvent)
+                                    self.notifyListeners(evt)
+
                         else:
                             strdata = unicode(str(x), 'utf-8', errors='replace')
                             evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata,
