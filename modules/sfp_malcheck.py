@@ -269,6 +269,14 @@ malchecks = {
         'checks': ['ip', 'netblock'],
         'url': 'http://www.voipbl.org/update',
         'regex': '{0}\/'
+    },
+    'Fortinet Threat Lookup': {
+        'id': 'fortinet',
+        'type': 'query',
+        'checks': [ 'ip' ],
+        'url': 'https://fortiguard.com/search?q={0}&engine=8',
+        'badregex': '.*Your signature is blacklisted.*',
+        'goodregex': '.*Your signature is not blacklisted.*'
     }
 }
 
@@ -303,6 +311,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'isc': True,
         'badips': True,
         'tornodes': True,
+        'fortinet': True,
         'multiproxy': True,
         'alienvault': True,
         'openbl': True,
@@ -342,6 +351,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'avgdomain': "Enable AVG Safety check?",
         'phishtank': "Enable PhishTank check?",
         'malc0de': "Enable malc0de.com check?",
+        'fortinet': "Enable fortinet.com FortiGuard check?",
         'blocklistde': 'Enable blocklist.de check?',
         'tornodes': 'Enable TOR exit node check?',
         'cybercrime': 'Enable cybercrime-tracker.net Malicious IP check?',
