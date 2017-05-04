@@ -275,8 +275,16 @@ malchecks = {
         'type': 'query',
         'checks': [ 'ip' ],
         'url': 'https://fortiguard.com/search?q={0}&engine=8',
-        'badregex': '.*Your signature is blacklisted.*',
-        'goodregex': '.*Your signature is not blacklisted.*'
+        'badregex': ['.*Your signature is blacklisted.*'],
+        'goodregex': ['.*Your signature is not blacklisted.*']
+    },
+    'Watchguard Reputation Authority Lookup': {
+        'id': 'watchguard',
+        'type': 'query',
+        'checks': [ 'ip' ],
+        'url': 'http://reputationauthority.org/lookup?ip={0}',
+        'badregex': ['.*>[6-9][0-9]/100 </td>.*','.*>100/100 </td>.*'],
+        'goodregex': []
     }
 }
 
@@ -312,6 +320,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'badips': True,
         'tornodes': True,
         'fortinet': True,
+        'watchguard': True,
         'multiproxy': True,
         'alienvault': True,
         'openbl': True,
@@ -352,6 +361,7 @@ class sfp_malcheck(SpiderFootPlugin):
         'phishtank': "Enable PhishTank check?",
         'malc0de': "Enable malc0de.com check?",
         'fortinet': "Enable fortinet.com FortiGuard check?",
+        'watchguard': "Enable Watchguard's Reputation Authority lookup?",
         'blocklistde': 'Enable blocklist.de check?',
         'tornodes': 'Enable TOR exit node check?',
         'cybercrime': 'Enable cybercrime-tracker.net Malicious IP check?',
