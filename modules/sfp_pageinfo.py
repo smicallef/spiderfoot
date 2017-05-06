@@ -28,8 +28,7 @@ regexps = dict({
 
 
 class sfp_pageinfo(SpiderFootPlugin):
-    """Page Info:Footprint,Investigate:Data Analysis::Obtain information about web pages (do they take passwords, do they contain forms,
-etc.)"""
+    """Page Info:Footprint,Investigate:Data Analysis::Obtain information about web pages (do they take passwords, do they contain forms, etc.)"""
 
     # Default options
     opts = {}
