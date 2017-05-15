@@ -984,7 +984,7 @@ class SpiderFoot:
                           " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
 
-                hdr = requests.head(url, headers=header, verify=False)
+                hdr = requests.head(url, headers=header, verify=False, timeout=timeout)
                 size = int(hdr.headers.get('content-length', 0))
                 result['realurl'] = hdr.headers.get('location', url)
                 result['code'] = str(hdr.status_code)
