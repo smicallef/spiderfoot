@@ -16,6 +16,7 @@ import csv
 import time
 import random
 import re
+from operator import itemgetter
 from copy import deepcopy
 from mako.lookup import TemplateLookup
 from mako.template import Template
@@ -236,6 +237,8 @@ class SpiderFootWebUi:
 
         sf = SpiderFoot(self.config)
         meta = dbh.scanInstanceGet(id)
+        if not meta:
+            return json.dumps([])
         if meta[3] != 0:
             started = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(meta[3]))
         else:
@@ -398,21 +401,45 @@ class SpiderFootWebUi:
 
     opts.exposed = True
 
+    # Settings
+    def optsraw(self):
+        ret = dict()
+        self.token = random.randint(0, 99999999)
+        for opt in self.config:
+            if opt.startswith('__'):
+                if opt == '__modules__':
+                    for mod in sorted(self.config['__modules__'].keys()):
+                        for mo in sorted(self.config['__modules__'][mod]['opts'].keys()):
+                            if mo.startswith("_"):
+                                continue
+                            ret["module." + mod + "." + mo] = self.config['__modules__'][mod]['opts'][mo]
+                continue
+            ret["global." + opt] = self.config[opt]
+        return json.dumps(['SUCCESS', {'token': self.token, 'data': ret}])
+
+    optsraw.exposed = True
+
     # Generic error, but not exposed as not called directly
     def error(self, message):
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
         return templ.render(message=message, docroot=self.docroot)
 
     # Delete a scan
-    def scandelete(self, id, confirm=None):
+    def scandelete(self, id, confirm=None, raw=False):
         dbh = SpiderFootDb(self.config)
         res = dbh.scanInstanceGet(id)
         if res is None:
-            return self.error("Scan ID not found.")
+            if not raw:
+                return self.error("Scan ID not found.")
+            else:
+                return json.dumps(["ERROR", "Scan ID not found."])
 
         if confirm is not None:
             dbh.scanInstanceDelete(id)
-            raise cherrypy.HTTPRedirect("/")
+            if not raw:
+                raise cherrypy.HTTPRedirect("/")
+            else:
+                return json.dumps(["SUCCESS", ""])
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
             return templ.render(id=id, name=res[0], names=list(), ids=list(),
@@ -447,8 +474,8 @@ class SpiderFootWebUi:
 
     # Save settings, also used to completely reset them to default
     def savesettings(self, allopts, token):
-        if str(token) != str(self.token):
-            return self.error("Invalid token (" + str(self.token) + ").")
+#        if str(token) != str(self.token):
+#            return self.error("Invalid token (" + str(self.token) + ").")
 
         try:
             dbh = SpiderFootDb(self.config)
@@ -478,6 +505,37 @@ class SpiderFootWebUi:
                             docroot=self.docroot, token=self.token)
 
     savesettings.exposed = True
+
+    # Save settings, also used to completely reset them to default
+    def savesettingsraw(self, allopts, token):
+        if str(token) != str(self.token):
+            return json.dumps(["ERROR", "Invalid token (" + str(self.token) + ")."])
+
+        try:
+            dbh = SpiderFootDb(self.config)
+            # Reset config to default
+            if allopts == "RESET":
+                dbh.configClear()  # Clear it in the DB
+                self.config = deepcopy(self.defaultConfig)  # Clear in memory
+            else:
+                useropts = json.loads(allopts)
+                cleanopts = dict()
+                for opt in useropts.keys():
+                    cleanopts[opt] = self.cleanUserInput([useropts[opt]])[0]
+
+                currentopts = deepcopy(self.config)
+
+                # Make a new config where the user options override
+                # the current system config.
+                sf = SpiderFoot(self.config)
+                self.config = sf.configUnserialize(cleanopts, currentopts)
+                dbh.configSet(sf.configSerialize(currentopts))
+        except Exception as e:
+            return json.dumps(["ERROR", "Processing one or more of your inputs failed: " + str(e)])
+
+        return json.dumps(["SUCCESS", ""])
+
+    savesettingsraw.exposed = True
 
     # Set a bunch of results (hashes) as false positive
     def resultsetfp(self, id, resultids, fp):
@@ -521,37 +579,49 @@ class SpiderFootWebUi:
     def eventtypes(self):
         dbh = SpiderFootDb(self.config)
         types = dbh.eventTypes()
+        ret = list()
 
-        return json.dumps(types)
+        for r in types:
+            ret.append([r[1], r[0]])
+
+        ret = sorted(ret, key=itemgetter(0))
+
+        return json.dumps(ret)
 
     eventtypes.exposed = True
 
     # For the CLI to fetch a list of modules.
     def modules(self):
         modinfo = self.config['__modules__'].keys()
-        return json.dumps(modinfo)
+        modinfo.sort()
+        ret = list()
+        for m in modinfo:
+            if "__" in m:
+                continue
+            ret.append({'name': m, 'descr': self.config['__modules__'][m]['descr']})
+        return json.dumps(ret)
 
     modules.exposed = True
 
     # For the CLI to test connectivity to this server.
     def ping(self):
-        return json.dumps(["SUCCESS", ""])
+        return json.dumps(["SUCCESS", self.config['__version__']])
 
     ping.exposed = True
 
     # For the CLI to run queries against the database.
     def query(self, query):
         data = None
-        dbh = SpiderFootDb(cfg)
-        if not query.startswith("SELECT"):
-            return json_dumps(["ERROR", "Non-SELECTs are unpredictable and not recommended."])
+        dbh = SpiderFootDb(self.config)
+        if not query.lower().startswith("select"):
+            return json.dumps(["ERROR", "Non-SELECTs are unpredictable and not recommended."])
         try:
-            ret = dbh.execute(query)
+            ret = dbh.dbh.execute(query)
             data = ret.fetchall()
         except BaseException as e:
-            return json_dumps(["ERROR", str(e)])
+            return json.dumps(["ERROR", str(e)])
 
-        return json_dumps(data)
+        return json.dumps(data)
 
     query.exposed = True
 
@@ -702,7 +772,7 @@ class SpiderFootWebUi:
                                   "error for this scan probably exists. <a href='/scandelete?id=" + \
                                   id + "&confirm=1'>Click here to delete it.</a>")
             else:
-                return json.dumps(["ERROR", "Scan is still running."])
+                return json.dumps(["ERROR", "Scan doesn't appear to be running."])
 
         if globalScanStatus.getStatus(id) == "ABORTED":
             if not cli:
@@ -733,14 +803,14 @@ class SpiderFootWebUi:
     #
 
     # Scan log data
-    def scanlog(self, id, limit=None):
+    def scanlog(self, id, limit=None, rowId=None, reverse=None):
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanLogs(id, limit)
+        data = dbh.scanLogs(id, limit, rowId, reverse)
         retdata = []
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
             retdata.append([generated, row[1], row[2],
-                            cgi.escape(unicode(row[3], errors='replace'))])
+                            cgi.escape(unicode(row[3], errors='replace')), row[4]])
         return json.dumps(retdata)
 
     scanlog.exposed = True
