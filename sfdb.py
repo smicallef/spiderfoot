@@ -468,11 +468,21 @@ class SpiderFootDb:
             self.sf.error("SQL error encountered when fetching unique result events: " + e.args[0])
 
     # Get scan logs
-    def scanLogs(self, instanceId, limit=None):
+    def scanLogs(self, instanceId, limit=None, fromRowId=None, reverse=False):
         qry = "SELECT generated AS generated, component, \
-            type, message FROM tbl_scan_log WHERE scan_instance_id = ? \
-            ORDER BY generated DESC"
+            type, message, rowid FROM tbl_scan_log WHERE scan_instance_id = ?"
+        if fromRowId:
+            qry += " and rowid > ?"
+        
+        qry += " ORDER BY generated "
+        if reverse:
+            qry += "ASC"
+        else:
+            qry += "DESC"
         qvars = [instanceId]
+
+        if fromRowId:
+            qvars.append(fromRowId)
 
         if limit is not None:
             qry += " LIMIT ?"

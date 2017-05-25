@@ -15,6 +15,7 @@ from stem import Signal
 from stem.control import Controller
 import inspect
 import hashlib
+import binascii
 import gzip
 import gexf
 import json
@@ -275,11 +276,13 @@ class SpiderFoot:
 
     # Generate an globally unique ID for this scan
     def genScanInstanceGUID(self, scanName):
-        hashStr = hashlib.sha256(
-            scanName +
-            str(time.time() * 1000) +
-            str(random.randint(100000, 999999))
-        ).hexdigest()
+ #       hashStr = hashlib.sha256(
+ #           scanName +
+ #           str(time.time() * 1000) +
+ #           str(random.randint(100000, 999999))
+ #       ).hexdigest()
+        rstr = scanName + str(time.time()) + str(random.randint(100000, 999999))
+        hashStr = "%08X" % int(binascii.crc32(rstr) & 0xffffffff)
         return hashStr
 
     def _dblog(self, level, message, component=None):
@@ -981,7 +984,7 @@ class SpiderFoot:
             if sizeLimit or headOnly:
                 if not noLog:
                     self.info("Fetching (HEAD only): " + url + \
-                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                          " [timeout: " + \
                           str(timeout) + "]")
 
                 hdr = requests.head(url, headers=header, verify=False, timeout=timeout)
@@ -998,7 +1001,7 @@ class SpiderFoot:
                 if result['realurl'] != url:
                     if not noLog:
                        self.info("Fetching (HEAD only): " + url + \
-                              " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                              " [timeout: " + \
                               str(timeout) + "]")
 
                     hdr = requests.head(result['realurl'], headers=header, verify=False)
@@ -1014,12 +1017,11 @@ class SpiderFoot:
                 req.add_header('cookie', cookies)
                 if not noLog:
                     self.info("Fetching (incl. cookies): " + url + \
-                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                          " [timeout: " + \
                           str(timeout) + "]")
             else:
                 if not noLog:
-                    self.info("Fetching: " + url + " [user-agent: " + \
-                          header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
+                    self.info("Fetching: " + url + " [timeout: " + str(timeout) + "]")
 
             result['headers'] = dict()
             opener = urllib2.build_opener(SmartRedirectHandler())
