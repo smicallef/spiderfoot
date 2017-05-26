@@ -746,10 +746,12 @@ class SpiderFootCli(cmd.Cmd):
 
     # Start a new scan.
     def do_start(self, line):
-        """start <target> <-m module1,module2,...>|<-t type1,type2>|<-u "Use case"> [-n name]
-        Start a scan against <target> using modules or looking for types or by Use case ("all",
-        "investigate", "passive" and "footprint").
+        """start <target> [-m m1,...] [-t t1,...] [-u case] [-n name] [-w]
+        Start a scan against <target> using modules m1,... or looking for types t1,... or by 
+        use case ("all", "investigate", "passive" and "footprint").
         Scan be be optionally named [name], without a name the target will be used.
+        Use -w to watch the logs from the scan. Ctrl-C to abort the logging (but will not 
+        abort the scan).
         """
         mods = ""
         types = ""
@@ -798,6 +800,9 @@ class SpiderFootCli(cmd.Cmd):
             self.dprint("Scan ID: " + s[1])
         else:
             self.dprint("Unable to start scan: " + str(s[1]))
+
+        if "-w" in c[0]:
+            return self.do_logs(s[1] + " -w")
 
     # Stop a running scan.
     def do_stop(self, line):
@@ -941,7 +946,7 @@ class SpiderFootCli(cmd.Cmd):
             ["types", "List available data types."],
             ["set [[$]opt] [= val]", "Set variables and configuration settings."],
             ["scans [-x]", "List all scans that have been run or are running."],
-            ["start <target> [-m m1,...] [-t t1,...] [-u name] [-n name]", "Start a new scan."],
+            ["start <target> [-m m1,...] [-t t1,...] [-u case] [-n name] [-w]", "Start a new scan."],
             ["stop <sid>", "Stop a scan."],
             ["delete <sid>", "Delete a scan."],
             ["scaninfo <sid> [-c]", "Scan information."],
