@@ -887,7 +887,7 @@ class SpiderFootWebUi:
             escapedsrc = cgi.escape(row[2])
             retdata.append([lastseen, escapeddata, escapedsrc,
                             row[3], row[5], row[6], row[7], row[8],
-                            row[13], row[14]])
+                            row[13], row[14], row[4]])
         return json.dumps(retdata, ensure_ascii=False)
 
     scaneventresults.exposed = True
