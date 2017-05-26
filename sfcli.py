@@ -1185,7 +1185,7 @@ if __name__ == "__main__":
         s.ownopts['cli.spool'] = True
         s.ownopts['cli.spool_file'] = args.o
 
-    if args.e:
+    if args.e or not os.isatty(0):
         try:
             s.use_rawinput = False
             s.prompt = ""
