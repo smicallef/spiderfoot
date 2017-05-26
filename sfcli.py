@@ -606,7 +606,6 @@ class SpiderFootCli(cmd.Cmd):
             titles = {"0": "ID",
               "1": "Name",
               "2": "Target",
-              "3": "Created",
               "4": "Started",
               "5": "Finished",
               "6": "Status",
@@ -722,7 +721,7 @@ class SpiderFootCli(cmd.Cmd):
                     return
                 j = json.loads(d)
                 for r in j:
-                    self.send_output(str(r), line, total=False, raw=True)
+                    #self.send_output(str(r), line, total=False, raw=True)
                     if r[2] == "ERROR":
                         self.edprint(r[1] + ": " + r[3])
                     else:
