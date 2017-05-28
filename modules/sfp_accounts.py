@@ -110,7 +110,7 @@ class sfp_accounts(SpiderFootPlugin):
                 if site['account_missing_string'] in res['content']:
                     found = False
         except BaseException:
-            self.sf.debug("Error parsing configuration: " + str(site))
+            #self.sf.debug("Error parsing configuration: " + str(site))
             found = False
 
         if found and self.opts['musthavename']:
