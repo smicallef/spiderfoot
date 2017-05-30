@@ -46,7 +46,13 @@
 % for mod in sorted(opts['__modules__'].keys()):
     <% keylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].iteritems() if not k.startswith('_')) %>
     % if len(keylist) > 0:
-        <li id='tab_${mod}'><a href='#' onClick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}</a></li>
+        <% keyicon = "" %>
+        <% apikeylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].iteritems() if k.find("api_key") >= 0) %>
+        <% 
+        if len(apikeylist) > 0: 
+            keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\"></i>"
+        %>
+        <li id='tab_${mod}'><a href='#' onClick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}${keyicon}</a></li>
     % endif
 % endfor
 </ul>
