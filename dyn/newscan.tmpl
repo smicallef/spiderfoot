@@ -86,7 +86,7 @@
                     <% apikeylist = dict((k, v) for k, v in modules[item]['opts'].iteritems() if k.find("api_key") >= 0) %>
                     <%
                     if len(apikeylist) > 0:
-                        keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\"></i>"
+                        keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\" rel='tooltip' title='Needs API key'></i>"
                     %>
                 % endif
 
