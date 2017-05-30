@@ -79,8 +79,19 @@
 
         <table class="table table-striped table-condensed" id="moduletable" style='display: none'>
             % for item in sorted(modules):
+
+                <% keylist = dict((k, v) for k, v in modules[item]['opts'].iteritems() if not k.startswith('_')) %>
+                <% keyicon = "" %>
+                % if len(keylist) > 0:
+                    <% apikeylist = dict((k, v) for k, v in modules[item]['opts'].iteritems() if k.find("api_key") >= 0) %>
+                    <%
+                    if len(apikeylist) > 0:
+                        keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\"></i>"
+                    %>
+                % endif
+
                 % if item != "sfp__stor_db":
-                    <tr><td><input type=checkbox id="module_${item}" checked></td><td>${modules[item]['name']}</td><td>${modules[item]['descr']}</td></tr>
+                    <tr><td><input type=checkbox id="module_${item}" checked></td><td>${modules[item]['name']}${keyicon}</td><td>${modules[item]['descr']}</td></tr>
                 % endif
             % endfor
         </table>
