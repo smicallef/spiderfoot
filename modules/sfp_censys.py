@@ -22,15 +22,15 @@ class sfp_censys(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "censys_api_uid": "",
-        "censys_api_secret": "",
+        "censys_api_key_uid": "",
+        "censys_api_key_secret": "",
         "age_limit_days": 90
     }
 
     # Option descriptions
     optdescs = {
-        "censys_api_uid": "Your Censys.io API UID",
-        "censys_api_secret": "Your Censys.io API Secret",
+        "censys_api_key_uid": "Your Censys.io API UID",
+        "censys_api_key_secret": "Your Censys.io API Secret",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited."
     }
 
@@ -69,7 +69,7 @@ class sfp_censys(SpiderFootPlugin):
         
         censys_url = "https://censys.io/api/v1/view"
         headers = {
-            'Authorization': "Basic " + base64.b64encode(self.opts['censys_api_uid'] + ":" + self.opts['censys_api_secret'])
+            'Authorization': "Basic " + base64.b64encode(self.opts['censys_api_key_uid'] + ":" + self.opts['censys_api_key_secret'])
         }
         url = censys_url + "/" + querytype.format(qry)
         res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], 
@@ -105,7 +105,7 @@ class sfp_censys(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['censys_api_uid'] == "" or self.opts['censys_api_secret'] == "":
+        if self.opts['censys_api_key_uid'] == "" or self.opts['censys_api_key_secret'] == "":
             self.sf.error("You enabled sfp_censys but did not set an API uid/secret!", False)
             self.errorState = True
             return None

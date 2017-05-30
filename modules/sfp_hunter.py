@@ -19,12 +19,12 @@ class sfp_hunter(SpiderFootPlugin):
 
     # Default options
     opts = { 
-        "apikey": ""
+        "api_key": ""
     }
 
     # Option descriptions
     optdescs = {
-        "apikey": "Your API key from hunter.io."
+        "api_key": "Your API key from hunter.io."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -53,7 +53,7 @@ class sfp_hunter(SpiderFootPlugin):
     def query(self, t):
         ret = None
 
-        url = "https://api.hunter.io/v2/domain-search?domain=" + t + "&api_key=" + self.opts['apikey']
+        url = "https://api.hunter.io/v2/domain-search?domain=" + t + "&api_key=" + self.opts['api_key']
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot")

@@ -22,14 +22,14 @@ class sfp_alienvault(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "apikey": "",
+        "api_key": "",
         "age_limit_days": 30,
         "threat_score_min": 2
     }
 
     # Option descriptions
     optdescs = {
-        "apikey": "Your AlienVault OTX API Key",
+        "api_key": "Your AlienVault OTX API Key",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         "threat_score_min": "Minimum AlienVault threat score."
     }
@@ -80,7 +80,7 @@ class sfp_alienvault(SpiderFootPlugin):
               "/" + qry + "/" + querytype
         headers = {
             'Accept': 'application/json',
-            'X-OTX-API-KEY': self.opts['apikey']
+            'X-OTX-API-KEY': self.opts['api_key']
         }
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                                useragent="SpiderFoot", headers=headers)
@@ -114,7 +114,7 @@ class sfp_alienvault(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['apikey'] == "":
+        if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_alienvault but did not set an API key/password!", False)
             self.errorState = True
             return None

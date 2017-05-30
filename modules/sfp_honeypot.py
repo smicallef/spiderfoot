@@ -21,7 +21,7 @@ class sfp_honeypot(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'apikey': "",
+        'api_key': "",
         'searchengine': False,
         'threatscore': 0,
         'timelimit': 30,
@@ -33,7 +33,7 @@ class sfp_honeypot(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'apikey': "The API key you obtained from projecthoneypot.org",
+        'api_key': "The API key you obtained from projecthoneypot.org",
         'searchengine': "Include entries considered search engines?",
         'threatscore': "Threat score minimum, 0 being everything and 255 being only the most serious.",
         'timelimit': "Maximum days old an entry can be. 255 is the maximum, 0 means you'll get nothing.",
@@ -106,7 +106,7 @@ class sfp_honeypot(SpiderFootPlugin):
         eventName = parentEvent.eventType
 
         try:
-            lookup = self.opts['apikey'] + "." + \
+            lookup = self.opts['api_key'] + "." + \
                      self.reverseAddr(qaddr) + ".dnsbl.httpbl.org"
 
             self.sf.debug("Checking Honeypot: " + lookup)
@@ -151,7 +151,7 @@ class sfp_honeypot(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['apikey'] == "":
+        if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_honeypot but did not set an API key!", False)
             self.errorState = True
             return None

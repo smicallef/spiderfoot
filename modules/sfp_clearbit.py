@@ -18,12 +18,12 @@ class sfp_clearbit(SpiderFootPlugin):
 
     # Default options
     opts = { 
-        "apikey": ""
+        "api_key": ""
     }
 
     # Option descriptions
     optdescs = {
-        "apikey": "Your API key from clearbit.com."
+        "api_key": "Your API key from clearbit.com."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -56,7 +56,7 @@ class sfp_clearbit(SpiderFootPlugin):
         url = "https://person.clearbit.com/v2/combined/find?email=" + t
         headers = {
             'Accept': 'application/json',
-            'Authorization': "Basic " + base64.b64encode(self.opts['apikey'] + ":")
+            'Authorization': "Basic " + base64.b64encode(self.opts['api_key'] + ":")
         }
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot", headers=headers)

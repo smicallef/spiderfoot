@@ -21,7 +21,7 @@ class sfp_virustotal(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "apikey": "",
+        "api_key": "",
         "publicapi": True,
         "checkcohosts": True,
         "checkaffiliates": True,
@@ -33,7 +33,7 @@ class sfp_virustotal(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "apikey": "Your VirusTotal API Key.",
+        "api_key": "Your VirusTotal API Key.",
         "publicapi": "Are you using a public key? If so SpiderFoot will pause for 15 seconds after each query to avoid VirusTotal dropping requests.",
         "checkcohosts": "Check co-hosted sites?",
         "checkaffiliates": "Check affiliates?",
@@ -80,7 +80,7 @@ class sfp_virustotal(SpiderFootPlugin):
         else:
             url = "https://www.virustotal.com/vtapi/v2/domain/report?domain=" + qry
 
-        res = self.sf.fetchUrl(url + "&apikey=" + self.opts['apikey'],
+        res = self.sf.fetchUrl(url + "&apikey=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         # Public API is limited to 4 queries per minute
@@ -110,7 +110,7 @@ class sfp_virustotal(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['apikey'] == "":
+        if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_virustotal but did not set an API key!", False)
             self.errorState = True
             return None

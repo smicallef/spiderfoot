@@ -20,14 +20,14 @@ class sfp_shodan(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "apikey": "",
+        "api_key": "",
         'netblocklookup': True,
         'maxnetblock': 24
     }
 
     # Option descriptions
     optdescs = {
-        "apikey": "Your SHODAN API Key.",
+        "api_key": "Your SHODAN API Key.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
@@ -56,7 +56,7 @@ class sfp_shodan(SpiderFootPlugin):
 
     def query(self, qry):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
-                               "?key=" + self.opts['apikey'],
+                               "?key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
@@ -81,7 +81,7 @@ class sfp_shodan(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['apikey'] == "":
+        if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_shodan but did not set an API key!", False)
             self.errorState = True
             return None

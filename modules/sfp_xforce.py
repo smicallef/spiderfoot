@@ -24,14 +24,14 @@ class sfp_xforce(SpiderFootPlugin):
     # Default options
     opts = {
         "xforce_api_key": "",
-        "xforce_password": "",
+        "xforce_api_key_password": "",
         "age_limit_days": 30
     }
 
     # Option descriptions
     optdescs = {
         "xforce_api_key": "The X-Force Exchange API Key",
-        "xforce_password": "The X-Force Exchange API Password",
+        "xforce_api_key_password": "The X-Force Exchange API Password",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited."
     }
 
@@ -73,7 +73,7 @@ class sfp_xforce(SpiderFootPlugin):
         xforce_url = "https://api.xforce.ibmcloud.com"
         headers = {
             'Accept': 'application/json',
-            'Authorization': "Basic " + base64.b64encode(self.opts['xforce_api_key'] + ":" + self.opts['xforce_password'])
+            'Authorization': "Basic " + base64.b64encode(self.opts['xforce_api_key'] + ":" + self.opts['xforce_api_key_password'])
         }
         url = xforce_url + "/" + querytype + "/" + qry
         res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
@@ -109,7 +109,7 @@ class sfp_xforce(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['xforce_api_key'] == "" or self.opts['xforce_password'] == "":
+        if self.opts['xforce_api_key'] == "" or self.opts['xforce_api_key_password'] == "":
             self.sf.error("You enabled sfp_xforce but did not set an API key/password!", False)
             self.errorState = True
             return None

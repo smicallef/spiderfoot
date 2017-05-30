@@ -20,10 +20,10 @@ class sfp_botscout(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "apikey": ""
+        "api_key": ""
     }
     optdescs = {
-        "apikey": "botscout.com API key. Without this you will be limited to 50 look-ups per day."
+        "api_key": "botscout.com API key. Without this you will be limited to 50 look-ups per day."
     }
     results = dict()
     errorState = False
@@ -56,7 +56,7 @@ class sfp_botscout(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['apikey'] == "":
+        if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_botscout but did not set an API key!", False)
             self.errorState = True
             return None
@@ -68,8 +68,8 @@ class sfp_botscout(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if self.opts['apikey']:
-            url = "http://botscout.com/test/?key=" + self.opts['apikey'] + "&all="
+        if self.opts['api_key']:
+            url = "http://botscout.com/test/?key=" + self.opts['api_key'] + "&all="
         else:
             url = "http://botscout.com/test/?all="
 
