@@ -57,6 +57,12 @@ class SpiderFootCli(cmd.Cmd):
         "cli.server_baseurl": "http://127.0.0.1:5001"
     }
 
+    def default(self, line):
+        if line.startswith('#'):
+            return
+
+        self.edprint("Unknown command")
+
     # Auto-complete for these commands
     def complete_start(self, text, line, startidx, endidx):
         return self.complete_default(text, line, startidx, endidx)
@@ -583,7 +589,7 @@ class SpiderFootCli(cmd.Cmd):
 
         if "-c" in c[0]:
             out += "Configuration:\n"
-            for k in j['config']:
+            for k in sorted(j['config']):
                 out += "  " + k + " = " + j['config'][k] + "\n"
 
         self.send_output(out, line, total=False, raw=True)
