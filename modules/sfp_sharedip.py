@@ -103,63 +103,67 @@ class sfp_sharedip(SpiderFootPlugin):
 
             # Robtex
             if "robtex" in self.opts['sources'].lower():
-                res = self.sf.fetchUrl("https://www.robtex.com/?a=2&ip=" + ip + "&shared=1")
+                res = self.sf.fetchUrl("https://www.robtex.com/?a=2&ip=" + ip + "&shared=1",
+                                       useragent=self.opts['_useragent'],
+                                       timeout=self.opts['_fetchtimeout'])
                 if res['content'] is None:
                     self.sf.error("Unable to fetch robtex content.", False)
-                    return None
 
-                if "shared DNS of" in res['content'] or "Pointing to " in res['content']:
-                    p = re.compile("<li><a href=(.*?/dns-lookup/.*?)..>(.[^<]*)", re.IGNORECASE)
-                    matches = p.findall(res['content'])
-                    for mt in matches:
-                        m = mt[1]
-                        self.sf.info("Found something on same IP: " + m)
-                        if not self.opts['cohostsamedomain']:
-                            if self.getTarget().matches(m, includeParents=True):
-                                self.sf.debug("Skipping " + m + " because it is on the same domain.")
+                if res['content'] is not None:
+                    if "shared DNS of" in res['content'] or "Pointing to " in res['content']:
+                        p = re.compile("<li><a href=(.*?/dns-lookup/.*?)..>(.[^<]*)", re.IGNORECASE)
+                        matches = p.findall(res['content'])
+                        for mt in matches:
+                            m = mt[1]
+                            self.sf.info("Found something on same IP: " + m)
+                            if not self.opts['cohostsamedomain']:
+                                if self.getTarget().matches(m, includeParents=True):
+                                    self.sf.debug("Skipping " + m + " because it is on the same domain.")
+                                    continue
+    
+                            if '*' in m:
+                                self.sf.debug("Skipping wildcard name: " + m)
                                 continue
-    
-                        if '*' in m:
-                            self.sf.debug("Skipping wildcard name: " + m)
-                            continue
-    
-                        if '.' not in m:
-                            self.sf.debug("Skipping tld: " + m)
-                            continue
-    
-                        if m not in myres and m != ip:
-                            if self.opts['verify'] and not self.validateIP(m, ip):
-                                self.sf.debug("Host no longer resolves to our IP.")
+        
+                            if '.' not in m:
+                                self.sf.debug("Skipping tld: " + m)
                                 continue
-                            evt = SpiderFootEvent("CO_HOSTED_SITE", m.lower(), self.__name__, event)
-                            self.notifyListeners(evt)
-                            myres.append(m.lower())
+        
+                            if m not in myres and m != ip:
+                                if self.opts['verify'] and not self.validateIP(m, ip):
+                                    self.sf.debug("Host no longer resolves to our IP.")
+                                    continue
+                                evt = SpiderFootEvent("CO_HOSTED_SITE", m.lower(), self.__name__, event)
+                                self.notifyListeners(evt)
+                                myres.append(m.lower())
 
             # Hackertarget.com
             if "hackertarget" in self.opts['sources'].lower():
-                res = self.sf.fetchUrl("http://api.hackertarget.com/reverseiplookup/?q=" + eventData)
+                res = self.sf.fetchUrl("http://api.hackertarget.com/reverseiplookup/?q=" + eventData,
+                                       useragent=self.opts['_useragent'],
+                                       timeout=self.opts['_fetchtimeout'])
                 if res['content'] is None:
                     self.sf.error("Unable to fetch hackertarget.com content.", False)
-                    return None
 
-                if "No records" not in res['content']:
-                    hosts = res['content'].split('\n')
-                    for h in hosts:
-                        if " " in h:
-                            continue
-                        self.sf.info("Found something on same IP: " + h)
-                        if not self.opts['cohostsamedomain']:
-                            if self.getTarget().matches(h, includeParents=True):
-                                self.sf.debug("Skipping " + h + " because it is on the same domain.")
+                if res['content'] is not None:
+                    if "No records" not in res['content']:
+                        hosts = res['content'].split('\n')
+                        for h in hosts:
+                            if " " in h:
                                 continue
+                            self.sf.info("Found something on same IP: " + h)
+                            if not self.opts['cohostsamedomain']:
+                                if self.getTarget().matches(h, includeParents=True):
+                                    self.sf.debug("Skipping " + h + " because it is on the same domain.")
+                                    continue
 
-                        if h not in myres and h != ip:
-                            if self.opts['verify'] and not self.validateIP(h, ip):
-                                self.sf.debug("Host no longer resolves to our IP.")
-                                continue
-                            evt = SpiderFootEvent("CO_HOSTED_SITE", h.lower(), self.__name__, event)
-                            self.notifyListeners(evt)
-                            myres.append(h.lower())
+                            if h not in myres and h != ip:
+                                if self.opts['verify'] and not self.validateIP(h, ip):
+                                    self.sf.debug("Host no longer resolves to our IP.")
+                                    continue
+                                evt = SpiderFootEvent("CO_HOSTED_SITE", h.lower(), self.__name__, event)
+                                self.notifyListeners(evt)
+                                myres.append(h.lower())
 
             # Bing
             if "bing" in self.opts['sources'].lower():
@@ -168,7 +172,7 @@ class sfp_sharedip(SpiderFootPlugin):
                                                                   timeout=self.opts['_fetchtimeout']))
                 if results is None:
                     self.sf.info("No data returned from Bing.")
-                    return None
+                    continue
 
                 for key in results.keys():
                     res = results[key]
