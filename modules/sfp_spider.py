@@ -273,9 +273,6 @@ class sfp_spider(SpiderFootPlugin):
             if robotsTxt['content'] is not None:
                 self.sf.debug('robots.txt contents: ' + robotsTxt['content'])
                 self.robotsRules[targetBase] = self.sf.parseRobotsTxt(robotsTxt['content'])
-            else:
-                self.sf.error("Unable to fetch robots.txt and you've asked to abide by its contents.")
-                return None
 
         if self.checkForStop():
             return None
