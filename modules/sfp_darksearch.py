@@ -94,10 +94,10 @@ class sfp_darksearch(SpiderFootPlugin):
                 else:
                     self.results.append(link)
                     self.sf.debug("Found a darknet mention: " + link)
-                    if self.sf.urlFQDN(link).endswith("onion.city"):
+                    if self.sf.urlFQDN(link).endswith(".onion.city"):
                         if self.checkForStop():
                             return None
-
+                        torlink = link.replace(".onion.city", ".onion")
                         if self.opts['fetchlinks']:
                             res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
                                                    useragent=self.opts['_useragent'])
@@ -112,7 +112,7 @@ class sfp_darksearch(SpiderFootPlugin):
                                 self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
                                 continue
 
-                            evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
+                            evt = SpiderFootEvent("DARKNET_MENTION_URL", torlink, self.__name__, event)
                             self.notifyListeners(evt)
 
                             try:
@@ -127,7 +127,7 @@ class sfp_darksearch(SpiderFootPlugin):
                                                   self.__name__, evt)
                             self.notifyListeners(evt)
                         else:
-                            evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
+                            evt = SpiderFootEvent("DARKNET_MENTION_URL", torlink, self.__name__, event)
                             self.notifyListeners(evt)
 
 

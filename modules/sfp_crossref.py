@@ -44,7 +44,8 @@ class sfp_crossref(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['LINKED_URL_EXTERNAL', 'SIMILARDOMAIN', 'CO_HOSTED_SITE']
+        return ['LINKED_URL_EXTERNAL', 'SIMILARDOMAIN', 
+                'CO_HOSTED_SITE', 'DARKNET_MENTION_URL']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
