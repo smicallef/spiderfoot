@@ -1027,12 +1027,6 @@ class SpiderFootCli(cmd.Cmd):
             for k in sorted(serverconfig.keys()):
                 if type(serverconfig[k]) == list:
                     serverconfig[k] = ','.join(serverconfig[k])
-                if type(serverconfig[k]) == bool:
-                    if serverconfig[k]:
-                        serverconfig[k] = "True"
-                    else:
-                        serverconfig[k] = "False"
-
                 if not cfg:
                     output.append({'opt': k, 'val': str(serverconfig[k])})
                 else:
@@ -1076,7 +1070,7 @@ class SpiderFootCli(cmd.Cmd):
                 for k in serverconfig:
                     optstr = ":".join(k.split(".")[1:])
                     if type(serverconfig[k]) == bool:
-                        if serverconfig[k] == "false" or serverconfig[k] == "0":
+                        if not serverconfig[k]:
                             confdata[optstr] = "0"
                         else:
                             confdata[optstr] = "1"
