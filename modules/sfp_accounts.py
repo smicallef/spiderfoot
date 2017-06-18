@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_accounts
-# Purpose:      Identify the existence of a given acount on various sites.
+# Purpose:      Identify the existence of a given acount on various sites thanks 
+#               to Micah Hoffman's (https://github.com/WebBreacher) list.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
