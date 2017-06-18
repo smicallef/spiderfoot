@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_freegeoip
+# Name:         sfp_ipinfo
 # Purpose:      SpiderFoot plug-in to identify the Geo-location of IP addresses
-#               identified by other modules using freegeoip.net.
+#               identified by other modules using ipinfo.io.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
-# Created:     18/02/2013
-# Copyright:   (c) Steve Micallef 2013
+# Created:     17/06/2017
+# Copyright:   (c) Steve Micallef 2017
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
@@ -15,16 +15,23 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
-class sfp_freegeoip(SpiderFootPlugin):
-    """FreeGeoIP:Footprint,Investigate,Passive:Networking::Identifies the physical location of IP addresses identified using freegeoip.net."""
+class sfp_ipinfo(SpiderFootPlugin):
+    """IPInfo.io:Footprint,Investigate,Passive:Networking::Identifies the physical location of IP addresses identified using ipinfo.io."""
 
     # Default options
-    opts = {}
+    opts = { 
+        "api_key": "" 
+    }
+    optdescs = {
+        "api_key": "Your ipinfo.io access token."
+    }
     results = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -45,7 +52,15 @@ class sfp_freegeoip(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_ipinfo but did not set an API key!", False)
+            self.errorState = True
+            return None
 
         # Don't look up stuff twice
         if eventData in self.results:
@@ -54,8 +69,13 @@ class sfp_freegeoip(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        res = self.sf.fetchUrl("https://freegeoip.net/json/" + eventData,
+        res = self.sf.fetchUrl("https://ipinfo.io/" + eventData + "/json?token=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+
+        if res['code'] == "429":
+            self.sf.error("You are being rate-limited by ipinfo.io.", False)
+            return
+
         if res['content'] is None:
             self.sf.info("No GeoIP info found for " + eventData)
         try:
@@ -64,12 +84,13 @@ class sfp_freegeoip(SpiderFootPlugin):
             self.sf.debug("Error processing JSON response.")
             return None
 
-        self.sf.info("Found GeoIP for " + eventData + ": " + hostip['country_name'])
-        countrycity = hostip['country_name']
+        self.sf.info("Found GeoIP for " + eventData + ": " + hostip['country'])
+        countrycity = hostip['country'] + ", " + hostip.get('region', "Unknown region") + \
+                      ", " + hostip.get('city', "Unknown city")
 
         evt = SpiderFootEvent("GEOINFO", countrycity, self.__name__, event)
         self.notifyListeners(evt)
 
         return None
 
-# End of sfp_freegeoip class
+# End of sfp_ipinfo class
