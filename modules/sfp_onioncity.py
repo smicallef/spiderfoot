@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_darksearch
-# Purpose:      Searches Tor onion site search engines for content related to the 
-#               domain in question.
+# Name:         sfp_onioncity
+# Purpose:      Searches the Tor search engine 'Onion City' for content related 
+#               to the domain in question.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -14,19 +14,19 @@
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 import re
 
-class sfp_darksearch(SpiderFootPlugin):
-    """Darknet:Footprint,Investigate:Search Engines::Search Tor 'Onion City' search engine for mentions of the target domain."""
+class sfp_onioncity(SpiderFootPlugin):
+    """Onion.city:Footprint,Investigate:Search Engines::Search Tor 'Onion City' search engine for mentions of the target domain."""
 
     # Default options
     opts = {
         'pages': 20,  # Number of results pages to iterate
-        'fetchlinks': True
+        'fetchlinks': False
     }
 
     # Option descriptions
     optdescs = {
         'pages': "Number of results pages to iterate through.",
-        'fetchlinks': "Fetch the darknet pages (via Onion City) to verify they mention your target."
+        'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target."
     }
 
     # Target
@@ -99,7 +99,7 @@ class sfp_darksearch(SpiderFootPlugin):
                             return None
                         torlink = link.replace(".onion.city", ".onion")
                         if self.opts['fetchlinks']:
-                            res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
+                            res = self.sf.fetchUrl(torlink, timeout=self.opts['_fetchtimeout'],
                                                    useragent=self.opts['_useragent'])
 
                             if res['content'] is None:
@@ -131,4 +131,4 @@ class sfp_darksearch(SpiderFootPlugin):
                             self.notifyListeners(evt)
 
 
-# End of sfp_darksearch class
+# End of sfp_onioncity class
