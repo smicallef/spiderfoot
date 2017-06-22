@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_pastes
-# Purpose:      Searches Google for PasteBin content related to the domain in 
+# Name:         sfp_pastie
+# Purpose:      Searches Google for Pastie.org content related to the domain in 
 #               question.
 #
 # Author:      Steve Micallef <steve@binarypool.com> and ShellCodeNoobx
@@ -15,29 +15,21 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
-class sfp_pastes(SpiderFootPlugin):
-    """Pastes:Footprint,Investigate,Passive:Search Engines:errorprone:PasteBin, Pastie and Notepad.cc scraping (via Google) to identify related content."""
+class sfp_pastie(SpiderFootPlugin):
+    """Pastie.org:Footprint,Investigate,Passive:Search Engines:errorprone:Pastie.org scraping (via Google) to identify related content."""
 
     # Default options
     opts = {
-        'searchpages': 20,  # Number of google results pages to iterate
-        'pastebin': True,
-        'pastie': True,
-        'notepadcc': True
+        'searchpages': 20  # Number of google results pages to iterate
     }
 
     # Option descriptions
     optdescs = {
-        'searchpages': "Number of search results pages to iterate through.",
-        'pastebin': "Search PasteBin?",
-        'pastie': "Search Pastie?",
-        'notepadcc': "Search Notepad.cc?"
+        'searchpages': "Number of search results pages to iterate through."
     }
 
     domains = {
-        'pastebin': "pastebin.com",
-        'pastie': "pastie.org",
-        'notepadcc': "notepadd.cc"
+        'pastie': "pastie.org"
     }
 
     results = list()
@@ -131,4 +123,4 @@ class sfp_pastes(SpiderFootPlugin):
                         self.notifyListeners(evt2)
 
 
-# End of sfp_pastes class
+# End of sfp_pastie class
