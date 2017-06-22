@@ -100,7 +100,7 @@ class sfp_googlesearchdomain(SpiderFootPlugin):
                     else:
                         self.results.append(link)
                     self.sf.debug("Found a link: " + link)
-                    if self.sf.urlFQDN(link).endswith(eventData):
+                    if self.sf.urlFQDN(link).endswith(dom):
                         found = True
                         evt = SpiderFootEvent("LINKED_URL_EXTERNAL", link,
                                               self.__name__, event)
