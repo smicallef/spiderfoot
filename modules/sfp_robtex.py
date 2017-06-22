@@ -12,6 +12,7 @@
 
 import re
 import socket
+import json
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -22,16 +23,19 @@ class sfp_robtex(SpiderFootPlugin):
     # Default options
     opts = {
         'cohostsamedomain': False,
-        'verify': True
+        'verify': True,
+        'api_key': ""
     }
 
     # Option descriptions
     optdescs = {
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
-        'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP."
+        'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
+        'api_key': "Robtex.com requires an API key, obtained from the Mashape.com marketplace."
     }
 
     results = list()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -48,7 +52,7 @@ class sfp_robtex(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["CO_HOSTED_SITE", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["CO_HOSTED_SITE"]
 
     def validateIP(self, host, ip):
         try:
@@ -76,6 +80,14 @@ class sfp_robtex(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.errorState:
+            return None
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_robtex but did not set an API key!", False)
+            self.errorState = True
+            return None
+
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
@@ -97,43 +109,32 @@ class sfp_robtex(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            res = self.sf.fetchUrl("https://www.robtex.com/?a=2&ip=" + ip + "&shared=1",
+            res = self.sf.fetchUrl("https://robtex.p.mashape.com/reverse/?q=" + ip + "&m=100",
                                    useragent=self.opts['_useragent'],
-                                   timeout=self.opts['_fetchtimeout'])
+                                   timeout=self.opts['_fetchtimeout'],
+                                   headers={
+                                    'X-Mashape-Key': self.opts['api_key'], 
+                                    'Accept': 'application/json'}
+                                  )
             if res['content'] is None:
                 self.sf.error("Unable to fetch robtex content.", False)
                 continue
 
-            if "shared DNS of" in res['content'] or "Pointing to " in res['content']:
-                p = re.compile("<li><a href=(.*?/dns-lookup/.*?)..>(.[^<]*)", re.IGNORECASE)
-                matches = p.findall(res['content'])
-                for mt in matches:
-                    m = mt[1]
-                    self.sf.info("Found something on same IP: " + m)
-                    if not self.opts['cohostsamedomain']:
-                        if self.getTarget().matches(m, includeParents=True):
-                            self.sf.debug("Skipping " + m + " because it is on the same domain.")
-                            continue
+            try:
+                data = json.loads(res['content'])
+            except BaseException as e:
+                self.sf.error("Error parsing JSON from robtex API.", False)
+                # Abort so that we don't use up API credits in case this is an error
+                # on our side.
+                self.errorState = True
+                return None
 
-                    if '*' in m:
-                        self.sf.debug("Skipping wildcard name: " + m)
+            if len(data.get('l')) > 0:
+                for r in data.get('l'):
+                    if self.opts['verify'] and not self.validateIP(r['o'], ip):
+                        self.sf.debug("Host no longer resolves to our IP.")
                         continue
+                    evt = SpiderFootEvent("CO_HOSTED_SITE", r['o'], self.__name__, event)
+                    self.notifyListeners(evt)
 
-                    if '.' not in m:
-                        self.sf.debug("Skipping tld: " + m)
-                        continue
-
-                    if m not in myres and m != ip:
-                        if self.opts['verify'] and not self.validateIP(m, ip):
-                            self.sf.debug("Host no longer resolves to our IP.")
-                            continue
-                        evt = SpiderFootEvent("CO_HOSTED_SITE", m.lower(), self.__name__, event)
-                        self.notifyListeners(evt)
-                        myres.append(m.lower())
-
-            # Submit the bing results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key],
-                                  self.__name__, event)
-            self.notifyListeners(evt)
-
-        # End of sfp_robtex class
+# End of sfp_robtex class
