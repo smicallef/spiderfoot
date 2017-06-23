@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_defaced
+# Name:         sfp_zoneh
 # Purpose:      Checks if a domain or IP appears on the zone-h.org defacement
 #               archive.
 #
@@ -16,8 +16,8 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
-class sfp_defaced(SpiderFootPlugin):
-    """Defacement Check:Investigate,Passive:Search Engines::Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed."""
+class sfp_zoneh(SpiderFootPlugin):
+    """Zone-H Defacement Check:Investigate,Passive:Search Engines::Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed."""
 
     # Default options
     opts = {
@@ -65,7 +65,7 @@ class sfp_defaced(SpiderFootPlugin):
         grps = re.findall("<title><\!\[CDATA\[(.[^\]]*)\]\]></title>\s+<link><\!\[CDATA\[(.[^\]]*)\]\]></link>", content)
         for m in grps:
             if target in m[0]:
-                self.sf.info("Found defaced site: " + m[0])
+                self.sf.info("Found zoneh site: " + m[0])
                 return m[0] + "\n<SFURL>" + m[1] + "</SFURL>"
 
         return False
@@ -108,14 +108,14 @@ class sfp_defaced(SpiderFootPlugin):
             return None
 
         url = "http://www.zone-h.org/rss/specialdefacements"
-        content = self.sf.cacheGet("sfdefaced", 48)
+        content = self.sf.cacheGet("sfzoneh", 48)
         if content is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
                 self.sf.error("Unable to fetch " + url, False)
                 return None
             else:
-                self.sf.cachePut("sfdefaced", data['content'])
+                self.sf.cachePut("sfzoneh", data['content'])
                 content = data['content']
 
         ret = self.lookupItem(eventData, content)
@@ -123,4 +123,4 @@ class sfp_defaced(SpiderFootPlugin):
             evt = SpiderFootEvent(evtType, ret, self.__name__, event)
             self.notifyListeners(evt)
 
-# End of sfp_defaced class
+# End of sfp_zoneh class

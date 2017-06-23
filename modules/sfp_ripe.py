@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_ir
+# Name:         sfp_ripe
 # Purpose:      Queries Internet registryes like RIPE (incl. ARIN) to get 
 #               netblocks and other bits of info.
 #
@@ -16,8 +16,8 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
-class sfp_ir(SpiderFootPlugin):
-    """Internet Registries:Footprint,Investigate,Passive:Networking::Queries Internet Registries to identify netblocks and other info."""
+class sfp_ripe(SpiderFootPlugin):
+    """RIPE Internet Registry:Footprint,Investigate,Passive:Networking::Queries the RIPE registry (includes ARIN data) to identify netblocks and other info."""
 
     # Default options
     opts = {}
@@ -338,4 +338,4 @@ class sfp_ir(SpiderFootPlugin):
 
         return None
 
-# End of sfp_ir class
+# End of sfp_ripe class

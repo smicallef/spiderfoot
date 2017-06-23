@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_historic
+# Name:         sfp_archiveorg
 # Purpose:      Queries archive.org (Wayback machine) for historic versions of
 #               certain pages.
 #
@@ -19,8 +19,8 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
-class sfp_historic(SpiderFootPlugin):
-    """Historic Files:Footprint:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
+class sfp_archiveorg(SpiderFootPlugin):
+    """Archive.org:Footprint:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
 
     # Default options
     opts = {
@@ -148,4 +148,4 @@ class sfp_historic(SpiderFootPlugin):
             evt = SpiderFootEvent(name, wbmlink, self.__name__, event)
             self.notifyListeners(evt)
 
-# End of sfp_historic class
+# End of sfp_archiveorg class

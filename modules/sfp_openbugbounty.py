@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
-# Name:         sfp_vuln
-# Purpose:      Query external vulnerability sources to see if our target appears.
+# Name:         sfp_openbugbounty
+# Purpose:      Query the Open Bug Bounty database to see if our target appears.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -16,8 +16,8 @@ import re
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-class sfp_vuln(SpiderFootPlugin):
-    """Vulnerable:Footprint,Investigate,Passive:Blacklists:errorprone:Check external vulnerability scanning/reporting services (for now only openbugbounty.org) to see if the target is listed."""
+class sfp_openbugbounty(SpiderFootPlugin):
+    """Open Bug Bounty:Footprint,Investigate,Passive:Blacklists:errorprone:Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed."""
 
     # Default options
     opts = {
@@ -99,4 +99,4 @@ class sfp_vuln(SpiderFootPlugin):
             e = SpiderFootEvent("VULNERABILITY", n, self.__name__, event)
             self.notifyListeners(e)
 
-# End of sfp_vuln class
+# End of sfp_openbugbounty class

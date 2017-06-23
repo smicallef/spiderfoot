@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_coderepo
-# Purpose:      Identifies public code repositories associated with your target.
+# Name:         sfp_github
+# Purpose:      Identifies public code repositories in Github associated with 
+#               your target.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -13,8 +14,8 @@
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-class sfp_coderepo(SpiderFootPlugin):
-    """Code Repos:Footprint,Passive:Social::Identify associated public code repositories (Github only for now)."""
+class sfp_github(SpiderFootPlugin):
+    """Github:Footprint,Passive:Social::Identify associated public code repositories on Github."""
 
     # Default options
     opts = {
@@ -176,4 +177,4 @@ class sfp_coderepo(SpiderFootPlugin):
                         self.notifyListeners(evt)
 
 
-# End of sfp_coderepo class
+# End of sfp_github class
