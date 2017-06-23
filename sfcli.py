@@ -894,7 +894,6 @@ class SpiderFootCli(cmd.Cmd):
         else:
             titles={"0": "Element Type",
                     "1": "Element Description",
-                    "2": "Last Seen",
                     "3": "Total",
                     "4": "Unique"
             }
@@ -941,27 +940,27 @@ class SpiderFootCli(cmd.Cmd):
             return
 
         helpmap = [
-            ["help [command]", "This help output. Specify 'command' for more detailed help."],
+            ["help [command]", "This help output."],
             ["debug", "Enable/Disable debug output."],
             ["clear", "Clear the screen."],
-            ["history [-l]", "Enable/Disable/List command history."],
+            ["history", "Enable/Disable/List command history."],
             ["spool", "Enable/Disable spooling output."],
             ["shell", "Execute a shell command."],
             ["exit", "Exit the SpiderFoot CLI (won't impact running scans)."],
             ["ping", "Test connectivity to the SpiderFoot server."],
             ["modules", "List available modules."],
             ["types", "List available data types."],
-            ["set [[$]opt] [= val]", "Set variables and configuration settings."],
-            ["scans [-x]", "List all scans that have been run or are running."],
-            ["start <target> (-m m1,... | -t t1,... | -u case) [-n name] [-w]", "Start a new scan."],
-            ["stop <sid>", "Stop a scan."],
-            ["delete <sid>", "Delete a scan."],
-            ["scaninfo <sid> [-c]", "Scan information."],
-            ["data <sid> [-t type] [-x] [-u]", "Show data from a scan's results."],
-            ["summary <sid> [-t]", "Scan result summary."],
-            ["find <string|/regex/> [-s sid] [-t type] [-x]", "Search for data within scan results."],
-            ["query <SQL query>", "Run SQL against the SpiderFoot SQLite database."],
-            ["logs <sid> [-l count] [-w]", "View/watch logs from a scan."]
+            ["set", "Set variables and configuration settings."],
+            ["scans", "List all scans that have been run or are running."],
+            ["start", "Start a new scan."],
+            ["stop", "Stop a scan."],
+            ["delete", "Delete a scan."],
+            ["scaninfo", "Scan information."],
+            ["data", "Show data from a scan's results."],
+            ["summary", "Scan result summary."],
+            ["find", "Search for data within scan results."],
+            ["query", "Run SQL against the SpiderFoot SQLite database."],
+            ["logs", "View/watch logs from a scan."]
         ]
 
         self.send_output(json.dumps(helpmap), "", titles={"0": "Command", "1": "Description"},
