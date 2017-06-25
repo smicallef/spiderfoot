@@ -101,6 +101,7 @@ class sfp_filemeta(SpiderFootPlugin):
                     except BaseException as e:
                         self.sf.error("Unable to parse meta data from: " +
                                       eventData + "(" + str(e) + ")", False)
+                        return None
 
                 if fileExt.lower() in ["pptx", "docx", "xlsx"]:
                     try:
@@ -112,23 +113,27 @@ class sfp_filemeta(SpiderFootPlugin):
                     except ValueError as e:
                         self.sf.error("Unable to parse meta data from: " +
                                       eventData + "(" + str(e) + ")", False)
+                        return None
                     except lxml.etree.XMLSyntaxError as e:
                         self.sf.error("Unable to parse XML within: " +
                                       eventData + "(" + str(e) + ")", False)
+                        return None
                     except BaseException as e:
                         self.sf.error("Unable to process file: " +
                                       eventData + "(" + str(e) + ")", False)
+                        return None
 
                 if fileExt.lower() in ["jpg", "jpeg", "tiff"]:
                     try:
                         raw = StringIO(ret['content'])
                         data = exifread.process_file(raw)
                         if data is None or len(data) == 0:
-                            return None
+                            continue
                         meta = str(data)
                     except BaseException as e:
                         self.sf.error("Unable to parse meta data from: " +
                                       eventData + "(" + str(e) + ")", False)
+                        return None
 
                 if meta is not None and data is not None:
                     evt = SpiderFootEvent("RAW_FILE_META_DATA", meta,
@@ -136,21 +141,25 @@ class sfp_filemeta(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
                     val = None
-                    if "/Producer" in data:
-                        val = data['/Producer']
-
-                    if "/Creator" in data:
+                    try:
                         if "/Producer" in data:
-                            if data['/Creator'] != data['/Producer']:
+                            val = data['/Producer']
+
+                        if "/Creator" in data:
+                            if "/Producer" in data:
+                                if data['/Creator'] != data['/Producer']:
+                                    val = data['/Creator']
+                            else:
                                 val = data['/Creator']
-                        else:
-                            val = data['/Creator']
 
-                    if "Application" in data:
-                        val = data['Application']
+                        if "Application" in data:
+                            val = data['Application']
 
-                    if "Image Software" in data:
-                        val = str(data['Image Software'])
+                        if "Image Software" in data:
+                            val = str(data['Image Software'])
+                    except BaseException as e:
+                        self.sf.error("Failed to parse PDF, " + eventData + ": " + str(e), False)
+                        return None
 
                     if val is not None:
                         # Strip non-ASCII
