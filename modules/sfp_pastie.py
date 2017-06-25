@@ -62,65 +62,64 @@ class sfp_pastie(SpiderFootPlugin):
             self.results.append(eventData)
 
         for dom in self.domains.keys():
-            if self.opts[dom]:
-                links = list()
-                target = self.domains[dom]
-                pages = self.sf.googleIterate("site:" + target + "%20+\"" + eventData + "\"",
-                                              dict(limit=self.opts['searchpages'],
-                                              useragent=self.opts['_useragent'], 
-                                              timeout=self.opts['_fetchtimeout']))
+            links = list()
+            target = self.domains[dom]
+            pages = self.sf.googleIterate("site:" + target + "%20+\"" + eventData + "\"",
+                                          dict(limit=self.opts['searchpages'],
+                                          useragent=self.opts['_useragent'], 
+                                          timeout=self.opts['_fetchtimeout']))
 
-                if pages is None:
-                    self.sf.info("No results returned from Google search of " + target + ".")
+            if pages is None:
+                self.sf.info("No results returned from Google search of " + target + ".")
+                return None
+
+            for page in pages.keys():
+                if page in self.results:
+                    continue
+                else:
+                    self.results.append(page)
+
+                # Check if we've been asked to stop
+                if self.checkForStop():
                     return None
 
-                for page in pages.keys():
-                    if page in self.results:
-                        continue
-                    else:
-                        self.results.append(page)
+                # Fetch the paste site content
+                links += self.sf.parseLinks(page, pages[page], target)
 
-                    # Check if we've been asked to stop
+            for link in links:
+                if link in self.results:
+                    continue
+                else:
+                    self.results.append(link)
+
+                self.sf.debug("Found a link: " + link)
+                if self.sf.urlBaseUrl(link).endswith(target):
                     if self.checkForStop():
                         return None
 
-                    # Fetch the paste site content
-                    links += self.sf.parseLinks(page, pages[page], target)
+                    res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
+                                           useragent=self.opts['_useragent'])
 
-                for link in links:
-                    if link in self.results:
+                    if res['content'] is None:
+                        self.sf.debug("Ignoring " + link + " as no data returned")
                         continue
-                    else:
-                        self.results.append(link)
 
-                    self.sf.debug("Found a link: " + link)
-                    if self.sf.urlBaseUrl(link).endswith(target):
-                        if self.checkForStop():
-                            return None
+                    # Sometimes pastes search results false positives
+                    if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
+                                 "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                      continue
 
-                        res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
-                                               useragent=self.opts['_useragent'])
+                    try:
+                        startIndex = res['content'].index(eventData)
+                    except BaseException as e:
+                        self.sf.debug("String not found in pastes content.")
+                        continue
 
-                        if res['content'] is None:
-                            self.sf.debug("Ignoring " + link + " as no data returned")
-                            continue
+                    evt1 = SpiderFootEvent("LEAKSITE_URL", link, self.__name__, event)
+                    self.notifyListeners(evt1)
 
-                        # Sometimes pastes search results false positives
-                        if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                                     "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
-                          continue
-
-                        try:
-                            startIndex = res['content'].index(eventData)
-                        except BaseException as e:
-                            self.sf.debug("String not found in pastes content.")
-                            continue
-
-                        evt1 = SpiderFootEvent("LEAKSITE_URL", link, self.__name__, event)
-                        self.notifyListeners(evt1)
-
-                        evt2 = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, evt1)
-                        self.notifyListeners(evt2)
+                    evt2 = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, evt1)
+                    self.notifyListeners(evt2)
 
 
 # End of sfp_pastie class
