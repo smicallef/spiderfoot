@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_blacklist
+# Name:         sfp_uceprotect
 # Purpose:      SpiderFoot plug-in for looking up whether IPs/Netblocks/Domains
-#               appear in various block lists, indicating potential open-relays,
+#               appear in the UCEPROTECT blacklist, indicating potential open-relays,
 #               open proxies, malicious servers, vulnerable servers, etc.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -17,8 +17,8 @@ from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
-class sfp_blacklist(SpiderFootPlugin):
-    """Blacklist:Investigate,Passive:Blacklists::Query various blacklist databases for open relays, open proxies, vulnerable servers, etc."""
+class sfp_uceprotect(SpiderFootPlugin):
+    """UCEPROTECT:Investigate,Passive:Blacklists::Query the UCEPROTECT databases for open relays, open proxies, vulnerable servers, etc."""
 
     # Default options
     opts = {
@@ -44,40 +44,8 @@ class sfp_blacklist(SpiderFootPlugin):
     # Check out:
     # http://www.blocklist.de/en/rbldns.html
     checks = {
-        "http.dnsbl.sorbs.net": "SORBS - Open HTTP Proxy",
-        "socks.dnsbl.sorbs.net": "SORBS - Open SOCKS Proxy",
-        "misc.dnsbl.sorbs.net": "SORBS - Open Proxy",
-        "smtp.dnsbl.sorbs.net": "SORBS - Open SMTP Relay",
-        "spam.dnsbl.sorbs.net": 'SORBS - Spammer',
-        "recent.spam.dnsbl.sorbs.net": 'SORBS - Recent Spammer',
-        "web.dnsbl.sorbs.net": 'SORBS - Vulnerability exposed to spammers',
-        "dnsbl.dronebl.org": {
-            "127.0.0.3": "dronebl.org - IRC Drone",
-            "127.0.0.5": "dronebl.org - Bottler",
-            "127.0.0.6": "dronebl.org - Unknown spambot or drone",
-            "127.0.0.7": "dronebl.org - DDOS Drone",
-            "127.0.0.8": "dronebl.org - SOCKS Proxy",
-            "127.0.0.9": "dronebl.org - HTTP Proxy",
-            "127.0.0.10": "dronebl.org - ProxyChain",
-            "127.0.0.13": "dronebl.org - Brute force attackers",
-            "127.0.0.14": "dronebl.org - Open Wingate Proxy",
-            "127.0.0.15": "dronebl.org - Compromised router / gateway",
-            "127.0.0.17": "dronebl.org - Automatically determined botnet IPs (experimental)",
-            "127.0.0.255": "dronebl.org - Unknown"
-        },
         "dnsbl-1.uceprotect.net": 'UCEPROTECT - Level 1 (high likelihood)',
-        "dnsbl-2.uceprotect.net": 'UCEPROTECT - Level 2 (some false positives)',
-        'zen.spamhaus.org': {
-            '127.0.0.2': "Spamhaus (Zen) - Spammer",
-            '127.0.0.3': "Spamhaus (Zen) - Spammer",
-            '127.0.0.4': "Spamhaus (Zen) - Proxies, Trojans, etc.",
-            '127.0.0.5': "Spamhaus (Zen) - Proxies, Trojans, etc.",
-            '127.0.0.6': "Spamhaus (Zen) - Proxies, Trojans, etc.",
-            '127.0.0.7': "Spamhaus (Zen) - Proxies, Trojans, etc.",
-            '127.0.0.10': "Spamhaus (Zen) - Potential Spammer",
-            '127.0.0.11': "Spamhaus (Zen) - Potential Spammer"
-        },
-        "bl.spamcop.net": "SpamCop Blacklist"
+        "dnsbl-2.uceprotect.net": 'UCEPROTECT - Level 2 (some false positives)'
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -184,4 +152,4 @@ class sfp_blacklist(SpiderFootPlugin):
         else:
             self.queryAddr(eventData, parentEvent)
 
-# End of sfp_blacklist class
+# End of sfp_uceprotect class
