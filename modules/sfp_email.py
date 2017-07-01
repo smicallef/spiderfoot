@@ -21,12 +21,10 @@ class sfp_email(SpiderFootPlugin):
     # Default options
     opts = {
         # options specific to this module
-        'includeexternal': False  # Include e-mail addrs on external domains
     }
 
     # Option descriptions
     optdescs = {
-        'includeexternal': "Report e-mail addresses not on the target base domain-name?"
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -75,8 +73,7 @@ class sfp_email(SpiderFootPlugin):
 
             # Get the doain and strip potential ending .
             mailDom = match.lower().split('@')[1].strip('.')
-            if not self.opts['includeexternal'] and not \
-                    self.getTarget().matches(mailDom):
+            if not self.getTarget().matches(mailDom):
                 self.sf.debug("Ignoring e-mail address on an external domain: " + match)
                 continue
 
