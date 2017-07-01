@@ -673,7 +673,7 @@ class SpiderFootCli(cmd.Cmd):
             titles["0"] = "Last Seen"
             titles["3"] = "Module"
             titles["2"] = "Source Data"
-
+        d = d.replace("&lt;/SFURL&gt;", "").replace("&lt;SFURL&gt;","")
         self.send_output(d, line, titles=titles)
 
     # Show logs.
