@@ -19,7 +19,8 @@ malchecks = {
         'id': '_torexits',
         'type': 'list',
         'checks': ['ip', 'netblock'],
-        'url': 'https://check.torproject.org/exit-addresses'
+        'url': 'https://check.torproject.org/exit-addresses',
+        'regex': '^ExitAddress\s+{0}\s+'
     }
 }
 

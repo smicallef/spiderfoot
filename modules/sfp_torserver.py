@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_tornode
-# Purpose:      Checks if an IP or netblock appears on the TOR exit node list.
+# Name:         sfp_torserver
+# Purpose:      Checks if an IP or netblock appears on the TOR server list.
 #
 # Author:       steve@binarypool.com
 #
@@ -24,8 +24,8 @@ malchecks = {
 }
 
 
-class sfp_tornode(SpiderFootPlugin):
-    """TOR Exit Nodes:Investigate,Passive:Blacklists:slow:Check if an IP or netblock appears on the blutmagie.de TOR exit node list."""
+class sfp_torserver(SpiderFootPlugin):
+    """TOR Servers:Investigate,Passive:Blacklists:slow:Check if an IP or netblock appears on the blutmagie.de TOR server list."""
 
     # Default options
     opts = {
@@ -264,4 +264,4 @@ class sfp_tornode(SpiderFootPlugin):
 
         return None
 
-# End of sfp_tornode class
+# End of sfp_torserver class
