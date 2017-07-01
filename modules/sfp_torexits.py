@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_tornode
+# Name:         sfp_torexits
 # Purpose:      Checks if an IP or netblock appears on the TOR exit node list.
 #
 # Author:       steve@binarypool.com
@@ -24,7 +24,7 @@ malchecks = {
 }
 
 
-class sfp_tornode(SpiderFootPlugin):
+class sfp_torexits(SpiderFootPlugin):
     """TOR Exit Nodes:Investigate,Passive:Blacklists:slow:Check if an IP or netblock appears on the torproject.org exit node list."""
 
     # Default options
@@ -264,4 +264,4 @@ class sfp_tornode(SpiderFootPlugin):
 
         return None
 
-# End of sfp_tornode class
+# End of sfp_torexits class
