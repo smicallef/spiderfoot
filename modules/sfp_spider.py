@@ -15,7 +15,8 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spider(SpiderFootPlugin):
-    """Spider:Footprint,Investigate:Web Spidering:slow,invasive:Spidering of web-pages to extract content for searching. """
+    """Spider:Footprint,Investigate:Crawling and Scanning:slow,invasive:Spidering of web-pages to extract content for searching."""
+
 
     # Default options
     opts = {

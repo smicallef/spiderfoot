@@ -19,7 +19,8 @@ from hashlib import sha256
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_bitcoin(SpiderFootPlugin):
-    """Bitcoin Finder:Footprint,Investigate:Social::Identify bitcoin addresses in scraped webpages."""
+    """Bitcoin Finder:Footprint,Investigate:Content Analysis::Identify bitcoin addresses in scraped webpages."""
+
 
     # Default options
     opts = {}

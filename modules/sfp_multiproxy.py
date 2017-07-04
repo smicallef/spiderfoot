@@ -26,7 +26,8 @@ malchecks = {
 
 
 class sfp_multiproxy(SpiderFootPlugin):
-    """multiproxy.org Open Proxies:Investigate,Passive:Blacklists:slow:Check if an IP is an open proxy according to multiproxy.org' open proxy list."""
+    """multiproxy.org Open Proxies:Investigate,Passive:Reputation Systems:slow:Check if an IP is an open proxy according to multiproxy.org' open proxy list."""
+
 
     # Default options
     opts = {

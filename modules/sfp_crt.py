@@ -18,7 +18,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_crt(SpiderFootPlugin):
-    """Certificate Transparency:Footprint,Investigate,Passive:Networking::Gather hostnames from historical certificates in crt.sh."""
+    """Certificate Transparency:Footprint,Investigate,Passive:Search Engines::Gather hostnames from historical certificates in crt.sh."""
+
 
     # Default options
     opts = {}

@@ -18,6 +18,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_shodan(SpiderFootPlugin):
     """SHODAN:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from SHODAN about identified IP addresses."""
 
+
     # Default options
     opts = {
         "api_key": "",

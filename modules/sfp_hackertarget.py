@@ -17,7 +17,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_hackertarget(SpiderFootPlugin):
-    """HackerTarget.com:Footprint,Investigate,Passive:Networking:errorprone:Search HackerTarget.com for hosts sharing the same IP."""
+    """HackerTarget.com:Footprint,Investigate,Passive:Reputation Systems:errorprone:Search HackerTarget.com for hosts sharing the same IP."""
+
 
     # Default options
     opts = {

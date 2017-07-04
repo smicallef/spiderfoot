@@ -26,7 +26,8 @@ malchecks = {
 
 
 class sfp_vxvault(SpiderFootPlugin):
-    """VXVault.net:Investigate,Passive:Blacklists:slow:Check if a domain or IP is malicious according to VXVault.net."""
+    """VXVault.net:Investigate,Passive:Reputation Systems:slow:Check if a domain or IP is malicious according to VXVault.net."""
+
 
     # Default options
     opts = {

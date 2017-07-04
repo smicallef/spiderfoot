@@ -27,7 +27,8 @@ malchecks = {
 
 
 class sfp_watchguard(SpiderFootPlugin):
-    """Watchguard:Investigate,Passive:Blacklists:slow:Check if an IP is malicious according to Watchguard's reputationauthority.org."""
+    """Watchguard:Investigate,Passive:Reputation Systems:slow:Check if an IP is malicious according to Watchguard's reputationauthority.org."""
+
 
     # Default options
     opts = {

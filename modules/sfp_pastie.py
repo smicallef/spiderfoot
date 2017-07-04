@@ -16,7 +16,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_pastie(SpiderFootPlugin):
-    """Pastie.org:Footprint,Investigate,Passive:Search Engines:errorprone:Pastie.org scraping (via Google) to identify related content."""
+    """Pastie.org:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:errorprone:Pastie.org scraping (via Google) to identify related content."""
+
 
     # Default options
     opts = {

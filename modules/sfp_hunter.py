@@ -17,6 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_hunter(SpiderFootPlugin):
     """Hunter.io:Footprint,Investigate,Passive:Search Engines:apikey:Check for e-mail addresses and names on hunter.io."""
 
+
     # Default options
     opts = { 
         "api_key": ""

@@ -17,6 +17,7 @@ import re
 class sfp_onioncity(SpiderFootPlugin):
     """Onion.city:Footprint,Investigate:Search Engines::Search Tor 'Onion City' search engine for mentions of the target domain."""
 
+
     # Default options
     opts = {
         'pages': 20,  # Number of results pages to iterate

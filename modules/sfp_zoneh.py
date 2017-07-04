@@ -17,7 +17,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_zoneh(SpiderFootPlugin):
-    """Zone-H Defacement Check:Investigate,Passive:Search Engines::Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed."""
+    """Zone-H Defacement Check:Investigate,Passive:Leaks, Dumps and Breaches::Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed."""
+
 
     # Default options
     opts = {

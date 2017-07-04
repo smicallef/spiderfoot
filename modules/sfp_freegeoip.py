@@ -16,7 +16,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_freegeoip(SpiderFootPlugin):
-    """FreeGeoIP:Footprint,Investigate,Passive:Networking::Identifies the physical location of IP addresses identified using freegeoip.net."""
+    """FreeGeoIP:Footprint,Investigate,Passive:Real World::Identifies the physical location of IP addresses identified using freegeoip.net."""
+
 
     # Default options
     opts = {}

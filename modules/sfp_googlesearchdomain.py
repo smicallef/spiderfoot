@@ -16,6 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_googlesearchdomain(SpiderFootPlugin):
     """Google Search, by domain:Footprint,Investigate,Passive:Search Engines:errorprone:Some light Google scraping to identify sub-domains and links within site:domain contexts you specify."""
 
+
     # Default options
     opts = {
         'pages': 20,  # Number of google results pages to iterate

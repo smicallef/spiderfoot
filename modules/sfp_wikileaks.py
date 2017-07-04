@@ -17,7 +17,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_wikileaks(SpiderFootPlugin):
-    """Wikileaks:Footprint,Investigate,Passive:Web Spidering:errorprone:Search Wikileaks for mentions of domain names and e-mail addresses."""
+    """Wikileaks:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:errorprone:Search Wikileaks for mentions of domain names and e-mail addresses."""
+
 
     # Default options
     opts = {

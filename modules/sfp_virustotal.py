@@ -17,7 +17,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_virustotal(SpiderFootPlugin):
-    """VirusTotal:Investigate,Passive:Blacklists:apikey:Obtain information from VirusTotal about identified IP addresses."""
+    """VirusTotal:Investigate,Passive:Reputation Systems:apikey:Obtain information from VirusTotal about identified IP addresses."""
+
 
     # Default options
     opts = {

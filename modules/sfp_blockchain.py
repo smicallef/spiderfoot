@@ -16,7 +16,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_blockchain(SpiderFootPlugin):
-    """Blockchain:Footprint,Investigate,Passive:Social::Queries blockchain.info to find the balance of identified bitcoin wallet addresses."""
+    """Blockchain:Footprint,Investigate,Passive:Public Registries::Queries blockchain.info to find the balance of identified bitcoin wallet addresses."""
+
 
     # Default options
     opts = {}

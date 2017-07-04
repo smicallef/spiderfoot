@@ -25,7 +25,8 @@ malchecks = {
 
 
 class sfp_torserver(SpiderFootPlugin):
-    """TOR Servers:Investigate,Passive:Blacklists:slow:Check if an IP or netblock appears on the blutmagie.de TOR server list."""
+    """TOR Servers:Investigate,Passive:Public Registries:slow:Check if an IP or netblock appears on the blutmagie.de TOR server list."""
+
 
     # Default options
     opts = {

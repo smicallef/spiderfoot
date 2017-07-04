@@ -17,7 +17,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_threatcrowd(SpiderFootPlugin):
-    """ThreatCrowd:Investigate,Passive:Blacklists::Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses."""
+    """ThreatCrowd:Investigate,Passive:Reputation Systems::Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses."""
+
 
     # Default options
     opts = {

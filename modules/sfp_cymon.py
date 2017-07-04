@@ -18,7 +18,8 @@ from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_cymon(SpiderFootPlugin):
-    """Cymon:Investigate,Passive:Blacklists:apikey:Obtain information from Cymon.io"""
+    """Cymon:Investigate,Passive:Reputation Systems:apikey:Obtain information from Cymon.io"""
+
 
     # Default options
     opts = {

@@ -17,7 +17,8 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_accounts(SpiderFootPlugin):
-    """Accounts:Footprint,Passive:Social:slow:Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc."""
+    """Accounts:Footprint,Passive:Social Media:slow:Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc."""
+
 
     # Default options
     opts = {

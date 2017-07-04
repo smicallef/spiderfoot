@@ -14,7 +14,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 import random
 
 class sfp_junkfiles(SpiderFootPlugin):
-    """Junk Files:Footprint:Web Spidering:slow,invasive:Looks for old/temporary and other similar files."""
+    """Junk Files:Footprint:Crawling and Scanning:slow,invasive:Looks for old/temporary and other similar files."""
+
 
     # Default options
     opts = {

@@ -17,7 +17,8 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_openbugbounty(SpiderFootPlugin):
-    """Open Bug Bounty:Footprint,Investigate,Passive:Blacklists:errorprone:Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed."""
+    """Open Bug Bounty:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:errorprone:Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed."""
+
 
     # Default options
     opts = {

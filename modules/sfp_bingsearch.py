@@ -16,6 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_bingsearch(SpiderFootPlugin):
     """Bing:Footprint,Investigate,Passive:Search Engines:errorprone:Some light Bing scraping to identify sub-domains and links."""
 
+
     # Default options
     opts = {
         'pages': 20  # Number of bing results pages to iterate

@@ -15,7 +15,8 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_psbdmp(SpiderFootPlugin):
-    """Psbdmp.com:Footprint,Investigate,Passive:Search Engines::Check psbdmp.com (PasteBin Dump) for potentially hacked e-mails and domains."""
+    """Psbdmp.com:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check psbdmp.com (PasteBin Dump) for potentially hacked e-mails and domains."""
+
 
     # Default options
     opts = { 

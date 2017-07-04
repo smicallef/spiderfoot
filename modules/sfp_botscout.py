@@ -16,7 +16,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_botscout(SpiderFootPlugin):
-    """BotScout:Investigate:Blacklists:apikey:Searches botscout.com's database of spam-bot IPs and e-mail addresses."""
+    """BotScout:Investigate:Reputation Systems:apikey:Searches botscout.com's database of spam-bot IPs and e-mail addresses."""
+
 
     # Default options
     opts = {

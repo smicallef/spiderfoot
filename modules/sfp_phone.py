@@ -19,7 +19,8 @@ import phonenumbers
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_phone(SpiderFootPlugin):
-    """Phone Numbers:Footprint,Investigate:Social::Identify phone numbers in scraped webpages."""
+    """Phone Numbers:Footprint,Investigate:Real World::Identify phone numbers in scraped webpages."""
+
 
     # Default options
     opts = {}

@@ -16,7 +16,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_email(SpiderFootPlugin):
-    """E-Mail:Footprint,Investigate,Passive:Data Analysis::Identify e-mail addresses in any obtained data."""
+    """E-Mail:Footprint,Investigate,Passive:Content Analysis::Identify e-mail addresses in any obtained data."""
+
 
     # Default options
     opts = {

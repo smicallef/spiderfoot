@@ -26,7 +26,8 @@ malchecks = {
 
 
 class sfp_alienvaultiprep(SpiderFootPlugin):
-    """AlienVault IP Reputation:Investigate,Passive:Blacklists:slow:Check if an IP or netblock is malicious according to the AlienVault IP Reputation database."""
+    """AlienVault IP Reputation:Investigate,Passive:Reputation Systems:slow:Check if an IP or netblock is malicious according to the AlienVault IP Reputation database."""
+
 
     # Default options
     opts = {

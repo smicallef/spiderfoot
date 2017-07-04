@@ -18,7 +18,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_uceprotect(SpiderFootPlugin):
-    """UCEPROTECT:Investigate,Passive:Blacklists::Query the UCEPROTECT databases for open relays, open proxies, vulnerable servers, etc."""
+    """UCEPROTECT:Investigate,Passive:Reputation Systems::Query the UCEPROTECT databases for open relays, open proxies, vulnerable servers, etc."""
+
 
     # Default options
     opts = {

@@ -18,7 +18,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_dronebl(SpiderFootPlugin):
-    """DroneBL:Investigate,Passive:Blacklists::Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc."""
+    """DroneBL:Investigate,Passive:Reputation Systems::Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc."""
+
 
     # Default options
     opts = {

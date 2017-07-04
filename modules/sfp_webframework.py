@@ -27,7 +27,8 @@ regexps = dict({
 
 
 class sfp_webframework(SpiderFootPlugin):
-    """Web Framework:Footprint:Data Analysis::Identify the usage of popular web frameworks like jQuery, YUI and others."""
+    """Web Framework:Footprint:Content Analysis::Identify the usage of popular web frameworks like jQuery, YUI and others."""
+
 
     # Default options
     opts = {}

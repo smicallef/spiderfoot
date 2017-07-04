@@ -22,6 +22,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_archiveorg(SpiderFootPlugin):
     """Archive.org:Footprint:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
 
+
     # Default options
     opts = {
         'farback': "30,60,90",

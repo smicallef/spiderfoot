@@ -27,7 +27,8 @@ malchecks = {
 
 
 class sfp_isc(SpiderFootPlugin):
-    """Internet Storm Center:Investigate,Passive:Blacklists:slow:Check if an IP is malicious according to SANS ISC."""
+    """Internet Storm Center:Investigate,Passive:Reputation Systems:slow:Check if an IP is malicious according to SANS ISC."""
+
 
     # Default options
     opts = {

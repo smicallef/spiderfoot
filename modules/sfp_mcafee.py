@@ -26,7 +26,8 @@ malchecks = {
 }
 
 class sfp_mcafee(SpiderFootPlugin):
-    """McAfee SiteAdvisor:Investigate,Passive:Blacklists:slow:Check if a host/domain is malicious according to McAfee SiteAdvisor."""
+    """McAfee SiteAdvisor:Investigate,Passive:Reputation Systems:slow:Check if a host/domain is malicious according to McAfee SiteAdvisor."""
+
 
     # Default options
     opts = {

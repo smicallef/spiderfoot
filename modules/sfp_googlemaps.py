@@ -16,7 +16,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlemaps(SpiderFootPlugin):
-    """Google Maps:Footprint,Investigate,Passive:Search Engines::Identifies potential physical addresses and latitude/longitude coordinates."""
+    """Google Maps:Footprint,Investigate,Passive:Real World::Identifies potential physical addresses and latitude/longitude coordinates."""
+
 
     # Default options
     opts = {}

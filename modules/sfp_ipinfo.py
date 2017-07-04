@@ -16,7 +16,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_ipinfo(SpiderFootPlugin):
-    """IPInfo.io:Footprint,Investigate,Passive:Networking::Identifies the physical location of IP addresses identified using ipinfo.io."""
+    """IPInfo.io:Footprint,Investigate,Passive:Real World::Identifies the physical location of IP addresses identified using ipinfo.io."""
+
 
     # Default options
     opts = { 

@@ -26,7 +26,8 @@ malchecks = {
 
 
 class sfp_hostsfilenet(SpiderFootPlugin):
-    """hosts-file.net Malicious Hosts:Investigate,Passive:Blacklists:slow:Check if a host/domain is malicious according to hosts-file.net Malicious Hosts."""
+    """hosts-file.net Malicious Hosts:Investigate,Passive:Reputation Systems:slow:Check if a host/domain is malicious according to hosts-file.net Malicious Hosts."""
+
 
     # Default options
     opts = {

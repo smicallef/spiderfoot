@@ -19,7 +19,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_tldsearch(SpiderFootPlugin):
-    """TLD Search:Footprint:Networking:slow:Search all Internet TLDs for domains with the same name as the target (this can be very slow.)"""
+    """TLD Search:Footprint:DNS:slow:Search all Internet TLDs for domains with the same name as the target (this can be very slow.)"""
+
 
     # Default options
     opts = {

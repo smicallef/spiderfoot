@@ -15,7 +15,8 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pwned(SpiderFootPlugin):
-    """Pwned Password:Footprint,Investigate,Passive:Search Engines:errorprone:Check Have I Been Pwned? for hacked e-mail addresses identified."""
+    """Pwned Password:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:errorprone:Check Have I Been Pwned? for hacked e-mail addresses identified."""
+
 
     # Default options
     opts = { 

@@ -18,7 +18,8 @@ from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_fraudguard(SpiderFootPlugin):
-    """Fraudguard:Investigate,Passive:Search Engines:apikey:Obtain threat information from Fraudguard.io"""
+    """Fraudguard:Investigate,Passive:Reputation Systems:apikey:Obtain threat information from Fraudguard.io"""
+
 
     # Default options
     opts = {

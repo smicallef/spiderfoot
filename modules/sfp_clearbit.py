@@ -16,6 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_clearbit(SpiderFootPlugin):
     """Clearbit:Footprint,Investigate,Passive:Search Engines:apikey:Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com."""
 
+
     # Default options
     opts = { 
         "api_key": ""

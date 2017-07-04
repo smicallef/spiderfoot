@@ -18,7 +18,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sorbs(SpiderFootPlugin):
-    """SORBS:Investigate,Passive:Blacklists::Query the SORBS database for open relays, open proxies, vulnerable servers, etc."""
+    """SORBS:Investigate,Passive:Reputation Systems::Query the SORBS database for open relays, open proxies, vulnerable servers, etc."""
+
 
     # Default options
     opts = {

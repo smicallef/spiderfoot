@@ -18,7 +18,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_robtex(SpiderFootPlugin):
-    """Robtex:Footprint,Investigate,Passive:Networking:errorprone:Search Robtex.com for hosts sharing the same IP."""
+    """Robtex:Footprint,Investigate,Passive:DNS:errorprone:Search Robtex.com for hosts sharing the same IP."""
+
 
     # Default options
     opts = {

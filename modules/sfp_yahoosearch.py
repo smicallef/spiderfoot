@@ -18,6 +18,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_yahoosearch(SpiderFootPlugin):
     """Yahoo:Footprint,Investigate,Passive:Search Engines:errorprone:Some light Yahoo scraping to identify sub-domains and links."""
 
+
     # Default options
     opts = {
         'pages': 20  # Number of yahoo results pages to iterate

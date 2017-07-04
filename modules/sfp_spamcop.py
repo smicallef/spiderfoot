@@ -18,7 +18,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_spamcop(SpiderFootPlugin):
-    """SpamCop:Investigate,Passive:Blacklists::Query various spamcop databases for open relays, open proxies, vulnerable servers, etc."""
+    """SpamCop:Investigate,Passive:Reputation Systems::Query various spamcop databases for open relays, open proxies, vulnerable servers, etc."""
+
 
     # Default options
     opts = {

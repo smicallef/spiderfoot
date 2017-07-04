@@ -16,7 +16,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_pastebin(SpiderFootPlugin):
-    """PasteBin:Footprint,Investigate,Passive:Search Engines:errorprone:PasteBin scraping (via Google) to identify related content."""
+    """PasteBin:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:errorprone:PasteBin scraping (via Google) to identify related content."""
+
 
     # Default options
     opts = {
