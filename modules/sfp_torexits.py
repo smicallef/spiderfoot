@@ -26,7 +26,7 @@ malchecks = {
 
 
 class sfp_torexits(SpiderFootPlugin):
-    """TOR Exit Nodes:Investigate,Passive:Public Registries:slow:Check if an IP or netblock appears on the torproject.org exit node list."""
+    """TOR Exit Nodes:Investigate,Passive:Secondary Networks:slow:Check if an IP or netblock appears on the torproject.org exit node list."""
 
 
     # Default options
