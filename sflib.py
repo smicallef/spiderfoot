@@ -660,9 +660,9 @@ class SpiderFoot:
     # checks.
     def urlBaseUrl(self, url):
         if '://' in url:
-            bits = re.match('(\w+://.[^/:]*)[:/].*', url)
+            bits = re.match('(\w+://.[^/:\?]*)[:/\?].*', url)
         else:
-            bits = re.match('(.[^/:]*)[:/]', url)
+            bits = re.match('(.[^/:\?]*)[:/\?]', url)
 
         if bits is None:
             return url.lower()
