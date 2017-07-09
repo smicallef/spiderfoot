@@ -135,7 +135,11 @@ class sfp_dnsresolve(SpiderFootPlugin):
         # Search for IPs/hosts in raw data, but obviously nothing this module
         # already produces, as those things are already entities, not raw data.
         if eventName not in self.producedEvents():
-            data = urllib2.unquote(eventData)
+            if type(eventData) in [dict, list]:
+                eventDataStr = str(eventData)
+            else:
+                eventDataStr = eventData
+            data = urllib2.unquote(eventDataStr)
             for name in self.getTarget().getNames():
                 if self.checkForStop():
                     return None

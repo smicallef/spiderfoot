@@ -166,10 +166,11 @@ class sfp_spider(SpiderFootPlugin):
                 continue
 
             # If we are respecting robots.txt, filter those out too
-            checkRobots = lambda blocked: str.lower(blocked) in link.lower() or blocked == '*'
-            if self.opts['robotsonly'] and filter(checkRobots, self.robotsRules[linkBase]):
-                #self.sf.debug("Ignoring page found in robots.txt: " + link)
-                continue
+            if linkBase in self.robotsRules and self.opts['robotsonly']:
+                checkRobots = lambda blocked: type(blocked).lower(blocked) in link.lower() or blocked == '*'
+                if filter(checkRobots, self.robotsRules[linkBase]):
+                    #self.sf.debug("Ignoring page found in robots.txt: " + link)
+                    continue
 
             # All tests passed, add link to be spidered
             self.sf.debug("Adding URL for spidering: " + link)
