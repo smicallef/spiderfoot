@@ -65,7 +65,7 @@ sfConfig = {
     '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
     '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
     '_internettlds_cache': 72,
-    '__version__': '2.10',
+    '__version__': '2.11',
     '__database': 'spiderfoot.db',
     '__webaddr': '127.0.0.1',
     '__webport': 5001,
