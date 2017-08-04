@@ -39,18 +39,6 @@ malchecks = {
         'checks': ['ip', 'netblock'],
         'url': 'https://feodotracker.abuse.ch/blocklist/?download=ipblocklist'
     },
-    'abuse.ch Palevo Tracker (Domain)': {
-        'id': 'abusepalevodomain',
-        'type': 'list',
-        'checks': ['domain'],
-        'url': 'https://palevotracker.abuse.ch/blocklists.php?download=domainblocklist'
-    },
-    'abuse.ch Palevo Tracker (IP)': {
-        'id': 'abusepalevoip',
-        'type': 'list',
-        'checks': ['ip', 'netblock'],
-        'url': 'https://palevotracker.abuse.ch/blocklists.php?download=ipblocklist'
-    },
     'abuse.ch SSL Blacklist (IP)': {
         'id': 'abusesslblip',
         'type': 'list',
@@ -70,8 +58,6 @@ class sfp_abusech(SpiderFootPlugin):
         'abusezeusip': True,
         'abusefeododomain': True,
         'abusefeodoip': True,
-        'abusepalevodomain': True,
-        'abusepalevoip': True,
         'abusesslblip': True,
         'checkaffiliates': True,
         'checkcohosts': True,
@@ -86,8 +72,6 @@ class sfp_abusech(SpiderFootPlugin):
         'abusezeusip': "Enable abuse.ch Zeus IP check?",
         'abusefeododomain': "Enable abuse.ch Feodo domain check?",
         'abusefeodoip': "Enable abuse.ch Feodo IP check?",
-        'abusepalevodomain': "Enable abuse.ch Palevo domain check?",
-        'abusepalevoip': "Enable abuse.ch Palevo IP check?",
         'abusesslblip': "Enable abuse.ch SSL Backlist IP check?",
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
