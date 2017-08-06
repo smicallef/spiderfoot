@@ -26,14 +26,22 @@ class sfp_xforce(SpiderFootPlugin):
     opts = {
         "xforce_api_key": "",
         "xforce_api_key_password": "",
-        "age_limit_days": 30
+        "age_limit_days": 30,
+        'netblocklookup': True,
+        'maxnetblock': 24,
+        'subnetlookup': True,
+        'maxsubnet': 24
     }
 
     # Option descriptions
     optdescs = {
         "xforce_api_key": "The X-Force Exchange API Key",
         "xforce_api_key_password": "The X-Force Exchange API Password",
-        "age_limit_days": "Ignore any records older than this many days. 0 = unlimited."
+        "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
+        'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
+        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -121,6 +129,26 @@ class sfp_xforce(SpiderFootPlugin):
             return None
         else:
             self.results[eventData] = True
+
+        if eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
+                return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxnetblock']))
+                    return None
+
+        if eventName == 'NETBLOCK_MEMBER':
+            if not self.opts['subnetlookup']:
+                return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxsubnet']))
+                    return None
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):

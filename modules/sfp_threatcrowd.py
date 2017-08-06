@@ -121,19 +121,25 @@ class sfp_threatcrowd(SpiderFootPlugin):
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
             return None
 
-        if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
-            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxnetblock']))
+        if eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
                 return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxnetblock']))
+                    return None
 
-        if eventName == 'NETBLOCK_MEMBER' and self.opts['subnetlookup']:
-            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxsubnet']))
+        if eventName == 'NETBLOCK_MEMBER':
+            if not self.opts['subnetlookup']:
                 return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxsubnet']))
+                    return None
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):

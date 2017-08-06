@@ -25,14 +25,18 @@ class sfp_fraudguard(SpiderFootPlugin):
     opts = {
         "fraudguard_api_key_account": "",
         "fraudguard_api_key_password": "",
-        "age_limit_days": 90
+        "age_limit_days": 90,
+        'netblocklookup': True,
+        'maxnetblock': 24
     }
 
     # Option descriptions
     optdescs = {
         "fraudguard_api_key_account": "Your Fraudguard.io API username",
         "fraudguard_api_key_password": "Your Fraudguard.io API password",
-        "age_limit_days": "Ignore any records older than this many days. 0 = unlimited."
+        "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
+        'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
+        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -65,7 +69,6 @@ class sfp_fraudguard(SpiderFootPlugin):
             'Authorization': "Basic " + base64.b64encode(self.opts['fraudguard_api_key_account'] + ":" + self.opts['fraudguard_api_key_password'])
         }
 
-        print str(headers)
         res = self.sf.fetchUrl(fraudguard_url , timeout=self.opts['_fetchtimeout'], 
                                useragent="SpiderFoot", headers=headers)
 
@@ -77,8 +80,6 @@ class sfp_fraudguard(SpiderFootPlugin):
         if res['content'] is None:
             self.sf.info("No Fraudguard.io info found for " + qry)
             return None
-
-        self.sf.debug(str(res['content']))
 
         try:
             info = json.loads(res['content'])
@@ -112,6 +113,16 @@ class sfp_fraudguard(SpiderFootPlugin):
             return None
         else:
             self.results[eventData] = True
+
+        if eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
+                return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxnetblock']))
+                    return None
 
         qrylist = list()
         rtype = ""

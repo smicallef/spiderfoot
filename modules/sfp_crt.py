@@ -81,6 +81,8 @@ class sfp_crt(SpiderFootPlugin):
 
             matches = re.findall("\"min_cert_id\":(\d+),", res['content'], re.IGNORECASE)
             for m in matches:
+                if self.checkForStop():
+                    return None
                 dat = self.sf.fetchUrl("https://crt.sh/?d=" + m, timeout=self.opts['_fetchtimeout'], 
                                        useragent=self.opts['_useragent'])
 

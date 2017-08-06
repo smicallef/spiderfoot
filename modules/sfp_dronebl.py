@@ -143,19 +143,25 @@ class sfp_dronebl(SpiderFootPlugin):
             return None
         self.results[eventData] = True
 
-        if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
-            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxnetblock']))
+        if eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
                 return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxnetblock']))
+                    return None
 
-        if eventName == 'NETBLOCK_MEMBER' and self.opts['subnetlookup']:
-            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxsubnet']))
+        if eventName == 'NETBLOCK_MEMBER':
+            if not self.opts['subnetlookup']:
                 return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxsubnet']))
+                    return None
 
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):

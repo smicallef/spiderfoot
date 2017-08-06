@@ -23,13 +23,17 @@ class sfp_hackertarget(SpiderFootPlugin):
     # Default options
     opts = {
         'cohostsamedomain': False,
-        'verify': True
+        'verify': True,
+        'netblocklookup': True,
+        'maxnetblock': 24
     }
 
     # Option descriptions
     optdescs = {
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
-        'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP."
+        'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
+        'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
+        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
     results = list()
@@ -81,6 +85,16 @@ class sfp_hackertarget(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
+
+        if eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
+                return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxnetblock']))
+                    return None
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):

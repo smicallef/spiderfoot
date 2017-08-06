@@ -151,12 +151,15 @@ class sfp_dnsresolve(SpiderFootPlugin):
             # Nothing left to do with internal links and raw data
             return None
 
-        if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
-            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxnetblock']))
-                return None
+            if eventName == 'NETBLOCK_OWNER':
+                if not self.opts['netblocklookup']:
+                    return None
+                else:
+                    if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                        self.sf.debug("Network size bigger than permitted: " +
+                                      str(IPNetwork(eventData).prefixlen) + " > " +
+                                      str(self.opts['maxnetblock']))
+                        return None
 
             # Not handling IPv6 (yet)
             if "::" in eventData:

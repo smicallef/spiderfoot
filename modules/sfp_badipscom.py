@@ -217,10 +217,6 @@ class sfp_badipscom(SpiderFootPlugin):
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):
             return None
-        if eventName == 'NETBLOCK_OWNER' and not self.opts.get('checknetblocks', False):
-            return None
-        if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
-            return None
 
         for check in malchecks.keys():
             cid = malchecks[check]['id']
@@ -246,13 +242,6 @@ class sfp_badipscom(SpiderFootPlugin):
                         evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
                     if eventName == 'CO_HOSTED_SITE':
                         evtType = 'MALICIOUS_COHOST'
-
-                if eventName == 'NETBLOCK_OWNER':
-                    typeId = 'netblock'
-                    evtType = 'MALICIOUS_NETBLOCK'
-                if eventName == 'NETBLOCK_MEMBER':
-                    typeId = 'netblock'
-                    evtType = 'MALICIOUS_SUBNET'
 
                 url = self.lookupItem(cid, typeId, eventData)
                 if self.checkForStop():

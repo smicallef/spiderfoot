@@ -94,12 +94,15 @@ class sfp_shodan(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName == 'NETBLOCK_OWNER' and self.opts['netblocklookup']:
-            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxnetblock']))
+        if eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
                 return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxnetblock']))
+                    return None
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
