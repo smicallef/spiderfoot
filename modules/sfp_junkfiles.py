@@ -19,11 +19,10 @@ class sfp_junkfiles(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'fileexts': ['tmp', 'bak', 'old', 'backup', 'new'],
+        'fileexts': ['tmp', 'bak', 'old'],
         'urlextstry': ['asp', 'php', 'jsp',],
-        'files': ['x', 'xxx', 'crap', 'old', 'a', 'aaa', 'z', 'zzz',
-                  'out', 'sql', "passwd", ".htaccess", ".htpasswd",
-                  "Thumbs.db", "asd", "asdf"],
+        'files': ["old", "passwd", ".htaccess", ".htpasswd",
+                  "Thumbs.db", "backup"],
         'dirs': ['zip', 'tar.gz', 'tgz', 'tar'],
         'skipfake': True
     }
@@ -88,6 +87,8 @@ class sfp_junkfiles(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'])
             if res['code'] != "404":
                 self.skiphosts.append(host)
+                self.hosts.append(host)
+                return None
 
             self.hosts.append(host)
 

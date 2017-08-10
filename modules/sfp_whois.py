@@ -61,11 +61,11 @@ class sfp_whois(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         try:
-            x = pythonwhois.net.get_whois_raw(eventData)
+            rawwhois = pythonwhois.net.get_whois_raw(eventData)
             try:
-                data = unicode('\n'.join(x), 'utf-8', errors='replace')
+                data = unicode('\n'.join(rawwhois), 'utf-8', errors='replace')
             except BaseException as e:
-                    data = '\n'.join(x)
+                    data = '\n'.join(rawwhois)
         except BaseException as e:
             self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
             return None
@@ -79,12 +79,18 @@ class sfp_whois(SpiderFootPlugin):
         self.notifyListeners(rawevt)
 
         try:
-            info = pythonwhois.parse.parse_raw_whois(data, True)
+            info = pythonwhois.parse.parse_raw_whois(rawwhois, True)
+            newinfo = {}
+            for k, v in info.items():
+                newinfo[k.lower()] = v
+            info = newinfo
+            print str(info)
         except BaseException as e:
             self.sf.debug("Error parsing whois data for " + eventData)
             return None
 
         if info.has_key('registrar'):
+            print "HERE"
             if eventName.startswith("DOMAIN_NAME") and info['registrar'] is not None:
                 evt = SpiderFootEvent("DOMAIN_REGISTRAR", info['registrar'][0],
                                       self.__name__, event)
