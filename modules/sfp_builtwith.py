@@ -93,7 +93,7 @@ class sfp_builtwith(SpiderFootPlugin):
             return None
 
         if "Meta" in data:
-            if "Names" in data['Meta']:
+            if data['Meta'].get("Names", []):
                 for nb in data['Meta']['Names']:
                     e = SpiderFootEvent("HUMAN_NAME", nb['Name'], 
                                         self.__name__, event)
@@ -103,13 +103,13 @@ class sfp_builtwith(SpiderFootPlugin):
                                             self.__name__, event)
                         self.notifyListeners(e)
 
-            if "Emails" in data['Meta']:
+            if data['Meta'].get("Emails", []):
                 for email in data['Meta']['Emails']:
                     e = SpiderFootEvent("EMAILADDR", email,
                                         self.__name__, event)
                     self.notifyListeners(e)
 
-            if "Telephones" in data['Meta']:
+            if data['Meta'].get("Telephones", []):
                 for phone in data['Meta']['Telephones']:
                     e = SpiderFootEvent("PHONE_NUMBER", phone,
                                         self.__name__, event)
