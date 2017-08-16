@@ -115,7 +115,7 @@ class sfp_robtex(SpiderFootPlugin):
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))
-                self.results[str(ipaddr)] = True
+                self.results.append(str(ipaddr))
         else:
             qrylist.append(eventData)
 
