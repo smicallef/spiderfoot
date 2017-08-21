@@ -64,6 +64,10 @@ class sfp_phone(SpiderFootPlugin):
             n = phonenumbers.format_number(match.number, 
                                            phonenumbers.PhoneNumberFormat.E164)
             evt = SpiderFootEvent("PHONE_NUMBER", n, self.__name__, event)
+            if event.moduleDataSource:
+                evt.moduleDataSource = event.moduleDataSource
+            else:
+                evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
 
         return None

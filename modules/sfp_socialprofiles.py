@@ -99,16 +99,19 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 results = self.sf.googleIterate(searchStr, dict(limit=self.opts['pages'],
                                                                 useragent=self.opts['_useragent'],
                                                                 timeout=self.opts['_fetchtimeout']))
+                self.__dataSource__ = "Google"
 
             if self.opts['method'].lower() == "yahoo":
                 results = self.sf.yahooIterate(searchStr, dict(limit=self.opts['pages'],
                                                                useragent=self.opts['_useragent'],
                                                                timeout=self.opts['_fetchtimeout']))
+                self.__dataSource__ = "Yahoo"
 
             if self.opts['method'].lower() == "bing":
                 results = self.sf.bingIterate(searchStr, dict(limit=self.opts['pages'],
                                                               useragent=self.opts['_useragent'],
                                                               timeout=self.opts['_fetchtimeout']))
+                self.__dataSource__ = "Bing"
 
             if results is None:
                 self.sf.info("No data returned from " + self.opts['method'] + ".")

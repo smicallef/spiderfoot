@@ -55,6 +55,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.__dataSource__ = "Target Network"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

@@ -49,6 +49,7 @@ class sfp_accounts(SpiderFootPlugin):
         self.results = dict()
         self.commonNames = list()
         self.reportedUsers = list()
+        self.__dataSource__ = "Social Media"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

@@ -69,6 +69,7 @@ class sfp_spider(SpiderFootPlugin):
         self.fetchedPages = dict()
         self.urlEvents = dict()
         self.siteCookies = dict()
+        self.__dataSource__ = "Target Website"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

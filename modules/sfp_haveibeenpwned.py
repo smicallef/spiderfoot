@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Name:         sfp_pwned
+# Name:         sfp_haveibeenpwned
 # Purpose:      Query haveibeenpwned.com to see if an e-mail account has been hacked.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -14,8 +14,8 @@ import json
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-class sfp_pwned(SpiderFootPlugin):
-    """Pwned Password:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:errorprone:Check Have I Been Pwned? for hacked e-mail addresses identified."""
+class sfp_haveibeenpwned(SpiderFootPlugin):
+    """HaveIBeenPwned:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:errorprone:Check Have I Been Pwned? for hacked e-mail addresses identified."""
 
 
     # Default options
@@ -104,4 +104,4 @@ class sfp_pwned(SpiderFootPlugin):
                                 self.__name__, event)
             self.notifyListeners(e)
 
-# End of sfp_pwned class
+# End of sfp_haveibeenpwned class

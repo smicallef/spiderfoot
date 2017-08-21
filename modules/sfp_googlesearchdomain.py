@@ -36,6 +36,7 @@ class sfp_googlesearchdomain(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = list()
+        self.__dataSource__ = "Google"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

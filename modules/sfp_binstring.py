@@ -48,6 +48,7 @@ class sfp_binstring(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = list()
+        self.__dataSource__ = "Target Website"
 
         self.d = set(self.sf.dictwords())
 

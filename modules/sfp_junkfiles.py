@@ -47,6 +47,7 @@ class sfp_junkfiles(SpiderFootPlugin):
         self.hosts = list()
         self.skiphosts = list()
         self.bases = list()
+        self.__dataSource__ = "Target Website"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

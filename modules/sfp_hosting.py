@@ -34,6 +34,7 @@ class sfp_hosting(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.__dataSource__ = "DNS"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

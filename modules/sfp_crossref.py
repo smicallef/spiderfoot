@@ -122,12 +122,16 @@ class sfp_crossref(SpiderFootPlugin):
                             matched = True
 
         if matched:
+            if not event.moduleDataSource:
+                event.moduleDataSource = "Unknown"
             self.sf.info("Found affiliate: " + url)
             evt1 = SpiderFootEvent("AFFILIATE_INTERNET_NAME", self.sf.urlFQDN(url),
                                    self.__name__, event)
+            evt1.moduleDataSource = event.moduleDataSource
             self.notifyListeners(evt1)
             evt2 = SpiderFootEvent("AFFILIATE_WEB_CONTENT", res['content'],
                                    self.__name__, evt1)
+            evt2.moduleDataSource = event.moduleDataSource
             self.notifyListeners(evt2)
 
 # End of sfp_crossref class
