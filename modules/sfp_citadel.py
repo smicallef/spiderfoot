@@ -19,12 +19,12 @@ class sfp_citadel(SpiderFootPlugin):
     # Default options
     opts = {
         "api_key": "",
-		    "timeout": 60
+	"timeout": 60
     }
     optdescs = {
-      "api_key": "citadel.pw API key. Without this you're limited to the public API.",
-		  "timeout": "Custom timeout due to heavy traffic at times."
-	  }
+	"api_key": "citadel.pw API key. Without this you're limited to the public API.",
+	"timeout": "Custom timeout due to heavy traffic at times."
+    }
 
     results = dict()
     errorState = False
@@ -74,7 +74,7 @@ class sfp_citadel(SpiderFootPlugin):
             else:
                     url = "http://citadel.pw/api.php?api=6ce4f0a0c7b776809adb0f90473ea0e4&query="
 
-			      res = self.sf.fetchUrl(url + eventData, timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
+	    res = self.sf.fetchUrl(url + eventData, timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
 
             if res['content'] is None or "{error" in res['content']:
                 self.sf.error("Error encountered processing " + eventData, False)
