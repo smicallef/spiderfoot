@@ -1406,6 +1406,8 @@ class SpiderFootPlugin(object):
     __sfdb__ = None
     # ID of the scan the module is running against
     __scanId__ = None
+    # (Unused) tracking of data sources
+    __dataSource__ = None
 
     # Not really needed in most cases.
     def __init__(self):
@@ -1683,6 +1685,7 @@ class SpiderFootEvent(object):
     data = None
     sourceEvent = None
     sourceEventHash = None
+    moduleDataSource = None
     __id = None
 
     def __init__(self, eventType, data, module, sourceEvent,

@@ -54,6 +54,7 @@ class sfp_torexits(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = list()
+        self.__dataSource__ = "torproject.org"
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.

@@ -46,6 +46,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         self.hostresults = dict()
         self.resolveCache = dict()
         self.resolveCache6 = dict()
+        self.__dataSource__ = "DNS"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

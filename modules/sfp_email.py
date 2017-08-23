@@ -91,6 +91,10 @@ class sfp_email(SpiderFootPlugin):
                 myres.append(mail)
 
             evt = SpiderFootEvent("EMAILADDR", mail, self.__name__, event)
+            if event.moduleDataSource:
+                evt.moduleDataSource = event.moduleDataSource
+            else:
+                evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
 
         return None

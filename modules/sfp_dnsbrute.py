@@ -47,6 +47,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.sf = sfc
         self.events = dict()
         self.resolveCache = dict()
+        self.__dataSource__ = "DNS"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

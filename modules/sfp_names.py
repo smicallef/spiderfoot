@@ -129,6 +129,10 @@ class sfp_names(SpiderFootPlugin):
             if p > self.opts['algotune']:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
+                if event.moduleDataSource:
+                    evt.moduleDataSource = event.moduleDataSource
+                else:
+                    evt.moduleDataSource = "Unknown"
                 self.notifyListeners(evt)
 
 # End of sfp_names class

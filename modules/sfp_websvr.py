@@ -26,6 +26,7 @@ class sfp_websvr(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.__dataSource__ = "Target Website"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

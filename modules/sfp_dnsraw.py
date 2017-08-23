@@ -33,6 +33,7 @@ class sfp_dnsraw(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.events = dict()
+        self.__dataSource__ = "DNS"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

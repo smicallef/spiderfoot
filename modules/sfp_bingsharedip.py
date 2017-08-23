@@ -39,6 +39,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = list()
+        self.__dataSource__ = "Bing"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
