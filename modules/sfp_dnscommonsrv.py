@@ -124,4 +124,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
                                       self.__name__, parentEvent)
                 self.notifyListeners(evt)
 
+                evt = SpiderFootEvent("DNS_SRV", name,
+                                      self.__name__, parentEvent)
+                self.notifyListeners(evt)
 # End of sfp_dnscommonsrv class
