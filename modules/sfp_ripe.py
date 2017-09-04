@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_ripe(SpiderFootPlugin):
-    """RIPE Internet Registry:Footprint,Investigate,Passive:Public Registries::Queries the RIPE registry (includes ARIN data) to identify netblocks and other info."""
+    """RIPE:Footprint,Investigate,Passive:Public Registries::Queries the RIPE registry (includes ARIN data) to identify netblocks and other info."""
 
 
     # Default options

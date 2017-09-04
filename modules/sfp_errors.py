@@ -10,7 +10,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
+try:
+    import re2 as re
+except ImportError:
+    import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Taken from Google Dorks on exploit-db.com
@@ -30,6 +33,8 @@ class sfp_errors(SpiderFootPlugin):
     """Errors:Footprint:Content Analysis::Identify common error messages in content like SQL errors, etc."""
 
 
+
+
     # Default options
     opts = {}
 
@@ -46,6 +51,7 @@ class sfp_errors(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.__dataSource__ = "Target Website"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -71,9 +77,7 @@ class sfp_errors(SpiderFootPlugin):
         if srcModuleName != "sfp_spider":
             return None
 
-        # If you are processing TARGET_WEB_CONTENT, this is how you would get the
-        # source of that raw data (e.g. a URL.)
-        eventSource = event.sourceEvent.data
+        eventSource = event.actualSource
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -96,7 +100,7 @@ class sfp_errors(SpiderFootPlugin):
                     self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)
                     evt = SpiderFootEvent("ERROR_MESSAGE", regexpGrp,
-                                          self.__name__, event.sourceEvent)
+                                          self.__name__, event)
                     self.notifyListeners(evt)
 
         return None

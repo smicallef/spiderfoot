@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_psbdmp
-# Purpose:      Query psbdmp.com for potentially hacked e-mail addresses.
+# Purpose:      Query psbdmp.cc for potentially hacked e-mail addresses.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -15,7 +15,7 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_psbdmp(SpiderFootPlugin):
-    """Psbdmp.com:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check psbdmp.com (PasteBin Dump) for potentially hacked e-mails and domains."""
+    """Psbdmp.com:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains."""
 
 
     # Default options
@@ -57,28 +57,28 @@ class sfp_psbdmp(SpiderFootPlugin):
         ret = None
 
         if "@" in qry:
-            url = "http://psbdmp.com/api/search/email/" + qry
+            url = "http://psbdmp.cc/api/search/email/" + qry
         else:
-            url = "http://psbdmp.com/api/search/domain/" + qry
+            url = "http://psbdmp.cc/api/search/domain/" + qry
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot")
 
         if res['code'] == "403":
-            self.sf.info("Unable to fetch data from psbdmp.com right now.")
+            self.sf.info("Unable to fetch data from psbdmp.cc right now.")
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from psbdmp.com: " + str(e), False)
+            self.sf.error("Error processing JSON response from psbdmp.cc: " + str(e), False)
             return None
         
         ids = list()
         if 'count' in ret:
             if ret['count'] > 0:
                 for d in ret['data']:
-                    ids.append("http://psbdmp.com/" + d['id'])
+                    ids.append("http://psbdmp.cc/" + d['id'])
             else:
                 return None
         else:

@@ -18,6 +18,7 @@ class sfp_names(SpiderFootPlugin):
     """Name Extractor:Footprint,Passive:Real World:errorprone:Attempt to identify human names in fetched content."""
 
 
+
     # Default options
     opts = {
         'algotune': 50,
@@ -78,6 +79,10 @@ class sfp_names(SpiderFootPlugin):
                     name = unicode(name, 'utf-8', errors='replace')
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
+                if event.moduleDataSource:
+                    evt.moduleDataSource = event.moduleDataSource
+                else:
+                    evt.moduleDataSource = "Unknown"
                 self.notifyListeners(evt)
                 return None
 
@@ -134,5 +139,6 @@ class sfp_names(SpiderFootPlugin):
                 else:
                     evt.moduleDataSource = "Unknown"
                 self.notifyListeners(evt)
+
 
 # End of sfp_names class
