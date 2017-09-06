@@ -14,20 +14,19 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_citadel(SpiderFootPlugin):
-    """Citadel Engine:Footprint,Investigate,Passive:Databases:apikey:Searches citadel.pw's database of breaches."""
+    """Citadel Engine:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Searches citadel.pw's database of breaches."""
 
     # Default options
     opts = {
         "api_key": "",
-	"timeout": 60
+        "timeout": 60
     }
     optdescs = {
-	"api_key": "citadel.pw API key. Without this you're limited to the public API.",
-	"timeout": "Custom timeout due to heavy traffic at times."
+        "api_key": "citadel.pw API key. Without this you're limited to the public API.",
+        "timeout": "Custom timeout due to heavy traffic at times."
     }
 
     results = dict()
-    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -53,28 +52,24 @@ class sfp_citadel(SpiderFootPlugin):
         eventData = event.data
 
         try:
-            if self.errorState:
-                    return None
-
             self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-
-            if self.opts['api_key'] == "":
-                    self.sf.info("You enabled sfp_citadel but did not set an API key!")
-                    self.errorState = False
 
             # Don't look up stuff twice
             if eventData in self.results:
-                    self.sf.debug("Skipping " + eventData + " as already searched.")
-                    return None
+                self.sf.debug("Skipping " + eventData + " as already searched.")
+                return None
             else:
-                    self.results[eventData] = True
+                self.results[eventData] = True
 
             if self.opts['api_key']:
-                    url = "http://citadel.pw/api.php?api=" + self.opts['api_key'] + "&query="
+                url = "http://citadel.pw/api.php?api=" + self.opts['api_key'] + \
+                      "&query="
             else:
-                    url = "http://citadel.pw/api.php?api=6ce4f0a0c7b776809adb0f90473ea0e4&query="
+                public_api = "6ce4f0a0c7b776809adb0f90473ea0e4"
+                url = "http://citadel.pw/api.php?api=" + public_api + "&query="
 
-	    res = self.sf.fetchUrl(url + eventData, timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
+            res = self.sf.fetchUrl(url + eventData, timeout=self.opts['timeout'], 
+                                   useragent=self.opts['_useragent'])
 
             if res['content'] is None or "{error" in res['content']:
                 self.sf.error("Error encountered processing " + eventData, False)
@@ -82,13 +77,10 @@ class sfp_citadel(SpiderFootPlugin):
 
             data = json.loads(res['content'])
 
-            if "error" in data[0]:
-                self.sf.error("Error encountered processing. Error:" + data[0]['error'], False)
-                return None
-
             if "site" in data[0]:
                 for record in data:
-                    self.sf.info("Found Citadel entry for " + eventData + ": " + record["site"])
+                    self.sf.info("Found Citadel entry for " + eventData + ": " + \
+                                 record["site"])
                     t = "EMAILADDR_COMPROMISED"
                     evt = SpiderFootEvent(t, record["site"], self.__name__, event)
                     self.notifyListeners(evt)
@@ -97,7 +89,7 @@ class sfp_citadel(SpiderFootPlugin):
         except Exception as ex:
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
-            print message
+            self.sf.error(message)
 
 # End of sfp_citadel class
 
