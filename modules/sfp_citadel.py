@@ -31,6 +31,7 @@ class sfp_citadel(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.__dataSource__ = "Citadel.pw"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
