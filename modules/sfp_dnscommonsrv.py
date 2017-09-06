@@ -16,8 +16,7 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_dnscommonsrv(SpiderFootPlugin):
-    """DNS Common SRV :Footprint,Investigate:DNS::Attempts to identify
-    hostnames through common SRV."""
+    """DNS Common SRV:Footprint,Investigate:DNS::Attempts to identify hostnames through common SRV."""
 
     # Default options
     opts = {}
