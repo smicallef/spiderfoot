@@ -120,6 +120,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DESCRIPTION_ABSTRACT', 'Description - Abstract', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DEVICE_TYPE', 'Device Type', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DNS_TEXT', 'DNS TXT Record', 0, 'DATA')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DNS_SRV', 'DNS SRV Record', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DNS_SPF', 'DNS SPF Record', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DOMAIN_NAME', 'Domain Name', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DOMAIN_NAME_PARENT', 'Domain Name (Parent)', 0, 'ENTITY')",
