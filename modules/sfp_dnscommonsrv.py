@@ -118,8 +118,10 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
                 answers = []
 
             for a in answers:
+                # Strip off the trailing .
+                tgt_clean = a.target.to_text().rstrip(".")
                 # Report the host
-                evt = SpiderFootEvent("INTERNET_NAME", a.target.to_text(),
+                evt = SpiderFootEvent("INTERNET_NAME", tgt_clean,
                                       self.__name__, parentEvent)
                 self.notifyListeners(evt)
 
