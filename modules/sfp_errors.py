@@ -77,8 +77,7 @@ class sfp_errors(SpiderFootPlugin):
         if srcModuleName != "sfp_spider":
             return None
 
-        eventSource = event.actualSource
-
+        eventSource = event.sourceEvent.data
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventSource not in self.results.keys():
@@ -100,7 +99,7 @@ class sfp_errors(SpiderFootPlugin):
                     self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource].append(regexpGrp)
                     evt = SpiderFootEvent("ERROR_MESSAGE", regexpGrp,
-                                          self.__name__, event)
+                                          self.__name__, event.sourceEvent)
                     self.notifyListeners(evt)
 
         return None
