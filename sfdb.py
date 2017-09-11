@@ -206,7 +206,9 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_BANNER', 'Web Server', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_HTTPHEADERS', 'HTTP Headers', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_STRANGEHEADER', 'Non-Standard HTTP Header', 0, 'DATA')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0, 'DESCRIPTOR')"
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WIFI_ACCESS_POINT', 'WiFi Access Point Nearby', 0, 'ENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WIKIPEDIA_PAGE_EDIT', 'Wikipedia Page Edit', 0, 'DESCRIPTOR')"
     ]
 
     def __init__(self, opts):
