@@ -67,7 +67,7 @@ class sfp_wigle(SpiderFootPlugin):
 
         res = self.sf.fetchUrl(url, timeout=30, 
                                useragent="SpiderFoot", headers=hdrs)
-        if res['code'] == "404":
+        if res['code'] == "404" or not res['content']:
             return None
         if "too many queries" in res['content']:
             self.sf.error("Wigle.net query limit reached for the day.", False)
@@ -100,7 +100,7 @@ class sfp_wigle(SpiderFootPlugin):
 
         res = self.sf.fetchUrl(url, timeout=30,
                                useragent="SpiderFoot", headers=hdrs)
-        if res['code'] == "404":
+        if res['code'] == "404" or not res['content']:
             return None
         if "too many queries" in res['content']:
             self.sf.error("Wigle.net query limit reached for the day.", False)
