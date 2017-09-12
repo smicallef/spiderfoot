@@ -369,9 +369,9 @@ class SpiderFoot:
         return os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
 
     def hashstring(self, string):
-        if type(string) in [dict, list]:
+        if type(string) in [list, dict]:
             string = str(string)
-        s = string.encode('raw_unicode_escape')
+        s = string.encode('raw_unicode_escape', errors='replace')
         return hashlib.sha256(s).hexdigest()
 
     #
