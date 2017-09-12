@@ -38,10 +38,12 @@ class sfp_wigle(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     results = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -125,6 +127,14 @@ class sfp_wigle(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+
+        if self.errorState:
+            return None
+
+        if self.opts['api_key_encoded'] == "":
+            self.sf.error("You enabled sfp_wigle but did not set an API key!", False)
+            self.errorState = True
+            return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
