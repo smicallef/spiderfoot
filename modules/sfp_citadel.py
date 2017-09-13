@@ -83,7 +83,8 @@ class sfp_citadel(SpiderFootPlugin):
                     self.sf.info("Found Citadel entry for " + eventData + ": " + \
                                  record["site"])
                     t = "EMAILADDR_COMPROMISED"
-                    evt = SpiderFootEvent(t, record["site"], self.__name__, event)
+                    evt = SpiderFootEvent(t, eventData + " [" + record["site"] + "]", 
+                                          self.__name__, event)
                     self.notifyListeners(evt)
                 return None
 
