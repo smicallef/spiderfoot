@@ -114,7 +114,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
             try:
                 answers = dns.resolver.query(name, 'SRV')
-            except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
+            except BaseException as e:
                 answers = []
 
             for a in answers:
