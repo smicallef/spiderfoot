@@ -118,6 +118,7 @@ class sfp_robtex(SpiderFootPlugin):
                 self.results.append(str(ipaddr))
         else:
             qrylist.append(eventData)
+            self.results.append(eventData)
 
         myres = list()
 
