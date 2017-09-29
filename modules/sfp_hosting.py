@@ -73,7 +73,7 @@ class sfp_hosting(SpiderFootPlugin):
             if IPAddress(qaddr) > IPAddress(start) and IPAddress(qaddr) < IPAddress(end):
                 return [title, url]
 
-        return False
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -88,7 +88,7 @@ class sfp_hosting(SpiderFootPlugin):
         self.results[eventData] = True
 
         ret = self.queryAddr(eventData)
-        if ret != False:
+        if ret:
             evt = SpiderFootEvent("PROVIDER_HOSTING", ret[0] + ": " + ret[1],
                                   self.__name__, event)
             self.notifyListeners(evt)
