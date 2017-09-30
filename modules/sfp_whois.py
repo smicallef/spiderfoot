@@ -84,7 +84,7 @@ class sfp_whois(SpiderFootPlugin):
             for k, v in info.items():
                 newinfo[k.lower()] = v
             info = newinfo
-            print str(info)
+            #print str(info)
         except BaseException as e:
             self.sf.debug("Error parsing whois data for " + eventData)
             return None
