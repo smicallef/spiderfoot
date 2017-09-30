@@ -41,7 +41,6 @@ class sfp_intfiles(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = list()
-        self.__dataSource__ = "Target Website"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -55,9 +54,6 @@ class sfp_intfiles(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["SEARCH_ENGINE_WEB_CONTENT", "INTERESTING_FILE"]
-
-    def yahooCleaner(self, string):
-        return " url=\"" + urllib.unquote(string.group(1)) + "\" "
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -98,18 +94,21 @@ class sfp_intfiles(SpiderFootPlugin):
                                               "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
                                                                         useragent=self.opts['_useragent'],
                                                                         timeout=self.opts['_fetchtimeout']))
+                self.__dataSource__ = "Google"
 
             if self.opts['searchengine'].lower() == "bing":
                 pages = self.sf.bingIterate("site:" + eventData + "+" +
-                                            "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
+                                            "%2Bfiletype:" + fileExt, dict(limit=self.opts['pages'],
                                                                       useragent=self.opts['_useragent'],
                                                                       timeout=self.opts['_fetchtimeout']))
+                self.__dataSource__ = "Bing"
 
             if self.opts['searchengine'].lower() == "yahoo":
                 pages = self.sf.yahooIterate("site:" + eventData + "+" +
-                                             "%2Bext:" + fileExt, dict(limit=self.opts['pages'],
+                                             "%2Bfiletype:" + fileExt, dict(limit=self.opts['pages'],
                                                                        useragent=self.opts['_useragent'],
                                                                        timeout=self.opts['_fetchtimeout']))
+                self.__dataSource__ = "Yahoo"
 
             if pages is None:
                 self.sf.info("No results returned from " + self.opts['searchengine'] +
@@ -126,23 +125,21 @@ class sfp_intfiles(SpiderFootPlugin):
                 if self.checkForStop():
                     return None
 
-                if self.opts['searchengine'].lower() == "yahoo":
-                    res = re.sub("RU=(.*?)/RK=", self.yahooCleaner, pages[page])
-                else:
-                    res = pages[page]
-
                 # Submit the gresults for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res,
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page],
                                       self.__name__, event)
                 self.notifyListeners(evt)
 
-                links = self.sf.parseLinks(page, res, eventData)
+                links = self.sf.parseLinks(page, pages[page], eventData)
                 if len(links) == 0:
                     continue
 
                 for link in links.keys():
                     if link in self.results:
                         continue
+
+                    if self.opts['searchengine'] == "yahoo":
+                        link = re.sub(r'.*RU=(.*?)/RK=.*', r'\1', link)
 
                     if self.sf.urlFQDN(link).endswith(eventData):
                         # This for loop might seem redundant but sometimes search engines return results

@@ -19,11 +19,11 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 sites = {
     # Search string to use, domain name the profile will sit on within 
     # those search results.
-    "Facebook": ['+intitle:%22{0}%22%20+site:facebook.com',
+    "Facebook": ['+title:%22{0}%22%20+site:facebook.com',
                  '"(https?://[a-z\.]*facebook.[a-z\.]+/[^\"<> ]+)"'],
-    "Google+": ['+intitle:%22{0}%22%20+site:plus.google.com',
+    "Google+": ['+title:%22{0}%22%20+site:plus.google.com',
                 '"(https?://plus.google.[a-z\.]+/\d+[^\"<>\/ ]+)"'],
-    "LinkedIn": ['+intitle:%22{0}%22%20+site:linkedin.com',
+    "LinkedIn": ['+title:%22{0}%22%20+site:linkedin.com',
                  '"(https?://[a-z\.]*linkedin.[a-z\.]+/[^\"<> ]+)"']
 }
 
@@ -65,10 +65,6 @@ class sfp_socialprofiles(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["SOCIAL_MEDIA", "SEARCH_ENGINE_WEB_CONTENT"]
-
-    def yahooCleaner(self, string):
-        ret = "\"" + urllib.unquote(string.group(1)) + "\""
-        return ret
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -126,14 +122,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
             for key in results.keys():
                 instances = list()
-                # Yahoo requires some additional parsing
-                if self.opts['method'].lower() == "yahoo":
-                    res = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner,
-                                 results[key], 0)
-                else:
-                    res = results[key]
 
-                matches = re.findall(searchDom, res, re.IGNORECASE)
+                matches = re.findall(searchDom, results[key], re.IGNORECASE)
 
                 if matches is not None:
                     for match in matches:
@@ -141,6 +131,9 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             continue
                         else:
                             instances.append(match)
+
+                        if self.opts['method'] == "yahoo":
+                            match = re.sub(r'.*RU=(.*?)/RK=.*', r'\1', match)
 
                         if self.checkForStop():
                             return None
@@ -156,7 +149,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             else:
                                 found = False
                                 for kw in self.keywords:
-                                    if re.search("[^a-zA-Z\-\_]" + kw + "[^a-zA-Z\-\_]", pres['content'], re.IGNORECASE):
+                                    if re.search("[^a-zA-Z\-\_]" + kw + "[^a-zA-Z\-\_]", 
+                                                 pres['content'], re.IGNORECASE):
                                         found = True
                                 if not found:
                                     continue
@@ -166,8 +160,8 @@ class sfp_socialprofiles(SpiderFootPlugin):
                                               self.__name__, event)
                         self.notifyListeners(evt)
 
-                # Submit the bing results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res,
+                # Submit the results for analysis
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key],
                                       self.__name__, event)
                 self.notifyListeners(evt)
 

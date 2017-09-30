@@ -48,9 +48,6 @@ class sfp_yahoosearch(SpiderFootPlugin):
     def producedEvents(self):
         return ["LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT"]
 
-    def yahooCleaner(self, string):
-        return " url=\"" + urllib.unquote(string.group(1)) + "\" "
-
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -64,8 +61,8 @@ class sfp_yahoosearch(SpiderFootPlugin):
 
         # Sites hosted on the domain
         pages = self.sf.yahooIterate("site:" + eventData, dict(limit=self.opts['pages'],
-                                                               useragent=self.opts['_useragent'],
-                                                               timeout=self.opts['_fetchtimeout']))
+                                     useragent=self.opts['_useragent'],
+                                     timeout=self.opts['_fetchtimeout']))
         if pages is None:
             self.sf.info("No results returned from Yahoo.")
             return None
@@ -77,12 +74,12 @@ class sfp_yahoosearch(SpiderFootPlugin):
             else:
                 self.results.append(page)
 
-            content = re.sub("RU=(.[^\/]+)\/RK=", self.yahooCleaner, pages[page])
-            links = self.sf.parseLinks(page, content, eventData)
+            links = self.sf.parseLinks(page, pages[page], eventData)
             if len(links) == 0:
                 continue
 
-            for link in links:
+            for _link in links:
+                link = re.sub(r'.*RU=(.*?)/RK=.*', r'\1', _link)
                 if self.checkForStop():
                     return None
 
@@ -100,7 +97,7 @@ class sfp_yahoosearch(SpiderFootPlugin):
 
             if found:
                 # Submit the yahoo results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", content,
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page],
                                       self.__name__, event)
                 self.notifyListeners(evt)
     
