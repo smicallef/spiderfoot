@@ -43,12 +43,14 @@ class sfp_accounts(SpiderFootPlugin):
     reportedUsers = list()
     siteResults = dict()
     sites = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
         self.commonNames = list()
         self.reportedUsers = list()
+        self.errorState = False
         self.__dataSource__ = "Social Media"
 
         for opt in userOpts.keys():
@@ -63,6 +65,7 @@ class sfp_accounts(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, useragent="SpiderFoot")
             if data['content'] is None:
                 self.sf.error("Unable to fetch " + url, False)
+                self.errorState = True
                 return None
             else:
                 self.sf.cachePut("sfaccounts", data['content'])
@@ -185,6 +188,9 @@ class sfp_accounts(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         users = list()
+
+        if self.errorState:
+            return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
