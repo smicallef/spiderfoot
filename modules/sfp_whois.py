@@ -90,7 +90,6 @@ class sfp_whois(SpiderFootPlugin):
             return None
 
         if info.has_key('registrar'):
-            print "HERE"
             if eventName.startswith("DOMAIN_NAME") and info['registrar'] is not None:
                 evt = SpiderFootEvent("DOMAIN_REGISTRAR", info['registrar'][0],
                                       self.__name__, event)
