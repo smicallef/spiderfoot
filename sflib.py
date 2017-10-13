@@ -372,9 +372,8 @@ class SpiderFoot:
         s = string
         if type(string) in [list, dict]:
             s = str(string)
-        if type(string) != unicode:
-            s = string.encode('raw_unicode_escape', errors='replace')
-        return hashlib.sha256(s).hexdigest()
+        s = s.encode('utf-8', errors='replace')
+        return sha256(s).hexdigest()
 
     #
     # Caching
