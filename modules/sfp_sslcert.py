@@ -111,7 +111,10 @@ class sfp_sslcert(SpiderFootPlugin):
         self.getIssued(m2cert, event)
         self.getIssuer(m2cert, event)
         self.checkHostMatch(m2cert, fqdn, event)
-        self.checkExpiry(m2cert, event)
+        try:
+            self.checkExpiry(m2cert, event)
+        except M2Crypto.X509.X509Error as e:
+            self.sf.error("Error processing certificate: " + str(e), False)
 
     # Report back who the certificate was issued to
     def getIssued(self, cert, sevt):
