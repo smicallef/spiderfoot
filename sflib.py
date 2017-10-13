@@ -370,8 +370,9 @@ class SpiderFoot:
 
     def hashstring(self, string):
         if type(string) in [list, dict]:
-            string = str(string)
-        s = string.encode('raw_unicode_escape', errors='replace')
+            s = str(string)
+        if type(string) != unicode:
+            s = string.encode('raw_unicode_escape', errors='replace')
         return hashlib.sha256(s).hexdigest()
 
     #
