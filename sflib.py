@@ -373,7 +373,7 @@ class SpiderFoot:
         if type(string) in [list, dict]:
             s = str(string)
         s = s.encode('utf-8', errors='replace')
-        return sha256(s).hexdigest()
+        return hashlib.sha256(s).hexdigest()
 
     #
     # Caching
