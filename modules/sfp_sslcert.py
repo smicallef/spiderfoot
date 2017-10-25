@@ -151,10 +151,14 @@ class sfp_sslcert(SpiderFootPlugin):
 
     # Check if the expiration date is in the future
     def checkExpiry(self, cert, sevt):
-        exp = int(time.mktime(cert.get_not_after().get_datetime().timetuple()))
-        expstr = cert.get_not_after().get_datetime().strftime("%Y-%m-%d %H:%M:%S")
-        now = int(time.time())
-        warnexp = now + self.opts['certexpiringdays'] * 86400
+        try:
+            exp = int(time.mktime(cert.get_not_after().get_datetime().timetuple()))
+            expstr = cert.get_not_after().get_datetime().strftime("%Y-%m-%d %H:%M:%S")
+            now = int(time.time())
+            warnexp = now + self.opts['certexpiringdays'] * 86400
+        except ValueError as e:
+            self.sf.error("Couldn't process date in certificate.", False)
+            return None
 
         if exp <= now:
             evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", expstr, self.__name__, sevt)
