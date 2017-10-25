@@ -126,10 +126,22 @@ class sfp_robtex(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            res = self.sf.fetchUrl("https://freeapi.robtex.com/ipquery/" + ip,
+            retry = 0
+            while retry < 2:
+                res = self.sf.fetchUrl("https://freeapi.robtex.com/ipquery/" + ip,
                                    timeout=self.opts['_fetchtimeout'])
+                if res['code'] == "200":
+                    break
+                if res['code'] == "404":
+                    return None
+                if res['code'] == "429":
+                    # Back off a little further
+                    time.sleep(2)
+                retry += 1
+
             if res['content'] is None:
                 self.sf.error("Unable to query robtex API.", False)
+                retry += 1
                 continue
 
             try:
