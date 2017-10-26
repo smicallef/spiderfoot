@@ -1284,7 +1284,7 @@ class SpiderFoot:
                     break
 
             if attempts == 3:
-                return returnReults
+                return returnResults
 
             returnResults[nextUrl] = nextPage['content']
             pat = re.compile("(\/search\S+first=\d+.[^\'\"]*)", re.IGNORECASE)
