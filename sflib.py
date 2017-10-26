@@ -374,7 +374,7 @@ class SpiderFoot:
             s = str(string)
         if type(s) == str:
             s = unicode(s, 'utf-8', errors='replace')
-        return hashlib.sha256(s).hexdigest()
+        return hashlib.sha256(s.encode('raw_unicode_escape')).hexdigest()
 
     #
     # Caching
