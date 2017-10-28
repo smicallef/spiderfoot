@@ -13,6 +13,7 @@
 import re
 import socket
 import json
+import time
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
