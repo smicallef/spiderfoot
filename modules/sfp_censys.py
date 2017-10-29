@@ -146,9 +146,10 @@ class sfp_censys(SpiderFootPlugin):
                     self.sf.debug("Record found but too old, skipping.")
                     continue
                 if 'location' in rec:
-                    dat = rec['location']['country']
-                    e = SpiderFootEvent("GEOINFO", dat, self.__name__, event)
-                    self.notifyListeners(e)
+                    dat = rec['location'].get('country')
+                    if dat:
+                        e = SpiderFootEvent("GEOINFO", dat, self.__name__, event)
+                        self.notifyListeners(e)
 
                 if 'headers' in rec:
                     dat = rec['headers']
