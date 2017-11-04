@@ -1,9 +1,10 @@
 #
-# Spiderfoot Dockerfile 
+# Spiderfoot Dockerfile
 #
 # http://www.spiderfoot.net
 #
 # Written by: Michael Pellon <m@pellon.io>
+# Updated by: Chandrapal <bnchandrapal@protonmail.com>
 #
 # Usage:
 #
@@ -17,7 +18,7 @@ FROM ubuntu:16.04
 RUN apt-get update && apt-get install -y \
   build-essential \
   curl \
-  git \ 
+  git \
   libssl-dev \
   libxml2-dev \
   libxslt1-dev \
@@ -34,13 +35,14 @@ RUN apt-get update && apt-get install -y \
 RUN rm -rf /var/lib/apt/lists/* \
   && cd /usr/include/openssl/ \
   && ln -s ../x86_64-linux-gnu/openssl/opensslconf.h . \
+  && pip install wheel \
   && pip install cherrypy lxml mako netaddr
 
 # Create a dedicated/non-privileged user to run the app.
 RUN addgroup spiderfoot && \
     useradd -r -g spiderfoot -d /home/spiderfoot -s /sbin/nologin -c "SpiderFoot User" spiderfoot
 
-ENV SPIDERFOOT_VERSION 2.10
+ENV SPIDERFOOT_VERSION 2.11.0
 
 # Download the specified release.
 WORKDIR /home
