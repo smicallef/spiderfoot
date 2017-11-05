@@ -72,6 +72,9 @@ class sfp_torch(SpiderFootPlugin):
             # Need the form ID to submit later for the search
             m = re.findall("\<form method=\"get\" action=\"/(\S+)/search.cgi\"\>", 
                            formpage['content'], re.IGNORECASE | re.DOTALL)
+            if not m:
+                return None
+
             formid = m[0]
 
         pagecontent = ""
