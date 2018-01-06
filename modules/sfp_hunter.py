@@ -62,6 +62,9 @@ class sfp_hunter(SpiderFootPlugin):
         if res['code'] == "404":
             return None
 
+        if not res['content']:
+            return None
+
         try:
             ret = json.loads(res['content'])['data']
         except Exception as e:

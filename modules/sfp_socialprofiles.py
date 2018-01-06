@@ -90,6 +90,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
             s = unicode(sites[site][0]).format(eventData)
             searchStr = s.replace(" ", "%20")
             searchDom = sites[site][1]
+            results = None
 
             if self.opts['method'].lower() == "google":
                 results = self.sf.googleIterate(searchStr, dict(limit=self.opts['pages'],
