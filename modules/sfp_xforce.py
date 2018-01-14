@@ -169,7 +169,9 @@ class sfp_xforce(SpiderFootPlugin):
                 res = ret["Passive"]['records']
                 for rec in res:
                     if rec['recordType'] == "A":
-                        last = rec.get("last", "")
+                        last = rec.get("last", None)
+                        if not last:
+                            continue
                         last_dt = datetime.strptime(last, '%Y-%m-%dT%H:%M:%SZ')
                         last_ts = int(time.mktime(last_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
@@ -203,8 +205,10 @@ class sfp_xforce(SpiderFootPlugin):
                     self.sf.debug("Found history results in XForce")
                     for result in rec_history:
                         reasonDescription = result.get("reasonDescription", "")
-                        created = result.get("created", "")
+                        created = result.get("created", None)
                         # 2014-11-06T10:45:00.000Z
+                        if not created:
+                            continue
                         created_dt = datetime.strptime(created, '%Y-%m-%dT%H:%M:%S.000Z')
                         created_ts = int(time.mktime(created_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
@@ -258,7 +262,9 @@ class sfp_xforce(SpiderFootPlugin):
                                     firstseen + infield_sep + \
                                     lastseen
 
-                        last = rec.get("last", "")
+                        last = rec.get("last", None)
+                        if not last:
+                            continue
                         last_dt = datetime.strptime(last, '%Y-%m-%dT%H:%M:%S.000Z')
                         last_ts = int(time.mktime(last_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
