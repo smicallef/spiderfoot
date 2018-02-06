@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_fullcontact
-# Purpose:      Query fullcontact.io using their API.
+# Purpose:      Query fullcontact.com using their API.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
