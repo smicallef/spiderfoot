@@ -111,7 +111,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
     def producedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
                 "AFFILIATE_IPADDR", "DOMAIN_NAME", "IPV6_ADDRESS", 
-                "DOMAIN_NAME_PARENT"]
+                "DOMAIN_NAME_PARENT", "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -132,6 +132,17 @@ class sfp_dnsresolve(SpiderFootPlugin):
             self.sf.debug("Skipping duplicate event.")
             return None
         self.events[eventDataHash] = True
+
+        # Simply translates these to their domains
+        if eventName in ["CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME"]:
+            dom = self.sf.hostDomain(eventData, self.opts['_internettlds'])
+            if "AFFILIATE_" in eventName:
+                ev = "AFFILIATE_DOMAIN"
+            else:
+                ev = "CO_HOSTED_SITE_DOMAIN"
+            evt = SpiderFootEvent(ev, dom, self.__name__, parentEvent)
+            self.notifyListeners(evt)
+            return None
 
         # Search for IPs/hosts in raw data, but obviously nothing this module
         # already produces, as those things are already entities, not raw data.
