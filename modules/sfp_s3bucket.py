@@ -83,7 +83,8 @@ class sfp_s3bucket(SpiderFootPlugin):
                     url = "https://" + b
                     res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot")
 
-                    if res['content'] is None or "NoSuchBucket" in res['content']:
+                    if res['code'] not in [ "301", "302", "200" ] and \
+                        (res['content'] is None or "NoSuchBucket" in res['content']):
                         self.sf.debug("Not a valid bucket: " + url)
                         continue
 
