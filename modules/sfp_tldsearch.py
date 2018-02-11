@@ -21,7 +21,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_tldsearch(SpiderFootPlugin):
     """TLD Search:Footprint:DNS:slow:Search all Internet TLDs for domains with the same name as the target (this can be very slow.)"""
 
-
     # Default options
     opts = {
         'activeonly': True,  # Only report domains that have content (try to fetch the page)
@@ -60,7 +59,9 @@ class sfp_tldsearch(SpiderFootPlugin):
     def producedEvents(self):
         return ["SIMILARDOMAIN"]
 
-    def tryTld(self, target):
+    def tryTld(self, target, tld):
+        if self.opts['skipwildcards'] and self.sf.checkDnsWildcard(tld):
+            return None 
         try:
             addrs = socket.gethostbyname_ex(target)
             self.tldResults[target] = True
@@ -75,9 +76,10 @@ class sfp_tldsearch(SpiderFootPlugin):
 
         # Spawn threads for scanning
         self.sf.info("Spawning threads to check TLDs: " + str(tldList))
-        for tld in tldList:
+        for pair in tldList:
+            (domain, tld) = pair
             tn = 'sfp_tldsearch_' + str(random.randint(0, 999999999))
-            t.append(threading.Thread(name=tn, target=self.tryTld, args=(tld,)))
+            t.append(threading.Thread(name=tn, target=self.tryTld, args=(domain, tld,)))
             t[i].start()
             i += 1
 
@@ -91,7 +93,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             if not found:
                 running = False
 
-            time.sleep(2)
+            time.sleep(1)
 
         for res in self.tldResults.keys():
             if self.tldResults[res] and res not in self.results:
@@ -152,16 +154,13 @@ class sfp_tldsearch(SpiderFootPlugin):
             if tld.endswith(".arpa"):
                 continue
 
-            if self.opts['skipwildcards'] and self.sf.checkDnsWildcard(tld):
-                continue
-
             tryDomain = keyword + "." + tld
 
             if self.checkForStop():
                 return None
 
             if len(targetList) <= self.opts['maxthreads']:
-                targetList.append(tryDomain)
+                targetList.append([tryDomain, tld])
             else:
                 self.tryTldWrapper(targetList, event)
                 targetList = list()

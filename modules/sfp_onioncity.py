@@ -15,7 +15,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 import re
 
 class sfp_onioncity(SpiderFootPlugin):
-    """Onion.city:Footprint,Investigate:Search Engines::Search Tor 'Onion City' search engine for mentions of the target domain."""
+    """Onion.link:Footprint,Investigate:Search Engines::Search Tor 'Onion City' search engine for mentions of the target domain."""
 
 
     # Default options
@@ -63,7 +63,7 @@ class sfp_onioncity(SpiderFootPlugin):
             self.results.append(eventData)
 
         # Sites hosted on the domain
-        pages = self.sf.googleIterate("site:onion.city+" + eventData,
+        pages = self.sf.googleIterate("site:onion.link+" + eventData,
                                       dict(limit=self.opts['pages'], useragent=self.opts['_useragent'],
                                            timeout=self.opts['_fetchtimeout']))
         if pages is None:
@@ -95,10 +95,10 @@ class sfp_onioncity(SpiderFootPlugin):
                 else:
                     self.results.append(link)
                     self.sf.debug("Found a darknet mention: " + link)
-                    if self.sf.urlFQDN(link).endswith(".onion.city"):
+                    if self.sf.urlFQDN(link).endswith(".onion.link"):
                         if self.checkForStop():
                             return None
-                        torlink = link.replace(".onion.city", ".onion")
+                        torlink = link.replace(".onion.link", ".onion")
                         if self.opts['fetchlinks']:
                             res = self.sf.fetchUrl(torlink, timeout=self.opts['_fetchtimeout'],
                                                    useragent=self.opts['_useragent'])
