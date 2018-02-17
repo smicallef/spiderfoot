@@ -119,6 +119,8 @@ class sfp_ripe(SpiderFootPlugin):
     # Owner information about an AS
     def asOwnerInfo(self, asn):
         ownerinfo = dict()
+        # Which keys to look for ownership information in (prefix)
+        ownerkeys = [ "as", "value", "auth", "desc", "org", "mnt", "admin", "tech" ]
 
         res = self.fetchRir("https://stat.ripe.net/data/whois/data.json?resource=" + asn)
         if res['content'] is None:
@@ -134,15 +136,13 @@ class sfp_ripe(SpiderFootPlugin):
 
         for rec in data:
             for d in rec:
-                if d["key"].lower().startswith("org") or \
-                        d["key"].lower().startswith("as") or \
-                        d["key"].lower().startswith("aut") or \
-                                d["key"].lower().startswith("descr") and \
-                                        d["value"].lower() not in ["null", "none", "none specified"]:
-                    if d["key"] in ownerinfo:
-                        ownerinfo[d["key"]].append(d["value"])
-                    else:
-                        ownerinfo[d["key"]] = [d["value"]]
+                for k in ownerkeys:
+                    if d['key'].lower().startswith(k):
+                        if d["value"].lower() not in ["null", "none", "none specified"]:
+                            if d["key"] in ownerinfo:
+                                ownerinfo[d["key"]].append(d["value"])
+                            else:
+                                ownerinfo[d["key"]] = [d["value"]]
 
         self.sf.debug("Returning ownerinfo: " + str(ownerinfo))
         return ownerinfo
@@ -203,22 +203,21 @@ class sfp_ripe(SpiderFootPlugin):
 
         # Slightly more complex..
         rx = [
-            '^{0}[-_/\'\"\\\.,\?\! ]',
-            '[-_/\'\"\\\.,\?\! ]{0}$',
-            '[-_/\'\"\\\.,\?\! ]{0}[-_/\'\"\\\.,\?\! ]'
+            '^{0}[-_/\'\"\\\.,\?\!\s\d]',
+            '[-_/\'\"\\\.,\?\!\s]{0}$',
+            '[-_/\'\"\\\.,\?\!\s]{0}[-_/\'\"\\\.,\?\!\s\d]'
         ]
 
         # Mess with the keyword as a last resort..
-        keywordList = list()
+        keywordList = set()
         for kw in self.keywords:
             # Create versions of the keyword, esp. if hyphens are involved.
-            keywordList.append(kw)
-            keywordList.append(kw.replace('-', ' '))
-            keywordList.append(kw.replace('-', '_'))
-            keywordList.append(kw.replace('-', ''))
+            keywordList.add(kw)
+            keywordList.add(kw.replace('-', ' '))
+            keywordList.add(kw.replace('-', '_'))
+            keywordList.add(kw.replace('-', ''))
 
         for kw in keywordList:
-            self.sf.debug("Looking for keyword: " + kw)
             for r in rx:
                 if re.match(r.format(kw), string, re.IGNORECASE) is not None:
                     return True
