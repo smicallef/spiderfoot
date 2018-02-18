@@ -181,6 +181,9 @@ class sfp_riskiq(SpiderFootPlugin):
                         t = "NETBLOCK_OWNER"
                     else:
                         t = "AFFILIATE_DOMAIN"
+                    # Skip IPv6
+                    if ":" in r['domain']:
+                        continue
                     e = SpiderFootEvent(t, r['domain'], self.__name__, event)
                     self.notifyListeners(e)
             return None
