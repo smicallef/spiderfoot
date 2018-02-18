@@ -32,7 +32,7 @@ class sfp_securitytrails(SpiderFootPlugin):
     optdescs = {
         "api_key": "Your SecurityTrails API key",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
-        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
+        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?"
     }
 
     # Be sure to completely clear any class variables in setup()
