@@ -39,13 +39,14 @@ class sfp_quad9(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME"]
+        return ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME", "CO_HOSTED_SITE"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME"]
+        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
+                "MALICIOUS_COHOST"]
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
@@ -87,6 +88,8 @@ class sfp_quad9(SpiderFootPlugin):
         if resolved:
             found = self.queryAddr(eventData)
             typ = "MALICIOUS_" + eventName
+            if eventName == "CO_HOSTED_SITE":
+                typ = "MALICIOUS_COHOST"
             if not found:
                 evt = SpiderFootEvent(typ, "Blocked by Quad9 [" + eventData + "]\n" +\
                                       "<SFURL>https://quad9.net/result/?url=" + eventData + "</SFURL>", 
