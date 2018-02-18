@@ -291,6 +291,9 @@ class sfp_ripe(SpiderFootPlugin):
 
                         # Technically this netblock was identified via the AS, not
                         # the original IP event, so link it to asevt, not event.
+                        # Skip IPv6 for now
+                        if ":" in netblock:
+                            continue
                         evt = SpiderFootEvent("NETBLOCK_OWNER", netblock,
                                               self.__name__, event)
                         self.notifyListeners(evt)
@@ -328,6 +331,9 @@ class sfp_ripe(SpiderFootPlugin):
                 return None
 
             if self.ownsAs(asn):
+                # For now we skip IPv6 addresses
+                if ":" in prefix:
+                    return None
                 self.sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
                 evt = SpiderFootEvent("NETBLOCK_OWNER", prefix, self.__name__, event)
                 self.notifyListeners(evt)
