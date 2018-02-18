@@ -15,24 +15,28 @@ import base64
 from datetime import datetime
 import re
 import time
+import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_circllu(SpiderFootPlugin):
     """CIRCL.LU:Investigate,Passive:Reputation Systems:apikey:Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases."""
 
-
     # Default options
     opts = {
         "api_key_login": "",
         "api_key_password": "",
-        "age_limit_days": 0
+        "age_limit_days": 0,
+        "verify": True,
+        "cohostsamedomain": False
     }
 
     # Option descriptions
     optdescs = {
         "api_key_login": "Your CIRCL.LU login",
         "api_key_password": "Your CIRCL.LU password",
-        "age_limit_days": "Ignore any Passive DNS records older than this many days. 0 = unlimited."
+        "age_limit_days": "Ignore any Passive DNS records older than this many days. 0 = unlimited.",
+        "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
+        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?"
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -50,6 +54,24 @@ class sfp_circllu(SpiderFootPlugin):
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
+
+    # Verify a host resolves to an IP
+    def validateIP(self, host, ip):
+        try:
+            addrs = socket.gethostbyname_ex(host)
+        except BaseException as e:
+            self.sf.debug("Unable to resolve " + host + ": " + str(e))
+            return False
+
+        for addr in addrs:
+            if type(addr) == list:
+                for a in addr:
+                    if str(a) == ip:
+                        return True
+            else:
+                if str(addr) == ip:
+                    return True
+        return False
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -191,6 +213,15 @@ class sfp_circllu(SpiderFootPlugin):
                             cohosts.append(rec['rrname'])
 
                 for co in cohosts:
+                    if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.validateIP(co, eventData)):
+                        self.sf.debug("Host no longer resolves to our IP.")
+                        continue
+
+                    if not self.opts['cohostsamedomain']:
+                        if self.getTarget().matches(co, includeParents=True):
+                            self.sf.debug("Skipping " + co + " because it is on the same domain.")
+                            continue
+
                     e = SpiderFootEvent("CO_HOSTED_SITE", co, self.__name__, event)
                     self.notifyListeners(e)
 
