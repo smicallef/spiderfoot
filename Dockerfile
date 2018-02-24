@@ -10,48 +10,37 @@
 # Usage:
 #
 #   sudo docker build -t spiderfoot .
-#   sudo docker run -it -p 8080:8080 spiderfoot
+#   sudo docker run -it -p 5001:5001 spiderfoot
 
 # Pull the base image.
 FROM alpine:3.7
-
+ENV SPIDERFOOT_VERSION 2.11.0
 COPY requirements.txt .
 
-# Install pre-requisites.
-RUN apk --update add \
-  curl \
-  git \
-  swig \
-  openssl-dev \
-  libxslt-dev \
-  tinyxml-dev \
-  py-lxml \
-  linux-headers \
-  musl-dev
-
-RUN apk --update add --virtual build-dependencies python-dev py-pip gcc \
-  && pip install wheel && pip install -r requirements.txt
-
-# Create a dedicated/non-privileged user to run the app.
-RUN addgroup spiderfoot && \
-    adduser -G spiderfoot -h /home/spiderfoot -s /sbin/nologin \
-            -g "SpiderFoot User" -D spiderfoot && \
-    rmdir /home/spiderfoot
-
-ENV SPIDERFOOT_VERSION 2.11.0
-
-# Download the specified release.
-WORKDIR /home
-RUN curl -sSL https://github.com/smicallef/spiderfoot/archive/v$SPIDERFOOT_VERSION-final.tar.gz \
-  | tar -v -C /home -xz \
-  && mv /home/spiderfoot-$SPIDERFOOT_VERSION-final /home/spiderfoot \
-  && chown -R spiderfoot:spiderfoot /home/spiderfoot
+# Run everything as one command so that only one layer is created
+RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py2-pip swig \
+        tinyxml-dev python2-dev musl-dev openssl-dev libxslt-dev \
+    && apk --update --no-cache add python2 musl openssl libxslt tinyxml \
+    && pip --no-cache-dir install wheel \
+    && pip --no-cache-dir install -r requirements.txt \
+    && addgroup spiderfoot \
+    && adduser -G spiderfoot -h /home/spiderfoot -s /sbin/nologin \
+               -g "SpiderFoot User" -D spiderfoot \
+    && rmdir /home/spiderfoot \
+    && cd /home \
+    && curl -sSL https://github.com/smicallef/spiderfoot/archive/v$SPIDERFOOT_VERSION-final.tar.gz \
+       | tar -v -C /home -xz \
+    && mv /home/spiderfoot-$SPIDERFOOT_VERSION-final /home/spiderfoot \
+    && chown -R spiderfoot:spiderfoot /home/spiderfoot \
+    && apk del --purge build-dependencies \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /root/.cache
 
 USER spiderfoot
 WORKDIR /home/spiderfoot
 
-EXPOSE 8080
+EXPOSE 5001
 
 # Run the application.
 ENTRYPOINT ["/usr/bin/python"] 
-CMD ["./sf.py", "0.0.0.0:8080"]
+CMD ["./sf.py", "0.0.0.0:5001"]
