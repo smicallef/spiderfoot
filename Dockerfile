@@ -5,6 +5,7 @@
 #
 # Written by: Michael Pellon <m@pellon.io>
 # Updated by: Chandrapal <bnchandrapal@protonmail.com>
+# Updated by: Steve Micallef <steve@binarypool.com>
 #
 # Usage:
 #
@@ -12,35 +13,30 @@
 #   sudo docker run -it -p 8080:8080 spiderfoot
 
 # Pull the base image.
-FROM ubuntu:16.04
+FROM alpine:3.7
+
+COPY requirements.txt .
 
 # Install pre-requisites.
-RUN apt-get update && apt-get install -y \
-  build-essential \
+RUN apk --update add \
   curl \
   git \
-  libssl-dev \
-  libxml2-dev \
-  libxslt1-dev \
-  python-pip  \
-  python-dev \
-  python-setuptools \
-  python-lxml \
-  python-m2crypto \
-  python-bs4 \
-  python-requests \
   swig \
-  --no-install-recommends
+  openssl-dev \
+  libxslt-dev \
+  tinyxml-dev \
+  py-lxml \
+  linux-headers \
+  musl-dev
 
-RUN rm -rf /var/lib/apt/lists/* \
-  && cd /usr/include/openssl/ \
-  && ln -s ../x86_64-linux-gnu/openssl/opensslconf.h . \
-  && pip install wheel \
-  && pip install cherrypy lxml mako netaddr
+RUN apk --update add --virtual build-dependencies python-dev py-pip gcc \
+  && pip install wheel && pip install -r requirements.txt
 
 # Create a dedicated/non-privileged user to run the app.
 RUN addgroup spiderfoot && \
-    useradd -r -g spiderfoot -d /home/spiderfoot -s /sbin/nologin -c "SpiderFoot User" spiderfoot
+    adduser -G spiderfoot -h /home/spiderfoot -s /sbin/nologin \
+            -g "SpiderFoot User" -D spiderfoot && \
+    rmdir /home/spiderfoot
 
 ENV SPIDERFOOT_VERSION 2.11.0
 
@@ -58,4 +54,4 @@ EXPOSE 8080
 
 # Run the application.
 ENTRYPOINT ["/usr/bin/python"] 
-CMD ["sf.py", "0.0.0.0:8080"]
+CMD ["./sf.py", "0.0.0.0:8080"]
