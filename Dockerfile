@@ -6,6 +6,7 @@
 # Written by: Michael Pellon <m@pellon.io>
 # Updated by: Chandrapal <bnchandrapal@protonmail.com>
 # Updated by: Steve Micallef <steve@binarypool.com>
+#    -> Inspired by https://github.com/combro2k/dockerfiles/tree/master/alpine-spiderfoot
 #
 # Usage:
 #
