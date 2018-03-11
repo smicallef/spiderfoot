@@ -148,6 +148,8 @@ class sfp_fullcontact(SpiderFootPlugin):
             data = self.queryPerson(email=eventData)
             if not data:
                 return None
+            if 'fullName' not in data:
+                return None
             e = SpiderFootEvent("HUMAN_NAME", data['fullName'], self.__name__, event)
             self.notifyListeners(e)
             return
@@ -179,8 +181,9 @@ class sfp_fullcontact(SpiderFootPlugin):
 
             if "keyPeople" in data:
                 for r in data['keyPeople']:
-                    e = SpiderFootEvent("HUMAN_NAME", r['fullName'], self.__name__, event)
-                    self.notifyListeners(e)
+                    if 'fullName' in r:
+                        e = SpiderFootEvent("HUMAN_NAME", r['fullName'], self.__name__, event)
+                        self.notifyListeners(e)
 
 
 # End of sfp_fullcontact class
