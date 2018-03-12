@@ -156,6 +156,8 @@ class sfp_fullcontact(SpiderFootPlugin):
 
         if eventName == "DOMAIN_NAME":
             data = self.queryCompany(eventData)
+            if not data:
+                return None
             if "details" in data:
                 data = data['details']
             if "emails" in data:
