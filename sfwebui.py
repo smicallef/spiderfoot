@@ -401,6 +401,25 @@ class SpiderFootWebUi:
 
     opts.exposed = True
 
+    # Export configuration
+    def optsexport(self, pattern):
+        sf = SpiderFoot(self.config)
+        conf = sf.configSerialize(self.config)
+        content = ""
+        for opt in sorted(conf):
+            if ":_" in opt or opt.startswith("_"):
+                continue
+            if not pattern:
+                content += opt + "=" + str(conf[opt]) + "\n"
+            else:
+                if pattern in opt:
+                    content += opt + "=" + str(conf[opt]) + "\n"
+        cherrypy.response.headers['Content-Disposition'] = 'attachment; filename="SpiderFoot.cfg"'
+        cherrypy.response.headers['Content-Type'] = "text/plain"
+        return content
+
+    optsexport.exposed = True
+
     # Settings
     def optsraw(self):
         ret = dict()
@@ -473,9 +492,25 @@ class SpiderFootWebUi:
     scandeletemulti.exposed = True
 
     # Save settings, also used to completely reset them to default
-    def savesettings(self, allopts, token):
-#        if str(token) != str(self.token):
-#            return self.error("Invalid token (" + str(self.token) + ").")
+    def savesettings(self, allopts, token, configFile=None):
+        if str(token) != str(self.token):
+            return self.error("Invalid token (" + str(self.token) + ").")
+
+        if configFile:  # configFile seems to get set even if a file isn't uploaded
+            if configFile.file:
+                contents = configFile.file.read()
+                try:
+                    tmp = dict()
+                    for line in contents.split("\n"):
+                        if "=" not in line:
+                            continue
+                        l = line.strip().split("=")
+                        if len(l) == 1:
+                            l[1] = ""
+                        tmp[l[0]] = l[1]
+                    allopts = json.dumps(tmp)
+                except BaseException as e:
+                    return self.error("Failed to parse input file. Was it generated from SpiderFoot? (" + str(e) + ")")
 
         try:
             dbh = SpiderFootDb(self.config)
@@ -495,7 +530,7 @@ class SpiderFootWebUi:
                 # the current system config.
                 sf = SpiderFoot(self.config)
                 self.config = sf.configUnserialize(cleanopts, currentopts)
-                dbh.configSet(sf.configSerialize(currentopts))
+                dbh.configSet(sf.configSerialize(self.config))
         except Exception as e:
             return self.error("Processing one or more of your inputs failed: " + str(e))
 
@@ -529,7 +564,7 @@ class SpiderFootWebUi:
                 # the current system config.
                 sf = SpiderFoot(self.config)
                 self.config = sf.configUnserialize(cleanopts, currentopts)
-                dbh.configSet(sf.configSerialize(currentopts))
+                dbh.configSet(sf.configSerialize(self.config))
         except Exception as e:
             return json.dumps(["ERROR", "Processing one or more of your inputs failed: " + str(e)])
 
