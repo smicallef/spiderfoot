@@ -15,7 +15,7 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_hackedemails(SpiderFootPlugin):
-    """Hacked-Emails.com:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:errorprone:Check Hacked-Emails.com for hacked e-mail addresses identified."""
+    """Hacked-Emails.com:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check Hacked-Emails.com for hacked e-mail addresses identified."""
 
 
     # Default options

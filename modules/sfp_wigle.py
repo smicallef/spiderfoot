@@ -16,7 +16,7 @@ import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_wigle(SpiderFootPlugin):
-    """Wigle.net:Footprint,Investigate,Passive:Secondary Networks::Query wigle.net to identify nearby WiFi access points."""
+    """Wigle.net:Footprint,Investigate,Passive:Secondary Networks:apikey:Query wigle.net to identify nearby WiFi access points."""
 
 
     # Default options
@@ -28,7 +28,7 @@ class sfp_wigle(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key_encoded": "Your Base64-encoded API name/token pair, as provided on your Wigle.net account page.",
+        "api_key_encoded": "Wigle.net base64-encoded API name/token pair.",
         "days_limit": "Maximum age of data to be considered valid.",
         "variance": "How tightly to bound queries against the latitude/longitude box extracted from idenified addresses. This value must be between 0.001 and 0.2."
     

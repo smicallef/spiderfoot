@@ -27,7 +27,12 @@ malchecks = {
 
 
 class sfp_threatexpert(SpiderFootPlugin):
-    """ThreatExpert.com:Investigate,Passive:Reputation Systems:slow:Check if a host/domain or IP is malicious according to ThreatExpert.com."""
+    """ThreatExpert.com:Investigate,Passive:Reputation Systems::Check if a host/domain or IP is malicious according to ThreatExpert.com."""
+
+
+
+
+
 
 
     # Default options

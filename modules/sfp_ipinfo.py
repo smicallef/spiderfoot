@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_ipinfo(SpiderFootPlugin):
-    """IPInfo.io:Footprint,Investigate,Passive:Real World::Identifies the physical location of IP addresses identified using ipinfo.io."""
+    """IPInfo.io:Footprint,Investigate,Passive:Real World:apikey:Identifies the physical location of IP addresses identified using ipinfo.io."""
 
 
     # Default options
@@ -24,7 +24,7 @@ class sfp_ipinfo(SpiderFootPlugin):
         "api_key": "" 
     }
     optdescs = {
-        "api_key": "Your ipinfo.io access token."
+        "api_key": "Ipinfo.io access token."
     }
     results = dict()
     errorState = False

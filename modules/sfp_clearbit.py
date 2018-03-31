@@ -17,6 +17,8 @@ class sfp_clearbit(SpiderFootPlugin):
     """Clearbit:Footprint,Investigate,Passive:Search Engines:apikey:Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com."""
 
 
+
+
     # Default options
     opts = { 
         "api_key": ""
@@ -24,7 +26,7 @@ class sfp_clearbit(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Your API key from clearbit.com."
+        "api_key": "Clearbit.com API key."
     }
 
     # Be sure to completely clear any class variables in setup()

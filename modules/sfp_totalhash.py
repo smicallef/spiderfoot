@@ -27,7 +27,7 @@ malchecks = {
 
 
 class sfp_totalhash(SpiderFootPlugin):
-    """TotalHash.com:Investigate,Passive:Reputation Systems:slow:Check if a host/domain or IP is malicious according to TotalHash.com."""
+    """TotalHash.com:Investigate,Passive:Reputation Systems::Check if a host/domain or IP is malicious according to TotalHash.com."""
 
 
     # Default options

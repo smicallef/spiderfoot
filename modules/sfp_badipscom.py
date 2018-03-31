@@ -26,7 +26,7 @@ malchecks = {
 
 
 class sfp_badipscom(SpiderFootPlugin):
-    """badips.com:Investigate,Passive:Reputation Systems:slow:Check if a domain or IP is malicious according to badips.com."""
+    """badips.com:Investigate,Passive:Reputation Systems::Check if a domain or IP is malicious according to badips.com."""
 
 
     # Default options

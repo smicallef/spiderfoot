@@ -26,7 +26,9 @@ malchecks = {
 
 
 class sfp_bitcash(SpiderFootPlugin):
-    """Bitcash.cz Malicious IPs:Investigate,Passive:Reputation Systems:slow:Check if an IP is malicious according to Bitcash.cz Malicious IPs."""
+    """Bitcash.cz Malicious IPs:Investigate,Passive:Reputation Systems::Check if an IP is malicious according to Bitcash.cz Malicious IPs."""
+
+
 
 
     # Default options

@@ -32,8 +32,8 @@ class sfp_fraudguard(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "fraudguard_api_key_account": "Your Fraudguard.io API username",
-        "fraudguard_api_key_password": "Your Fraudguard.io API password",
+        "fraudguard_api_key_account": "Fraudguard.io API username.",
+        "fraudguard_api_key_password": "Fraudguard.io API password.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"

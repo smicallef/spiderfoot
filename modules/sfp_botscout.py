@@ -18,13 +18,12 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_botscout(SpiderFootPlugin):
     """BotScout:Investigate:Reputation Systems:apikey:Searches botscout.com's database of spam-bot IPs and e-mail addresses."""
 
-
     # Default options
     opts = {
         "api_key": ""
     }
     optdescs = {
-        "api_key": "botscout.com API key. Without this you will be limited to 50 look-ups per day."
+        "api_key": "Botscout.com API key. Without this you will be limited to 50 look-ups per day."
     }
     results = dict()
     errorState = False

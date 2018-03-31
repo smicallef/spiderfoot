@@ -27,7 +27,7 @@ class sfp_fullcontact(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Your API key from fullcontact.com.",
+        "api_key": "Fullcontact.com API key.",
         "max_age_days": "Maximum number of age in days for a record before it's considered invalid and not reported."
     }
 

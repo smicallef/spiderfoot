@@ -49,7 +49,7 @@ malchecks = {
 }
 
 class sfp_abusech(SpiderFootPlugin):
-    """abuse.ch:Investigate,Passive:Reputation Systems:slow:Check if a host/domain, IP or netblock is malicious according to abuse.ch."""
+    """abuse.ch:Investigate,Passive:Reputation Systems::Check if a host/domain, IP or netblock is malicious according to abuse.ch."""
 
 
     # Default options

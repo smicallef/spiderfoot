@@ -27,7 +27,7 @@ malchecks = {
 
 
 class sfp_fortinet(SpiderFootPlugin):
-    """Fortiguard.com:Investigate,Passive:Reputation Systems:slow:Check if an IP is malicious according to Fortiguard.com."""
+    """Fortiguard.com:Investigate,Passive:Reputation Systems::Check if an IP is malicious according to Fortiguard.com."""
 
 
     # Default options

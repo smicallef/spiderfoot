@@ -36,7 +36,10 @@ malchecks = {
 }
 
 class sfp_nothink(SpiderFootPlugin):
-    """Nothink.org:Investigate,Passive:Reputation Systems:slow:Check if a host/domain, netblock or IP is malicious according to Nothink.org."""
+    """Nothink.org:Investigate,Passive:Reputation Systems::Check if a host/domain, netblock or IP is malicious according to Nothink.org."""
+
+
+
 
 
     # Default options

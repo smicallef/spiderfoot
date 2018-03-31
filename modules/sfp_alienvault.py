@@ -34,7 +34,7 @@ class sfp_alienvault(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Your AlienVault OTX API Key",
+        "api_key": "AlienVault OTX API Key.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         "threat_score_min": "Minimum AlienVault threat score.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",

@@ -34,7 +34,7 @@ class sfp_virustotal(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Your VirusTotal API Key.",
+        "api_key": "VirusTotal API Key.",
         "publicapi": "Are you using a public key? If so SpiderFoot will pause for 15 seconds after each query to avoid VirusTotal dropping requests.",
         "checkcohosts": "Check co-hosted sites?",
         "checkaffiliates": "Check affiliates?",

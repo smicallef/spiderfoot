@@ -26,7 +26,7 @@ malchecks = {
 
 
 class sfp_phishtank(SpiderFootPlugin):
-    """PhishTank:Investigate,Passive:Reputation Systems:slow:Check if a host/domain is malicious according to PhishTank."""
+    """PhishTank:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to PhishTank."""
 
 
     # Default options

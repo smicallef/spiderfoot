@@ -32,8 +32,8 @@ class sfp_circllu(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key_login": "Your CIRCL.LU login",
-        "api_key_password": "Your CIRCL.LU password",
+        "api_key_login": "CIRCL.LU login.",
+        "api_key_password": "CIRCL.LU password.",
         "age_limit_days": "Ignore any Passive DNS records older than this many days. 0 = unlimited.",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?"

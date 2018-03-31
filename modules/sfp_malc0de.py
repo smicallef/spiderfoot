@@ -25,7 +25,7 @@ malchecks = {
 
 
 class sfp_malc0de(SpiderFootPlugin):
-    """malc0de.com:Investigate,Passive:Reputation Systems:slow:Check if a netblock or IP is malicious according to malc0de.com."""
+    """malc0de.com:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to malc0de.com."""
 
 
     # Default options

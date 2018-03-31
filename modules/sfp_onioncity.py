@@ -15,13 +15,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 import re
 
 class sfp_onioncity(SpiderFootPlugin):
-    """Onion.link:Footprint,Investigate:Search Engines::Search Tor 'Onion City' search engine for mentions of the target domain."""
+    """Onion.link:Footprint,Investigate:Search Engines:errorprone:Search Tor 'Onion City' search engine for mentions of the target domain."""
 
 
     # Default options
     opts = {
         'pages': 20,  # Number of results pages to iterate
-        'fetchlinks': False
+        'fetchlinks': True
     }
 
     # Option descriptions

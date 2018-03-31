@@ -35,8 +35,8 @@ class sfp_xforce(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "xforce_api_key": "The X-Force Exchange API Key",
-        "xforce_api_key_password": "The X-Force Exchange API Password",
+        "xforce_api_key": "X-Force Exchange API Key.",
+        "xforce_api_key_password": "X-Force Exchange API Password.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",

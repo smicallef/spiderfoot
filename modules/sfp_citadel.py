@@ -22,7 +22,7 @@ class sfp_citadel(SpiderFootPlugin):
         "timeout": 60
     }
     optdescs = {
-        "api_key": "citadel.pw API key. Without this you're limited to the public API.",
+        "api_key": "Citadel.pw API key. Without this you're limited to the public API.",
         "timeout": "Custom timeout due to heavy traffic at times."
     }
 

@@ -19,14 +19,13 @@ malchecks = {
         'id': '_hphosts',
         'type': 'list',
         'checks': ['domain'],
-        'url': 'http://hosts-file.net/download/hosts.txt',
-        'regex': '^127.0.0.1\s+{0}$'
+        'url': 'http://hosts-file.net/download/hosts.txt'
     }
 }
 
 
 class sfp_hostsfilenet(SpiderFootPlugin):
-    """hosts-file.net Malicious Hosts:Investigate,Passive:Reputation Systems:slow:Check if a host/domain is malicious according to hosts-file.net Malicious Hosts."""
+    """hosts-file.net Malicious Hosts:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to hosts-file.net Malicious Hosts."""
 
 
     # Default options
@@ -71,44 +70,6 @@ class sfp_hostsfilenet(SpiderFootPlugin):
         return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_COHOST"]
 
-    # Check the regexps to see whether the content indicates maliciousness
-    def contentMalicious(self, content, goodregex, badregex):
-        # First, check for the bad indicators
-        if len(badregex) > 0:
-            for rx in badregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be bad against bad regex: " + rx)
-                    return True
-
-        # Finally, check for good indicators
-        if len(goodregex) > 0:
-            for rx in goodregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be good againt good regex: " + rx)
-                    return False
-
-        # If nothing was matched, reply None
-        self.sf.debug("Neither good nor bad, unknown.")
-        return None
-
-    # Look up 'query' type sources
-    def resourceQuery(self, id, target, targetType):
-        self.sf.debug("Querying " + id + " for maliciousness of " + target)
-        for check in malchecks.keys():
-            cid = malchecks[check]['id']
-            if id == cid and malchecks[check]['type'] == "query":
-                url = unicode(malchecks[check]['url'])
-                res = self.sf.fetchUrl(url.format(target), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-                if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target), False)
-                    return None
-                if self.contentMalicious(res['content'],
-                                         malchecks[check]['goodregex'],
-                                         malchecks[check]['badregex']):
-                    return url.format(target)
-
-        return None
-
     # Look up 'list' type resources
     def resourceList(self, id, target, targetType):
         targetDom = ''
@@ -130,56 +91,13 @@ class sfp_hostsfilenet(SpiderFootPlugin):
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
 
-                # If we're looking at netblocks
-                if targetType == "netblock":
-                    iplist = list()
-                    # Get the regex, replace {0} with an IP address matcher to 
-                    # build a list of IP.
-                    # Cycle through each IP and check if it's in the netblock.
-                    if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}",
-                                                               "(\d+\.\d+\.\d+\.\d+)")
-                        pat = re.compile(rx, re.IGNORECASE)
-                        self.sf.debug("New regex for " + check + ": " + rx)
-                        for line in data['content'].split('\n'):
-                            grp = re.findall(pat, line)
-                            if len(grp) > 0:
-                                #self.sf.debug("Adding " + grp[0] + " to list.")
-                                iplist.append(grp[0])
-                    else:
-                        iplist = data['content'].split('\n')
-
-                    for ip in iplist:
-                        if len(ip) < 8 or ip.startswith("#"):
-                            continue
-                        ip = ip.strip()
-
-                        try:
-                            if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
-                                return url
-                        except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
-                            continue
-
-                    return None
-
-                # If we're looking at hostnames/domains/IPs
-                if 'regex' not in malchecks[check]:
-                    for line in data['content'].split('\n'):
-                        if line == target or (targetType == "domain" and line == targetDom):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                            return url
-                else:
-                    # Check for the domain and the hostname
-                    rxDom = unicode(malchecks[check]['regex']).format(targetDom)
-                    rxTgt = unicode(malchecks[check]['regex']).format(target)
-                    for line in data['content'].split('\n'):
-                        if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
-                                re.match(rxTgt, line, re.IGNORECASE):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                            return url
+                # Check for the domain and the hostname
+                if targetType == "domain" and "127.0.0.1\t" + targetDom + "\n" in data['content']:
+                    self.sf.debug(targetDom + " found in " + check + " list.")
+                    return url
+                if "127.0.0.1\t" + target + "\n" in data['content']:
+                    self.sf.debug(target + " found in " + check + " list.")
+                    return url
         return None
 
     def lookupItem(self, resourceId, itemType, target):
@@ -188,8 +106,6 @@ class sfp_hostsfilenet(SpiderFootPlugin):
             if cid == resourceId and itemType in malchecks[check]['checks']:
                 self.sf.debug("Checking maliciousness of " + target + " (" +
                               itemType + ") with: " + cid)
-                if malchecks[check]['type'] == "query":
-                    return self.resourceQuery(cid, target, itemType)
                 if malchecks[check]['type'] == "list":
                     return self.resourceList(cid, target, itemType)
 
@@ -211,7 +127,7 @@ class sfp_hostsfilenet(SpiderFootPlugin):
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None
-        if eventName == 'AFFILIATE_IPADDR' \
+        if eventName == 'AFFILIATE_INTERNET_NAME' \
                 and not self.opts.get('checkaffiliates', False):
             return None
 
@@ -219,19 +135,7 @@ class sfp_hostsfilenet(SpiderFootPlugin):
             cid = malchecks[check]['id']
             # If the module is enabled..
             if self.opts[cid]:
-                if eventName in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
-                    typeId = 'ip'
-                    if eventName == 'IP_ADDRESS':
-                        evtType = 'MALICIOUS_IPADDR'
-                    else:
-                        evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-
-                if eventName in ['BGP_AS_OWNER', 'BGP_AS_MEMBER']:
-                    typeId = 'asn'
-                    evtType = 'MALICIOUS_ASN'
-
-                if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE',
-                                 'AFFILIATE_INTERNET_NAME', ]:
+                if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE', 'AFFILIATE_INTERNET_NAME' ]:
                     typeId = 'domain'
                     if eventName == "INTERNET_NAME":
                         evtType = "MALICIOUS_INTERNET_NAME"
@@ -240,10 +144,10 @@ class sfp_hostsfilenet(SpiderFootPlugin):
                     if eventName == 'CO_HOSTED_SITE':
                         evtType = 'MALICIOUS_COHOST'
 
-                url = self.lookupItem(cid, typeId, eventData)
                 if self.checkForStop():
                     return None
 
+                url = self.lookupItem(cid, typeId, eventData)
                 # Notify other modules of what you've found
                 if url is not None:
                     text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"

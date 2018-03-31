@@ -33,7 +33,7 @@ class sfp_cymon(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "cymon_api_key": "Your Cymon.io API Key",
+        "cymon_api_key": "Your Cymon.io API Key.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",

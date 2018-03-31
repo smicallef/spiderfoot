@@ -32,8 +32,8 @@ class sfp_riskiq(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key_login": "Your RiskIQ login",
-        "api_key_password": "Your RiskIQ API key",
+        "api_key_login": "RiskIQ login.",
+        "api_key_password": "RiskIQ API Key.",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?"
     }
@@ -181,9 +181,6 @@ class sfp_riskiq(SpiderFootPlugin):
                         t = "NETBLOCK_OWNER"
                     else:
                         t = "AFFILIATE_DOMAIN"
-                    # Skip IPv6
-                    if ":" in r['domain']:
-                        continue
                     e = SpiderFootEvent(t, r['domain'], self.__name__, event)
                     self.notifyListeners(e)
             return None
