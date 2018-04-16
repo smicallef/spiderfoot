@@ -67,6 +67,7 @@ class sfp_fullcontact(SpiderFootPlugin):
 
         if res['code'] in [ "401", "400" ]:
             self.sf.error("API key rejected by fullcontact.com", False)
+            self.errorState = True
             return None
 
         if res['code'] == "403":
