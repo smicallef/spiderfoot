@@ -6,6 +6,7 @@
 # Written by: Michael Pellon <m@pellon.io>
 # Updated by: Chandrapal <bnchandrapal@protonmail.com>
 # Updated by: Steve Micallef <steve@binarypool.com>
+# Updated by: nancheal <nancheal@gmail.com>
 #    -> Inspired by https://github.com/combro2k/dockerfiles/tree/master/alpine-spiderfoot
 #
 # Usage:
@@ -43,5 +44,7 @@ WORKDIR /home/spiderfoot
 EXPOSE 5001
 
 # Run the application.
-ENTRYPOINT ["/usr/bin/python"] 
-CMD ["./sf.py", "0.0.0.0:5001"]
+# ENTRYPOINT ["/usr/bin/python"] 
+# CMD ["./sf.py", "0.0.0.0:5001"]
+ADD docker-entrypoint.sh /home/spiderfoot/docker-entrypoint.sh
+ENTRYPOINT [ "/docker-entrypoint.sh"]
