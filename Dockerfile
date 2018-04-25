@@ -12,7 +12,7 @@
 # Usage:
 #
 #   sudo docker build -t spiderfoot .
-#   sudo docker run -it -p 5001:5001 spiderfoot
+#   sudo docker run -it -p 6001:5001 spiderfoot -A admin:admin
 
 # Pull the base image.
 FROM alpine:3.7

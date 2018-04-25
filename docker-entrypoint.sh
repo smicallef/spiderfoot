@@ -1,5 +1,5 @@
 #!/bin/sh
-
+# Updated by: nancheal <nancheal@gmail.com>
 export TOP_PID=$$
 trap 'exit 1' TERM
 exit_script(){
