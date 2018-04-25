@@ -44,7 +44,5 @@ WORKDIR /home/spiderfoot
 EXPOSE 5001
 
 # Run the application.
-# ENTRYPOINT ["/usr/bin/python"] 
-# CMD ["./sf.py", "0.0.0.0:5001"]
 ADD docker-entrypoint.sh /home/spiderfoot/docker-entrypoint.sh
-ENTRYPOINT [ "/docker-entrypoint.sh"]
+ENTRYPOINT [ "/home/spiderfoot/docker-entrypoint.sh"]
