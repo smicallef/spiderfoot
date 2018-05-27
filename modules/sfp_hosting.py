@@ -70,8 +70,12 @@ class sfp_hosting(SpiderFootPlugin):
             except BaseException as e:
                 continue
 
-            if IPAddress(qaddr) > IPAddress(start) and IPAddress(qaddr) < IPAddress(end):
-                return [title, url]
+            try:
+                if IPAddress(qaddr) > IPAddress(start) and IPAddress(qaddr) < IPAddress(end):
+                    return [title, url]
+            except BaseException as e:
+                self.sf.debug("Encountered an issue processing an IP: " + str(e))
+                continue
 
         return None
 

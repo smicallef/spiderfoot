@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import socket
-import socks
 import ssl
 import time
 import M2Crypto
@@ -118,7 +117,12 @@ class sfp_sslcert(SpiderFootPlugin):
 
     # Report back who the certificate was issued to
     def getIssued(self, cert, sevt):
-        issued = cert.get_subject().as_text().encode('raw_unicode_escape')
+        try:
+            issued = cert.get_subject().as_text().encode('raw_unicode_escape')
+        except BaseException as e:
+            self.sf.error("Error processing certificate: " + str(e), False)
+            return None
+
         evt = SpiderFootEvent("SSL_CERTIFICATE_ISSUED", issued, self.__name__, sevt)
         self.notifyListeners(evt)
 

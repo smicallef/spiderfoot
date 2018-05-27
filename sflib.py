@@ -971,7 +971,8 @@ class SpiderFoot:
             return None
 
         # Clean the URL
-        url = url.encode('ascii', 'ignore')
+        if type(url) != unicode:
+            url = unicode(url, 'utf-8', errors='replace')
 
         try:
             header = dict()

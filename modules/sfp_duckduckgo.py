@@ -17,6 +17,8 @@ class sfp_duckduckgo(SpiderFootPlugin):
     """DuckDuckGo:Footprint,Investigate,Passive:Search Engines::Query DuckDuckGo's API for descriptive information about your target."""
 
 
+
+
     # Default options
     opts = {
             "affiliatedomains": True
@@ -75,11 +77,6 @@ class sfp_duckduckgo(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except BaseException as e:
-            ret = None
-
-        if ret == None:
-            self.sf.error("Unable to process empty response from DuckDuckGo for: " + \
-                          eventData, False)
             return None
 
         if ret['Heading'] == "":

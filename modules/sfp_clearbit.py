@@ -65,7 +65,7 @@ class sfp_clearbit(SpiderFootPlugin):
             useragent="SpiderFoot", headers=headers)
 
         if res['code'] != "200":
-            self.sf.error("Return code indicates no results or potential API key failure.", 
+            self.sf.error("Return code indicates no results or potential API key failure or exceeded limits.", 
                        False)
             return None
 
