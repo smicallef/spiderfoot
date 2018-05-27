@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_sublist3r
-# Purpose:      Query Sublist3r/PassiveTotal using their API
+# Purpose:      Query Sublist3r using their API
 #
 # Author:      Steve Micallef
 #
-# Created:     16/02/2018
+# Created:     16/05/2018
 # Copyright:   (c) Steve Micallef 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
