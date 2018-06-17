@@ -128,7 +128,12 @@ class sfp_sslcert(SpiderFootPlugin):
 
     # Report back the certificate issuer
     def getIssuer(self, cert, sevt):
-        issuer = cert.get_issuer().as_text().encode('raw_unicode_escape')
+        try:
+            issuer = cert.get_issuer().as_text().encode('raw_unicode_escape')
+        except BaseException as e:
+            self.sf.debug("Error parsing certificate.")
+            return None
+
         evt = SpiderFootEvent("SSL_CERTIFICATE_ISSUER", issuer, self.__name__, sevt)
         self.notifyListeners(evt)
 
@@ -138,15 +143,20 @@ class sfp_sslcert(SpiderFootPlugin):
         hosts = ""
 
         # Extract the CN from the issued section
-        issued = cert.get_subject().as_text().encode('raw_unicode_escape')
-        self.sf.debug("Checking for " + fqdn + " in " + issued.lower())
-        if "cn=" + fqdn in issued.lower():
-            hosts = 'dns:' + fqdn
+        try:
+            issued = cert.get_subject().as_text().encode('raw_unicode_escape')
+            self.sf.debug("Checking for " + fqdn + " in " + issued.lower())
+            if "cn=" + fqdn in issued.lower():
+                hosts = 'dns:' + fqdn
+        except BaseException as e:
+            self.sf.debug("Error parsing certificate.")
+            return None
 
         try:
             hosts = hosts + " " + cert.get_ext("subjectAltName").get_value().encode('raw_unicode_escape').lower()
         except LookupError as e:
             self.sf.debug("No alternative name found in certificate.")
+            return None
 
         fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
         if "dns:" + fqdn not in hosts and "dns:*." + fqdn_tld not in hosts:
