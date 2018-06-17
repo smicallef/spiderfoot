@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_s3bucket
-# Purpose:      SpiderFoot plug-in for identifying potential S3 buckets related to
-#               the target.
+# Name:         sfp_digitaloceanspace
+# Purpose:      SpiderFoot plug-in for identifying potential Digital Ocean spaces
+#               related to the target.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
-# Created:     24/07/2016
-# Copyright:   (c) Steve Micallef 2016
+# Created:     16/06/2018
+# Copyright:   (c) Steve Micallef 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
@@ -15,21 +15,21 @@ import threading
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-class sfp_s3bucket(SpiderFootPlugin):
-    """Amazon S3 Bucket Finder:Footprint,Passive:Crawling and Scanning::Search for potential Amazon S3 buckets associated with the target and attempt to list their contents."""
+class sfp_digitaloceanspace(SpiderFootPlugin):
+    """Digital Ocean Space Finder:Footprint,Passive:Crawling and Scanning::Search for potential Digital Ocean Spaces associated with the target and attempt to list their contents."""
 
 
     # Default options
     opts = {
-        "endpoints": "s3.amazonaws.com,s3-external-1.amazonaws.com,s3-us-west-1.amazonaws.com,s3-us-west-2.amazonaws.com,s3.ap-south-1.amazonaws.com,s3-ap-south-1.amazonaws.com,s3.ap-northeast-2.amazonaws.com,s3-ap-northeast-2.amazonaws.com,s3-ap-southeast-1.amazonaws.com,s3-ap-southeast-2.amazonaws.com,s3-ap-northeast-1.amazonaws.com,s3.eu-central-1.amazonaws.com,s3-eu-central-1.amazonaws.com,s3-eu-west-1.amazonaws.com,s3-sa-east-1.amazonaws.com",
+        "endpoints": "nyc3.digitaloceanspaces.com,sgp1.digitaloceanspaces.com,ams3.digitaloceanspaces.com",
         "suffixes": "test,dev,web,beta,bucket,space,files,content,data,-test,-dev,-web,-beta,-bucket,-space,-files,-content,-data",
         "_maxthreads": 20
     }
 
     # Option descriptions
     optdescs = {
-        "endpoints": "Different S3 endpoints to check where buckets may exist, as per http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region",
-        "suffixes": "List of suffixes to append to domains tried as bucket names"
+        "endpoints": "Different Digital Ocean locations to check where spaces may exist.",
+        "suffixes": "List of suffixes to append to domains tried as space names"
     }
 
     results = list()
@@ -77,7 +77,7 @@ class sfp_s3bucket(SpiderFootPlugin):
                 return None
 
             self.sf.info("Spawning thread to check bucket: " + site)
-            t.append(threading.Thread(name='sfp_s3buckets_' + site,
+            t.append(threading.Thread(name='sfp_digitaloceanspaces_' + site,
                                       target=self.checkSite, args=(site,)))
             t[i].start()
             i += 1
@@ -134,7 +134,7 @@ class sfp_s3bucket(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventName == "LINKED_URL_EXTERNAL":
-            if ".amazonaws.com" in eventData:
+            if ".digitaloceanspaces.com" in eventData:
                 b = self.sf.urlFQDN(eventData)
                 evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", b, self.__name__, event)
                 self.notifyListeners(evt)
@@ -165,4 +165,4 @@ class sfp_s3bucket(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
 
-# End of sfp_s3bucket class
+# End of sfp_digitaloceanspace class
