@@ -14,6 +14,7 @@
 import time
 import threading
 import json
+import random
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_accounts(SpiderFootPlugin):
@@ -27,7 +28,7 @@ class sfp_accounts(SpiderFootPlugin):
         "ignorenamedict": True,
         "ignoreworddict": True,
         "musthavename": True,
-        "maxthreads": 25
+        "_maxthreads": 25
     }
 
     # Option descriptions
@@ -35,15 +36,15 @@ class sfp_accounts(SpiderFootPlugin):
         "generic": "Generic internal accounts to not bother looking up externally.",
         "ignorenamedict": "Don't bother looking up names that are just stand-alone first names (too many false positives).",
         "ignoreworddict": "Don't bother looking up names that appear in the dictionary.",
-        "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
-        "maxthreads": "Maximum number of simultaneous threads (one thread per site the account is being checked on.)"
+        "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives)."
     }
 
     results = dict()
     reportedUsers = list()
     siteResults = dict()
-    sites = dict()
+    sites = list()
     errorState = False
+    distrustedChecked = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -51,6 +52,7 @@ class sfp_accounts(SpiderFootPlugin):
         self.commonNames = list()
         self.reportedUsers = list()
         self.errorState = False
+        self.distrustedChecked = False
         self.__dataSource__ = "Social Media"
 
         for opt in userOpts.keys():
@@ -71,7 +73,7 @@ class sfp_accounts(SpiderFootPlugin):
                 self.sf.cachePut("sfaccounts", data['content'])
                 content = data['content']
 
-        self.sites = json.loads(content)
+        self.sites = json.loads(content)['sites']
 
     # What events is this module interested in for input
     # * = be notified about all events.
@@ -153,7 +155,7 @@ class sfp_accounts(SpiderFootPlugin):
             if not found:
                 running = False
 
-            time.sleep(2) 
+            time.sleep(0.25) 
 
         # Return once the scanning has completed
         return self.siteResults
@@ -163,10 +165,10 @@ class sfp_accounts(SpiderFootPlugin):
         res = list()
         siteList = list()
 
-        for site in self.sites['sites']:
+        for site in self.sites:
             if not site['valid'] or 'check_uri' not in site:
                 continue
-            if i >= self.opts['maxthreads']:
+            if i >= self.opts['_maxthreads']:
                 data = self.threadSites(name, siteList)
                 if data == None:
                     return res
@@ -199,6 +201,21 @@ class sfp_accounts(SpiderFootPlugin):
         else:
             return None
 
+        # If being called for the first time, let's see how trusted the
+        # sites are by attempting to fetch a garbage user.
+        if not self.distrustedChecked:
+            randpool = 'abcdefghijklmnopqrstuvwxyz1234567890'
+            randuser = ''.join([random.choice(randpool) for x in range(10)])
+            res = self.batchSites(randuser)
+            if len(res) > 0:
+                delsites = list()
+                for site in res:
+                    sitename = site.split(" (Category:")[0]
+                    self.sf.debug("Distrusting " + sitename)
+                    delsites.append(sitename)
+                self.sites = [d for d in self.sites if d['name'] not in delsites]
+            self.distrustedChecked = True
+
         if eventName == "DOMAIN_NAME":
             kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
 
@@ -224,10 +241,6 @@ class sfp_accounts(SpiderFootPlugin):
                 return None
 
             users.append(name)
-            if "." in name:
-                # steve.micallef -> smicallef
-                users.append(str(name[0] + name.split(".")[1]).lower())
-
             for user in users:
                 if user not in self.reportedUsers:
                     evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
