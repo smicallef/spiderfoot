@@ -48,12 +48,13 @@ class sfp_shodan(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_OWNER"]
+        return ["IP_ADDRESS", "NETBLOCK_OWNER", "DOMAIN_NAME"]
 
     # What events this module produces
     def producedEvents(self):
         return ["OPERATING_SYSTEM", "DEVICE_TYPE",
-                "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER"]
+                "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
+                "SEARCH_ENGINE_WEB_CONTENT" ]
 
     def query(self, qry):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
@@ -70,6 +71,23 @@ class sfp_shodan(SpiderFootPlugin):
             return None
 
         return info
+
+    def searchHosts(self, qry):
+        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?query=hostname:" + qry +
+                               "?key=" + self.opts['api_key'],
+                               timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        if res['content'] is None:
+            self.sf.info("No SHODAN info found for " + qry)
+            return None
+
+        try:
+            info = json.loads(res['content'])
+        except Exception as e:
+            self.sf.error("Error processing JSON response from SHODAN.", False)
+            return None
+
+        return info
+
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -94,6 +112,14 @@ class sfp_shodan(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
+        if eventName == "DOMAIN_NAME":
+            hosts = self.searchHosts(eventData)
+            if hosts is None:
+                return None
+            
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(hosts), self.__name__, event)
+            self.notifyListeners(evt)
+
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return None
@@ -116,6 +142,9 @@ class sfp_shodan(SpiderFootPlugin):
             rec = self.query(addr)
             if rec is None:
                 continue
+
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(rec), self.__name__, event)
+            self.notifyListeners(evt)
 
             if self.checkForStop():
                 return None
