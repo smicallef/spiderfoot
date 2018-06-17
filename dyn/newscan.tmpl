@@ -78,8 +78,13 @@
         </table>
 
         <table class="table table-striped table-condensed" id="moduletable" style='display: none'>
-            % for item in sorted(modules):
-
+            <%
+            modlist = dict()
+            for item in modules:
+                modlist[modules[item]['name']] = item
+            %>
+            % for it in sorted(modlist, key=lambda v: v.upper()):
+                <% item = modlist[it] %>
                 <% keylist = dict((k, v) for k, v in modules[item]['opts'].iteritems() if not k.startswith('_')) %>
                 <% keyicon = "" %>
                 % if len(keylist) > 0:
