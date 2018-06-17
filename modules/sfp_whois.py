@@ -72,6 +72,11 @@ class sfp_whois(SpiderFootPlugin):
             self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
             return None
 
+        # This is likely to be an error about being throttled rather than real data
+        if len(data) < 250:
+            self.sf.error("Throttling from Whois is probably happening.", False)
+            return None
+
         if eventName.startswith("DOMAIN_NAME"):
             typ = "DOMAIN_WHOIS"
         if eventName.startswith("NETBLOCK"):
