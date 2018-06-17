@@ -23,7 +23,6 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'onlyactive': True,
         'validatereverse': True,
         'skipcommononwildcard': True,
         'netblocklookup': True,
@@ -33,7 +32,6 @@ class sfp_dnsresolve(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'skipcommononwildcard': "If wildcard DNS is detected, only attempt to look up the first common sub-domain from the common sub-domain list.",
-        'onlyactive': "Only report sub-domains/hostnames that resolve to an IP.",
         'validatereverse': "Validate that reverse-resolved hostnames still resolve back to that IP before considering them as aliases of your target.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
         'maxnetblock': "Maximum owned netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
@@ -325,8 +323,15 @@ class sfp_dnsresolve(SpiderFootPlugin):
             else:
                 htype = "INTERNET_NAME"
 
-        if htype.endswith("INTERNET_NAME") and self.opts['onlyactive']:
-            if len(self.resolveHost(host)) == 0:
+        if htype.endswith("INTERNET_NAME"):
+            resolved = len(self.resolveHost(host)) > 0
+            if htype == "INTERNET_NAME" and not resolved:
+                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host,
+                                      self.__name__, parentEvent)
+                self.notifyListeners(evt)
+                return None
+
+            if not resolved:
                 return None
 
         # Report the host
