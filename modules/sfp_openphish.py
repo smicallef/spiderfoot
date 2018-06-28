@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_openphish
-# Purpose:      Checks if an ASN, IP or domain is malicious.
+# Purpose:      Checks if an ASN, IP or domain is malicious by checking OpenPhish.com.
 #
 # Author:       steve@binarypool.com
 #
-# Created:     14/12/2013
-# Copyright:   (c) Steve Micallef, 2013
+# Created:     28/06/2018
+# Copyright:   (c) Steve Micallef, 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
