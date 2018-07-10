@@ -456,7 +456,7 @@ class SpiderFootWebUi:
         if confirm is not None:
             dbh.scanInstanceDelete(id)
             if not raw:
-                raise cherrypy.HTTPRedirect("/")
+                raise cherrypy.HTTPRedirect(self.docroot)
             else:
                 return json.dumps(["SUCCESS", ""])
         else:
@@ -483,7 +483,7 @@ class SpiderFootWebUi:
         if confirm is not None:
             for id in ids.split(','):
                 dbh.scanInstanceDelete(id)
-            raise cherrypy.HTTPRedirect("/")
+            raise cherrypy.HTTPRedirect(self.docroot)
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
             return templ.render(id=None, name=None, ids=ids.split(','), names=names, 
