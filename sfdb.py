@@ -177,6 +177,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('SEARCH_ENGINE_WEB_CONTENT', 'Search Engine''s Web Content', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('SOCIAL_MEDIA', 'Social Media Presence', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('SIMILARDOMAIN', 'Similar Domain', 0, 'ENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('SIMILARDOMAIN_WHOIS', 'Similar Domain - Whois', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('SOFTWARE_USED', 'Software Used', 0, 'SUBENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('SSL_CERTIFICATE_RAW', 'SSL Certificate - Raw Data', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('SSL_CERTIFICATE_ISSUED', 'SSL Certificate - Issued to', 0, 'ENTITY')",
