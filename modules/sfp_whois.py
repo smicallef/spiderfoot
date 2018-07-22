@@ -87,7 +87,7 @@ class sfp_whois(SpiderFootPlugin):
         if eventName.startswith("CO_HOSTED_SITE_DOMAIN"):
             typ = "CO_HOSTED_SITE_DOMAIN_WHOIS"
         if eventName == "SIMILARDOMAIN":
-            typ = "SIMILAR_DOMAIN_WHOIS"
+            typ = "SIMILARDOMAIN_WHOIS"
 
         rawevt = SpiderFootEvent(typ, data, self.__name__, event)
         self.notifyListeners(rawevt)
