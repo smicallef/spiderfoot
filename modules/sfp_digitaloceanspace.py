@@ -160,7 +160,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
             evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", bucket[0] + ":" + bucket[1], self.__name__, event)
             self.notifyListeners(evt)
             if bucket[2] != "0":
-                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET_OPEN", bucket[2] + " files found.", 
+                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET_OPEN", bucket[0] + ":" + bucket[1] + ": " + bucket[2] + " files found.", 
                                       self.__name__, evt)
                 self.notifyListeners(evt)
 
