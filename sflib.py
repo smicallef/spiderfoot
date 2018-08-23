@@ -1616,7 +1616,7 @@ class SpiderFootTarget(object):
     # Get all domains associated with the target
     def getNames(self):
         e = self._getEquivalents("INTERNET_NAME")
-        if self.targetType == "INTERNET_NAME":
+        if self.targetType == "INTERNET_NAME" and self.targetValue.lower() not in e:
             e.append(self.targetValue.lower())
         return e
 
