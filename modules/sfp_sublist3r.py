@@ -64,7 +64,7 @@ class sfp_sublist3r(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["INTERNET_NAME"]
+        return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
 
     def query(self, qry):
         url = "https://api.sublist3r.com/search.php?domain=" + qry
@@ -107,7 +107,10 @@ class sfp_sublist3r(SpiderFootPlugin):
             for res in ret:
                 if self.opts['verify']:
                     if not self.resolveHost(res):
+                        e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", res, self.__name__, event)
+                        self.notifyListeners(e)
                         continue
+
                 e = SpiderFootEvent("INTERNET_NAME", res, self.__name__, event)
                 self.notifyListeners(e)
 

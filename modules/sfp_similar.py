@@ -85,7 +85,7 @@ class sfp_similar(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "INTERNET_NAME"]
+        return ["DOMAIN_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events

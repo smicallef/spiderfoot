@@ -78,7 +78,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["IP_ADDRESS", "INTERNET_NAME", "IPV6_ADDRESS"]
+        return ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -109,7 +109,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
             name = srv + "." + eventData
 
             # Skip hosts we've processed already
-            if self.sf.hashstring(name) in self.events.keys():
+            if self.sf.hashstring(name) in self.events:
                 continue
 
             try:
@@ -121,9 +121,14 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
                 # Strip off the trailing .
                 tgt_clean = a.target.to_text().rstrip(".")
                 # Report the host
-                evt = SpiderFootEvent("INTERNET_NAME", tgt_clean,
-                                      self.__name__, parentEvent)
-                self.notifyListeners(evt)
+                if self.getTarget().matches(tgt_clean):
+                    evt = SpiderFootEvent("INTERNET_NAME", tgt_clean,
+                                          self.__name__, parentEvent)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", tgt_clean,
+                                          self.__name__, parentEvent)
+                    self.notifyListeners(evt)
 
                 evt = SpiderFootEvent("DNS_SRV", name,
                                       self.__name__, parentEvent)

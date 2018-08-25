@@ -61,16 +61,12 @@ class sfp_alienvault(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
-                "CO_HOSTED_SITE", "NETBLOCK_OWNER", "NETBLOCK_MEMBER",
-                "AFFILIATE_INTERNET_NAME", "IPV6_ADDRESS"]
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR", 
+                "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
-                "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-                "CO_HOSTED_SITE"]
+        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK" ]
 
     def query(self, qry, querytype):
         ret = None
@@ -106,6 +102,7 @@ class sfp_alienvault(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
+            print str(res['content'])
             self.sf.error("Error processing JSON response from AlienVault OTX.", False)
             return None
 
@@ -196,12 +193,6 @@ class sfp_alienvault(SpiderFootPlugin):
                 evtType = 'MALICIOUS_IPADDR'
             if eventName == "AFFILIATE_IPADDR":
                 evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-            if eventName == "INTERNET_NAME":
-                evtType = "MALICIOUS_INTERNET_NAME"
-            if eventName == 'AFFILIATE_INTERNET_NAME':
-                evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-            if eventName == 'CO_HOSTED_SITE':
-                evtType = 'MALICIOUS_COHOST'
 
             rec = self.query(addr, "reputation")
             if rec is not None:
