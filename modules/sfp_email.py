@@ -93,7 +93,7 @@ class sfp_email(SpiderFootPlugin):
 
             # Get the domain and strip potential ending .
             mailDom = match.lower().split('@')[1].strip('.')
-            if not self.getTarget().matches(mailDom):
+            if not self.getTarget().matches(mailDom) and not self.getTarget().matches(match):
                 self.sf.debug("External domain, so possible affiliate e-mail")
                 # Raw RIR data returning external e-mails generates way
                 # too much noise.
