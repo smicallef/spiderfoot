@@ -24,21 +24,25 @@ class sfp_bingsharedip(SpiderFootPlugin):
     opts = {
         'cohostsamedomain': False,
         'pages': 20,
-        'verify': True
+        'verify': True,
+        'maxcohost': 100
     }
 
     # Option descriptions
     optdescs = {
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
         'pages': "How many pages of results to iterate through.",
-        'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP."
+        'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
+        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
 
-    results = list()
+    results = dict()
+    cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
+        self.cohostcount = 0
         self.__dataSource__ = "Bing"
 
         for opt in userOpts.keys():
@@ -77,7 +81,6 @@ class sfp_bingsharedip(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         self.currentEventSrc = event
-
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
@@ -85,15 +88,18 @@ class sfp_bingsharedip(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
 
+        if self.cohostcount > self.opts['maxcohost']:
+            return None
+
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
                 if str(ipaddr) not in self.results:
                     qrylist.append(str(ipaddr))
-                    self.results.append(str(ipaddr))
+                    self.results[str(ipaddr)] = True
         else:
             qrylist.append(eventData)
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         myres = list()
 
@@ -125,6 +131,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
                             continue
                         evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
                         self.notifyListeners(evt)
+                        self.cohostcount += 1
                         myres.append(site)
 
                 # Submit the bing results for analysis

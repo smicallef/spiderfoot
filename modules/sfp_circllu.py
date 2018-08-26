@@ -27,7 +27,8 @@ class sfp_circllu(SpiderFootPlugin):
         "api_key_password": "",
         "age_limit_days": 0,
         "verify": True,
-        "cohostsamedomain": False
+        "cohostsamedomain": False,
+        "maxcohost": 100
     }
 
     # Option descriptions
@@ -36,7 +37,8 @@ class sfp_circllu(SpiderFootPlugin):
         "api_key_password": "CIRCL.LU password.",
         "age_limit_days": "Ignore any Passive DNS records older than this many days. 0 = unlimited.",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
-        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?"
+        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
+        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -44,10 +46,12 @@ class sfp_circllu(SpiderFootPlugin):
 
     results = dict()
     errorState = False
+    cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.cohostcount = 0
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -222,7 +226,9 @@ class sfp_circllu(SpiderFootPlugin):
                             self.sf.debug("Skipping " + co + " because it is on the same domain.")
                             continue
 
-                    e = SpiderFootEvent("CO_HOSTED_SITE", co, self.__name__, event)
-                    self.notifyListeners(e)
+                    if self.cohostcount < self.opts['maxcohost']:
+                        e = SpiderFootEvent("CO_HOSTED_SITE", co, self.__name__, event)
+                        self.notifyListeners(e)
+                        self.cohostcount += 1
 
 # End of sfp_circllu class

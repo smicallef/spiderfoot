@@ -29,7 +29,8 @@ class sfp_robtex(SpiderFootPlugin):
         'maxnetblock': 24,
         'subnetlookup': True,
         'maxsubnet': 24,
-        'cohostsamedomain': False
+        'cohostsamedomain': False,
+        'maxcohost': 100
     }
 
     # Option descriptions
@@ -39,14 +40,17 @@ class sfp_robtex(SpiderFootPlugin):
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of for identifying co-hosts?",
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?"
+        'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
+        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
 
-    results = list()
+    results = dict()
+    cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
+        self.cohostcount = 0
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -87,6 +91,9 @@ class sfp_robtex(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.cohostcount > self.opts['maxcohost']:
+            return None
+
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
@@ -116,10 +123,10 @@ class sfp_robtex(SpiderFootPlugin):
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))
-                self.results.append(str(ipaddr))
+                self.results[str(ipaddr)] = True
         else:
             qrylist.append(eventData)
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         myres = list()
 
@@ -165,5 +172,6 @@ class sfp_robtex(SpiderFootPlugin):
                         continue
                     evt = SpiderFootEvent("CO_HOSTED_SITE", r['o'], self.__name__, event)
                     self.notifyListeners(evt)
+                    self.cohostcount += 1
 
 # End of sfp_robtex class

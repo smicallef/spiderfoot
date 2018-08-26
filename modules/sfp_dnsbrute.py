@@ -14,37 +14,46 @@
 import socket
 import re
 import dns
+import random
+import threading
 import urllib2
+import time
 from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsbrute(SpiderFootPlugin):
-    """DNS Brute-force:Footprint,Investigate:DNS::Attempts to identify hostnames through brute-forcing common names."""
+    """DNS Brute-force:Footprint,Investigate:DNS::Attempts to identify hostnames through brute-forcing common names and iterations."""
 
 
     # Default options
     opts = {
         "skipcommonwildcard": True,
         "domainonly": True,
-        "commonsubs": ["www", "web", "ns", "mail", "dns", "mx", "gw", "proxy",
-                       "ssl", "fw", "gateway", "firewall", "www1", "www2",
-                       "ns0", "ns1", "ns2", "dns0", "dns1", "dns2", "mx1", "mx2"
-                       ]  # Common sub-domains to try.
-
+        "commons": True,
+        "top10000": False,
+        "numbersuffix": True,
+        "numbersuffixlimit": True,
+        "maxthreads": 20
     }
 
     # Option descriptions
     optdescs = {
         'skipcommonwildcard': "If wildcard DNS is detected, only attempt to look up the first common sub-domain from the common sub-domain list.",
         'domainonly': "Only attempt to brute-force names on domain names, not hostnames (some hostnames are also sub-domains).",
-        'commonsubs': "Common sub-domains to try to resolve on the target subdomain/domain. Prefix with an '@' to iterate through a file containing sub-domains to try (one per line), e.g. @C:\subdomains.txt or @/home/bob/subdomains.txt. Or supply a URL to load the list from there."
+        'commons': "Try a list of about 750 common hostnames/sub-domains.",
+        'top10000': "Try a further 10,000 common hostnames/sub-domains. Will make the scan much slower.",
+        'numbersuffix': "For any host found, try appending 1, 01, 001, -1, -01, -001, 2, 02, etc. (up to 10)",
+        'numbersuffixlimit': "Limit using the number suffixes for hosts that have already been resolved? If disabled this will significantly extend the duration of scans.",
+        'maxthreads': "Maximum number of concurrent resolution attempts."
     }
 
     events = dict()
     resolveCache = dict()
+    sublist = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
+        self.sublist = dict()
         self.events = dict()
         self.resolveCache = dict()
         self.__dataSource__ = "DNS"
@@ -52,17 +61,28 @@ class sfp_dnsbrute(SpiderFootPlugin):
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
-        self.sublist = self.opts['commonsubs']
-        # User may have supplied a file or URL containing the subdomains
-        if self.opts['commonsubs'][0].startswith("http://") or \
-                self.opts['commonsubs'][0].startswith("https://") or \
-                self.opts['commonsubs'][0].startswith("@"):
-            self.sublist = self.sf.optValueToData(self.opts['commonsubs'][0])
+        cslines = list()
+        if self.opts['commons']:
+            cs = open(self.sf.myPath() + "/ext/subdomains.txt", 'r')
+            cslines = cs.readlines()
+            for s in cslines:
+                s = s.strip()
+                self.sublist[s] = True
 
+        ttlines = list()
+        if self.opts['top10000']:
+            tt = open(self.sf.myPath() + "/ext/subdomains-10000.txt", 'r')
+            ttlines = tt.readlines()
+            for s in ttlines:
+                s = s.strip()
+                self.sublist[s] = True
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['INTERNET_NAME', 'DOMAIN_NAME']
+        ret = ['DOMAIN_NAME']
+        if not self.opts['domainonly'] or self.opts['numbersuffix']:
+            ret.append('INTERNET_NAME')
+        return ret
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -86,6 +106,55 @@ class sfp_dnsbrute(SpiderFootPlugin):
             self.sf.debug("Unable to resolve " + hostname + " (" + str(e) + ")")
             return list()
 
+    def tryHost(self, name):
+        resolver = dns.resolver.Resolver()
+        resolver.timeout = 2
+        resolver.lifetime = 2
+        resolver.search = list()
+
+        try:
+            addrs = resolver.query(name)
+            self.hostResults[name] = True
+        except BaseException as e:
+            self.hostResults[name] = False
+
+    def tryHostWrapper(self, hostList, sourceEvent):
+        self.hostResults = dict()
+        running = True
+        i = 0
+        t = []
+
+        # Spawn threads for scanning
+        self.sf.info("Spawning threads to check hosts: " + str(hostList))
+        for name in hostList:
+            tn = 'sfp_dnsbrute_' + str(random.randint(0, 999999999))
+            t.append(threading.Thread(name=tn, target=self.tryHost, args=(name,)))
+            t[i].start()
+            i += 1
+
+        # Block until all threads are finished
+        while running:
+            found = False
+            for rt in threading.enumerate():
+                if rt.name.startswith("sfp_dnsbrute_"):
+                    found = True
+
+            if not found:
+                running = False
+
+            time.sleep(0.25)
+
+        for res in self.hostResults:
+            if self.hostResults.get(res, False):
+                self.sendEvent(sourceEvent, res)
+
+    # Store the result internally and notify listening modules
+    def sendEvent(self, source, result):
+        self.sf.info("Found a brute-forced host: " + result)
+        # Report the host
+        evt = SpiderFootEvent("INTERNET_NAME", result, self.__name__, source)
+        self.notifyListeners(evt)
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -96,38 +165,83 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['domainonly'] and eventName == "INTERNET_NAME":
-            return None
-
         if eventDataHash in self.events:
             return None
-
         self.events[eventDataHash] = True
 
+        if eventName == "INTERNET_NAME" and not self.getTarget().matches(eventData, includeChildren=False):
+            if not self.opts['numbersuffix']:
+                return None
+
+            if self.checkForStop():
+                return None
+
+            h, dom = eventData.split(".", 1)
+            dom = "." + dom
+            nextsubs = dict()
+            for i in range(0, 9):
+                nextsubs[h + str(i) + dom] = True
+                nextsubs[h + "0" + str(i) + dom] = True
+                nextsubs[h + "00" + str(i) + dom] = True
+                nextsubs[h + "-" + str(i) + dom] = True
+                nextsubs[h + "-0" + str(i) + dom] = True
+                nextsubs[h + "-00" + str(i) + dom] = True
+
+            self.tryHostWrapper(nextsubs.keys(), event)
+
+            # The rest of the module is for handling targets only
+            return None
+
+        # Only for the target, from this point forward...
+        if not self.getTarget().matches(eventData, includeChildren=False):
+            return None
+
+        # Try resolving common names
         self.sf.debug("Iterating through possible sub-domains.")
         wildcard = self.sf.checkDnsWildcard(eventData)
         if self.opts['skipcommonwildcard'] and wildcard:
             self.sf.debug("Wildcard DNS detected.")
             return None
 
-        # Try resolving common names
+        targetList = list()
         for sub in self.sublist:
             if self.checkForStop():
                 return None
 
-            if sub == "":
-                continue
+            name = sub + "." + eventData
+
+            if len(targetList) <= self.opts['maxthreads']:
+                targetList.append(name)
             else:
-                name = sub + "." + eventData
+                self.tryHostWrapper(targetList, event)
+                targetList = list()
 
-            # Skip hosts we've processed already
-            if self.sf.hashstring(name) in self.events.keys():
-                continue
+        # Scan whatever may be left over.
+        if len(targetList) > 0:
+            self.tryHostWrapper(targetList, event)
 
-            if len(self.resolveHost(name)) > 0:
-                # Report the host
-                evt = SpiderFootEvent("INTERNET_NAME", name, 
-                                      self.__name__, parentEvent)
-                self.notifyListeners(evt)
+        if self.opts['numbersuffix'] and not self.opts['numbersuffixlimit']:
+            nextsubs = dict()
+            dom = "." + eventData
+            for s in self.sublist:
+                if self.checkForStop():
+                    return None
+
+                for i in range(0, 9):
+                    nextsubs[s + str(i) + dom] = True
+                    nextsubs[s + "0" + str(i) + dom] = True
+                    nextsubs[s + "00" + str(i) + dom] = True
+                    nextsubs[s + "-" + str(i) + dom] = True
+                    nextsubs[s + "-0" + str(i) + dom] = True
+                    nextsubs[s + "-00" + str(i) + dom] = True
+
+                if len(nextsubs.keys()) >= self.opts['maxthreads']:
+                    self.tryHostWrapper(nextsubs.keys(), event)
+                    nextsubs = dict()
+
+            # Scan whatever may be left over.
+            if len(nextsubs) > 0:
+                self.tryHostWrapper(nextsubs.keys(), event)
+
 
 # End of sfp_dnsbrute class

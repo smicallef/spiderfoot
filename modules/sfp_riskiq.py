@@ -27,7 +27,8 @@ class sfp_riskiq(SpiderFootPlugin):
         "api_key_login": "",
         "api_key_password": "",
         "verify": True,
-        "cohostsamedomain": False
+        "cohostsamedomain": False,
+        'maxcohost': 100
     }
 
     # Option descriptions
@@ -35,7 +36,8 @@ class sfp_riskiq(SpiderFootPlugin):
         "api_key_login": "RiskIQ login.",
         "api_key_password": "RiskIQ API Key.",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
-        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?"
+        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
+        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -43,10 +45,12 @@ class sfp_riskiq(SpiderFootPlugin):
 
     results = dict()
     errorState = False
+    cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.cohostcount = 0
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -216,7 +220,9 @@ class sfp_riskiq(SpiderFootPlugin):
                         self.notifyListeners(e)
                         continue
 
-                e = SpiderFootEvent("CO_HOSTED_SITE", co, self.__name__, event)
-                self.notifyListeners(e)
+                if self.cohostcount < self.opts['maxcohost']:
+                    e = SpiderFootEvent("CO_HOSTED_SITE", co, self.__name__, event)
+                    self.notifyListeners(e)
+                    self.cohostcount += 1
 
 # End of sfp_riskiq class

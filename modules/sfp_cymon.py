@@ -28,7 +28,8 @@ class sfp_cymon(SpiderFootPlugin):
         'netblocklookup': True,
         'maxnetblock': 24,
         'subnetlookup': True,
-        'maxsubnet': 24
+        'maxsubnet': 24,
+        'maxcohost': 100
     }
 
     # Option descriptions
@@ -38,7 +39,8 @@ class sfp_cymon(SpiderFootPlugin):
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -46,10 +48,12 @@ class sfp_cymon(SpiderFootPlugin):
 
     results = dict()
     errorState = False
+    cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.cohostcount = 0
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -179,8 +183,10 @@ class sfp_cymon(SpiderFootPlugin):
                         self.sf.debug("Record found but too old, skipping.")
                         continue
                     else:
-                        e = SpiderFootEvent(evtType, host, self.__name__, event)
-                        self.notifyListeners(e)
+                        if self.cohostcount < self.opts['maxcohost']:
+                            e = SpiderFootEvent(evtType, host, self.__name__, event)
+                            self.notifyListeners(e)
+                            self.cohostcount += 1
 
         for addr in qrylist:
             if self.checkForStop():
