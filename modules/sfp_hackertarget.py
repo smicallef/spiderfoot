@@ -25,7 +25,8 @@ class sfp_hackertarget(SpiderFootPlugin):
         'cohostsamedomain': False,
         'verify': True,
         'netblocklookup': True,
-        'maxnetblock': 24
+        'maxnetblock': 24,
+        'maxcohost': 100
     }
 
     # Option descriptions
@@ -33,14 +34,17 @@ class sfp_hackertarget(SpiderFootPlugin):
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
         'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
-        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
 
-    results = list()
+    results = dict()
+    cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
+        self.cohostcount = 0
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -101,10 +105,10 @@ class sfp_hackertarget(SpiderFootPlugin):
             for ipaddr in IPNetwork(eventData):
                 if str(ipaddr) not in self.results:
                     qrylist.append(str(ipaddr))
-                    self.results.append(str(ipaddr))
+                    self.results[str(ipaddr)] = True
         else:
             qrylist.append(eventData)
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         myres = list()
 
@@ -134,8 +138,10 @@ class sfp_hackertarget(SpiderFootPlugin):
                         if self.opts['verify'] and not self.validateIP(h, ip):
                             self.sf.debug("Host no longer resolves to our IP.")
                             continue
-                        evt = SpiderFootEvent("CO_HOSTED_SITE", h.lower(), self.__name__, event)
-                        self.notifyListeners(evt)
-                        myres.append(h.lower())
+                        if self.cohostcount < self.opts['maxcohost']:
+                            evt = SpiderFootEvent("CO_HOSTED_SITE", h.lower(), self.__name__, event)
+                            self.notifyListeners(evt)
+                            myres.append(h.lower())
+                            self.cohostcount += 1
 
 # End of sfp_hackertarget class
