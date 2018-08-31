@@ -78,7 +78,7 @@ class sfp_ipstack(SpiderFootPlugin):
             self.sf.debug("Error processing JSON response.")
             return None
 
-        if 'country_name' in hostip:
+        if hostip.get('country_name', None) != None:
             self.sf.info("Found GeoIP for " + eventData + ": " + hostip['country_name'])
             countrycity = hostip['country_name']
 
