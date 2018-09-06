@@ -45,6 +45,20 @@ malchecks = {
         'checks': ['ip'],
         'url': 'https://sslbl.abuse.ch/blacklist/sslipblacklist.csv',
         'regex': '{0},.*'
+    },
+    'abuse.ch URLhaus (Domain)': {
+        'id': 'abuseurlhaus',
+        'type': 'list',
+        'checks': ['domain'],
+        'url': 'https://urlhaus.abuse.ch/downloads/csv/',
+        'regex': '.*//{0}/.*'
+    },
+    'abuse.ch Ransomware Blocklist (Domain)': {
+        'id': 'abuseransomdom',
+        'type': 'list',
+        'checks': ['domain'],
+        'url': 'https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt',
+        'regex': '^{0}$'
     }
 }
 
@@ -59,6 +73,8 @@ class sfp_abusech(SpiderFootPlugin):
         'abusefeododomain': True,
         'abusefeodoip': True,
         'abusesslblip': True,
+        'abuseurlhaus': True,
+        'abuseransomdom': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18,
@@ -73,6 +89,8 @@ class sfp_abusech(SpiderFootPlugin):
         'abusefeododomain': "Enable abuse.ch Feodo domain check?",
         'abusefeodoip': "Enable abuse.ch Feodo IP check?",
         'abusesslblip': "Enable abuse.ch SSL Backlist IP check?",
+        'abuseurlhaus': "Enable abuse.ch URLhaus check?",
+        'abuseransomdom': "Enable abuse.ch Ransom Domains check?",
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
@@ -83,11 +101,11 @@ class sfp_abusech(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -246,7 +264,7 @@ class sfp_abusech(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None
