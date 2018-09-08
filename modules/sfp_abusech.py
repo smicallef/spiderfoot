@@ -42,7 +42,7 @@ malchecks = {
     'abuse.ch SSL Blacklist (IP)': {
         'id': 'abusesslblip',
         'type': 'list',
-        'checks': ['ip'],
+        'checks': ['ip', 'netblock'],
         'url': 'https://sslbl.abuse.ch/blacklist/sslipblacklist.csv',
         'regex': '{0},.*'
     },

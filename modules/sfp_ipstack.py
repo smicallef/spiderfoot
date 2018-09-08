@@ -23,7 +23,7 @@ class sfp_ipstack(SpiderFootPlugin):
         "api_key": ""
     }
     optdescs = {
-        "api_key": "Your ipstack.com API key."
+        "api_key": "Ipstack.com API key."
     }
     results = None
     errorState = False
