@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_cinsscore
-# Purpose:      Checks if an IP is malicious according to the CINS Army List.
+# Name:         sfp_bambenek
+# Purpose:      Checks if an IP, hostname or domain is malicious.
 #
 # Author:       steve@binarypool.com
 #
-# Created:     30/05/2018
+# Created:     07/09/2018
 # Copyright:   (c) Steve Micallef, 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
@@ -15,23 +15,32 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-    'cinsscore.com List': {
-        'id': '_cinsscore',
+    'Bambenek C&C IP List': {
+        'id': 'bambip',
         'type': 'list',
         'checks': ['ip', 'netblock'],
-        'url': 'http://cinsscore.com/list/ci-badguys.txt'
+        'url': 'http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist.txt',
+        'regex': '^{0},.*'
+    },
+    'Bambenek C&C Domain List': {
+        'id': 'bambdom',
+        'type': 'list',
+        'checks': ['domain'],
+        'url': 'http://osint.bambenekconsulting.com/feeds/c2-dommasterlist.txt',
+        'regex': '^{0},.*'
     }
 }
 
-
-class sfp_cinsscore(SpiderFootPlugin):
-    """CINS Army List:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to cinsscore.com's Army List."""
+class sfp_bambenek(SpiderFootPlugin):
+    """Bambenek C&C List:Investigate,Passive:Reputation Systems::Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists."""
 
 
     # Default options
     opts = {
-        '_cinsscore': True,
+        'bambip': True,
+        'bambdom': True,
         'checkaffiliates': True,
+        'checkcohosts': True,
         'cacheperiod': 18,
         'checknetblocks': True,
         'checksubnets': True
@@ -39,7 +48,10 @@ class sfp_cinsscore(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
+        'bambip': "Enable Bambenek IP check?",
+        'bambdom': "Enable Bambenek Domains check?",
         'checkaffiliates': "Apply checks to affiliates?",
+        'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
         'checknetblocks': "Report if any malicious IPs are found within owned netblocks?",
         'checksubnets': "Check if any malicious IPs are found within the same subnet of the target?"
@@ -48,11 +60,11 @@ class sfp_cinsscore(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -63,15 +75,17 @@ class sfp_cinsscore(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_MEMBER", "AFFILIATE_IPADDR",
-                "NETBLOCK_OWNER"]
+        return ["INTERNET_NAME", "IP_ADDRESS",
+                "NETBLOCK_MEMBER", "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
+                "CO_HOSTED_SITE", "NETBLOCK_OWNER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR",
-                "MALICIOUS_SUBNET", "MALICIOUS_NETBLOCK"]
+        return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
+                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME",
+                "MALICIOUS_SUBNET", "MALICIOUS_COHOST", "MALICIOUS_NETBLOCK"]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
@@ -209,7 +223,7 @@ class sfp_cinsscore(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None
@@ -231,10 +245,6 @@ class sfp_cinsscore(SpiderFootPlugin):
                         evtType = 'MALICIOUS_IPADDR'
                     else:
                         evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-
-                if eventName in ['BGP_AS_OWNER', 'BGP_AS_MEMBER']:
-                    typeId = 'asn'
-                    evtType = 'MALICIOUS_ASN'
 
                 if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE',
                                  'AFFILIATE_INTERNET_NAME', ]:
@@ -265,4 +275,4 @@ class sfp_cinsscore(SpiderFootPlugin):
 
         return None
 
-# End of sfp_cinsscore class
+# End of sfp_bambenek class

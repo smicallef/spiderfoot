@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_cinsscore
-# Purpose:      Checks if an IP is malicious according to the CINS Army List.
+# Name:         sfp_cleantalk
+# Purpose:      Checks if an ASN, IP or domain is malicious.
 #
 # Author:       steve@binarypool.com
 #
-# Created:     30/05/2018
+# Created:     05/08/2018
 # Copyright:   (c) Steve Micallef, 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
@@ -15,22 +15,22 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-    'cinsscore.com List': {
-        'id': '_cinsscore',
+    'CleanTalk Spam List': {
+        'id': '_cleantalk',
         'type': 'list',
         'checks': ['ip', 'netblock'],
-        'url': 'http://cinsscore.com/list/ci-badguys.txt'
+        'url': 'https://iplists.firehol.org/files/cleantalk_7d.ipset',
+        'regex': '^{0}$'
     }
 }
 
 
-class sfp_cinsscore(SpiderFootPlugin):
-    """CINS Army List:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to cinsscore.com's Army List."""
-
+class sfp_cleantalk(SpiderFootPlugin):
+    """CleanTalk Spam List:Investigate,Passive:Reputation Systems::Check if an IP is on CleanTalk.org's spam IP list."""
 
     # Default options
     opts = {
-        '_cinsscore': True,
+        '_cleantalk': True,
         'checkaffiliates': True,
         'cacheperiod': 18,
         'checknetblocks': True,
@@ -48,11 +48,11 @@ class sfp_cinsscore(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -209,7 +209,7 @@ class sfp_cinsscore(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None
@@ -265,4 +265,4 @@ class sfp_cinsscore(SpiderFootPlugin):
 
         return None
 
-# End of sfp_cinsscore class
+# End of sfp_cleantalk class
