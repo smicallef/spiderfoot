@@ -18,7 +18,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_whois(SpiderFootPlugin):
     """Whois:Footprint,Investigate,Passive:Public Registries::Perform a WHOIS look-up on domain names and owned netblocks."""
 
-
     # Default options
     opts = {
     }
@@ -27,12 +26,12 @@ class sfp_whois(SpiderFootPlugin):
     optdescs = {
     }
 
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
 
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -59,19 +58,25 @@ class sfp_whois(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         try:
-            rawwhois = pythonwhois.net.get_whois_raw(eventData)
-            try:
-                data = unicode('\n'.join(rawwhois), 'utf-8', errors='replace')
-            except BaseException as e:
-                    data = '\n'.join(rawwhois)
+            whoisdata = pythonwhois.net.get_whois_raw(eventData)
+            data = '\n'.join(whoisdata)
         except BaseException as e:
             self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
             return None
+
+        # Sometimes WHOIS servers refer to another server for more information..
+        try:
+            for k,v in pythonwhois.parse.parse_raw_whois(whoisdata, True).items():
+                if "whois" in k.lower():
+                    rawdata = pythonwhois.net.get_whois_raw(eventData, server=v[0])
+                    data += "\n" + '\n'.join(rawdata)
+        except BaseException as e:
+            self.sf.error("Couldn't contact alternative WHOIS server.", False)
 
         # This is likely to be an error about being throttled rather than real data
         if len(data) < 250:
@@ -93,7 +98,7 @@ class sfp_whois(SpiderFootPlugin):
         self.notifyListeners(rawevt)
 
         try:
-            info = pythonwhois.parse.parse_raw_whois(rawwhois, True)
+            info = pythonwhois.parse.parse_raw_whois(whoisdata, True)
             newinfo = {}
             for k, v in info.items():
                 newinfo[k.lower()] = v

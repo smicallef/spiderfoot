@@ -111,7 +111,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
                                        timeout=self.opts['_fetchtimeout'], 
                                        useragent=self.opts['_useragent'])
                 if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target), False)
+                    self.sf.error("Unable to fetch " + url.format(target, "masked", daysback), False)
                     return None
 
                 try:
