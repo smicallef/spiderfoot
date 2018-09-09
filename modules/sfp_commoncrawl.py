@@ -99,7 +99,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["LINKED_URL_INTERNAL"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -127,20 +127,18 @@ class sfp_commoncrawl(SpiderFootPlugin):
             return None
 
         for content in data:
-            # Submit the gresults for analysis
-            sevt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", content,
-                                  self.__name__, event)
-            self.notifyListeners(sevt)
-
             try:
                 for line in content.split("\n"):
+                    if self.checkForStop():
+                        return None
+
                     if len(line) < 2:
                         continue
                     link = json.loads(line)
                     if 'url' not in link:
                         continue
                     evt = SpiderFootEvent("LINKED_URL_INTERNAL", link['url'],
-                                          self.__name__, sevt)
+                                          self.__name__, event)
                     self.notifyListeners(evt)
             except BaseException as e:
                 self.sf.error("Malformed JSON from CommonCrawl.org: " + str(e), False)
