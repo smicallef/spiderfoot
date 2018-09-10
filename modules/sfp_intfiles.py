@@ -21,7 +21,6 @@ class sfp_intfiles(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'pages': 20,  # Number of search results pages to iterate
         'fileexts': ["doc", "docx", "ppt", "pptx", "pdf", 'xls', 'xlsx', 'zip']
     }
 
