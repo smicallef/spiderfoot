@@ -58,11 +58,17 @@ class sfp_company(SpiderFootPlugin):
         # Support up to three word company names with each starting with
         # a capital letter, allowing for hyphens brackets and numbers within.
         pattern_prefix = "(?=[,;:\'\">\(= ]|^)\s?([A-Z0-9\(\)][A-Za-z0-9\-&,][^ \"\';:><]*)?\s?([A-Z0-9\(\)][A-Za-z0-9\-&,]?[^ \"\';:><]*|[Aa]nd)?\s?([A-Z0-9\(\)][A-Za-z0-9\-&,]?[^ \"\';:><]*)?\s+"
-        pattern_match = [
+        pattern_match_re = [
             'LLC', 'L\.L\.C\.?', 'AG', 'A\.G\.?', 'GmbH', 'Pty\.?\s+Ltd\.?', 
             'Ltd\.?', 'Pte\.?', 'Inc\.?', 'INC\.?', 'Incorporated', 'Foundation',
             'Corp\.?', 'Corporation', 'SA', 'S\.A\.?', 'SIA', 'BV', 'B\.V\.?',
             'NV', 'N\.V\.?' 'PLC', 'Limited', 'Pvt\.?\s+Ltd\.?', 'SARL' ]
+        pattern_match = [
+            'LLC', 'L.L.C', 'AG', 'A.G', 'GmbH', 'Pty',
+            'Ltd', 'Pte', 'Inc', 'INC', 'Foundation',
+            'Corp', 'SA', 'S.A', 'SIA', 'BV', 'B.V',
+            'NV', 'N.V' 'PLC', 'Limited', 'Pvt.', 'SARL' ]
+
         pattern_suffix = "(?=[ \.,:<\)\'\"]|$)"
 
         # Filter out anything from the company name which matches the below
@@ -96,40 +102,59 @@ class sfp_company(SpiderFootPlugin):
         except BaseException as e:
                 self.sf.debug("Couldn't strip out O=, proceeding anyway...")
 
-        myres = list()
+        # Find chunks of text containing what might be a company name first.
+        # This is to avoid running very expensive regexps on large chunks of
+        # data.
+        chunks = list()
         for pat in pattern_match:
-            matches = re.findall(pattern_prefix + "(" + pat + ")" + pattern_suffix, eventData, re.MULTILINE)
-            for match in matches:
-                matched = 0
-                for m in match:
-                    if len(m) > 0:
-                        matched += 1
-                if matched <= 1:
-                    continue
+            start = 0
+            m = eventData.find(pat, start)
+            while m > 0:
+                start = m - 100
+                if start < 0:
+                    start = 0
+                end = m + 100
+                if end >= len(eventData):
+                    end = len(eventData)-1
+                chunks.append(eventData[start:end])
+                offset = m + len(pat)
+                m = eventData.find(pat, offset)
 
-                fullcompany = ""
-                for m in match:
-                    flt = False
-                    for f in filterpatterns:
-                        if re.match(f, m):
-                           flt = True 
-                    if not flt:
-                        fullcompany += m + " "
+        myres = list()
+        for chunk in chunks:
+            for pat in pattern_match_re:
+                matches = re.findall(pattern_prefix + "(" + pat + ")" + pattern_suffix, chunk, re.MULTILINE)
+                for match in matches:
+                    matched = 0
+                    for m in match:
+                        if len(m) > 0:
+                            matched += 1
+                    if matched <= 1:
+                        continue
 
-                fullcompany = re.sub("\s+", " ", fullcompany.strip())
-                
-                self.sf.info("Found company name: " + fullcompany)
-                if fullcompany in myres:
-                    self.sf.debug("Already found from this source.")
-                    continue
-                else:
-                    myres.append(fullcompany)
+                    fullcompany = ""
+                    for m in match:
+                        flt = False
+                        for f in filterpatterns:
+                            if re.match(f, m):
+                               flt = True 
+                        if not flt:
+                            fullcompany += m + " "
 
-                evt = SpiderFootEvent("COMPANY_NAME", fullcompany, self.__name__, event)
-                if event.moduleDataSource:
-                    evt.moduleDataSource = event.moduleDataSource
-                else:
-                    evt.moduleDataSource = "Unknown"
-                self.notifyListeners(evt)
+                    fullcompany = re.sub("\s+", " ", fullcompany.strip())
+                    
+                    self.sf.info("Found company name: " + fullcompany)
+                    if fullcompany in myres:
+                        self.sf.debug("Already found from this source.")
+                        continue
+                    else:
+                        myres.append(fullcompany)
+
+                    evt = SpiderFootEvent("COMPANY_NAME", fullcompany, self.__name__, event)
+                    if event.moduleDataSource:
+                        evt.moduleDataSource = event.moduleDataSource
+                    else:
+                        evt.moduleDataSource = "Unknown"
+                    self.notifyListeners(evt)
 
 # End of sfp_company class
