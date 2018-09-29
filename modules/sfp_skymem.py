@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_skymem
-# Purpose:      SpiderFoot plug-in for retrieving up to six e-mail addresses
+# Purpose:      SpiderFoot plug-in for retrieving up to 100 e-mail addresses
 #               belonging to your target from Skymem.
 #
 # Author:      Brendan Coles <bcoles@gmail.com>
@@ -60,17 +60,21 @@ class sfp_skymem(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if not eventName == "DOMAIN_NAME":
+            return None
+
         # Get e-mail addresses on this domain
-        if eventName == "DOMAIN_NAME":
-            res = self.sf.fetchUrl("http://www.skymem.info/srch?q=" + eventData, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl("http://www.skymem.info/srch?q=" + eventData, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
         if res['content'] is None:
             return None
 
+        evttype = "EMAILADDR"
+
+        # Extract emails from results page
         pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
         matches = re.findall(pat, res['content'])
         for match in matches:
-            evttype = "EMAILADDR"
             self.sf.debug("Found possible email: " + match)
 
             # Handle false positive matches
@@ -92,6 +96,54 @@ class sfp_skymem(SpiderFootPlugin):
             self.sf.info("Found e-mail address: " + match)
             evt = SpiderFootEvent(evttype, match, self.__name__, event)
             self.notifyListeners(evt)
+
+        # Loop through first 20 pages of results
+        domain_ids = re.findall(r'<a href="/domain/([a-z0-9]+)\?p=', res['content'])
+
+        if not domain_ids:
+            return None
+
+        domain_id = domain_ids[0]
+
+        for page in range(1, 21):
+            res = self.sf.fetchUrl("http://www.skymem.info/domain/" + domain_id + "?p=" + str(page), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+
+            if res['content'] is None:
+                break
+
+            pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
+            matches = re.findall(pat, res['content'])
+            for match in matches:
+                self.sf.debug("Found possible email: " + match)
+
+                # Handle false positive matches
+                if len(match) < 5:
+                    self.sf.debug("Likely invalid address.")
+                    continue
+
+                # Handle messed up encodings
+                if "%" in match:
+                    self.sf.debug("Skipped address: " + match)
+                    continue
+
+                # Skip unrelated emails
+                mailDom = match.lower().split('@')[1]
+                if not self.getTarget().matches(mailDom):
+                    self.sf.debug("Skipped address: " + match)
+                    continue
+
+                self.sf.info("Found e-mail address: " + match)
+                evt = SpiderFootEvent(evttype, match, self.__name__, event)
+                self.notifyListeners(evt)
+
+            # Check if we're on the last page of results
+            max_page = 0
+            pages = re.findall(r'/domain/' + domain_id + '\?p=(\d+)', res['content'])
+            for p in pages:
+                if int(p) >= max_page:
+                    max_page = int(p)
+            if page >= max_page:
+                break
 
         return None
 
