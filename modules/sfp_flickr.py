@@ -89,9 +89,6 @@ class sfp_flickr(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if not eventName == "DOMAIN_NAME":
-            return None
-
         # Retrieve API key
         api_key = self.retrieveApiKey()
 
