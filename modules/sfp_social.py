@@ -19,6 +19,7 @@ regexps = dict({
     "Github": list(['.*github.com/([a-zA-Z0-9_]+)\/']),
     "Google+": list(['.*plus.google.com/([0-9]+$)']),
     "Facebook": list(['.*facebook.com/([a-zA-Z0-9_]+$)']),
+    "MySpace": list(['https?://myspace.com/([a-zA-Z0-9_\.]+$)']),
     "YouTube": list(['.*youtube.com/([a-zA-Z0-9_]+$)']),
     "Twitter": list(['.*twitter.com/([a-zA-Z0-9_]{1,15}$)',
                      '.*twitter.com/#!/([a-zA-Z0-9_]{1,15}$)'
