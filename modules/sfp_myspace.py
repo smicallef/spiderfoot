@@ -60,14 +60,22 @@ class sfp_myspace(SpiderFootPlugin):
             if res['content'] is None:
                 return None
 
-            # The first result is the closest match, but whether it's an exact match is unknown.
-            # As such, we check for email address as name, at the risk of missed results.
-            profiles = re.findall(r'<a href="/([a-zA-Z0-9_]+)">' + email.lower() + '</a></h6>', res['content'].lower())
+            # Extract HTML containing potential profile matches
+            profiles = re.findall(r'<a href="/[a-zA-Z0-9_]+">[^<]+</a></h6>', res['content'])
 
             if not profiles:
                 return None
 
-            name = profiles[0]
+            # The first result is the closest match, but whether it's an exact match is unknown.
+            profile = profiles[0]
+
+            # Check for email address as name, at the risk of missed results.
+            matches = re.findall(r'<a href="/([a-zA-Z0-9_]+)">' + email, profile, re.IGNORECASE)
+
+            if not matches:
+                return None
+
+            name = matches[0]
 
             e = SpiderFootEvent("SOCIAL_MEDIA", "MySpace: " + name, self.__name__, event)
             self.notifyListeners(e)
