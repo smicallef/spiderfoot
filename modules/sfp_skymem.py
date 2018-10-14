@@ -19,7 +19,7 @@ class sfp_skymem(SpiderFootPlugin):
     """Skymem:Footprint,Investigate,Passive:Search Engines::Look up e-mail addresses on Skymem."""
 
 
-    results = list()
+    results = dict()
 
     # Default options
     opts = {
@@ -32,7 +32,7 @@ class sfp_skymem(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "Skymem"
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -56,12 +56,9 @@ class sfp_skymem(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-
-        if not eventName == "DOMAIN_NAME":
-            return None
 
         # Get e-mail addresses on this domain
         res = self.sf.fetchUrl("http://www.skymem.info/srch?q=" + eventData, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
@@ -69,11 +66,12 @@ class sfp_skymem(SpiderFootPlugin):
         if res['content'] is None:
             return None
 
-        evttype = "EMAILADDR"
-
         # Extract emails from results page
         pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
         matches = re.findall(pat, res['content'])
+        if not matches:
+            return None
+
         for match in matches:
             self.sf.debug("Found possible email: " + match)
 
@@ -94,8 +92,10 @@ class sfp_skymem(SpiderFootPlugin):
                 continue
 
             self.sf.info("Found e-mail address: " + match)
-            evt = SpiderFootEvent(evttype, match, self.__name__, event)
-            self.notifyListeners(evt)
+            if match not in self.results:
+                evt = SpiderFootEvent("EMAILADDR", match, self.__name__, event)
+                self.notifyListeners(evt)
+                self.results[match] = True
 
         # Loop through first 20 pages of results
         domain_ids = re.findall(r'<a href="/domain/([a-z0-9]+)\?p=', res['content'])
@@ -133,8 +133,10 @@ class sfp_skymem(SpiderFootPlugin):
                     continue
 
                 self.sf.info("Found e-mail address: " + match)
-                evt = SpiderFootEvent(evttype, match, self.__name__, event)
-                self.notifyListeners(evt)
+                if match not in self.results:
+                    evt = SpiderFootEvent("EMAILADDR", match, self.__name__, event)
+                    self.notifyListeners(evt)
+                    self.results[match] = True
 
             # Check if we're on the last page of results
             max_page = 0

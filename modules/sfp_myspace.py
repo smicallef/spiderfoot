@@ -26,7 +26,7 @@ class sfp_myspace(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "MySpace.com"
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -48,31 +48,36 @@ class sfp_myspace(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Search by email address
         if eventName == "EMAILADDR":
             email = eventData
-            res = self.sf.fetchUrl("https://myspace.com/search/people?q=" + email, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+            res = self.sf.fetchUrl("https://myspace.com/search/people?q=" + email, 
+                                   timeout=self.opts['_fetchtimeout'], 
+                                   useragent=self.opts['_useragent'])
 
             if res['content'] is None:
+                self.sf.error("Could not fetch MySpace content for " + email, False)
                 return None
 
             # Extract HTML containing potential profile matches
             profiles = re.findall(r'<a href="/[a-zA-Z0-9_]+">[^<]+</a></h6>', res['content'])
 
             if not profiles:
+                self.sf.debug("No profiles found with that e-mail.")
                 return None
 
             # The first result is the closest match, but whether it's an exact match is unknown.
             profile = profiles[0]
 
             # Check for email address as name, at the risk of missed results.
-            matches = re.findall(r'<a href="/([a-zA-Z0-9_]+)">' + email, profile, re.IGNORECASE)
+            matches = re.findall(r'<a href="/([a-zA-Z0-9_]+)">.[^<]*' + email, profile, re.IGNORECASE)
 
             if not matches:
+                self.sf.debug("No concrete match for that e-mail.")
                 return None
 
             name = matches[0]
@@ -89,7 +94,8 @@ class sfp_myspace(SpiderFootPlugin):
                 self.sf.debug("Skipping social network profile, " + name + ", as not a MySpace profile")
                 return None
 
-            res = self.sf.fetchUrl("https://myspace.com/" + name, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+            res = self.sf.fetchUrl("https://myspace.com/" + name, timeout=self.opts['_fetchtimeout'], 
+                                   useragent=self.opts['_useragent'])
 
             if res['content'] is None:
                 return None

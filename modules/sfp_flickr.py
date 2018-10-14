@@ -34,10 +34,12 @@ class sfp_flickr(SpiderFootPlugin):
         'maxpages': "Maximum number of pages of results to fetch."
     }
 
+    results = dict()
+
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "Flickr"
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -85,7 +87,7 @@ class sfp_flickr(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -161,9 +163,11 @@ class sfp_flickr(SpiderFootPlugin):
                         self.sf.debug("Skipped address: " + match)
                         continue
 
-                    self.sf.info("Found e-mail address: " + match)
-                    evt = SpiderFootEvent("EMAILADDR", match, self.__name__, event)
-                    self.notifyListeners(evt)
+                    if match not in self.results:
+                        self.sf.info("Found e-mail address: " + match)
+                        evt = SpiderFootEvent("EMAILADDR", match, self.__name__, event)
+                        self.notifyListeners(evt)
+                        self.results[match] = True
 
             page += 1
             time.sleep(self.opts['pause'])                                                                                                                                                                             

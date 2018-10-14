@@ -545,7 +545,8 @@ class SpiderFoot:
             "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
             "^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER",
             "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME",
-            "^.*@.*$": "EMAILADDR"
+            "^.*@.*$": "EMAILADDR",
+            "^\".*\"$": "HUMAN_NAME"
         }
 
         # Parse the target and set the targetType
@@ -1569,7 +1570,7 @@ class SpiderFootPlugin(object):
 # Class for targets
 class SpiderFootTarget(object):
     _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME",
-                   "EMAILADDR" ]
+                   "EMAILADDR", "HUMAN_NAME" ]
     targetType = None
     targetValue = None
     targetAliases = list()
@@ -1649,6 +1650,10 @@ class SpiderFootTarget(object):
 
         if value is None or value == "":
             return False
+
+        # We can't really say anything about names, so everything matches
+        if self.targetType == "HUMAN_NAME":
+            return True
 
         if netaddr.valid_ipv4(value):
             # 1.1

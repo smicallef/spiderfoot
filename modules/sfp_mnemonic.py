@@ -39,10 +39,13 @@ class sfp_mnemonic(SpiderFootPlugin):
         'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
     }
 
+    cohostcount = 0
+    results = None
+
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "Mnemonic PassiveDNS"
-        self.results = list()
+        self.results = dict()
         self.cohostcount = 0                                                                                                                                                                                       
 
         for opt in userOpts.keys():
@@ -130,7 +133,7 @@ class sfp_mnemonic(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
