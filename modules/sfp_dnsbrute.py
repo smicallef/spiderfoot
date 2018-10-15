@@ -38,7 +38,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'skipcommonwildcard': "If wildcard DNS is detected, only attempt to look up the first common sub-domain from the common sub-domain list.",
+        'skipcommonwildcard': "If wildcard DNS is detected, don't attempt brute-forcing.",
         'domainonly': "Only attempt to brute-force names on domain names, not hostnames (some hostnames are also sub-domains).",
         'commons': "Try a list of about 750 common hostnames/sub-domains.",
         'top10000': "Try a further 10,000 common hostnames/sub-domains. Will make the scan much slower.",
@@ -177,6 +177,12 @@ class sfp_dnsbrute(SpiderFootPlugin):
                 return None
 
             h, dom = eventData.split(".", 1)
+            # Try resolving common names
+            wildcard = self.sf.checkDnsWildcard(dom)
+            if self.opts['skipcommonwildcard'] and wildcard:
+                self.sf.debug("Wildcard DNS detected.")
+                return None
+
             dom = "." + dom
             nextsubs = dict()
             for i in range(0, 9):
