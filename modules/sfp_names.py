@@ -68,8 +68,7 @@ class sfp_names(SpiderFootPlugin):
         # If the source event is web content, check if the source URL was javascript
         # or CSS, in which case optionally ignore it.
         if eventName == "TARGET_WEB_CONTENT":
-            #url = event.sourceEvent.data
-            url = event.actualSource
+            url = event.sourceEvent.data
             if self.opts['filterjscss'] and (".js" in url or ".css" in url):
                 self.sf.debug("Ignoring web content from CSS/JS.")
                 return None
