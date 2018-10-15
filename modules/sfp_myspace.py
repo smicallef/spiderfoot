@@ -23,6 +23,8 @@ class sfp_myspace(SpiderFootPlugin):
     optdescs = {
     }
 
+    results = dict()
+
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "MySpace.com"
@@ -74,7 +76,7 @@ class sfp_myspace(SpiderFootPlugin):
             profile = profiles[0]
 
             # Check for email address as name, at the risk of missed results.
-            matches = re.findall(r'<a href="/([a-zA-Z0-9_]+)">.[^<]*' + email, profile, re.IGNORECASE)
+            matches = re.findall('<a href=\"\/([a-zA-Z0-9_]+)\".*[\&; :\"\#\*\(\"\'\;\,\>\.\?\!]+' + email + '[\&; :\"\#\*\)\"\'\;\,\<\.\?\!]+', profile, re.IGNORECASE)
 
             if not matches:
                 self.sf.debug("No concrete match for that e-mail.")
@@ -94,8 +96,7 @@ class sfp_myspace(SpiderFootPlugin):
                 self.sf.debug("Skipping social network profile, " + name + ", as not a MySpace profile")
                 return None
 
-            res = self.sf.fetchUrl("https://myspace.com/" + name, timeout=self.opts['_fetchtimeout'], 
-                                   useragent=self.opts['_useragent'])
+            res = self.sf.fetchUrl("https://myspace.com/" + name, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if res['content'] is None:
                 return None
