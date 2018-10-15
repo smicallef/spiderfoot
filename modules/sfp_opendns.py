@@ -46,7 +46,7 @@ class sfp_opendns(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+                "MALICIOUS_COHOST", "IP_ADDRESS", "AFFILIATE_IPADDR"]
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
@@ -69,30 +69,53 @@ class sfp_opendns(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         parentEvent = event
-        resolved = False
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        # Don't look up stuff twice
         if eventData in self.results:
+            self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
-        self.results[eventData] = True
+        else:
+            self.results[eventData] = True
 
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by OpenDNS.
         try:
-            if self.sf.normalizeDNS(socket.gethostbyname_ex(eventData)):
-                resolved = True
+            addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(eventData))
         except BaseException as e:
+            self.sf.debug("Unable to resolve " + eventData + ": " + str(e))
             return None
 
-        if resolved:
-            found = self.queryAddr(eventData)
-            typ = "MALICIOUS_" + eventName
-            if eventName == "CO_HOSTED_SITE":
-                typ = "MALICIOUS_COHOST"
-            if not found:
-                evt = SpiderFootEvent(typ, "Blocked by OpenDNS [" + eventData + "]",
-                                      self.__name__, parentEvent)
+        if not addrs:
+            self.sf.debug("Unable to resolve " + eventData)
+            return None
+
+        for addr in addrs:
+            if not self.sf.validIP(addr):
+                continue
+
+            if eventName == "INTERNET_NAME":
+                evt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
                 self.notifyListeners(evt)
+
+            if eventName == "AFFILIATE_INTERNET_NAME":
+                evt = SpiderFootEvent("AFFILIATE_IPADDR", addr, self.__name__, event)
+                self.notifyListeners(evt)
+
+        # Check if the host is resolved by OpenDNS
+        found = self.queryAddr(eventData)
+
+        if found:
+            return None
+
+        if eventName == "CO_HOSTED_SITE":
+            typ = "MALICIOUS_COHOST"
+        else:
+            typ = "MALICIOUS_" + eventName
+
+        evt = SpiderFootEvent(typ, "Blocked by OpenDNS [" + eventData + "]",
+                              self.__name__, parentEvent)
+        self.notifyListeners(evt)
 
 # End of sfp_opendns class
