@@ -13,18 +13,21 @@
 import random
 import re
 import time
-import urllib
+import urllib2
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 sites = {
     # Search string to use, domain name the profile will sit on within 
     # those search results.
     "Facebook": ['+title:%22{0}%22%20+site:facebook.com',
-                 '"(https?://[a-z\.]*facebook.[a-z\.]+/[^\"<> ]+)"'],
+                 ['"(https?://[a-z\.]*facebook.[a-z\.]+/[^/\"<> ]+)"',
+                 '(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/\"<> ]+)']],
     "Google+": ['+title:%22{0}%22%20+site:plus.google.com',
-                '"(https?://plus.google.[a-z\.]+/\d+[^\"<>\/ ]+)"'],
+                ['"(https?://plus.google.[a-z\.]+/\d+[^\"<>\/ ]+)"',
+                '(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/\"<> ]+)']],
     "LinkedIn": ['+title:%22{0}%22%20+site:linkedin.com',
-                 '"(https?://[a-z\.]*linkedin.[a-z\.]+/[^\"<> ]+)"']
+                 ['"(https?://[a-z\.]*linkedin.[a-z\.]+/[^/\"<> ]+)"',
+                 '(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\/\"<> ]+)']]
 }
 
 
@@ -52,6 +55,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = list()
+        self.keywords = None
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -85,11 +89,12 @@ class sfp_socialprofiles(SpiderFootPlugin):
         if self.keywords is None:
             self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
                 self.opts['_internettlds'])
+            if len(self.keywords) == 0:
+                self.keywords = None
 
         for site in sites.keys():
             s = unicode(sites[site][0]).format(eventData)
             searchStr = s.replace(" ", "%20")
-            searchDom = sites[site][1]
             results = None
 
             if self.opts['method'].lower() == "google":
@@ -124,10 +129,14 @@ class sfp_socialprofiles(SpiderFootPlugin):
             for key in results.keys():
                 instances = list()
 
-                matches = re.findall(searchDom, results[key], re.IGNORECASE)
+                for searchDom in sites[site][1]:
+                    matches = re.findall(searchDom, results[key], re.IGNORECASE|re.MULTILINE)
 
-                if matches is not None:
+                    if not matches:
+                        continue
+
                     for match in matches:
+                        self.sf.debug("Match found: " + match)
                         if match in instances:
                             continue
                         else:
@@ -135,13 +144,16 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
                         if self.opts['method'] == "yahoo":
                             match = re.sub(r'.*RU=(.*?)/RK=.*', r'\1', match)
+                            self.sf.debug("Yahoo match: " + match)
 
                         if self.checkForStop():
                             return None
 
                         # Fetch the profile page if we are checking
                         # for a firm relationship.
-                        if self.opts['tighten']:
+                        # Keywords might be empty if the target was an IP, subnet or name.
+                        if self.opts['tighten'] and self.keywords:
+                            self.sf.debug("Tightening results to look for " + str(self.keywords))
                             pres = self.sf.fetchUrl(match, timeout=self.opts['_fetchtimeout'],
                                                     useragent=self.opts['_useragent'])
 
@@ -156,6 +168,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                                 if not found:
                                     continue
 
+                        match = urllib2.unquote(match)
                         self.sf.info("Social Media Profile found at " + site + ": " + match)
                         evt = SpiderFootEvent("SOCIAL_MEDIA", site + ": " + match,
                                               self.__name__, event)

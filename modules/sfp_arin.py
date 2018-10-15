@@ -26,7 +26,6 @@ class sfp_arin(SpiderFootPlugin):
     results = dict()
     currentEventSrc = None
     memCache = dict()
-    nbreported = dict()
     keywords = None
 
     def setup(self, sfc, userOpts=dict()):
@@ -34,7 +33,6 @@ class sfp_arin(SpiderFootPlugin):
         self.results = dict()
         self.memCache = dict()
         self.currentEventSrc = None
-        self.nbreported = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -47,7 +45,7 @@ class sfp_arin(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["HUMAN_NAME", "RAW_RIR_DATA"]
+        return ["RAW_RIR_DATA"]
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
@@ -132,8 +130,13 @@ class sfp_arin(SpiderFootPlugin):
                         if "," in name:
                             sname = name.split(", ", 1)
                             name = sname[1] + " " + sname[0]
-                        evt = SpiderFootEvent("HUMAN_NAME", name, 
-                                              self.__name__, event)
+
+                        # A bit of a hack. The reason we do this is because
+                        # the names are separated in the content and sfp_names
+                        # won't recognise it. So we submit this and see if it
+                        # really is considered a name.
+                        evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name, 
+                                              self.__name__, self.currentEventSrc)
                         self.notifyListeners(evt)
 
                         # We just want the raw data so we can get potential

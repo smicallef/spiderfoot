@@ -50,7 +50,7 @@ class sfp_clearbit(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "HUMAN_NAME", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
+        return [ "RAW_RIR_DATA", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
                  "AFFILIATE_INTERNET_NAME", "EMAILADDR" ]
 
     def query(self, t):
@@ -101,7 +101,8 @@ class sfp_clearbit(SpiderFootPlugin):
             # Get the name associated with the e-mail
             if "person" in data:
                 name = data['person']['name']['fullName']
-                evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
+                evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name, 
+                                      self.__name__, event)
                 self.notifyListeners(evt)
         except Exception:
             self.sf.debug("Unable to extract name from JSON.")

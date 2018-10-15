@@ -67,7 +67,7 @@ class SpiderFootWebUi:
             c = cgi.escape(item, True)
             c = c.replace('\'', '&quot;')
             # We don't actually want & translated to &amp;
-            c = c.replace("&amp;", "&")
+            c = c.replace("&amp;", "&").replace("&quot;", "\"")
             ret.append(c)
 
         return ret
@@ -274,13 +274,16 @@ class SpiderFootWebUi:
 
         targetType = sf.targetType(scantarget)
         if targetType == None:
-            # Should never be triggered for a re-run scan..
-            return self.error("Invalid target type. Could not recognize it as " + \
-                "an IP address, IP subnet, domain name or host name.")
+            # It must then be a name, as a re-run scan should always have a clean
+            # target.
+            targetType = "HUMAN_NAME"
+
+        if targetType != "HUMAN_NAME":
+            scantarget = scantarget.lower()
 
         # Start running a new scan
         newId = sf.genScanInstanceGUID(scanname)
-        t = SpiderFootScanner(scanname, scantarget.lower(), targetType, newId,
+        t = SpiderFootScanner(scanname, scantarget, targetType, newId,
             modlist, cfg, modopts)
         t.start()
 
@@ -319,7 +322,7 @@ class SpiderFootWebUi:
             if targetType == None:
                 # Should never be triggered for a re-run scan..
                 return self.error("Invalid target type. Could not recognize it as " + \
-                                  "an IP address, IP subnet, domain name or host name.")
+                                  "a human name, IP address, IP subnet, domain name or host name.")
 
             # Start running a new scan
             newId = sf.genScanInstanceGUID(scanname)
@@ -352,6 +355,7 @@ class SpiderFootWebUi:
     
     # Clone an existing scan (pre-selected options in the newscan page)
     def clonescan(self, id):
+        sf = SpiderFoot(self.config)
         dbh = SpiderFootDb(self.config)
         types = dbh.eventTypes()
         info = dbh.scanInstanceGet(id)
@@ -362,6 +366,11 @@ class SpiderFootWebUi:
 
         if scanname == "" or scantarget == "" or len(scanconfig) == 0:
             return self.error("Something went wrong internally.")
+
+        targetType = sf.targetType(scantarget)
+        if targetType == None:
+            # It must be a name, so wrap quotes around it
+            scantarget = "&quot;" + scantarget + "&quot;"
 
         modlist = scanconfig['_modulesenabled'].split(',')
 
@@ -724,14 +733,18 @@ class SpiderFootWebUi:
         if targetType is None:
             if not cli:
                 return self.error("Invalid target type. Could not recognize it as " + \
-                                  "an IP address, IP subnet, domain name or host name.")
+                                  "a human name, IP address, IP subnet, domain name or host name.")
             else:
                 return json.dumps(["ERROR", "Unrecognised target type."])
 
 
         # Start running a new scan
         scanId = sf.genScanInstanceGUID(scanname)
-        t = SpiderFootScanner(scanname, scantarget.lower(), targetType, scanId,
+        if targetType == "HUMAN_NAME":
+            scantarget = scantarget.replace("\"", "")
+        else:
+            scantarget = scantarget.lower()
+        t = SpiderFootScanner(scanname, scantarget, targetType, scanId,
                               modlist, cfg, modopts)
         t.start()
 

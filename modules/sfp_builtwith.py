@@ -51,7 +51,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "INTERNET_NAME", "EMAILADDR", "HUMAN_NAME", 
+        return [ "INTERNET_NAME", "EMAILADDR", "RAW_RIR_DATA", 
                  "WEB_TECHNOLOGY", "PHONE_NUMBER" ]
 
     def query(self, t):
@@ -98,7 +98,7 @@ class sfp_builtwith(SpiderFootPlugin):
         if "Meta" in data:
             if data['Meta'].get("Names", []):
                 for nb in data['Meta']['Names']:
-                    e = SpiderFootEvent("HUMAN_NAME", nb['Name'], 
+                    e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + nb['Name'], 
                                         self.__name__, event)
                     self.notifyListeners(e)
                     if nb.get('Email', None):

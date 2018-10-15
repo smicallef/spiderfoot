@@ -54,7 +54,7 @@ class sfp_fullcontact(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "EMAILADDR", "HUMAN_NAME", "PHONE_NUMBER", 
+        return [ "EMAILADDR", "RAW_RIR_DATA", "PHONE_NUMBER", 
                  "GEOINFO", "PHYSICAL_ADDRESS" ]
 
     def query(self, url, data, failcount=0):
@@ -151,7 +151,8 @@ class sfp_fullcontact(SpiderFootPlugin):
                 return None
             if 'fullName' not in data:
                 return None
-            e = SpiderFootEvent("HUMAN_NAME", data['fullName'], self.__name__, event)
+            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
+                                data['fullName'], self.__name__, event)
             self.notifyListeners(e)
             return
 
@@ -174,18 +175,21 @@ class sfp_fullcontact(SpiderFootPlugin):
             if "locations" in data:
                 for r in data['locations']:
                     if "city" in r and "country" in r:
-                        e = SpiderFootEvent("GEOINFO", r['city'] + ", " + r['country'], self.__name__, event)
+                        e = SpiderFootEvent("GEOINFO", r['city'] + ", " + r['country'], 
+                                            self.__name__, event)
                         self.notifyListeners(e)
                     if "formatted" in r:
                         # Seems to contain some junk sometimes
                         if len(r['formatted']) > 10:
-                            e = SpiderFootEvent("PHYSICAL_ADDRESS", r['formatted'], self.__name__, event)
+                            e = SpiderFootEvent("PHYSICAL_ADDRESS", r['formatted'], 
+                                                self.__name__, event)
                             self.notifyListeners(e)
 
             if "keyPeople" in data:
                 for r in data['keyPeople']:
                     if 'fullName' in r:
-                        e = SpiderFootEvent("HUMAN_NAME", r['fullName'], self.__name__, event)
+                        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
+                                            r['fullName'], self.__name__, event)
                         self.notifyListeners(e)
 
 

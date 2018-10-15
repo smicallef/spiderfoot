@@ -78,7 +78,7 @@ class sfp_accounts(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["EMAILADDR", "DOMAIN_NAME"]
+        return ["EMAILADDR", "DOMAIN_NAME", "HUMAN_NAME", "USERNAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -196,6 +196,10 @@ class sfp_accounts(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        # Skip events coming from me unless they are USERNAME events
+        if eventName != "USERNAME" and srcModuleName == "sfp_accounts":
+            return None
+
         if eventData not in self.results.keys():
             self.results[eventData] = True
         else:
@@ -216,6 +220,16 @@ class sfp_accounts(SpiderFootPlugin):
                 self.sites = [d for d in self.sites if d['name'] not in delsites]
             self.distrustedChecked = True
 
+        if eventName == "HUMAN_NAME":
+            names = [ eventData.lower().replace(" ", ""), eventData.lower().replace(" ", ".") ]
+            for name in names:
+                res = self.batchSites(name)
+                for site in res:
+                    evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", site,
+                                          self.__name__, event)
+                    self.notifyListeners(evt)
+                    users.append(name)
+
         if eventName == "DOMAIN_NAME":
             kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
 
@@ -224,34 +238,30 @@ class sfp_accounts(SpiderFootPlugin):
                 evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", site,
                                       self.__name__, event)
                 self.notifyListeners(evt)
-            return None
+                users.append(kw)
 
         if eventName == "EMAILADDR":
             name = eventData.split("@")[0].lower()
+            adduser = True
             if self.opts['generic'] is list() and name in self.opts['generic']:
                 self.sf.debug(name + " is a generic account name, skipping.")
-                return None
+                adduser = False
 
             if self.opts['ignorenamedict'] and name in self.commonNames:
                 self.sf.debug(name + " is found in our name dictionary, skipping.")
-                return None
+                adduser = False
 
             if self.opts['ignoreworddict'] and name in self.words:
                 self.sf.debug(name + " is found in our word dictionary, skipping.")
-                return None
+                adduser = False
 
-            users.append(name)
-            for user in users:
-                if user not in self.reportedUsers:
-                    evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
-                    self.notifyListeners(evt)
-                    self.reportedUsers.append(user)
+            if adduser:
+                users.append(name)
 
-                res = self.batchSites(user)
-
-                for site in res:
-                    evt = SpiderFootEvent("ACCOUNT_EXTERNAL_USER_SHARED", site,
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
+        for user in users:
+            if user not in self.reportedUsers:
+                evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
+                self.notifyListeners(evt)
+                self.reportedUsers.append(user)
 
 # End of sfp_accounts class

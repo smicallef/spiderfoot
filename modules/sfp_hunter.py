@@ -49,7 +49,7 @@ class sfp_hunter(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "EMAILADDR", "HUMAN_NAME" ]
+        return [ "EMAILADDR", "RAW_RIR_DATA" ]
 
     def query(self, t):
         ret = None
@@ -103,7 +103,8 @@ class sfp_hunter(SpiderFootPlugin):
             if 'first_name' in email and 'last_name' in email:
                 if email['first_name'] != None and email['last_name'] != None:
                     n = email['first_name'] + " " + email['last_name']
-                    e = SpiderFootEvent("HUMAN_NAME", n, self.__name__, event)
+                    e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n, 
+                                        self.__name__, event)
                     self.notifyListeners(e)
 
 
