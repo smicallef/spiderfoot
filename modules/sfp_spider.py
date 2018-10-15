@@ -206,6 +206,16 @@ class sfp_spider(SpiderFootPlugin):
                                 self.__name__, parentEvent)
         self.notifyListeners(event)
 
+        if not httpresult.get('headers'):
+            return None
+
+        ctype = httpresult['headers'].get('content-type')
+        if ctype:
+            event = SpiderFootEvent("TARGET_WEB_CONTENT_TYPE", ctype,
+                                    self.__name__, parentEvent)
+            self.notifyListeners(event)
+
+
     # Trigger spidering off the following events..
     # Spidering and search engines provide LINKED_URL_INTERNAL, and DNS lookups
     # provide INTERNET_NAME.
@@ -217,7 +227,8 @@ class sfp_spider(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["WEBSERVER_HTTPHEADERS", "HTTP_CODE", "LINKED_URL_INTERNAL",
-                "LINKED_URL_EXTERNAL", "TARGET_WEB_CONTENT"]
+                "LINKED_URL_EXTERNAL", "TARGET_WEB_CONTENT",
+                "TARGET_WEB_CONTENT_TYPE"]
 
     # Some other modules may request we spider things
     def handleEvent(self, event):
