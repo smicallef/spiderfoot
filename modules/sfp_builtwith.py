@@ -34,6 +34,7 @@ class sfp_builtwith(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     results = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -83,6 +84,11 @@ class sfp_builtwith(SpiderFootPlugin):
         eventData = event.data
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_builtwith but did not set an API key!", False)
+            self.errorState = True
+            return None
 
        # Don't look up stuff twice
         if self.results.has_key(eventData):
