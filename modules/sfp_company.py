@@ -40,13 +40,14 @@ class sfp_company(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["TARGET_WEB_CONTENT", "SSL_CERTIFICATE_ISSUED", 
-                "DOMAIN_WHOIS", "NETBLOCK_WHOIS"]
+                "DOMAIN_WHOIS", "NETBLOCK_WHOIS", 
+                "AFFILIATE_DOMAIN_WHOIS", "AFFILIATE_WEB_CONTENT"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["COMPANY_NAME"]
+        return ["COMPANY_NAME", "AFFILIATE_COMPANY_NAME"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -57,7 +58,7 @@ class sfp_company(SpiderFootPlugin):
         # Various ways to identify companies in text
         # Support up to three word company names with each starting with
         # a capital letter, allowing for hyphens brackets and numbers within.
-        pattern_prefix = "(?=[,;:\'\">\(= ]|^)\s?([A-Z0-9\(\)][A-Za-z0-9\-&,][^ \"\';:><]*)?\s?([A-Z0-9\(\)][A-Za-z0-9\-&,]?[^ \"\';:><]*|[Aa]nd)?\s?([A-Z0-9\(\)][A-Za-z0-9\-&,]?[^ \"\';:><]*)?\s+"
+        pattern_prefix = "(?=[,;:\'\">\(= ]|^)\s?([A-Z0-9\(\)][A-Za-z0-9\-&,\.][^ \"\';:><]*)?\s?([A-Z0-9\(\)][A-Za-z0-9\-&,\.]?[^ \"\';:><]*|[Aa]nd)?\s?([A-Z0-9\(\)][A-Za-z0-9\-&,\.]?[^ \"\';:><]*)?\s+"
         pattern_match_re = [
             'LLC', 'L\.L\.C\.?', 'AG', 'A\.G\.?', 'GmbH', 'Pty\.?\s+Ltd\.?', 
             'Ltd\.?', 'Pte\.?', 'Inc\.?', 'INC\.?', 'Incorporated', 'Foundation',
@@ -69,7 +70,7 @@ class sfp_company(SpiderFootPlugin):
             'Corp', 'SA', 'S.A', 'SIA', 'BV', 'B.V',
             'NV', 'N.V' 'PLC', 'Limited', 'Pvt.', 'SARL' ]
 
-        pattern_suffix = "(?=[ \.,:<\)\'\"]|$)"
+        pattern_suffix = "(?=[ \.,:<\)\'\"]|[$\n\r])"
 
         # Filter out anything from the company name which matches the below
         filterpatterns = [
@@ -78,7 +79,7 @@ class sfp_company(SpiderFootPlugin):
         ]
 
         # Don't re-parse company names
-        if eventName == "COMPANY_NAME":
+        if eventName in [ "COMPANY_NAME", "AFFILIATE_COMPANY_NAME" ]:
             return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName + ": " + str(len(eventData)) + " bytes.")
@@ -123,7 +124,7 @@ class sfp_company(SpiderFootPlugin):
         myres = list()
         for chunk in chunks:
             for pat in pattern_match_re:
-                matches = re.findall(pattern_prefix + "(" + pat + ")" + pattern_suffix, chunk, re.MULTILINE)
+                matches = re.findall(pattern_prefix + "(" + pat + ")" + pattern_suffix, chunk, re.MULTILINE|re.DOTALL)
                 for match in matches:
                     matched = 0
                     for m in match:
@@ -150,7 +151,12 @@ class sfp_company(SpiderFootPlugin):
                     else:
                         myres.append(fullcompany)
 
-                    evt = SpiderFootEvent("COMPANY_NAME", fullcompany, self.__name__, event)
+                    if "AFFILIATE_" in eventName:
+                        etype = "AFFILIATE_COMPANY_NAME"
+                    else:
+                        etype = "COMPANY_NAME"
+
+                    evt = SpiderFootEvent(etype, fullcompany, self.__name__, event)
                     if event.moduleDataSource:
                         evt.moduleDataSource = event.moduleDataSource
                     else:
