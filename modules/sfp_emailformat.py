@@ -19,7 +19,7 @@ class sfp_emailformat(SpiderFootPlugin):
     """EmailFormat:Footprint,Investigate,Passive:Search Engines::Look up e-mail addresses on email-format.com."""
 
 
-    results = list()
+    results = dict()
 
     # Default options
     opts = {
@@ -32,7 +32,7 @@ class sfp_emailformat(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "Email-Format.com"
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -56,7 +56,7 @@ class sfp_emailformat(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

@@ -39,7 +39,7 @@ class sfp_github(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "USERNAME", "SOCIAL_MEDIA"]
+        return ["DOMAIN_NAME", "USERNAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -83,8 +83,6 @@ class sfp_github(SpiderFootPlugin):
             name = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
         if eventName == "USERNAME":
             name = eventData
-        if eventName == "SOCIAL_MEDIA":
-            name = eventData.split(": ")[1]
 
         self.sf.debug("Looking at " + name)
         failed = False

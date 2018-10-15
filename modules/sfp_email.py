@@ -21,9 +21,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_email(SpiderFootPlugin):
     """E-Mail:Footprint,Investigate,Passive:Content Analysis::Identify e-mail addresses in any obtained data."""
 
-
-
-
     # Default options
     opts = {
         # options specific to this module
@@ -95,10 +92,9 @@ class sfp_email(SpiderFootPlugin):
             mailDom = match.lower().split('@')[1].strip('.')
             if not self.getTarget().matches(mailDom) and not self.getTarget().matches(match):
                 self.sf.debug("External domain, so possible affiliate e-mail")
-                # Raw RIR data returning external e-mails generates way
-                # too much noise.
-                if eventName == "RAW_RIR_DATA":
-                    return None
+                evttype = "AFFILIATE_EMAILADDR"
+
+            if eventName.startswith("AFFILIATE_"):
                 evttype = "AFFILIATE_EMAILADDR"
 
             self.sf.info("Found e-mail address: " + match)

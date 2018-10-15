@@ -164,7 +164,7 @@ class sfp_filemeta(SpiderFootPlugin):
                         self.sf.error("Failed to parse PDF, " + eventData + ": " + str(e), False)
                         return None
 
-                    if val is not None:
+                    if val and not isinstance(val, PyPDF2.generic.NullObject):
                         # Strip non-ASCII
                         val = ''.join([i if ord(i) < 128 else ' ' for i in val])
                         evt = SpiderFootEvent("SOFTWARE_USED", val,

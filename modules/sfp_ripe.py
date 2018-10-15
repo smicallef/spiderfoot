@@ -28,6 +28,7 @@ class sfp_ripe(SpiderFootPlugin):
     memCache = dict()
     nbreported = dict()
     keywords = None
+    lastContent = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -35,6 +36,7 @@ class sfp_ripe(SpiderFootPlugin):
         self.memCache = dict()
         self.currentEventSrc = None
         self.nbreported = dict()
+        self.lastContent = None
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -60,9 +62,7 @@ class sfp_ripe(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'])
             if res['content'] is not None:
                 self.memCache[url] = res
-                evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__,
-                                      self.currentEventSrc)
-                self.notifyListeners(evt)
+                self.lastContent = res['content']
         return res
 
     # Get the netblock the IP resides in
@@ -297,6 +297,10 @@ class sfp_ripe(SpiderFootPlugin):
                         evt = SpiderFootEvent("NETBLOCK_OWNER", netblock,
                                               self.__name__, event)
                         self.notifyListeners(evt)
+                    evt = SpiderFootEvent("RAW_RIR_DATA", self.lastContent, self.__name__,
+                                          event)
+                    self.notifyListeners(evt)
+
             return None
 
         # NETBLOCK -> AS and other owned netblocks
@@ -310,6 +314,9 @@ class sfp_ripe(SpiderFootPlugin):
             if self.ownsAs(asn):
                 asevt = SpiderFootEvent("BGP_AS_OWNER", asn, self.__name__, event)
                 self.notifyListeners(asevt)
+                evt = SpiderFootEvent("RAW_RIR_DATA", self.lastContent, self.__name__,
+                                      event)
+                self.notifyListeners(evt)
             else:
                 asevt = SpiderFootEvent("BGP_AS_MEMBER", asn, self.__name__, event)
                 self.notifyListeners(asevt)
@@ -336,6 +343,9 @@ class sfp_ripe(SpiderFootPlugin):
                     return None
                 self.sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
                 evt = SpiderFootEvent("NETBLOCK_OWNER", prefix, self.__name__, event)
+                self.notifyListeners(evt)
+                evt = SpiderFootEvent("RAW_RIR_DATA", self.lastContent, self.__name__,
+                                      event)
                 self.notifyListeners(evt)
             else:
                 self.sf.info("Netblock found: " + prefix + "(" + asn + ")")
