@@ -24,7 +24,7 @@ class sfp_mnemonic(SpiderFootPlugin):
         'limit': 1000,
         'timeout': 30,
         'maxage': 1095,   # 3 years
-        'verify': False,
+        'verify': True,
         'cohostsamedomain': False,
         'maxcohost': 100
     }
