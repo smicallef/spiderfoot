@@ -19,7 +19,7 @@ from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsresolve(SpiderFootPlugin):
-    """DNS Resolver:Footprint,Investigate:DNS::Resolves Hosts and IP Addresses identified, also extracted from raw content."""
+    """DNS Resolver:Footprint,Investigate,Passive:DNS::Resolves Hosts and IP Addresses identified, also extracted from raw content."""
 
     # Default options
     opts = {

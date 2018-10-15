@@ -18,7 +18,7 @@ from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsraw(SpiderFootPlugin):
-    """DNS Raw Records:Footprint,Investigate:DNS::Retrieves raw DNS records such as MX, TXT and others."""
+    """DNS Raw Records:Footprint,Investigate,Passive:DNS::Retrieves raw DNS records such as MX, TXT and others."""
 
     # Default options
     opts = {
