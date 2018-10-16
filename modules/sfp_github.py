@@ -99,18 +99,18 @@ class sfp_github(SpiderFootPlugin):
                 self.sf.debug("Error processing JSON response.")
                 return None
 
-            if not json_data['login']:
+            if not json_data.get('login'):
                 self.sf.debug(name + " is not a valid Github profile")
                 return None
 
-            if not json_data['name']:
+            if not json_data.get('name'):
                 self.sf.debug(name + " is not a valid Github profile")
                 return None
 
             e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + json_data['name'], self.__name__, event)
             self.notifyListeners(e)
 
-            location = json_data['location']
+            location = json_data.get('location')
 
             if location is None:
                 return None
