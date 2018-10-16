@@ -37,6 +37,7 @@ class sfp_hunter(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -79,6 +80,9 @@ class sfp_hunter(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+
+        if self.errorState:
+            return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
