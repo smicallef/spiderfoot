@@ -32,6 +32,7 @@ class sfp_hunter(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     results = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -87,6 +88,11 @@ class sfp_hunter(SpiderFootPlugin):
             return None
         else:
             self.results[eventData] = True
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_hunter but did not set an API key!", False)
+            self.errorState = True
+            return None
 
         data = self.query(eventData)
         if data == None:
