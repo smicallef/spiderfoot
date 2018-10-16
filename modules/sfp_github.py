@@ -28,24 +28,24 @@ class sfp_github(SpiderFootPlugin):
         'namesonly':    "Match repositories by name only, not by their descriptions. Helps reduce false positives."
     }
 
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "USERNAME"]
+        return ["DOMAIN_NAME", "USERNAME", "SOCIAL_MEDIA"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["PUBLIC_CODE_REPO"]
+        return ["RAW_RIR_DATA", "GEOINFO", "PUBLIC_CODE_REPO"]
 
     # Build up repo info for use as an event
     def buildRepoInfo(self, item):
@@ -77,7 +77,52 @@ class sfp_github(SpiderFootPlugin):
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
+
+        # Extract name and location from profile
+        if eventName == "SOCIAL_MEDIA":
+            network = eventData.split(": ")[0]
+            name = eventData.split(": ")[1]
+
+            if not network == "Github":
+                self.sf.debug("Skipping social network profile, " + name + ", as not a Github profile")
+                return None
+
+            res = self.sf.fetchUrl("https://api.github.com/users/" + name, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+
+            if res['content'] is None:
+                return None
+
+            try:
+                json_data = json.loads(res['content'])
+            except BaseException as e:
+                self.sf.debug("Error processing JSON response.")
+                return None
+
+            if not json_data['login']:
+                self.sf.debug(name + " is not a valid Github profile")
+                return None
+
+            if not json_data['name']:
+                self.sf.debug(name + " is not a valid Github profile")
+                return None
+
+            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + json_data['name'], self.__name__, event)
+            self.notifyListeners(e)
+
+            location = json_data['location']
+
+            if location is None:
+                return None
+
+            if len(location) < 3 or len(location) > 100:
+                self.sf.debug("Skipping likely invalid location: " + location)
+                return None
+
+            e = SpiderFootEvent("GEOINFO", location, self.__name__, event)
+            self.notifyListeners(e)
+
+            return None
 
         if eventName == "DOMAIN_NAME":
             name = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
@@ -90,7 +135,7 @@ class sfp_github(SpiderFootPlugin):
         # name identified
         url = "https://api.github.com/search/repositories?q=" + name
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot")
+                               useragent=self.opts['_useragent'])
 
         if res['content'] == None:
             self.sf.error("Unable to fetch " + url, False)
@@ -126,7 +171,7 @@ class sfp_github(SpiderFootPlugin):
         failed = False
         url = "https://api.github.com/search/users?q=" + name
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot")
+                               useragent=self.opts['_useragent'])
 
         if res['content'] == None:
             self.sf.error("Unable to fetch " + url, False)
@@ -153,7 +198,7 @@ class sfp_github(SpiderFootPlugin):
 
                 url = item['repos_url']
                 res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-	                               useragent="SpiderFoot")
+	                               useragent=self.opts['_useragent'])
     
     	        if res['content'] == None:
                     self.sf.error("Unable to fetch " + url, False)
