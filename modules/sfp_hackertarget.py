@@ -136,7 +136,7 @@ class sfp_hackertarget(SpiderFootPlugin):
 
                     if h not in myres and h != ip:
                         if self.opts['verify'] and not self.validateIP(h, ip):
-                            self.sf.debug("Host no longer resolves to our IP.")
+                            self.sf.debug("Host " + h + " no longer resolves to " + ip)
                             continue
                         if self.cohostcount < self.opts['maxcohost']:
                             evt = SpiderFootEvent("CO_HOSTED_SITE", h.lower(), self.__name__, event)
