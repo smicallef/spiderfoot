@@ -190,7 +190,7 @@ class sfp_viewdns(SpiderFootPlugin):
                         self.cohostcount += 1
                         if eventName == "IP_ADDRESS" and self.opts['verify']:
                             if not self.validateIP(h, eventData):
-                                self.sf.debug("Host no longer resolves to our IP.")
+                                self.sf.debug("Host " + h + " no longer resolves to " + eventData)
                                 continue
                         e = SpiderFootEvent("CO_HOSTED_SITE", h, self.__name__, event)
                     self.notifyListeners(e)

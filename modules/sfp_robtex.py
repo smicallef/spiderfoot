@@ -168,7 +168,7 @@ class sfp_robtex(SpiderFootPlugin):
                             continue
 
                     if self.opts['verify'] and not self.validateIP(r['o'], ip):
-                        self.sf.debug("Host no longer resolves to our IP.")
+                        self.sf.debug("Host " + r['o'] + " no longer resolves to " + ip)
                         continue
                     evt = SpiderFootEvent("CO_HOSTED_SITE", r['o'], self.__name__, event)
                     self.notifyListeners(evt)

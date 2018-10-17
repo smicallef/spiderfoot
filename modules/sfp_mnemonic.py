@@ -182,7 +182,7 @@ class sfp_mnemonic(SpiderFootPlugin):
 
         for co in cohosts:
             if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.validateIP(co, eventData)):
-                self.sf.debug("Host no longer resolves to " + eventData)
+                self.sf.debug("Host " + co + " no longer resolves to " + eventData)
                 continue
 
             if not self.opts['cohostsamedomain']:

@@ -178,7 +178,7 @@ class sfp_securitytrails(SpiderFootPlugin):
 
                         if h not in myres and h != ip:
                             if self.opts['verify'] and not self.validateIP(h, ip):
-                                self.sf.debug("Host no longer resolves to our IP.")
+                                self.sf.debug("Host " + h + " no longer resolves to " + ip)
                                 continue
                         myres.append(h.lower())
                         e = SpiderFootEvent("CO_HOSTED_SITE", h, self.__name__, event)

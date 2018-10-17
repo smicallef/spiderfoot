@@ -127,7 +127,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
                                 self.sf.debug("Skipping " + site + " because it is on the same domain.")
                                 continue
                         if self.opts['verify'] and not self.validateIP(site, ip):
-                            self.sf.debug("Host no longer resolves to our IP.")
+                            self.sf.debug("Host " + site + " no longer resolves to " + ip)
                             continue
                         evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
                         self.notifyListeners(evt)
