@@ -73,7 +73,7 @@ class sfp_slideshare(SpiderFootPlugin):
         # Check if the profile is valid and extract name
         human_name = self.extractMeta('slideshare:name', res['content'])
 
-        if human_name is None:
+        if not human_name:
             self.sf.debug(name + " is not a valid SlideShare profile")
             return None
 
@@ -83,7 +83,7 @@ class sfp_slideshare(SpiderFootPlugin):
         # Retrieve location (country)
         location = self.extractMeta('slideshare:location', res['content'])
 
-        if location is None:
+        if not location:
             return None
 
         if len(location[0]) < 3 or len(location[0]) > 100:

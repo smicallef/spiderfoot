@@ -73,14 +73,14 @@ class sfp_twitter(SpiderFootPlugin):
         # Retrieve name
         human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>', res['content'], re.MULTILINE)
 
-        if human_name is not None:
+        if human_name:
             e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0], self.__name__, event)
             self.notifyListeners(e)
 
         # Retrieve location
         location = re.findall(r'<div class="location">([^<]+)</div>', res['content'])
 
-        if location is not None:
+        if location:
             if len(location[0]) < 3 or len(location[0]) > 100:
                 self.sf.debug("Skipping likely invalid location.")
             else:
