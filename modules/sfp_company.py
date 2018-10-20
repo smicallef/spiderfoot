@@ -19,7 +19,7 @@ except ImportError:
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_company(SpiderFootPlugin):
-    """Company Names:Footprint,Investigate,Passive:Content Analysis::Identify company names in any obtained data."""
+    """Company Names:Passive,Footprint,Investigate,Passive:Content Analysis::Identify company names in any obtained data."""
 
 
     # Default options
