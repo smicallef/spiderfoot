@@ -14,6 +14,7 @@
 import json
 import re
 import time
+import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_mnemonic(SpiderFootPlugin):
