@@ -17,7 +17,7 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_mnemonic(SpiderFootPlugin):
-    """Mnemonic PassiveDNS:Footprint,Investigate,Passive:Search Engines::Obtain Passive DNS information from PassiveDNS.mnemonic.no."""
+    """Mnemonic PassiveDNS:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from PassiveDNS.mnemonic.no."""
 
     # Default options
     opts = {
