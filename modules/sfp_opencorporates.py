@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_opencorporates
-# Purpose:      SpiderFoot plug-in for retrieving company location and previous
-#               company names from OpenCorporates.
+# Purpose:      SpiderFoot plug-in for retrieving company information from
+#               OpenCorporates.
 #
 # Author:      Brendan Coles <bcoles@gmail.com>
 #
@@ -21,12 +21,14 @@ class sfp_opencorporates(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'confidence': 100
+        'confidence': 100,
+        'api_key': ''
     }
 
     # Option descriptions
     optdescs = {
-        'confidence': "Confidence that the search result objects are correct (numeric value between 0 and 100)."
+        'confidence': "Confidence that the search result objects are correct (numeric value between 0 and 100).",
+        'api_key': 'OpenCorporates.com API key.'
     }
 
     results = dict()
@@ -41,25 +43,121 @@ class sfp_opencorporates(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["COMPANY_NAME"]
+        return [ "COMPANY_NAME" ]
 
     # What events this module produces
     def producedEvents(self):
-        return ["AFFILIATE_COMPANY_NAME", "GEOINFO"]
+        return [ "COMPANY_NAME", "GEOINFO", "RAW_RIR_DATA" ]
 
-    # Query the REST API
+    # Search for company name
     # https://api.opencorporates.com/documentation/API-Reference
-    def query(self, qry):
+    def searchCompany(self, qry):
         params = {
             'q': qry,
             'format': 'json',
             'order': 'score',
             'confidence': str(self.opts['confidence'])
         }
+
+        if not self.opts['api_key'] == "":
+            params['api_token'] = self.opts['api_key']
+
         res = self.sf.fetchUrl("https://api.opencorporates.com/v0.4/companies/search?" + urllib.urlencode(params),
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
-        return res['content']
+        if res['code'] == "401":
+            self.sf.error("Invalid OpenCorporates API key.", False)
+            return None
+
+        if res['code'] == "403":
+            self.sf.error("You are being rate-limited by OpenCorporates.", False)
+            return None
+
+        # Parse response content as JSON
+        try:
+            data = json.loads(res['content'])
+        except Exception as e:
+            self.sf.debug("Error processing JSON response: " + str(e))
+            return None
+
+        if 'results' not in data:
+            return None
+
+        return data['results']
+
+    # Retrieve company details
+    # https://api.opencorporates.com/documentation/API-Reference
+    def retrieveCompanyDetails(self, jurisdiction_code, company_number):
+        url = "https://api.opencorporates.com/companies/" + jurisdiction_code + "/" + str(company_number)
+
+        if not self.opts['api_key'] == "":
+            url += '?' + self.opts['api_key']
+
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+
+        if res['code'] == "401":
+            self.sf.error("Invalid OpenCorporates API key.", False)
+            return None
+
+        if res['code'] == "403":
+            self.sf.error("You are being rate-limited by OpenCorporates.", False)
+            return None
+
+        # Parse response content as JSON
+        try:
+            data = json.loads(res['content'])
+        except Exception as e:
+            self.sf.debug("Error processing JSON response: " + str(e))
+            return None
+
+        if 'results' not in data:
+            return None
+
+        return data['results']
+
+
+    # Extract company address, previous names, and officer names
+    def extractCompanyDetails(self, company, sevt):
+
+        # Extract registered address
+        location = company.get('registered_address_in_full')
+
+        if location:
+            if len(location) < 3 or len(location) > 100:
+                self.sf.debug("Skipping likely invalid location.")
+            else:
+                if company.get('registered_address'):
+                    country = company.get('registered_address').get('country')
+                    if country:
+                        if not location.endswith(country):
+                            location += ", " + country
+
+                location = location.replace("\n", ',')
+                self.sf.info("Found company address: " + location)
+                e = SpiderFootEvent("GEOINFO", location, self.__name__, sevt)
+                self.notifyListeners(e)
+
+        # Extract previous company names
+        previous_names = company.get('previous_names')
+
+        if previous_names:
+            for previous_name in previous_names:
+                p = previous_name.get('company_name')
+                if p:
+                    self.sf.info("Found previous company name: " + p)
+                    e = SpiderFootEvent("COMPANY_NAME", p, self.__name__, sevt)
+                    self.notifyListeners(e)
+
+        # Extract officer names
+        officers = company.get('officers')
+
+        if officers:
+            for officer in officers:
+                n = officer.get('name')
+                if n:
+                    self.sf.info("Found company officer: " + n)
+                    e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n, self.__name__, sevt)
+                    self.notifyListeners(e)
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -75,57 +173,49 @@ class sfp_opencorporates(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        # Query the API for company information
-        res = self.query(eventData + "*")
+        # Search for the company
+        res = self.searchCompany(eventData + "*")
 
         if res is None:
-            return None
-
-        # Parse response content as JSON
-        try:
-            data = json.loads(res)
-        except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
-            return None
-
-        if 'results' not in data:
             self.sf.debug("Found no results for " + eventData)
             return None
 
-        if 'companies' not in data['results']:
+        companies = res.get('companies')
+
+        if not companies:
             self.sf.debug("Found no results for " + eventData)
             return None
 
-        # Check for a match
-        for company in data['results']['companies']:
-            if not eventData.lower() == company['company']['name'].lower():
+        for c in companies:
+            company = c.get('company')
+
+            if not company:
                 continue
 
-            # Extract registered address
-            location = company['company']['registered_address_in_full']
+            # Check for match
+            if not eventData.lower() == company.get('name').lower():
+                continue
 
-            if location is not None:
-                if len(location) < 3 or len(location) > 100:
-                    self.sf.debug("Skipping likely invalid location.")
-                else:
-                    if company['company']['registered_address'] is not None:
-                        if company['company']['registered_address']['country'] is not None:
-                            country = company['company']['registered_address']['country']
-                            if not location.endswith(country):
-                                location = location + ", " + country
+            # Extract company details from search results
+            self.extractCompanyDetails(company, event)
 
-                    self.sf.info("Found company address: " + location)
-                    e = SpiderFootEvent("GEOINFO", location, self.__name__, event)
-                    self.notifyListeners(e)
+            # Retrieve further details
+            jurisdiction_code = company.get('jurisdiction_code')
+            company_number = company.get('company_number')
 
-            # Extract previous company names
-            previous_names = company['company']['previous_names']
+            if not company_number or not jurisdiction_code:
+                continue
 
-            if previous_names is not None:
-                for previous_name in previous_names:
-                    p = previous_name['company_name']
-                    self.sf.info("Found previous company name: " + p)
-                    e = SpiderFootEvent("AFFILIATE_COMPANY_NAME", p, self.__name__, event)
-                    self.notifyListeners(e)
+            res = self.retrieveCompanyDetails(jurisdiction_code, company_number)
+
+            if not res:
+                continue
+
+            c = res.get('company')
+
+            if not c:
+                continue
+
+            self.extractCompanyDetails(c, event)
 
 # End of sfp_opencorporates class
