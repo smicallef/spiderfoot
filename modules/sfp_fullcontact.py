@@ -141,6 +141,8 @@ class sfp_fullcontact(SpiderFootPlugin):
             data = self.queryPerson(name=eventData)
             if not data:
                 return None
+            if not data.get('email'):
+                return None
             e = SpiderFootEvent("EMAILADDR", data['email'], self.__name__, event)
             self.notifyListeners(e)
             return
@@ -149,7 +151,7 @@ class sfp_fullcontact(SpiderFootPlugin):
             data = self.queryPerson(email=eventData)
             if not data:
                 return None
-            if 'fullName' not in data:
+            if not data.get('fullName'):
                 return None
             e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
                                 data['fullName'], self.__name__, event)
@@ -160,34 +162,34 @@ class sfp_fullcontact(SpiderFootPlugin):
             data = self.queryCompany(eventData)
             if not data:
                 return None
-            if "details" in data:
+            if data.get("details"):
                 data = data['details']
-            if "emails" in data:
+            if data.get("emails"):
                 for r in data['emails']:
                     e = SpiderFootEvent("EMAILADDR", r['value'], self.__name__, event)
                     self.notifyListeners(e)
 
-            if "phones" in data:
+            if data.get("phones"):
                 for r in data['phones']:
                     e = SpiderFootEvent("PHONE_NUMBER", r['value'], self.__name__, event)
                     self.notifyListeners(e)
 
-            if "locations" in data:
+            if data.get("locations"):
                 for r in data['locations']:
-                    if "city" in r and "country" in r:
+                    if r.get("city") and r.get("country"):
                         e = SpiderFootEvent("GEOINFO", r['city'] + ", " + r['country'], 
                                             self.__name__, event)
                         self.notifyListeners(e)
-                    if "formatted" in r:
+                    if r.get("formatted"):
                         # Seems to contain some junk sometimes
                         if len(r['formatted']) > 10:
                             e = SpiderFootEvent("PHYSICAL_ADDRESS", r['formatted'], 
                                                 self.__name__, event)
                             self.notifyListeners(e)
 
-            if "keyPeople" in data:
+            if data.get("keyPeople"):
                 for r in data['keyPeople']:
-                    if 'fullName' in r:
+                    if r.get('fullName'):
                         e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
                                             r['fullName'], self.__name__, event)
                         self.notifyListeners(e)
