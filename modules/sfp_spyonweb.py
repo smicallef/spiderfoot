@@ -101,7 +101,8 @@ class sfp_spyonweb(SpiderFootPlugin):
             self.sf.debug("Error processing JSON response.")
             return None
 
-        if not data['status'] == 'found':
+        status = data.get('status')
+        if not status == 'found':
             self.sf.info("No results found for " + qry)
             return None
 
@@ -146,7 +147,8 @@ class sfp_spyonweb(SpiderFootPlugin):
             self.sf.debug("Error processing JSON response.")
             return None
 
-        if not data['status'] == 'found':
+        status = data.get('status')
+        if not status == 'found':
             self.sf.info("No results found for " + qry)
             return None
 
@@ -191,7 +193,8 @@ class sfp_spyonweb(SpiderFootPlugin):
             self.sf.debug("Error processing JSON response.")
             return None
 
-        if not data['status'] == 'found':
+        status = data.get('status')
+        if not status == 'found':
             self.sf.info("No results found for " + qry)
             return None
 
@@ -236,7 +239,8 @@ class sfp_spyonweb(SpiderFootPlugin):
             self.sf.debug("Error processing JSON response.")
             return None
 
-        if not data['status'] == 'found':
+        status = data.get('status')
+        if not status == 'found':
             self.sf.info("No results found for " + qry)
             return None
 
