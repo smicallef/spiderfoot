@@ -16,16 +16,23 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlemaps(SpiderFootPlugin):
-    """Google Maps:Footprint,Investigate,Passive:Real World::Identifies potential physical addresses and latitude/longitude coordinates."""
+    """Google Maps:Footprint,Investigate,Passive:Real World:apikey:Identifies potential physical addresses and latitude/longitude coordinates."""
 
 
     # Default options
-    opts = {}
+    opts = {
+        "api_key": ""
+    }
+    optdescs = {
+        "api_key": "Google Geocoding API Key."
+    }
     results = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -46,7 +53,15 @@ class sfp_googlemaps(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_googlemaps but did not set an API key!", False)
+            self.errorState = True
+            return None
 
         # Don't look up stuff twice
         if eventData in self.results:
@@ -56,7 +71,8 @@ class sfp_googlemaps(SpiderFootPlugin):
             self.results[eventData] = True
 
         res = self.sf.fetchUrl("https://maps.googleapis.com/maps/api/geocode/json?address=" + \
-                               eventData, timeout=self.opts['_fetchtimeout'], 
+                               eventData + "&key=" + self.opts['api_key'], 
+                               timeout=self.opts['_fetchtimeout'], 
                                useragent=self.opts['_useragent'])
         if res['content'] is None:
             self.sf.info("No location info found for " + eventData)
