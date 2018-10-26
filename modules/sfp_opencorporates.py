@@ -62,8 +62,9 @@ class sfp_opencorporates(SpiderFootPlugin):
         if not self.opts['api_key'] == "":
             params['api_token'] = self.opts['api_key']
 
+        # High timeouts as they can sometimes take a while
         res = self.sf.fetchUrl("https://api.opencorporates.com/v0.4/companies/search?" + urllib.urlencode(params),
-                               timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                               timeout=60, useragent=self.opts['_useragent'])
 
         if res['code'] == "401":
             self.sf.error("Invalid OpenCorporates API key.", False)
