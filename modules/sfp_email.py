@@ -38,7 +38,12 @@ class sfp_email(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["*"]
+        return ["TARGET_WEB_CONTENT", "BASE64_DATA", "AFFILIATE_DOMAIN_WHOIS",
+                "CO_HOSTED_SITE_DOMAIN_WHOIS", "DOMAN_WHOIS", "NETBLOCK_WHOIS",
+                "LEAKSITE_CONTENT", "RAW_DNS_RECORDS", "RAW_FILE_META_DATA",
+                "SEARCH_ENGINE_WEB_CONTENT", "SIMILARDOMAIN_WHOIS",
+                "SSL_CERTIFICATE_RAW", "SSL_CERTIFICATE_ISSUED", "TCP_PORT_OPEN_BANNER",
+                "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -51,15 +56,6 @@ class sfp_email(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-
-        # Don't re-parse e-mail addresses
-        if "EMAILADDR" in eventName:
-            return None
-
-        # Ignore any web content that isn't from the target. This avoids noise from
-        # pastebin and other content where unrelated e-mails are likely to be found.
-        if "_CONTENT" in eventName and eventName != "TARGET_WEB_CONTENT":
-            return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
