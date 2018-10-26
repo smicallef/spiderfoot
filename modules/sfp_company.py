@@ -25,10 +25,12 @@ class sfp_company(SpiderFootPlugin):
     # Default options
     opts = {
         # options specific to this module
+        'filterjscss': True
     }
 
     # Option descriptions
     optdescs = {
+        'filterjscss': "Filter out company names that originated from CSS/JS content. Enabling this avoids detection of popular Javascript and web framework author company names."
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -82,6 +84,12 @@ class sfp_company(SpiderFootPlugin):
         if eventName in [ "COMPANY_NAME", "AFFILIATE_COMPANY_NAME" ]:
             return None
 
+        if eventName == "TARGET_WEB_CONTENT":
+            url = event.sourceEvent.data
+            if self.opts['filterjscss'] and (".js" in url or ".css" in url):
+                self.sf.debug("Ignoring web content from CSS/JS.")
+                return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName + ": " + str(len(eventData)) + " bytes.")
 
         if type(eventData) not in [str, unicode]:
@@ -111,10 +119,10 @@ class sfp_company(SpiderFootPlugin):
             start = 0
             m = eventData.find(pat, start)
             while m > 0:
-                start = m - 100
+                start = m - 50
                 if start < 0:
                     start = 0
-                end = m + 100
+                end = m + 10
                 if end >= len(eventData):
                     end = len(eventData)-1
                 chunks.append(eventData[start:end])
