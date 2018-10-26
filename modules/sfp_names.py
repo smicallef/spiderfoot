@@ -49,7 +49,7 @@ class sfp_names(SpiderFootPlugin):
     def watchedEvents(self):
         return ["TARGET_WEB_CONTENT", "EMAILADDR", 
                 "DOMAIN_WHOIS", "NETBLOCK_WHOIS", 
-                "RAW_RIR_DATA"]
+                "RAW_RIR_DATA", "RAW_FILE_META_DATA"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
