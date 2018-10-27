@@ -11,11 +11,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import datetime
 import json
 import re
-import time
-import datetime
 import socket
+import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spyonweb(SpiderFootPlugin):
@@ -82,17 +82,17 @@ class sfp_spyonweb(SpiderFootPlugin):
     def producedEvents(self):
         return ['CO_HOSTED_SITE', 'INTERNET_NAME', 'AFFILIATE_DOMAIN', 'WEB_ANALYTICS_ID']
 
-    # Retrieve hosts with the specified Google Analytics ID
+    # Query the REST API
     # https://api.spyonweb.com/v1/docs
-    def queryGoogleAnalytics(self, qry, limit=100):
-        url = "https://api.spyonweb.com/v1/analytics/" + qry
+    def query(self, endpoint, qry, limit=100):
+        url = "https://api.spyonweb.com/v1/" + endpoint + "/" + qry
         url += "?limit=" + str(limit)
         url += "&access_token=" + self.opts['api_key']
 
         res = self.sf.fetchUrl(url, timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            self.sf.info("No results found for " + qry)
+            self.sf.debug("No results found for " + qry)
             return None
 
         try:
@@ -102,23 +102,40 @@ class sfp_spyonweb(SpiderFootPlugin):
             return None
 
         status = data.get('status')
+
         if not status == 'found':
-            self.sf.info("No results found for " + qry)
+            self.sf.debug("No results found for " + qry)
             return None
 
-        if 'result' not in data:
-            self.sf.info("No results found for " + qry)
+        api_result = data.get('result')
+
+        if not api_result:
+            self.sf.debug("No results found for " + qry)
             return None
 
-        if 'analytics' not in data['result']:
-            self.sf.info("No results found for " + qry)
+        endpoint_result = api_result.get(endpoint)
+
+        if not endpoint_result:
+            self.sf.debug("No results found for " + qry)
             return None
 
-        if qry not in data['result']['analytics']:
-            self.sf.info("No results found for " + qry)
+        results = endpoint_result.get(qry)
+
+        if not results:
+            self.sf.debug("No results found for " + qry)
             return None
 
-        items = data['result']['analytics'][qry].get('items')
+        items = results.get('items')
+
+        if not items:
+            self.sf.debug("No results found for " + qry)
+            return None
+
+        return items
+
+    # Retrieve hosts with the specified Google Analytics ID
+    def queryGoogleAnalytics(self, qry, limit=100):
+        items = self.query('analytics', qry, limit)
 
         if not items:
             self.sf.debug("No results found for " + qry)
@@ -129,42 +146,8 @@ class sfp_spyonweb(SpiderFootPlugin):
         return items
 
     # Retrieve hosts with the specified Google AdSense ID
-    # https://api.spyonweb.com/v1/docs
     def queryGoogleAdsense(self, qry, limit=100):
-        url = "https://api.spyonweb.com/v1/adsense/" + qry
-        url += "?limit=" + str(limit)
-        url += "&access_token=" + self.opts['api_key']
-
-        res = self.sf.fetchUrl(url, timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
-
-        if res['content'] is None:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        try:
-            data = json.loads(res['content'])
-        except Exception as e:
-            self.sf.debug("Error processing JSON response.")
-            return None
-
-        status = data.get('status')
-        if not status == 'found':
-            self.sf.info("No results found for " + qry)
-            return None
-
-        if 'result' not in data:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        if 'adsense' not in data['result']:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        if qry not in data['result']['adsense']:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        items = data['result']['adsense'][qry].get('items')
+        items = self.query('adsense', qry, limit)
 
         if not items:
             self.sf.debug("No results found for " + qry)
@@ -174,43 +157,9 @@ class sfp_spyonweb(SpiderFootPlugin):
 
         return items
 
-    # Retrieve hosts on the specified IP address
-    # https://api.spyonweb.com/v1/docs
+    # Retrieve hosts with the specified IP address
     def queryIP(self, qry, limit=100):
-        url = "https://api.spyonweb.com/v1/ip/" + qry
-        url += "?limit=" + str(limit)
-        url += "&access_token=" + self.opts['api_key']
-
-        res = self.sf.fetchUrl(url, timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
-
-        if res['content'] is None:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        try:
-            data = json.loads(res['content'])
-        except Exception as e:
-            self.sf.debug("Error processing JSON response.")
-            return None
-
-        status = data.get('status')
-        if not status == 'found':
-            self.sf.info("No results found for " + qry)
-            return None
-
-        if 'result' not in data:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        if 'ip' not in data['result']:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        if qry not in data['result']['ip']:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        items = data['result']['ip'][qry].get('items')
+        items = self.query('ip', qry, limit)
 
         if not items:
             self.sf.debug("No results found for " + qry)
@@ -221,42 +170,8 @@ class sfp_spyonweb(SpiderFootPlugin):
         return items
 
     # Retrieve Google Analytics and Google AdSense IDs for the specified domain
-    # https://api.spyonweb.com/v1/docs
     def querySummary(self, qry, limit=100):
-        url = "https://api.spyonweb.com/v1/summary/" + qry
-        url += "?limit=" + str(limit)
-        url += "&access_token=" + self.opts['api_key']
-
-        res = self.sf.fetchUrl(url, timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
-
-        if res['content'] is None:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        try:
-            data = json.loads(res['content'])
-        except Exception as e:
-            self.sf.debug("Error processing JSON response.")
-            return None
-
-        status = data.get('status')
-        if not status == 'found':
-            self.sf.info("No results found for " + qry)
-            return None
-
-        if 'result' not in data:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        if 'summary' not in data['result']:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        if qry not in data['result']['summary']:
-            self.sf.info("No results found for " + qry)
-            return None
-
-        items = data['result']['summary'][qry].get('items')
+        items = self.query('summary', qry, limit)
 
         if not items:
             self.sf.debug("No results found for " + qry)
@@ -298,12 +213,14 @@ class sfp_spyonweb(SpiderFootPlugin):
                 return None
 
             google_adsense = data.get('adsense')
+
             if google_adsense:
                 for r in google_adsense.keys():
                     evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google AdSense: " + r, self.__name__, event)
                     self.notifyListeners(evt)
 
             google_analytics = data.get('analytics')
+
             if google_analytics:
                 for r in google_analytics.keys():
                     evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google Analytics: " + r, self.__name__, event)
