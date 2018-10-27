@@ -47,7 +47,7 @@ class sfp_opencorporates(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "COMPANY_NAME", "GEOINFO", "RAW_RIR_DATA" ]
+        return [ "COMPANY_NAME", "PHYSICAL_ADDRESS", "RAW_RIR_DATA" ]
 
     # Search for company name
     # https://api.opencorporates.com/documentation/API-Reference
@@ -135,7 +135,7 @@ class sfp_opencorporates(SpiderFootPlugin):
 
                 location = location.replace("\n", ',')
                 self.sf.info("Found company address: " + location)
-                e = SpiderFootEvent("GEOINFO", location, self.__name__, sevt)
+                e = SpiderFootEvent("PHYSICAL_ADDRESS", location, self.__name__, sevt)
                 self.notifyListeners(e)
 
         # Extract previous company names
