@@ -18,6 +18,8 @@ class sfp_ahmia(SpiderFootPlugin):
     """Ahmia:Footprint,Investigate:Search Engines::Search Tor 'Ahmia' search engine for mentions of the target domain."""
 
 
+
+
     # Default options
     opts = {
         # We don't bother with pagination as ahmia seems fairly limited in coverage
@@ -30,11 +32,11 @@ class sfp_ahmia(SpiderFootPlugin):
     }
 
     # Target
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -58,7 +60,7 @@ class sfp_ahmia(SpiderFootPlugin):
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         # Sites hosted on the domain
         data = self.sf.fetchUrl("https://ahmia.fi/search/?q=" + eventData,
@@ -68,7 +70,7 @@ class sfp_ahmia(SpiderFootPlugin):
             self.sf.info("No results returned from ahmia.fi.")
             return None
 
-        if "onion_key" in data['content']:
+        if "redirect_url=" in data['content']:
             # Check if we've been asked to stop
             if self.checkForStop():
                 return None
@@ -78,14 +80,14 @@ class sfp_ahmia(SpiderFootPlugin):
                                   self.__name__, event)
             self.notifyListeners(evt)
 
-            links = re.findall("\<li\s+class=\"result\"\s+href=\"(.*?)\"\s+id=\"onion_key\"\>", 
+            links = re.findall("redirect_url=(.[^\"]+)\"", 
                              data['content'], re.IGNORECASE | re.DOTALL)
 
             for link in links:
                 if link in self.results:
                     continue
                 else:
-                    self.results.append(link)
+                    self.results[link] = True
                     self.sf.debug("Found a darknet mention: " + link)
                     if self.sf.urlFQDN(link).endswith(".onion"):
                         if self.checkForStop():
