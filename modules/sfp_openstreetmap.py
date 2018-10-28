@@ -108,13 +108,13 @@ class sfp_openstreetmap(SpiderFootPlugin):
         self.sf.info("Found " + str(len(data)) + " matches for " + eventData)
 
         for location in data:
-            lat = str(location.get('lat'))
-            lon = str(location.get('lon'))
+            lat = location.get('lat')
+            lon = location.get('lon')
 
             if not lat or not lon:
                 continue
 
-            coords = lat + "," + lon
+            coords = str(lat) + "," + str(lon)
             self.sf.debug("Found coordinates: " + coords)
 
             evt = SpiderFootEvent("PHYSICAL_COORDINATES", coords, self.__name__, event)
