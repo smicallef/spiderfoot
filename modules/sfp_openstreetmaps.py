@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_openstreetmaps
+# Name:         sfp_openstreetmap
 # Purpose:      SpiderFoot plug-in to retrieve latitude/longitude coordinates
-#               for physical addresses from Open Street Maps API.
+#               for physical addresses from OpenStreetMap API.
 #
 # Author:      Brendan Coles <bcoles@gmail.com>
 #
@@ -17,8 +17,8 @@ import time
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-class sfp_openstreetmaps(SpiderFootPlugin):
-    """Open Street Maps:Footprint,Investigate,Passive:Real World::Retrieves latitude/longitude coordinates for physical addresses from Open Street Maps API."""
+class sfp_openstreetmap(SpiderFootPlugin):
+    """OpenStreetMap:Footprint,Investigate,Passive:Real World::Retrieves latitude/longitude coordinates for physical addresses from OpenStreetMap API."""
 
     opts = {
     }
@@ -120,4 +120,4 @@ class sfp_openstreetmaps(SpiderFootPlugin):
             evt = SpiderFootEvent("PHYSICAL_COORDINATES", coords, self.__name__, event)
             self.notifyListeners(evt)
 
-# End of sfp_openstreetmaps class
+# End of sfp_openstreetmap class
