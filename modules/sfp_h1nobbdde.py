@@ -1,6 +1,7 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_h1.nobbd.de
-# Purpose:      Query the the unofficial HackerOne disclosure timeline database to see if our target appears.
+# Purpose:      Query the the unofficial HackerOne disclosure timeline database 
+#               to see if our target appears.
 #
 # Author:      Dhiraj Mishra <dhiraj@notsosecure.com>
 # Created:     28/10/2018
@@ -16,9 +17,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_h1nobbdde(SpiderFootPlugin):
-     """Unofficial HackerOne:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed."""
-
-
+    """HackerOne (Unofficial):Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed."""
 
     # Default options
     opts = {
@@ -48,9 +47,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        ret = ["VULNERABILITY"]
-
-        return ret
+        return ["VULNERABILITY"]
 
     # Query h1.nobbd.de
     def queryOBB(self, qry):
@@ -64,11 +61,11 @@ class sfp_h1nobbdde(SpiderFootPlugin):
             return None
 
         try:
-            rx = re.compile(".*<div class=.cell1.><a href=.(.*).>(.*" + qry + ").*?</a></div>.*", re.IGNORECASE)
+            rx = re.compile("<a class=\"title\" href=.(.[^\"]+).*?title=.(.[^\"\']+)", re.IGNORECASE|re.DOTALL)
             for m in rx.findall(res['content']):
                 # Report it
-                if m[1] == qry or m[1].endswith("."+qry):
-                    ret.append("From h1.nobbd.de: <SFURL>" + base + m[0] + "</SFURL>")
+                if qry in m[1]:
+                    ret.append(m[1] + "\n<SFURL>" + m[0] + "</SFURL>")
         except Exception as e:
             self.sf.error("Error processing response from h1.nobbd.de: " + str(e), False)
             return None
