@@ -16,7 +16,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_h1nobbdde(SpiderFootPlugin):
-     """the unofficial HackerOne:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed."""
+     """Unofficial HackerOne:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed."""
 
 
 
@@ -48,7 +48,9 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-         return ["*"]
+        ret = ["VULNERABILITY"]
+
+        return ret
 
     # Query h1.nobbd.de
     def queryOBB(self, qry):
