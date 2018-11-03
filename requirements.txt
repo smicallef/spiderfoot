@@ -4,4 +4,4 @@ Mako==1.0.4
 beautifulsoup4==4.4.1
 lxml==3.4.4
 netaddr==0.7.18
-requests==2.7.0
+requests>=2.20.0 
