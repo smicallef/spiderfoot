@@ -71,6 +71,11 @@ class sfp_commoncrawl(SpiderFootPlugin):
             self.errorState = True
             return None
 
+        if not res['content']:
+            self.sf.error("CommonCrawl index collection doesn't seem to be available.", False)
+            self.errorState = True
+            return None
+
         indexes = re.findall(".*(CC-MAIN-\d+-\d+).*", res['content'])
         highest = 0
         indexlist = dict()
