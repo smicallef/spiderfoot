@@ -57,6 +57,11 @@ class sfp_commoncrawl(SpiderFootPlugin):
                 self.errorState = True
                 return None
 
+            if not res['content']:
+                self.sf.error("CommonCrawl search doesn't seem to be available.", False)
+                self.errorState = True
+                return None
+
             ret.append(res['content'])
 
         return ret
