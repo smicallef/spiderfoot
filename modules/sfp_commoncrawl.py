@@ -127,6 +127,10 @@ class sfp_commoncrawl(SpiderFootPlugin):
         if len(self.indexBase) == 0:
             self.indexBase = self.getLatestIndexes()
 
+        if not self.indexBase:
+            self.sf.error("Unable to fetch CommonCrawl index.", False)
+            return None
+
         if len(self.indexBase) == 0:
             self.sf.error("Unable to fetch CommonCrawl index.", False)
             return None
