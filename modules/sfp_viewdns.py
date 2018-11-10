@@ -119,7 +119,7 @@ class sfp_viewdns(SpiderFootPlugin):
                     self.sf.error("Error querying ViewDNS.info: " + r.get("error", "Unknown"), False)
                     return None
 
-                if len(r.get(responsekey)) == pagesize:
+                if len(r.get(responsekey), list()) == pagesize:
                     if accum:
                         accum.extend(r.get(responsekey))
                     else:
