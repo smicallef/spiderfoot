@@ -15,6 +15,7 @@ import socket
 import re
 import dns
 import urllib2
+import encodings
 from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -88,6 +89,9 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 target.setAlias(host, "IP_ADDRESS")
             else:
                 target.setAlias(host, "INTERNET_NAME")
+                idnahost = host.encode("idna")
+                if idnahost != host:
+                    target.setAlias(idnahost, "INTERNET_NAME")
                 # If the target was a hostname/sub-domain, we can
                 # add the domain as an alias for the target. But
                 # not if the target was an IP or subnet.
@@ -120,7 +124,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
     def producedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
                 "AFFILIATE_IPADDR", "DOMAIN_NAME", "IPV6_ADDRESS", 
-                "DOMAIN_NAME_PARENT", "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN"]
+                "DOMAIN_NAME_PARENT", "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN",
+                "INTERNET_NAME_UNRESOLVED"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -265,6 +270,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
             return self.resolveCache[hostname]
 
         try:
+            # IDNA-encode the hostname in case it contains unicode
+            hostname = hostname.encode("idna")
             addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
             self.resolveCache[hostname] = addrs
             self.sf.debug("Resolved " + hostname + " to: " + str(addrs))

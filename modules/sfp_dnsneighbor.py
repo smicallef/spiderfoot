@@ -169,6 +169,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             return self.resolveCache[hostname]
 
         try:
+            hostname = hostname.encode("idna")
             addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
             self.resolveCache[hostname] = addrs
             self.sf.debug("Resolved " + hostname + " to: " + str(addrs))

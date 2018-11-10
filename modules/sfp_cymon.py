@@ -91,7 +91,7 @@ class sfp_cymon(SpiderFootPlugin):
         headers = {
             'Authorization': "Token " + self.opts['cymon_api_key']
         }
-        url = cymon_url + "/" + querytype.format(qry)
+        url = cymon_url + "/" + querytype.format(qry.encode('utf-8', errors='replace'))
         res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], 
                                useragent="SpiderFoot", headers=headers)
 

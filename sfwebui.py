@@ -293,7 +293,7 @@ class SpiderFootWebUi:
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=newId, name=scanname, docroot=self.docroot,
+        return templ.render(id=newId, name=unicode(scanname, 'utf-8', errors='replace'), docroot=self.docroot,
             status=globalScanStatus.getStatus(newId), pageid="SCANLIST")
 
     rerunscan.exposed = True
@@ -326,8 +326,9 @@ class SpiderFootWebUi:
 
             # Start running a new scan
             newId = sf.genScanInstanceGUID(scanname)
-            t = SpiderFootScanner(scanname, scantarget.lower(), targetType, newId,
-                                  modlist, cfg, modopts)
+            t = SpiderFootScanner(unicode(scanname, 'utf-8', errors='replace'), 
+                                  unicode(scantarget, 'utf-8', errors='replace').lower(), 
+                                  targetType, newId, modlist, cfg, modopts)
             t.start()
 
             # Wait until the scan has initialized
@@ -377,7 +378,8 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
                             modules=self.config['__modules__'], selectedmods=modlist,
-                            scanname=scanname, scantarget=scantarget)
+                            scanname=unicode(scanname, 'utf-8', errors='replace'), 
+                            scantarget=unicode(scantarget, 'utf-8', errors='replace'))
 
     clonescan.exposed = True
 
@@ -396,8 +398,8 @@ class SpiderFootWebUi:
         if res is None:
             return self.error("Scan ID not found.")
 
-        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=id, name=res[0], status=res[5], docroot=self.docroot,
+        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup, disable_unicode=True, input_encoding='utf-8')
+        return templ.render(id=id, name=cgi.escape(res[0]), status=res[5], docroot=self.docroot,
                             pageid="SCANLIST")
 
     scaninfo.exposed = True
@@ -857,8 +859,7 @@ class SpiderFootWebUi:
         retdata = []
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
-            retdata.append([generated, row[1], row[2],
-                            cgi.escape(unicode(row[3], errors='replace')), row[4]])
+            retdata.append([generated, row[1], row[2], cgi.escape(row[3]), row[4]])
         return json.dumps(retdata)
 
     scanlog.exposed = True

@@ -61,7 +61,7 @@ class sfp_wigle(SpiderFootPlugin):
 
     def getcoords(self, qry):
         url = "https://api.wigle.net/api/v2/network/geocode?" + \
-              urllib.urlencode({'addresscode': unicode.encode(qry, 'utf-8', errors='replace')})
+              urllib.urlencode({'addresscode': qry.encode('utf-8', errors='replace')})
         hdrs = { 
                     "Accept": "application/json",
                     "Authorization": "Basic " + self.opts['api_key_encoded']

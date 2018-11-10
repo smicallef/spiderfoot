@@ -34,7 +34,7 @@ class SpiderFootScanner(threading.Thread):
                  globalOpts, moduleOpts):
 
         # Initialize the thread
-        threading.Thread.__init__(self, name="SF_" + scanName + \
+        threading.Thread.__init__(self, name="SF_" + scanId + \
                                              str(random.randint(100000, 999999)))
 
         # Temporary data to be used in startScan

@@ -28,12 +28,6 @@ malchecks = {
 class sfp_voipbl(SpiderFootPlugin):
     """VoIPBL OpenPBX IPs:Investigate,Passive:Reputation Systems::Check if an IP or netblock is an open PBX according to VoIPBL OpenPBX IPs."""
 
-
-
-
-
-
-
     # Default options
     opts = {
         '_voipbl': True,
@@ -54,11 +48,11 @@ class sfp_voipbl(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -181,13 +175,18 @@ class sfp_voipbl(SpiderFootPlugin):
                             return url
                 else:
                     # Check for the domain and the hostname
-                    rxDom = unicode(malchecks[check]['regex']).format(targetDom.decode('string_escape'))
-                    rxTgt = unicode(malchecks[check]['regex']).format(target.decode('string_escape'))
-                    for line in data['content'].split('\n'):
-                        if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
-                                re.match(rxTgt, line, re.IGNORECASE):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                            return url
+                    try:
+                        rxDom = unicode(malchecks[check]['regex']).format(targetDom)
+                        rxTgt = unicode(malchecks[check]['regex']).format(target)
+                        for line in data['content'].split('\n'):
+                            if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
+                                    re.match(rxTgt, line, re.IGNORECASE):
+                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                                return url
+                    except BaseException as e:
+                        self.sf.debug("Error encountered parsing 2: " + str(e))
+                        continue
+
         return None
 
     def lookupItem(self, resourceId, itemType, target):
@@ -215,7 +214,7 @@ class sfp_voipbl(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None

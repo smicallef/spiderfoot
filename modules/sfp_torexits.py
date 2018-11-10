@@ -49,11 +49,11 @@ class sfp_torexits(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
         self.__dataSource__ = "torproject.org"
 
         # Clear / reset any other class member variables here
@@ -177,13 +177,18 @@ class sfp_torexits(SpiderFootPlugin):
                             return url
                 else:
                     # Check for the domain and the hostname
-                    rxDom = unicode(malchecks[check]['regex']).format(targetDom.decode('string_escape'))
-                    rxTgt = unicode(malchecks[check]['regex']).format(target.decode('string_escape'))
-                    for line in data['content'].split('\n'):
-                        if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
-                                re.match(rxTgt, line, re.IGNORECASE):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                            return url
+                    try:
+                        rxDom = unicode(malchecks[check]['regex']).format(targetDom)
+                        rxTgt = unicode(malchecks[check]['regex']).format(target)
+                        for line in data['content'].split('\n'):
+                            if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
+                                    re.match(rxTgt, line, re.IGNORECASE):
+                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                                return url
+                    except BaseException as e:
+                        self.sf.debug("Error encountered parsing 2: " + str(e))
+                        continue
+
         return None
 
     def lookupItem(self, resourceId, itemType, target):
@@ -211,7 +216,7 @@ class sfp_torexits(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None

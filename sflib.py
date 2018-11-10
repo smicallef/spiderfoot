@@ -281,7 +281,7 @@ class SpiderFoot:
  #           str(time.time() * 1000) +
  #           str(random.randint(100000, 999999))
  #       ).hexdigest()
-        rstr = scanName + str(time.time()) + str(random.randint(100000, 999999))
+        rstr = str(time.time()) + str(random.randint(100000, 999999))
         hashStr = "%08X" % int(binascii.crc32(rstr) & 0xffffffff)
         return hashStr
 
@@ -294,6 +294,8 @@ class SpiderFoot:
             print '[Error] ' + error
         else:
             self._dblog("ERROR", error)
+        if self.opts.get('__logstdout'):
+            print "[Error] " + error
         if exception:
             raise BaseException("Internal Error Encountered: " + error)
 
@@ -310,6 +312,8 @@ class SpiderFoot:
             print "[Status] " + message
         else:
             self._dblog("STATUS", message)
+        if self.opts.get('__logstdout'):
+            print "[*] " + message
 
     def info(self, message):
         frm = inspect.stack()[1]
@@ -332,6 +336,8 @@ class SpiderFoot:
             print '[' + modName + '] ' + message
         else:
             self._dblog("INFO", message, modName)
+        if self.opts.get('__logstdout'):
+            print "[*] " + message
         return
 
     def debug(self, message):
@@ -357,6 +363,8 @@ class SpiderFoot:
             print '[' + modName + '] ' + message
         else:
             self._dblog("DEBUG", message, modName)
+        if self.opts.get('__logstdout'):
+            print "[d] " + message
         return
 
     def myPath(self):
@@ -544,14 +552,14 @@ class SpiderFoot:
         regexToType = {
             "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
             "^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER",
-            "^.[a-zA-Z\-0-9\.]+$": "INTERNET_NAME",
             "^.*@.*$": "EMAILADDR",
-            "^\".*\"$": "HUMAN_NAME"
+            "^\".*\"$": "HUMAN_NAME",
+            ".*\..*": "INTERNET_NAME"
         }
 
         # Parse the target and set the targetType
-        for rx in regexToType.keys():
-            if re.match(rx, target, re.IGNORECASE):
+        for rx in regexToType:
+            if re.match(rx, target, re.IGNORECASE|re.UNICODE):
                 targetType = regexToType[rx]
                 break
         return targetType
@@ -567,6 +575,8 @@ class SpiderFoot:
             for evtype in self.opts['__modules__'][mod]['provides']:
                 if evtype in events and mod not in modlist:
                     modlist.append(mod)
+                if "*" in events and mod not in modlist:
+                    modlist.append(mod)
 
         return modlist
 
@@ -577,6 +587,9 @@ class SpiderFoot:
         for mod in self.opts['__modules__'].keys():
             if self.opts['__modules__'][mod]['consumes'] is None:
                 continue
+            
+            if "*" in self.opts['__modules__'][mod]['consumes'] and mod not in modlist:
+                modlist.append(mod)
 
             for evtype in self.opts['__modules__'][mod]['consumes']:
                 if evtype in events and mod not in modlist:
@@ -731,9 +744,9 @@ class SpiderFoot:
         for addr in res:
             if type(addr) == list:
                 for host in addr:
-                    ret.append(host)
+                    ret.append(unicode(host, 'utf-8', errors='replace'))
             else:
-                ret.append(addr)
+                ret.append(unicode(addr, 'utf-8', errors='replace'))
         return ret
 
     # Return dictionary words and/or names
@@ -902,6 +915,8 @@ class SpiderFoot:
                 # Remember the regex will return two vars (two groups captured)
                 junk = linkTuple[0]
                 link = linkTuple[1]
+                if type(link) != unicode:
+                    link = unicode(link, 'utf-8', errors='replace')
                 linkl = link.lower()
                 absLink = None
 
@@ -955,6 +970,9 @@ class SpiderFoot:
 
         return returnLinks
 
+    def urlEncodeUnicode(self, url):
+        return re.sub('[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), url)
+
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False, 
@@ -974,6 +992,9 @@ class SpiderFoot:
         # Clean the URL
         if type(url) != unicode:
             url = unicode(url, 'utf-8', errors='replace')
+
+        # Convert any unicode chars in the URL
+        url = self.urlEncodeUnicode(url)
 
         try:
             header = dict()
@@ -1028,6 +1049,7 @@ class SpiderFoot:
             else:
                 if not noLog:
                     self.info("Fetching: " + url + " [timeout: " + str(timeout) + "]")
+
 
             result['headers'] = dict()
             opener = urllib2.build_opener(SmartRedirectHandler())
@@ -1084,10 +1106,8 @@ class SpiderFoot:
         # An exception will be raised if the resolution fails
         try:
             addrs = socket.gethostbyname_ex(randhost + "." + target)
-            self.debug(target + " has wildcard DNS.")
             return True
         except BaseException as e:
-            self.debug(target + " does not have wildcard DNS.")
             return False
 
     # Scrape Google for content, starting at startUrl and iterating through
@@ -1472,7 +1492,10 @@ class SpiderFootPlugin(object):
     # within the same execution context of this thread, not on their own.
     def notifyListeners(self, sfEvent):
         eventName = sfEvent.eventType
-        eventData = sfEvent.data
+        if type(sfEvent.data) == str:
+            eventData = unicode(sfEvent.data, 'utf-8', errors='replace')
+        else:
+            eventData = sfEvent.data
         storeOnly = False  # Under some conditions, only store and don't notify
 
         if eventData is None or (type(eventData) is unicode and len(eventData) == 0):
@@ -1526,7 +1549,10 @@ class SpiderFootPlugin(object):
                 return None
 
             #print "EVENT: " + str(sfEvent)
-            listener.handleEvent(sfEvent)
+            try:
+                listener.handleEvent(sfEvent)
+            except BaseException as e:
+                self.sf.error("Module encountered an error: " + str(e))
 
     # For modules to use to check for when they should give back control
     def checkForStop(self):
@@ -1716,6 +1742,14 @@ class SpiderFootEvent(object):
         self.sourceEventHash = sourceEvent.getHash()
         self.__id = self.eventType + str(self.generated) + self.module + \
                     str(random.randint(0, 99999999))
+
+    def asDict(self):
+        return {
+            'generated': int(self.generated),
+            'type': self.eventType,
+            'data': self.data,
+            'module': self.module
+        }
 
     # Unique hash of this event
     def getHash(self):

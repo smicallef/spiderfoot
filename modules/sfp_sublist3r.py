@@ -51,6 +51,7 @@ class sfp_sublist3r(SpiderFootPlugin):
     # Verify a host resolves
     def resolveHost(self, host):
         try:
+            host = host.encode("idna")
             addrs = socket.gethostbyname_ex(host)
         except BaseException as e:
             self.sf.debug("Unable to resolve " + host + ": " + str(e))

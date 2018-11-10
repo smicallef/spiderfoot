@@ -177,8 +177,8 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
                 else:
                     # Check for the domain and the hostname
                     try:
-                        rxDom = unicode(malchecks[check]['regex']).format(targetDom.decode('string_escape'))
-                        rxTgt = unicode(malchecks[check]['regex']).format(target.decode('string_escape'))
+                        rxDom = unicode(malchecks[check]['regex']).format(targetDom)
+                        rxTgt = unicode(malchecks[check]['regex']).format(target)
                         for line in data['content'].split('\n'):
                             if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                                     re.match(rxTgt, line, re.IGNORECASE):

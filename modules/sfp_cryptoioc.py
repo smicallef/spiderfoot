@@ -180,13 +180,18 @@ class sfp_cryptoioc(SpiderFootPlugin):
                             return url
                 else:
                     # Check for the domain and the hostname
-                    rxDom = unicode(malchecks[check]['regex']).format(targetDom.decode('string_escape'))
-                    rxTgt = unicode(malchecks[check]['regex']).format(target.decode('string_escape'))
-                    for line in data['content'].split('\n'):
-                        if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
-                                re.match(rxTgt, line, re.IGNORECASE):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                            return url
+                    try:
+                        rxDom = unicode(malchecks[check]['regex']).format(targetDom)
+                        rxTgt = unicode(malchecks[check]['regex']).format(target)
+                        for line in data['content'].split('\n'):
+                            if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
+                                    re.match(rxTgt, line, re.IGNORECASE):
+                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                                return url
+                    except BaseException as e:
+                        self.sf.debug("Error encountered parsing 2: " + str(e))
+                        continue
+
         return None
 
     def lookupItem(self, resourceId, itemType, target):

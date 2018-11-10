@@ -98,6 +98,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             return self.resolveCache[hostname]
 
         try:
+            hostname = hostname.encode("idna")
             addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
             self.resolveCache[hostname] = addrs
             self.sf.debug("Resolved " + hostname + " to: " + str(addrs))
@@ -168,6 +169,9 @@ class sfp_dnsbrute(SpiderFootPlugin):
         if eventDataHash in self.events:
             return None
         self.events[eventDataHash] = True
+
+        # Handle Unicode characters in the name
+        eventData = eventData.encode("idna")
 
         if eventName == "INTERNET_NAME" and not self.getTarget().matches(eventData, includeChildren=False):
             if not self.opts['numbersuffix']:
