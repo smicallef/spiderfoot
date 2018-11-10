@@ -472,7 +472,8 @@ class SpiderFootWebUi:
                 return json.dumps(["SUCCESS", ""])
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=id, name=res[0], names=list(), ids=list(),
+            return templ.render(id=id, name=unicode(res[0], 'utf-8', errors='replace'), 
+                                names=list(), ids=list(),
                                 pageid="SCANLIST", docroot=self.docroot)
 
     scandelete.exposed = True
@@ -484,7 +485,7 @@ class SpiderFootWebUi:
 
         for id in ids.split(','):
             res = dbh.scanInstanceGet(id)
-            names.append(res[0])
+            names.append(unicode(res[0], 'utf-8', errors='replace'))
             if res is None:
                 return self.error("Scan ID not found (" + id + ").")
 
@@ -779,17 +780,19 @@ class SpiderFootWebUi:
             if scaninfo is None:
                 return self.error("Invalid scan ID specified.")
 
+            scanname = unicode(scaninfo[0], 'utf-8', errors='replace')
+
             if globalScanStatus.getStatus(id) == "FINISHED" or scaninfo[5] == "FINISHED":
-                error.append("Scan '" + scaninfo[0] + "' is in a finished state. <a href='/scandelete?id=" + \
+                error.append("Scan '" + scanname + "' is in a finished state. <a href='/scandelete?id=" + \
                              id + "&confirm=1'>Maybe you want to delete it instead?</a>")
                 errState = True
 
             if not errState and (globalScanStatus.getStatus(id) == "ABORTED" or scaninfo[5] == "ABORTED"):
-                error.append("Scan '" + scaninfo[0] + "' is already aborted.")
+                error.append("Scan '" + scanname + "' is already aborted.")
                 errState = True
 
             if not errState and globalScanStatus.getStatus(id) is None:
-                error.append("Scan '" + scaninfo[0] + "' is not actually running. A data consistency " + \
+                error.append("Scan '" + scanname + "' is not actually running. A data consistency " + \
                              "error for this scan probably exists. <a href='/scandelete?id=" + \
                              id + "&confirm=1'>Click here to delete it.</a>")
                 errState = True
