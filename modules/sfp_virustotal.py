@@ -80,7 +80,12 @@ class sfp_virustotal(SpiderFootPlugin):
     # Verify a host resolves
     def resolveHost(self, host):
         try:
-            host = host.encode("idna")
+            # IDNA-encode the hostname in case it contains unicode
+            if type(host) != unicode:
+                host = unicode(host, "utf-8", errors='replace').encode("idna")
+            else:
+                host = host.encode("idna")
+
             addrs = socket.gethostbyname_ex(host)
         except BaseException as e:
             self.sf.debug("Unable to resolve " + host + ": " + str(e))

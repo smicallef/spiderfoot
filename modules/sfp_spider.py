@@ -239,7 +239,7 @@ class sfp_spider(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if eventData in self.urlEvents.keys():
+        if eventData in self.urlEvents:
             self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")
             return None
         else:
@@ -252,7 +252,8 @@ class sfp_spider(SpiderFootPlugin):
         # Determine where to start spidering from if it's a INTERNET_NAME event
         if eventName == "INTERNET_NAME":
             for prefix in self.opts['start']:
-                res = self.sf.fetchUrl(prefix + eventData, timeout=self.opts['_fetchtimeout'],
+                url = prefix + eventData
+                res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                        useragent=self.opts['_useragent'])
                 if res['content'] is not None:
                     spiderTarget = prefix + eventData

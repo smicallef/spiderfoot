@@ -271,7 +271,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         try:
             # IDNA-encode the hostname in case it contains unicode
-            hostname = hostname.encode("idna")
+            if type(hostname) != unicode:
+                hostname = unicode(hostname, "utf-8", errors='replace').encode("idna")
+            else:
+                hostname = hostname.encode("idna")
             addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
             self.resolveCache[hostname] = addrs
             self.sf.debug("Resolved " + hostname + " to: " + str(addrs))

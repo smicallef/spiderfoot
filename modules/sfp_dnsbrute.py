@@ -90,23 +90,6 @@ class sfp_dnsbrute(SpiderFootPlugin):
     def producedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "IPV6_ADDRESS"]
 
-    # Resolve a host
-    def resolveHost(self, hostname):
-        if hostname in self.resolveCache:
-            self.sf.debug("Returning cached result for " + hostname + " (" +
-                          str(self.resolveCache[hostname]) + ")")
-            return self.resolveCache[hostname]
-
-        try:
-            hostname = hostname.encode("idna")
-            addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
-            self.resolveCache[hostname] = addrs
-            self.sf.debug("Resolved " + hostname + " to: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + hostname + " (" + str(e) + ")")
-            return list()
-
     def tryHost(self, name):
         resolver = dns.resolver.Resolver()
         resolver.timeout = 2
@@ -114,6 +97,12 @@ class sfp_dnsbrute(SpiderFootPlugin):
         resolver.search = list()
 
         try:
+            # IDNA-encode the hostname in case it contains unicode
+            if type(name) != unicode:
+                name = unicode(name, "utf-8", errors='replace').encode("idna")
+            else:
+                name = name.encode("idna")
+
             addrs = resolver.query(name)
             self.hostResults[name] = True
         except BaseException as e:
@@ -171,7 +160,10 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.events[eventDataHash] = True
 
         # Handle Unicode characters in the name
-        eventData = eventData.encode("idna")
+        if type(eventData) != unicode:
+            eventData = unicode(eventData, "utf-8", errors='replace').encode("idna")
+        else:
+            eventData = eventData.encode("idna")
 
         if eventName == "INTERNET_NAME" and not self.getTarget().matches(eventData, includeChildren=False):
             if not self.opts['numbersuffix']:

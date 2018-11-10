@@ -994,7 +994,7 @@ class SpiderFoot:
             url = unicode(url, 'utf-8', errors='replace')
 
         # Convert any unicode chars in the URL
-        url = self.urlEncodeUnicode(url)
+        url = str(self.urlEncodeUnicode(url))
 
         try:
             header = dict()
@@ -1492,13 +1492,14 @@ class SpiderFootPlugin(object):
     # within the same execution context of this thread, not on their own.
     def notifyListeners(self, sfEvent):
         eventName = sfEvent.eventType
+
+        # Convert strings to unicode
         if type(sfEvent.data) == str:
-            eventData = unicode(sfEvent.data, 'utf-8', errors='replace')
-        else:
-            eventData = sfEvent.data
+            sfEvent.data = unicode(sfEvent.data, 'utf-8', errors='replace')
+
         storeOnly = False  # Under some conditions, only store and don't notify
 
-        if eventData is None or (type(eventData) is unicode and len(eventData) == 0):
+        if sfEvent.data is None or (type(sfEvent.data) is unicode and len(sfEvent.data) == 0):
             #print "No data to send for " + eventName + " to " + listener.__module__
             return None
 
@@ -1552,7 +1553,7 @@ class SpiderFootPlugin(object):
             try:
                 listener.handleEvent(sfEvent)
             except BaseException as e:
-                self.sf.error("Module encountered an error: " + str(e))
+                print "Module encountered an error: " + str(e)
 
     # For modules to use to check for when they should give back control
     def checkForStop(self):
@@ -1604,7 +1605,7 @@ class SpiderFootTarget(object):
     def __init__(self, targetValue, typeName):
         if typeName in self._validTypes:
             self.targetType = typeName
-            self.targetValue = targetValue.lower()
+            self.targetValue = unicode(targetValue.lower(), 'utf-8', errors='replace')
             self.targetAliases = list()
         else:
             print "Internal Error: Invalid target type."
