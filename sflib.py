@@ -1553,7 +1553,7 @@ class SpiderFootPlugin(object):
             try:
                 listener.handleEvent(sfEvent)
             except BaseException as e:
-                f = open("/tmp/sferror", "a")
+                f = open("sferror.log", "a")
                 f.write("Module (" + listener.__module__ + ") encountered an error: " + str(e))
                 f.close()
 
