@@ -1553,7 +1553,9 @@ class SpiderFootPlugin(object):
             try:
                 listener.handleEvent(sfEvent)
             except BaseException as e:
-                print "Module encountered an error: " + str(e)
+                f = open("/tmp/sferror", "a")
+                f.write("Module (" + listener.__module__ + ") encountered an error: " + str(e))
+                f.close()
 
     # For modules to use to check for when they should give back control
     def checkForStop(self):
@@ -1605,7 +1607,8 @@ class SpiderFootTarget(object):
     def __init__(self, targetValue, typeName):
         if typeName in self._validTypes:
             self.targetType = typeName
-            self.targetValue = unicode(targetValue.lower(), 'utf-8', errors='replace')
+            if type(targetValue) != unicode:
+                self.targetValue = unicode(targetValue, 'utf-8', errors='replace').lower()
             self.targetAliases = list()
         else:
             print "Internal Error: Invalid target type."

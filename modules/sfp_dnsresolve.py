@@ -264,6 +264,9 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
     # Resolve a host
     def resolveHost(self, hostname):
+        if not hostname:
+            return list()
+
         if hostname in self.resolveCache:
             self.sf.debug("Returning cached result for " + hostname + " (" +
                           str(self.resolveCache[hostname]) + ")")
