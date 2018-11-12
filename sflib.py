@@ -34,6 +34,10 @@ import threading
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy, copy
 
+# For hiding the SSL warnings coming from the requests lib
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 class SpiderFoot:
     dbh = None
     GUID = None
@@ -290,6 +294,9 @@ class SpiderFoot:
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, error, exception=True):
+        if not self.opts['__logging']:
+            return None
+
         if self.dbh is None:
             print '[Error] ' + error
         else:
@@ -308,6 +315,9 @@ class SpiderFoot:
         sys.exit(-1)
 
     def status(self, message):
+        if not self.opts['__logging']:
+            return None
+
         if self.dbh is None:
             print "[Status] " + message
         else:
@@ -316,6 +326,9 @@ class SpiderFoot:
             print "[*] " + message
 
     def info(self, message):
+        if not self.opts['__logging']:
+            return None
+
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
 
@@ -343,6 +356,8 @@ class SpiderFoot:
     def debug(self, message):
         if not self.opts['_debug']:
             return
+        if not self.opts['__logging']:
+            return None
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
 
@@ -748,6 +763,16 @@ class SpiderFoot:
             else:
                 ret.append(unicode(addr, 'utf-8', errors='replace'))
         return ret
+
+    # Verify input is OK to execute
+    def sanitiseInput(self, cmd):
+        chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m',
+         'n','o','p','q','r','s','t','u','v','w','x','y','z',
+         '0','1','2','3','4','5','6','7','8','9','-','.'] 
+        for c in cmd:
+            if c.lower() not in chars:
+                return False
+        return True
 
     # Return dictionary words and/or names
     def dictwords(self):
