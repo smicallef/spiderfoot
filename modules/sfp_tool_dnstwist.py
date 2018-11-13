@@ -23,14 +23,14 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'pythonpath': "python"
-        'dnstwistpath': "",
+        'pythonpath': "python",
+        'dnstwistpath': ""
     }
 
     # Option descriptions
     optdescs = {
         'pythonpath': "Path to Python interpreter to use for DNSTwist. If just 'python' then it should be in your PATH.",
-        'dnstwistpath': "Path to the where the dnstwist.py file lives. Must be set.",
+        'dnstwistpath': "Path to the where the dnstwist.py file lives. Must be set."
     }
 
     results = None
