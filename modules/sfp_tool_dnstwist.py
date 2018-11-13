@@ -23,12 +23,13 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
 
     # Default options
     opts = {
-        # Commonly used ports on external-facing systems
+        'pythonpath': "python"
         'dnstwistpath': "",
     }
 
     # Option descriptions
     optdescs = {
+        'pythonpath': "Path to Python interpreter to use for DNSTwist. If just 'python' then it should be in your PATH.",
         'dnstwistpath': "Path to the where the dnstwist.py file lives. Must be set.",
     }
 
@@ -89,7 +90,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             return None
 
         try:
-            p = Popen(["python", exe, "-f", "json", "-r", eventData], stdout=PIPE, stderr=PIPE)
+            p = Popen([self.opts['pythonpath'], exe, "-f", "json", "-r", eventData], stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
             if p.returncode == 0:
                 content = stdout

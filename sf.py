@@ -14,6 +14,10 @@
 import sys
 import os
 import inspect
+import signal
+import time
+import argparse
+from copy import deepcopy
 
 # Look under ext ford 3rd party dependencies
 cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "ext")))
@@ -52,20 +56,24 @@ import cherrypy
 import random
 from cherrypy.lib import auth_digest
 from sflib import SpiderFoot
+from sfdb import SpiderFootDb
 from sfwebui import SpiderFootWebUi
+from sfscan import SpiderFootScanner
 
 # 'Global' configuration options
 # These can be overriden on a per-module basis, and some will
 # be overridden from saved configuration settings stored in the DB.
 sfConfig = {
     '_debug': False,  # Debug
+    '__logging': True, # Logging in general
     '__blocknotif': False,  # Block notifications
+    '_fatalerrors': False,
     '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
     '_dnsserver': '',  # Override the default resolver
     '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
     '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
     '_internettlds_cache': 72,
-    '__version__': '2.12',
+    '__version__': '3.0',
     '__database': 'spiderfoot.db',
     '__webaddr': '127.0.0.1',
     '__webport': 5001,
@@ -77,7 +85,8 @@ sfConfig = {
     '_socks4user': '',
     '_socks5pwd': '',
     '_socks6dns': True,
-    '_torctlport': 9051
+    '_torctlport': 9051,
+    '__logstdout': False
 }
 
 sfOptdescs = {
@@ -94,20 +103,59 @@ sfOptdescs = {
     '_socks5pwd': "SOCKS Password. Valid only for SOCKS5 servers.",
     '_socks6dns': "Resolve DNS through the SOCKS proxy? Has no affect when TOR is used: Will always be True.",
     '_torctlport': "The port TOR is taking control commands on. This is necessary for SpiderFoot to tell TOR to re-circuit when it suspects anonymity is compromised.",
+    '_fatalerrors': "Abort the scan when modules encounter exceptions.",
     '_modulesenabled': "Modules enabled for the scan."  # This is a hack to get a description for an option not actually available.
 }
 
+scanId = None
+dbh = None
+
+def handle_abort(signal, frame):
+    print "[*] Aborting..."
+    if scanId and dbh:
+        dbh.scanInstanceSet(scanId, None, None, "ABORTED")
+    sys.exit(-1)
+
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        (addr, port) = sys.argv[1].split(":")
-        sfConfig['__webaddr'] = addr
-        sfConfig['__webport'] = int(port)
+    # Legacy way to run the server
+    args = None
+    if (len(sys.argv) > 1 and ":" in sys.argv[1]) or len(sys.argv) == 1:
+        if len(sys.argv) > 1:
+            (addr, port) = sys.argv[1].split(":")
+            sfConfig['__webaddr'] = addr
+            sfConfig['__webport'] = int(port)
+            sfConfig['__logstdout'] = False
+    else:
+        p = argparse.ArgumentParser(description='SpiderFoot 3.0: Open Source Intelligence Automation.')
+        p.add_argument("-d", "--debug", action='store_true', help="Enable debug output.")
+        p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")
+        p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
+        p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
+        p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to enable.")
+        p.add_argument("-T", "--types", action='store_true', help="List available event types.")
+        p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
+        p.add_argument("-n", action='store_true', help="Strip newlines from data.")
+        p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
+        p.add_argument("-f", action='store_true', help="Filter out other event types that weren't requested with -t.")
+        p.add_argument("-F", metavar="FILTER", type=str, help="Filter out a set of event types.")
+        p.add_argument("-q", action='store_true', help="Disable logging.")
+        args = p.parse_args()
 
-    sf = SpiderFoot(sfConfig)
+        sfConfig['__logstdout'] = True
+            
+        if args.debug:
+            sfConfig['_debug'] = True
+        else:
+            sfConfig['_debug'] = False
+
+        if args.q:
+            sfConfig['__logging'] = False
+
+
     sfModules = dict()
-
+    sft = SpiderFoot(sfConfig)
     # Go through each module in the modules directory with a .py extension
-    for filename in os.listdir(sf.myPath() + '/modules/'):
+    for filename in os.listdir(sft.myPath() + '/modules/'):
         if filename.startswith("sfp_") and filename.endswith(".py"):
             # Skip the module template and debugging modules
             if filename == "sfp_template.py" or filename == 'sfp_stor_print.py':
@@ -138,6 +186,124 @@ if __name__ == '__main__':
     sfConfig['__modules__'] = sfModules
     # Add descriptions of the global config options
     sfConfig['__globaloptdescs__'] = sfOptdescs
+
+    sf = SpiderFoot(sfConfig)
+    dbh = SpiderFootDb(sfConfig)
+
+    if args:
+        if args.modules:
+            print "Modules available:"
+            for m in sorted(sfModules.keys()):
+                if "__" in m:
+                    continue
+                print '{0:25}  {1}'.format(m, sfModules[m]['descr'])
+            sys.exit(0)
+
+        if args.types:
+            print "Types available:"
+            typedata = dbh.eventTypes()
+            types = dict()
+            for r in typedata:
+                types[r[1]] = r[0]
+
+            for t in sorted(types.keys()):
+                print '{0:45}  {1}'.format(t, types[t])
+            sys.exit(0)
+
+        if not args.s:
+            print "You must specify a target when running in scan mode. Try sf.py --help for guidance."
+            sys.exit(-1)
+
+        target = args.s
+        targetType = sf.targetType(args.s)
+
+        modlist = list()
+        if not args.t and not args.m:
+            print "WARNING: You didn't specify any modules or types, so all will be enabled."
+            for m in sfModules.keys():
+                if "__" in m:
+                    continue
+                modlist.append(m)
+
+        signal.signal(signal.SIGINT, handle_abort)
+        # If the user is scanning by type..
+        # 1. Find modules producing that type
+        if args.t:
+            types = args.t
+            modlist = sf.modulesProducing(types)
+            newmods = deepcopy(modlist)
+            newmodcpy = deepcopy(newmods)
+            # 2. For each type those modules consume, get modules producing
+            while len(newmodcpy) > 0:
+                for etype in sf.eventsToModules(newmodcpy):
+                    xmods = sf.modulesProducing([etype])
+                    for mod in xmods:
+                        if mod not in modlist:
+                            modlist.append(mod)
+                            newmods.append(mod)
+                newmodcpy = deepcopy(newmods)
+                newmods = list()
+
+        # Easier if scanning by module
+        if args.m:
+            modlist = args.m.split(",")
+
+        # Add sfp__stor_stdout to the module list
+        outputformat = "tab"
+        typedata = dbh.eventTypes()
+        types = dict()
+        for r in typedata:
+            types[r[1]] = r[0]
+
+        sfConfig['__modules__']['sfp__stor_stdout']['opts']['_eventtypes'] = types
+        if args.f:
+            if args.f and not args.t:
+                print "You can only use -f with -t. Use --help for guidance."
+                sys.exit(-1)
+            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showonlyrequested'] = True
+        if args.F:
+            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_requested'] = args.F.split(",")
+            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showonlyrequested'] = True
+        if args.o:
+            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_format'] = args.o
+        if args.t:
+            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_requested'] = args.t.split(",")
+        if args.n:
+            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_stripnewline'] = True
+        if args.S:
+            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_maxlength'] = args.S
+
+        modlist += ["sfp__stor_db", "sfp__stor_stdout"]
+
+        # Run the scan
+        if not args.q:
+            print "[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist)
+        cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
+        scanId = sf.genScanInstanceGUID(target)
+
+        # Debug mode is a variable that gets stored to the DB, so re-apply it
+        if args.debug:
+            cfg['_debug'] = True
+        else:
+            cfg['_debug'] = False
+
+        t = SpiderFootScanner(target, target, targetType, scanId,
+            modlist, cfg, dict())
+        t.daemon = True
+        t.start()
+
+        while True:
+            info = dbh.scanInstanceGet(scanId)
+            if not info:
+                time.sleep(1)
+                continue
+            if info[5] in [ "ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED" ]:
+                if not args.q:
+                    print "[*] Scan completed with status " + info[5]
+                sys.exit(0)
+            time.sleep(1)
+
+        sys.exit(0)
 
     # Start the web server so you can start looking at results
     print "Starting web server at http://" + sfConfig['__webaddr'] + \
