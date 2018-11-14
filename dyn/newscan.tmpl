@@ -95,7 +95,7 @@
                     %>
                 % endif
 
-                % if item != "sfp__stor_db":
+                % if item != "sfp__stor_db" and item != "sfp__stor_stdout":
                     <tr><td><input type=checkbox id="module_${item}" checked></td><td>${modules[item]['name']}${keyicon}</td><td>${modules[item]['descr']}</td></tr>
                 % endif
             % endfor
