@@ -322,7 +322,7 @@ class SpiderFootWebUi:
             if targetType == None:
                 # Should never be triggered for a re-run scan..
                 return self.error("Invalid target type. Could not recognize it as " + \
-                                  "a human name, IP address, IP subnet, domain name or host name.")
+                                  "a human name, IP address, IP subnet, ASN, domain name or host name.")
 
             # Start running a new scan
             newId = sf.genScanInstanceGUID(scanname)
@@ -736,7 +736,7 @@ class SpiderFootWebUi:
         if targetType is None:
             if not cli:
                 return self.error("Invalid target type. Could not recognize it as " + \
-                                  "a human name, IP address, IP subnet, domain name or host name.")
+                                  "a human name, IP address, IP subnet, ASN, domain name or host name.")
             else:
                 return json.dumps(["ERROR", "Unrecognised target type."])
 

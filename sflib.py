@@ -569,6 +569,7 @@ class SpiderFoot:
             "^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER",
             "^.*@.*$": "EMAILADDR",
             "^\".*\"$": "HUMAN_NAME",
+            "\d+": "BGP_AS_OWNER",
             ".*\..*": "INTERNET_NAME"
         }
 
@@ -1624,7 +1625,7 @@ class SpiderFootPlugin(object):
 # Class for targets
 class SpiderFootTarget(object):
     _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME",
-                   "EMAILADDR", "HUMAN_NAME" ]
+                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER" ]
     targetType = None
     targetValue = None
     targetAliases = list()
