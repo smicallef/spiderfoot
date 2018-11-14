@@ -190,7 +190,7 @@ class sfp_hackertarget(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            hosts = self.reverseIpLookup(eventData)
+            hosts = self.reverseIpLookup(ip)
 
             for h in hosts:
                 if " " in h:
