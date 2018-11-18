@@ -15,6 +15,7 @@ from netaddr import IPAddress, IPNetwork
 import socket
 import random
 import threading
+import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -124,6 +125,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
 
             if not found:
                 running = False
+            time.sleep(0.25)
 
         return self.portResults
 

@@ -564,19 +564,20 @@ class SpiderFoot:
     def targetType(self, target):
         targetType = None
 
-        regexToType = {
-            "^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS",
-            "^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER",
-            "^.*@.*$": "EMAILADDR",
-            "^\".*\"$": "HUMAN_NAME",
-            "\d+": "BGP_AS_OWNER",
-            ".*\..*": "INTERNET_NAME"
-        }
+        regexToType = [
+            {"^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS"},
+            {"^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER"},
+            {"^.*@.*$": "EMAILADDR"},
+            {"^\".*\"$": "HUMAN_NAME"},
+            {"\d+": "BGP_AS_OWNER"},
+            {".*\..*": "INTERNET_NAME"}
+        ]
 
         # Parse the target and set the targetType
-        for rx in regexToType:
+        for rxpair in regexToType:
+            rx = rxpair.keys()[0]
             if re.match(rx, target, re.IGNORECASE|re.UNICODE):
-                targetType = regexToType[rx]
+                targetType = rxpair.values()[0]
                 break
         return targetType
 
