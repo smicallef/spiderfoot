@@ -65,7 +65,7 @@ class sfp_pulsedive(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_IPADDR", 
-                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK" ]
+                "MALICIOUS_AFFILIATE_IPADDR" ]
 
     def query(self, qry):
         ret = None
