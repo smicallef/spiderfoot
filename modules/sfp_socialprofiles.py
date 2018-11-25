@@ -50,11 +50,11 @@ class sfp_socialprofiles(SpiderFootPlugin):
     }
 
     keywords = None
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
         self.keywords = None
 
         for opt in userOpts.keys():
@@ -84,7 +84,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if self.keywords is None:
             self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
@@ -92,7 +92,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
             if len(self.keywords) == 0:
                 self.keywords = None
 
-        for site in sites.keys():
+        for site in sites:
             s = unicode(sites[site][0]).format(eventData)
             searchStr = s.replace(" ", "%20")
             results = None
@@ -126,7 +126,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
             self.sf.debug("Pausing for " + str(pauseSecs))
             time.sleep(pauseSecs)
 
-            for key in results.keys():
+            for key in results:
                 instances = list()
 
                 for searchDom in sites[site][1]:
@@ -153,6 +153,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                         # for a firm relationship.
                         # Keywords might be empty if the target was an IP, subnet or name.
                         if self.opts['tighten'] and self.keywords:
+                            match = urllib2.unquote(match)
                             self.sf.debug("Tightening results to look for " + str(self.keywords))
                             pres = self.sf.fetchUrl(match, timeout=self.opts['_fetchtimeout'],
                                                     useragent=self.opts['_useragent'])
@@ -168,7 +169,6 @@ class sfp_socialprofiles(SpiderFootPlugin):
                                 if not found:
                                     continue
 
-                        match = urllib2.unquote(match)
                         self.sf.info("Social Media Profile found at " + site + ": " + match)
                         evt = SpiderFootEvent("SOCIAL_MEDIA", site + ": " + match,
                                               self.__name__, event)
