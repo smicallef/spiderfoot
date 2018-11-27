@@ -25,14 +25,16 @@ class sfp_securitytrails(SpiderFootPlugin):
     opts = {
         "api_key": "",
         "verify": True,
-        "cohostsamedomain": False
+        "cohostsamedomain": False,
+        'maxcohost': 100
     }
 
     # Option descriptions
     optdescs = {
         "api_key": "SecurityTrails API key.",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
-        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?"
+        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
+        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -40,10 +42,12 @@ class sfp_securitytrails(SpiderFootPlugin):
 
     results = dict()
     errorState = False
+    cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.cohostcount = 0
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -170,6 +174,9 @@ class sfp_securitytrails(SpiderFootPlugin):
                             self.notifyListeners(e)
                             hosters.append(dat)
                     if "hostname" in r:
+                        if self.cohostcount > self.opts['maxcohost']:
+                            continue
+
                         h = r['hostname']
                         if not self.opts['cohostsamedomain']:
                             if self.getTarget().matches(h, includeParents=True):
@@ -178,11 +185,12 @@ class sfp_securitytrails(SpiderFootPlugin):
 
                         if h not in myres and h != ip:
                             if self.opts['verify'] and not self.validateIP(h, ip):
-                                self.sf.debug("Host " + h + " no longer resolves to " + ip)
+                                self.sf.debug("Host no longer resolves to our IP.")
                                 continue
                         myres.append(h.lower())
                         e = SpiderFootEvent("CO_HOSTED_SITE", h, self.__name__, event)
                         self.notifyListeners(e)
+                        self.cohostcount += 1
 
         if eventName in [ "EMAILADDR"]:
             email = eventData

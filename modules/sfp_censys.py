@@ -139,43 +139,46 @@ class sfp_censys(SpiderFootPlugin):
             if rec is not None:
                 self.sf.debug("Found results in Censys.io")
                 # 2016-12-24T07:25:35+00:00'
-                created_dt = datetime.strptime(rec.get('updated_at'), '%Y-%m-%dT%H:%M:%S+00:00')
-                created_ts = int(time.mktime(created_dt.timetuple()))
-                age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
-                if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                    self.sf.debug("Record found but too old, skipping.")
-                    continue
-                if 'location' in rec:
-                    dat = rec['location'].get('country')
-                    if dat:
-                        e = SpiderFootEvent("GEOINFO", dat, self.__name__, event)
+                try:
+                    created_dt = datetime.strptime(rec.get('updated_at'), '%Y-%m-%dT%H:%M:%S+00:00')
+                    created_ts = int(time.mktime(created_dt.timetuple()))
+                    age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
+                    if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
+                        self.sf.debug("Record found but too old, skipping.")
+                        continue
+                    if 'location' in rec:
+                        dat = rec['location'].get('country')
+                        if dat:
+                            e = SpiderFootEvent("GEOINFO", dat, self.__name__, event)
+                            self.notifyListeners(e)
+
+                    if 'headers' in rec:
+                        dat = rec['headers']
+                        e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, event)
                         self.notifyListeners(e)
 
-                if 'headers' in rec:
-                    dat = rec['headers']
-                    e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, event)
-                    self.notifyListeners(e)
-
-                if 'autonomous_system' in rec:
-                    dat = str(rec['autonomous_system']['asn'])
-                    e = SpiderFootEvent("BGP_AS_MEMBER", dat, self.__name__, event)
-                    self.notifyListeners(e)
-                    dat = rec['autonomous_system']['routed_prefix']
-                    e = SpiderFootEvent("NETBLOCK_MEMBER", dat, self.__name__, event)
-                    self.notifyListeners(e)
-
-                if 'protocols' in rec:
-                    for p in rec['protocols']:
-                        if 'ip' not in rec:
-                            continue
-                        dat = rec['ip'] + ":" + p.split("/")[0]
-                        e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, event)
+                    if 'autonomous_system' in rec:
+                        dat = str(rec['autonomous_system']['asn'])
+                        e = SpiderFootEvent("BGP_AS_MEMBER", dat, self.__name__, event)
+                        self.notifyListeners(e)
+                        dat = rec['autonomous_system']['routed_prefix']
+                        e = SpiderFootEvent("NETBLOCK_MEMBER", dat, self.__name__, event)
                         self.notifyListeners(e)
 
-                if 'metadata' in rec:
-                    if 'os_description' in rec['metadata']:
-                        dat = rec['metadata']['os_description']
-                        e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, event)
-                        self.notifyListeners(e)
-    
+                    if 'protocols' in rec:
+                        for p in rec['protocols']:
+                            if 'ip' not in rec:
+                                continue
+                            dat = rec['ip'] + ":" + p.split("/")[0]
+                            e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, event)
+                            self.notifyListeners(e)
+
+                    if 'metadata' in rec:
+                        if 'os_description' in rec['metadata']:
+                            dat = rec['metadata']['os_description']
+                            e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, event)
+                            self.notifyListeners(e)
+                except BaseException as e:
+                    self.sf.error("Error encountered processing record for " + eventData, False)
+        
 # End of sfp_censys class

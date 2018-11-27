@@ -31,6 +31,7 @@ class sfp_spider(SpiderFootPlugin):
                         'mpeg', 'iso', 'dat', 'mov', 'swf', 'rar', 'exe', 'zip',
                         'bin', 'bz2', 'xsl', 'doc', 'docx', 'ppt', 'pptx', 'xls',
                         'xlsx', 'csv'],
+        'filtermime': ['image/'],
         'filterusers': True,  # Don't follow /~user directories
         'nosubs': False,  # Should links to subdomains be ignored?
         'reportduplicates': False,
@@ -46,6 +47,7 @@ class sfp_spider(SpiderFootPlugin):
         'maxpages': "Maximum number of pages to fetch per starting point identified.",
         'maxlevels': "Maximum levels to traverse per starting point (e.g. hostname or link identified by another module) identified.",
         'filterfiles': "File extensions to ignore (don't fetch them.)",
+        'filtermime': "MIME types to ignore.",
         'filterusers': "Skip spidering of /~user directories?",
         'nosubs': "Skip spidering of subdomains of the target?",
         'reportduplicates': "Report links every time one is found, even if found before?",
@@ -194,9 +196,20 @@ class sfp_spider(SpiderFootPlugin):
 
     # Notify listening modules about raw data and others
     def contentNotify(self, url, httpresult, parentEvent=None):
-        event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
-                                self.__name__, parentEvent)
-        self.notifyListeners(event)
+        sendcontent = True
+        if httpresult.get('headers'):
+            ctype = httpresult['headers'].get('content-type')
+            if not ctype:
+                sendcontent = True
+            else:
+                for mt in self.opts['filtermime']:
+                    if ctype.startswith(mt):
+                        sendcontent = False
+
+        if sendcontent:
+            event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
+                                    self.__name__, parentEvent)
+            self.notifyListeners(event)
 
         event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", httpresult['headers'],
                                 self.__name__, parentEvent)

@@ -28,11 +28,11 @@ class sfp_github(SpiderFootPlugin):
         'namesonly':    "Match repositories by name only, not by their descriptions. Helps reduce false positives."
     }
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -152,7 +152,7 @@ class sfp_github(SpiderFootPlugin):
             failed = True
 
         if not failed:
-            if ret['total_count'] == "0" or len(ret['items']) == 0:
+            if ret.get('total_count', "0") == "0" or len(ret['items']) == 0:
                 self.sf.debug("No Github information for " + name)
                 failed = True
 
@@ -185,7 +185,7 @@ class sfp_github(SpiderFootPlugin):
                 failed = True
 
         if not failed:
-            if ret['total_count'] == "0" or len(ret['items']) == 0:
+            if ret.get('total_count', "0") == "0" or len(ret['items']) == 0:
                 self.sf.debug("No Github information for " + name)
                 failed = True
 
@@ -206,6 +206,11 @@ class sfp_github(SpiderFootPlugin):
 
                 repret = json.loads(res['content'])
                 if repret == None:
+                    self.sf.error("Unable to process empty response from Github for: " + \
+                                  name, False)
+                    continue
+
+                if 'items' not in repret:
                     self.sf.error("Unable to process empty response from Github for: " + \
                                   name, False)
                     continue

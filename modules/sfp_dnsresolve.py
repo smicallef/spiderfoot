@@ -15,7 +15,6 @@ import socket
 import re
 import dns
 import urllib2
-import encodings
 from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
