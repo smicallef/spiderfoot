@@ -182,6 +182,8 @@ class sfp_viewdns(SpiderFootPlugin):
                         myres.append(h.lower())
                     else:
                         continue
+                    if h.lower() in [ "demo1.com", "demo2.com", "demo3.com", "demo4.com", "demo5.com" ]:
+                        continue
                     if eventName in [ "HUMAN_NAME", "EMAILADDR" ]:
                         e = SpiderFootEvent("AFFILIATE_DOMAIN", h, self.__name__, event)
                     else:
