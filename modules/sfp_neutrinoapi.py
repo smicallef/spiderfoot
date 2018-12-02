@@ -56,12 +56,8 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # https://www.neutrinoapi.com/api/ip-info/
     def queryIpInfo(self, qry):
         res = self.sf.fetchUrl("https://neutrinoapi.com/ip-info",
-            postData="ip=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
+            postData="output-format=json&ip=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
             timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
-
-        if res['content'] is None:
-            self.sf.debug("No results found for " + qry)
-            return None
 
         return self.parseApiResponse(res)
 
@@ -69,12 +65,8 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # https://www.neutrinoapi.com/api/ip-blocklist/
     def queryIpBlocklist(self, qry):
         res = self.sf.fetchUrl("https://neutrinoapi.com/ip-blocklist",
-            postData="ip=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
+            postData="output-format=json&ip=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
             timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
-
-        if res['content'] is None:
-            self.sf.debug("No results found for " + qry)
-            return None
 
         return self.parseApiResponse(res)
 
@@ -82,25 +74,24 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # https://www.neutrinoapi.com/api/host-reputation/
     def queryHostReputation(self, qry):
         res = self.sf.fetchUrl("https://neutrinoapi.com/host-reputation",
-            postData="host=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
+            postData="output-format=json&host=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
             timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
-
-        if res['content'] is None:
-            self.sf.debug("No results found for " + qry)
-            return None
 
         return self.parseApiResponse(res)
 
     # Parse API response
     def parseApiResponse(self, res):
+        if res['code'] == "403":
+            self.sf.error("Authentication failed", False)
+            return None
+
+        if res['content'] is None:
+            return None
+
         try:
             data = json.loads(res['content'])
         except Exception as e:
             self.sf.debug("Error processing JSON response.")
-            return None
-
-        if res['code'] == "403":
-            self.sf.error("Authentication failed", False)
             return None
 
         if res['code'] == "400":
@@ -140,7 +131,9 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
         data = self.queryIpInfo(eventData)
 
-        if data is not None:
+        if data is None:
+            self.sf.debug("No IP info results found for " + eventData)
+        else:
             if data.get('city') is not None and data.get('region') is not None and data.get('country-code') is not None:
                 location = data.get('city') + ', ' + data.get('region') + ', ' + data.get('country-code')
                 evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
@@ -148,7 +141,9 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
         data = self.queryIpBlocklist(eventData)
 
-        if data is not None:
+        if data is None:
+            self.sf.debug("No IP blocklist results found for " + eventData)
+        else:
             if data.get('is-listed'):
                 evt = SpiderFootEvent("MALICIOUS_IPADDR", eventData, self.__name__, event)
                 self.notifyListeners(evt)
@@ -157,7 +152,9 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
         data = self.queryHostReputation(eventData)
 
-        if data is not None:
+        if data is None:
+            self.sf.debug("No host reputation results found for " + eventData)
+        else:
             if data.get('is-listed'):
                 evt = SpiderFootEvent("MALICIOUS_IPADDR", eventData, self.__name__, event)
                 self.notifyListeners(evt)
