@@ -108,8 +108,12 @@ class sfp_openstreetmap(SpiderFootPlugin):
         self.sf.info("Found " + str(len(data)) + " matches for " + eventData)
 
         for location in data:
-            lat = location.get('lat')
-            lon = location.get('lon')
+            try:
+                lat = location.get('lat')
+                lon = location.get('lon')
+            except BaseException as e:
+                self.sf.debug("Failed to get lat/lon: " + str(e))
+                continue
 
             if not lat or not lon:
                 continue
