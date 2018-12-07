@@ -32,13 +32,13 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         "suffixes": "List of suffixes to append to domains tried as space names"
     }
 
-    results = list()
-    s3results = dict()
+    results = None
+    s3results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.s3results = dict()
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -54,11 +54,11 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         return ["CLOUD_STORAGE_BUCKET", "CLOUD_STORAGE_BUCKET_OPEN"]
 
     def checkSite(self, url):
-        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
+        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot")
 
         if res['code'] not in [ "301", "302", "200" ] and \
             (res['content'] is None or "NoSuchBucket" in res['content']):
-            return None
+            self.sf.debug("Not a valid bucket: " + url)
         else:
             if "ListBucketResult" in res['content']:
                 self.s3results[url] = res['content'].count("<Key>")
@@ -86,7 +86,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         while running:
             found = False
             for rt in threading.enumerate():
-                if rt.name.startswith("sfp_s3buckeets_"):
+                if rt.name.startswith("sfp_digitaloceanspaces_"):
                     found = True
 
             if not found:
@@ -129,7 +129,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

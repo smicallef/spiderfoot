@@ -19,8 +19,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_wikileaks(SpiderFootPlugin):
     """Wikileaks:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Search Wikileaks for mentions of domain names and e-mail addresses."""
 
-
-
     # Default options
     opts = {
         'daysback': 365,
@@ -33,18 +31,18 @@ class sfp_wikileaks(SpiderFootPlugin):
         'external': "Include external leak sources such as Associated Twitter accounts, Snowden + Hammond Documents, Cryptome Documents, ICWatch, This Day in WikiLeaks Blog and WikiLeaks Press, WL Central."
     }
 
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME", "EMAILADDR"]
+        return ["DOMAIN_NAME", "EMAILADDR", "HUMAN_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -66,7 +64,7 @@ class sfp_wikileaks(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if self.opts['external']:
             external = "True"
