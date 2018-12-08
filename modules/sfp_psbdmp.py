@@ -9,6 +9,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
+import re
 import sys
 import json
 import time
@@ -108,5 +109,26 @@ class sfp_psbdmp(SpiderFootPlugin):
         for n in data:
             e = SpiderFootEvent("LEAKSITE_URL", n, self.__name__, event)
             self.notifyListeners(e)
+
+            res = self.sf.fetchUrl(n, timeout=self.opts['_fetchtimeout'],
+                                   useragent=self.opts['_useragent'])
+
+            if res['content'] is None:
+                self.sf.debug("Ignoring " + n + " as no data returned")
+                continue
+
+            # Sometimes pastes search results false positives
+            if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
+                         "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+              continue
+
+            try:
+                startIndex = res['content'].index(eventData)
+            except BaseException as e:
+                self.sf.debug("String not found in pastes content.")
+                continue
+
+            evt = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, e)
+            self.notifyListeners(evt)
 
 # End of sfp_psbdmp class
