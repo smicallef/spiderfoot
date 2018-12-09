@@ -40,8 +40,7 @@ class sfp_crt(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["INTERNET_NAME", "SSL_CERTIFICATE_ISSUED", 
-                "SSL_CERTIFICATE_ISSUER", "SSL_CERTIFICATE_RAW"]
+        return ["SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER", "SSL_CERTIFICATE_RAW"]
 
     def getIssued(self, cert, sevt):
         issued = cert.get_subject().as_text().encode('raw_unicode_escape')
