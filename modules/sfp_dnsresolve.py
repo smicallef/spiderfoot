@@ -135,8 +135,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         addrs = None
         parentEvent = event
 
-        # Don't be recursive
-        if srcModuleName == "sfp_dnsresolve":
+        # Don't be recursive, and trust that sfp_dnsbrute knows what it's doing
+        if srcModuleName in [ "sfp_dnsresolve", "sfp_dnsbrute" ]:
             return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
