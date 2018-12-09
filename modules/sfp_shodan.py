@@ -143,7 +143,7 @@ class sfp_shodan(SpiderFootPlugin):
             if rec is None:
                 continue
 
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(rec), self.__name__, event)
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
             self.notifyListeners(evt)
 
             if self.checkForStop():
@@ -166,6 +166,8 @@ class sfp_shodan(SpiderFootPlugin):
                 for r in rec['data']:
                     port = str(r.get('port'))
                     banner = r.get('banner')
+                    asn = r.get('asn')
+                    product = r.get('product')
 
                     if port is not None:
                         # Notify other modules of what you've found
@@ -177,6 +179,16 @@ class sfp_shodan(SpiderFootPlugin):
                     if banner is not None:
                         # Notify other modules of what you've found
                         evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
+                                              self.__name__, event)
+                        self.notifyListeners(evt)
+
+                    if product is not None:
+                        evt = SpiderFootEvent("SOFTWARE_USED", product,
+                                              self.__name__, event)
+                        self.notifyListeners(evt)
+
+                    if asn is not None:
+                        evt = SpiderFootEvent("BGP_AS_MEMBER", asn.replace("AS", ""),
                                               self.__name__, event)
                         self.notifyListeners(evt)
 
