@@ -158,6 +158,10 @@ class sfp_robtex(SpiderFootPlugin):
                 self.sf.error("Error parsing JSON from robtex API.", False)
                 return None
 
+            pas = data.get('pas')
+            if not pas:
+                return None
+
             if len(data.get('pas')) > 0:
                 for r in data.get('pas'):
                     if 'o' not in r:
