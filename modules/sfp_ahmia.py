@@ -49,7 +49,7 @@ class sfp_ahmia(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["DARKNET_MENTION_URL", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT", "SEARCH_ENGINE_WEB_CONTENT"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -105,6 +105,19 @@ class sfp_ahmia(SpiderFootPlugin):
                                 continue
                             evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                             self.notifyListeners(evt)
+
+                            try:
+                                startIndex = res['content'].index(eventData) - 120
+                                endIndex = startIndex + len(eventData) + 240
+                            except BaseException as e:
+                                self.sf.debug("String not found in content.")
+                                continue
+
+                            data = res['content'][startIndex:endIndex]
+                            evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + data + "...",
+                                                  self.__name__, evt)
+                            self.notifyListeners(evt)
+
                         else:
                             evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                             self.notifyListeners(evt)

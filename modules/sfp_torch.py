@@ -31,11 +31,11 @@ class sfp_torch(SpiderFootPlugin):
     }
 
     # Target
-    results = list()
+    results = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = dict()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -48,7 +48,7 @@ class sfp_torch(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["DARKNET_MENTION_URL", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT", "SEARCH_ENGINE_WEB_CONTENT"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -59,7 +59,7 @@ class sfp_torch(SpiderFootPlugin):
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         formpage = self.sf.fetchUrl("http://xmh57jrzrnw6insl.onion",
                                 useragent=self.opts['_useragent'],
@@ -113,7 +113,7 @@ class sfp_torch(SpiderFootPlugin):
                     if link in self.results:
                         continue
                     else:
-                        self.results.append(link)
+                        self.results[link] = True
                         self.sf.debug("Found a darknet mention: " + link)
                         if self.sf.urlFQDN(link).endswith(".onion"):
                             if self.checkForStop():
@@ -131,6 +131,19 @@ class sfp_torch(SpiderFootPlugin):
                                     continue
                                 evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                                 self.notifyListeners(evt)
+
+                                try:
+                                    startIndex = res['content'].index(eventData) - 120
+                                    endIndex = startIndex + len(eventData) + 240
+                                except BaseException as e:
+                                    self.sf.debug("String not found in content.")
+                                    continue
+
+                                data = res['content'][startIndex:endIndex]
+                                evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + data + "...",
+                                                      self.__name__, evt)
+                                self.notifyListeners(evt)
+
                             else:
                                 evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                                 self.notifyListeners(evt)
