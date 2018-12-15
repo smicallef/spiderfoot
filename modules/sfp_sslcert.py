@@ -53,7 +53,7 @@ class sfp_sslcert(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "LINKED_URL_INTERNAL"]
+        return ["INTERNET_NAME", "LINKED_URL_INTERNAL", "IP_ADDRESS"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -80,6 +80,9 @@ class sfp_sslcert(SpiderFootPlugin):
             self.results[fqdn] = True
         else:
             return None
+
+        if eventName == "IP_ADDRESS":
+            fqdn = "https://" + eventData
 
         if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
             return None
@@ -109,7 +112,8 @@ class sfp_sslcert(SpiderFootPlugin):
         # Generate events for other cert aspects
         self.getIssued(m2cert, event)
         self.getIssuer(m2cert, event)
-        self.checkHostMatch(m2cert, fqdn, event)
+        if eventName != "IP_ADDRESS":
+            self.checkHostMatch(m2cert, fqdn, event)
         try:
             self.checkExpiry(m2cert, event)
         except M2Crypto.X509.X509Error as e:
