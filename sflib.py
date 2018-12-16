@@ -379,7 +379,7 @@ class SpiderFoot:
         else:
             self._dblog("DEBUG", message, modName)
         if self.opts.get('__logstdout'):
-            print "[d] " + message
+            print "[d:" + modName +"] " + message
         return
 
     def myPath(self):
@@ -1459,6 +1459,8 @@ class SpiderFootPlugin(object):
     __scanId__ = None
     # (Unused) tracking of data sources
     __dataSource__ = None
+    # If set, events not matching this list are dropped
+    __outputFilter__ = None
 
     # Not really needed in most cases.
     def __init__(self):
@@ -1514,11 +1516,21 @@ class SpiderFootPlugin(object):
     def registerListener(self, listener):
         self._listenerModules.append(listener)
 
+    def setOutputFilter(self, types):
+        self.__outputFilter__ = types
+
     # Call the handleEvent() method of every other plug-in listening for
     # events from this plug-in. Remember that those plug-ins will be called
     # within the same execution context of this thread, not on their own.
     def notifyListeners(self, sfEvent):
         eventName = sfEvent.eventType
+
+        if self.__outputFilter__:
+            # Be strict about what events to pass on, unless they are
+            # the ROOT event or the event type of the target.
+            if eventName != 'ROOT' and eventName != self.getTarget().getType() \
+                and eventName not in self.__outputFilter__:
+                return None
 
         # Convert strings to unicode
         if type(sfEvent.data) == str:
@@ -1781,7 +1793,8 @@ class SpiderFootEvent(object):
             'generated': int(self.generated),
             'type': self.eventType,
             'data': self.data,
-            'module': self.module
+            'module': self.module,
+            'source': self.sourceEvent.data
         }
 
     # Unique hash of this event

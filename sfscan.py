@@ -226,6 +226,10 @@ class SpiderFootScanner(threading.Thread):
                 if self.ts.config['_socks1type'] != '':
                     mod._updateSocket(socket)
 
+                # Set up event output filters if requested
+                if self.ts.config['__outputfilter']:
+                    mod.setOutputFilter(self.ts.config['__outputfilter'])
+
                 self.ts.sf.status(modName + " module loaded.")
 
             # Register listener modules and then start all modules sequentially
@@ -260,8 +264,6 @@ class SpiderFootScanner(threading.Thread):
             psMod.notifyListeners(rootEvent)
             firstEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue,
                                          "SpiderFoot UI", rootEvent)
-
-            # If in interactive mode, this needs the storeOnly arg.
             psMod.notifyListeners(firstEvent)
 
             # If in interactive mode, loop through this shared global variable

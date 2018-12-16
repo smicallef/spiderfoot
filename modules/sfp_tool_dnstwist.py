@@ -29,7 +29,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'pythonpath': "Path to Python interpreter to use for DNSTwist. If just 'python' then it should be in your PATH.",
+        'pythonpath': "Path to Python interpreter to use for DNSTwist. If just 'python' then it must be in your PATH.",
         'dnstwistpath': "Path to the where the dnstwist.py file lives. Must be set."
     }
 
@@ -70,6 +70,8 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already scanned.")
             return None
+        else:
+            self.results[eventData] = True
 
         if not self.opts['dnstwistpath']:
             self.sf.error("You enabled sfp_tool_dnstwist but did not set a path to the tool!", False)

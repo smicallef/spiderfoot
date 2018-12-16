@@ -186,6 +186,9 @@ class sfp_mnemonic(SpiderFootPlugin):
                 self.sf.debug("Host " + co + " no longer resolves to " + eventData)
                 continue
 
+            if co in self.results:
+                continue
+
             if not self.opts['cohostsamedomain']:
                 if self.getTarget().matches(co, includeParents=True):
                     evt = SpiderFootEvent("INTERNET_NAME", co, self.__name__, event)

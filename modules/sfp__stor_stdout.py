@@ -23,6 +23,8 @@ class sfp__stor_stdout(SpiderFootPlugin):
         "_requested": [],
         "_showonlyrequested": False,
         "_stripnewline": False,
+        "_showsource": False,
+        "_csvdelim": ",",
         "_maxlength": 0,
         "_eventtypes": dict()
     }
@@ -44,6 +46,7 @@ class sfp__stor_stdout(SpiderFootPlugin):
         return ["*"]
 
     def output(self, event):
+        d = self.opts['_csvdelim']
         if type(event.data) in [list, dict]:
             data = unicode(str(event.data), 'utf-8', errors='replace')
         else:
@@ -52,17 +55,30 @@ class sfp__stor_stdout(SpiderFootPlugin):
         if type(data) != unicode:
             data = unicode(event.data, 'utf-8', errors='replace')
 
+        if type(event.sourceEvent.data) in [list, dict]:
+            srcdata = unicode(str(event.sourceEvent.data), 'utf-8', errors='replace')
+        else:
+            srcdata = event.sourceEvent.data
+
+        if type(srcdata) != unicode:
+            srcdata = unicode(event.sourceEvent.data, 'utf-8', errors='replace')
+
         if self.opts['_stripnewline']:
             data = data.replace("\n", "").replace("\r", "")
+            srcdata = srcdata.replace("\n", "").replace("\r", "")
 
         if self.opts['_maxlength'] > 0:
             data = data[0:self.opts['_maxlength']]
+            srcdata = srcdata[0:self.opts['_maxlength']]
 
         if self.opts['_format'] == "tab":
-            print u'{0:45}  {1}'.format(self.opts['_eventtypes'][event.eventType], data)
+            if self.opts['_showsource']:
+                print '{0:30}\t{1:45}\t{2}\t{3}'.format(event.module, self.opts['_eventtypes'][event.eventType], srcdata, data)
+            else:
+                print '{0:30}\t{1:45}\t{2}'.format(event.module, self.opts['_eventtypes'][event.eventType], data)
 
         if self.opts['_format'] == "csv":
-            print self.opts['_eventtypes'][event.eventType] + "," + data
+            print event.module + d + self.opts['_eventtypes'][event.eventType] + d + srcdata + d + data
 
         if self.opts['_format'] == "json":
             d = event.asDict()

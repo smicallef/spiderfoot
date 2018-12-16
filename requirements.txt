@@ -1,7 +1,9 @@
-CherryPy==5.1.0
-M2Crypto==0.23.0
-Mako==1.0.4
-beautifulsoup4==4.4.1
-lxml==3.4.4
-netaddr==0.7.18
-requests>=2.20.0 
+CherryPy>=14.0.0
+M2Crypto>=0.29.0
+Mako>=1.0.4
+beautifulsoup4>=4.4.1
+lxml>=3.4.4
+netaddr>=0.7.18
+requests>=2.20.0
+ipwhois==1.0.0
+ipaddr>=2.2.0

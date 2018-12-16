@@ -54,7 +54,7 @@ class sfp_builtwith(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return [ "INTERNET_NAME", "EMAILADDR", "RAW_RIR_DATA", 
-                 "WEB_TECHNOLOGY", "PHONE_NUMBER" ]
+                 "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER" ]
 
     def query(self, t):
         ret = None

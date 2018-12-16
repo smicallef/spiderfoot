@@ -24,8 +24,9 @@ cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(insp
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
-deps = ['M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks',
-        'PyPDF2', 'openxmllib', 'stem', 'bs4', 'gexf', 'phonenumbers']
+deps = ['M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks', 'whois',
+        'PyPDF2', 'openxmllib', 'stem', 'bs4', 'gexf', 'phonenumbers', 'ipaddr',
+        'ipwhois']
 for mod in deps:
     try:
         if mod.startswith("ext."):
@@ -66,6 +67,7 @@ from sfscan import SpiderFootScanner
 sfConfig = {
     '_debug': False,  # Debug
     '__logging': True, # Logging in general
+    '__outputfilter': None, # Event types to filter from modules' output
     '__blocknotif': False,  # Block notifications
     '_fatalerrors': False,
     '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
@@ -131,13 +133,16 @@ if __name__ == '__main__':
         p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")
         p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
         p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
-        p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to enable.")
+        p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect.")
         p.add_argument("-T", "--types", action='store_true', help="List available event types.")
         p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
         p.add_argument("-n", action='store_true', help="Strip newlines from data.")
+        p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
         p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
+        p.add_argument("-D", action='store_true', help="Delimter to use for CSV output. Default is ,.")
         p.add_argument("-f", action='store_true', help="Filter out other event types that weren't requested with -t.")
         p.add_argument("-F", metavar="FILTER", type=str, help="Filter out a set of event types.")
+        p.add_argument("-x", action='store_true', help="STRICT MODE. Means that only modules consuming your target type will be enabled and if -t was specified, only those events will be consumed by modules. This overrides -t and -m options.")
         p.add_argument("-q", action='store_true', help="Disable logging.")
         args = p.parse_args()
 
@@ -214,6 +219,22 @@ if __name__ == '__main__':
             print "You must specify a target when running in scan mode. Try sf.py --help for guidance."
             sys.exit(-1)
 
+        if args.x and not args.t:
+            print "-x can only be used with -t. Use --help for guidance."
+            sys.exit(-1)
+
+        if args.x and args.m:
+            print "-x can only be used with -t and not with -m. Use --help for guidance."
+            sys.exit(-1)
+
+        if args.r and (args.o and args.o not in ["tab", "csv"]):
+            print "-r can only be used when your output format is tab or csv."
+            sys.exit(-1)
+
+        if args.D and args.o != "csv":
+            print "-D can only be used when using the csv output format."
+            sys.exit(-1)
+
         target = args.s
         targetType = sf.targetType(args.s)
 
@@ -233,6 +254,7 @@ if __name__ == '__main__':
             modlist = sf.modulesProducing(types)
             newmods = deepcopy(modlist)
             newmodcpy = deepcopy(newmods)
+
             # 2. For each type those modules consume, get modules producing
             while len(newmodcpy) > 0:
                 for etype in sf.eventsToModules(newmodcpy):
@@ -270,8 +292,30 @@ if __name__ == '__main__':
             sfConfig['__modules__']['sfp__stor_stdout']['opts']['_requested'] = args.t.split(",")
         if args.n:
             sfConfig['__modules__']['sfp__stor_stdout']['opts']['_stripnewline'] = True
+        if args.r:
+            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showsource'] = True
         if args.S:
             sfConfig['__modules__']['sfp__stor_stdout']['opts']['_maxlength'] = args.S
+        if args.x:
+            tmodlist = list()
+            modlist = list()
+            xmods = sf.modulesConsuming([targetType])
+            for mod in xmods:
+                if mod not in modlist:
+                    tmodlist.append(mod)
+
+            # Remove any modules not producing the type requested
+            rtypes = args.t.split(",")
+            for mod in tmodlist:
+                for r in rtypes:
+                    if not sfModules[mod]['provides']:
+                        continue
+                    if r in sfModules[mod].get('provides', []) and mod not in modlist:
+                        modlist.append(mod)
+
+        if len(modlist) == 0:
+            print "Based on your criteria, no modules were enabled."
+            sys.exit(-1)
 
         modlist += ["sfp__stor_db", "sfp__stor_stdout"]
 
@@ -286,6 +330,10 @@ if __name__ == '__main__':
             cfg['_debug'] = True
         else:
             cfg['_debug'] = False
+
+        # If strict mode is enabled, filter the output from modules.
+        if args.x and args.t:
+            cfg['__outputfilter'] = args.t.split(",")
 
         t = SpiderFootScanner(target, target, targetType, scanId,
             modlist, cfg, dict())

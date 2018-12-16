@@ -12,6 +12,8 @@
 # -------------------------------------------------------------------------------
 
 import whois
+import ipwhois
+from netaddr import IPAddress
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_whois(SpiderFootPlugin):
@@ -29,7 +31,6 @@ class sfp_whois(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-
         self.results = dict()
 
         for opt in userOpts.keys():
@@ -62,11 +63,20 @@ class sfp_whois(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         try:
-            #whoisdata = pythonwhois.net.get_whois_raw(eventData)
-            whoisdata = whois.whois(eventData)
-            if whoisdata:
-                data = whoisdata.text
+            data = None
+            if eventName != "NETBLOCK_OWNER":
+                whoisdata = whois.whois(eventData)
+                if whoisdata:
+                    data = whoisdata.text
             else:
+                qry = eventData.split("/")[0]
+                ip = IPAddress(qry) + 1
+                self.sf.debug("Querying for IP ownership of " + str(ip))
+                r = ipwhois.IPWhois(ip)
+                whoisdata = r.lookup_rdap(depth=1)
+                if whoisdata:
+                    data = str(whoisdata)
+            if not data:
                 self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
                 return None
         except BaseException as e:
