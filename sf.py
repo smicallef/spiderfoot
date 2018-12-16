@@ -139,7 +139,7 @@ if __name__ == '__main__':
         p.add_argument("-n", action='store_true', help="Strip newlines from data.")
         p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
         p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
-        p.add_argument("-D", action='store_true', help="Delimter to use for CSV output. Default is ,.")
+        p.add_argument("-D", metavar='DELIMITER', type=str, help="Delimiter to use for CSV output. Default is ,.")
         p.add_argument("-f", action='store_true', help="Filter out other event types that weren't requested with -t.")
         p.add_argument("-F", metavar="FILTER", type=str, help="Filter out a set of event types.")
         p.add_argument("-x", action='store_true', help="STRICT MODE. Means that only modules consuming your target type will be enabled and if -t was specified, only those events will be consumed by modules. This overrides -t and -m options.")
@@ -296,6 +296,8 @@ if __name__ == '__main__':
             sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showsource'] = True
         if args.S:
             sfConfig['__modules__']['sfp__stor_stdout']['opts']['_maxlength'] = args.S
+        if args.D:
+            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_csvdelim'] = args.D
         if args.x:
             tmodlist = list()
             modlist = list()
