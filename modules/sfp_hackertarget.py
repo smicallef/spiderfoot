@@ -63,7 +63,7 @@ class sfp_hackertarget(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["CO_HOSTED_SITE", "UDP_PORT_OPEN", "TCP_PORT_OPEN"]
+        return ["CO_HOSTED_SITE", "UDP_PORT_OPEN", "TCP_PORT_OPEN", "IP_ADDRESS"]
 
     def validateIP(self, host, ip):
         try:
@@ -159,6 +159,9 @@ class sfp_hackertarget(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if srcModuleName == "sfp_hackertarget" and eventName == "IP_ADDRESS":
+            return None
+
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
@@ -208,8 +211,17 @@ class sfp_hackertarget(SpiderFootPlugin):
                         self.sf.debug("Host " + h + " no longer resolves to " + ip)
                         continue
                     if self.cohostcount < self.opts['maxcohost']:
-                        evt = SpiderFootEvent("CO_HOSTED_SITE", h.lower(), self.__name__, event)
-                        self.notifyListeners(evt)
+                        # Create an IP Address event stemming from the netblock as the
+                        # link to the co-host.
+                        if eventName == "NETBLOCK_OWNER":
+                            ipe = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
+                            self.notifyListeners(ipe)
+                            evt = SpiderFootEvent("CO_HOSTED_SITE", h.lower(), self.__name__, ipe)
+                            self.notifyListeners(evt)
+                        else:
+                            evt = SpiderFootEvent("CO_HOSTED_SITE", h.lower(), self.__name__, event)
+                            self.notifyListeners(evt)
+
                         myres.append(h.lower())
                         self.cohostcount += 1
 

@@ -59,7 +59,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["INTERNET_NAME"]
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -183,28 +183,6 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             self.sf.debug("Unable to resolve " + hostname + " (" + str(e) + ")")
             return list()
 
-    # Resolve a host to IPv6
-    def resolveHost6(self, hostname):
-        if hostname in self.resolveCache6:
-            self.sf.debug("Returning IPv6 cached result for " + hostname + " (" +
-                          str(self.resolveCache6[hostname]) + ")")
-            return self.resolveCache6[hostname]
-
-        try:
-            addrs = list()
-            res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
-            for addr in res:
-                if addr[4][0] not in addrs:
-                    addrs.append(addr[4][0])
-            if len(addrs) < 1:
-                return None
-            self.resolveCache6[hostname] = addrs
-            self.sf.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
-            return list()
-
     # Process a host/IP, parentEvent is the event that represents this entity
     def processHost(self, host, parentEvent, affiliate=None):
         parentHash = self.sf.hashstring(parentEvent.data)
@@ -233,16 +211,16 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         else:
             affil = affiliate
 
+        htype = None
         if affil:
             if self.sf.validIP(host):
                 htype = "AFFILIATE_IPADDR"
-            else:
-                htype = "AFFILIATE_INTERNET_NAME"
         else:
             if self.sf.validIP(host):
                 htype = "IP_ADDRESS"
-            else:
-                htype = "INTERNET_NAME"
+
+        if not htype:
+            return None
 
         # Report the host
         evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)

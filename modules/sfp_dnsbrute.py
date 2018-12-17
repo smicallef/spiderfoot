@@ -88,7 +88,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["IP_ADDRESS", "INTERNET_NAME", "IPV6_ADDRESS"]
+        return ["INTERNET_NAME"]
 
     def tryHost(self, name):
         resolver = dns.resolver.Resolver()

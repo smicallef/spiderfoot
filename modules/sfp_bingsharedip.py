@@ -56,7 +56,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["CO_HOSTED_SITE", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["CO_HOSTED_SITE", "IP_ADDRESS", "SEARCH_ENGINE_WEB_CONTENT"]
 
     def validateIP(self, host, ip):
         try:
@@ -86,6 +86,11 @@ class sfp_bingsharedip(SpiderFootPlugin):
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
+            return None
+
+        # Ignore IP addresses from myself as they are just for creating
+        # a link from the netblock to the co-host.
+        if eventName == "IP_ADDRESS" and srcModuleName == "sfp_bingsharedip":
             return None
 
         if self.cohostcount > self.opts['maxcohost']:
@@ -129,8 +134,16 @@ class sfp_bingsharedip(SpiderFootPlugin):
                         if self.opts['verify'] and not self.validateIP(site, ip):
                             self.sf.debug("Host " + site + " no longer resolves to " + ip)
                             continue
-                        evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
-                        self.notifyListeners(evt)
+                        # Create an IP Address event stemming from the netblock as the
+                        # link to the co-host.
+                        if eventName == "NETBLOCK_OWNER":
+                            ipe = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
+                            self.notifyListeners(ipe)
+                            evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, ipe)
+                            self.notifyListeners(evt)
+                        else:
+                            evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
+                            self.notifyListeners(evt)
                         self.cohostcount += 1
                         myres.append(site)
 

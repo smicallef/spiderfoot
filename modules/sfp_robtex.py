@@ -27,8 +27,6 @@ class sfp_robtex(SpiderFootPlugin):
         'verify': True,
         'netblocklookup': True,
         'maxnetblock': 24,
-        'subnetlookup': True,
-        'maxsubnet': 24,
         'cohostsamedomain': False,
         'maxcohost': 100
     }
@@ -38,8 +36,6 @@ class sfp_robtex(SpiderFootPlugin):
         'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible co-hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'subnetlookup': "Look up all IPs on subnets which your target is a part of for identifying co-hosts?",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
         'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
@@ -63,7 +59,7 @@ class sfp_robtex(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["CO_HOSTED_SITE"]
+        return ["CO_HOSTED_SITE", "IP_ADDRESS"]
 
     def validateIP(self, host, ip):
         try:
@@ -94,6 +90,9 @@ class sfp_robtex(SpiderFootPlugin):
         if self.cohostcount > self.opts['maxcohost']:
             return None
 
+        if srcModuleName == "sfp_robtex" and eventName == "IP_ADDRESS":
+            return None
+
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
@@ -107,16 +106,6 @@ class sfp_robtex(SpiderFootPlugin):
                     self.sf.debug("Network size bigger than permitted: " +
                                   str(IPNetwork(eventData).prefixlen) + " > " +
                                   str(self.opts['maxnetblock']))
-                    return None
-
-        if eventName == 'NETBLOCK_MEMBER':
-            if not self.opts['subnetlookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
                     return None
 
         qrylist = list()
@@ -157,7 +146,7 @@ class sfp_robtex(SpiderFootPlugin):
             except BaseException as e:
                 self.sf.error("Error parsing JSON from robtex API.", False)
                 return None
-
+            
             pas = data.get('pas')
             if not pas:
                 return None
@@ -174,8 +163,14 @@ class sfp_robtex(SpiderFootPlugin):
                     if self.opts['verify'] and not self.validateIP(r['o'], ip):
                         self.sf.debug("Host " + r['o'] + " no longer resolves to " + ip)
                         continue
-                    evt = SpiderFootEvent("CO_HOSTED_SITE", r['o'], self.__name__, event)
-                    self.notifyListeners(evt)
+                    if eventName == "NETBLOCK_OWNER":
+                        ipe = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
+                        self.notifyListeners(ipe)
+                        evt = SpiderFootEvent("CO_HOSTED_SITE", r['o'], self.__name__, ipe)
+                        self.notifyListeners(evt)
+                    else:
+                        evt = SpiderFootEvent("CO_HOSTED_SITE", r['o'], self.__name__, event)
+                        self.notifyListeners(evt)
                     self.cohostcount += 1
 
 # End of sfp_robtex class

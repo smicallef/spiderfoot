@@ -357,9 +357,12 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if not resolved:
                 return None
 
-        # Report the host
-        evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
-        self.notifyListeners(evt)
+        if host != parentEvent.data and htype != parentEvent.eventType:
+            evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
+            self.notifyListeners(evt)
+        else:
+            evt = parentEvent
+
         # Report the domain for that host
         if htype == "INTERNET_NAME":
             dom = self.sf.hostDomain(host, self.opts['_internettlds'])
@@ -370,13 +373,23 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 evt6 = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
                 self.notifyListeners(evt6)
 
+        if htype == "AFFILIATE_INTERNET_NAME":
+            dom = self.sf.hostDomain(host, self.opts['_internettlds'])
+            self.processDomain(dom, evt, True)
+
         return evt
 
-    def processDomain(self, domainName, parentEvent):
+    def processDomain(self, domainName, parentEvent, affil=False):
         if domainName not in self.domresults:
             self.domresults[domainName] = True
         else:
             self.sf.debug("Skipping domain, " + domainName + ", already processed.")
+            return None
+
+        if affil:
+            domevt = SpiderFootEvent("AFFILIATE_DOMAIN", domainName,
+                                     self.__name__, parentEvent)
+            self.notifyListeners(domevt)
             return None
 
         if self.getTarget().matches(domainName):
