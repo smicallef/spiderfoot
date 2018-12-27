@@ -12,6 +12,7 @@
 import sys
 import json
 import time
+import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_builtwith(SpiderFootPlugin):
@@ -33,7 +34,7 @@ class sfp_builtwith(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
@@ -106,21 +107,25 @@ class sfp_builtwith(SpiderFootPlugin):
             return None
 
         if "Meta" in data:
+            # Verify any email addresses as we sometimes get junk from BuiltWith
+            pat = re.compile("([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
             if data['Meta'].get("Names", []):
                 for nb in data['Meta']['Names']:
                     e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + nb['Name'], 
                                         self.__name__, event)
                     self.notifyListeners(e)
                     if nb.get('Email', None):
-                        e = SpiderFootEvent("EMAILADDR", nb['Email'], 
-                                            self.__name__, event)
-                        self.notifyListeners(e)
+                        if (re.match(pat, nb['Email'])):
+                            e = SpiderFootEvent("EMAILADDR", nb['Email'], 
+                                                self.__name__, event)
+                            self.notifyListeners(e)
 
             if data['Meta'].get("Emails", []):
                 for email in data['Meta']['Emails']:
-                    e = SpiderFootEvent("EMAILADDR", email,
-                                        self.__name__, event)
-                    self.notifyListeners(e)
+                    if (re.match(pat, email)):
+                        e = SpiderFootEvent("EMAILADDR", email,
+                                            self.__name__, event)
+                        self.notifyListeners(e)
 
             if data['Meta'].get("Telephones", []):
                 for phone in data['Meta']['Telephones']:

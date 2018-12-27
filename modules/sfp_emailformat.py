@@ -19,7 +19,7 @@ class sfp_emailformat(SpiderFootPlugin):
     """EmailFormat:Footprint,Investigate,Passive:Search Engines::Look up e-mail addresses on email-format.com."""
 
 
-    results = dict()
+    results = None
 
     # Default options
     opts = {
@@ -76,6 +76,10 @@ class sfp_emailformat(SpiderFootPlugin):
             # Handle false positive matches
             if len(match) < 5:
                 self.sf.debug("Likely invalid address.")
+                continue
+
+            if "..." in match:
+                self.sf.debug("Incomplete e-mail address, skipping.")
                 continue
 
             # Handle messed up encodings
