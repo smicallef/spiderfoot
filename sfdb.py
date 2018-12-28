@@ -32,7 +32,7 @@ class SpiderFootDb:
     conn = None
 
     # Queries for creating the SpiderFoot database
-    createQueries = [
+    createSchemaQueries = [
         "PRAGMA journal_mode=WAL",
         "CREATE TABLE tbl_event_types ( \
             event       VARCHAR NOT NULL PRIMARY KEY, \
@@ -85,7 +85,11 @@ class SpiderFootDb:
         "CREATE INDEX idx_scan_results_type ON tbl_scan_results (scan_instance_id, type)",
         "CREATE INDEX idx_scan_results_hash ON tbl_scan_results (scan_instance_id, hash)",
         "CREATE INDEX idx_scan_results_srchash ON tbl_scan_results (scan_instance_id, source_event_hash)",
-        "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)",
+        "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)"
+
+    ]
+
+    createTypeQueries = [
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ROOT', 'Internal SpiderFoot Root event', 1, 'INTERNAL')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ACCOUNT_EXTERNAL_OWNED', 'Account on External Site', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ACCOUNT_EXTERNAL_OWNED_COMPROMISED', 'Hacked Account on External Site', 0, 'DESCRIPTOR')",
@@ -224,7 +228,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WIKIPEDIA_PAGE_EDIT', 'Wikipedia Page Edit', 0, 'DESCRIPTOR')"
     ]
 
-    def __init__(self, opts):
+    def __init__(self, opts, init=False):
         self.sf = SpiderFoot(opts)
 
         # connect() will create the database file if it doesn't exist, but
@@ -247,9 +251,18 @@ class SpiderFootDb:
             # .. If not set up, we set it up.
             try:
                 self.create()
+                init = True
             except BaseException as e:
                 self.sf.error("Tried to set up the SpiderFoot database schema, but failed: " + e.args[0])
-        return
+            return
+
+        if init:
+            for qry in self.createTypeQueries:
+                try:
+                    self.dbh.execute(qry)
+                    self.conn.commit()
+                except BaseException as e:
+                    continue
 
     #
     # Back-end database operations
@@ -258,7 +271,10 @@ class SpiderFootDb:
     # Create the back-end schema
     def create(self):
         try:
-            for qry in self.createQueries:
+            for qry in self.createSchemaQueries:
+                self.dbh.execute(qry)
+            self.conn.commit()
+            for qry in self.createTypeQueries:
                 self.dbh.execute(qry)
             self.conn.commit()
         except sqlite3.Error as e:

@@ -193,7 +193,7 @@ if __name__ == '__main__':
     sfConfig['__globaloptdescs__'] = sfOptdescs
 
     sf = SpiderFoot(sfConfig)
-    dbh = SpiderFootDb(sfConfig)
+    dbh = SpiderFootDb(sfConfig, init=True)
 
     if args:
         if args.modules:
