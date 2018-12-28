@@ -65,15 +65,14 @@ class sfp_pulsedive(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_IPADDR", 
-                "MALICIOUS_AFFILIATE_IPADDR" ]
+                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK" ]
 
     def query(self, qry):
         ret = None
 
         url = "https://pulsedive.com/api/info.php?indicator=" + qry + \
               "&key=" + self.opts['api_key']
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
-                               useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=30, useragent="SpiderFoot")
 
         if res['code'] == "403":
             self.sf.error("Pulsedive API key seems to have been rejected or you have exceeded usage limits for the month.", False)

@@ -77,7 +77,7 @@ class sfp_whois(SpiderFootPlugin):
                 if whoisdata:
                     data = str(whoisdata)
             if not data:
-                self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
+                self.sf.error("Unable to perform WHOIS on " + eventData, False)
                 return None
         except BaseException as e:
             self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)

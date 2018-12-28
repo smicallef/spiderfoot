@@ -123,7 +123,10 @@ class sfp_riskiq(SpiderFootPlugin):
             return None
 
         try:
-            return json.loads(res['content'])['results']
+            ret = json.loads(res['content'])
+            if 'results' not in ret:
+                self.sf.info("No RiskIQ info found for " + qry)
+                return None
         except BaseException as e:
             self.sf.error("Invalid JSON returned by RiskIQ.", False)
             return None
@@ -211,7 +214,7 @@ class sfp_riskiq(SpiderFootPlugin):
 
             for co in cohosts:
                 if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.validateIP(co, eventData)):
-                    self.sf.debug("Host " + co + " no longer resolves to " + eventData)
+                    self.sf.debug("Host no longer resolves to our IP.")
                     continue
 
                 if not self.opts['cohostsamedomain']:

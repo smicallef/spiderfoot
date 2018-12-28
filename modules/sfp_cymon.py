@@ -104,6 +104,10 @@ class sfp_cymon(SpiderFootPlugin):
             self.sf.info("No Cymon.io info found for " + qry)
             return None
 
+        if len(res['content']) == 0:
+            self.sf.info("No Cymon.io info found for " + qry)
+            return None
+
         try:
             info = json.loads(res['content'])
         except Exception as e:

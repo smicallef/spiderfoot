@@ -94,7 +94,7 @@ class sfp_isc(SpiderFootPlugin):
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "query":
                 url = unicode(malchecks[check]['url'])
-                res = self.sf.fetchUrl(url.format(target), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                res = self.sf.fetchUrl(url.format(target), timeout=30, useragent=self.opts['_useragent'])
                 if res['content'] is None:
                     self.sf.error("Unable to fetch " + url.format(target), False)
                     return None
@@ -119,7 +119,7 @@ class sfp_isc(SpiderFootPlugin):
                 url = malchecks[check]['url']
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
                 if data['content'] is None:
-                    data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                    data = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
                     if data['content'] is None:
                         self.sf.error("Unable to fetch " + url, False)
                         return None

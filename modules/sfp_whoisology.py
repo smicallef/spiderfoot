@@ -76,12 +76,15 @@ class sfp_whoisology(SpiderFootPlugin):
 
         try:
             info = json.loads(res['content'])
-            if len(info.get("domains", list())) == 0:
+            if info.get("domains") == None:
                 self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"), False)
-                self.errorState = True
+                return None
+
+            if len(info.get("domains", [])) == 0:
+                self.sf.debug("No data found in Whoisology for " + qry)
                 return None
             else:
-                return info.get('domains', [])
+                return info.get('domains')
         except Exception as e:
             self.sf.error("Error processing JSON response from Whoisology: " + str(e), False)
             return None

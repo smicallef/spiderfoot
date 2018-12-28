@@ -311,7 +311,7 @@ class sfp_ripe(SpiderFootPlugin):
                 self.sf.debug("Could not identify BGP AS for " + eventData)
                 return None
 
-            if self.ownsAs(asn):
+            if eventName == "NETBLOCK_OWNER" and self.ownsAs(asn):
                 asevt = SpiderFootEvent("BGP_AS_OWNER", asn, self.__name__, event)
                 self.notifyListeners(asevt)
                 evt = SpiderFootEvent("RAW_RIR_DATA", self.lastContent, self.__name__,
@@ -337,20 +337,9 @@ class sfp_ripe(SpiderFootPlugin):
                 self.sf.debug("Could not identify BGP AS for " + prefix)
                 return None
 
-            if self.ownsAs(asn):
-                # For now we skip IPv6 addresses
-                if ":" in prefix:
-                    return None
-                self.sf.info("Owned netblock found: " + prefix + "(" + asn + ")")
-                evt = SpiderFootEvent("NETBLOCK_OWNER", prefix, self.__name__, event)
-                self.notifyListeners(evt)
-                evt = SpiderFootEvent("RAW_RIR_DATA", self.lastContent, self.__name__,
-                                      event)
-                self.notifyListeners(evt)
-            else:
-                self.sf.info("Netblock found: " + prefix + "(" + asn + ")")
-                evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
-                self.notifyListeners(evt)
+            self.sf.info("Netblock found: " + prefix + "(" + asn + ")")
+            evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
+            self.notifyListeners(evt)
 
         return None
 

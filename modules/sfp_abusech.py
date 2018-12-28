@@ -27,17 +27,11 @@ malchecks = {
         'checks': ['ip', 'netblock'],
         'url': 'https://zeustracker.abuse.ch/blocklist.php?download=badips'
     },
-    'abuse.ch Feodo Tracker (Domain)': {
-        'id': 'abusefeododomain',
-        'type': 'list',
-        'checks': ['domain'],
-        'url': 'https://feodotracker.abuse.ch/blocklist/?download=domainblocklist'
-    },
     'abuse.ch Feodo Tracker (IP)': {
         'id': 'abusefeodoip',
         'type': 'list',
         'checks': ['ip', 'netblock'],
-        'url': 'https://feodotracker.abuse.ch/blocklist/?download=ipblocklist'
+        'url': 'https://feodotracker.abuse.ch/downloads/ipblocklist.txt'
     },
     'abuse.ch SSL Blacklist (IP)': {
         'id': 'abusesslblip',

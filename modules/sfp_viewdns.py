@@ -37,11 +37,13 @@ class sfp_viewdns(SpiderFootPlugin):
 
     results = dict()
     errorState = False
+    accum = list()
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.accum = list()
         self.cohostcount = 0
 
         # Clear / reset any other class member variables here
@@ -76,7 +78,7 @@ class sfp_viewdns(SpiderFootPlugin):
         return False
 
     # Search ViewDNS.info
-    def query(self, qry, querytype, page=1, accum=list()):
+    def query(self, qry, querytype, page=1):
         info = None
 
         if querytype == "reverseip":
@@ -120,14 +122,11 @@ class sfp_viewdns(SpiderFootPlugin):
                     return None
 
                 if len(r.get(responsekey, list())) == pagesize:
-                    if accum:
-                        accum.extend(r.get(responsekey))
-                    else:
-                        accum = r.get(responsekey)
-                    return self.query(qry, querytype, page+1, accum)
+                    self.sf.debug("Looping at ViewDNS page " + str(page))
+                    self.accum.extend(r.get(responsekey))
+                    self.query(qry, querytype, page+1)
                 # We are at the last or only page
-                accum.extend(r.get(responsekey, []))
-                return accum
+                self.accum.extend(r.get(responsekey, []))
         except Exception as e:
             self.sf.error("Error processing JSON response from ViewDNS.info: " + str(e), False)
             return None
@@ -170,7 +169,9 @@ class sfp_viewdns(SpiderFootPlugin):
                 self.sf.debug("DNS provider found but not related to target, skipping")
                 return None
 
-        rec = self.query(eventData, ident)
+        self.accum = list()
+        self.query(eventData, ident)
+        rec = self.accum
         myres = list()
         if rec is not None:
             for r in rec:
@@ -192,7 +193,7 @@ class sfp_viewdns(SpiderFootPlugin):
                         self.cohostcount += 1
                         if eventName == "IP_ADDRESS" and self.opts['verify']:
                             if not self.validateIP(h, eventData):
-                                self.sf.debug("Host " + h + " no longer resolves to " + eventData)
+                                self.sf.debug("Host no longer resolves to our IP.")
                                 continue
                         e = SpiderFootEvent("CO_HOSTED_SITE", h, self.__name__, event)
                     self.notifyListeners(e)

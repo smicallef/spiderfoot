@@ -32,11 +32,13 @@ class sfp_clearbit(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -83,6 +85,14 @@ class sfp_clearbit(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+
+        if self.errorState:
+            return None
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_clearbit but did not set an API key!", False)
+            self.errorState = True
+            return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

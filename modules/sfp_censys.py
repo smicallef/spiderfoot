@@ -136,7 +136,16 @@ class sfp_censys(SpiderFootPlugin):
                 qtype = "host"
 
             rec = self.query(addr, qtype)
+            self.sf.debug("Censys raw data: " + str(rec))
             if rec is not None:
+                if 'error' in rec and 'error_type' == "unknown":
+                    self.sf.debug("Censys returned no data for " + addr)
+                    continue
+
+                if 'error' in rec:
+                    self.sf.error("Censys returned an unexpected error: " + rec['error_type'], False)
+                    continue
+
                 self.sf.debug("Found results in Censys.io")
                 # 2016-12-24T07:25:35+00:00'
                 try:
@@ -179,6 +188,6 @@ class sfp_censys(SpiderFootPlugin):
                             e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, event)
                             self.notifyListeners(e)
                 except BaseException as e:
-                    self.sf.error("Error encountered processing record for " + eventData, False)
+                    self.sf.error("Error encountered processing record for " + eventData + " (" + str(e) + ")", False)
         
 # End of sfp_censys class

@@ -70,7 +70,7 @@ class sfp_email(SpiderFootPlugin):
                 self.sf.debug("Unable to convert list/dict to string: " + str(e))
                 return None
 
-        pat = re.compile("([\%a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
+        pat = re.compile("([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
         matches = re.findall(pat, eventData)
         myres = list()
         for match in matches:

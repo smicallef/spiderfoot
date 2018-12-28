@@ -52,13 +52,13 @@ class sfp_github(SpiderFootPlugin):
         repo_info = None
 
         # Get repos matching the name
-        if item['name'] == None:
+        if item.get('name') == None:
             self.sf.debug("Incomplete Github information found (name).")
             return None
-        if item['html_url'] == None:
+        if item.get('html_url') == None:
             self.sf.debug("Incomplete Github information found (url).")
             return None
-        if item['description'] == None:
+        if item.get('description') == None:
             self.sf.debug("Incomplete Github information found (description).")
             return None
 
@@ -192,7 +192,7 @@ class sfp_github(SpiderFootPlugin):
         if not failed:
             # For each user matching the name, get their repos
             for item in ret['items']:
-                if item['repos_url'] == None:
+                if item.get('repos_url') == None:
                     self.sf.debug("Incomplete Github information found (repos_url).")
                     continue
 
@@ -202,20 +202,24 @@ class sfp_github(SpiderFootPlugin):
     
     	        if res['content'] == None:
                     self.sf.error("Unable to fetch " + url, False)
-	            continue
+                    continue
 
-                repret = json.loads(res['content'])
+                try:
+                    repret = json.loads(res['content'])
+                except BaseException as e:
+                    self.sf.error("Invalid JSON returned from Github.", False)
+                    continue
+
                 if repret == None:
                     self.sf.error("Unable to process empty response from Github for: " + \
                                   name, False)
                     continue
 
-                if 'items' not in repret:
-                    self.sf.error("Unable to process empty response from Github for: " + \
-                                  name, False)
-                    continue
-
                 for item in repret:
+                    if type(item) != dict:
+                        self.sf.error("Encountered an unexpected response from Github.", False)
+                        continue 
+
                     repo_info = self.buildRepoInfo(item)
                     if repo_info != None:
                         if self.opts['namesonly'] and name not in item['name']:

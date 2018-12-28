@@ -31,6 +31,7 @@ class sfp_ipstack(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -54,6 +55,11 @@ class sfp_ipstack(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if self.errorState:
+            return None
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_ipstack but did not set an API key!", False)
+            self.errorState = True
             return None
 
         # Don't look up stuff twice
