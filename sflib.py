@@ -570,7 +570,7 @@ class SpiderFoot:
             {"^.*@.*$": "EMAILADDR"},
             {"^\".*\"$": "HUMAN_NAME"},
             {"\d+": "BGP_AS_OWNER"},
-            {".*\..*": "INTERNET_NAME"}
+            {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
         ]
 
         # Parse the target and set the targetType
@@ -774,6 +774,16 @@ class SpiderFoot:
         for c in cmd:
             if c.lower() not in chars:
                 return False
+
+        if '..' in cmd:
+            return False
+
+        if cmd.startswith("-"):
+            return False
+
+        if len(cmd) < 3:
+            return False
+
         return True
 
     # Return dictionary words and/or names
