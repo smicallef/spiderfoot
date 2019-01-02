@@ -11,12 +11,12 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_websvr(SpiderFootPlugin):
     """Web Server:Footprint,Investigate:Content Analysis::Obtain web server banners to identify versions of web servers being used."""
-
 
     # Default options
     opts = {}
@@ -59,34 +59,42 @@ class sfp_websvr(SpiderFootPlugin):
             self.sf.debug("Not collecting web server information for external sites.")
             return None
 
+        try:
+            jdata = json.loads(eventData)
+            if jdata == None:
+                return None
+        except BaseException as e:
+            self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
+            return None
+
         # Could apply some smarts here, for instance looking for certain
         # banners and therefore classifying them further (type and version,
         # possibly OS. This could also trigger additional tests, such as 404s
         # and other errors to see what the header looks like.
-        if 'server' in eventData:
-            evt = SpiderFootEvent("WEBSERVER_BANNER", eventData['server'],
+        if 'server' in jdata:
+            evt = SpiderFootEvent("WEBSERVER_BANNER", jdata['server'],
                                   self.__name__, parentEvent)
             self.notifyListeners(evt)
 
-            self.sf.info("Found web server: " + eventData['server'] + " (" + eventSource + ")")
+            self.sf.info("Found web server: " + jdata['server'] + " (" + eventSource + ")")
 
-        if 'x-powered-by' in eventData:
-            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", eventData['x-powered-by'],
+        if 'x-powered-by' in jdata:
+            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", jdata['x-powered-by'],
                                   self.__name__, parentEvent)
             self.notifyListeners(evt)
             return None
 
         tech = None
-        if 'set-cookie'in eventData and 'PHPSESS' in eventData['set-cookie']:
+        if 'set-cookie'in jdata and 'PHPSESS' in jdata['set-cookie']:
             tech = "PHP"
 
-        if 'set-cookie' in eventData and 'JSESSIONID' in eventData['set-cookie']:
+        if 'set-cookie' in jdata and 'JSESSIONID' in jdata['set-cookie']:
             tech = "Java/JSP"
 
-        if 'set-cookie' in eventData and 'ASP.NET' in eventData['set-cookie']:
+        if 'set-cookie' in jdata and 'ASP.NET' in jdata['set-cookie']:
             tech = "ASP.NET"
 
-        if 'x-aspnet-version' in eventData:
+        if 'x-aspnet-version' in jdata:
             tech = "ASP.NET"
 
         if tech is not None and '.jsp' in eventSource:

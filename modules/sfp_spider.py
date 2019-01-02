@@ -12,6 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import time
+import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spider(SpiderFootPlugin):
@@ -211,9 +212,11 @@ class sfp_spider(SpiderFootPlugin):
                                     self.__name__, parentEvent)
             self.notifyListeners(event)
 
-        event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", httpresult['headers'],
-                                self.__name__, parentEvent)
-        self.notifyListeners(event)
+        if httpresult.get('headers') != None:
+            event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", 
+                                    json.dumps(httpresult['headers'], ensure_ascii=False),
+                                    self.__name__, parentEvent)
+            self.notifyListeners(event)
 
         event = SpiderFootEvent("HTTP_CODE", str(httpresult['code']),
                                 self.__name__, parentEvent)

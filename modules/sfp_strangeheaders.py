@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Standard headers, taken from http://en.wikipedia.org/wiki/List_of_HTTP_header_fields
@@ -59,6 +60,7 @@ class sfp_strangeheaders(SpiderFootPlugin):
         parentEvent = event.sourceEvent
         eventSource = event.sourceEvent.data
 
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
         if eventSource in self.results:
             return None
@@ -69,9 +71,17 @@ class sfp_strangeheaders(SpiderFootPlugin):
             self.sf.debug("Not collecting header information for external sites.")
             return None
 
-        for key in eventData:
+        try:
+            jdata = json.loads(eventData)
+            if jdata == None:
+                return None
+        except BaseException as e:
+            self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
+            return None
+
+        for key in jdata:
             if key.lower() not in headers:
-                val = key + ": " + eventData[key]
+                val = key + ": " + jdata[key]
                 evt = SpiderFootEvent("WEBSERVER_STRANGEHEADER", val,
                                       self.__name__, parentEvent)
                 self.notifyListeners(evt)

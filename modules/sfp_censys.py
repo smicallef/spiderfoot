@@ -162,7 +162,7 @@ class sfp_censys(SpiderFootPlugin):
                             self.notifyListeners(e)
 
                     if 'headers' in rec:
-                        dat = rec['headers']
+                        dat = json.dumps(rec['headers'], ensure_ascii=False)
                         e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, event)
                         self.notifyListeners(e)
 

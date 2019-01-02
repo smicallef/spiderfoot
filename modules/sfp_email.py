@@ -59,17 +59,6 @@ class sfp_email(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if type(eventData) not in [str, unicode]:
-            try:
-                if type(eventData) in [ list, dict ]:
-                    eventData = str(eventData)
-                else:
-                    self.sf.debug("Unhandled type to find e-mails: " + str(type(eventData)))
-                    return None
-            except BaseException as e:
-                self.sf.debug("Unable to convert list/dict to string: " + str(e))
-                return None
-
         pat = re.compile("([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
         matches = re.findall(pat, eventData)
         myres = list()

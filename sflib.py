@@ -1785,8 +1785,18 @@ class SpiderFootEvent(object):
         self.visibility = visibility
         self.risk = risk
         self.module = module
-        self.data = data
         self.sourceEvent = sourceEvent
+
+        if type(data) in [ list, dict ]:
+            print "FATAL: Only string events are accepted, not lists or dicts."
+            print "FATAL: Offending module: " + module
+            print "FATAL: Offending type: " + eventType
+            sys.exit(-1)
+
+        if type(data) != unicode and data != None:
+            self.data = unicode(data, 'utf-8', errors='replace')
+        else:
+            self.data = data
 
         # "ROOT" is a special "hash" reserved for elements with no
         # actual parent (e.g. the first page spidered.)
