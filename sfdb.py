@@ -257,12 +257,15 @@ class SpiderFootDb:
             return
 
         if init:
+            print "Attempting to verify database and update if necessary..."
             for qry in self.createTypeQueries:
                 try:
                     self.dbh.execute(qry)
                     self.conn.commit()
                 except BaseException as e:
                     continue
+            self.conn.commit()
+            self.conn.close()
 
     #
     # Back-end database operations
