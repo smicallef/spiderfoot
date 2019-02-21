@@ -14,7 +14,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_citadel(SpiderFootPlugin):
-    """Citadel Engine:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Searches citadel.pw's database of breaches."""
+    """Citadel Engine:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Searches Leak-Lookup.com's database of breaches."""
 
     # Default options
     opts = {
@@ -22,7 +22,7 @@ class sfp_citadel(SpiderFootPlugin):
         "timeout": 60
     }
     optdescs = {
-        "api_key": "Citadel.pw API key. Without this you're limited to the public API.",
+        "api_key": "Leak-Lookup API key. Without this you're limited to the public API.",
         "timeout": "Custom timeout due to heavy traffic at times."
     }
 
@@ -31,7 +31,7 @@ class sfp_citadel(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
-        self.__dataSource__ = "Citadel.pw"
+        self.__dataSource__ = "Leak-Lookup.com"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -62,32 +62,31 @@ class sfp_citadel(SpiderFootPlugin):
             else:
                 self.results[eventData] = True
 
+            url = "http://leak-lookup.com/api/search" 
+               
             if self.opts['api_key']:
-                url = "http://citadel.pw/api.php?api=" + self.opts['api_key'] + \
-                      "&query="
+                postdata = "key={}".format( self.opts['api_key'] )  
             else:
-                public_api = "6ce4f0a0c7b776809adb0f90473ea0e4"
-                url = "http://citadel.pw/api.php?api=" + public_api + "&query="
+                postdata = "key=6ce4f0a0c7b776809adb0f90473ea0e4"
 
-            res = self.sf.fetchUrl(url + eventData, timeout=self.opts['timeout'], 
+            postdata += "&type=email_address&query={}".format( eventData )
+                
+            res = self.sf.fetchUrl(url, data=postdata timeout=self.opts['timeout'], 
                                    useragent=self.opts['_useragent'])
 
-            if res['content'] is None or "{error" in res['content']:
+            if res['content'] is None or '"error": "true"' in res['content']:
                 self.sf.error("Error encountered processing " + eventData, False)
                 return None
 
             data = json.loads(res['content'])
 
-            if "site" in data[0]:
-                for record in data:
-                    self.sf.info("Found Citadel entry for " + eventData + ": " + \
-                                 record["site"])
-                    t = "EMAILADDR_COMPROMISED"
-                    evt = SpiderFootEvent(t, eventData + " [" + record["site"] + "]", 
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
-                return None
-
+            for site in data["message"]:
+                self.sf.info("Found Leak-Lookup entry for {}: {}".format( eventData, site ) )
+                evt = SpiderFootEvent( "EMAILADDR_COMPROMISED", "{} [{}]".format( eventData, site ), self.__name__, event )
+                self.notifyListeners(evt)
+            
+            return None
+            
         except Exception as ex:
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
