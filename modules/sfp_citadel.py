@@ -18,7 +18,7 @@ class sfp_citadel(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "api_key": "09bc5ad70a1104f2dc81fa8c3ec3243d2",
+        "api_key": "3edfb5603418f101926c64ca5dd0e409",
         "timeout": 60
     }
     optdescs = {
