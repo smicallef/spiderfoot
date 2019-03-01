@@ -18,7 +18,7 @@ class sfp_citadel(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "api_key": "",
+        "api_key": "09bc5ad70a1104f2dc81fa8c3ec3243d2",
         "timeout": 60
     }
     optdescs = {
@@ -54,8 +54,8 @@ class sfp_citadel(SpiderFootPlugin):
 
         try:
             self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-
-            # Don't look up stuff twice
+            
+	    # Don't look up stuff twice
             if eventData in self.results:
                 self.sf.debug("Skipping " + eventData + " as already searched.")
                 return None
@@ -63,19 +63,14 @@ class sfp_citadel(SpiderFootPlugin):
                 self.results[eventData] = True
 
             url = "http://leak-lookup.com/api/search" 
-               
-            if self.opts['api_key']:
-                postdata = "key={}".format( self.opts['api_key'] )  
-            else:
-                postdata = "key=6ce4f0a0c7b776809adb0f90473ea0e4"
-
-            postdata += "&type=email_address&query={}".format( eventData )
-                
-            res = self.sf.fetchUrl(url, data=postdata timeout=self.opts['timeout'], 
+            postdata = "key={}&type=email_address&query={}".format( self.opts["api_key"], eventData )              
+ 
+            res = self.sf.fetchUrl(url, postData=postdata, timeout=self.opts['timeout'], 
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None or '"error": "true"' in res['content']:
-                self.sf.error("Error encountered processing " + eventData, False)
+		errorMessage = json.loads(res['content'])["message"]
+                self.sf.error("Error encountered processing {}: {}".format( eventData, errorMessage ), False)
                 return None
 
             data = json.loads(res['content'])
