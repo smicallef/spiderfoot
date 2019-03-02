@@ -87,8 +87,14 @@ class sfp_wikileaks(SpiderFootPlugin):
 
         # Fetch the paste site content
         links = dict()
-        links.update(self.sf.parseLinks(wlurl, res['content'], "wikileaks.org"))
-        links.update(self.sf.parseLinks(wlurl, res['content'], "cryptome.org"))
+        p = self.sf.parseLinks(wlurl, res['content'], "wikileaks.org")
+        if p:
+            links.update(p)
+
+        p = self.sf.parseLinks(wlurl, res['content'], "cryptome.org")
+        if p:
+            links.update(p)
+
         keepGoing = True
         page = 0
         while keepGoing:
@@ -130,7 +136,12 @@ class sfp_wikileaks(SpiderFootPlugin):
                 res = self.sf.fetchUrl(wlurl)
                 # Fetch the paste site content
                 links = dict()
-                links.update(self.sf.parseLinks(wlurl, res['content'], "wikileaks.org"))
-                links.update(self.sf.parseLinks(wlurl, res['content'], "cryptome.org"))
+                p = self.sf.parseLinks(wlurl, res['content'], "wikileaks.org")
+                if p:
+                    links.update(p)
+
+                p = self.sf.parseLinks(wlurl, res['content'], "cryptome.org")
+                if p:
+                    links.update(p)
 
 # End of sfp_wikileaks class
