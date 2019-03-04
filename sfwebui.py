@@ -175,6 +175,45 @@ class SpiderFootWebUi:
 
     scansearchresultexport.exposed = True
 
+    # Export results from multiple scans in ReconJSON format
+    def scanexportreconjsonmulti(self, ids):
+        types = list()
+        dbh = SpiderFootDb(self.config)
+        sf = SpiderFoot(self.config)
+        data = list()
+
+        for id in ids.split(','):
+            data = data + dbh.scanResultEvent(id, filterFp=True)
+
+        host_events = [
+            'CO_HOSTED_SITE_DOMAIN',
+            'SIMILARDOMAIN',
+            'DOMAIN_NAME',
+            'INTERNET_NAME',
+            'INTERNET_NAME_UNRESOLVED',
+            'AFFILIATE_INTERNET_NAME',
+            'AFFILIATE_IPADDR',
+        ]
+        reconjson = []
+        for event in data:
+            event_data = event[1]
+            event_sourcedata = event[2]
+            event_type = event[4]
+            if event_type in host_events:
+                reconjson.append({"type": "host", "fqdn": event_data})
+            if event_type in 'CO_HOSTED_SITE' :
+                reconjson.append({"type": "host", "fqdn": event_data, "ip": event_sourcedata})
+            if event_type in 'IP_ADDRESS' :
+                reconjson.append({"type": "host", "fqdn": event_sourcedata, "ip": event_data})
+
+        cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.json"
+        cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
+        cherrypy.response.headers['Pragma'] = "no-cache"
+
+        return json.dumps(reconjson)
+
+    scanexportreconjsonmulti.exposed = True
+
     # Export entities from scan results for visualising
     def scanviz(self, id, gexf="0"):
         types = list()
