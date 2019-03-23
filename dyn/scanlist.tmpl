@@ -119,8 +119,11 @@
                         efr.src = '${docroot}/scanvizmulti?ids=' + ids.join(',');
                     } else if (type == "csv") {
                         efr.src = '${docroot}/scaneventresultexportmulti?ids=' + ids.join(',');
+                    } else if (type == "json") {
+                        efr.src = '${docroot}/scanexportjsonmulti?ids=' + ids.join(',');
                     } else if (type == "reconjson") {
                         efr.src = '${docroot}/scanexportreconjsonmulti?ids=' + ids.join(',');
+
                     } else {
                         console.log("Invalid export type");
                     }
@@ -173,6 +176,7 @@
                             buttons += "<ul class='dropdown-menu'>";
                             buttons += "<li><a href='javascript:exportSelected(\"csv\")'>CSV</a></li>";
                             buttons += "<li><a href='javascript:exportSelected(\"gexf\")'>GEXF</a></li>";
+                            buttons += "<li><a href='javascript:exportSelected(\"json\")'>JSON</a></li>";
                             buttons += "<li><a href='javascript:exportSelected(\"reconjson\")'>ReconJSON</a></li>";
                             buttons += "</ul>";
                             buttons += "</div>";
