@@ -15,7 +15,7 @@
 
 # Pull the base image.
 FROM alpine:latest
-ENV SPIDERFOOT_VERSION 2.12.0
+ENV SPIDERFOOT_VERSION 3.0.0
 COPY requirements.txt .
 
 # Run everything as one command so that only one layer is created

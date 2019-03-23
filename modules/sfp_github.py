@@ -217,7 +217,7 @@ class sfp_github(SpiderFootPlugin):
 
                 for item in repret:
                     if type(item) != dict:
-                        self.sf.error("Encountered an unexpected response from Github.", False)
+                        self.sf.debug("Encountered an unexpected or empty response from Github.")
                         continue 
 
                     repo_info = self.buildRepoInfo(item)

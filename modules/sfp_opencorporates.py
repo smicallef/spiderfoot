@@ -52,6 +52,8 @@ class sfp_opencorporates(SpiderFootPlugin):
     # Search for company name
     # https://api.opencorporates.com/documentation/API-Reference
     def searchCompany(self, qry):
+        if type(qry) != unicode:
+            qry = qry.encode("utf-8", errors="replace")
         params = {
             'q': qry,
             'format': 'json',
