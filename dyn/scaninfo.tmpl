@@ -56,6 +56,14 @@
         var dataloaders = [];
         var sharedSigma = "";
         var loadersrunning = false;
+        
+        $(document).on("keydown", function (event) {        
+		      if (event.keyCode === 8) {
+			      event.preventDefault();
+			      browseEventList("${id}");
+			    }
+		    });
+    
         var refresh = function() { browseEventList("${id}"); }
         $('#searchvalue').popover({ 'trigger': 'focus', 'placement': 'bottom'});
         $('#searchvalue').keyup(function(event) {
