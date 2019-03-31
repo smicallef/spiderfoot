@@ -30,10 +30,12 @@ class sfp_gotcha(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     results = dict()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -71,6 +73,7 @@ class sfp_gotcha(SpiderFootPlugin):
                 return True
         except Exception as e:
             self.sf.error("Error processing response from gotcha.pw: " + str(e), False)
+            self.errorState = True
             return None
 
     # Handle events sent to this module
@@ -80,6 +83,10 @@ class sfp_gotcha(SpiderFootPlugin):
         eventData = event.data
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.errorState:
+            self.sf.error("Gotcha.pw is having problems, so not processing any further events.", False)
+            return None
 
        # Don't look up stuff twice
         if eventData in self.results:
