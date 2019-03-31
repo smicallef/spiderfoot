@@ -98,6 +98,9 @@ class sfp_wikileaks(SpiderFootPlugin):
         keepGoing = True
         page = 0
         while keepGoing:
+            if not res['content']:
+                break
+
             if "page=" not in res['content']:
                 keepGoing = False
 
@@ -134,6 +137,9 @@ class sfp_wikileaks(SpiderFootPlugin):
                         external + "&new_search=True&order_by=most_relevant&page=" + \
                         str(page) + "#results"
                 res = self.sf.fetchUrl(wlurl)
+                if not res['content']:
+                    break
+
                 # Fetch the paste site content
                 links = dict()
                 p = self.sf.parseLinks(wlurl, res['content'], "wikileaks.org")
