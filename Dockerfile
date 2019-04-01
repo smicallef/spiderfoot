@@ -19,9 +19,6 @@ FROM alpine:latest
 WORKDIR /home/spiderfoot
 COPY . .
 ENV SPIDERFOOT_VERSION 3.0.0
-#COPY requirements.txt .
-
-
 
 # Run everything as one command so that only one layer is created
 RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py2-pip swig \
@@ -39,7 +36,6 @@ RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py2-pi
     && rm -rf /root/.cache
 
 USER spiderfoot
-
 
 EXPOSE 5001
 
