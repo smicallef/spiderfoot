@@ -265,7 +265,7 @@ class SpiderFootDb:
                 except BaseException as e:
                     continue
             self.conn.commit()
-            self.conn.close()
+            #self.conn.close()
 
     #
     # Back-end database operations
