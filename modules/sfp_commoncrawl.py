@@ -74,12 +74,12 @@ class sfp_commoncrawl(SpiderFootPlugin):
         if res['code'] in [ "400", "401", "402", "403", "404" ]:
             self.sf.error("CommonCrawl index collection doesn't seem to be available.", False)
             self.errorState = True
-            return None
+            return list()
 
         if not res['content']:
             self.sf.error("CommonCrawl index collection doesn't seem to be available.", False)
             self.errorState = True
-            return None
+            return list()
 
         indexes = re.findall(".*(CC-MAIN-\d+-\d+).*", res['content'])
         highest = 0
@@ -93,7 +93,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
         if len(topindexes) < self.opts['indexes']:
             self.sf.error("Not able to find latest CommonCrawl indexes.", False)
             self.errorState = True
-            return None
+            return list()
 
         retindex = list()
         for i in topindexes:
