@@ -1,6 +1,6 @@
 table.tablesorter thead tr .header {
 cursor: pointer;
-background-image: url(/static/img/sortbg.gif);     
+background-image: url(../img/sortbg.gif);
 background-repeat: no-repeat; 
 background-position: center left; 
 padding-left: 20px; 
