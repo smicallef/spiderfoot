@@ -80,7 +80,7 @@ class sfp_ripe(SpiderFootPlugin):
             self.sf.debug("Error processing JSON response.")
             return None
 
-        prefix = j["data"]["prefix"]
+        prefix = j["data"].get("prefix")
         if prefix is None:
             self.sf.debug("Could not identify network prefix.")
             return None

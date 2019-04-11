@@ -77,7 +77,8 @@ class sfp_wikileaks(SpiderFootPlugin):
         else:
             maxDate = ""
 
-        wlurl = "https://search.wikileaks.org/?query=%22" + eventData + "%22" + \
+        qdata = eventData.replace(" ", "+")
+        wlurl = "https://search.wikileaks.org/?query=%22" + qdata + "%22" + \
               "&released_date_start=" + maxDate + "&include_external_sources=" + \
               external + "&new_search=True&order_by=most_relevant#results"
         res = self.sf.fetchUrl(wlurl)
@@ -106,8 +107,11 @@ class sfp_wikileaks(SpiderFootPlugin):
 
             valid = False
             for link in links:
+                if "search.wikileaks.org/" in link:
+                    continue
+
                 # We can safely skip search.wikileaks.org and others.
-                if not link.startswith("https://wikileaks.org/") and not link.startswith("https://cryptome.org/"):
+                if "wikileaks.org/" not in link and "cryptome.org/" not in link:
                     continue
                 else:
                     self.sf.debug("Found a link: " + link)
@@ -132,7 +136,7 @@ class sfp_wikileaks(SpiderFootPlugin):
 
             if keepGoing:
                 page += 1
-                wlurl = "https://search.wikileaks.org/?query=%22" + eventData + "%22" + \
+                wlurl = "https://search.wikileaks.org/?query=%22" + qdata + "%22" + \
                         "&released_date_start=" + maxDate + "&include_external_sources=" + \
                         external + "&new_search=True&order_by=most_relevant&page=" + \
                         str(page) + "#results"
