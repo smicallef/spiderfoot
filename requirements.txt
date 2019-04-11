@@ -7,3 +7,4 @@ netaddr>=0.7.18
 requests>=2.20.0
 ipwhois==1.0.0
 ipaddr>=2.2.0
+future
