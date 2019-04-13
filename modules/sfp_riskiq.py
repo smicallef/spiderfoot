@@ -131,6 +131,8 @@ class sfp_riskiq(SpiderFootPlugin):
             self.sf.error("Invalid JSON returned by RiskIQ.", False)
             return None
 
+        return ret['results']
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
