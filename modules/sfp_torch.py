@@ -31,7 +31,7 @@ class sfp_torch(SpiderFootPlugin):
     }
 
     # Target
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -42,7 +42,7 @@ class sfp_torch(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME"]
+        return ["DOMAIN_NAME", "HUMAN_NAME", "EMAILADDR"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events

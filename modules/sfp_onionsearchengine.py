@@ -20,6 +20,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
 
     # Default options
     opts = {
+        # We don't bother with pagination as ahmia seems fairly limited in coverage
         'fetchlinks': False,
         'blacklist': [ '.*://relate.*' ]
     }
@@ -31,7 +32,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
     }
 
     # Target
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -42,7 +43,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME"]
+        return ["DOMAIN_NAME", "HUMAN_NAME", "EMAILADDR"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events

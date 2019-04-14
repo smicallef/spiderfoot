@@ -32,7 +32,7 @@ class sfp_ahmia(SpiderFootPlugin):
     }
 
     # Target
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -43,7 +43,7 @@ class sfp_ahmia(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME"]
+        return ["DOMAIN_NAME", "HUMAN_NAME", "EMAILADDR"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -75,7 +75,7 @@ class sfp_ahmia(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            # Submit the google results for analysis
+            # Submit the search results for analysis
             evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
                                   self.__name__, event)
             self.notifyListeners(evt)
