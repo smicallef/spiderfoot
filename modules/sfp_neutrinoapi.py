@@ -83,6 +83,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     def parseApiResponse(self, res):
         if res['code'] == "403":
             self.sf.error("Authentication failed", False)
+            self.errorState = True
             return None
 
         if res['content'] is None:
