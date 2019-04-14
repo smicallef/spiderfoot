@@ -63,7 +63,7 @@ class sfp_ahmia(SpiderFootPlugin):
             self.results[eventData] = True
 
         # Sites hosted on the domain
-        data = self.sf.fetchUrl("https://ahmia.fi/search/?q=" + eventData,
+        data = self.sf.fetchUrl("https://ahmia.fi/search/?q=" + eventData.replace(" ", "%20"),
                                 useragent=self.opts['_useragent'],
                                 timeout=self.opts['_fetchtimeout'])
         if data is None or not data.get('content'):

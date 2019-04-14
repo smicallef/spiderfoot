@@ -87,7 +87,7 @@ class sfp_torch(SpiderFootPlugin):
 
             # Sites hosted on the domain
             data = self.sf.fetchUrl("http://xmh57jrzrnw6insl.onion/" + formid + "/search.cgi?q=" + \
-                                    eventData + "&cmd=Search!" + p,
+                                    eventData.replace(" ", "%20") + "&cmd=Search!" + p,
                                     useragent=self.opts['_useragent'],
                                     timeout=self.opts['_fetchtimeout'])
             if data is None or not data.get('content'):

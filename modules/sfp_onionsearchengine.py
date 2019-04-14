@@ -69,7 +69,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         while keepGoing:
             # Sites hosted on the domain
             data = self.sf.fetchUrl("https://onionsearchengine.com/search.php?search=\"" + \
-                                    eventData + "\"&submit=Search" + paging, 
+                                    eventData.replace(" ", "%20") + "\"&submit=Search" + paging, 
                                     useragent=self.opts['_useragent'], 
                                     timeout=self.opts['_fetchtimeout'])
             if data is None or not data.get('content'):
