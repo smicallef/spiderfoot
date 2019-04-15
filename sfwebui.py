@@ -784,6 +784,8 @@ class SpiderFootWebUi:
         scanId = sf.genScanInstanceGUID(scanname)
         if targetType == "HUMAN_NAME":
             scantarget = scantarget.replace("\"", "")
+        elif targetType == "COMPANY_NAME":
+            scantarget = scantarget.replace("-", "")
         else:
             scantarget = scantarget.lower()
         t = SpiderFootScanner(scanname, scantarget, targetType, scanId,
