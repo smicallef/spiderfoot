@@ -13,6 +13,8 @@
 
 import re
 import json
+import math
+from netaddr import IPAddress
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -44,14 +46,14 @@ class sfp_ripe(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         return ['IP_ADDRESS', 'NETBLOCK_MEMBER', 'NETBLOCK_OWNER',
-                'BGP_AS_OWNER', 'BGP_AS_MEMBER']
+                'BGP_AS_OWNER', 'BGP_AS_MEMBER', 'INTERNET_NAME', 'DOMAIN_NAME', 'COMPANY_NAME']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
         return ["NETBLOCK_MEMBER", "NETBLOCK_OWNER", "BGP_AS_MEMBER",
-                "RAW_RIR_DATA", "BGP_AS_OWNER", "BGP_AS_PEER"]
+                "RAW_RIR_DATA", "BGP_AS_OWNER", "BGP_AS_PEER", "PHONE_NUMBER", "HUMAN_NAME", "EMAILADDR", "AFFILIATE_IPADDR", 'DOMAIN_NAME']
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
@@ -341,6 +343,104 @@ class sfp_ripe(SpiderFootPlugin):
             evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
             self.notifyListeners(evt)
 
+        # INTERNET_NAME, DOMAIN_NAME, COMPANY_NAME -> EMAILADDR, PHONE_NUMBER, HUMAN_NAME, AFFILIATE_IPADDR
+        if eventName == 'INTERNET_NAME' or eventName == 'DOMAIN_NAME' or eventName == 'COMPANY_NAME':
+            
+            search_query = eventData.replace(" ", "+AND+")
+
+            res = self.fetchRir("https://apps.db.ripe.net/db-web-ui/api/rest/fulltextsearch/select?facet=true&format=xml&hl=true&q=(" + search_query + ")&start=0&wt=json")
+
+            if res['content'] is None:
+                self.sf.debug("Could not fetch free text search results for " + eventData + " at RIPE.")
+                return None
+
+            try:
+                j = json.loads(res['content'])
+            except Exception as e:
+                self.sf.debug("Error processing JSON response.")
+                return None
+
+            numFound = j['result']['numFound']
+
+            self.sf.debug("Got " + str(numFound) + " results from Ripe")
+
+            if numFound > 0:
+
+                #calculate pagination as only 10 results are shown per page
+                current_page = 1
+                target_page = int(math.ceil(float(numFound) / float(10)))
+                
+                self.sf.debug("Have to paginate through " + str(target_page) + " pages for all results")
+
+                while current_page <= target_page:
+                    self.sf.debug("Processing page " + str(current_page) + " out of " + str(target_page))
+
+                    for result in j['result']['docs']:
+                        for item in result['doc']['strs']:
+
+                            if item['str']['name'] == "e-mail" or item['str']['name'] == "upd-to":
+                                self.sf.debug("Got email for " + eventData)
+                                email = item['str']['value']
+                                evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
+                                self.notifyListeners(evt)
+                                domain_name = email.split("@")[0]
+                                evt = SpiderFootEvent("DOMAIN_NAME", domain_name, self.__name__, event)
+                                self.notifyListeners(evt)
+
+                            if item['str']['name'] == "phone":
+                                self.sf.debug("Got email for " + eventData)
+                                phone = item['str']['value']
+                                evt = SpiderFootEvent("PHONE_NUMBER", phone, self.__name__, event)
+                                self.notifyListeners(evt)
+
+                            if item['str']['name'] == "person":
+                                self.sf.debug("Got human name for " + eventData)
+                                person = item['str']['value']
+                                evt = SpiderFootEvent("HUMAN_NAME", person, self.__name__, event)
+                                self.notifyListeners(evt)
+
+                            #As ripe gives the IPs as ranges we need to increment from the start till the end ip
+                            if item['str']['name'] == "lookup-key":
+                                self.sf.debug("Got ips for " + eventData)
+                                if " - " in item['str']['value']:
+                                    self.sf.debug("Its an ip range")
+                                    start_ip = item['str']['value'].split(" - ")[0]
+                                    end_ip = item['str']['value'].split(" - ")[1]
+                                    self.sf.debug("Start ip " + start_ip)
+                                    self.sf.debug("End ip " + end_ip)
+                                    current_ip_obj = IPAddress(str(start_ip))
+                                    end_ip_obj = IPAddress(str(end_ip))
+                                    self.sf.debug("Strings converted to objects")
+                                    while current_ip_obj <= end_ip_obj:
+                                        ipaddr = str(current_ip_obj)
+                                        self.sf.debug("Storing ip " + ipaddr)
+                                        evt = SpiderFootEvent("AFFILIATE_IPADDR", ipaddr, self.__name__, event)
+                                        self.notifyListeners(evt)
+                                        current_ip_obj += 1
+                    
+                    #If we havent reached the target page, fetch next page and increment the counter
+                    if current_page < target_page:
+                        self.sf.debug("Going to next page")
+                        start_value = current_page * 10
+                        res = self.fetchRir("https://apps.db.ripe.net/db-web-ui/api/rest/fulltextsearch/select?facet=true&format=xml&hl=true&q=(" + search_query + ")&wt=json&start=" + str(start_value))
+                        if res['content'] is None:
+                            self.sf.debug("Could not fetch free text search results for " + eventData + " at RIPE.")
+                            return None
+
+                        try:
+                            j = json.loads(res['content'])
+                        except Exception as e:
+                            self.sf.debug("Error processing JSON response.")
+                            return None
+
+                        current_page += 1
+
+                    #If we have reached the target page
+                    if current_page == target_page:
+                        current_page += 1
+
+
         return None
+
 
 # End of sfp_ripe class
