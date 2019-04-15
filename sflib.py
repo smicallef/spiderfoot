@@ -1649,7 +1649,7 @@ class SpiderFootPlugin(object):
 # Class for targets
 class SpiderFootTarget(object):
     _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME",
-                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER" ]
+                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", "COMPANY_NAME" ]
     targetType = None
     targetValue = None
     targetAliases = list()
