@@ -18,7 +18,7 @@
 FROM alpine:latest
 WORKDIR /home/spiderfoot
 COPY . .
-ENV SPIDERFOOT_VERSION 3.0.0
+ENV SPIDERFOOT_VERSION
 
 # Run everything as one command so that only one layer is created
 RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py2-pip swig \
