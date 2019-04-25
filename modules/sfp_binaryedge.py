@@ -231,7 +231,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                         continue
                     if self.getTarget().matches(host, includeParents=True):
                         if self.opts['verify']:
-                            if not self.resolveHost(rec):
+                            if not self.resolveHost(host):
                                 continue
                         evt = SpiderFootEvent("INTERNET_NAME", rec, self.__name__, event)
                         self.notifyListeners(evt)
