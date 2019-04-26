@@ -235,7 +235,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                                 continue
                         evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
                         self.notifyListeners(evt)
-                        self.reportedhosts[rec] = True
+                        self.reportedhosts[host] = True
                         continue
 
                     if self.cohostcount < self.opts['maxcohost']:
@@ -276,6 +276,8 @@ class sfp_binaryedge(SpiderFootPlugin):
                 for rec in res:
                     if rec in self.reportedhosts:
                         continue
+                    else:
+                        self.reportedhosts[rec] = True
                     if self.opts['verify']:
                         if not self.resolveHost(rec):
                             self.sf.debug("Couldn't resolve " + rec + ", so skipping.")
