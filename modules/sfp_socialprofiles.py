@@ -38,7 +38,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     # Default options
     opts = {
         'pages': 1,
-        'method': "yahoo",
+        'method': "bing",
         'tighten': True
     }
 
@@ -46,7 +46,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     optdescs = {
         'pages': "Number of search engine pages of identified profiles to iterate through.",
         'tighten': "Tighten results by expecting to find the keyword of the target domain mentioned in the social media profile page results?",
-        'method': "Search engine to use: google, yahoo or bing."
+        'method': "Search engine to use: google or bing."
     }
 
     keywords = None
@@ -97,17 +97,15 @@ class sfp_socialprofiles(SpiderFootPlugin):
             searchStr = s.replace(" ", "%20")
             results = None
 
+            if self.opts['method'].lower() == "yahoo":
+                self.sf.error("Yahoo is no longer supported. Please try 'bing' or 'google'.", False)
+                return None
+
             if self.opts['method'].lower() == "google":
                 results = self.sf.googleIterate(searchStr, dict(limit=self.opts['pages'],
                                                                 useragent=self.opts['_useragent'],
                                                                 timeout=self.opts['_fetchtimeout']))
                 self.__dataSource__ = "Google"
-
-            if self.opts['method'].lower() == "yahoo":
-                results = self.sf.yahooIterate(searchStr, dict(limit=self.opts['pages'],
-                                                               useragent=self.opts['_useragent'],
-                                                               timeout=self.opts['_fetchtimeout']))
-                self.__dataSource__ = "Yahoo"
 
             if self.opts['method'].lower() == "bing":
                 results = self.sf.bingIterate(searchStr, dict(limit=self.opts['pages'],
@@ -141,10 +139,6 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             continue
                         else:
                             instances.append(match)
-
-                        if self.opts['method'] == "yahoo":
-                            match = re.sub(r'.*RU=(.*?)/RK=.*', r'\1', match)
-                            self.sf.debug("Yahoo match: " + match)
 
                         if self.checkForStop():
                             return None
