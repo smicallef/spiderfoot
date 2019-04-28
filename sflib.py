@@ -31,6 +31,7 @@ import netaddr
 import urllib2
 import StringIO
 import threading
+import traceback
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy, copy
 
@@ -1604,6 +1605,9 @@ class SpiderFootPlugin(object):
             except BaseException as e:
                 f = open("sferror.log", "a")
                 f.write("Module (" + listener.__module__ + ") encountered an error: " + str(e) + "\n")
+                
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
                 f.close()
 
     # For modules to use to check for when they should give back control
