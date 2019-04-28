@@ -49,6 +49,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -60,14 +61,14 @@ class sfp_threatcrowd(SpiderFootPlugin):
     def watchedEvents(self):
         return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
                 "CO_HOSTED_SITE", "NETBLOCK_OWNER", "EMAILADDR",
-                "NETBLOCK_MEMBER"]
+                "NETBLOCK_MEMBER", "AFFILIATE_INTERNET_NAME"]
 
     # What events this module produces
     def producedEvents(self):
         return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
                 "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-                "MALICIOUS_SUBNET", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
+                "MALICIOUS_SUBNET", "INTERNET_NAME",
                 "MALICIOUS_EMAILADDR"]
 
     def query(self, qry):
@@ -93,6 +94,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
             ret = json.loads(res['content'])
         except Exception as e:
             self.sf.error("Error processing JSON response from ThreatCrowd.", False)
+            self.errorState = True
             return None
 
         return ret
