@@ -54,18 +54,15 @@ class sfp_opencorporates(SpiderFootPlugin):
     def searchCompany(self, qry):
         if type(qry) != unicode:
             qry = qry.encode("utf-8", errors="replace")
-        params = {
-            'q': qry,
-            'format': 'json',
-            'order': 'score',
-            'confidence': str(self.opts['confidence'])
-        }
 
+        apiparam = ""
         if not self.opts['api_key'] == "":
-            params['api_token'] = self.opts['api_key']
+            apiparam = "&api_token=" + self.opts['api_key']
 
         # High timeouts as they can sometimes take a while
-        res = self.sf.fetchUrl("https://api.opencorporates.com/v0.4/companies/search?" + urllib.urlencode(params),
+        res = self.sf.fetchUrl("https://api.opencorporates.com/v0.4/companies/search?q=" + \
+                               qry + "&format=json&order=score&confidence=" + \
+                               str(self.opts['confidence']) + apiparam,
                                timeout=60, useragent=self.opts['_useragent'])
 
         if res['code'] == "401":
