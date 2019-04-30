@@ -1,6 +1,16 @@
 These people are owed some credit for their contributions to SpiderFoot, be it
 bug fixes or new functionality. Thank you!
 
+- Brendan Coles (https://github.com/bcoles)
+    - Second highest contributor to the project
+    - Too many contributions to list here, see https://github.com/smicallef/spiderfoot/pulls?q=is%3Apr+author%3Abcoles+is%3Aclosed
+
+- Counter Intrusive Technologies (https://github.com/counterintrusive)
+    - sfp_citadel updates
+
+- Dhiraj Mishra (https://github.com/RootUp)
+    - Created the sfp_h1nobbdde module
+
 - Chris Weber (http://www.casaba.com/blog/author/chris/)
     - Many recommendations for improvement
 
@@ -36,3 +46,4 @@ bug fixes or new functionality. Thank you!
 
 - HackershubNL (https://github.com/HackershubNL)
     - Contributions towards authentication functionality
+
