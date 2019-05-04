@@ -32,7 +32,7 @@ class sfp_viewdns(SpiderFootPlugin):
         "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
 
-    # Be sure to.infopletely clear any class variables in setup()
+    # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
     results = dict()
