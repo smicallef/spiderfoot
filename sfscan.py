@@ -194,8 +194,13 @@ class SpiderFootScanner(threading.Thread):
                 if modName == '':
                     continue
 
-                module = __import__('modules.' + modName, globals(), locals(),
-                                    [modName])
+                try:
+                    module = __import__('modules.' + modName, globals(), locals(),
+                                        [modName])
+                except ImportError:
+                    self.ts.sf.error("Failed to load module: " + modName, False)
+                    continue
+
                 mod = getattr(module, modName)()
                 mod.__name__ = modName
 
