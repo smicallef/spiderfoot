@@ -136,8 +136,14 @@ class sfp_shodan(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if eventName == 'WEB_ANALYTICS_ID':
-            network = eventData.split(": ")[0]
-            analytics_id = eventData.split(": ")[1]
+            try:
+                network = eventData.split(": ")[0]
+                analytics_id = eventData.split(": ")[1]
+            except BaseException as e:
+                self.sf.error("Unable to parse WEB_ANALYTICS_ID: " +
+                              eventData + " (" + str(e) + ")", False)
+                return None
+
             rec = self.searchHtml(analytics_id)
 
             if rec is None:
