@@ -74,6 +74,9 @@ class sfp_crt(SpiderFootPlugin):
             self.sf.info("No certificate transparency info found for " + eventData)
             return None
 
+        if res['content'] == "[]":
+            return None
+
         try:
             evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'], self.__name__, event)
             self.notifyListeners(evt)
