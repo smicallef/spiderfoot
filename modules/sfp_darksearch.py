@@ -106,9 +106,11 @@ class sfp_darksearch(SpiderFootPlugin):
                 return None
 
             for result in data:
-                if result is not None:
-                    evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(result), self.__name__, event)
-                    self.notifyListeners(evt)
+                if result is None:
+                    continue
+
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(result), self.__name__, event)
+                self.notifyListeners(evt)
 
                 if result.get('link') is not None:
                     evt = SpiderFootEvent("DARKNET_MENTION_URL", result.get('link'), self.__name__, event)
