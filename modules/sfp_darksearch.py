@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_darksearch
-# Purpose:      Searches the Darksearch.io Tor search engine for content related 
+# Purpose:      Searches the Darksearch.io Tor search engine for content related
 #               to the domain in question.
 #
 # Author:      <bcoles[at]gmail[.]com>
@@ -21,11 +21,13 @@ class sfp_darksearch(SpiderFootPlugin):
 
     # Default options
     opts = {
+        'fetchlinks': False,
         'max_pages': 20
     }
 
     # Option descriptions
     optdescs = {
+        'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target.",
         'max_pages': "Maximum number of pages of results to fetch."
     }
 
@@ -42,7 +44,7 @@ class sfp_darksearch(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ['DOMAIN_NAME', 'EMAILADDR']
+        return ['DOMAIN_NAME', 'HUMAN_NAME', 'EMAILADDR']
 
     def producedEvents(self):
         return ['DARKNET_MENTION_URL', 'DARKNET_MENTION_CONTENT', 'SEARCH_ENGINE_WEB_CONTENT']
@@ -92,6 +94,8 @@ class sfp_darksearch(SpiderFootPlugin):
             if res is None:
                 return None
 
+            page += 1
+
             last_page = res.get('last_page')
 
             if last_page is None:
@@ -112,17 +116,64 @@ class sfp_darksearch(SpiderFootPlugin):
                 evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(result), self.__name__, event)
                 self.notifyListeners(evt)
 
-                if result.get('link') is not None:
-                    evt = SpiderFootEvent("DARKNET_MENTION_URL", result.get('link'), self.__name__, event)
+                link = result.get('link')
+
+                if link is None:
+                    continue
+
+                if link in self.results:
+                    continue
+
+                if not self.sf.urlFQDN(link).endswith(".onion"):
+                    continue
+
+                self.results[link] = True
+                self.sf.debug("Found a darknet mention: " + link)
+
+                if self.opts['fetchlinks']:
+                    res = self.sf.fetchUrl(link,
+                                           timeout=self.opts['_fetchtimeout'],
+                                           useragent=self.opts['_useragent'])
+
+                    if res['content'] is None:
+                        self.sf.debug("Ignoring " + link + " as no data returned")
+                        continue
+
+                    if eventData not in res['content']:
+                        self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
+                        continue
+
+                    evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                     self.notifyListeners(evt)
 
-                if result.get('title') is not None and result.get('description') is not None:
+                    # extract content excerpt
+                    try:
+                        startIndex = res['content'].index(eventData) - 120
+                        endIndex = startIndex + len(eventData) + 240
+                    except BaseException as e:
+                        self.sf.debug("String not found in content.")
+                        continue
+
+                    data = res['content'][startIndex:endIndex]
                     evt = SpiderFootEvent("DARKNET_MENTION_CONTENT",
-                                          "Title: " + result.get('title') + "\n\n" + result.get('description'),
+                                          "..." + data + "...",
                                           self.__name__,
                                           event)
                     self.notifyListeners(evt)
 
-            page += 1
+                else:
+                    evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
+                    self.notifyListeners(evt)
+
+                    if result.get('title') is None and result.get('description') is None:
+                        self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
+                        continue
+
+                    evt = SpiderFootEvent("DARKNET_MENTION_CONTENT",
+                                          "Title: " + result.get('title') + "\n\n" +
+                                          "..." + result.get('description') + "...",
+                                          self.__name__,
+                                          event)
+                    self.notifyListeners(evt)
 
 # End of sfp_darksearch class
