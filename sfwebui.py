@@ -699,8 +699,12 @@ class SpiderFootWebUi:
     def query(self, query):
         data = None
         dbh = SpiderFootDb(self.config)
+
+        cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
+
         if not query.lower().startswith("select"):
             return json.dumps(["ERROR", "Non-SELECTs are unpredictable and not recommended."])
+
         try:
             ret = dbh.dbh.execute(query)
             data = ret.fetchall()
