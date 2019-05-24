@@ -81,8 +81,13 @@ class sfp_github(SpiderFootPlugin):
 
         # Extract name and location from profile
         if eventName == "SOCIAL_MEDIA":
-            network = eventData.split(": ")[0]
-            name = eventData.split(": ")[1]
+            try:
+                network = eventData.split(": ")[0]
+                name = eventData.split(": ")[1]
+            except BaseException as e:
+                self.sf.error("Unable to parse SOCIAL_MEDIA: " +
+                              eventData + " (" + str(e) + ")", False)
+                return None
 
             if not network == "Github":
                 self.sf.debug("Skipping social network profile, " + name + ", as not a Github profile")

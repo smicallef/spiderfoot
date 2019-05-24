@@ -89,8 +89,13 @@ class sfp_myspace(SpiderFootPlugin):
 
         # Retrieve location from MySpace profile
         if eventName == "SOCIAL_MEDIA":
-            network = eventData.split(": ")[0]
-            name = eventData.split(": ")[1]
+            try:
+                network = eventData.split(": ")[0]
+                name = eventData.split(": ")[1]
+            except BaseException as e:
+                self.sf.error("Unable to parse SOCIAL_MEDIA: " +
+                              eventData + " (" + str(e) + ")", False)
+                return None
 
             if network != "MySpace":
                 self.sf.debug("Skipping social network profile, " + name + ", as not a MySpace profile")

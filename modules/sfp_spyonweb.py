@@ -228,8 +228,13 @@ class sfp_spyonweb(SpiderFootPlugin):
 
         # Find affiliate domains for the specified Google AdSense ID or Google Analytics ID
         if eventName in [ 'WEB_ANALYTICS_ID' ]:
-            network = eventData.split(": ")[0]
-            analytics_id = eventData.split(": ")[1]
+            try:
+                network = eventData.split(": ")[0]
+                analytics_id = eventData.split(": ")[1]
+            except BaseException as e:
+                self.sf.error("Unable to parse WEB_ANALYTICS_ID: " +
+                              eventData + " (" + str(e) + ")", False)
+                return None
 
             data = dict()
             if network == 'Google AdSense':
