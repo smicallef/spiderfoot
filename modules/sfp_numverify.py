@@ -129,8 +129,12 @@ class sfp_numverify(SpiderFootPlugin):
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
-        if data.get('location') is not None and data.get('country_code') is not None:
-            location = data.get('location') + ', ' + data.get('country_code')
+        if data.get('country_code') is not None:
+            if data.get('location') == '':
+                location = data.get('country_code')
+            else:
+                location = data.get('location') + ', ' + data.get('country_code')
+        
             evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(evt)
         else:
