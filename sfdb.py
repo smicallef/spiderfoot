@@ -177,6 +177,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_MAIL', 'Email Gateway (DNS ''MX'' Records)', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_HOSTING', 'Hosting Provider', 0, 'ENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_TELCO', 'Telecommunications Provider', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PUBLIC_CODE_REPO', 'Public Code Repository', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('RAW_RIR_DATA', 'Raw Data from RIRs/APIs', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('RAW_DNS_RECORDS', 'Raw DNS Records', 1, 'DATA')",
