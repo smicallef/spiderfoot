@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_neutrinoapi
-# Purpose:      SpiderFoot plug-in to search NeutrinoAPI for IP address info and
-#               check IP reputation.
+# Name:        sfp_neutrinoapi
+# Purpose:     SpiderFoot plug-in to search NeutrinoAPI for IP address info,
+#              check IP address reputation, and search for phone location.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-11-30
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
@@ -35,6 +35,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     results = dict()
     errorState = False
 
+    # Initialize module and module options
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "NeutrinoAPI"
@@ -46,11 +47,20 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS']
+        return ['IP_ADDRESS', 'PHONE_NUMBER']
 
     # What events this module produces
     def producedEvents(self):
         return ['RAW_RIR_DATA', 'MALICIOUS_IPADDR', 'GEOINFO']
+
+    # Query the phone-validate REST API
+    # https://www.neutrinoapi.com/api/phone-validate/
+    def queryPhoneValidate(self, qry):
+        res = self.sf.fetchUrl('https://neutrinoapi.com/phone-validate',
+            postData="output-format=json&number=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
+            timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
+
+        return self.parseApiResponse(res)
 
     # Query the ip-info REST API
     # https://www.neutrinoapi.com/api/ip-info/
@@ -115,10 +125,6 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-        else:
-            self.results[eventData] = True
-
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_neutrinoapi but did not set an API key!", False)
@@ -130,36 +136,59 @@ class sfp_neutrinoapi(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        data = self.queryIpInfo(eventData)
+        self.results[eventData] = True
 
-        if data is None:
-            self.sf.debug("No IP info results found for " + eventData)
-        else:
-            if data.get('city') is not None and data.get('region') is not None and data.get('country-code') is not None:
-                location = data.get('city') + ', ' + data.get('region') + ', ' + data.get('country-code')
-                evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
-                self.notifyListeners(evt)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        data = self.queryIpBlocklist(eventData)
+        if eventName == 'PHONE_NUMBER':
+            data = self.queryPhoneValidate(eventData)
 
-        if data is None:
-            self.sf.debug("No IP blocklist results found for " + eventData)
-        else:
-            if data.get('is-listed'):
-                evt = SpiderFootEvent("MALICIOUS_IPADDR", eventData, self.__name__, event)
-                self.notifyListeners(evt)
-                evt = SpiderFootEvent("RAW_RIR_DATA", data, self.__name__, event)
-                self.notifyListeners(evt)
+            if data is None:
+                self.sf.debug("No phone info results found for " + eventData)
+            else:
+                if data.get('location') is not None and data.get('country') is not None:
+                    if data.get('location') == data.get('country'):
+                        location = data.get('location')
+                    else:
+                        location = data.get('location') + ', ' + data.get('country')
 
-        data = self.queryHostReputation(eventData)
+                    evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
+                    self.notifyListeners(evt)
+                    evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                    self.notifyListeners(evt)
 
-        if data is None:
-            self.sf.debug("No host reputation results found for " + eventData)
-        else:
-            if data.get('is-listed'):
-                evt = SpiderFootEvent("MALICIOUS_IPADDR", eventData, self.__name__, event)
-                self.notifyListeners(evt)
-                evt = SpiderFootEvent("RAW_RIR_DATA", data, self.__name__, event)
-                self.notifyListeners(evt)
+
+        if eventName == 'IP_ADDRESS':
+            data = self.queryIpInfo(eventData)
+
+            if data is None:
+                self.sf.debug("No IP info results found for " + eventData)
+            else:
+                if data.get('city') is not None and data.get('region') is not None and data.get('country-code') is not None:
+                    location = data.get('city') + ', ' + data.get('region') + ', ' + data.get('country-code')
+                    evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
+                    self.notifyListeners(evt)
+
+            data = self.queryIpBlocklist(eventData)
+
+            if data is None:
+                self.sf.debug("No IP blocklist results found for " + eventData)
+            else:
+                if data.get('is-listed'):
+                    evt = SpiderFootEvent("MALICIOUS_IPADDR", eventData, self.__name__, event)
+                    self.notifyListeners(evt)
+                    evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                    self.notifyListeners(evt)
+
+            data = self.queryHostReputation(eventData)
+
+            if data is None:
+                self.sf.debug("No host reputation results found for " + eventData)
+            else:
+                if data.get('is-listed'):
+                    evt = SpiderFootEvent("MALICIOUS_IPADDR", eventData, self.__name__, event)
+                    self.notifyListeners(evt)
+                    evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                    self.notifyListeners(evt)
 
 # End of sfp_neutrinoapi class
