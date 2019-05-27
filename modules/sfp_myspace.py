@@ -76,7 +76,11 @@ class sfp_myspace(SpiderFootPlugin):
             profile = profiles[0]
 
             # Check for email address as name, at the risk of missed results.
-            matches = re.findall('<a href=\"\/([a-zA-Z0-9_]+)\".*[\&; :\"\#\*\(\"\'\;\,\>\.\?\!]+' + email + '[\&; :\"\#\*\)\"\'\;\,\<\.\?\!]+', profile, re.IGNORECASE)
+            try:
+                matches = re.findall('<a href=\"\/([a-zA-Z0-9_]+)\".*[\&; :\"\#\*\(\"\'\;\,\>\.\?\!]+' + email + '[\&; :\"\#\*\)\"\'\;\,\<\.\?\!]+', profile, re.IGNORECASE)
+            except BaseException as e:
+                self.sf.debug("Malformed e-mail address, skipping.")
+                return None
 
             if not matches:
                 self.sf.debug("No concrete match for that e-mail.")
