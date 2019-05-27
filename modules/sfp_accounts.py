@@ -102,6 +102,10 @@ class sfp_accounts(SpiderFootPlugin):
             self.siteResults[retname] = False
             return
 
+        if res['code'].startswith("4") or res['code'].startswith("5"):
+            self.siteResults[retname] = False
+            return
+
         try:
             found = False
             site['account_existence_code'] = str(site['account_existence_code'])
@@ -123,6 +127,13 @@ class sfp_accounts(SpiderFootPlugin):
 
         if found and self.opts['musthavename']:
             if name not in res['content']:
+                found = False
+
+        # Some sites can't handle periods so treat bob.abc and bob as the same
+        if found and "." in name:
+            firstname = name.split(".")[0]
+
+            if firstname + "<" in res['content'] or firstname + '"' in res['content']:
                 found = False
 
         self.siteResults[retname] = found
