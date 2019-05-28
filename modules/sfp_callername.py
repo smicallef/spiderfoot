@@ -45,7 +45,7 @@ class sfp_callername(SpiderFootPlugin):
     def producedEvents(self):
         return ['GEOINFO', 'MALICIOUS_PHONE_NUMBER']
 
-    # Query numinfo for the specified phone number
+    # Query CallerName.com for the specified phone number
     def query(self, qry):
         number = qry.lstrip('+1').strip('(').strip(')').strip('-').strip(' ')
 
