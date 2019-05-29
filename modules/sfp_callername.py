@@ -45,29 +45,6 @@ class sfp_callername(SpiderFootPlugin):
     def producedEvents(self):
         return ['GEOINFO', 'MALICIOUS_PHONE_NUMBER']
 
-    # Query CallerName.com for the specified phone number
-    def query(self, qry):
-        number = qry.lstrip('+1').strip('(').strip(')').strip('-').strip(' ')
-
-        if not number.isdigit():
-            self.sf.debug('Invalid phone number: ' + number)
-            return None
-
-        res = self.sf.fetchUrl("https://callername.com/" + number,
-                               timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'])
-
-        time.sleep(1)
-
-        if res['content'] is None:
-            self.sf.debug('No response from CallerName.com')
-            return None
-
-        if res['code'] != '200':
-            return None
-
-        return res['content']
-
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -84,17 +61,33 @@ class sfp_callername(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        # Only US numbers are supported (+1)
         if not eventData.startswith('+1'):
             self.sf.debug('Unsupported phone number: ' + eventData)
             return None
 
-        html = self.query(eventData)
+        # Strip country code (+1) and formatting
+        number = eventData.lstrip('+1').strip('(').strip(')').strip('-').strip(' ')
 
-        if html is None:
+        if not number.isdigit():
+            self.sf.debug('Invalid phone number: ' + number)
+            return None
+
+        # Query CallerName.com for the specified phone number
+        url = 'https://callername.com/' + number
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+
+        time.sleep(1)
+
+        if res['content'] is None:
+            self.sf.debug('No response from CallerName.com')
+            return None
+
+        if res['code'] != '200':
             self.sf.debug('No phone information found for ' + eventData)
             return None
 
-        location_match = re.findall(r'<div class="callerid"><h4>.*?</h4><p>(.+?)</p></div>', html, re.MULTILINE | re.DOTALL)
+        location_match = re.findall(r'<div class="callerid"><h4>.*?</h4><p>(.+?)</p></div>', res['content'], re.MULTILINE | re.DOTALL)
 
         if location_match is not None:
             location = location_match[0]
@@ -105,15 +98,16 @@ class sfp_callername(SpiderFootPlugin):
                 evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
                 self.notifyListeners(evt)
 
-        rep_good_match = re.findall(r'>SAFE.*?>(\d+) votes?<', html)
-        rep_bad_match = re.findall(r'>UNSAFE.*?>(\d+) votes?<', html)
+        rep_good_match = re.findall(r'>SAFE.*?>(\d+) votes?<', res['content'])
+        rep_bad_match = re.findall(r'>UNSAFE.*?>(\d+) votes?<', res['content'])
 
         if rep_good_match is not None and rep_bad_match is not None:
             good_votes = int(rep_good_match[0])
             bad_votes = int(rep_bad_match[0])
 
             if bad_votes > good_votes:
-                evt = SpiderFootEvent('MALICIOUS_PHONE_NUMBER', eventData, self.__name__, event)
+                text = "CallerName [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                evt = SpiderFootEvent('MALICIOUS_PHONE_NUMBER', text, self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_callername class
