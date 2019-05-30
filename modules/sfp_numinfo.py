@@ -16,7 +16,7 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_numinfo(SpiderFootPlugin):
-    """numinfo:Footprint,Investigate,Passive:Real World::Lookup phone number information."""
+    """numinfo:Footprint,Investigate,Passive:Real World::Lookup phone number information from numinfo.net."""
 
     # Default options
     opts = {
