@@ -16,7 +16,7 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_numinfo(SpiderFootPlugin):
-    """numinfo:Footprint,Investigate,Passive:Real World::Lookup phone number information from numinfo.net."""
+    """numinfo:Footprint,Investigate,Passive:Real World:slow:Lookup phone number information from numinfo.net."""
 
     # Default options
     opts = {
@@ -55,7 +55,7 @@ class sfp_numinfo(SpiderFootPlugin):
             return None
 
         res = self.sf.fetchUrl("http://" + number + '.numinfo.net/',
-                               timeout=self.opts['_fetchtimeout'],
+                               timeout=60,
                                useragent=self.opts['_useragent'])
 
         time.sleep(1)
