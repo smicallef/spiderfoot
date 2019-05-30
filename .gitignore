@@ -2,6 +2,9 @@
 #######################
 /cache/
 /spiderfoot.db*
+passwd
+spiderfoot.crt
+spiderfoot.key
 
 # Compiled source #
 ###################
