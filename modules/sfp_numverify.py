@@ -17,7 +17,7 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_numverify(SpiderFootPlugin):
-    """numverify:Footprint,Investigate,Passive:Real World:apikey:Lookup phone number location and carrier information."""
+    """numverify:Footprint,Investigate,Passive:Real World:apikey:Lookup phone number location and carrier information from numverify.com."""
 
     # Default options
     opts = {
