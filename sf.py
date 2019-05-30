@@ -386,18 +386,16 @@ if __name__ == '__main__':
 
         for line in pw.readlines():
             if ':' not in line:
-                continue
+                print "Incorrect format of passwd file, must be username:password on each line."
+                sys.exit(-1)
 
             u, p = line.strip().split(":")
 
             if not u or not p:
-                continue
+                print "Incorrect format of passwd file, must be username:password on each line."
+                sys.exit(-1)
 
             secrets[u] = p
-
-        if not secrets:
-            print "Incorrect format of passwd file, must be username:password on each line."
-            sys.exit(-1)
 
         print "Enabling authentication based on supplied passwd file."
         conf['/'] = {
