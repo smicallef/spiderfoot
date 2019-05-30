@@ -28,8 +28,8 @@ class sfp_gravatar(SpiderFootPlugin):
     optdescs = {
     }
 
-    results = dict()
-    reportedUsers = dict()
+    results = None
+    reportedUsers = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -48,7 +48,7 @@ class sfp_gravatar(SpiderFootPlugin):
     def producedEvents(self):
         return ['RAW_RIR_DATA', 'HUMAN_NAME', 'USERNAME', 
                 'EMAILADDR', 'PHONE_NUMBER', 'GEOINFO',
-                'ACCOUNT_EXTERNAL_OWNED']
+                'ACCOUNT_EXTERNAL_OWNED', 'SOCIAL_MEDIA']
 
     # Query Gravatar API for the specified email address
     # https://secure.gravatar.com/site/implement/
@@ -109,9 +109,17 @@ class sfp_gravatar(SpiderFootPlugin):
             self.notifyListeners(evt)
             self.reportedUsers[un] = True
 
-        if data.get('name') is not None and data.get('name').get('formatted') is not None:
-            evt = SpiderFootEvent("HUMAN_NAME", data.get('name').get('formatted'), self.__name__, event)
-            self.notifyListeners(evt)
+        names = list()
+        if data.get('name') is not None:
+            if type(data.get('name')) != list:
+                names.append(data.get('name'))
+            else:
+                names = data.get('name')
+
+            for name in names:
+                if name.get('formatted') is not None:
+                    evt = SpiderFootEvent("HUMAN_NAME", name.get('formatted'), self.__name__, event)
+                    self.notifyListeners(evt)
 
         # location can not be trusted
         #if data.get('currentLocation') is not None:
@@ -140,16 +148,20 @@ class sfp_gravatar(SpiderFootPlugin):
                     t = im.get('type').capitalize() + " (Instant Messenger)\n" + im.get('value')
                     evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", t, self.__name__, event)
                     self.notifyListeners(evt)
+                    if im.get('value') not in self.reportedUsers:
+                        evt = SpiderFootEvent("USERNAME", un, self.__name__, event)
+                        self.notifyListeners(evt)
+                        self.reportedUsers[im.get('value')] = True
+
 
         if data.get('accounts') is not None:
             for account in data.get('accounts'):
                 # For some reason facebook.com gets reported as a username
-                un = account.get('username')
-                if un == "facebook.com":
-                    continue
-                if un is not None and un not in self.reportedUsers:
-                    evt = SpiderFootEvent("USERNAME", un, self.__name__, event)
+                url = account.get('url')
+                platform = account.get('shortname')
+                if platform is not None and url is not None:
+                    t = platform.capitalize() + ": " + url
+                    evt = SpiderFootEvent("SOCIAL_MEDIA", t, self.__name__, event)
                     self.notifyListeners(evt)
-                    self.reportedUsers[un] = True
 
 # End of sfp_gravatar class
