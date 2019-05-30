@@ -408,12 +408,21 @@ if __name__ == '__main__':
         else:
             print "Warning: passwd file contains no passwords. Authentication disabled."
 
-    if os.path.isfile(sf.myPath() + '/spiderfoot.key') and \
-       os.path.isfile(sf.myPath() + '/spiderfoot.crt'):
+    key_path = sf.myPath() + '/spiderfoot.key'
+    crt_path = sf.myPath() + '/spiderfoot.crt'
+    if os.path.isfile(key_path) and os.path.isfile(crt_path):
+        if not os.access(crt_path, os.R_OK):
+            print "Could not read spiderfoot.crt file. Permission denied."
+            sys.exit(-1)
+
+        if not os.access(key_path, os.R_OK):
+            print "Could not read spiderfoot.key file. Permission denied."
+            sys.exit(-1)
+
         print "Enabling SSL based on supplied key and certificate file."
         cherrypy.server.ssl_module = 'builtin'
-        cherrypy.server.ssl_certificate = sf.myPath() + '/spiderfoot.crt'
-        cherrypy.server.ssl_private_key = sf.myPath() + '/spiderfoot.key'
+        cherrypy.server.ssl_certificate = crt_path
+        cherrypy.server.ssl_private_key = key_path
 
     # Try starting the web server. If it fails due to a database being
     # missing, start a smaller web server just for setting up the DB.
