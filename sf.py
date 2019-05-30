@@ -374,15 +374,30 @@ if __name__ == '__main__':
         'tools.staticdir.dir': os.path.join(currentDir, 'static')
     }}
 
-    if os.path.isfile(sf.myPath() + '/passwd'):
+    passwd_file = sf.myPath() + '/passwd'
+    if os.path.isfile(passwd_file):
+        if not os.access(passwd_file, os.R_OK):
+            print "Could not read passwd file. Permission denied."
+            sys.exit(-1)
+
         secrets = dict()
-        pw = file(sf.myPath() + '/passwd', 'r')
+
+        pw = file(passwd_file, 'r')
+
         for line in pw.readlines():
+            if ':' not in line:
+                continue
+
             u, p = line.strip().split(":")
-            if None in [u, p]:
-                print "Incorrect format of passwd file, must be username:password on each line."
-                sys.exit(-1)
+
+            if not u or not p:
+                continue
+
             secrets[u] = p
+
+        if not secrets:
+            print "Incorrect format of passwd file, must be username:password on each line."
+            sys.exit(-1)
 
         print "Enabling authentication based on supplied passwd file."
         conf['/'] = {
