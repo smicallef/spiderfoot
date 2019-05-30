@@ -313,9 +313,8 @@ class sfp_spider(SpiderFootPlugin):
         # and so on..
         links = self.processUrl(startingPoint)  # fetch first page
 
-        # No links from the first fetch means we've got a problem
         if links is None:
-            self.sf.error("No links found on the first fetch!", False)
+            self.sf.debug("No links found on the first fetch!")
             return None
 
         while keepSpidering:
