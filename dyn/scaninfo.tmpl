@@ -42,11 +42,11 @@
         </ul>
     </div>
   </div>
-    <script src="/static/js/sigma.min.js"></script>
-    <script src="/static/js/sigma.parsers.json.min.js"></script>
-    <script src="/static/js/sigma.plugins.dragNodes.min.js"></script>
-    <script src="/static/js/sigma.layout.forceAtlas2.min.js"></script>
-    <script src="/static/js/sigma.renderers.snapshot.min.js"></script>
+    <script src="${docroot}/static/js/sigma.min.js"></script>
+    <script src="${docroot}/static/js/sigma.parsers.json.min.js"></script>
+    <script src="${docroot}/static/js/sigma.plugins.dragNodes.min.js"></script>
+    <script src="${docroot}/static/js/sigma.layout.forceAtlas2.min.js"></script>
+    <script src="${docroot}/static/js/sigma.renderers.snapshot.min.js"></script>
     <script type='text/javascript'>
         var currentType = "ALL";
         var currentTypeName = "All";
@@ -210,7 +210,7 @@
             $("#btn-random").addClass("active");
 
             sigma.renderers.def = sigma.renderers.canvas
-            sigma.parsers.json("/scanviz?id=" + instanceId + "&gexf=0", {
+            sigma.parsers.json("${docroot}/scanviz?id=" + instanceId + "&gexf=0", {
                 container: 'graph-container'
             }, function(s) { 
                 sharedSigma = s;

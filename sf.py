@@ -374,30 +374,55 @@ if __name__ == '__main__':
         'tools.staticdir.dir': os.path.join(currentDir, 'static')
     }}
 
-    if os.path.isfile(sf.myPath() + '/passwd'):
+    passwd_file = sf.myPath() + '/passwd'
+    if os.path.isfile(passwd_file):
+        if not os.access(passwd_file, os.R_OK):
+            print "Could not read passwd file. Permission denied."
+            sys.exit(-1)
+
         secrets = dict()
-        pw = file(sf.myPath() + '/passwd', 'r')
+
+        pw = file(passwd_file, 'r')
+
         for line in pw.readlines():
-            u, p = line.strip().split(":")
-            if None in [u, p]:
+            if ':' not in line:
                 print "Incorrect format of passwd file, must be username:password on each line."
                 sys.exit(-1)
+
+            u, p = line.strip().split(":")
+
+            if not u or not p:
+                print "Incorrect format of passwd file, must be username:password on each line."
+                sys.exit(-1)
+
             secrets[u] = p
 
-        print "Enabling authentication based on supplied passwd file."
-        conf['/'] = {
-            'tools.auth_digest.on': True,
-            'tools.auth_digest.realm': sfConfig['__webaddr'],
-            'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(secrets),
-            'tools.auth_digest.key': random.randint(0, 99999999)
-        }
+        if secrets:
+            print "Enabling authentication based on supplied passwd file."
+            conf['/'] = {
+                'tools.auth_digest.on': True,
+                'tools.auth_digest.realm': sfConfig['__webaddr'],
+                'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(secrets),
+                'tools.auth_digest.key': random.randint(0, 99999999)
+            }
+        else:
+            print "Warning: passwd file contains no passwords. Authentication disabled."
 
-    if os.path.isfile(sf.myPath() + '/spiderfoot.key') and \
-       os.path.isfile(sf.myPath() + '/spiderfoot.crt'):
+    key_path = sf.myPath() + '/spiderfoot.key'
+    crt_path = sf.myPath() + '/spiderfoot.crt'
+    if os.path.isfile(key_path) and os.path.isfile(crt_path):
+        if not os.access(crt_path, os.R_OK):
+            print "Could not read spiderfoot.crt file. Permission denied."
+            sys.exit(-1)
+
+        if not os.access(key_path, os.R_OK):
+            print "Could not read spiderfoot.key file. Permission denied."
+            sys.exit(-1)
+
         print "Enabling SSL based on supplied key and certificate file."
         cherrypy.server.ssl_module = 'builtin'
-        cherrypy.server.ssl_certificate = sf.myPath() + '/spiderfoot.crt'
-        cherrypy.server.ssl_private_key = sf.myPath() + '/spiderfoot.key'
+        cherrypy.server.ssl_certificate = crt_path
+        cherrypy.server.ssl_private_key = key_path
 
     # Try starting the web server. If it fails due to a database being
     # missing, start a smaller web server just for setting up the DB.
