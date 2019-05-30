@@ -87,25 +87,27 @@ class sfp_myspace(SpiderFootPlugin):
                 return None
 
             name = matches[0]
-
-            e = SpiderFootEvent("SOCIAL_MEDIA", "MySpace: " + name, self.__name__, event)
+            e = SpiderFootEvent("SOCIAL_MEDIA", "MySpace: " + "https://myspace.com/" + name, 
+                                self.__name__, event)
             self.notifyListeners(e)
 
         # Retrieve location from MySpace profile
         if eventName == "SOCIAL_MEDIA":
             try:
                 network = eventData.split(": ")[0]
-                name = eventData.split(": ")[1]
+                url = eventData.split(": ")[1]
             except BaseException as e:
                 self.sf.error("Unable to parse SOCIAL_MEDIA: " +
                               eventData + " (" + str(e) + ")", False)
                 return None
 
             if network != "MySpace":
-                self.sf.debug("Skipping social network profile, " + name + ", as not a MySpace profile")
+                self.sf.debug("Skipping social network profile, " + url + \
+                              ", as not a MySpace profile")
                 return None
 
-            res = self.sf.fetchUrl("https://myspace.com/" + name, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+                                   useragent=self.opts['_useragent'])
 
             if res['content'] is None:
                 return None

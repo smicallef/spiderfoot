@@ -56,6 +56,9 @@ class sfp_base64(SpiderFootPlugin):
         pat = re.compile("([A-Za-z0-9+\/]+\=\=|[A-Za-z0-9+\/]+\=)")
         m = re.findall(pat, eventData)
         for match in m:
+            if self.checkForStop():
+                return None
+
             minlen = int(self.opts['minlength'])
             if len(match) >= minlen:
                 caps = sum(1 for c in match if c.isupper())

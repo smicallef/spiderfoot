@@ -59,17 +59,18 @@ class sfp_slideshare(SpiderFootPlugin):
         # Retrieve profile
         try:
             network = eventData.split(": ")[0]
-            name = eventData.split(": ")[1]
+            url = eventData.split(": ")[1]
         except BaseException as e:
             self.sf.error("Unable to parse SOCIAL_MEDIA: " +
                           eventData + " (" + str(e) + ")", False)
             return None
 
         if not network == "SlideShare":
-            self.sf.debug("Skipping social network profile, " + name + ", as not a SlideShare profile")
+            self.sf.debug("Skipping social network profile, " + url + \
+                          ", as not a SlideShare profile")
             return None
 
-        res = self.sf.fetchUrl("https://slideshare.net/" + name, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:
@@ -79,10 +80,11 @@ class sfp_slideshare(SpiderFootPlugin):
         human_name = self.extractMeta('slideshare:name', res['content'])
 
         if not human_name:
-            self.sf.debug(name + " is not a valid SlideShare profile")
+            self.sf.debug(url + " is not a valid SlideShare profile")
             return None
 
-        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0], self.__name__, event)
+        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
+                            human_name[0], self.__name__, event)
         self.notifyListeners(e)
 
         # Retrieve location (country)

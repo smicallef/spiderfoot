@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_socialprofiles
-# Purpose:      Obtains social media profiles of any identified human names.
+# Purpose:      Tries to discover social media profiles of any identified human names.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -32,7 +32,7 @@ sites = {
 
 
 class sfp_socialprofiles(SpiderFootPlugin):
-    """Social Media Profiles:Footprint,Passive:Social Media:slow,errorprone:Identify the social media profiles for human names identified."""
+    """Social Media Profiles:Footprint,Passive:Social Media:slow,errorprone:Tries to discover the social media profiles for human names identified."""
 
 
     # Default options
@@ -119,10 +119,6 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
             if self.checkForStop():
                 return None
-
-            pauseSecs = random.randint(4, 15)
-            self.sf.debug("Pausing for " + str(pauseSecs))
-            time.sleep(pauseSecs)
 
             for key in results:
                 instances = list()

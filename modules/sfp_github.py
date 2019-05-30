@@ -83,14 +83,21 @@ class sfp_github(SpiderFootPlugin):
         if eventName == "SOCIAL_MEDIA":
             try:
                 network = eventData.split(": ")[0]
-                name = eventData.split(": ")[1]
+                url = eventData.split(": ")[1]
             except BaseException as e:
                 self.sf.error("Unable to parse SOCIAL_MEDIA: " +
                               eventData + " (" + str(e) + ")", False)
                 return None
 
             if not network == "Github":
-                self.sf.debug("Skipping social network profile, " + name + ", as not a Github profile")
+                self.sf.debug("Skipping social network profile, " + url + ", as not a Github profile")
+                return None
+
+            try:
+                bits = url.split("/")
+                name = bits[len(bits)-1]
+            except BaseException as e:
+                self.sf.debug("Couldn't get a username out of " + url)
                 return None
 
             res = self.sf.fetchUrl("https://api.github.com/users/" + name, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])

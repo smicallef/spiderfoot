@@ -55,31 +55,33 @@ class sfp_twitter(SpiderFootPlugin):
         # Retrieve profile
         try:
             network = eventData.split(": ")[0]
-            name = eventData.split(": ")[1]
+            url = eventData.split(": ")[1]
         except BaseException as e:
             self.sf.error("Unable to parse SOCIAL_MEDIA: " +
                           eventData + " (" + str(e) + ")", False)
             return None
 
         if not network == "Twitter":
-            self.sf.debug("Skipping social network profile, " + name + ", as not a Twitter profile")
+            self.sf.debug("Skipping social network profile, " + url + ", as not a Twitter profile")
             return None
 
-        res = self.sf.fetchUrl("https://mobile.twitter.com/" + name, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                                useragent="SpiderFoot")
 
         if res['content'] is None:
             return None
 
         if not res['code'] == "200":
-            self.sf.debug(name + " is not a valid Twitter profile")
+            self.sf.debug(url + " is not a valid Twitter profile")
             return None
 
         # Retrieve name
-        human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>', res['content'], re.MULTILINE)
+        human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>', 
+                                res['content'], re.MULTILINE)
 
         if human_name:
-            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0], self.__name__, event)
+            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0], 
+                                self.__name__, event)
             self.notifyListeners(e)
 
         # Retrieve location

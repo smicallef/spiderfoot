@@ -24,7 +24,8 @@ regexps = dict({
     "Twitter": list(['.*twitter.com/([a-zA-Z0-9_]{1,15}$)',
                      '.*twitter.com/#!/([a-zA-Z0-9_]{1,15}$)'
                      ]),
-    "SlideShare": list(['.*slideshare.net/([a-zA-Z0-9_]+$)'])
+    "SlideShare": list(['.*slideshare.net/([a-zA-Z0-9_]+$)']),
+    "Instagram": list(['.*instagram.com/([a-zA-Z0-9_]+$)'])
 })
 
 
@@ -61,7 +62,7 @@ class sfp_social(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SOCIAL_MEDIA"]
+        return ["SOCIAL_MEDIA", "USERNAME"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -82,8 +83,14 @@ class sfp_social(SpiderFootPlugin):
                 if bits is not None:
                     self.sf.info("Matched " + regexpGrp + " in " + eventData)
                     evt = SpiderFootEvent("SOCIAL_MEDIA", regexpGrp + ": " +
-                                          bits.group(1), self.__name__, event)
+                                          eventData, self.__name__, event)
                     self.notifyListeners(evt)
+
+                    # Except for Google+, the link includes potential usernames
+                    if regexpGrp != "Google+":
+                        un = bits.group(1)
+                        evt = SpiderFootEvent("USERNAME", bits.group(1), self.__name__, event)
+                        self.notifyListeners(evt)
 
         return None
 

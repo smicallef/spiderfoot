@@ -84,8 +84,7 @@ class sfp_accounts(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["USERNAME", "ACCOUNT_EXTERNAL_OWNED", 
-                "ACCOUNT_EXTERNAL_USER_SHARED"]
+        return ["USERNAME", "ACCOUNT_EXTERNAL_OWNED"]
 
     def checkSite(self, name, site):
         if 'check_uri' not in site:
@@ -251,7 +250,7 @@ class sfp_accounts(SpiderFootPlugin):
                 self.notifyListeners(evt)
                 users.append(kw)
 
-        if eventName == "EMAILADDR":
+        if eventName in ["EMAILADDR", "USERNAME"]:
             name = eventData.split("@")[0].lower()
             adduser = True
             if self.opts['generic'] is list() and name in self.opts['generic']:
@@ -270,7 +269,7 @@ class sfp_accounts(SpiderFootPlugin):
                 users.append(name)
 
         for user in users:
-            if user not in self.reportedUsers:
+            if user not in self.reportedUsers and user != eventData:
                 evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
                 self.notifyListeners(evt)
                 self.reportedUsers.append(user)
