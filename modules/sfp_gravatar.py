@@ -144,19 +144,20 @@ class sfp_gravatar(SpiderFootPlugin):
 
         if data.get('ims') is not None:
             for im in data.get('ims'):
-                if im.get('value') is not None:
-                    t = im.get('type').capitalize() + " (Instant Messenger)\n" + im.get('value')
-                    evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", t, self.__name__, event)
+                v = im.get('value')
+                if v is None:
+                    continue
+                t = im.get('type').capitalize() + " (Instant Messenger)\n" + v
+                evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", t, self.__name__, event)
+                self.notifyListeners(evt)
+                if v not in self.reportedUsers:
+                    evt = SpiderFootEvent("USERNAME", v, self.__name__, event)
                     self.notifyListeners(evt)
-                    if im.get('value') not in self.reportedUsers:
-                        evt = SpiderFootEvent("USERNAME", un, self.__name__, event)
-                        self.notifyListeners(evt)
-                        self.reportedUsers[im.get('value')] = True
+                    self.reportedUsers[v] = True
 
 
         if data.get('accounts') is not None:
             for account in data.get('accounts'):
-                # For some reason facebook.com gets reported as a username
                 url = account.get('url')
                 platform = account.get('shortname')
                 if platform is not None and url is not None:
