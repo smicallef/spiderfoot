@@ -571,7 +571,7 @@ class SpiderFoot:
             {"^.*@.*$": "EMAILADDR"},
             {"^\+\d+$": "PHONE_NUMBER"},
             {"^\".*\"$": "HUMAN_NAME"},
-            {"\d+": "BGP_AS_OWNER"},
+            {"^\d+$": "BGP_AS_OWNER"},
             {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
         ]
 
