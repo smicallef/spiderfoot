@@ -49,6 +49,10 @@ class SpiderFootWebUi:
 
         self.docroot = self.config['__docroot'].rstrip('/')
 
+        cherrypy.config.update({
+          'error_page.404': self.error_page_404
+        })
+
         print ""
         print ""
         print "*************************************************************"
@@ -58,6 +62,9 @@ class SpiderFootWebUi:
         print ""
         print ""
 
+    def error_page_404(self, status, message, traceback, version):
+        templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
+        return templ.render(message='Not Found', docroot=self.docroot, status=status)
 
     # Sanitize user input
     def cleanUserInput(self, inputList):
