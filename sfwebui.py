@@ -23,7 +23,7 @@ from mako.template import Template
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, globalScanStatus
 from sfscan import SpiderFootScanner
-from StringIO import StringIO
+from io import StringIO
 
 
 class SpiderFootWebUi:
