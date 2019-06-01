@@ -9,7 +9,7 @@ setup(
             "packages": ["modules", "ext.dns", "sflib", "sfwebui", "sfdb", "mako",
                          "cherrypy", "M2Crypto", "netaddr", "ext.socks", "ext.PyPDF2",
                          "ext.openxmllib", "ext.stem", "ext.whois",
-                         "ext.phonenumbers", "ext.gexf", "bs4", "requests" ],
+                         "phonenumbers", "ext.gexf", "bs4", "requests" ],
             "bundle_files": 1,
             "compressed": True,
             "includes": ['lxml._elementpath'],
