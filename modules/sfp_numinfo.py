@@ -27,13 +27,11 @@ class sfp_numinfo(SpiderFootPlugin):
     }
 
     results = dict()
-    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = 'numinfo'
         self.results = dict()
-        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -44,7 +42,7 @@ class sfp_numinfo(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'EMAILADDR']
+        return ['RAW_RIR_DATA', 'EMAILADDR', 'AFFILIATE_EMAILADDR']
 
     # Query numinfo for the specified phone number
     def query(self, qry):
@@ -87,9 +85,6 @@ class sfp_numinfo(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        if self.errorState:
-            return None
-
         if eventData in self.results:
             return None
 
@@ -109,7 +104,13 @@ class sfp_numinfo(SpiderFootPlugin):
         if data.get('email'):
             email_match = re.findall(r'^mailto:([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)$', data.get('email'))
             if email_match is not None:
-                evt = SpiderFootEvent('EMAILADDR', email_match[0], self.__name__, event)
+                mailDom = email_match[0].lower().split('@')[1]
+                if not self.getTarget().matches(mailDom):
+                    evttype = "AFFILIATE_EMAILADDR"
+                else:
+                    evttype = "EMAILADDR"
+
+                evt = SpiderFootEvent(evttype, email_match[0], self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_numinfo class

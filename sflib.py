@@ -1639,8 +1639,8 @@ class SpiderFootTarget(object):
         if value is None or value == "":
             return False
 
-        # We can't really say anything about names, so everything matches
-        if self.targetType == "HUMAN_NAME":
+        # We can't really say anything about names or phone numbers, so everything matches
+        if self.targetType == "HUMAN_NAME" or self.targetType == "PHONE_NUMBER":
             return True
 
         if netaddr.valid_ipv4(value):
