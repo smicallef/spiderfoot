@@ -352,7 +352,7 @@ class SpiderFootCli(cmd.Cmd):
                              data = post
                     )
             self.ddprint("Response: " + str(r))
-            if r.status_code == requests.codes.ok:
+            if r.status_code == requests.codes.ok:  #pylint: disable=no-member
                 return r.text
             else:
                 r.raise_for_status()
