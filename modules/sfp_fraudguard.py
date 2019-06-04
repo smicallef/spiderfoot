@@ -87,7 +87,7 @@ class sfp_fraudguard(SpiderFootPlugin):
             self.sf.error("Error processing JSON response from Fraudguard.io.", False)
             return None
 
-        #print str(info)
+        #print(str(info))
         return info
 
 

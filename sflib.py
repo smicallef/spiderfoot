@@ -162,15 +162,15 @@ class SpiderFoot:
             for [parent, id] in parents[entity]:
                 if parent in entities:
                     if entity != parent:
-                        #print "Adding entity parent: " + parent
+                        #print("Adding entity parent: " + parent)
                         mapping.add((entity, parent))
                 else:
                     ppids = list()
-                    #print "Checking " + parent + " for entityship."
+                    #print("Checking " + parent + " for entityship.")
                     next_parents = get_next_parent_entities(parent, ppids)
                     for next_parent in next_parents:
                         if entity != next_parent:
-                            #print "Adding next entity parent: " + next_parent
+                            #print("Adding next entity parent: " + next_parent)
                             mapping.add((entity, next_parent))
         return mapping
 
@@ -291,7 +291,7 @@ class SpiderFoot:
         return hashStr
 
     def _dblog(self, level, message, component=None):
-        #print str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component)
+        #print(str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component))
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, error, exception=True):
@@ -299,20 +299,20 @@ class SpiderFoot:
             return None
 
         if self.dbh is None:
-            print '[Error] ' + error
+            print('[Error] ' + error)
         else:
             self._dblog("ERROR", error)
         if self.opts.get('__logstdout'):
-            print "[Error] " + error
+            print("[Error] " + error)
         if exception:
             raise BaseException("Internal Error Encountered: " + error)
 
     def fatal(self, error):
         if self.dbh is None:
-            print '[Fatal] ' + error
+            print('[Fatal] ' + error)
         else:
             self._dblog("FATAL", error)
-        print str(inspect.stack())
+        print(str(inspect.stack()))
         sys.exit(-1)
 
     def status(self, message):
@@ -320,11 +320,11 @@ class SpiderFoot:
             return None
 
         if self.dbh is None:
-            print "[Status] " + message
+            print("[Status] " + message)
         else:
             self._dblog("STATUS", message)
         if self.opts.get('__logstdout'):
-            print "[*] " + message
+            print("[*] " + message)
 
     def info(self, message):
         if not self.opts['__logging']:
@@ -347,11 +347,11 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print '[' + modName + '] ' + message
+            print('[' + modName + '] ' + message)
         else:
             self._dblog("INFO", message, modName)
         if self.opts.get('__logstdout'):
-            print "[*] " + message
+            print("[*] " + message)
         return
 
     def debug(self, message):
@@ -376,11 +376,11 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print '[' + modName + '] ' + message
+            print('[' + modName + '] ' + message)
         else:
             self._dblog("DEBUG", message, modName)
         if self.opts.get('__logstdout'):
-            print "[d:" + modName +"] " + message
+            print("[d:" + modName +"] " + message)
         return
 
     def myPath(self):
@@ -825,7 +825,7 @@ class SpiderFoot:
     # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):
         def get_children(needle, haystack):
-            #print "called"
+            #print("called")
             ret = list()
 
             if needle not in haystack.keys():
@@ -835,7 +835,7 @@ class SpiderFoot:
                 return None
 
             for c in haystack[needle]:
-                #print "found child of " + needle + ": " + c
+                #print("found child of " + needle + ": " + c)
                 ret.append({"name": c, "children": get_children(c, haystack)})
             return ret
 
@@ -858,7 +858,7 @@ class SpiderFoot:
                 break
 
         if root is None:
-            #print "*BUG*: Invalid structure - needs to go back to one root."
+            #print("*BUG*: Invalid structure - needs to go back to one root.")
             final = {}
         else:
             final = {"name": root, "children": get_children(root, data)}
@@ -1107,8 +1107,8 @@ class SpiderFoot:
             else:
                 result['content'] = unicode(content, 'utf-8', errors='replace')
 
-            #print "FOR: " + url
-            #print "HEADERS: " + str(result['headers'])
+            #print("FOR: " + url)
+            #print("HEADERS: " + str(result['headers']))
             result['realurl'] = fullPage.geturl()
             result['code'] = str(fullPage.getcode())
             result['status'] = 'OK'
@@ -1421,7 +1421,7 @@ class SpiderFootPlugin(object):
     # Gets the current target this module is acting against
     def getTarget(self):
         if self._currentTarget is None:
-            print "Internal Error: Module called getTarget() but no target set."
+            print("Internal Error: Module called getTarget() but no target set.")
             sys.exit(-1)
         return self._currentTarget
 
@@ -1453,7 +1453,7 @@ class SpiderFootPlugin(object):
         storeOnly = False  # Under some conditions, only store and don't notify
 
         if sfEvent.data is None or (type(sfEvent.data) is unicode and len(sfEvent.data) == 0):
-            #print "No data to send for " + eventName + " to " + listener.__module__
+            #print("No data to send for " + eventName + " to " + listener.__module__)
             return None
 
         if self.checkForStop():
@@ -1478,23 +1478,23 @@ class SpiderFootPlugin(object):
             if prevEvent.sourceEvent is not None:
                 if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
                                 prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
-                    #print "Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data
+                    #print("Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data)
                     storeOnly = True
                     break
             prevEvent = prevEvent.sourceEvent
 
         self._listenerModules.sort()
         for listener in self._listenerModules:
-            #print listener.__module__ + ": " + listener.watchedEvents().__str__()
+            #print(listener.__module__ + ": " + listener.watchedEvents().__str__())
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
-                #print listener.__module__ + " not listening for " + eventName
+                #print(listener.__module__ + " not listening for " + eventName)
                 continue
 
             if storeOnly and "__stor" not in listener.__module__:
-                #print "Storing only for " + sfEvent.eventType + " / " + sfEvent.data
+                #print("Storing only for " + sfEvent.eventType + " / " + sfEvent.data)
                 continue
 
-            #print "Notifying " + eventName + " to " + listener.__module__
+            #print("Notifying " + eventName + " to " + listener.__module__)
             listener._currentEvent = sfEvent
 
             # Check if we've been asked to stop in the meantime, so that
@@ -1502,7 +1502,7 @@ class SpiderFootPlugin(object):
             if self.checkForStop():
                 return None
 
-            #print "EVENT: " + str(sfEvent)
+            #print("EVENT: " + str(sfEvent))
             try:
                 listener.handleEvent(sfEvent)
             except BaseException as e:
@@ -1569,7 +1569,7 @@ class SpiderFootTarget(object):
                 self.targetValue = targetValue
             self.targetAliases = list()
         else:
-            print "Internal Error: Invalid target type."
+            print("Internal Error: Invalid target type.")
             sys.exit(-1)
 
     def getType(self):
@@ -1695,9 +1695,9 @@ class SpiderFootEvent(object):
         self.sourceEvent = sourceEvent
 
         if type(data) in [ list, dict ]:
-            print "FATAL: Only string events are accepted, not lists or dicts."
-            print "FATAL: Offending module: " + module
-            print "FATAL: Offending type: " + eventType
+            print("FATAL: Only string events are accepted, not lists or dicts.")
+            print("FATAL: Offending module: " + module)
+            print("FATAL: Offending type: " + eventType)
             sys.exit(-1)
 
         if type(data) != unicode and data != None:

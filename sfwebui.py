@@ -53,14 +53,14 @@ class SpiderFootWebUi:
           'error_page.404': self.error_page_404
         })
 
-        print ""
-        print ""
-        print "*************************************************************"
-        print " Use SpiderFoot by starting your web browser of choice and "
-        print " browse to http://" + addr + ":" + str(self.config['__webport']) + self.docroot
-        print "*************************************************************"
-        print ""
-        print ""
+        print("")
+        print("")
+        print("*************************************************************")
+        print(" Use SpiderFoot by starting your web browser of choice and ")
+        print(" browse to http://" + addr + ":" + str(self.config['__webport']) + self.docroot)
+        print("*************************************************************")
+        print("")
+        print("")
 
     def error_page_404(self, status, message, traceback, version):
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
@@ -335,7 +335,7 @@ class SpiderFootWebUi:
 
         # Wait until the scan has initialized
         while globalScanStatus.getStatus(newId) == None:
-            print "[info] Waiting for the scan to initialize..."
+            print("[info] Waiting for the scan to initialize...")
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
@@ -379,7 +379,7 @@ class SpiderFootWebUi:
 
             # Wait until the scan has initialized
             while globalScanStatus.getStatus(newId) == None:
-                print "[info] Waiting for the scan to initialize..."
+                print("[info] Waiting for the scan to initialize...")
                 time.sleep(1)
 
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
@@ -803,7 +803,7 @@ class SpiderFootWebUi:
 
         # Wait until the scan has initialized
         while globalScanStatus.getStatus(scanId) is None:
-            print "[info] Waiting for the scan to initialize..."
+            print("[info] Waiting for the scan to initialize...")
             time.sleep(1)
 
         if not cli:

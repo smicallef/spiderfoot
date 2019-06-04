@@ -259,7 +259,7 @@ class SpiderFootDb:
             return
 
         if init:
-            print "Attempting to verify database and update if necessary..."
+            print("Attempting to verify database and update if necessary...")
             for qry in self.createTypeQueries:
                 try:
                     self.dbh.execute(qry)
@@ -334,8 +334,8 @@ class SpiderFootDb:
         qry += " ORDER BY c.data"
 
         try:
-            #print qry
-            #print str(qvars)
+            #print(qry)
+            #print(str(qvars))
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
@@ -705,7 +705,7 @@ class SpiderFootDb:
                  sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
                  sfEvent.module, storeData, sfEvent.sourceEventHash]
 
-        #print "STORING: " + str(qvals)
+        #print("STORING: " + str(qvals))
 
         try:
             self.dbh.execute(qry, qvals)
@@ -834,7 +834,7 @@ class SpiderFootDb:
                 parentId = row[9]
                 childId = row[8]
                 datamap[childId] = row
-                #print childId + " = " + str(row)
+                #print(childId + " = " + str(row))
 
                 if parentId in pc:
                     if childId not in pc[parentId]:

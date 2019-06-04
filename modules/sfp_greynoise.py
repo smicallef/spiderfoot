@@ -87,7 +87,7 @@ class sfp_greynoise(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            print str(res['content'])
+            print(str(res['content']))
             self.sf.error("Error processing JSON response from Greynoise.", False)
             return None
 

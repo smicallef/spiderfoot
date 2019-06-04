@@ -49,8 +49,8 @@ class SpiderFootScanner(threading.Thread):
     # Set the status of the currently running scan (if any)
     def setStatus(self, status, started=None, ended=None):
         if self.ts is None:
-            print "Internal Error: Status set attempted before " + \
-                  "SpiderFootScanner was ready."
+            print("Internal Error: Status set attempted before " + \
+                  "SpiderFootScanner was ready.")
             exit(-1)
 
         self.ts.status = status

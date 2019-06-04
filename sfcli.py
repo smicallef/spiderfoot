@@ -120,7 +120,7 @@ class SpiderFootCli(cmd.Cmd):
                 cout = msg
                 sout = msg
 
-            print cout
+            print(cout)
 
         if self.ownopts['cli.spool']:
             f = codecs.open(self.ownopts['cli.spool_file'], "a", encoding="utf-8")
@@ -228,7 +228,7 @@ class SpiderFootCli(cmd.Cmd):
                     # we have a dict key
                     cn = c
                     v = r[c]
-                #print str(cn) + ", " + str(c) + ", " + str(v)
+                #print(str(cn) + ", " + str(c) + ", " + str(v))
                 if len(v) > maxsize.get(cn, 0):
                     maxsize[cn] = len(v)
                 i += 1
@@ -316,7 +316,7 @@ class SpiderFootCli(cmd.Cmd):
             #out += "\n"
             out.append("\n")
 
-        #print "time: " + str(time.time() - ts)
+        #print("time: " + str(time.time() - ts))
         #return ""
         return ''.join(out)
 
@@ -1131,7 +1131,7 @@ class SpiderFootCli(cmd.Cmd):
     def do_EOF(self, line):
         """EOF (Ctrl-D)
         Exit the SpiderFoot CLI."""
-        print "\n",
+        print("\n")
         return True
 
 if __name__ == "__main__":
@@ -1156,7 +1156,7 @@ if __name__ == "__main__":
         try:
             cin = open(args.e, "r")
         except BaseException as e:
-            print "Unable to open " + args.e + ":" + " (" + str(e) + ")"
+            print("Unable to open " + args.e + ":" + " (" + str(e) + ")")
             sys.exit(-1)
     else:
         cin = sys.stdin
@@ -1174,7 +1174,7 @@ if __name__ == "__main__":
             s.ownopts['cli.password'] = pf.readlines()[0].strip('\n')
             pf.close()
         except BaseException as e:
-            print "Unable to open " + args.P + ":" + " (" + str(e) + ")"
+            print("Unable to open " + args.P + ":" + " (" + str(e) + ")")
             sys.exit(-1)
     if args.k:
         s.ownopts['cli.color'] = False
