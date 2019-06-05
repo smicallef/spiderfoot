@@ -130,11 +130,7 @@ class sfp_numverify(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         if data.get('country_code') is not None:
-            if data.get('location') == '':
-                location = data.get('country_code')
-            else:
-                location = data.get('location') + ', ' + data.get('country_code')
-        
+            location = ', '.join(filter(None, [data.get('location'), data.get('country_code')]))
             evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(evt)
         else:
