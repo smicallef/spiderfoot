@@ -35,20 +35,20 @@ for mod in deps:
         else:
             __import__(mod)
     except ImportError as e:
-        print ""
-        print "Critical Start-up Failure: " + str(e)
-        print "================================="
-        print "It appears you are missing a module required for SpiderFoot"
-        print "to function. Please refer to the documentation for the list"
-        print "of dependencies and install them."
-        print ""
-        print "Python modules required are: "
+        print("")
+        print("Critical Start-up Failure: " + str(e))
+        print("=================================")
+        print("It appears you are missing a module required for SpiderFoot")
+        print("to function. Please refer to the documentation for the list")
+        print("of dependencies and install them.")
+        print("")
+        print("Python modules required are: ")
         for mod in deps:
-            print " - " + mod
-        print ""
-        print "If you are running on Windows and getting this error, please"
-        print "report this as a bug to support@spiderfoot.net."
-        print ""
+            print(" - " + mod)
+        print("")
+        print("If you are running on Windows and getting this error, please")
+        print("report this as a bug to support@spiderfoot.net.")
+        print("")
         sys.exit(-1)
 
 import os
@@ -113,7 +113,7 @@ scanId = None
 dbh = None
 
 def handle_abort(signal, frame):
-    print "[*] Aborting..."
+    print("[*] Aborting...")
     if scanId and dbh:
         dbh.scanInstanceSet(scanId, None, None, "ABORTED")
     sys.exit(-1)
@@ -184,7 +184,7 @@ if __name__ == '__main__':
                 sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
 
     if len(sfModules.keys()) < 1:
-        print "No modules found in the modules directory."
+        print("No modules found in the modules directory.")
         sys.exit(-1)
 
     # Add module info to sfConfig so it can be used by the UI
@@ -197,42 +197,42 @@ if __name__ == '__main__':
 
     if args:
         if args.modules:
-            print "Modules available:"
+            print("Modules available:")
             for m in sorted(sfModules.keys()):
                 if "__" in m:
                     continue
-                print '{0:25}  {1}'.format(m, sfModules[m]['descr'])
+                print('{0:25}  {1}'.format(m, sfModules[m]['descr']))
             sys.exit(0)
 
         if args.types:
-            print "Types available:"
+            print("Types available:")
             typedata = dbh.eventTypes()
             types = dict()
             for r in typedata:
                 types[r[1]] = r[0]
 
             for t in sorted(types.keys()):
-                print '{0:45}  {1}'.format(t, types[t])
+                print('{0:45}  {1}'.format(t, types[t]))
             sys.exit(0)
 
         if not args.s:
-            print "You must specify a target when running in scan mode. Try sf.py --help for guidance."
+            print("You must specify a target when running in scan mode. Try sf.py --help for guidance.")
             sys.exit(-1)
 
         if args.x and not args.t:
-            print "-x can only be used with -t. Use --help for guidance."
+            print("-x can only be used with -t. Use --help for guidance.")
             sys.exit(-1)
 
         if args.x and args.m:
-            print "-x can only be used with -t and not with -m. Use --help for guidance."
+            print("-x can only be used with -t and not with -m. Use --help for guidance.")
             sys.exit(-1)
 
         if args.r and (args.o and args.o not in ["tab", "csv"]):
-            print "-r can only be used when your output format is tab or csv."
+            print("-r can only be used when your output format is tab or csv.")
             sys.exit(-1)
 
         if args.D and args.o != "csv":
-            print "-D can only be used when using the csv output format."
+            print("-D can only be used when using the csv output format.")
             sys.exit(-1)
 
         target = args.s
@@ -240,7 +240,7 @@ if __name__ == '__main__':
 
         modlist = list()
         if not args.t and not args.m:
-            print "WARNING: You didn't specify any modules or types, so all will be enabled."
+            print("WARNING: You didn't specify any modules or types, so all will be enabled.")
             for m in sfModules.keys():
                 if "__" in m:
                     continue
@@ -280,7 +280,7 @@ if __name__ == '__main__':
         sfConfig['__modules__']['sfp__stor_stdout']['opts']['_eventtypes'] = types
         if args.f:
             if args.f and not args.t:
-                print "You can only use -f with -t. Use --help for guidance."
+                print("You can only use -f with -t. Use --help for guidance.")
                 sys.exit(-1)
             sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showonlyrequested'] = True
         if args.F:
@@ -316,14 +316,14 @@ if __name__ == '__main__':
                         modlist.append(mod)
 
         if len(modlist) == 0:
-            print "Based on your criteria, no modules were enabled."
+            print("Based on your criteria, no modules were enabled.")
             sys.exit(-1)
 
         modlist += ["sfp__stor_db", "sfp__stor_stdout"]
 
         # Run the scan
         if not args.q:
-            print "[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist)
+            print("[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist))
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
         scanId = sf.genScanInstanceGUID(target)
 
@@ -349,15 +349,15 @@ if __name__ == '__main__':
                 continue
             if info[5] in [ "ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED" ]:
                 if not args.q:
-                    print "[*] Scan completed with status " + info[5]
+                    print("[*] Scan completed with status " + info[5])
                 sys.exit(0)
             time.sleep(1)
 
         sys.exit(0)
 
     # Start the web server so you can start looking at results
-    print "Starting web server at http://" + sfConfig['__webaddr'] + \
-          ":" + str(sfConfig['__webport']) + sfConfig['__docroot'] + " ..."
+    url = 'http://' + sfConfig['__webaddr'] + ":" + str(sfConfig['__webport']) + sfConfig['__docroot']
+    print('Starting web server at %s ...' % url)
 
     cherrypy.config.update({
         'server.socket_host': sfConfig['__webaddr'],
@@ -377,7 +377,7 @@ if __name__ == '__main__':
     passwd_file = sf.myPath() + '/passwd'
     if os.path.isfile(passwd_file):
         if not os.access(passwd_file, os.R_OK):
-            print "Could not read passwd file. Permission denied."
+            print("Could not read passwd file. Permission denied.")
             sys.exit(-1)
 
         secrets = dict()
@@ -386,19 +386,19 @@ if __name__ == '__main__':
 
         for line in pw.readlines():
             if ':' not in line:
-                print "Incorrect format of passwd file, must be username:password on each line."
+                print("Incorrect format of passwd file, must be username:password on each line.")
                 sys.exit(-1)
 
             u, p = line.strip().split(":")
 
             if not u or not p:
-                print "Incorrect format of passwd file, must be username:password on each line."
+                print("Incorrect format of passwd file, must be username:password on each line.")
                 sys.exit(-1)
 
             secrets[u] = p
 
         if secrets:
-            print "Enabling authentication based on supplied passwd file."
+            print("Enabling authentication based on supplied passwd file.")
             conf['/'] = {
                 'tools.auth_digest.on': True,
                 'tools.auth_digest.realm': sfConfig['__webaddr'],
@@ -406,20 +406,20 @@ if __name__ == '__main__':
                 'tools.auth_digest.key': random.randint(0, 99999999)
             }
         else:
-            print "Warning: passwd file contains no passwords. Authentication disabled."
+            print("Warning: passwd file contains no passwords. Authentication disabled.")
 
     key_path = sf.myPath() + '/spiderfoot.key'
     crt_path = sf.myPath() + '/spiderfoot.crt'
     if os.path.isfile(key_path) and os.path.isfile(crt_path):
         if not os.access(crt_path, os.R_OK):
-            print "Could not read spiderfoot.crt file. Permission denied."
+            print("Could not read spiderfoot.crt file. Permission denied.")
             sys.exit(-1)
 
         if not os.access(key_path, os.R_OK):
-            print "Could not read spiderfoot.key file. Permission denied."
+            print("Could not read spiderfoot.key file. Permission denied.")
             sys.exit(-1)
 
-        print "Enabling SSL based on supplied key and certificate file."
+        print("Enabling SSL based on supplied key and certificate file.")
         cherrypy.server.ssl_module = 'builtin'
         cherrypy.server.ssl_certificate = crt_path
         cherrypy.server.ssl_private_key = key_path
