@@ -59,7 +59,8 @@ class sfp_sslcert(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
+        return ['TCP_PORT_OPEN',
+                "SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
                 "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
                 "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW"]
 
@@ -87,12 +88,13 @@ class sfp_sslcert(SpiderFootPlugin):
         if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
             return None
 
-        self.sf.debug("Testing SSL for: " + eventData)
+        port = 443
+        self.sf.debug("Testing SSL for: " + eventData + ':' + str(port))
         # Re-fetch the certificate from the site and process
         try:
             s = socket.socket()
             s.settimeout(int(self.opts['ssltimeout']))
-            s.connect((fqdn, 443))
+            s.connect((fqdn, port))
             sock = ssl.wrap_socket(s)
             sock.do_handshake()
             rawcert = sock.getpeercert(True)
@@ -101,6 +103,10 @@ class sfp_sslcert(SpiderFootPlugin):
         except BaseException as x:
             self.sf.info("Unable to SSL-connect to " + fqdn)
             return None
+
+        if eventName in ['INTERNET_NAME', 'IP_ADDRESS']:
+            evt = SpiderFootEvent('TCP_PORT_OPEN', eventData + ':' + str(port), self.__name__, event)
+            self.notifyListeners(evt)
 
         # Generate the event for the raw cert (in text form)
         # Cert raw data text contains a lot of gems..
