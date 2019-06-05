@@ -73,6 +73,9 @@ class sfp_sslcert(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventName == "LINKED_URL_INTERNAL":
+            if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
+                return None
+
             fqdn = self.sf.urlFQDN(eventData.lower())
         else:
             fqdn = eventData
@@ -80,12 +83,6 @@ class sfp_sslcert(SpiderFootPlugin):
         if fqdn not in self.results:
             self.results[fqdn] = True
         else:
-            return None
-
-        if eventName == "IP_ADDRESS":
-            fqdn = "https://" + eventData
-
-        if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
             return None
 
         port = 443
