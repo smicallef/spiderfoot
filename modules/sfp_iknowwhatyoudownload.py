@@ -39,6 +39,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -105,6 +106,9 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         eventData = event.data
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.errorState:
+            return None
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!", False)
