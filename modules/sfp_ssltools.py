@@ -170,7 +170,7 @@ class sfp_ssltools(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if eventName != 'IP_ADDRESS':
-            self.checkHostMatch(m2cert, fqdn, event)
+            self.checkHostMatch(m2cert, eventData, event)
 
         self.checkExpiry(m2cert, event)
 
@@ -201,7 +201,7 @@ class sfp_ssltools(SpiderFootPlugin):
 
         try:
             # Extract the CN from the issued section
-            issued = self.getIssued(self, cert)
+            issued = self.getIssued(cert)
 
             self.sf.debug("Checking for " + fqdn + " in " + issued.lower())
 
