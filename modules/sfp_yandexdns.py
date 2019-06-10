@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_yandex
+# Name:         sfp_yandexdns
 # Purpose:      SpiderFoot plug-in for looking up whether hosts are blocked by
 #               Yandex DNS (77.88.8.88 and 77.88.8.2)
 #
@@ -17,8 +17,8 @@ from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
-class sfp_yandex(SpiderFootPlugin):
-    """Yandex:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Yandex DNS"""
+class sfp_yandexdns(SpiderFootPlugin):
+    """Yandex DNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Yandex DNS"""
 
     # Default options
     opts = {
@@ -48,6 +48,8 @@ class sfp_yandex(SpiderFootPlugin):
         return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_COHOST"]
 
+    # Query Yandex DNS "safe" servers
+    # https://dns.yandex.com/advanced/
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
         res.nameservers = [ "77.88.8.88", "77.88.8.2" ]
@@ -75,6 +77,7 @@ class sfp_yandex(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
+
         self.results[eventData] = True
 
         # Check that it resolves first, as it becomes a valid
@@ -83,16 +86,24 @@ class sfp_yandex(SpiderFootPlugin):
             if self.sf.normalizeDNS(socket.gethostbyname_ex(eventData)):
                 resolved = True
         except BaseException as e:
+            self.sf.debug("Unable to resolve " + eventData)
             return None
 
-        if resolved:
-            found = self.queryAddr(eventData)
-            typ = "MALICIOUS_" + eventName
-            if eventName == "CO_HOSTED_SITE":
-                typ = "MALICIOUS_COHOST"
-            if not found:
-                evt = SpiderFootEvent(typ, "Blocked by Yandex [" + eventData + "]",
-                                      self.__name__, parentEvent)
-                self.notifyListeners(evt)
+        if not resolved:
+            return None
 
-# End of sfp_yandex class
+        found = self.queryAddr(eventData)
+
+        if not found:
+            return None
+
+        if eventName == "CO_HOSTED_SITE":
+            typ = "MALICIOUS_COHOST"
+        else:
+            typ = "MALICIOUS_" + eventName
+
+        evt = SpiderFootEvent(typ, "Blocked by Yandex [" + eventData + "]",
+                              self.__name__, parentEvent)
+        self.notifyListeners(evt)
+
+# End of sfp_yandexdns class
