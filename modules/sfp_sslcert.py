@@ -112,63 +112,97 @@ class sfp_sslcert(SpiderFootPlugin):
                                  self.__name__, event)
         self.notifyListeners(rawevt)
 
-        # Generate events for other cert aspects
-        self.getIssued(m2cert, event)
-        self.getIssuer(m2cert, event)
+        issued = self.getIssued(m2cert)
+
+        if issued is not None:
+            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUED', issued, self.__name__, event)
+            self.notifyListeners(evt)
+
+        issuer = self.getIssuer(m2cert)
+
+        if issuer is not None:
+            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUER', issuer, self.__name__, event)
+            self.notifyListeners(evt)
+
+        sans = self.getSubjectAltNames(m2cert)
+
         if eventName != "IP_ADDRESS":
             self.checkHostMatch(m2cert, fqdn, event)
+
         try:
             self.checkExpiry(m2cert, event)
         except M2Crypto.X509.X509Error as e:
             self.sf.error("Error processing certificate: " + str(e), False)
 
-    # Report back who the certificate was issued to
-    def getIssued(self, cert, sevt):
+    # Retrieve the entity to whom the certificate was issued
+    def getIssued(self, cert):
         try:
             issued = cert.get_subject().as_text().encode('raw_unicode_escape')
         except BaseException as e:
             self.sf.error("Error processing certificate: " + str(e), False)
             return None
 
-        evt = SpiderFootEvent("SSL_CERTIFICATE_ISSUED", issued, self.__name__, sevt)
-        self.notifyListeners(evt)
+        return issued
 
-    # Report back the certificate issuer
-    def getIssuer(self, cert, sevt):
+    # Retrieve the certificate issuer
+    def getIssuer(self, cert):
         try:
             issuer = cert.get_issuer().as_text().encode('raw_unicode_escape')
         except BaseException as e:
-            self.sf.debug("Error parsing certificate.")
+            self.sf.error("Error processing certificate: " + str(e), False)
             return None
 
-        evt = SpiderFootEvent("SSL_CERTIFICATE_ISSUER", issuer, self.__name__, sevt)
-        self.notifyListeners(evt)
+        return issuer
+
+    # Extract the Subject Alternative Names from the certificate subject
+    def getSubjectAltNames(self, cert):
+        names = list()
+
+        try:
+            sans = cert.get_ext('subjectAltName').get_value().encode('raw_unicode_escape')
+
+            if sans is None:
+                return None
+
+            for san in sans.split(','):
+                names.append(san.strip())
+        except LookupError as e:
+            self.sf.debug("No alternative name found in certificate.")
+            return None
+        except BaseException as e:
+            self.sf.debug("Error parsing certificate:" + str(e))
+            return None
+
+        return names
 
     # Check if the hostname matches the name of the server
     def checkHostMatch(self, cert, fqdn, sevt):
         fqdn = fqdn.lower()
-        hosts = ""
+        hosts = list()
 
         # Extract the CN from the issued section
-        try:
-            issued = cert.get_subject().as_text().encode('raw_unicode_escape')
-            self.sf.debug("Checking for " + fqdn + " in " + issued.lower())
-            if "cn=" + fqdn in issued.lower():
-                hosts = 'dns:' + fqdn
-        except BaseException as e:
-            self.sf.debug("Error parsing certificate.")
-            return None
+        issued = self.getIssued(cert)
 
-        try:
-            hosts = hosts + " " + cert.get_ext("subjectAltName").get_value().encode('raw_unicode_escape').lower()
-        except LookupError as e:
-            self.sf.debug("No alternative name found in certificate.")
-            return None
+        if "cn=" + fqdn in issued.lower():
+            hosts.append('dns:' + fqdn)
 
+        # Extract subject alternative names
+        for host in self.getSubjectAltNames(cert):
+            hosts.append(host.lower())
+
+        self.sf.debug("Checking for " + fqdn + " in certificate subject")
         fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
-        if "dns:" + fqdn not in hosts and "dns:*." + fqdn_tld not in hosts:
-            evt = SpiderFootEvent("SSL_CERTIFICATE_MISMATCH", hosts, self.__name__, sevt)
-            self.notifyListeners(evt)
+
+        for host in hosts:
+            if host == "dns:" + fqdn:
+                return True
+            if host == "dns:*." + fqdn_tld:
+                return True
+
+        evt = SpiderFootEvent('SSL_CERTIFICATE_MISMATCH', ', '.join(hosts), self.__name__, sevt)
+        self.notifyListeners(evt)
+
+        return False
 
     # Check if the expiration date is in the future
     def checkExpiry(self, cert, sevt):
