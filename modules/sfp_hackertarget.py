@@ -12,6 +12,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import json
 import re
 import socket
 from netaddr import IPNetwork
@@ -149,7 +150,16 @@ class sfp_hackertarget(SpiderFootPlugin):
             self.sf.debug("Found no HTTP headers for " + ip)
             return None
 
-        return res['content']
+        headers = dict()
+
+        for header in res['content'].splitlines():
+            if ': ' not in header:
+                continue
+            k = header.split(': ')[0].lower()
+            v = ': '.join(header.split(': ')[1:])
+            headers[k] = v
+
+        return headers
 
     # Reverse lookup hosts on the same IP address
     def reverseIpLookup(self, ip):
@@ -247,7 +257,7 @@ class sfp_hackertarget(SpiderFootPlugin):
             if self.opts.get('http_headers', True):
                 http_headers = self.httpHeaders(ip)
                 if http_headers is not None:
-                    e = SpiderFootEvent('WEBSERVER_HTTPHEADERS', http_headers, self.__name__, event)
+                    e = SpiderFootEvent('WEBSERVER_HTTPHEADERS', json.dumps(http_headers), self.__name__, event)
                     self.notifyListeners(e)
 
             if self.opts.get('udp_portscan', True):
