@@ -29,6 +29,7 @@ class sfp_hackertarget(SpiderFootPlugin):
         'netblocklookup': True,
         'maxnetblock': 24,
         'maxcohost': 100,
+        'http_headers': False,
         'tcp_portscan': False,
         'udp_portscan': False
     }
@@ -40,6 +41,7 @@ class sfp_hackertarget(SpiderFootPlugin):
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
+        'http_headers': "Retrieve IP HTTP headers using HackerTarget.com",
         'tcp_portscan': "Scan IP for commonly open TCP ports using HackerTarget.com TCP port scan.",
         'udp_portscan': "Scan IP for commonly open UDP ports using HackerTarget.com UDP port scan."
     }
@@ -63,7 +65,8 @@ class sfp_hackertarget(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["CO_HOSTED_SITE", "UDP_PORT_OPEN", "TCP_PORT_OPEN", "IP_ADDRESS"]
+        return ["CO_HOSTED_SITE", "UDP_PORT_OPEN", "TCP_PORT_OPEN", "IP_ADDRESS",
+                'WEBSERVER_HTTPHEADERS']
 
     def validateIP(self, host, ip):
         try:
@@ -131,6 +134,22 @@ class sfp_hackertarget(SpiderFootPlugin):
         self.sf.debug("Found " + str(len(open_ports)) + " open TCP ports on " + ip)
 
         return open_ports
+
+    # Retrieve HTTP headers
+    def httpHeaders(self, ip):
+        res = self.sf.fetchUrl("https://api.hackertarget.com/httpheaders/?q=" + ip,
+                               useragent=self.opts['_useragent'],
+                               timeout=self.opts['_fetchtimeout'])
+
+        if res['content'] is None:
+            self.sf.error("Unable to fetch HTTP headers for " + ip + " from HackerTarget.com.", False)
+            return None
+
+        if not res['content'].startswith('HTTP/'):
+            self.sf.debug("Found no HTTP headers for " + ip)
+            return None
+
+        return res['content']
 
     # Reverse lookup hosts on the same IP address
     def reverseIpLookup(self, ip):
@@ -224,6 +243,12 @@ class sfp_hackertarget(SpiderFootPlugin):
 
                         myres.append(h.lower())
                         self.cohostcount += 1
+
+            if self.opts.get('http_headers', True):
+                http_headers = self.httpHeaders(ip)
+                if http_headers is not None:
+                    e = SpiderFootEvent('WEBSERVER_HTTPHEADERS', http_headers, self.__name__, event)
+                    self.notifyListeners(e)
 
             if self.opts.get('udp_portscan', True):
                 udp_ports = self.portScanUDP(ip)
