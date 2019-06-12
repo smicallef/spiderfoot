@@ -115,6 +115,8 @@ class sfp_abuseipdb(SpiderFootPlugin):
                     return None
 
                 try:
+                    if "rate limit" in res['content']:
+                        return None
                     j = json.loads(res['content'])
                     if len(j) == 0:
                         return None
