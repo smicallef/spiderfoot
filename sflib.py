@@ -572,7 +572,7 @@ class SpiderFoot:
             {"^\+\d+$": "PHONE_NUMBER"},
             {"^\".*\"$": "HUMAN_NAME"},
             {"^\d+$": "BGP_AS_OWNER"},
-            {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
+            {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
         ]
 
         # Parse the target and set the targetType
