@@ -58,9 +58,9 @@ class sfp_psbdmp(SpiderFootPlugin):
         ret = None
 
         if "@" in qry:
-            url = "http://psbdmp.cc/api/search/email/" + qry
+            url = "https://psbdmp.cc/api/search/email/" + qry
         else:
-            url = "http://psbdmp.cc/api/search/domain/" + qry
+            url = "https://psbdmp.cc/api/search/domain/" + qry
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot")
@@ -79,7 +79,7 @@ class sfp_psbdmp(SpiderFootPlugin):
         if 'count' in ret:
             if ret['count'] > 0:
                 for d in ret['data']:
-                    ids.append("http://psbdmp.cc/" + d['id'])
+                    ids.append("https://psbdmp.cc/" + d['id'])
             else:
                 return None
         else:
