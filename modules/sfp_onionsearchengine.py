@@ -21,7 +21,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
     # Default options
     opts = {
         # We don't bother with pagination as ahmia seems fairly limited in coverage
-        'fetchlinks': False,
+        'fetchlinks': True,
         'blacklist': [ '.*://relate.*' ]
     }
 

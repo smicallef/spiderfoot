@@ -21,7 +21,7 @@ class sfp_darksearch(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'fetchlinks': False,
+        'fetchlinks': True,
         'max_pages': 20
     }
 

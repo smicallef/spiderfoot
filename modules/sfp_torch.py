@@ -20,8 +20,8 @@ class sfp_torch(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'fetchlinks': False,
-        'pages': 20,
+        'fetchlinks': True,
+        'pages': 20
     }
 
     # Option descriptions

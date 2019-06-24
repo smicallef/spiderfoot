@@ -23,7 +23,7 @@ class sfp_ahmia(SpiderFootPlugin):
     # Default options
     opts = {
         # We don't bother with pagination as ahmia seems fairly limited in coverage
-        'fetchlinks': False
+        'fetchlinks': True
     }
 
     # Option descriptions
