@@ -42,12 +42,12 @@ class sfp_fraudguard(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -87,7 +87,7 @@ class sfp_fraudguard(SpiderFootPlugin):
             self.sf.error("Error processing JSON response from Fraudguard.io.", False)
             return None
 
-        #print(str(info))
+        #print str(info)
         return info
 
 
@@ -155,7 +155,7 @@ class sfp_fraudguard(SpiderFootPlugin):
                     self.notifyListeners(e)
 
                 if rec.get('threat') != "unknown":
-                    dat = rec['threat'] + " (risk level: " + rec['risk_level'] + ")"
+                    dat = rec['threat'] + " (risk level: " + rec['risk_level'] + ") [" + eventData + "]"
                     e = SpiderFootEvent("MALICIOUS_" + rtype, dat, self.__name__, event)
                     self.notifyListeners(e)
     

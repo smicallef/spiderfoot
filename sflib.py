@@ -1433,6 +1433,10 @@ class SpiderFootPlugin(object):
     def setOutputFilter(self, types):
         self.__outputFilter__ = types
 
+    # For SpiderFoot HX compatability of modules
+    def tempStorage(self):
+        return dict()
+
     # Call the handleEvent() method of every other plug-in listening for
     # events from this plug-in. Remember that those plug-ins will be called
     # within the same execution context of this thread, not on their own.

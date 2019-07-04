@@ -46,12 +46,12 @@ class sfp_alienvault(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -102,7 +102,6 @@ class sfp_alienvault(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            print(str(res['content']))
             self.sf.error("Error processing JSON response from AlienVault OTX.", False)
             return None
 
@@ -201,7 +200,7 @@ class sfp_alienvault(SpiderFootPlugin):
                     rec_history = rec['reputation'].get("activities", list())
                     if rec['reputation']['threat_score'] < self.opts['threat_score_min']:
                         continue
-                    descr = "Threat Score: " + str(rec['reputation']['threat_score']) + ":"
+                    descr = "AlienVault Threat Score: " + str(rec['reputation']['threat_score']) + ":"
 
                     for result in rec_history:
                         descr += "\n - " + result.get("name", "")

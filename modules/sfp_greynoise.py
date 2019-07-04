@@ -46,12 +46,12 @@ class sfp_greynoise(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -87,7 +87,6 @@ class sfp_greynoise(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            print(str(res['content']))
             self.sf.error("Error processing JSON response from Greynoise.", False)
             return None
 
@@ -190,7 +189,7 @@ class sfp_greynoise(SpiderFootPlugin):
                         self.notifyListeners(e)
 
                     if rec.get("classification"):
-                        descr = addr + "\n - Classification: " + rec.get("classification")
+                        descr = "Greynoise [" + addr + "]\n - Classification: " + rec.get("classification")
                         if rec.get("tags"):
                             descr += ", Tags: " + ", ".join(rec.get("tags"))
                         else:

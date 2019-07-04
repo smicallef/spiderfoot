@@ -44,13 +44,13 @@ class sfp_circllu(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.cohostcount = 0
 
         # Clear / reset any other class member variables here
@@ -218,7 +218,7 @@ class sfp_circllu(SpiderFootPlugin):
 
                 for co in cohosts:
                     if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.validateIP(co, eventData)):
-                        self.sf.debug("Host " + co + " no longer resolves to " + eventData)
+                        self.sf.debug("Host no longer resolves to our IP.")
                         continue
 
                     if not self.opts['cohostsamedomain']:

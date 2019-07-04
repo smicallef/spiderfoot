@@ -25,12 +25,12 @@ class sfp_botscout(SpiderFootPlugin):
     optdescs = {
         "api_key": "Botscout.com API key. Without this you will be limited to 50 look-ups per day."
     }
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -87,7 +87,7 @@ class sfp_botscout(SpiderFootPlugin):
             else:
                 t = "MALICIOUS_EMAILADDR"
 
-            evt = SpiderFootEvent(t, eventData, self.__name__, event)
+            evt = SpiderFootEvent(t, "Botscout [" + eventData + "]", self.__name__, event)
             self.notifyListeners(evt)
 
             return None
