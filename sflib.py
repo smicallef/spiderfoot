@@ -1016,7 +1016,7 @@ class SpiderFoot:
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False, 
                  postData=None, dontMangle=False, sizeLimit=None,
-                 headOnly=False):
+                 headOnly=False, verify=False):
         result = {
             'code': None,
             'status': None,
@@ -1053,7 +1053,7 @@ class SpiderFoot:
                           " [timeout: " + \
                           str(timeout) + "]")
 
-                hdr = requests.head(url, headers=header, verify=False, timeout=timeout)
+                hdr = requests.head(url, headers=header, verify=verify, timeout=timeout)
                 size = int(hdr.headers.get('content-length', 0))
                 result['realurl'] = hdr.headers.get('location', url)
                 result['code'] = str(hdr.status_code)
@@ -1070,7 +1070,7 @@ class SpiderFoot:
                               " [timeout: " + \
                               str(timeout) + "]")
 
-                    hdr = requests.head(result['realurl'], headers=header, verify=False)
+                    hdr = requests.head(result['realurl'], headers=header, verify=verify)
                     size = int(hdr.headers.get('content-length', 0))
                     result['realurl'] = hdr.headers.get('location', result['realurl'])
                     result['code'] = str(hdr.status_code)
