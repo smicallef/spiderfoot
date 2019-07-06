@@ -39,7 +39,8 @@ class sfp_websvr(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["WEBSERVER_BANNER", "WEBSERVER_TECHNOLOGY"]
+        return ["WEBSERVER_BANNER", "WEBSERVER_TECHNOLOGY",
+                'LINKED_URL_INTERNAL', 'LINKED_URL_EXTERNAL']
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -66,6 +67,28 @@ class sfp_websvr(SpiderFootPlugin):
         except BaseException as e:
             self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
             return None
+
+        # Check location header for linked URLs
+        if 'location' in jdata:
+            if jdata['location'].startswith('http://') or jdata['location'].startswith('https://'):
+                if self.getTarget().matches(self.sf.urlFQDN(jdata['location'])):
+                    evt = SpiderFootEvent('LINKED_URL_INTERNAL', jdata['location'], self.__name__, parentEvent)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent('LINKED_URL_EXTERNAL', jdata['location'], self.__name__, parentEvent)
+                    self.notifyListeners(evt)
+
+        # Check CSP header for linked URLs
+        if 'content-security-policy' in jdata:
+            for directive in jdata['content-security-policy'].split(';'):
+                for string in directive.split(' '):
+                    if string.startswith('http://') or string.startswith('https://'):
+                        if self.getTarget().matches(self.sf.urlFQDN(string)):
+                            evt = SpiderFootEvent('LINKED_URL_INTERNAL', string, self.__name__, parentEvent)
+                            self.notifyListeners(evt)
+                        else:
+                            evt = SpiderFootEvent('LINKED_URL_EXTERNAL', string, self.__name__, parentEvent)
+                            self.notifyListeners(evt)
 
         # Could apply some smarts here, for instance looking for certain
         # banners and therefore classifying them further (type and version,
