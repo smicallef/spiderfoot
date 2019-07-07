@@ -47,15 +47,33 @@ class sfp_webanalytics(SpiderFootPlugin):
 
         if sourceData in self.results:
             return None
-        else:
-            self.results[sourceData] = True
+
+        self.results[sourceData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        matches = re.findall("ua\-\d{4,10}\-\d{1,4}", eventData, re.IGNORECASE)
+        # Google Analytics
+        matches = re.findall(r"\bua\-\d{4,10}\-\d{1,4}\b", eventData, re.IGNORECASE)
         for m in matches:
+            if m.lower().startswith('ua-000000-'):
+                continue
+            if m.lower().startswith('ua-123456-'):
+                continue
+            if m.lower().startswith('ua-123456789'):
+                continue
+
             self.sf.debug("Google Analytics match: " + m)
             evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google Analytics: " + m, self.__name__, event)
+            self.notifyListeners(evt)
+
+        # Google AdSense
+        matches = re.findall(r"\b(pub-\d{10,20})\b", eventData, re.IGNORECASE)
+        for m in matches:
+            if m.lower().startswith('pub-123456789'):
+                continue
+
+            self.sf.debug("Google AdSense match: " + m)
+            evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google AdSense: " + m, self.__name__, event)
             self.notifyListeners(evt)
 
         return None
