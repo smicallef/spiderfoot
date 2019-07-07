@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_websvr
+# Name:         sfp_webserver
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
 #               modules (such as sfp_spider) and identifying web servers used
 #
@@ -15,7 +15,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
-class sfp_websvr(SpiderFootPlugin):
+class sfp_webserver(SpiderFootPlugin):
     """Web Server:Footprint,Investigate:Content Analysis::Obtain web server banners to identify versions of web servers being used."""
 
     # Default options
@@ -130,4 +130,4 @@ class sfp_websvr(SpiderFootPlugin):
             evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, parentEvent)
             self.notifyListeners(evt)
 
-# End of sfp_websvr class
+# End of sfp_webserver class
