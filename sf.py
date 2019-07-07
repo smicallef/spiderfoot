@@ -389,7 +389,8 @@ if __name__ == '__main__':
                 print("Incorrect format of passwd file, must be username:password on each line.")
                 sys.exit(-1)
 
-            u, p = line.strip().split(":")
+            u = line.strip().split(":")[0]
+            p = ':'.join(line.strip().split(":")[1:])
 
             if not u or not p:
                 print("Incorrect format of passwd file, must be username:password on each line.")
