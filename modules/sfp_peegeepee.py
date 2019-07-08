@@ -126,11 +126,13 @@ class sfp_peegeepee(SpiderFootPlugin):
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
+        eventData = event.data
+
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if srcModuleName == 'sfp_peegeepee':
+            self.sf.debug("Ignoring " + eventData + ", from self.")
             return None
-
-        eventData = event.data
 
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + ", already checked.")
@@ -138,62 +140,52 @@ class sfp_peegeepee(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-
         keys = self.query(eventData)
 
         if not keys:
             self.sf.debug('No results found for ' + eventData)
             return None
 
-        # Get e-mail addresses on this domain
-        if eventName == 'DOMAIN_NAME' or eventName == 'INTERNET_NAME':
-            for key in keys:
-                email = keys.get(key)[1]
+        names = list()
+        emails = list()
 
-                if not email:
-                    continue
+        for key in keys:
+            name = keys.get(key)[0]
+            email = keys.get(key)[1]
 
+            if not email:
+                continue
+
+            # Get e-mail addresses on this domain
+            if eventName == 'DOMAIN_NAME' or eventName == 'INTERNET_NAME':
                 mailDom = email.lower().split('@')[1]
 
                 if not self.getTarget().matches(mailDom):
                     continue
 
-                self.sf.info('Found e-mail address: ' + email)
-                evt = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
-                self.notifyListeners(evt)
-
-                # A bit of a hack. Submit the description to sfp_names
-                # and see if it is considered to be a name.
-                name = keys.get(key)[0]
-                evt = SpiderFootEvent('RAW_RIR_DATA', 'Possible full name: ' + name,
-                                      self.__name__, event)
-                self.notifyListeners(evt)
-
-                if self.opts['fetch_keys']:
-                    self.retrieveKey(key, event)
- 
-        # Retrieve names for the specified e-mail address
-        if eventName == 'EMAILADDR':
-            for key in keys:
-                email = keys.get(key)[1]
-
-                if not email:
-                    continue
-
+            # Retrieve names for the specified e-mail address
+            if eventName == 'EMAILADDR':
                 if not email.lower() == eventData.lower():
                     continue
 
-                # A bit of a hack. Submit the description to sfp_names
-                # and see if it is considered to be a name.
-                name = keys.get(key)[0]
-                evt = SpiderFootEvent('RAW_RIR_DATA', 'Possible full name: ' + name,
-                                      self.__name__, event)
+            emails.append(email)
+            names.append(name)
+
+        for name in set(names):
+            # A bit of a hack. Submit the description to sfp_names
+            # and see if it is considered to be a name.
+            evt = SpiderFootEvent('RAW_RIR_DATA', 'Possible full name: ' + name,
+                                  self.__name__, event)
+            self.notifyListeners(evt)
+
+        for email in set(emails):
+                evt = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
                 self.notifyListeners(evt)
 
-                if self.opts['fetch_keys']:
-                    self.retrieveKey(key, event)
-
+        if self.opts['fetch_keys']:
+            for key in keys:
+                self.retrieveKey(key, event)
+ 
         return None
 
 # End of sfp_peegeepee class
