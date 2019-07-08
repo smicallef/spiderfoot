@@ -4,10 +4,10 @@
 # Purpose:      SpiderFoot plug-in to search SpyOnWeb for hosts sharing the
 #               same IP address, Google Analytics code, or Google Adsense code.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-25
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 

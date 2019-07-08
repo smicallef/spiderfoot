@@ -4,10 +4,10 @@
 # Purpose:      SpiderFoot plug-in to retrieve latitude/longitude coordinates
 #               for physical addresses from OpenStreetMap API.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-27
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 

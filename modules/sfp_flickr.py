@@ -4,10 +4,10 @@
 # Purpose:      SpiderFoot plug-in for retrieving email addresses belonging
 #               to your target from Flickr.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-08
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 

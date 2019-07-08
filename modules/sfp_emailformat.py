@@ -4,10 +4,10 @@
 # Purpose:      SpiderFoot plug-in for retrieving e-mail addresses
 #               belonging to your target from email-format.com.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     29/09/2018
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 

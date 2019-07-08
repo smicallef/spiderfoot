@@ -2,10 +2,10 @@
 # Name:         sfp_myspace
 # Purpose:      Query MySpace for username and location information.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-07
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 

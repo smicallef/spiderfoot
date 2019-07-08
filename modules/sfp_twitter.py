@@ -2,10 +2,10 @@
 # Name:         sfp_twitter
 # Purpose:      Query Twitter for name and location information.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-17
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
