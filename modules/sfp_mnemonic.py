@@ -4,10 +4,10 @@
 # Purpose:      SpiderFoot plug-in for retrieving passive DNS information
 #               from Mnemonic PassiveDNS API.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-12
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
