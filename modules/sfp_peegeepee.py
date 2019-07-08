@@ -20,8 +20,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_peegeepee(SpiderFootPlugin):
     """PeeGeePee:Footprint,Investigate,Passive:Public Registries::Look up e-mail addresses and domains on PeeGeePee.com."""
 
-    results = dict()
-
     # Default options
     opts = {
         'timeout': 15,
@@ -34,14 +32,11 @@ class sfp_peegeepee(SpiderFootPlugin):
         'fetch_keys': 'Retrieve PGP keys for each match.'
     }
 
-    currentEventSrc = None
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = 'PeeGeePee'
-        self.results = dict()
-        self.currentEventSrc = None
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -136,7 +131,6 @@ class sfp_peegeepee(SpiderFootPlugin):
             return None
 
         eventData = event.data
-        self.currentEventSrc = event
 
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + ", already checked.")
@@ -173,7 +167,7 @@ class sfp_peegeepee(SpiderFootPlugin):
                 # and see if it is considered to be a name.
                 name = keys.get(key)[0]
                 evt = SpiderFootEvent('RAW_RIR_DATA', 'Possible full name: ' + name,
-                                      self.__name__, self.currentEventSrc)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
                 if self.opts['fetch_keys']:
@@ -194,7 +188,7 @@ class sfp_peegeepee(SpiderFootPlugin):
                 # and see if it is considered to be a name.
                 name = keys.get(key)[0]
                 evt = SpiderFootEvent('RAW_RIR_DATA', 'Possible full name: ' + name,
-                                      self.__name__, self.currentEventSrc)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
                 if self.opts['fetch_keys']:
