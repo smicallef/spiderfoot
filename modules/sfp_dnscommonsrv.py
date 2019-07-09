@@ -84,14 +84,15 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
-
-        if srcModuleName == "sfp_dnscommonsrv":
-            return None
+        eventData = event.data
 
         self.sf.debug("Received event, " + eventName +
                       ", from " + srcModuleName)
 
-        eventData = event.data
+        if srcModuleName == "sfp_dnscommonsrv":
+            self.sf.debug("Ignoring " + eventName + ", from self.")
+            return None
+
         eventDataHash = self.sf.hashstring(eventData)
         parentEvent = event
 

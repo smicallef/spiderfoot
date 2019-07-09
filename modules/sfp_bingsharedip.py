@@ -81,6 +81,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         self.currentEventSrc = event
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Don't look up stuff twice
@@ -91,6 +92,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         # Ignore IP addresses from myself as they are just for creating
         # a link from the netblock to the co-host.
         if eventName == "IP_ADDRESS" and srcModuleName == "sfp_bingsharedip":
+            self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
         if self.cohostcount > self.opts['maxcohost']:
