@@ -90,7 +90,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
                       ", from " + srcModuleName)
 
         if srcModuleName == "sfp_dnscommonsrv":
-            self.sf.debug("Ignoring " + eventData + ", from self.")
+            self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
         eventDataHash = self.sf.hashstring(eventData)

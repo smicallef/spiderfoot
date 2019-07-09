@@ -131,7 +131,7 @@ class sfp_circllu(SpiderFootPlugin):
 
         # Ignore messages from myself
         if srcModuleName == "sfp_circllu":
-            self.sf.debug("Ignoring " + eventData + ", from self.")
+            self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
         if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":

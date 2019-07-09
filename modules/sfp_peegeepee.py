@@ -131,7 +131,7 @@ class sfp_peegeepee(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if srcModuleName == 'sfp_peegeepee':
-            self.sf.debug("Ignoring " + eventData + ", from self.")
+            self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
         if eventData in self.results:

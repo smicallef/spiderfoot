@@ -256,7 +256,7 @@ class sfp_spider(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventData in self.urlEvents:
-            self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")
+            self.sf.debug("Ignoring " + eventName + " as already spidered or is being spidered.")
             return None
 
         # Don't spider links we find ourselves, obviously

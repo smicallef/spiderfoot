@@ -189,7 +189,7 @@ class sfp_hackertarget(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if srcModuleName == "sfp_hackertarget" and eventName == "IP_ADDRESS":
-            self.sf.debug("Ignoring " + eventData + ", from self.")
+            self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
         # Don't look up stuff twice
