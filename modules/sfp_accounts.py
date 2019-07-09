@@ -208,6 +208,7 @@ class sfp_accounts(SpiderFootPlugin):
 
         # Skip events coming from me unless they are USERNAME events
         if eventName != "USERNAME" and srcModuleName == "sfp_accounts":
+            self.sf.debug("Ignoring " + eventData + ", from self.")
             return None
 
         if eventData not in self.results.keys():

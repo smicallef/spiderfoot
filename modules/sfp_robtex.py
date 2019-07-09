@@ -91,6 +91,7 @@ class sfp_robtex(SpiderFootPlugin):
             return None
 
         if srcModuleName == "sfp_robtex" and eventName == "IP_ADDRESS":
+            self.sf.debug("Ignoring " + eventData + ", from self.")
             return None
 
         # Don't look up stuff twice

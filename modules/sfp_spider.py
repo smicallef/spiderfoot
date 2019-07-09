@@ -258,12 +258,13 @@ class sfp_spider(SpiderFootPlugin):
         if eventData in self.urlEvents:
             self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")
             return None
-        else:
-            self.urlEvents[eventData] = event
 
         # Don't spider links we find ourselves, obviously
         if eventName == "LINKED_URL_INTERNAL" and "sfp_spider" in srcModuleName:
+            self.sf.debug("Ignoring " + eventData + ", from self.")
             return None
+
+        self.urlEvents[eventData] = event
 
         # Determine where to start spidering from if it's a INTERNET_NAME event
         if eventName == "INTERNET_NAME":
