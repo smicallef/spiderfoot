@@ -20,10 +20,10 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_sslcert(SpiderFootPlugin):
     """SSL Certificates:Footprint,Investigate:Crawling and Scanning::Gather information about SSL certificates used by the target's HTTPS sites."""
 
-
     # Default options
     opts = {
         "tryhttp": True,
+        'verify': True,
         "ssltimeout": 10,
         "certexpiringdays": 30
     }
@@ -31,6 +31,7 @@ class sfp_sslcert(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         "tryhttp": "Also try to HTTPS-connect to HTTP sites and hostnames.",
+        'verify': "Verify certificate subject alternative names resolve.",
         "ssltimeout": "Seconds before giving up trying to HTTPS connect.",
         "certexpiringdays": "Number of days in the future a certificate expires to consider it as expiring."
     }
@@ -60,9 +61,24 @@ class sfp_sslcert(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ['TCP_PORT_OPEN',
+                'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
+                'AFFILIATE_DOMAIN', 'AFFILIATE_DOMAIN_UNRESOLVED',
                 "SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
                 "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
                 "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW"]
+
+    # Resolve a host
+    def resolveHost(self, host):
+        try:
+            addrs = socket.gethostbyname_ex(host)
+        except BaseException as e:
+            self.sf.debug("Unable to resolve " + host + ": " + str(e))
+            return False
+
+        if not addrs:
+            return False
+
+        return True
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -124,11 +140,28 @@ class sfp_sslcert(SpiderFootPlugin):
             evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUER', issuer, self.__name__, event)
             self.notifyListeners(evt)
 
-        sans = self.getSubjectAltNames(m2cert)
-
         if eventName != "IP_ADDRESS":
             self.checkHostMatch(m2cert, fqdn, event)
 
+        # extract certificate Subject Alternative Names
+        domains = list()
+        for san in self.getSubjectAltNames(m2cert):
+            domains.append(san.replace('DNS:', '').replace('*.', ''))
+
+        for domain in set(domains):
+            if self.getTarget().matches(domain, includeChildren=True):
+                evt_type = 'INTERNET_NAME'
+            else:
+                evt_type = 'AFFILIATE_DOMAIN'
+
+            if self.opts['verify'] and not self.resolveHost(domain):
+                self.sf.debug("Host " + san + " could not be resolved")
+                evt_type += '_UNRESOLVED'
+
+            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
+            self.notifyListeners(evt)
+
+        # check certificate expiry
         try:
             self.checkExpiry(m2cert, event)
         except M2Crypto.X509.X509Error as e:
