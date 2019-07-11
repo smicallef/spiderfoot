@@ -63,7 +63,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         cslines = list()
         if self.opts['commons']:
-            cs = open(self.sf.myPath() + "/ext/subdomains.txt", 'r')
+            cs = open(self.sf.myPath() + "/dicts/subdomains.txt", 'r')
             cslines = cs.readlines()
             for s in cslines:
                 s = s.strip()
@@ -71,7 +71,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         ttlines = list()
         if self.opts['top10000']:
-            tt = open(self.sf.myPath() + "/ext/subdomains-10000.txt", 'r')
+            tt = open(self.sf.myPath() + "/dicts/subdomains-10000.txt", 'r')
             ttlines = tt.readlines()
             for s in ttlines:
                 s = s.strip()

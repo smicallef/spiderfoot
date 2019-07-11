@@ -795,7 +795,7 @@ class SpiderFoot:
         dicts = [ "english", "german", "french", "spanish" ]
 
         for d in dicts:
-            wdct = open(self.myPath() + "/ext/ispell/" + d + ".dict", 'r')
+            wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
             dlines = wdct.readlines()
 
             for w in dlines:
@@ -811,7 +811,7 @@ class SpiderFoot:
         dicts = [ "names" ]
 
         for d in dicts:
-            wdct = open(self.myPath() + "/ext/ispell/" + d + ".dict", 'r')
+            wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
             dlines = wdct.readlines()
 
             for w in dlines:
