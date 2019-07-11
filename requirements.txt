@@ -1,3 +1,6 @@
+adblockparser>=0.7
+dnspython>=1.16.0
+exifread>=2.1.2
 CherryPy>=14.0.0
 M2Crypto>=0.29.0
 Mako>=1.0.4
@@ -8,4 +11,8 @@ requests>=2.20.0
 ipwhois==1.0.0
 ipaddr>=2.2.0
 phonenumbers>=8.10.2
+pygexf>=0.2.2
+PyPDF2>=1.26.0
+stem>=1.7.1
+python-whois>=0.7.1
 future

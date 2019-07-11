@@ -22,7 +22,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
     # Default options
     opts = {
         "endpoints": "nyc3.digitaloceanspaces.com,sgp1.digitaloceanspaces.com,ams3.digitaloceanspaces.com",
-        "suffixes": "test,dev,web,beta,bucket,space,files,content,data,-test,-dev,-web,-beta,-bucket,-space,-files,-content,-data",
+        "suffixes": "test,dev,web,beta,bucket,space,files,content,data,prod,staging,production,stage,app,media,development,-test,-dev,-web,-beta,-bucket,-space,-files,-content,-data,-prod,-staging,-production,-stage,-app,-media,-development",
         "_maxthreads": 20
     }
 

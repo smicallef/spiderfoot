@@ -46,8 +46,12 @@ for mod in deps:
         for mod in deps:
             print(" - " + mod)
         print("")
-        print("If you are running on Windows and getting this error, please")
-        print("report this as a bug to support@spiderfoot.net.")
+        print("****************************************************************")
+        print("Please note that if you are seeing this after doing a git pull")
+        print("then you just need to do a `pip install -r requirements.txt` as")
+        print("dependencies previously bundled with SpiderFoot are now")
+        print("unbundled.")
+        print("****************************************************************")
         print("")
         sys.exit(-1)
 
