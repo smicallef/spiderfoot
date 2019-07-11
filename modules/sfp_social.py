@@ -25,7 +25,7 @@ regexps = dict({
                      '.*twitter.com/#!/([a-zA-Z0-9_]{1,15}$)'
                      ]),
     "SlideShare": list(['.*slideshare.net/([a-zA-Z0-9_]+$)']),
-    "Instagram": list(['.*instagram.com/([a-zA-Z0-9_]+$)'])
+    "Instagram": list(['.*instagram.com/([a-zA-Z0-9_\.]+$)'])
 })
 
 
