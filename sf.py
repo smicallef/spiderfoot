@@ -20,7 +20,7 @@ import argparse
 from copy import deepcopy
 
 # Look under ext ford 3rd party dependencies
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "ext")))
+cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "lib")))
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
@@ -29,9 +29,9 @@ deps = ['M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks', 'whois',
         'ipwhois']
 for mod in deps:
     try:
-        if mod.startswith("ext."):
+        if mod.startswith("lib."):
             modname = mod.split('.')
-            __import__('ext', fromlist=[modname[1]])
+            __import__('lib', fromlist=[modname[1]])
         else:
             __import__(mod)
     except ImportError as e:
