@@ -2,10 +2,10 @@
 # Name:         sfp_deviantart
 # Purpose:      Query DeviantArt profile name, age, and location information.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2019-05-10
-# Copyright:   (c) Brendan Coles 2019
+# Copyright:   (c) bcoles 2019
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
