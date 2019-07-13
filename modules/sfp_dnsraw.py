@@ -47,7 +47,8 @@ class sfp_dnsraw(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["PROVIDER_MAIL", "PROVIDER_DNS", "RAW_DNS_RECORDS",
-                "DNS_TEXT", "DNS_SPF", "AFFILIATE_INTERNET_NAME"]
+                "DNS_TEXT", "DNS_SPF", "AFFILIATE_INTERNET_NAME",
+                "WEB_ANALYTICS_ID"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -94,27 +95,72 @@ class sfp_dnsraw(SpiderFootPlugin):
                         self.sf.debug("Checking " + str(x) + " + against " + recs[rx][0])
                         pat = re.compile(recs[rx][0], re.IGNORECASE | re.DOTALL)
                         grps = re.findall(pat, str(x))
-                        if len(grps) > 0:
-                            for m in grps:
-                                self.sf.debug("Matched: " + m)
-                                strdata = unicode(m, 'utf-8', errors='replace')
-                                evt = SpiderFootEvent(recs[rx][1], strdata,
-                                                      self.__name__, parentEvent)
-                                self.notifyListeners(evt)
-                                if rec != "TXT" and not strdata.endswith(eventData):
-                                    evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME",
-                                                          strdata, self.__name__, parentEvent)
-                                    self.notifyListeners(evt)
-                                if rec == "TXT" and "v=spf" in strdata:
-                                    evt = SpiderFootEvent("DNS_SPF", strdata,
-                                                          self.__name__, parentEvent)
-                                    self.notifyListeners(evt)
 
-                        else:
+                        if len(grps) == 0:
                             strdata = unicode(str(x), 'utf-8', errors='replace')
                             evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata,
                                                   self.__name__, parentEvent)
                             self.notifyListeners(evt)
+                            continue
+
+                        for m in grps:
+                            self.sf.debug("Matched: " + m)
+                            strdata = unicode(m, 'utf-8', errors='replace')
+                            evt = SpiderFootEvent(recs[rx][1], strdata,
+                                                  self.__name__, parentEvent)
+                            self.notifyListeners(evt)
+
+                            if rec == "TXT":
+                                if "v=spf" in strdata:
+                                    evt = SpiderFootEvent("DNS_SPF", strdata,
+                                                          self.__name__, parentEvent)
+                                self.notifyListeners(evt)
+
+                                if 'google-site-verification=' in strdata:
+                                    matches = re.findall(r'google-site-verification=([a-z0-9\-\+_=]{43,44})$', strdata.strip(), re.IGNORECASE)
+                                    for m in matches:
+                                        evt = SpiderFootEvent("WEB_ANALYTICS_ID",
+                                                              "Google Site Verification: " + m,
+                                                              self.__name__, parentEvent)
+                                        self.notifyListeners(evt)
+
+                                if 'logmein-domain-confirmation' in strdata:
+                                    matches = re.findall(r'logmein-domain-confirmation ([A-Z0-9]{24})$', strdata.strip(), re.IGNORECASE)
+                                    for m in matches:
+                                        evt = SpiderFootEvent("WEB_ANALYTICS_ID",
+                                                              "LogMeIn Domain Verification: " + m,
+                                                              self.__name__, parentEvent)
+                                        self.notifyListeners(evt)
+
+                                if 'logmein-verification-code=' in strdata:
+                                    matches = re.findall(r'logmein-verification-code=([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$', strdata.strip(), re.IGNORECASE)
+                                    for m in matches:
+                                        evt = SpiderFootEvent("WEB_ANALYTICS_ID",
+                                                              "LogMeIn Domain Verification: " + m,
+                                                              self.__name__, parentEvent)
+                                        self.notifyListeners(evt)
+
+                                if 'docusign=' in strdata:
+                                    matches = re.findall(r'docusign=([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$', strdata.strip(), re.IGNORECASE)
+                                    for m in matches:
+                                        evt = SpiderFootEvent("WEB_ANALYTICS_ID",
+                                                              "DocuSign Domain Verification: " + m,
+                                                              self.__name__, parentEvent)
+                                        self.notifyListeners(evt)
+
+                                if 'globalsign-domain-verification=' in strdata:
+                                    matches = re.findall(r'_?globalsign-domain-verification=([a-z0-9\-\+_=]{42,44})$', strdata.strip(), re.IGNORECASE)
+                                    for m in matches:
+                                        evt = SpiderFootEvent("WEB_ANALYTICS_ID",
+                                                              "GlobalSign Site Verification: " + m,
+                                                              self.__name__, parentEvent)
+                                        self.notifyListeners(evt)
+                            else:
+                                if not strdata.endswith(eventData):
+                                    evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME",
+                                                          strdata, self.__name__, parentEvent)
+                                    self.notifyListeners(evt)
+
             except BaseException as e:
                 self.sf.error("Failed to obtain DNS response for " + eventData +
                               "(" + rec + "): " + str(e), False)
