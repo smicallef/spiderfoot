@@ -76,6 +76,19 @@ class sfp_webanalytics(SpiderFootPlugin):
             evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google AdSense: " + m, self.__name__, event)
             self.notifyListeners(evt)
 
+        # Google Website Verification
+        matches = re.findall(r'<meta name="google-site-verification" content="([a-z0-9\-\+_=]{43,44})"', eventData, re.IGNORECASE)
+        for m in matches:
+            self.sf.debug("Google Site Verification match: " + m)
+            evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google Site Verification: " + m, self.__name__, event)
+            self.notifyListeners(evt)
+
+        matches = re.findall(r'<meta name="verify-v1" content="([a-z0-9\-\+_=]{43,44})"', eventData, re.IGNORECASE)
+        for m in matches:
+            self.sf.debug("Google Site Verification match: " + m)
+            evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google Site Verification: " + m, self.__name__, event)
+            self.notifyListeners(evt)
+
         return None
 
 # End of sfp_webanalytics class
