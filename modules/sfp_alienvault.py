@@ -29,7 +29,8 @@ class sfp_alienvault(SpiderFootPlugin):
         'netblocklookup': True,
         'maxnetblock': 24,
         'subnetlookup': True,
-        'maxsubnet': 24
+        'maxsubnet': 24,
+        'checkaffiliates': True
     }
 
     # Option descriptions
@@ -40,7 +41,8 @@ class sfp_alienvault(SpiderFootPlugin):
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'checkaffiliates': "Apply checks to affiliates?"
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -141,6 +143,9 @@ class sfp_alienvault(SpiderFootPlugin):
                                   str(self.opts['maxnetblock']))
                     return None
 
+        if eventName == 'AFFILIATE_IPADDR' and not self.opts.get('checkaffiliates', False):
+            return None
+
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
@@ -203,7 +208,10 @@ class sfp_alienvault(SpiderFootPlugin):
                     descr = "AlienVault Threat Score: " + str(rec['reputation']['threat_score']) + ":"
 
                     for result in rec_history:
-                        descr += "\n - " + result.get("name", "")
+                        nm = result.get("name", None)
+                        if nm is None or nm in descr:
+                            continue
+                        descr += "\n - " + nm
                         created = result.get("last_date", "")
                         # 2014-11-06T10:45:00.000
                         try:
