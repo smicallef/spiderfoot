@@ -712,7 +712,7 @@ class SpiderFootCli(cmd.Cmd):
                 self.dprint("No results.")
                 return
 
-            print(json.dumps(j))
+            self.send_output(json.dumps(j), line, titles=None, total=False, raw=True)
 
         elif export_format == 'csv':
             res = self.request(base_url + '/scaneventresultexportmulti', post=post)
@@ -721,7 +721,7 @@ class SpiderFootCli(cmd.Cmd):
                 self.dprint("No results.")
                 return
 
-            print(res)
+            self.send_output(res, line, titles=None, total=False, raw=True)
 
     # Show logs.
     def do_logs(self, line):
