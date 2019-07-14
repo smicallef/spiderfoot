@@ -1236,5 +1236,9 @@ if __name__ == "__main__":
         except BaseException as e:
             pass
 
-    s.dprint("Type 'help' or '?'.")
-    s.cmdloop()
+    try:
+        s.dprint("Type 'help' or '?'.")
+        s.cmdloop()
+    except KeyboardInterrupt:
+        print("\n")
+        sys.exit(0)
