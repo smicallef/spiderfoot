@@ -188,7 +188,12 @@ class SpiderFootWebUi:
         scaninfo = dict()
 
         for id in ids.split(','):
-          scan_name = dbh.scanInstanceGet(id)[0]
+          scan = dbh.scanInstanceGet(id)
+
+          if scan is None:
+              continue
+
+          scan_name = scan[0]
 
           if scan_name not in scaninfo:
               scaninfo[scan_name] = []
