@@ -23,7 +23,7 @@ from mako.template import Template
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, globalScanStatus
 from sfscan import SpiderFootScanner
-from io import StringIO
+from io import BytesIO
 
 
 class SpiderFootWebUi:
@@ -122,7 +122,7 @@ class SpiderFootWebUi:
     def scaneventresultexport(self, id, type, dialect="excel"):
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
-        fileobj = StringIO()
+        fileobj = BytesIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
@@ -147,7 +147,7 @@ class SpiderFootWebUi:
             scaninfo[id] = dbh.scanInstanceGet(id)
             data = data + dbh.scanResultEvent(id)
 
-        fileobj = StringIO()
+        fileobj = BytesIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Scan Name", "Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
@@ -167,7 +167,7 @@ class SpiderFootWebUi:
     # Get search result data in CSV format
     def scansearchresultexport(self, id, eventType=None, value=None, dialect="excel"):
         data = self.searchBase(id, eventType, value)
-        fileobj = StringIO()
+        fileobj = BytesIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
