@@ -28,11 +28,13 @@ class sfp_dnsraw(SpiderFootPlugin):
     optdescs = {
     }
 
-    events = dict()
+    events = None
+    checked = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.events = dict()
+        self.events = self.tempStorage()
+        self.checked = self.tempStorage()
         self.__dataSource__ = "DNS"
 
         for opt in userOpts.keys():
@@ -82,7 +84,7 @@ class sfp_dnsraw(SpiderFootPlugin):
             try:
                 req = dns.message.make_query(eventData, dns.rdatatype.from_text(rec))
 
-                if self.opts['_dnsserver'] != "":
+                if self.opts.get('_dnsserver', None):
                     n = self.opts['_dnsserver']
                 else:
                     ns = dns.resolver.get_default_resolver()
@@ -90,6 +92,9 @@ class sfp_dnsraw(SpiderFootPlugin):
 
                 res = dns.query.udp(req, n, timeout=30)
                 for x in res.answer:
+                    if str(x) in self.checked:
+                        continue
+                    self.checked[str(x)] = True
                     for rx in recs.keys():
                         self.sf.debug("Checking " + str(x) + " + against " + recs[rx][0])
                         pat = re.compile(recs[rx][0], re.IGNORECASE | re.DOTALL)
@@ -110,11 +115,10 @@ class sfp_dnsraw(SpiderFootPlugin):
                                                           self.__name__, parentEvent)
                                     self.notifyListeners(evt)
 
-                        else:
-                            strdata = unicode(str(x), 'utf-8', errors='replace')
-                            evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata,
-                                                  self.__name__, parentEvent)
-                            self.notifyListeners(evt)
+                    strdata = unicode(str(x), 'utf-8', errors='replace')
+                    evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata,
+                                          self.__name__, parentEvent)
+                    self.notifyListeners(evt)
             except BaseException as e:
                 self.sf.error("Failed to obtain DNS response for " + eventData +
                               "(" + rec + "): " + str(e), False)
