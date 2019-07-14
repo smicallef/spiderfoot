@@ -931,81 +931,128 @@ class SpiderFoot:
             return None
 
         # Find potential links that aren't links (text possibly in comments, etc.)
-        data = urllib2.unquote(data)
+        parsedata = urllib2.unquote(data.lower())
+
+        if parseText:
+            # Find chunks of text encapsulating the data we care about
+            offset = parsedata.find("http")
+            regRelurl = re.compile('()(https?://.[a-zA-Z0-9\-\.\:\/_]+[^<\"\'])')
+            while offset >= 0:
+                offset = parsedata.find("http", offset)
+                #print "found at offset: " + str(offset)
+                if offset < 0:
+                    break
+
+                # Get the trailing part for urls (some URLs are big..)
+                chunkurl = parsedata[offset:(offset+2000)]
+
+                try:
+                    m = regRelurl.findall(chunkurl)
+                    urlsRel.extend(regRelurl.findall(chunkurl))
+                except Exception as e:
+                    self.error("Error applying regex3 to data (" + str(e) + ")", False)
+                offset += len("http")
+
+        # Internal links
         for domain in domains:
             if parseText:
+                # Find chunks of text encapsulating the data we care about
+                offset = parsedata.find(domain)
+                if offset < 0:
+                    #print "skipping " + domain
+                    continue
+
+                # If the text started with the domain, then start from after it
+                if offset == 0:
+                    offset += len(domain)
+
                 try:
-                    # Because we're working with a big blob of text now, don't worry
-                    # about clobbering proper links by url decoding them.
-                    regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.' + domain + ')',
-                                        re.IGNORECASE)
-                    urlsRel = urlsRel + regRel.findall(data)
-                except Exception as e:
-                    self.error("Error applying regex2 to: " + data + "(" + str(e) + ")", False)
-                try:
-                    # Some links are sitting inside a tag, e.g. Google's use of <cite>
-                    regRel = re.compile('([>\"])([a-zA-Z0-9\-\.\:\/]+\.' + domain + '/.[^<\"]+)', re.IGNORECASE)
-                    urlsRel = urlsRel + regRel.findall(data)
-                except Exception as e:
-                    self.error("Error applying regex3 to: " + data + "(" + str(e) + ")", False)
-
-            # Loop through all the URLs/links found
-            for linkTuple in urlsRel:
-                # Remember the regex will return two vars (two groups captured)
-                junk = linkTuple[0]
-                link = linkTuple[1]
-                if type(link) != unicode:
-                    link = unicode(link, 'utf-8', errors='replace')
-                linkl = link.lower()
-                absLink = None
-
-                if len(link) < 1:
+                    regRelhost = re.compile('(.)([a-z0-9\-\.]+\.' + domain + ')', re.IGNORECASE)
+                    regRelurl = re.compile('([>\"])([a-zA-Z0-9\-\.\:\/]+\.' + domain + '/.[^<\"]+)', re.IGNORECASE)
+                except BaseException as e:
+                    self.error("Unable to form proper regexp trying to parse " + domain, False)
                     continue
 
-                # Don't include stuff likely part of some dynamically built incomplete
-                # URL found in Javascript code (character is part of some logic)
-                if link[len(link) - 1] == '.' or link[0] == '+' or \
-                                'javascript:' in linkl or '()' in link:
-                    self.debug('unlikely link: ' + link)
-                    continue
-                # Filter in-page links
-                if re.match('.*#.[^/]+', link):
-                    self.debug('in-page link: ' + link)
-                    continue
+                while offset >= 0:
+                    offset = parsedata.find(domain, offset)
+                    #print "found at offset: " + str(offset)
+                    if offset < 0:
+                        break
 
-                # Ignore mail links
-                if 'mailto:' in linkl:
-                    self.debug("Ignoring mail link: " + link)
-                    continue
+                    # Get 200 bytes before the domain to try and get hostnames
+                    chunkhost = parsedata[(offset-200):(offset+len(domain)+1)]
+                    # Get the trailing part for urls (some URLs are big..)
+                    chunkurl = parsedata[(offset-200):(offset+len(domain)+2000)]
 
-                # URL decode links
-                if '%2f' in linkl:
-                    link = urllib2.unquote(link)
+                    try:
+                        urlsRel.extend(regRelhost.findall(chunkhost))
+                    except Exception as e:
+                        self.error("Error applying regex2 to data (" + str(e) + ")", False)
 
-                # Capture the absolute link:
-                # If the link contains ://, it is already an absolute link
-                if '://' in link:
-                    absLink = link
+                    try:
+                        urlsRel.extend(regRelurl.findall(chunkurl))
+                    except Exception as e:
+                        self.error("Error applying regex3 to data (" + str(e) + ")", False)
 
-                # If the link starts with a /, the absolute link is off the base URL
-                if link.startswith('/'):
-                    absLink = self.urlBaseUrl(url) + link
+                    offset += len(domain)
 
-                # Protocol relative URLs
-                if link.startswith('//'):
-                    absLink = proto + ':' + link
+        # Loop through all the URLs/links found
+        for linkTuple in urlsRel:
+            # Remember the regex will return two vars (two groups captured)
+            junk = linkTuple[0]
+            link = linkTuple[1]
+            if type(link) != unicode:
+                link = unicode(link, 'utf-8', errors='replace')
+            linkl = link.lower()
+            absLink = None
 
-                # Maybe the domain was just mentioned and not a link, so we make it one
-                if absLink is None and domain.lower() in link.lower():
-                    absLink = proto + '://' + link
+            if len(link) < 1:
+                continue
 
-                # Otherwise, it's a flat link within the current directory
-                if absLink is None:
-                    absLink = self.urlBaseDir(url) + link
+            # Don't include stuff likely part of some dynamically built incomplete
+            # URL found in Javascript code (character is part of some logic)
+            if link[len(link) - 1] == '.' or link[0] == '+' or \
+                            'javascript:' in linkl or '()' in link:
+                self.debug('unlikely link: ' + link)
+                continue
+            # Filter in-page links
+            if re.match('.*#.[^/]+', link):
+                self.debug('in-page link: ' + link)
+                continue
 
-                # Translate any relative pathing (../)
-                absLink = self.urlRelativeToAbsolute(absLink)
-                returnLinks[absLink] = {'source': url, 'original': link}
+            # Ignore mail links
+            if 'mailto:' in linkl:
+                self.debug("Ignoring mail link: " + link)
+                continue
+
+            # URL decode links
+            if '%2f' in linkl:
+                link = urllib2.unquote(link)
+
+            # Capture the absolute link:
+            # If the link contains ://, it is already an absolute link
+            if '://' in link:
+                absLink = link
+
+            # If the link starts with a /, the absolute link is off the base URL
+            if link.startswith('/'):
+                absLink = self.urlBaseUrl(url) + link
+
+            # Protocol relative URLs
+            if link.startswith('//'):
+                absLink = proto + ':' + link
+
+            # Maybe the domain was just mentioned and not a link, so we make it one
+            if absLink is None and domain.lower() in link.lower():
+                absLink = proto + '://' + link
+
+            # Otherwise, it's a flat link within the current directory
+            if absLink is None:
+                absLink = self.urlBaseDir(url) + link
+
+            # Translate any relative pathing (../)
+            absLink = self.urlRelativeToAbsolute(absLink)
+            returnLinks[absLink] = {'source': url, 'original': link}
 
         return returnLinks
 
