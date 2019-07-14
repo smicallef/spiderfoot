@@ -678,7 +678,7 @@ class SpiderFootCli(cmd.Cmd):
 
     # Export data from a scan.
     def do_export(self, line):
-        """export <sid> [-t type] [-x] [-u]
+        """export <sid> [-t type]
         Export the scan data for scan ID <sid> as type [type].
         Valid types: csv, json (default: json)."""
         c = self.myparseline(line)
