@@ -42,7 +42,7 @@ class sfp_dnsraw(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['INTERNET_NAME', 'DOMAIN_NAME']
+        return ['INTERNET_NAME', 'DOMAIN_NAME', 'DOMAIN_NAME_PARENT']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
