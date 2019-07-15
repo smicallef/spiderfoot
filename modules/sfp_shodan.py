@@ -149,6 +149,10 @@ class sfp_shodan(SpiderFootPlugin):
                               eventData + " (" + str(e) + ")", False)
                 return None
 
+            if network not in ['Google AdSense', 'Google Analytics', 'Google Site Verification']:
+                self.sf.debug("Skipping " + eventData + ", as not supported.")
+                return None
+
             rec = self.searchHtml(analytics_id)
 
             if rec is None:
