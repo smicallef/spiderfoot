@@ -70,15 +70,20 @@ class sfp_sslcert(SpiderFootPlugin):
     # Resolve a host
     def resolveHost(self, host):
         try:
+            # IDNA-encode the hostname in case it contains unicode
+            if type(host) != unicode:
+                host = unicode(host, "utf-8", errors='replace').encode("idna")
+            else:
+                host = host.encode("idna")
+
             addrs = socket.gethostbyname_ex(host)
+            if not addrs:
+                return False
+
+            return True
         except BaseException as e:
             self.sf.debug("Unable to resolve " + host + ": " + str(e))
             return False
-
-        if not addrs:
-            return False
-
-        return True
 
     # Handle events sent to this module
     def handleEvent(self, event):
