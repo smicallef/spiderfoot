@@ -32,6 +32,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 
     results = None
     s3results = None
+    lock = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc

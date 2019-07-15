@@ -34,11 +34,13 @@ class sfp_s3bucket(SpiderFootPlugin):
 
     results = list()
     s3results = dict()
+    lock = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.s3results = dict()
         self.results = list()
+        self.lock = threading.Lock()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -62,9 +64,11 @@ class sfp_s3bucket(SpiderFootPlugin):
             return None
         else:
             if "ListBucketResult" in res['content']:
-                self.s3results[url] = res['content'].count("<Key>")
+                with self.lock:
+                    self.s3results[url] = res['content'].count("<Key>")
             else:
-                self.s3results[url] = 0
+                with self.lock:
+                    self.s3results[url] = 0
 
     def threadSites(self, siteList):
         ret = list()

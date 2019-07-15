@@ -52,11 +52,13 @@ class sfp_portscan_tcp(SpiderFootPlugin):
     results = dict()
     portlist = list()
     portResults = dict()
+    lock = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
         self.__dataSource__ = "Target Network"
+        self.lock = threading.Lock()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -88,14 +90,17 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         try:
             sock = socket.create_connection((ip, port), self.opts['timeout'])
             sock.settimeout(self.opts['timeout'])
-            self.portResults[ip + ":" + str(port)] = True
+            with self.lock:
+                self.portResults[ip + ":" + str(port)] = True
         except Exception as e:
-            self.portResults[ip + ":" + str(port)] = False
+            with self.lock:
+                self.portResults[ip + ":" + str(port)] = False
             return
 
         # If the port was open, see what we can read
         try:
-            self.portResults[ip + ":" + str(port)] = sock.recv(4096)
+            with self.lock:
+                self.portResults[ip + ":" + str(port)] = sock.recv(4096)
         except Exception as e:
             sock.close()
             return

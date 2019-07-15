@@ -50,6 +50,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
     events = dict()
     resolveCache = dict()
     sublist = dict()
+    lock = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -57,6 +58,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.events = dict()
         self.resolveCache = dict()
         self.__dataSource__ = "DNS"
+        self.lock = threading.Lock()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -104,9 +106,11 @@ class sfp_dnsbrute(SpiderFootPlugin):
                 name = name.encode("idna")
 
             addrs = resolver.query(name)
-            self.hostResults[name] = True
+            with self.lock:
+                self.hostResults[name] = True
         except BaseException as e:
-            self.hostResults[name] = False
+            with self.lock:
+                self.hostResults[name] = False
 
     def tryHostWrapper(self, hostList, sourceEvent):
         self.hostResults = dict()

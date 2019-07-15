@@ -34,11 +34,13 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
 
     results = None
     s3results = None
+    lock = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.s3results = dict()
         self.results = dict()
+        self.lock = threading.Lock()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -60,10 +62,11 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
             (res['content'] is None or "NoSuchBucket" in res['content']):
             self.sf.debug("Not a valid bucket: " + url)
         else:
-            if "ListBucketResult" in res['content']:
-                self.s3results[url] = res['content'].count("<Key>")
-            else:
-                self.s3results[url] = 0
+            with self.lock:
+                if "ListBucketResult" in res['content']:
+                    self.s3results[url] = res['content'].count("<Key>")
+                else:
+                    self.s3results[url] = 0
 
     def threadSites(self, siteList):
         ret = list()

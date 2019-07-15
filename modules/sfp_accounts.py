@@ -45,6 +45,7 @@ class sfp_accounts(SpiderFootPlugin):
     sites = list()
     errorState = False
     distrustedChecked = False
+    lock = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -54,6 +55,7 @@ class sfp_accounts(SpiderFootPlugin):
         self.errorState = False
         self.distrustedChecked = False
         self.__dataSource__ = "Social Media"
+        self.lock = threading.Lock()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -98,11 +100,13 @@ class sfp_accounts(SpiderFootPlugin):
                                useragent=self.opts['_useragent'], noLog=True)
 
         if not res['content']:
-            self.siteResults[retname] = False
+            with self.lock:
+                self.siteResults[retname] = False
             return
 
         if res['code'].startswith("4") or res['code'].startswith("5"):
-            self.siteResults[retname] = False
+            with self.lock:
+                self.siteResults[retname] = False
             return
 
         try:
@@ -135,7 +139,8 @@ class sfp_accounts(SpiderFootPlugin):
             if firstname + "<" in res['content'] or firstname + '"' in res['content']:
                 found = False
 
-        self.siteResults[retname] = found
+        with self.lock:
+            self.siteResults[retname] = found
 
     def threadSites(self, name, siteList):
         ret = list()
