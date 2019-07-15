@@ -25,13 +25,13 @@ class sfp_numpi(SpiderFootPlugin):
     optdescs = {
     }
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = 'numpi'
-        self.results = dict()
+        self.results = self.tempStorage()
         self.errorState = False
 
         for opt in userOpts.keys():
@@ -63,7 +63,7 @@ class sfp_numpi(SpiderFootPlugin):
         table = re.findall(r'<table id="body_in_phone_info">(.+?)</table>',
                           res['content'], re.MULTILINE | re.DOTALL)
 
-        if table is None:
+        if not table:
             return None
 
         name_html = re.findall(r'<div class="body_in_phone_id">(.+?)</div>',
@@ -71,7 +71,7 @@ class sfp_numpi(SpiderFootPlugin):
 
         data = dict()
 
-        if name_html is not None:
+        if name_html:
             name = name_html[0].strip()
 
             if len(name) < 100:
