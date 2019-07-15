@@ -103,7 +103,7 @@ class sfp_numinfo(SpiderFootPlugin):
 
         if data.get('email'):
             email_match = re.findall(r'^mailto:([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)$', data.get('email'))
-            if email_match is not None:
+            if email_match:
                 mailDom = email_match[0].lower().split('@')[1]
                 if not self.getTarget().matches(mailDom):
                     evttype = "AFFILIATE_EMAILADDR"

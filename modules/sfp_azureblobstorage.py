@@ -35,8 +35,8 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.s3results = dict()
-        self.results = dict()
+        self.s3results = self.tempStorage()
+        self.results = self.tempStorage()
         self.lock = threading.Lock()
 
         for opt in userOpts.keys():

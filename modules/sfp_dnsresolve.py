@@ -170,7 +170,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     return None
                 pat = re.compile("(%..)?([a-zA-Z0-9\-\.]+\." + name + ")", re.IGNORECASE)
                 matches = re.findall(pat, data)
-                if matches is not None:
+                if matches:
                     for match in matches:
                         self.processHost(match[1], parentEvent, False)
             # Nothing left to do with internal links and raw data

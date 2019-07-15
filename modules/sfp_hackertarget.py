@@ -97,13 +97,13 @@ class sfp_hackertarget(SpiderFootPlugin):
 
         html_data = re.findall(r'<pre id="formResponse">(.*?)</pre>', res['content'], re.MULTILINE | re.DOTALL)
 
-        if html_data is None:
+        if not html_data:
             self.sf.debug("Found no open UDP ports on " + ip)
             return None
 
         open_ports = re.findall(r'(\d+)/udp\s+open\s+', html_data[0])
 
-        if open_ports is None:
+        if not open_ports:
             self.sf.debug("Found no open UDP ports on " + ip)
             return None
 
@@ -122,13 +122,13 @@ class sfp_hackertarget(SpiderFootPlugin):
 
         html_data = re.findall(r'<pre id="formResponse">(.*?)</pre>', res['content'], re.MULTILINE | re.DOTALL)
 
-        if html_data is None:
+        if not html_data:
             self.sf.debug("Found no open TCP ports on " + ip)
             return None
 
         open_ports = re.findall(r'(\d+)/tcp\s+open\s+', html_data[0])
 
-        if open_ports is None:
+        if not open_ports:
             self.sf.debug("Found no open TCP ports on " + ip)
             return None
 

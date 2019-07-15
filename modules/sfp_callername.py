@@ -89,7 +89,7 @@ class sfp_callername(SpiderFootPlugin):
 
         location_match = re.findall(r'<div class="callerid"><h4>.*?</h4><p>(.+?)</p></div>', res['content'], re.MULTILINE | re.DOTALL)
 
-        if location_match is not None:
+        if location_match:
             location = location_match[0]
 
             if len(location) < 5 or len(location) > 100:
@@ -101,7 +101,7 @@ class sfp_callername(SpiderFootPlugin):
         rep_good_match = re.findall(r'>SAFE.*?>(\d+) votes?<', res['content'])
         rep_bad_match = re.findall(r'>UNSAFE.*?>(\d+) votes?<', res['content'])
 
-        if rep_good_match is not None and rep_bad_match is not None:
+        if rep_good_match and rep_bad_match:
             good_votes = int(rep_good_match[0])
             bad_votes = int(rep_bad_match[0])
 
