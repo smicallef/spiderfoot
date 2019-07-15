@@ -676,6 +676,53 @@ class SpiderFootCli(cmd.Cmd):
         d = d.replace("&lt;/SFURL&gt;", "").replace("&lt;SFURL&gt;","")
         self.send_output(d, line, titles=titles)
 
+    # Export data from a scan.
+    def do_export(self, line):
+        """export <sid> [-t type]
+        Export the scan data for scan ID <sid> as type [type].
+        Valid types: csv, json (default: json)."""
+        c = self.myparseline(line)
+
+        if len(c[0]) < 1:
+            self.edprint("Invalid syntax.")
+            return
+
+        if '-t' in c[0]:
+            export_format = c[0][c[0].index("-t")+1]
+        else:
+            export_format = 'json'
+
+        if not export_format in ['json', 'csv']:
+            print("Invalid export format: %s" % export_format)
+            return
+
+        base_url = self.ownopts['cli.server_baseurl']
+        post = { "ids": c[0][0] }
+
+        if export_format == 'json':
+            res = self.request(base_url + '/scanexportjsonmulti', post=post)
+
+            if not res:
+                self.dprint("No results.")
+                return
+
+            j = json.loads(res)
+
+            if len(j) < 1:
+                self.dprint("No results.")
+                return
+
+            self.send_output(json.dumps(j), line, titles=None, total=False, raw=True)
+
+        elif export_format == 'csv':
+            res = self.request(base_url + '/scaneventresultexportmulti', post=post)
+
+            if not res:
+                self.dprint("No results.")
+                return
+
+            self.send_output(res, line, titles=None, total=False, raw=True)
+
     # Show logs.
     def do_logs(self, line):
         """logs <sid> [-l count] [-w]
