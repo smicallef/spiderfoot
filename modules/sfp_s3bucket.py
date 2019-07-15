@@ -87,7 +87,7 @@ class sfp_s3bucket(SpiderFootPlugin):
         while running:
             found = False
             for rt in threading.enumerate():
-                if rt.name.startswith("sfp_s3buckeets_"):
+                if rt.name.startswith("sfp_s3buckets_"):
                     found = True
 
             if not found:
