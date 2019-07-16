@@ -39,11 +39,11 @@ class sfp_sslcert(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -200,16 +200,14 @@ class sfp_sslcert(SpiderFootPlugin):
             sans = cert.get_ext('subjectAltName').get_value().encode('raw_unicode_escape')
 
             if sans is None:
-                return None
+                return names
 
             for san in sans.split(','):
                 names.append(san.strip())
         except LookupError as e:
             self.sf.debug("No alternative name found in certificate.")
-            return None
         except BaseException as e:
             self.sf.debug("Error parsing certificate:" + str(e))
-            return None
 
         return names
 
