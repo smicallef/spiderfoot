@@ -55,7 +55,8 @@ class sfp_shodan(SpiderFootPlugin):
     def producedEvents(self):
         return ["OPERATING_SYSTEM", "DEVICE_TYPE",
                 "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
-                "SEARCH_ENGINE_WEB_CONTENT" ]
+                "SEARCH_ENGINE_WEB_CONTENT", 'RAW_RIR_DATA',
+                'GEOINFO', 'VULNERABILITY']
 
     def query(self, qry):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
@@ -203,6 +204,11 @@ class sfp_shodan(SpiderFootPlugin):
                                       " (" + addr + ")", self.__name__, event)
                 self.notifyListeners(evt)
 
+            if rec.get('country_name') is not None:
+                location = ', '.join(filter(None, [rec.get('city'), rec.get('country_name')]))
+                evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
+                self.notifyListeners(evt)
+
             if 'data' in rec:
                 self.sf.info("Found SHODAN data for " + eventData)
                 for r in rec['data']:
@@ -210,6 +216,7 @@ class sfp_shodan(SpiderFootPlugin):
                     banner = r.get('banner')
                     asn = r.get('asn')
                     product = r.get('product')
+                    vulns = r.get('vulns')
 
                     if port is not None:
                         # Notify other modules of what you've found
@@ -233,6 +240,12 @@ class sfp_shodan(SpiderFootPlugin):
                         evt = SpiderFootEvent("BGP_AS_MEMBER", asn.replace("AS", ""),
                                               self.__name__, event)
                         self.notifyListeners(evt)
+
+                    if vulns is not None:
+                        for vuln in vulns.keys():
+                            evt = SpiderFootEvent('VULNERABILITY', vuln,
+                                                  self.__name__, event)
+                            self.notifyListeners(evt)
 
         return None
 
