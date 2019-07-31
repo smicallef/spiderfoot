@@ -33,12 +33,12 @@ class sfp_ssltools(SpiderFootPlugin):
         'certexpiringdays': 'Number of days in the future a certificate expires to consider it as expiring.'
     }
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = 'SSL Tools'
-        self.results = dict()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -264,6 +264,9 @@ class sfp_ssltools(SpiderFootPlugin):
 
         # Extract the CN from the issued section
         issued = self.getIssued(cert)
+
+        if not issued:
+            return False
 
         if "cn=" + fqdn in issued.lower():
             hosts.append('dns:' + fqdn)

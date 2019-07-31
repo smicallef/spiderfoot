@@ -219,6 +219,9 @@ class sfp_sslcert(SpiderFootPlugin):
         # Extract the CN from the issued section
         issued = self.getIssued(cert)
 
+        if not issued:
+            return False
+
         if "cn=" + fqdn in issued.lower():
             hosts.append('dns:' + fqdn)
 
