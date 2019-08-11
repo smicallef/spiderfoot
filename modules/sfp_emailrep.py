@@ -102,7 +102,7 @@ class sfp_emailrep(SpiderFootPlugin):
 
         credentials_leaked = details.get('credentials_leaked')
         if credentials_leaked:
-            evt = SpiderFootEvent('EMAILADDR_COMPROMISED', eventData, self.__name__, event)
+            evt = SpiderFootEvent('EMAILADDR_COMPROMISED', eventData + " [Unknown]", self.__name__, event)
             self.notifyListeners(evt)
 
         malicious_activity = details.get('malicious_activity')
