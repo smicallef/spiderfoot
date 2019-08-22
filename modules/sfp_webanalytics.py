@@ -311,6 +311,15 @@ class sfp_webanalytics(SpiderFootPlugin):
                                       self.__name__, parentEvent)
                 self.notifyListeners(evt)
 
+            # Brave Ledger Verification
+            # https://support.brave.com/hc/en-us/articles/360021408352-How-do-I-verify-my-channel-
+            matches = re.findall(r'brave-ledger-verification=([a-z0-9]+)$', eventData.strip(), re.IGNORECASE)
+            for m in matches:
+                evt = SpiderFootEvent("WEB_ANALYTICS_ID",
+                                      "Brave Ledger Verification: " + m,
+                                      self.__name__, parentEvent)
+                self.notifyListeners(evt)
+
         return None
 
 # End of sfp_webanalytics class
