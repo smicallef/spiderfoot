@@ -54,17 +54,17 @@ class sfp_binaryedge(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
     cohostcount = 0
-    reportedhosts = dict()
-    checkedips = dict()
+    reportedhosts = None
+    checkedips = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
-        self.reportedhosts = dict()
-        self.checkedips = dict()
+        self.results = self.tempStorage()
+        self.reportedhosts = self.tempStorage()
+        self.checkedips = self.tempStorage()
         self.cohostcount = 0
         self.errorState = False
 
@@ -154,7 +154,9 @@ class sfp_binaryedge(SpiderFootPlugin):
                 self.sf.error("Maximum number of pages reached.", False)
                 return [info]
             retarr.append(info)
-            retarr.extend(self.query(qry, querytype, page))
+            e = self.query(qry, querytype, page)
+            if e:
+                retarr.extend(e)
         else:
             retarr.append(info)
 
