@@ -52,7 +52,6 @@ class sfp_bingsearch(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
@@ -67,34 +66,31 @@ class sfp_bingsearch(SpiderFootPlugin):
             self.sf.info("No results returned from Bing.")
             return None
 
-        for page in pages.keys():
-            found = False
-            if page in self.results:
-                continue
-            else:
-                self.results.append(page)
+        new_pages = list(set(pages.keys()) - set(self.results))
 
-            links = self.sf.parseLinks(page, pages[page], eventData)
-            if len(links) == 0:
-                continue
+        # Add new pages to results
+        self.results.extend(new_pages)
 
-            for link in links:
-                if self.checkForStop():
-                    return None
+        for page in new_pages:
+            # Allow gracefully stopping the scan
+            if self.checkForStop():
+                return None
 
-                if link in self.results:
-                    continue
-                else:
-                    self.results.append(link)
-                if self.sf.urlFQDN(link).endswith(eventData):
-                    found = True
-                    self.sf.debug("Found a link: " + link)
+            links_in_page = self.sf.parseLinks(page, pages[page], eventData)
+            new_links = list(set(links_in_page) - set(self.results))
 
-                    evt = SpiderFootEvent("LINKED_URL_INTERNAL", link,
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
+            # Add new links to results
+            self.results.extend(new_links)
 
-            if found:
+            internal_links = [link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)]
+            for link in internal_links:
+                self.sf.debug("Found a link: " + link)
+
+                evt = SpiderFootEvent("LINKED_URL_INTERNAL", link,
+                                        self.__name__, event)
+                self.notifyListeners(evt)
+
+            if internal_links:
                 # Submit the bing results for analysis
                 evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page],
                                       self.__name__, event)
