@@ -15,6 +15,7 @@ from stem import Signal
 from stem.control import Controller
 import inspect
 import hashlib
+import urllib
 import binascii
 import gzip
 import gexf
@@ -1311,29 +1312,33 @@ class SpiderFoot:
     # useragent: User-Agent string to use
     # timeout: api call timeout
     def bingIterate(self, searchString, opts=dict()):
-        endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search"
+        endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?"
         # ToDO: figure out how to add credentials in config:
         key = ""
-        response = requests.get(
-            endpoint,
-            timeout=opts["timeout"],
-            headers={"Ocp-Apim-Subscription-Key": key, "User-Agent": opts["useragent"]},
-            params={
+        params = {
                 "q": searchString,
                 "responseFilter": "Webpages",
                 "count": opts["count"],
-            },
+            }
+        response = self.fetchUrl(
+            endpoint + urllib.urlencode(params),
+            timeout=opts["timeout"],
+            useragent=opts["useragent"],
+            headers={"Ocp-Apim-Subscription-Key": key},
         )
-        if response.status_code != 200:
+
+        if response is None:
             message = "Failed to talk to Bing API, status code: %s, response: %s".format(
                 response.status_code, response.text
             )
             self.error(message)
             return None
 
+        response_json = json.loads(response['content'])
+
         results = {
-            "urls": [result["url"] for result in response.json()["webPages"]["value"]],
-            "webSearchUrl": response.json()["webPages"]["webSearchUrl"],
+            "urls": [result["url"] for result in response_json["webPages"]["value"]],
+            "webSearchUrl": response_json["webPages"]["webSearchUrl"],
         }
         return results
 
