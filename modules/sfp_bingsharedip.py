@@ -12,7 +12,6 @@
 
 import re
 import socket
-import requests
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -109,30 +108,18 @@ class sfp_bingsharedip(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search"
-            # ToDO: figure out how to add credentials in config:
-            key = ""
-            response = requests.get(
-                endpoint,
-                timeout=self.opts["_fetchtimeout"],
-                headers={
-                    "Ocp-Apim-Subscription-Key": key,
-                    "User-Agent": self.opts["_useragent"],
-                },
-                params={
-                    "q": "ip:" + ip,
-                    "responseFilter": "Webpages",
+            results = self.sf.bingIterate(
+                searchString="ip:" + ip,
+                opts={
+                    "timeout": self.opts["_fetchtimeout"],
+                    "useragent": self.opts["_useragent"],
                     "count": self.opts["pages"],
                 },
             )
-
-            if response.status_code != 200:
-                message = "Failed to talk to Bing API, status code: %s, response: %s".format(
-                    response.status_code, response.text
-                )
-                self.error(message)
-
-            urls = [result["url"] for result in response.json()["webPages"]["value"]]
+            if results is None:
+                # Failed to talk to bing api
+                return None
+            urls = results["urls"]
 
             for url in urls:
                 self.sf.info("Found something on same IP: " + url)
@@ -168,7 +155,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
 
             if urls:
                 # Submit the bing results for analysis
-                bingsearch_url = response.json()["webPages"]["webSearchUrl"]
+                bingsearch_url = results["webSearchUrl"]
                 response = self.sf.fetchUrl(
                     bingsearch_url,
                     timeout=self.opts["_fetchtimeout"],

@@ -9,7 +9,6 @@
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-import requests
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -52,32 +51,20 @@ class sfp_bingsearch(SpiderFootPlugin):
             self.results.append(eventData)
 
         # Sites hosted on the domain
-        endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search"
-        # ToDO: figure out how to add credentials in config:
-        key = ""
-        response = requests.get(
-            endpoint,
-            timeout=self.opts["_fetchtimeout"],
-            headers={
-                "Ocp-Apim-Subscription-Key": key,
-                "User-Agent": self.opts["_useragent"],
-            },
-            params={
-                "q": "site:" + eventData,
-                "responseFilter": "Webpages",
+
+        results = self.sf.bingIterate(
+            searchString="site:" + eventData,
+            opts={
+                "timeout": self.opts["_fetchtimeout"],
+                "useragent": self.opts["_useragent"],
                 "count": self.opts["pages"],
             },
         )
-        if response.status_code != 200:
-            message = "Failed to talk to Bing API, status code: %s, response: %s".format(
-                response.status_code, response.text
-            )
-            self.error(message)
-
-        links_in_page = [
-            result["url"] for result in response.json()["webPages"]["value"]
-        ]
-        new_links = list(set(links_in_page) - set(self.results))
+        if results is None:
+            # Failed to talk to bing api
+            return None
+        urls = results["urls"]
+        new_links = list(set(urls) - set(self.results))
 
         # Add new links to results
         self.results.extend(new_links)
@@ -93,7 +80,7 @@ class sfp_bingsearch(SpiderFootPlugin):
 
         if internal_links:
             # Submit the bing results for analysis
-            bingsearch_url = response.json()["webPages"]["webSearchUrl"]
+            bingsearch_url = results["webSearchUrl"]
             response = self.sf.fetchUrl(
                 bingsearch_url,
                 timeout=self.opts["_fetchtimeout"],
