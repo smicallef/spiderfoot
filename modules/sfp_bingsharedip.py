@@ -20,7 +20,13 @@ class sfp_bingsharedip(SpiderFootPlugin):
     """Bing (Shared IPs):Footprint,Investigate,Passive:Search Engines::Search Bing for hosts sharing the same IP."""
 
     # Default options
-    opts = {"cohostsamedomain": False, "pages": 20, "verify": True, "maxcohost": 100}
+    opts = {
+        "cohostsamedomain": False,
+        "pages": 20,
+        "verify": True,
+        "maxcohost": 100,
+        "api_key": "",
+    }
 
     # Option descriptions
     optdescs = {
@@ -28,6 +34,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         "pages": "Number of max bing results to request from api.",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
+        "api_key": "Bing API Key.",
     }
 
     results = dict()
@@ -114,6 +121,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
                     "timeout": self.opts["_fetchtimeout"],
                     "useragent": self.opts["_useragent"],
                     "count": self.opts["pages"],
+                    "api_key": self.opts["api_key"],
                 },
             )
             if results is None:

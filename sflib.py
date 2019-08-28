@@ -1313,8 +1313,6 @@ class SpiderFoot:
     # timeout: api call timeout
     def bingIterate(self, searchString, opts=dict()):
         endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?"
-        # ToDO: figure out how to add credentials in config:
-        key = ""
         params = {
                 "q": searchString,
                 "responseFilter": "Webpages",
@@ -1324,7 +1322,7 @@ class SpiderFoot:
             endpoint + urllib.urlencode(params),
             timeout=opts["timeout"],
             useragent=opts["useragent"],
-            headers={"Ocp-Apim-Subscription-Key": key},
+            headers={"Ocp-Apim-Subscription-Key": opts["api_key"]},
         )
 
         if response is None:
