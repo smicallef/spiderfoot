@@ -76,13 +76,13 @@ class sfp_threatcrowd(SpiderFootPlugin):
         url = None
 
         if self.sf.validIP(qry):
-            url = "http://www.threatcrowd.org/searchApi/v2/ip/report/?ip=" + qry
+            url = "https://www.threatcrowd.org/searchApi/v2/ip/report/?ip=" + qry
         
         if "@" in qry:
-            url = "http://www.threatcrowd.org/searchApi/v2/email/report/?email=" + qry
+            url = "https://www.threatcrowd.org/searchApi/v2/email/report/?email=" + qry
         
         if not url:
-            url = "http://www.threatcrowd.org/searchApi/v2/domain/report/?domain=" + qry
+            url = "https://www.threatcrowd.org/searchApi/v2/domain/report/?domain=" + qry
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 

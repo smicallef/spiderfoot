@@ -114,7 +114,7 @@ class sfp_archiveorg(SpiderFootPlugin):
             newDate = datetime.datetime.now() - datetime.timedelta(days=int(daysback))
             maxDate = newDate.strftime("%Y%m%d")
 
-            url = "http://archive.org/wayback/available?url=" + eventData + \
+            url = "https://archive.org/wayback/available?url=" + eventData + \
                   "&timestamp=" + maxDate
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                                    useragent=self.opts['_useragent'])
