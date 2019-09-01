@@ -50,7 +50,7 @@ class sfp_fullcontact(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME", "EMAILADDR", "HUMAN_NAME" ]
+        return [ "DOMAIN_NAME", "EMAILADDR" ]
 
     # What events this module produces
     def producedEvents(self):
@@ -136,16 +136,6 @@ class sfp_fullcontact(SpiderFootPlugin):
             return None
         else:
             self.results[eventData] = True
-
-        if eventName == "HUMAN_NAME":
-            data = self.queryPerson(name=eventData)
-            if not data:
-                return None
-            if not data.get('email'):
-                return None
-            e = SpiderFootEvent("EMAILADDR", data['email'], self.__name__, event)
-            self.notifyListeners(e)
-            return
 
         if eventName == "EMAILADDR":
             data = self.queryPerson(email=eventData)
