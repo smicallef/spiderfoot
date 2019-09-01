@@ -28,11 +28,9 @@ class sfp_github(SpiderFootPlugin):
         'namesonly':    "Match repositories by name only, not by their descriptions. Helps reduce false positives."
     }
 
-    results = dict()
-
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -190,9 +188,14 @@ class sfp_github(SpiderFootPlugin):
             failed = True
 
         if not failed:
-            ret = json.loads(res['content'])
-            if ret == None:
-                self.sf.error("Unable to process empty response from Github for: " + \
+            try:
+                ret = json.loads(res['content'])
+                if ret == None:
+                    self.sf.error("Unable to process empty response from Github for: " + \
+                                  name, False)
+                    failed = True
+            except BaseException as e:
+                self.sf.error("Unable to process invalid response from Github for: " + \
                               name, False)
                 failed = True
 
