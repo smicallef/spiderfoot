@@ -14,6 +14,7 @@
 from subprocess import Popen, PIPE
 import io
 import json
+import os.path
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_cmseek(SpiderFootPlugin):
@@ -77,7 +78,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        # If tool is not found, abort
+        # Normalize path
         if self.opts['cmseekpath'].endswith('cmseek.py'):
             exe = self.opts['cmseekpath']
             resultpath = self.opts['cmseekpath'].split("cmseek.py")[0] + "/Result"
@@ -87,6 +88,12 @@ class sfp_tool_cmseek(SpiderFootPlugin):
         else:
             exe = self.opts['cmseekpath'] + "/cmseek.py"
             resultpath = self.opts['cmseekpath'] + "/Result"
+
+        # If tool is not found, abort
+        if not os.path.isfile(exe):
+            self.sf.error("File does not exist: " + exe, False)
+            self.errorState = True
+            return None
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
