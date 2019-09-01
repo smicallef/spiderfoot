@@ -204,7 +204,7 @@ class sfp_hackertarget(SpiderFootPlugin):
 
     # Reverse lookup hosts on the same IP address
     def reverseIpLookup(self, ip):
-        res = self.sf.fetchUrl("http://api.hackertarget.com/reverseiplookup/?q=" + ip,
+        res = self.sf.fetchUrl("https://api.hackertarget.com/reverseiplookup/?q=" + ip,
                                useragent=self.opts['_useragent'],
                                timeout=self.opts['_fetchtimeout'])
         if res['content'] is None:

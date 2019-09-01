@@ -66,7 +66,7 @@ class sfp_citadel(SpiderFootPlugin):
             if not apikey:
                 # Public API key
                 apikey = "3edfb5603418f101926c64ca5dd0e409"
-            url = "http://leak-lookup.com/api/search" 
+            url = "https://leak-lookup.com/api/search"
             postdata = "key={}&type=email_address&query={}".format( apikey, eventData ) 
  
             res = self.sf.fetchUrl(url, postData=postdata, timeout=self.opts['timeout'], 
