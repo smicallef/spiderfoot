@@ -125,8 +125,9 @@ class sfp_bingsharedip(SpiderFootPlugin):
                 },
             )
             if results is None:
-                # Failed to talk to bing api
+                # Failed to talk to bing api or no results returned
                 return None
+
             urls = results["urls"]
 
             for url in urls:

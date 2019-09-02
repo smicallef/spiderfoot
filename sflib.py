@@ -1334,10 +1334,14 @@ class SpiderFoot:
 
         response_json = json.loads(response['content'])
 
-        results = {
-            "urls": [result["url"] for result in response_json["webPages"]["value"]],
-            "webSearchUrl": response_json["webPages"]["webSearchUrl"],
-        }
+        if "webPages" in response_json:
+            results = {
+                "urls": [result["url"] for result in response_json["webPages"]["value"]],
+                "webSearchUrl": response_json["webPages"]["webSearchUrl"],
+            }
+        else:
+            return None
+
         return results
 
 
