@@ -15,6 +15,7 @@ from subprocess import Popen, PIPE
 import time
 import re
 import json
+import os.path
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_dnstwist(SpiderFootPlugin):
@@ -78,13 +79,19 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        # If tool is not found, abort
+        # Normalize path
         if self.opts['dnstwistpath'].endswith('dnstwist.py'):
             exe = self.opts['dnstwistpath']
         elif self.opts['dnstwistpath'].endswith('/'):
             exe = self.opts['dnstwistpath'] + "dnstwist.py"
         else:
             exe = self.opts['dnstwistpath'] + "/dnstwist.py"
+
+        # If tool is not found, abort
+        if not os.path.isfile(exe):
+            self.sf.error("File does not exist: " + exe, False)
+            self.errorState = True
+            return None
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
