@@ -1325,11 +1325,8 @@ class SpiderFoot:
             headers={"Ocp-Apim-Subscription-Key": opts["api_key"]},
         )
 
-        if response is None:
-            message = "Failed to talk to Bing API, status code: %s, response: %s".format(
-                response.status_code, response.text
-            )
-            self.error(message)
+        if response['status'] != 'OK':
+            self.error("Failed to get a valid response from bing API", exception=False)
             return None
 
         response_json = json.loads(response['content'])

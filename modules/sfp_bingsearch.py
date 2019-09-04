@@ -90,10 +90,14 @@ class sfp_bingsearch(SpiderFootPlugin):
                 timeout=self.opts["_fetchtimeout"],
                 useragent=self.opts["_useragent"],
             )
-            evt = SpiderFootEvent(
-                "SEARCH_ENGINE_WEB_CONTENT", response["content"], self.__name__, event
-            )
-            self.notifyListeners(evt)
+            if response['status'] == 'OK':
+                evt = SpiderFootEvent(
+                    "SEARCH_ENGINE_WEB_CONTENT", response["content"], self.__name__, event
+                )
+                self.notifyListeners(evt)
+            else:
+                self.sf.error("Failed to fetch bing web search URL", exception=False)
+
 
 
 # End of sfp_bingsearch class
