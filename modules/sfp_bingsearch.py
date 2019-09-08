@@ -13,7 +13,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_bingsearch(SpiderFootPlugin):
-    """Bing:Footprint,Investigate,Passive:Search Engines::Obtain information from bing to identify sub-domains and links."""
+    """Bing:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from bing to identify sub-domains and links."""
 
     # Default options
     opts = {"pages": 20, "api_key": ""}
@@ -65,7 +65,7 @@ class sfp_bingsearch(SpiderFootPlugin):
             },
         )
         if results is None:
-            # Failed to talk to bing api or no results returned
+            # Failed to talk to the bing API or no results returned
             return None
         urls = results["urls"]
         new_links = list(set(urls) - set(self.results))

@@ -1302,15 +1302,15 @@ class SpiderFoot:
 
         return returnResults
 
-    # Request search results from bing api. Will return a dict:
+    # Request search results from the bing API. Will return a dict:
     # {
     #   "urls": a list of urls that match the query string,
     #   "webSearchUrl": url for bing results page,
     # }
     # Options accepted:
-    # count: number of search results to request from the api
+    # count: number of search results to request from the API
     # useragent: User-Agent string to use
-    # timeout: api call timeout
+    # timeout: API call timeout
     def bingIterate(self, searchString, opts=dict()):
         endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?"
         params = {
@@ -1326,12 +1326,20 @@ class SpiderFoot:
         )
 
         if response['status'] != 'OK':
-            self.error("Failed to get a valid response from bing API", exception=False)
+            self.error("Failed to get a valid response from the bing API", exception=False)
             return None
 
-        response_json = json.loads(response['content'])
+        try:
+            response_json = json.loads(response['content'])
+        except ValueError:
+            self.error("the key 'content' in the bing API response doesn't contain valid json.", exception=False)
+            return None
 
-        if "webPages" in response_json:
+        if (
+            "webPages" in response_json
+            and "value" in response_json["webPages"]
+            and "webSearchUrl" in response_json["webPages"]
+        ):
             results = {
                 "urls": [result["url"] for result in response_json["webPages"]["value"]],
                 "webSearchUrl": response_json["webPages"]["webSearchUrl"],
