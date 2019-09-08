@@ -1199,110 +1199,54 @@ class SpiderFoot:
         except BaseException as e:
             return False
 
-    # Scrape Google for content, starting at startUrl and iterating through
-    # results based on options supplied. Will return a dictionary of all pages
-    # fetched and their contents {page => content}.
+    # Request search results from the Google API. Will return a dict:
+    # {
+    #   "urls": a list of urls that match the query string,
+    #   "webSearchUrl": url for Google results page,
+    # }
     # Options accepted:
-    # limit: number of search result pages before returning, default is 10
-    # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
-    # timeout: Fetch timeout
+    # timeout: API call timeout
     def googleIterate(self, searchString, opts=dict()):
-        limit = 10
-        fetches = 0
-        returnResults = dict()
+        endpoint = "https://www.googleapis.com/customsearch/v1?"
+        params = {
+            "q": searchString,
+            "cx": opts["cse_id"],
+            "key": opts["api_key"],
+        }
 
-        if 'limit' in opts:
-            limit = opts['limit']
+        response = self.fetchUrl(
+            endpoint + urllib.urlencode(params),
+            timeout=opts["timeout"],
+            useragent=opts["useragent"],
+        )
 
-        # We attempt to make the URL look as authentically human as possible
-        seedUrl = u"https://www.google.com/search?q={0}".format(searchString) + \
-                  u"&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
-
-        attempts = 0
-        failed = False
-        while attempts < 3:
-            firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-                                      useragent=opts['useragent'])
-            if firstPage['code'] == "403" or firstPage['code'] == "503":
-                self.error("Google doesn't like us right now..", False)
-                failed = True
-
-            if firstPage['content'] is None:
-                self.error("Failed to fetch content from Google.", False)
-                failed = True
-            else:
-                if "name=\"captcha\"" in firstPage['content']:
-                    self.error("Google returned a CAPTCHA.", False)
-                    failed = True
-
-            if failed:
-                self.refreshTorIdent()
-                attempts += 1
-                failed = False
-            else:
-                break
-
-        if attempts == 3:
+        if response['status'] != 'OK':
+            self.error("Failed to get a valid response from the Google API", exception=False)
             return None
 
-        returnResults[seedUrl] = firstPage['content']
-        pat = re.compile("(\/search\S+start=\d+.[^\'\"]*sa=N)", re.IGNORECASE)
-        matches = re.findall(pat, firstPage['content'])
+        try:
+            response_json = json.loads(response['content'])
+        except ValueError:
+            self.error("the key 'content' in the Google API response doesn't contain valid json.", exception=False)
+            return None
 
-        while matches > 0 and fetches < limit:
-            nextUrl = None
-            fetches += 1
-            for match in matches:
-                # Google moves in increments of 10
-                if "start=" + str(fetches * 10) in match:
-                    nextUrl = match.replace("&amp;", "&")
+        if "items" in response_json:
+            # We attempt to make the URL look as authentically human as possible
+            search_url = u"https://www.google.com/search?q={0}".format(searchString) + \
+                u"&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
 
-            if nextUrl is None:
-                self.debug("Nothing left to scan for in Google results.")
-                return returnResults
-            self.info("Next Google URL: " + nextUrl)
+            results = {
+                "urls": [str(k['link']) for k in response_json['items']],
+                "webSearchUrl": search_url,
+            }
+        else:
+            return None
 
-            # Wait for a random number of seconds between fetches
-            if 'nopause' not in opts:
-                pauseSecs = random.randint(4, 15)
-                self.info("Pausing for " + str(pauseSecs))
-                time.sleep(pauseSecs)
+        return results
 
-            attempts = 0
-            failed = False
-            while attempts < 3:
-                nextPage = self.fetchUrl(u'https://www.google.com' + nextUrl,
-                                         timeout=opts['timeout'], useragent=opts['useragent'])
-                if nextPage['code'] == "403" or nextPage['code'] == "503":
-                    self.error("Google doesn't like us right now..", False)
-                    failed = True
 
-                if nextPage['content'] is None:
-                    self.error("Failed to fetch subsequent content from Google.", False)
-                    failed = True
-                else:
-                    if "name=\"captcha\"" in nextPage['content']:
-                        self.error("Google returned a CAPTCHA.", False)
-                        failed = True
-
-                if failed:
-                    self.refreshTorIdent()
-                    attempts += 1
-                    failed = False
-                else:
-                    break
-
-            if attempts == 3:
-                return returnResults
-
-            returnResults[nextUrl] = nextPage['content']
-            pat = re.compile("(\/search\S+start=\d+.[^\'\"]*)", re.IGNORECASE)
-            matches = re.findall(pat, nextPage['content'])
-
-        return returnResults
-
-    # Request search results from the bing API. Will return a dict:
+    # Request search results from the Bing API. Will return a dict:
     # {
     #   "urls": a list of urls that match the query string,
     #   "webSearchUrl": url for bing results page,

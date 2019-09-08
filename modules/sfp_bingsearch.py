@@ -67,6 +67,7 @@ class sfp_bingsearch(SpiderFootPlugin):
         if results is None:
             # Failed to talk to the bing API or no results returned
             return None
+
         urls = results["urls"]
         new_links = list(set(urls) - set(self.results))
 
