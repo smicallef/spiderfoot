@@ -76,7 +76,7 @@ class sfp_googlesearchdomain(SpiderFootPlugin):
 
             # Sites hosted on the domain
             results = self.sf.googleIterate(
-                searchString=eventData + "%20site:" + dom,
+                searchString=eventData + "+site:" + dom,
                 opts={
                     "timeout": self.opts["_fetchtimeout"],
                     "useragent": self.opts["_useragent"],
@@ -94,16 +94,16 @@ class sfp_googlesearchdomain(SpiderFootPlugin):
             # Add new links to results
             self.results.extend(new_links)
 
-            internal_links = [
-                link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)
+            relevant_links = [
+                link for link in new_links if self.sf.urlFQDN(link).endswith(dom)
             ]
-            for link in internal_links:
+            for link in relevant_links:
                 self.sf.debug("Found a link: " + link)
 
                 evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, self.__name__, event)
                 self.notifyListeners(evt)
 
-            if internal_links:
+            if relevant_links:
                 # Submit the Google results for analysis
                 googlesearch_url = results["webSearchUrl"]
                 response = self.sf.fetchUrl(
