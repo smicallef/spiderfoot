@@ -14,18 +14,18 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlesearchdomain(SpiderFootPlugin):
-    """Google Search, by domain:Footprint,Investigate,Passive:Search Engines:errorprone:Some light Google scraping to identify sub-domains and links within site:domain contexts you specify."""
+    """Google Search, by domain:Footprint,Investigate,Passive:Search Engines:apikey:Some light Google scraping to identify sub-domains and links within site:domain contexts you specify."""
 
 
     # Default options
     opts = {
-        'pages': 20,  # Number of google results pages to iterate
-        'sites': ""
+        "api_key": "", "cse_id": "", 'sites': ""
     }
 
     # Option descriptions
     optdescs = {
-        'pages': "Number of Google results pages to iterate through.",
+        "api_key": "Google API Key.",
+        "cse_id": "Google Custom Search Engine ID.",
         'sites': "Comma-separated list of site: entries to search for your target. For example, specifying youtube.com,facebook.com will use Google to search within youtube.com and facebook.com for mentions of your target. This should NOT be set to the domain name of your target, because that is what the sfp_googlesearch module will cover."
     }
 
@@ -75,44 +75,48 @@ class sfp_googlesearchdomain(SpiderFootPlugin):
                 return None
 
             # Sites hosted on the domain
-            pages = self.sf.googleIterate(eventData + "%20site:" + dom,
-                                          dict(limit=self.opts['pages'], useragent=self.opts['_useragent'],
-                                          timeout=self.opts['_fetchtimeout']))
-            if pages is None:
-                self.sf.info("No results returned from Google for " + dom + ".")
+            results = self.sf.googleIterate(
+                searchString=eventData + "%20site:" + dom,
+                opts={
+                    "timeout": self.opts["_fetchtimeout"],
+                    "useragent": self.opts["_useragent"],
+                    "api_key": self.opts["api_key"],
+                    "cse_id": self.opts["cse_id"],
+                },
+            )
+            if results is None:
+                # Failed to talk to the bing API or no results returned
                 return None
 
-            for page in pages.keys():
-                found = False
-                if page in self.results:
-                    continue
-                else:
-                    self.results.append(page)
+            urls = results["urls"]
+            new_links = list(set(urls) - set(self.results))
 
-                links = self.sf.parseLinks(page, pages[page], dom)
-                if len(links) == 0:
-                    continue
+            # Add new links to results
+            self.results.extend(new_links)
 
-                for link in links:
-                    if self.checkForStop():
-                        return None
+            internal_links = [
+                link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)
+            ]
+            for link in internal_links:
+                self.sf.debug("Found a link: " + link)
 
-                    if link in self.results:
-                        continue
-                    else:
-                        self.results.append(link)
-                    self.sf.debug("Found a link: " + link)
-                    if self.sf.urlFQDN(link).endswith(dom):
-                        found = True
-                        evt = SpiderFootEvent("LINKED_URL_EXTERNAL", link,
-                                              self.__name__, event)
-                        self.notifyListeners(evt)
+                evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, self.__name__, event)
+                self.notifyListeners(evt)
 
-                if found:
-                    # Submit the google results for analysis
-                    evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page],
-                                          self.__name__, event)
+            if internal_links:
+                # Submit the bing results for analysis
+                bingsearch_url = results["webSearchUrl"]
+                response = self.sf.fetchUrl(
+                    bingsearch_url,
+                    timeout=self.opts["_fetchtimeout"],
+                    useragent=self.opts["_useragent"],
+                )
+                if response['status'] == 'OK':
+                    evt = SpiderFootEvent(
+                        "SEARCH_ENGINE_WEB_CONTENT", response["content"], self.__name__, event
+                    )
                     self.notifyListeners(evt)
-
+                else:
+                    self.sf.error("Failed to fetch bing web search URL", exception=False)
 
 # End of sfp_googlesearchdomain class
