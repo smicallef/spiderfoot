@@ -85,7 +85,7 @@ class sfp_googlesearchdomain(SpiderFootPlugin):
                 },
             )
             if results is None:
-                # Failed to talk to the bing API or no results returned
+                # Failed to talk to the Google API or no results returned
                 return None
 
             urls = results["urls"]
@@ -104,10 +104,10 @@ class sfp_googlesearchdomain(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             if internal_links:
-                # Submit the bing results for analysis
-                bingsearch_url = results["webSearchUrl"]
+                # Submit the Google results for analysis
+                googlesearch_url = results["webSearchUrl"]
                 response = self.sf.fetchUrl(
-                    bingsearch_url,
+                    googlesearch_url,
                     timeout=self.opts["_fetchtimeout"],
                     useragent=self.opts["_useragent"],
                 )
@@ -117,6 +117,6 @@ class sfp_googlesearchdomain(SpiderFootPlugin):
                     )
                     self.notifyListeners(evt)
                 else:
-                    self.sf.error("Failed to fetch bing web search URL", exception=False)
+                    self.sf.error("Failed to fetch Google web search URL", exception=False)
 
 # End of sfp_googlesearchdomain class
