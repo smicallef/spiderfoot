@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_censys
-# Purpose:      Query censys.io using their API
+# Name:        sfp_censys
+# Purpose:     Query Censys.io API
 #
 # Author:      Steve Micallef
 #
@@ -20,11 +20,11 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_censys(SpiderFootPlugin):
     """Censys:Investigate,Passive:Search Engines:apikey:Obtain information from Censys.io"""
 
-
     # Default options
     opts = {
         "censys_api_key_uid": "",
         "censys_api_key_secret": "",
+        'delay': 3,
         "age_limit_days": 90
     }
 
@@ -32,22 +32,21 @@ class sfp_censys(SpiderFootPlugin):
     optdescs = {
         "censys_api_key_uid": "Censys.io API UID.",
         "censys_api_key_secret": "Censys.io API Secret.",
+        'delay': 'Delay between requests, in seconds.',
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited."
     }
 
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
-
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
-
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
@@ -58,23 +57,27 @@ class sfp_censys(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["BGP_AS_MEMBER", "TCP_PORT_OPEN", "OPERATING_SYSTEM", 
-                "WEBSERVER_HTTPHEADERS", "NETBLOCK_MEMBER", "GEOINFO"]
+                "WEBSERVER_HTTPHEADERS", "NETBLOCK_MEMBER", "GEOINFO",
+                'RAW_RIR_DATA']
 
+    # https://censys.io/api
+    # https://censys.io/api/v1/docs/view
     def query(self, qry, querytype):
-        ret = None
-
         if querytype == "ip":
             querytype = "ipv4/{0}"
         if querytype == "host":
             querytype = "websites/{0}"
         
-        censys_url = "https://censys.io/api/v1/view"
         headers = {
             'Authorization': "Basic " + base64.b64encode(self.opts['censys_api_key_uid'] + ":" + self.opts['censys_api_key_secret'])
         }
-        url = censys_url + "/" + querytype.format(qry.encode('utf-8', errors='replace'))
-        res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], 
-                               useragent="SpiderFoot", headers=headers)
+        res = self.sf.fetchUrl('https://censys.io/api/v1/view/' + querytype.format(qry.encode('utf-8', errors='replace')),
+                               timeout=self.opts['_fetchtimeout'],
+                               useragent="SpiderFoot",
+                               headers=headers)
+
+        # API rate limit: 0.4 actions/second (120.0 per 5 minute interval)
+        time.sleep(self.opts['delay'])
 
         if res['code'] in [ "400", "429", "500", "403" ]:
             self.sf.error("Censys.io API key seems to have been rejected or you have exceeded usage limits for the month.", False)
@@ -93,7 +96,6 @@ class sfp_censys(SpiderFootPlugin):
 
         #print(str(info))
         return info
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -115,8 +117,8 @@ class sfp_censys(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -130,64 +132,74 @@ class sfp_censys(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            if eventName in [ "IP_ADDRESS", "NETLBLOCK_OWNER"]:
+            if eventName in ["IP_ADDRESS", "NETLBLOCK_OWNER"]:
                 qtype = "ip"
             else:
                 qtype = "host"
 
             rec = self.query(addr, qtype)
+
+            if rec is None:
+                continue
+
             self.sf.debug("Censys raw data: " + str(rec))
-            if rec is not None:
-                if 'error' in rec and 'error_type' == "unknown":
+
+            if 'error' in rec:
+                if rec['error_type'] == "unknown":
                     self.sf.debug("Censys returned no data for " + addr)
-                    continue
-
-                if 'error' in rec:
+                else:
                     self.sf.error("Censys returned an unexpected error: " + rec['error_type'], False)
+                continue
+
+            self.sf.debug("Found results in Censys.io")
+
+            e = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
+            self.notifyListeners(e)
+
+            try:
+                # Date format: 2016-12-24T07:25:35+00:00'
+                created_dt = datetime.strptime(rec.get('updated_at'), '%Y-%m-%dT%H:%M:%S+00:00')
+                created_ts = int(time.mktime(created_dt.timetuple()))
+                age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
+
+                if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
+                    self.sf.debug("Record found but too old, skipping.")
                     continue
 
-                self.sf.debug("Found results in Censys.io")
-                # 2016-12-24T07:25:35+00:00'
-                try:
-                    created_dt = datetime.strptime(rec.get('updated_at'), '%Y-%m-%dT%H:%M:%S+00:00')
-                    created_ts = int(time.mktime(created_dt.timetuple()))
-                    age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
-                    if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                        self.sf.debug("Record found but too old, skipping.")
-                        continue
-                    if 'location' in rec:
-                        dat = rec['location'].get('country')
-                        if dat:
-                            e = SpiderFootEvent("GEOINFO", dat, self.__name__, event)
-                            self.notifyListeners(e)
-
-                    if 'headers' in rec:
-                        dat = json.dumps(rec['headers'], ensure_ascii=False)
-                        e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, event)
+                if 'location' in rec:
+                    dat = rec['location'].get('country')
+                    if dat:
+                        e = SpiderFootEvent("GEOINFO", dat, self.__name__, event)
                         self.notifyListeners(e)
 
-                    if 'autonomous_system' in rec:
-                        dat = str(rec['autonomous_system']['asn'])
-                        e = SpiderFootEvent("BGP_AS_MEMBER", dat, self.__name__, event)
-                        self.notifyListeners(e)
-                        dat = rec['autonomous_system']['routed_prefix']
-                        e = SpiderFootEvent("NETBLOCK_MEMBER", dat, self.__name__, event)
+                if 'headers' in rec:
+                    dat = json.dumps(rec['headers'], ensure_ascii=False)
+                    e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, event)
+                    self.notifyListeners(e)
+
+                if 'autonomous_system' in rec:
+                    dat = str(rec['autonomous_system']['asn'])
+                    e = SpiderFootEvent("BGP_AS_MEMBER", dat, self.__name__, event)
+                    self.notifyListeners(e)
+
+                    dat = rec['autonomous_system']['routed_prefix']
+                    e = SpiderFootEvent("NETBLOCK_MEMBER", dat, self.__name__, event)
+                    self.notifyListeners(e)
+
+                if 'protocols' in rec:
+                    for p in rec['protocols']:
+                        if 'ip' not in rec:
+                            continue
+                        dat = rec['ip'] + ":" + p.split("/")[0]
+                        e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, event)
                         self.notifyListeners(e)
 
-                    if 'protocols' in rec:
-                        for p in rec['protocols']:
-                            if 'ip' not in rec:
-                                continue
-                            dat = rec['ip'] + ":" + p.split("/")[0]
-                            e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, event)
-                            self.notifyListeners(e)
-
-                    if 'metadata' in rec:
-                        if 'os_description' in rec['metadata']:
-                            dat = rec['metadata']['os_description']
-                            e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, event)
-                            self.notifyListeners(e)
-                except BaseException as e:
-                    self.sf.error("Error encountered processing record for " + eventData + " (" + str(e) + ")", False)
+                if 'metadata' in rec:
+                    if 'os_description' in rec['metadata']:
+                        dat = rec['metadata']['os_description']
+                        e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, event)
+                        self.notifyListeners(e)
+            except BaseException as e:
+                self.sf.error("Error encountered processing record for " + eventData + " (" + str(e) + ")", False)
         
 # End of sfp_censys class
