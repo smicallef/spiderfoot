@@ -572,6 +572,7 @@ class SpiderFoot:
             {"^\+\d+$": "PHONE_NUMBER"},
             {"^\".*\"$": "HUMAN_NAME"},
             {"^\d+$": "BGP_AS_OWNER"},
+            {"^[0-9a-f:]+$": "IPV6_ADDRESS"},
             {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
         ]
 
@@ -1605,7 +1606,7 @@ class SpiderFootPlugin(object):
 
 # Class for targets
 class SpiderFootTarget(object):
-    _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME",
+    _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
                    "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER']
     targetType = None
     targetValue = None
