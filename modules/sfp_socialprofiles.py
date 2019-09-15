@@ -20,21 +20,21 @@ sites = {
     # Search string to use, domain name the profile will sit on within
     # those search results.
     "Facebook": [
-        "+title:%22{0}%22%20+site:facebook.com",
+        "\"{0}\" site:facebook.com",
         [
             '"(https?://[a-z\.]*facebook.[a-z\.]+/[^/"<> ]+)"',
             '(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/"<> ]+)',
         ],
     ],
     "Google+": [
-        "+title:%22{0}%22%20+site:plus.google.com",
+        "\"{0}\" site:plus.google.com",
         [
             '"(https?://plus.google.[a-z\.]+/\d+[^"<>\/ ]+)"',
             '(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/"<> ]+)',
         ],
     ],
     "LinkedIn": [
-        "+title:%22{0}%22%20+site:linkedin.com",
+        "\"{0}\" site:linkedin.com",
         [
             '"(https?://[a-z\.]*linkedin.[a-z\.]+/[^/"<> ]+)"',
             '(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\/"<> ]+)',
@@ -148,10 +148,11 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
             if results is None:
                 self.sf.info("No data returned from " + self.opts["method"] + ".")
-                return None
+                continue
 
             if self.checkForStop():
                 return None
+
 
             web_search_url = results["webSearchUrl"]
             response = self.sf.fetchUrl(
@@ -162,13 +163,14 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
             if response["status"] != "OK":
                 self.sf.error("Failed to fetch bing web search URL", exception=False)
-                return None
+                continue
 
             # Submit the results for analysis
             evt = SpiderFootEvent(
                 "SEARCH_ENGINE_WEB_CONTENT", response["content"], self.__name__, event
             )
             self.notifyListeners(evt)
+
 
             for searchDom in sites[site][1]:
                 matches = re.findall(
