@@ -1233,9 +1233,15 @@ class SpiderFoot:
 
         if "items" in response_json:
             # We attempt to make the URL look as authentically human as possible
-            search_url = u"https://www.google.com/search?q={0}".format(searchString) + \
-                u"&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
-
+            params = {
+                "q": searchString,
+                "ie": "utf-8",
+                "oe": "utf-8",
+                "aq": "t",
+                "rls": "org.mozilla:en-US:official",
+                "client": "firefox-a",
+            }
+            search_url = u"https://www.google.com/search?" + urllib.urlencode(params)
             results = {
                 "urls": [str(k['link']) for k in response_json['items']],
                 "webSearchUrl": search_url,
@@ -1262,6 +1268,7 @@ class SpiderFoot:
                 "responseFilter": "Webpages",
                 "count": opts["count"],
             }
+
         response = self.fetchUrl(
             endpoint + urllib.urlencode(params),
             timeout=opts["timeout"],

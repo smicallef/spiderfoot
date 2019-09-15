@@ -67,7 +67,7 @@ class sfp_pastebin(SpiderFootPlugin):
             links = list()
             target = self.domains[dom]
             results = self.sf.googleIterate(
-                searchString="site:" + target + "%20+\"" + eventData + "\"",
+                searchString="site:" + target + " \"" + eventData + "\"",
                 opts={
                     "timeout": self.opts["_fetchtimeout"],
                     "useragent": self.opts["_useragent"],
