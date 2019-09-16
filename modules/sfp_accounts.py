@@ -28,6 +28,7 @@ class sfp_accounts(SpiderFootPlugin):
         "ignorenamedict": True,
         "ignoreworddict": True,
         "musthavename": True,
+        "userfromemail": True,
         "_maxthreads": 25
     }
 
@@ -36,10 +37,11 @@ class sfp_accounts(SpiderFootPlugin):
         "generic": "Generic internal accounts to not bother looking up externally.",
         "ignorenamedict": "Don't bother looking up names that are just stand-alone first names (too many false positives).",
         "ignoreworddict": "Don't bother looking up names that appear in the dictionary.",
-        "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives)."
+        "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
+        "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts."
     }
 
-    results = dict()
+    results = None
     reportedUsers = list()
     siteResults = dict()
     sites = list()
@@ -49,7 +51,7 @@ class sfp_accounts(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.commonNames = list()
         self.reportedUsers = list()
         self.errorState = False
@@ -213,7 +215,6 @@ class sfp_accounts(SpiderFootPlugin):
 
         # Skip events coming from me unless they are USERNAME events
         if eventName != "USERNAME" and srcModuleName == "sfp_accounts":
-            self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
         if eventData not in self.results.keys():
@@ -269,6 +270,9 @@ class sfp_accounts(SpiderFootPlugin):
 
             if self.opts['ignoreworddict'] and name in self.words:
                 self.sf.debug(name + " is found in our word dictionary, skipping.")
+                adduser = False
+
+            if eventName == "EMAILADDR" and not self.opts['userfromemail']:
                 adduser = False
 
             if adduser:
