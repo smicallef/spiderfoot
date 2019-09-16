@@ -119,6 +119,10 @@ class sfp_scylla(SpiderFootPlugin):
                 if not email:
                     continue
 
+                if "@" + eventData not in email:
+                    # Scylla sometimes returns broader results than the searched data
+                    continue
+
                 breach = source.get('Domain')
 
                 if not breach:
