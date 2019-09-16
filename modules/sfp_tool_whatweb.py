@@ -22,12 +22,14 @@ class sfp_tool_whatweb(SpiderFootPlugin):
 
     # Default options
     opts = {
+        'aggression': 1,
         'ruby_path': 'ruby',
         'whatweb_path': ''
     }
 
     # Option descriptions
     optdescs = {
+        'aggression': 'Set WhatWeb aggression level (1-4)',
         'ruby_path': "Path to Ruby interpreter to use for WhatWeb. If just 'ruby' then it must be in your $PATH.",
         'whatweb_path': "Path to the whatweb executable file. Must be set."
     }
@@ -86,11 +88,22 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             self.sf.error("Invalid input, refusing to run.", False)
             return None
 
+        # Set aggression level
+        try:
+            aggression = int(self.opts['aggression'])
+            if aggression > 4:
+                aggression = 4
+            if aggression < 1:
+                aggression = 1
+        except:
+            aggression = 1
+
         # Run WhatWeb
         args = [
             self.opts['ruby_path'],
             exe,
             "--quiet",
+            "--aggression=" + str(aggression),
             "--log-json=/dev/stdout",
             "--user-agent=Mozilla/5.0",
             "--follow-redirect=never",
@@ -121,6 +134,13 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         evt = SpiderFootEvent('RAW_RIR_DATA', str(result_json), self.__name__, event)
         self.notifyListeners(evt)
 
+        blacklist = [
+            'Country', 'IP',
+            'Script', 'Title',
+            'HTTPServer', 'RedirectLocation', 'UncommonHeaders', 'Via-Proxy', 'Cookies', 'HttpOnly',
+            'Strict-Transport-Security', 'X-Cache', 'X-UA-Compatible', 'X-Powered-By', 'X-Frame-Options', 'X-XSS-Protection'
+        ]
+
         for result in result_json:
             plugin_matches = result.get('plugins')
 
@@ -136,5 +156,11 @@ class sfp_tool_whatweb(SpiderFootPlugin):
                 for w in plugin_matches.get('X-Powered-By').get('string'):
                     evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', w, self.__name__, event)
                     self.notifyListeners(evt)
+
+            for plugin in plugin_matches:
+                if plugin in blacklist:
+                    continue
+                evt = SpiderFootEvent('SOFTWARE_USED', plugin, self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_tool_whatweb class
