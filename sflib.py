@@ -1208,9 +1208,10 @@ class SpiderFoot:
     # useragent: User-Agent string to use
     # timeout: API call timeout
     def googleIterate(self, searchString, opts=dict()):
-        endpoint = "https://www.googleapis.com/customsearch/v1?"
+        endpoint = "https://www.googleapis.com/customsearch/v1?q={search_string}&".format(
+            search_string=searchString.replace(" ", "%20")
+        )
         params = {
-            "q": searchString,
             "cx": opts["cse_id"],
             "key": opts["api_key"],
         }
@@ -1218,7 +1219,6 @@ class SpiderFoot:
         response = self.fetchUrl(
             endpoint + urllib.urlencode(params),
             timeout=opts["timeout"],
-            useragent=opts["useragent"],
         )
 
         if response['status'] != 'OK':
@@ -1234,14 +1234,16 @@ class SpiderFoot:
         if "items" in response_json:
             # We attempt to make the URL look as authentically human as possible
             params = {
-                "q": searchString,
                 "ie": "utf-8",
                 "oe": "utf-8",
                 "aq": "t",
                 "rls": "org.mozilla:en-US:official",
                 "client": "firefox-a",
             }
-            search_url = u"https://www.google.com/search?" + urllib.urlencode(params)
+            search_url = u"https://www.google.com/search?q={search_string}&{params}".format(
+                search_string=searchString.replace(" ", "%20"),
+                params=urllib.urlencode(params)
+            )
             results = {
                 "urls": [str(k['link']) for k in response_json['items']],
                 "webSearchUrl": search_url,
@@ -1262,12 +1264,14 @@ class SpiderFoot:
     # useragent: User-Agent string to use
     # timeout: API call timeout
     def bingIterate(self, searchString, opts=dict()):
-        endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?"
+        endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&".format(
+            search_string=SearchString.replace(" ", "%20")
+        ) 
+
         params = {
-                "q": searchString,
-                "responseFilter": "Webpages",
-                "count": opts["count"],
-            }
+            "responseFilter": "Webpages",
+            "count": opts["count"],
+        }
 
         response = self.fetchUrl(
             endpoint + urllib.urlencode(params),

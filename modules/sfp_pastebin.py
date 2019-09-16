@@ -67,7 +67,10 @@ class sfp_pastebin(SpiderFootPlugin):
             links = list()
             target = self.domains[dom]
             results = self.sf.googleIterate(
-                searchString="site:" + target + " \"" + eventData + "\"",
+                searchString="+site:{target_site} \"{search_keyword}\"".format(
+                    target_site=target,
+                    search_keyword=eventData,
+                ),
                 opts={
                     "timeout": self.opts["_fetchtimeout"],
                     "useragent": self.opts["_useragent"],
@@ -75,6 +78,7 @@ class sfp_pastebin(SpiderFootPlugin):
                     "cse_id": self.opts["cse_id"],
                 },
             )
+
             if results is None:
                 # Failed to talk to the Google API or no results returned
                 return None

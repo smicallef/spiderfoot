@@ -20,21 +20,21 @@ sites = {
     # Search string to use, domain name the profile will sit on within
     # those search results.
     "Facebook": [
-        "\"{0}\" site:facebook.com",
+        "\"{name}\"+site:facebook.com",
         [
             '"(https?://[a-z\.]*facebook.[a-z\.]+/[^/"<> ]+)"',
             '(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/"<> ]+)',
         ],
     ],
     "Google+": [
-        "\"{0}\" site:plus.google.com",
+        "\"{name}\"+site:plus.google.com",
         [
             '"(https?://plus.google.[a-z\.]+/\d+[^"<>\/ ]+)"',
             '(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/"<> ]+)',
         ],
     ],
     "LinkedIn": [
-        "\"{0}\" site:linkedin.com",
+        "\"{name}\"+site:linkedin.com",
         [
             '"(https?://[a-z\.]*linkedin.[a-z\.]+/[^/"<> ]+)"',
             '(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\/"<> ]+)',
@@ -111,7 +111,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 self.keywords = None
 
         for site in sites:
-            s = unicode(sites[site][0]).format(eventData)
+            s = unicode(sites[site][0]).format(name=eventData)
             searchStr = s.replace(" ", "%20")
             results = None
 
@@ -172,11 +172,16 @@ class sfp_socialprofiles(SpiderFootPlugin):
             self.notifyListeners(evt)
 
 
+            instances = list()
             for searchDom in sites[site][1]:
+                # Search both the urls & the search engine web content
+                search_string = " ".join(results["urls"] + [response["content"]])
+
                 matches = re.findall(
-                    searchDom, response["content"], re.IGNORECASE | re.MULTILINE
+                    searchDom, search_string, re.IGNORECASE | re.MULTILINE
                 )
 
+                import pdb; pdb.set_trace()
                 if not matches:
                     continue
 

@@ -64,7 +64,7 @@ class sfp_onioncity(SpiderFootPlugin):
 
         # Sites hosted on the domain
         results = self.sf.googleIterate(
-            searchString="site:onion.link " + eventData,
+            searchString="+site:onion.link " + eventData,
             opts={
                 "timeout": self.opts["_fetchtimeout"],
                 "useragent": self.opts["_useragent"],
