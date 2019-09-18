@@ -119,8 +119,11 @@ class sfp_scylla(SpiderFootPlugin):
                 if not email:
                     continue
 
-                if "@" + eventData not in email:
-                    # Scylla sometimes returns broader results than the searched data
+                # Skip unrelated emails
+                # Scylla sometimes returns broader results than the searched data
+                mailDom = email.lower().split('@')[1]
+                if not self.getTarget().matches(mailDom):
+                    self.sf.debug("Skipped address: " + match)
                     continue
 
                 breach = source.get('Domain')
