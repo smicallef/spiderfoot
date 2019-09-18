@@ -138,7 +138,8 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             'Country', 'IP',
             'Script', 'Title',
             'HTTPServer', 'RedirectLocation', 'UncommonHeaders', 'Via-Proxy', 'Cookies', 'HttpOnly',
-            'Strict-Transport-Security', 'X-Cache', 'X-UA-Compatible', 'X-Powered-By', 'X-Frame-Options', 'X-XSS-Protection'
+            'Strict-Transport-Security', 'x-hacker', 'x-machine', 'x-pingback', 'X-Backend', 'X-Cache',
+            'X-UA-Compatible', 'X-Powered-By', 'X-Forwarded-For', 'X-Frame-Options', 'X-XSS-Protection'
         ]
 
         for result in result_json:
