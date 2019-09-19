@@ -107,6 +107,10 @@ class sfp_scylla(SpiderFootPlugin):
             #evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             #self.notifyListeners(evt)
 
+            emails = list()
+            hashes = list()
+            passwords = list()
+
             for result in data:
                 source = result.get('_source')
 
@@ -122,7 +126,7 @@ class sfp_scylla(SpiderFootPlugin):
                 # Skip unrelated emails
                 # Scylla sometimes returns broader results than the searched data
                 mailDom = email.lower().split('@')[1]
-                if not self.getTarget().matches(mailDom):
+                if not self.getTarget().matches(mailDom, includeParents=True):
                     self.sf.debug("Skipped address: " + match)
                     continue
 
@@ -131,26 +135,35 @@ class sfp_scylla(SpiderFootPlugin):
                 if not breach:
                     breach = 'Unknown'
 
-                evt = SpiderFootEvent('EMAILADDR_COMPROMISED', email + " [" + breach + "]", self.__name__, event)
-                self.notifyListeners(evt)
+                emails.append(email + " [" + breach + "]")
 
                 pass_hash = source.get('PassHash')
 
                 if pass_hash:
                     pass_salt = source.get('PassSalt')
                     if pass_salt:
-                        evt = SpiderFootEvent('HASH_COMPROMISED', email + ':' + pass_hash + " (Salt: " + pass_salt + ") [" + breach + "]", self.__name__, event)
+                        hashes.append(email + ':' + pass_hash + " (Salt: " + pass_salt + ") [" + breach + "]")
                     else:
-                        evt = SpiderFootEvent('HASH_COMPROMISED', email + ':' + pass_hash + " [" + breach + "]", self.__name__, event)
-                    self.notifyListeners(evt)
+                        hashes.append(email + ':' + pass_hash + " [" + breach + "]")
 
                 password = source.get('Password')
 
                 if password:
-                    evt = SpiderFootEvent('PASSWORD_COMPROMISED', email + ':' + password + " [" + breach + "]", self.__name__, event)
-                    self.notifyListeners(evt)
+                    passwords.append(email + ':' + password + " [" + breach + "]")
 
             if len(data) < per_page:
                 break
+
+        for pass_hash in set(hashes):
+            evt = SpiderFootEvent('HASH_COMPROMISED', pass_hash, self.__name__, event)
+            self.notifyListeners(evt)
+
+        for email in set(emails):
+            evt = SpiderFootEvent('EMAILADDR_COMPROMISED', email, self.__name__, event)
+            self.notifyListeners(evt)
+
+        for password in set(passwords):
+            evt = SpiderFootEvent('PASSWORD_COMPROMISED', password, self.__name__, event)
+            self.notifyListeners(evt)
 
 # End of sfp_scylla class
