@@ -19,21 +19,22 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_bingsharedip(SpiderFootPlugin):
     """Bing (Shared IPs):Footprint,Investigate,Passive:Search Engines::Search Bing for hosts sharing the same IP."""
 
-
     # Default options
     opts = {
-        'cohostsamedomain': False,
-        'pages': 20,
-        'verify': True,
-        'maxcohost': 100
+        "cohostsamedomain": False,
+        "pages": 20,
+        "verify": True,
+        "maxcohost": 100,
+        "api_key": "",
     }
 
     # Option descriptions
     optdescs = {
-        'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
-        'pages': "How many pages of results to iterate through.",
-        'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
-        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
+        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
+        "pages": "Number of max bing results to request from API.",
+        "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
+        "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
+        "api_key": "Bing API Key.",
     }
 
     results = dict()
@@ -95,7 +96,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
             self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
-        if self.cohostcount > self.opts['maxcohost']:
+        if self.cohostcount > self.opts["maxcohost"]:
             return None
 
         qrylist = list()
@@ -114,44 +115,71 @@ class sfp_bingsharedip(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            results = self.sf.bingIterate("ip:" + ip, dict(limit=self.opts['pages'],
-                                                           useragent=self.opts['_useragent'],
-                                                           timeout=self.opts['_fetchtimeout']))
+            results = self.sf.bingIterate(
+                searchString="ip:" + ip,
+                opts={
+                    "timeout": self.opts["_fetchtimeout"],
+                    "useragent": self.opts["_useragent"],
+                    "count": self.opts["pages"],
+                    "api_key": self.opts["api_key"],
+                },
+            )
             if results is None:
-                self.sf.info("No data returned from Bing.")
-                continue
+                # Failed to talk to bing api or no results returned
+                return None
 
-            for key in results.keys():
-                res = results[key]
-                pat = re.compile("<h2><a href=\"(\S+)\"", re.IGNORECASE)
-                matches = re.findall(pat, res)
-                for match in matches:
-                    self.sf.info("Found something on same IP: " + match)
-                    site = self.sf.urlFQDN(match.lower())
-                    if site not in myres and site != ip:
-                        if not self.opts['cohostsamedomain']:
-                            if self.getTarget().matches(site, includeParents=True):
-                                self.sf.debug("Skipping " + site + " because it is on the same domain.")
-                                continue
-                        if self.opts['verify'] and not self.validateIP(site, ip):
-                            self.sf.debug("Host " + site + " no longer resolves to " + ip)
+            urls = results["urls"]
+
+            for url in urls:
+                self.sf.info("Found something on same IP: " + url)
+                site = self.sf.urlFQDN(url.lower())
+                if site not in myres and site != ip:
+                    if not self.opts["cohostsamedomain"]:
+                        if self.getTarget().matches(site, includeParents=True):
+                            self.sf.debug(
+                                "Skipping "
+                                + site
+                                + " because it is on the same domain."
+                            )
                             continue
-                        # Create an IP Address event stemming from the netblock as the
-                        # link to the co-host.
-                        if eventName == "NETBLOCK_OWNER":
-                            ipe = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
-                            self.notifyListeners(ipe)
-                            evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, ipe)
-                            self.notifyListeners(evt)
-                        else:
-                            evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
-                            self.notifyListeners(evt)
-                        self.cohostcount += 1
-                        myres.append(site)
+                    if self.opts["verify"] and not self.validateIP(site, ip):
+                        self.sf.debug("Host " + site + " no longer resolves to " + ip)
+                        continue
+                    # Create an IP Address event stemming from the netblock as the
+                    # link to the co-host.
+                    if eventName == "NETBLOCK_OWNER":
+                        ipe = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
+                        self.notifyListeners(ipe)
+                        evt = SpiderFootEvent(
+                            "CO_HOSTED_SITE", site, self.__name__, ipe
+                        )
+                        self.notifyListeners(evt)
+                    else:
+                        evt = SpiderFootEvent(
+                            "CO_HOSTED_SITE", site, self.__name__, event
+                        )
+                        self.notifyListeners(evt)
+                    self.cohostcount += 1
+                    myres.append(site)
 
+            if urls:
                 # Submit the bing results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
+                bingsearch_url = results["webSearchUrl"]
+                response = self.sf.fetchUrl(
+                    bingsearch_url,
+                    timeout=self.opts["_fetchtimeout"],
+                    useragent=self.opts["_useragent"],
+                )
+                if response['status'] == 'OK':
+                    evt = SpiderFootEvent(
+                        "SEARCH_ENGINE_WEB_CONTENT",
+                        response["content"],
+                        self.__name__,
+                        event,
+                    )
+                    self.notifyListeners(evt)
+                else:
+                    self.sf.error("Failed to fetch bing web search URL", exception=False)
+
 
 # End of sfp_bingsharedip class

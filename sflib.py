@@ -15,6 +15,7 @@ from stem import Signal
 from stem.control import Controller
 import inspect
 import hashlib
+import urllib
 import binascii
 import gzip
 import gexf
@@ -37,7 +38,9 @@ from copy import deepcopy, copy
 
 # For hiding the SSL warnings coming from the requests lib
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 class SpiderFoot:
     dbh = None
@@ -75,7 +78,7 @@ class SpiderFoot:
 
         try:
             self.info("Re-circuiting TOR...")
-            with Controller.from_port(address=self.opts['_socks2addr'], 
+            with Controller.from_port(address=self.opts['_socks2addr'],
                                       port=self.opts['_torctlport']) as controller:
                 controller.authenticate()
                 controller.signal(Signal.NEWNYM)
@@ -176,7 +179,7 @@ class SpiderFoot:
 
     # Convert supplied raw data into GEXF format (e.g. for Gephi)
     # GEXF produced by PyGEXF doesn't work with SigmaJS because
-    # SJS needs coordinates for each node. 
+    # SJS needs coordinates for each node.
     # flt is a list of event types to include, if not set everything is
     # included.
     def buildGraphGexf(self, root, title, data, flt=[]):
@@ -199,7 +202,7 @@ class SpiderFoot:
                 if dst in root:
                     col = ["255", "0", "0"]
                 graph.addNode(str(ncounter), unicode(dst, errors="replace"),
-                              r=col[0], g=col[1], b=col[2])    
+                              r=col[0], g=col[1], b=col[2])
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
@@ -238,7 +241,7 @@ class SpiderFoot:
                 ncounter = ncounter + 1
                 if dst in root:
                     col = "#f00"
-                ret['nodes'].append({'id': str(ncounter), 
+                ret['nodes'].append({'id': str(ncounter),
                                     'label': unicode(dst, errors="replace"),
                                     'x': random.randint(1,1000),
                                     'y': random.randint(1,1000),
@@ -251,7 +254,7 @@ class SpiderFoot:
                 if src in root:
                     col = "#f00"
                 ncounter = ncounter + 1
-                ret['nodes'].append({'id': str(ncounter), 
+                ret['nodes'].append({'id': str(ncounter),
                                     'label': unicode(src, errors="replace"),
                                     'x': random.randint(1,1000),
                                     'y': random.randint(1,1000),
@@ -261,8 +264,8 @@ class SpiderFoot:
                 nodelist[src] = ncounter
 
             ecounter = ecounter + 1
-            ret['edges'].append({'id': str(ecounter), 
-                                'source': str(nodelist[src]), 
+            ret['edges'].append({'id': str(ecounter),
+                                'source': str(nodelist[src]),
                                 'target': str(nodelist[dst])
             })
 
@@ -607,7 +610,7 @@ class SpiderFoot:
         for mod in self.opts['__modules__'].keys():
             if self.opts['__modules__'][mod]['consumes'] is None:
                 continue
-            
+
             if "*" in self.opts['__modules__'][mod]['consumes'] and mod not in modlist:
                 modlist.append(mod)
 
@@ -773,7 +776,7 @@ class SpiderFoot:
     def sanitiseInput(self, cmd):
         chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m',
          'n','o','p','q','r','s','t','u','v','w','x','y','z',
-         '0','1','2','3','4','5','6','7','8','9','-','.'] 
+         '0','1','2','3','4','5','6','7','8','9','-','.']
         for c in cmd:
             if c.lower() not in chars:
                 return False
@@ -1062,7 +1065,7 @@ class SpiderFoot:
 
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
-                 useragent="SpiderFoot", headers=None, noLog=False, 
+                 useragent="SpiderFoot", headers=None, noLog=False,
                  postData=None, dontMangle=False, sizeLimit=None,
                  headOnly=False, verify=False):
         result = {
@@ -1197,209 +1200,111 @@ class SpiderFoot:
         except BaseException as e:
             return False
 
-    # Scrape Google for content, starting at startUrl and iterating through
-    # results based on options supplied. Will return a dictionary of all pages
-    # fetched and their contents {page => content}.
+    # Request search results from the Google API. Will return a dict:
+    # {
+    #   "urls": a list of urls that match the query string,
+    #   "webSearchUrl": url for Google results page,
+    # }
     # Options accepted:
-    # limit: number of search result pages before returning, default is 10
-    # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
-    # timeout: Fetch timeout
+    # timeout: API call timeout
     def googleIterate(self, searchString, opts=dict()):
-        limit = 10
-        fetches = 0
-        returnResults = dict()
+        endpoint = "https://www.googleapis.com/customsearch/v1?q={search_string}&".format(
+            search_string=searchString.replace(" ", "%20")
+        )
+        params = {
+            "cx": opts["cse_id"],
+            "key": opts["api_key"],
+        }
 
-        if 'limit' in opts:
-            limit = opts['limit']
+        response = self.fetchUrl(
+            endpoint + urllib.urlencode(params),
+            timeout=opts["timeout"],
+        )
 
-        # We attempt to make the URL look as authentically human as possible
-        seedUrl = u"https://www.google.com/search?q={0}".format(searchString) + \
-                  u"&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
-
-        attempts = 0
-        failed = False
-        while attempts < 3:
-            firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-                                      useragent=opts['useragent'])
-            if firstPage['code'] == "403" or firstPage['code'] == "503":
-                self.error("Google doesn't like us right now..", False)
-                failed = True
-
-            if firstPage['content'] is None:
-                self.error("Failed to fetch content from Google.", False)
-                failed = True
-            else:
-                if "name=\"captcha\"" in firstPage['content']:
-                    self.error("Google returned a CAPTCHA.", False)
-                    failed = True
-
-            if failed:
-                self.refreshTorIdent()
-                attempts += 1
-                failed = False
-            else:
-                break
-
-        if attempts == 3:
+        if response['status'] != 'OK':
+            self.error("Failed to get a valid response from the Google API", exception=False)
             return None
-                                
-        returnResults[seedUrl] = firstPage['content']
-        pat = re.compile("(\/search\S+start=\d+.[^\'\"]*sa=N)", re.IGNORECASE)
-        matches = re.findall(pat, firstPage['content'])
 
-        while matches > 0 and fetches < limit:
-            nextUrl = None
-            fetches += 1
-            for match in matches:
-                # Google moves in increments of 10
-                if "start=" + str(fetches * 10) in match:
-                    nextUrl = match.replace("&amp;", "&")
+        try:
+            response_json = json.loads(response['content'])
+        except ValueError:
+            self.error("the key 'content' in the Google API response doesn't contain valid json.", exception=False)
+            return None
 
-            if nextUrl is None:
-                self.debug("Nothing left to scan for in Google results.")
-                return returnResults
-            self.info("Next Google URL: " + nextUrl)
+        if "items" in response_json:
+            # We attempt to make the URL look as authentically human as possible
+            params = {
+                "ie": "utf-8",
+                "oe": "utf-8",
+                "aq": "t",
+                "rls": "org.mozilla:en-US:official",
+                "client": "firefox-a",
+            }
+            search_url = u"https://www.google.com/search?q={search_string}&{params}".format(
+                search_string=searchString.replace(" ", "%20"),
+                params=urllib.urlencode(params)
+            )
+            results = {
+                "urls": [str(k['link']) for k in response_json['items']],
+                "webSearchUrl": search_url,
+            }
+        else:
+            return None
 
-            # Wait for a random number of seconds between fetches
-            if 'nopause' not in opts:
-                pauseSecs = random.randint(4, 15)
-                self.info("Pausing for " + str(pauseSecs))
-                time.sleep(pauseSecs)
+        return results
 
-            attempts = 0
-            failed = False
-            while attempts < 3:
-                nextPage = self.fetchUrl(u'https://www.google.com' + nextUrl,
-                                         timeout=opts['timeout'], useragent=opts['useragent'])
-                if nextPage['code'] == "403" or nextPage['code'] == "503":
-                    self.error("Google doesn't like us right now..", False)
-                    failed = True
 
-                if nextPage['content'] is None:
-                    self.error("Failed to fetch subsequent content from Google.", False)
-                    failed = True
-                else:
-                    if "name=\"captcha\"" in nextPage['content']:
-                        self.error("Google returned a CAPTCHA.", False)
-                        failed = True
-
-                if failed:
-                    self.refreshTorIdent()
-                    attempts += 1
-                    failed = False
-                else:
-                    break
-
-            if attempts == 3:
-                return returnResults
-
-            returnResults[nextUrl] = nextPage['content']
-            pat = re.compile("(\/search\S+start=\d+.[^\'\"]*)", re.IGNORECASE)
-            matches = re.findall(pat, nextPage['content'])
-
-        return returnResults
-
-    # Scrape Bing for content, starting at startUrl and iterating through
-    # results based on options supplied. Will return a dictionary of all pages
-    # fetched and their contents {page => content}.
+    # Request search results from the Bing API. Will return a dict:
+    # {
+    #   "urls": a list of urls that match the query string,
+    #   "webSearchUrl": url for bing results page,
+    # }
     # Options accepted:
-    # limit: number of search result pages before returning, default is 10
-    # nopause: don't randomly pause between fetches
+    # count: number of search results to request from the API
     # useragent: User-Agent string to use
-    # timeout: Fetch timeout
+    # timeout: API call timeout
     def bingIterate(self, searchString, opts=dict()):
-        limit = 10
-        fetches = 0
-        returnResults = dict()
+        endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&".format(
+            search_string=SearchString.replace(" ", "%20")
+        ) 
 
-        if 'limit' in opts:
-            limit = opts['limit']
+        params = {
+            "responseFilter": "Webpages",
+            "count": opts["count"],
+        }
 
-        # We attempt to make the URL look as authentically human as possible
-        seedUrl = u"http://www.bing.com/search?q={0}".format(searchString) + \
-                  u"&pc=MOZI"
+        response = self.fetchUrl(
+            endpoint + urllib.urlencode(params),
+            timeout=opts["timeout"],
+            useragent=opts["useragent"],
+            headers={"Ocp-Apim-Subscription-Key": opts["api_key"]},
+        )
 
-        attempts = 0
-        failed = False
-        while attempts < 3:
-            firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-                                      useragent=opts['useragent'])
-            if firstPage['code'] == "400":
-                self.error("Bing doesn't like us right now..", False)
-                failed = True
-
-            if firstPage['content'] is None:
-                self.error("Failed to fetch content from Bing.", False)
-                failed = True
-            else:
-                if "/challengepic?" in firstPage['content']:
-                    self.error("Bing returned a CAPTCHA.", False)
-                    failed = True
-
-            if failed:
-                self.refreshTorIdent()
-                attempts += 1
-                failed = False
-            else:
-                break
-
-        if attempts == 3:
+        if response['status'] != 'OK':
+            self.error("Failed to get a valid response from the bing API", exception=False)
             return None
 
-        returnResults[seedUrl] = firstPage['content']
-        pat = re.compile("(\/search\S+first=\d+.[^\'\"]*FORM=\S+)", re.IGNORECASE)
-        matches = re.findall(pat, firstPage['content'])
-        while matches > 0 and fetches < limit:
-            nextUrl = None
-            fetches += 1
-            for match in matches:
-                # Bing moves in increments of 10
-                if "first=" + str((fetches * 10) + 1) in match:
-                    nextUrl = match.replace("&amp;", "&").replace("%3a", ":")
+        try:
+            response_json = json.loads(response['content'])
+        except ValueError:
+            self.error("the key 'content' in the bing API response doesn't contain valid json.", exception=False)
+            return None
 
-            if nextUrl is None:
-                self.debug("Nothing left to scan for in Bing results.")
-                return returnResults
-            self.info("Next Bing URL: " + nextUrl)
+        if (
+            "webPages" in response_json
+            and "value" in response_json["webPages"]
+            and "webSearchUrl" in response_json["webPages"]
+        ):
+            results = {
+                "urls": [result["url"] for result in response_json["webPages"]["value"]],
+                "webSearchUrl": response_json["webPages"]["webSearchUrl"],
+            }
+        else:
+            return None
 
-            # Wait for a random number of seconds between fetches
-            if 'nopause' not in opts:
-                pauseSecs = random.randint(4, 15)
-                self.info("Pausing for " + str(pauseSecs))
-                time.sleep(pauseSecs)
+        return results
 
-            attempts = 0
-            while attempts < 3:
-                nextPage = self.fetchUrl(u'https://www.bing.com' + nextUrl,
-                                         timeout=opts['timeout'], useragent=opts['useragent'])
-                if nextPage['code'] == "400":
-                    self.error("Bing doesn't like us any more..", False)
-                    failed = True
-
-                if nextPage['content'] is None:
-                    self.error("Failed to fetch subsequent content from Bing.", False)
-                    failed = True
-                else:
-                    if "/challengepic?" in firstPage['content']:
-                        self.error("Bing returned a CAPTCHA.", False)
-                        failed = True
-
-                if failed:
-                    self.refreshTorIdent()
-                    attempts += 1
-                    failed = False
-                else:
-                    break
-
-            if attempts == 3:
-                return returnResults
-
-            returnResults[nextUrl] = nextPage['content']
-            pat = re.compile("(\/search\S+first=\d+.[^\'\"]*)", re.IGNORECASE)
-            matches = re.findall(pat, nextPage['content'])
-
-        return returnResults
 
 # SpiderFoot plug-in module base class
 #
@@ -1560,7 +1465,7 @@ class SpiderFootPlugin(object):
             except BaseException as e:
                 f = open("sferror.log", "a")
                 f.write("Module (" + listener.__module__ + ") encountered an error: " + str(e) + "\n")
-                
+
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
                 f.close()
@@ -1712,7 +1617,7 @@ class SpiderFootTarget(object):
                 # 2.1
                 if value == name:
                     return True
-                # 2.2            
+                # 2.2
                 if includeParents and name.endswith("." + value):
                     return True
                 # 2.3
