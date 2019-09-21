@@ -27,16 +27,18 @@ class sfp_googlesearch(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Google API Key.",
+        "api_key": "Google API Key for Google search.",
         "cse_id": "Google Custom Search Engine ID."
     }
 
     # Target
-    results = list()
+    results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -49,21 +51,31 @@ class sfp_googlesearch(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["LINKED_URL_INTERNAL", "RAW_RIR_DATA"]
 
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return None
+
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_googlesearch but did not set a Google API key!", False)
+            self.errorState = True
+            return None
+
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         # Sites hosted on the domain
-        results = self.sf.googleIterate(
+        res = self.sf.googleIterate(
             searchString="site:" + eventData,
             opts={
                 "timeout": self.opts["_fetchtimeout"],
@@ -72,15 +84,16 @@ class sfp_googlesearch(SpiderFootPlugin):
                 "cse_id": self.opts["cse_id"],
             },
         )
-        if results is None:
+        if res is None:
             # Failed to talk to the Google API or no results returned
             return None
 
-        urls = results["urls"]
-        new_links = list(set(urls) - set(self.results))
+        urls = res["urls"]
+        new_links = list(set(urls) - set(self.results.keys()))
 
         # Add new links to results
-        self.results.extend(new_links)
+        for l in new_links:
+            self.results[l] = True
 
         internal_links = [
             link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)
@@ -92,19 +105,9 @@ class sfp_googlesearch(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if internal_links:
-            # Submit the Google results for analysis
-            googlesearch_url = results["webSearchUrl"]
-            response = self.sf.fetchUrl(
-                googlesearch_url,
-                timeout=self.opts["_fetchtimeout"],
-                useragent=self.opts["_useragent"],
+            evt = SpiderFootEvent(
+                "RAW_RIR_DATA", str(res), self.__name__, event
             )
-            if response['status'] == 'OK':
-                evt = SpiderFootEvent(
-                    "SEARCH_ENGINE_WEB_CONTENT", response["content"], self.__name__, event
-                )
-                self.notifyListeners(evt)
-            else:
-                self.sf.error("Failed to fetch Google web search URL", exception=False)
+            self.notifyListeners(evt)
 
 # End of sfp_googlesearch class

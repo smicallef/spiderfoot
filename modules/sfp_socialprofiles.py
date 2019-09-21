@@ -61,18 +61,20 @@ class sfp_socialprofiles(SpiderFootPlugin):
         "count": "Number of bing search engine results of identified profiles to iterate through.",
         "method": "Search engine to use: 'google' or 'bing'.",
         "tighten": "Tighten results by expecting to find the keyword of the target domain mentioned in the social media profile page results?",
-        "bing_api_key": "Bing API Key.",
-        "google_api_key": "Google API Key.",
+        "bing_api_key": "Bing API Key for social media profile search.",
+        "google_api_key": "Google API Key for social media profile search.",
         "google_cse_id": "Google Custom Search Engine ID.",
     }
 
     keywords = None
-    results = dict()
+    results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.keywords = None
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -85,7 +87,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SOCIAL_MEDIA", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["SOCIAL_MEDIA", "RAW_RIR_DATA"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -94,7 +96,15 @@ class sfp_socialprofiles(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['google_api_key'] == "" and self.opts['bing_api_key'] == "":
+            self.sf.error("You enabled sfp_socialprofiles but did not set a Google or Bing API key!", False)
+            self.errorState = True
+            return None
 
         # Don't look up stuff twice
         if eventData in self.results:
@@ -113,7 +123,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
         for site in sites:
             s = unicode(sites[site][0]).format(name=eventData)
             searchStr = s.replace(" ", "%20")
-            results = None
+            res = None
 
             if self.opts["method"].lower() == "yahoo":
                 self.sf.error(
@@ -123,7 +133,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 return None
 
             if self.opts["method"].lower() == "google":
-                results = self.sf.googleIterate(
+                res = self.sf.googleIterate(
                     searchString=searchStr,
                     opts={
                         "timeout": self.opts["_fetchtimeout"],
@@ -135,7 +145,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 self.__dataSource__ = "Google"
 
             if self.opts["method"].lower() == "bing":
-                results = self.sf.bingIterate(
+                res = self.sf.bingIterate(
                     searchString=searchStr,
                     opts={
                         "timeout": self.opts["_fetchtimeout"],
@@ -146,24 +156,23 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 )
                 self.__dataSource__ = "Bing"
 
-            if results is None:
+            if res is None:
                 self.sf.info("No data returned from " + self.opts["method"] + ".")
                 continue
 
             if self.checkForStop():
                 return None
 
-
             # Submit the results for analysis
             evt = SpiderFootEvent(
-                "SEARCH_ENGINE_WEB_CONTENT", str(results), self.__name__, event
+                "RAW_RIR_DATA", str(res), self.__name__, event
             )
             self.notifyListeners(evt)
 
             instances = list()
             for searchDom in sites[site][1]:
                 # Search both the urls & the search engine web content
-                search_string = " ".join(results["urls"] + [str(results)])
+                search_string = " ".join(res["urls"] + [str(res)])
 
                 matches = re.findall(
                     searchDom, search_string, re.IGNORECASE | re.MULTILINE

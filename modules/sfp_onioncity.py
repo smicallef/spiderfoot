@@ -27,17 +27,19 @@ class sfp_onioncity(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Google API Key.",
+        "api_key": "Google API Key for Onion.link search.",
         "cse_id": "Google Custom Search Engine ID.",
         'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target."
     }
 
     # Target
-    results = list()
+    results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -51,21 +53,31 @@ class sfp_onioncity(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT", 
-                "SEARCH_ENGINE_WEB_CONTENT"]
+                "RAW_RIR_DATA"]
 
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return None
+
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_onioncity but did not set a Google API key!", False)
+            self.errorState = True
+            return None
+
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         # Sites hosted on the domain
-        results = self.sf.googleIterate(
+        res = self.sf.googleIterate(
             searchString="+site:onion.link " + eventData,
             opts={
                 "timeout": self.opts["_fetchtimeout"],
@@ -74,18 +86,19 @@ class sfp_onioncity(SpiderFootPlugin):
                 "cse_id": self.opts["cse_id"],
             },
         )
-        if results is None:
+        if res is None:
             # Failed to talk to the bing API or no results returned
             return None
 
-        urls = results["urls"]
-        new_links = list(set(urls) - set(self.results))
+        urls = res["urls"]
+        new_links = list(set(urls) - set(self.results.keys()))
 
         # Add new links to results
-        self.results.extend(new_links)
+        for l in new_links:
+            self.results[l] = True
 
         # Submit the Google results for analysis
-        googlesearch_url = results["webSearchUrl"]
+        googlesearch_url = res["webSearchUrl"]
         response = self.sf.fetchUrl(
             googlesearch_url,
             timeout=self.opts["_fetchtimeout"],
@@ -93,7 +106,7 @@ class sfp_onioncity(SpiderFootPlugin):
         )
         if response['code'].startswith('2'):
             evt = SpiderFootEvent(
-                "SEARCH_ENGINE_WEB_CONTENT", response["content"], self.__name__, event
+                "RAW_RIR_DATA", response["content"], self.__name__, event
             )
             self.notifyListeners(evt)
         else:

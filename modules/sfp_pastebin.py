@@ -27,7 +27,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Google API Key.",
+        "api_key": "Google API Key for PasteBin search.",
         "cse_id": "Google Custom Search Engine ID.",
     }
 
@@ -35,11 +35,13 @@ class sfp_pastebin(SpiderFootPlugin):
         'pastebin': "pastebin.com"
     }
 
-    results = list()
+    results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -59,15 +61,23 @@ class sfp_pastebin(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return None
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_pastebin but did not set a Google API key!", False)
+            self.errorState = True
+            return None
+
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         for dom in self.domains.keys():
             links = list()
             target = self.domains[dom]
-            results = self.sf.googleIterate(
+            res = self.sf.googleIterate(
                 searchString="+site:{target_site} \"{search_keyword}\"".format(
                     target_site=target,
                     search_keyword=eventData,
@@ -80,15 +90,16 @@ class sfp_pastebin(SpiderFootPlugin):
                 },
             )
 
-            if results is None:
+            if res is None:
                 # Failed to talk to the Google API or no results returned
                 return None
 
-            urls = results["urls"]
-            new_links = list(set(urls) - set(self.results))
+            urls = res["urls"]
+            new_links = list(set(urls) - set(self.results.keys()))
 
             # Add new links to results
-            self.results.extend(new_links)
+            for l in new_links:
+                self.results[l] = True
 
             relevant_links = [
                 link for link in new_links if self.sf.urlBaseUrl(link).endswith(target)

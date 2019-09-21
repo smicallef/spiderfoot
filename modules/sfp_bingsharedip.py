@@ -25,7 +25,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         "pages": 20,
         "verify": True,
         "maxcohost": 100,
-        "api_key": "",
+        "api_key": ""
     }
 
     # Option descriptions
@@ -34,17 +34,19 @@ class sfp_bingsharedip(SpiderFootPlugin):
         "pages": "Number of max bing results to request from API.",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
-        "api_key": "Bing API Key.",
+        "api_key": "Bing API Key for shared IP search."
     }
 
-    results = dict()
+    results = None
     cohostcount = 0
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.cohostcount = 0
         self.__dataSource__ = "Bing"
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -57,7 +59,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["CO_HOSTED_SITE", "IP_ADDRESS", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["CO_HOSTED_SITE", "IP_ADDRESS", "RAW_RIR_DATA"]
 
     def validateIP(self, host, ip):
         try:
@@ -83,7 +85,15 @@ class sfp_bingsharedip(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['api_key'] == "" and self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_bingsharedip but did not set a Bing API key!", False)
+            self.errorState = True
+            return None
 
         # Don't look up stuff twice
         if eventData in self.results:
@@ -115,7 +125,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            results = self.sf.bingIterate(
+            res = self.sf.bingIterate(
                 searchString="ip:" + ip,
                 opts={
                     "timeout": self.opts["_fetchtimeout"],
@@ -124,11 +134,11 @@ class sfp_bingsharedip(SpiderFootPlugin):
                     "api_key": self.opts["api_key"],
                 },
             )
-            if results is None:
+            if res is None:
                 # Failed to talk to bing api or no results returned
                 return None
 
-            urls = results["urls"]
+            urls = res["urls"]
 
             for url in urls:
                 self.sf.info("Found something on same IP: " + url)
@@ -163,23 +173,10 @@ class sfp_bingsharedip(SpiderFootPlugin):
                     myres.append(site)
 
             if urls:
-                # Submit the bing results for analysis
-                bingsearch_url = results["webSearchUrl"]
-                response = self.sf.fetchUrl(
-                    bingsearch_url,
-                    timeout=self.opts["_fetchtimeout"],
-                    useragent=self.opts["_useragent"],
+                evt = SpiderFootEvent(
+                    "RAW_RIR_DATA", str(res), self.__name__, event
                 )
-                if response['status'] == 'OK':
-                    evt = SpiderFootEvent(
-                        "SEARCH_ENGINE_WEB_CONTENT",
-                        response["content"],
-                        self.__name__,
-                        event,
-                    )
-                    self.notifyListeners(evt)
-                else:
-                    self.sf.error("Failed to fetch bing web search URL", exception=False)
+                self.notifyListeners(evt)
 
 
 # End of sfp_bingsharedip class
