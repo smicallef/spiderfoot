@@ -52,7 +52,7 @@ class sfp_metadefender(SpiderFootPlugin):
         return ['MALICIOUS_IPADDR', 'MALICIOUS_INTERNET_NAME', 'GEOINFO']
 
     # Query domain REST API
-    # https://onlinehelp.opswat.com/mdcloud/4.1_IP_Reputation.html
+    # https://onlinehelp.opswat.com/mdcloud/4.5_Domain_Reputation.html
     def queryDomain(self, qry):
         headers = {
             'Accept': 'application/json',
