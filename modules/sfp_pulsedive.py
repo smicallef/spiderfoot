@@ -15,15 +15,17 @@ import base64
 from datetime import datetime
 import time
 from netaddr import IPNetwork
+import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pulsedive(SpiderFootPlugin):
     """Pulsedive:Investigate,Passive:Reputation Systems:apikey:Obtain information from Pulsedive's API."""
 
-
     # Default options
     opts = {
         "api_key": "",
+        # The rate limit for free users is 30 requests per minute
+        "delay": 2,
         "age_limit_days": 30,
         'netblocklookup': True,
         'maxnetblock': 24,
@@ -34,6 +36,7 @@ class sfp_pulsedive(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         "api_key": "Pulsedive API Key.",
+        "delay": "Delay between requests, in seconds.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
@@ -65,18 +68,27 @@ class sfp_pulsedive(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_IPADDR", 
-                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK" ]
+                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
+                'TCP_PORT_OPEN']
 
+    # https://pulsedive.com/api/
     def query(self, qry):
-        ret = None
+        params = {
+            'indicator': qry.encode('raw_unicode_escape'),
+            'key': self.opts['api_key']
+        }
 
-        url = "https://pulsedive.com/api/info.php?indicator=" + qry + \
-              "&key=" + self.opts['api_key']
+        url = 'https://pulsedive.com/api/info.php?' + urllib.urlencode(params)
         res = self.sf.fetchUrl(url, timeout=30, useragent="SpiderFoot")
+
+        time.sleep(self.opts['delay'])
 
         if res['code'] == "403":
             self.sf.error("Pulsedive API key seems to have been rejected or you have exceeded usage limits for the month.", False)
             self.errorState = True
+            return None
+
+        if res['content'] is None:
             return None
 
         try:
@@ -87,7 +99,6 @@ class sfp_pulsedive(SpiderFootPlugin):
             return None
 
         return info
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -109,30 +120,31 @@ class sfp_pulsedive(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxnetblock']))
+                return None
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxsubnet']))
+                return None
 
         qrylist = list()
+
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))
@@ -152,28 +164,47 @@ class sfp_pulsedive(SpiderFootPlugin):
                 evtType = 'MALICIOUS_INTERNET_NAME'
 
             rec = self.query(addr)
-            if rec is not None:
-                if rec.get("threats", None):
-                    self.sf.debug("Found threat info in Pulsedive")
-                    for result in rec.get("threats"):
-                        descr = addr
-                        tid = str(rec.get("iid"))
-                        descr += "\n - " + result.get("name", "")
-                        descr += " (" + result.get("category", "") + ")"
-                        if tid:
-                            descr += "\n<SFURL>https://pulsedive.com/indicator/?iid=" + tid + "</SFURL>"
-                        created = result.get("stamp_linked", "")
-                        # 2018-02-20 03:51:59
-                        try:
-                            created_dt = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
-                            created_ts = int(time.mktime(created_dt.timetuple()))
-                            age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
-                            if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                                self.sf.debug("Record found but too old, skipping.")
-                                continue
-                        except BaseException as e:
-                            self.sf.debug("Couldn't parse date from Pulsedive so assuming it's OK.")
-                        e = SpiderFootEvent(evtType, descr, self.__name__, event)
+
+            if rec is None:
+                continue
+
+            attributes = rec.get('attributes')
+
+            if attributes:
+                ports = attributes.get('port')
+                if ports:
+                    for p in ports:
+                        e = SpiderFootEvent('TCP_PORT_OPEN', addr + ':' + p, self.__name__, event)
                         self.notifyListeners(e)
+
+            threats = rec.get('threats')
+
+            if not threats:
+                continue
+
+            self.sf.debug("Found threat info in Pulsedive")
+
+            for result in threats:
+                descr = addr
+                tid = str(rec.get("iid"))
+                descr += "\n - " + result.get("name", "")
+                descr += " (" + result.get("category", "") + ")"
+
+                if tid:
+                    descr += "\n<SFURL>https://pulsedive.com/indicator/?iid=" + tid + "</SFURL>"
+
+                created = result.get("stamp_linked", "")
+                # 2018-02-20 03:51:59
+                try:
+                    created_dt = datetime.strptime(created, '%Y-%m-%d %H:%M:%S')
+                    created_ts = int(time.mktime(created_dt.timetuple()))
+                    age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
+                    if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
+                        self.sf.debug("Record found but too old, skipping.")
+                        continue
+                except BaseException as e:
+                    self.sf.debug("Couldn't parse date from Pulsedive so assuming it's OK.")
+                e = SpiderFootEvent(evtType, descr, self.__name__, event)
+                self.notifyListeners(e)
 
 # End of sfp_pulsedive class
