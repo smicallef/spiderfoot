@@ -12,10 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import socket
-import re
-import dns
-import urllib2
-from netaddr import IPAddress, IPNetwork
+from netaddr import IPAddress
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsneighbor(SpiderFootPlugin):

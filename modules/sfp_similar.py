@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

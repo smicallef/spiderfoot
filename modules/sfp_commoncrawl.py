@@ -13,7 +13,6 @@
 
 import re
 import json
-import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

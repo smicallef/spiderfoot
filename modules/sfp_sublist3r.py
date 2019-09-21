@@ -11,10 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import base64
-from datetime import datetime
-import re
-import time
 import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

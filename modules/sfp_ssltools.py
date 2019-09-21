@@ -14,7 +14,6 @@ import json
 import M2Crypto
 import socket
 import time
-import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

@@ -11,11 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import base64
-from datetime import datetime
-import time
-import socket
-from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_whoxy(SpiderFootPlugin):

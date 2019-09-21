@@ -12,8 +12,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import re
-import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_opencorporates(SpiderFootPlugin):

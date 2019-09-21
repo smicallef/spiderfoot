@@ -9,9 +9,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import json
-import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_iknowwhatyoudownload(SpiderFootPlugin):

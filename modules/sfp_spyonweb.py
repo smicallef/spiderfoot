@@ -13,7 +13,6 @@
 
 import datetime
 import json
-import re
 import socket
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

@@ -10,7 +10,6 @@
 #-------------------------------------------------------------------------------
 
 import json
-import re
 import time
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

@@ -12,7 +12,6 @@
 # -------------------------------------------------------------------------------
 
 import re
-from hashlib import sha256
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_webanalytics(SpiderFootPlugin):

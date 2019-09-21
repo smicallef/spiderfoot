@@ -15,7 +15,6 @@ try:
     import re2 as re
 except ImportError:
     import re
-from hashlib import sha256
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_ethereum(SpiderFootPlugin):
