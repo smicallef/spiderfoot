@@ -21,7 +21,7 @@ class sfp_onioncity(SpiderFootPlugin):
     # Default options
     opts = {
         "api_key": "", 
-        "cse_id": "", 
+        "cse_id": "013611106330597893267:tfgl3wxdtbp", 
         'fetchlinks': True
     }
 

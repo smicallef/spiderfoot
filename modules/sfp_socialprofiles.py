@@ -53,7 +53,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
         "tighten": True,
         "bing_api_key": "",
         "google_api_key": "",
-        "google_cse_id": "",
+        "google_cse_id": "013611106330597893267:tfgl3wxdtbp",
     }
 
     # Option descriptions
@@ -164,8 +164,6 @@ class sfp_socialprofiles(SpiderFootPlugin):
             for searchDom in sites[site][1]:
                 # Search both the urls & the search engine web content
                 search_string = " ".join(results["urls"] + [str(results)])
-
-                self.sf.debug("Applying " + searchDom + " to " + search_string)
 
                 matches = re.findall(
                     searchDom, search_string, re.IGNORECASE | re.MULTILINE
