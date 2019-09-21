@@ -82,7 +82,7 @@ class sfp_tldsearch(SpiderFootPlugin):
         self.sf.info("Spawning threads to check TLDs: " + str(tldList))
         for pair in tldList:
             (domain, tld) = pair
-            tn = 'sfp_tldsearch_' + str(random.randint(0, 999999999))
+            tn = 'sfp_tldsearch_' + str(random.SystemRandom().randint(0, 999999999))
             t.append(threading.Thread(name=tn, target=self.tryTld, args=(domain, tld,)))
             t[i].start()
             i += 1

@@ -408,7 +408,7 @@ if __name__ == '__main__':
                 'tools.auth_digest.on': True,
                 'tools.auth_digest.realm': sfConfig['__webaddr'],
                 'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(secrets),
-                'tools.auth_digest.key': random.randint(0, 99999999)
+                'tools.auth_digest.key': random.SystemRandom().randint(0, 99999999)
             }
         else:
             print("Warning: passwd file contains no passwords. Authentication disabled.")

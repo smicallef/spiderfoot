@@ -458,7 +458,7 @@ class SpiderFootWebUi:
     # Settings
     def opts(self):
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
-        self.token = random.randint(0, 99999999)
+        self.token = random.SystemRandom().randint(0, 99999999)
         return templ.render(opts=self.config, pageid='SETTINGS', token=self.token, docroot=self.docroot)
 
     opts.exposed = True
@@ -485,7 +485,7 @@ class SpiderFootWebUi:
     # Settings
     def optsraw(self):
         ret = dict()
-        self.token = random.randint(0, 99999999)
+        self.token = random.SystemRandom().randint(0, 99999999)
         for opt in self.config:
             if opt.startswith('__'):
                 if opt == '__modules__':
@@ -598,7 +598,7 @@ class SpiderFootWebUi:
             return self.error("Processing one or more of your inputs failed: " + str(e))
 
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
-        self.token = random.randint(0, 99999999)
+        self.token = random.SystemRandom().randint(0, 99999999)
         return templ.render(opts=self.config, pageid='SETTINGS', updated=True,
                             docroot=self.docroot, token=self.token)
 
