@@ -39,7 +39,7 @@ class sfp_apility(SpiderFootPlugin):
     # Initialize module and module options
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.errorState = False
 
         for opt in userOpts.keys():
