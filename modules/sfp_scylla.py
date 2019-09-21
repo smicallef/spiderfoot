@@ -112,7 +112,7 @@ class sfp_scylla(SpiderFootPlugin):
 
         while position < (per_page * max_pages):
             if self.errorState:
-                return None
+                break
 
             data = self.query(eventData, per_page, position)
 
