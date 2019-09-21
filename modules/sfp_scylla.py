@@ -136,9 +136,10 @@ class sfp_scylla(SpiderFootPlugin):
                 if not email:
                     continue
 
+                mailDom = email.lower().split('@')[1]
                 # Skip unrelated emails
                 # Scylla sometimes returns broader results than the searched data
-                if not email.endswith("@" + eventData):
+                if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
                     self.sf.debug("Skipped address: " + email)
                     continue
 
