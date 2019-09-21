@@ -243,8 +243,8 @@ class SpiderFoot:
                     col = "#f00"
                 ret['nodes'].append({'id': str(ncounter),
                                     'label': unicode(dst, errors="replace"),
-                                    'x': random.randint(1,1000),
-                                    'y': random.randint(1,1000),
+                                    'x': random.SystemRandom().randint(1, 1000),
+                                    'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
                                     'color': col
                 })
@@ -256,8 +256,8 @@ class SpiderFoot:
                 ncounter = ncounter + 1
                 ret['nodes'].append({'id': str(ncounter),
                                     'label': unicode(src, errors="replace"),
-                                    'x': random.randint(1,1000),
-                                    'y': random.randint(1,1000),
+                                    'x': random.SystemRandom().randint(1, 1000),
+                                    'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
                                     'color': col
                 })
@@ -287,9 +287,9 @@ class SpiderFoot:
  #       hashStr = hashlib.sha256(
  #           scanName +
  #           str(time.time() * 1000) +
- #           str(random.randint(100000, 999999))
+ #           str(random.SystemRandom().randint(100000, 999999))
  #       ).hexdigest()
-        rstr = str(time.time()) + str(random.randint(100000, 999999))
+        rstr = str(time.time()) + str(random.SystemRandom().randint(100000, 999999))
         hashStr = "%08X" % int(binascii.crc32(rstr) & 0xffffffff)
         return hashStr
 
@@ -1089,7 +1089,7 @@ class SpiderFoot:
         try:
             header = dict()
             if type(useragent) is list:
-                header['User-Agent'] = random.choice(useragent)
+                header['User-Agent'] = random.SystemRandom().choice(useragent)
             else:
                 header['User-Agent'] = useragent
 
@@ -1191,7 +1191,7 @@ class SpiderFoot:
     # Check if wildcard DNS is enabled by looking up two random hostnames
     def checkDnsWildcard(self, target):
         randpool = 'bcdfghjklmnpqrstvwxyz3456789'
-        randhost = ''.join([random.choice(randpool) for x in range(10)])
+        randhost = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
 
         # An exception will be raised if the resolution fails
         try:
@@ -1670,7 +1670,7 @@ class SpiderFootEvent(object):
 
         self.sourceEventHash = sourceEvent.getHash()
         self.__id = self.eventType + str(self.generated) + self.module + \
-                    str(random.randint(0, 99999999))
+                    str(random.SystemRandom().randint(0, 99999999))
 
     def asDict(self):
         return {

@@ -74,7 +74,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         self.portlist = [int(x) for x in self.portlist]
 
         if self.opts['randomize']:
-            random.shuffle(self.portlist)
+            random.SystemRandom().shuffle(self.portlist)
 
     # What events is this module interested in for input
     def watchedEvents(self):

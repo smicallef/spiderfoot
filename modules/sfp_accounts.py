@@ -226,7 +226,7 @@ class sfp_accounts(SpiderFootPlugin):
         # sites are by attempting to fetch a garbage user.
         if not self.distrustedChecked:
             randpool = 'abcdefghijklmnopqrstuvwxyz1234567890'
-            randuser = ''.join([random.choice(randpool) for x in range(10)])
+            randuser = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
             res = self.batchSites(randuser)
             if len(res) > 0:
                 delsites = list()
