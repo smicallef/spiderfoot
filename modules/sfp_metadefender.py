@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import socket
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
