@@ -10,10 +10,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import base64
 import json
 import time
-from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_bgpview(SpiderFootPlugin):
@@ -194,14 +192,15 @@ class sfp_bgpview(SpiderFootPlugin):
                 self.sf.info("No peers found for ASN " + eventData)
                 return None
 
+            peers = list()
+
             ipv4_peers = data.get('ipv4_peers')
             if ipv4_peers is not None:
                 for peer in ipv4_peers:
                     asn = peer.get('asn')
                     if not asn:
                         continue
-                    evt = SpiderFootEvent('BGP_AS_PEER', str(asn), self.__name__, event)
-                    self.notifyListeners(evt)
+                    peers.append(str(asn))
 
             ipv6_peers = data.get('ipv6_peers')
             if ipv6_peers is not None:
@@ -209,8 +208,11 @@ class sfp_bgpview(SpiderFootPlugin):
                     asn = peer.get('asn')
                     if not asn:
                         continue
-                    evt = SpiderFootEvent('BGP_AS_PEER', str(asn), self.__name__, event)
-                    self.notifyListeners(evt)
+                    peers.append(str(asn))
+
+            for peer in set(peers):
+                evt = SpiderFootEvent('BGP_AS_PEER', str(peer), self.__name__, event)
+                self.notifyListeners(evt)
 
         if eventName == 'NETBLOCK_MEMBER':
             data = self.queryNetblock(eventData)
