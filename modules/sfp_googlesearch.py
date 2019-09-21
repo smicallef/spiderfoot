@@ -21,13 +21,14 @@ class sfp_googlesearch(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "api_key": "", "cse_id": "",
+        "api_key": "",
+        "cse_id": ""
     }
 
     # Option descriptions
     optdescs = {
         "api_key": "Google API Key.",
-        "cse_id": "Google Custom Search Engine ID.",
+        "cse_id": "Google Custom Search Engine ID."
     }
 
     # Target

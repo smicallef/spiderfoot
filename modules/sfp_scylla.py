@@ -33,10 +33,12 @@ class sfp_scylla(SpiderFootPlugin):
     }
 
     results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = dict()
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -67,6 +69,11 @@ class sfp_scylla(SpiderFootPlugin):
 
         time.sleep(self.opts['pause'])
 
+        if res['code'].startswith("50"):
+            self.sf.error("Syclla.sh is having problems.", False)
+            self.errorState = True
+            return None
+
         if res['content'] is None:
             self.sf.debug('No response from Scylla.sh')
             return None
@@ -88,6 +95,9 @@ class sfp_scylla(SpiderFootPlugin):
         if eventData in self.results:
             return None
 
+        if self.errorState:
+            return None
+
         self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
@@ -96,7 +106,14 @@ class sfp_scylla(SpiderFootPlugin):
         max_pages = int(self.opts['max_pages'])
         per_page = int(self.opts['per_page'])
 
+        emails = list()
+        hashes = list()
+        passwords = list()
+
         while position < (per_page * max_pages):
+            if self.errorState:
+                return None
+
             data = self.query(eventData, per_page, position)
 
             if not data:
@@ -106,10 +123,6 @@ class sfp_scylla(SpiderFootPlugin):
 
             #evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             #self.notifyListeners(evt)
-
-            emails = list()
-            hashes = list()
-            passwords = list()
 
             for result in data:
                 source = result.get('_source')
@@ -125,9 +138,8 @@ class sfp_scylla(SpiderFootPlugin):
 
                 # Skip unrelated emails
                 # Scylla sometimes returns broader results than the searched data
-                mailDom = email.lower().split('@')[1]
-                if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
-                    self.sf.debug("Skipped address: " + match)
+                if not email.endswith("@" + eventData):
+                    self.sf.debug("Skipped address: " + email)
                     continue
 
                 breach = source.get('Domain')

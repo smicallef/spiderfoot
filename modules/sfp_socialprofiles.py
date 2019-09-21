@@ -22,22 +22,22 @@ sites = {
     "Facebook": [
         "\"{name}\"+site:facebook.com",
         [
-            '"(https?://[a-z\.]*facebook.[a-z\.]+/[^/"<> ]+)"',
-            '(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/"<> ]+)',
+            '[ \'"](https?://[a-z\.]*facebook.[a-z\.]+/[^/"\'<> ]+/?)[\'" ]',
+            '(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/"\'<> ]+/?)',
         ],
     ],
     "Google+": [
         "\"{name}\"+site:plus.google.com",
         [
-            '"(https?://plus.google.[a-z\.]+/\d+[^"<>\/ ]+)"',
-            '(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/"<> ]+)',
+            '[ \'"](https?://plus.google.[a-z\.]+/\d+[^"\'<>\/ ]+)[\'" ]',
+            '(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/"\'<> ]+)',
         ],
     ],
     "LinkedIn": [
         "\"{name}\"+site:linkedin.com",
         [
-            '"(https?://[a-z\.]*linkedin.[a-z\.]+/[^/"<> ]+)"',
-            '(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\/"<> ]+)',
+            '["\' ](https?://[a-z\.]*linkedin.[a-z\.]+/[^\?"\'<> ]+)[\'" ]',
+            '(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\?"\'<> ]+)',
         ],
     ],
 }
@@ -59,7 +59,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         "count": "Number of bing search engine results of identified profiles to iterate through.",
-        "method": "Search engine to use: google or bing.",
+        "method": "Search engine to use: 'google' or 'bing'.",
         "tighten": "Tighten results by expecting to find the keyword of the target domain mentioned in the social media profile page results?",
         "bing_api_key": "Bing API Key.",
         "google_api_key": "Google API Key.",
@@ -154,34 +154,23 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 return None
 
 
-            web_search_url = results["webSearchUrl"]
-            response = self.sf.fetchUrl(
-                web_search_url,
-                timeout=self.opts["_fetchtimeout"],
-                useragent=self.opts["_useragent"],
-            )
-
-            if response["status"] != "OK":
-                self.sf.error("Failed to fetch bing web search URL", exception=False)
-                continue
-
             # Submit the results for analysis
             evt = SpiderFootEvent(
-                "SEARCH_ENGINE_WEB_CONTENT", response["content"], self.__name__, event
+                "SEARCH_ENGINE_WEB_CONTENT", str(results), self.__name__, event
             )
             self.notifyListeners(evt)
-
 
             instances = list()
             for searchDom in sites[site][1]:
                 # Search both the urls & the search engine web content
-                search_string = " ".join(results["urls"] + [response["content"]])
+                search_string = " ".join(results["urls"] + [str(results)])
+
+                self.sf.debug("Applying " + searchDom + " to " + search_string)
 
                 matches = re.findall(
                     searchDom, search_string, re.IGNORECASE | re.MULTILINE
                 )
 
-                import pdb; pdb.set_trace()
                 if not matches:
                     continue
 

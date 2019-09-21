@@ -20,7 +20,9 @@ class sfp_onioncity(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "api_key": "", "cse_id": "", 'fetchlinks': True
+        "api_key": "", 
+        "cse_id": "", 
+        'fetchlinks': True
     }
 
     # Option descriptions
@@ -89,7 +91,7 @@ class sfp_onioncity(SpiderFootPlugin):
             timeout=self.opts["_fetchtimeout"],
             useragent=self.opts["_useragent"],
         )
-        if response['status'] == 'OK':
+        if response['code'].startswith('2'):
             evt = SpiderFootEvent(
                 "SEARCH_ENGINE_WEB_CONTENT", response["content"], self.__name__, event
             )

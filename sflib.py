@@ -1266,7 +1266,7 @@ class SpiderFoot:
     # timeout: API call timeout
     def bingIterate(self, searchString, opts=dict()):
         endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&".format(
-            search_string=SearchString.replace(" ", "%20")
+            search_string=searchString.replace(" ", "%20")
         ) 
 
         params = {

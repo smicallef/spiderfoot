@@ -16,12 +16,15 @@ class sfp_bingsearch(SpiderFootPlugin):
     """Bing:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from bing to identify sub-domains and links."""
 
     # Default options
-    opts = {"pages": 20, "api_key": ""}
+    opts = {
+        "pages": 20,
+        "api_key": ""
+    }
 
     # Option descriptions
     optdescs = {
-        "pages": "Number of max bing results to request from api.",
-        "api_key": "Bing API Key.",
+        "pages": "Number of max bing results to request from the API.",
+        "api_key": "Bing API Key."
     }
 
     results = list()
@@ -91,7 +94,7 @@ class sfp_bingsearch(SpiderFootPlugin):
                 timeout=self.opts["_fetchtimeout"],
                 useragent=self.opts["_useragent"],
             )
-            if response['status'] == 'OK':
+            if response['code'].startswith('2'):
                 evt = SpiderFootEvent(
                     "SEARCH_ENGINE_WEB_CONTENT", response["content"], self.__name__, event
                 )
