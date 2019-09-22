@@ -67,6 +67,9 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         paging = ""
         pagenr = 1
         while keepGoing:
+            if self.checkForStop():
+                return None
+
             # Sites hosted on the domain
             data = self.sf.fetchUrl("https://onionsearchengine.com/search.php?search=\"" + \
                                     eventData.replace(" ", "%20") + "\"&submit=Search" + paging, 

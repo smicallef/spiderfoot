@@ -81,6 +81,10 @@ class sfp_torch(SpiderFootPlugin):
         pagecount = 0
         p = ""
         while "color=gray>next &gt;&gt;" not in pagecontent.lower() and pagecount < self.opts['pages']:
+            # Check if we've been asked to stop
+            if self.checkForStop():
+                return None
+
             if pagecount > 0:
                 p = "&np=" + str(pagecount)
             pagecount += 1
@@ -97,10 +101,6 @@ class sfp_torch(SpiderFootPlugin):
             pagecontent = data['content']
 
             if "No documents were found" not in data['content']:
-                # Check if we've been asked to stop
-                if self.checkForStop():
-                    return None
-
                 # Submit the google results for analysis
                 evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
                                       self.__name__, event)

@@ -115,6 +115,9 @@ class sfp_intelx(SpiderFootPlugin):
             count = 0
             status = 3  # status 3 = No results yet, keep trying. 0 = Success with results
             while status == 3 and count < limit:
+                if self.checkForStop():
+                    return None
+
                 res = self.sf.fetchUrl(resulturl, headers=headers)
                 if res['content'] is None:
                     self.sf.info("No IntelligenceX info found for results from " + qry)
