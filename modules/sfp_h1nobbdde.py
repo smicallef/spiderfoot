@@ -9,11 +9,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import time
-import datetime
 import re
-import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_h1nobbdde(SpiderFootPlugin):

@@ -10,12 +10,9 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 import re
 import dns.query
 import dns.zone
-import urllib2
-from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnszonexfer(SpiderFootPlugin):

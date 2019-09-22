@@ -9,7 +9,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import json
 import time
 import re

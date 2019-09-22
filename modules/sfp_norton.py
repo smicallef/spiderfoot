@@ -13,7 +13,6 @@
 
 import socket
 import dns.resolver
-from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

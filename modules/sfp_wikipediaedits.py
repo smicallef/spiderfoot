@@ -10,10 +10,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import json
 import datetime
-import urllib2
 import re
 from HTMLParser import HTMLParser
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

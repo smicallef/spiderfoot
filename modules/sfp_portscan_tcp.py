@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
+from netaddr import IPNetwork
 import socket
 import random
 import threading

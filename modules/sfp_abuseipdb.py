@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
 import re
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

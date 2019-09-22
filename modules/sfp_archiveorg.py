@@ -11,10 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-import urllib
 import datetime
-import time
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

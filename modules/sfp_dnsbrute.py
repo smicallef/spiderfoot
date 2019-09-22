@@ -11,14 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
-import re
 import dns
 import random
 import threading
-import urllib2
 import time
-from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsbrute(SpiderFootPlugin):

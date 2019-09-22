@@ -13,7 +13,6 @@
 
 import json
 import hashlib
-import re
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

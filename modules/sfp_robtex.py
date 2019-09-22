@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 import socket
 import json
 import time

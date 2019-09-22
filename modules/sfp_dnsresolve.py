@@ -13,9 +13,8 @@
 
 import socket
 import re
-import dns
 import urllib2
-from netaddr import IPAddress, IPNetwork
+from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsresolve(SpiderFootPlugin):

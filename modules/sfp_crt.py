@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import re
 import M2Crypto
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
@@ -96,7 +95,7 @@ class sfp_crt(SpiderFootPlugin):
                 self.getIssuer(m2cert, evt)
                 self.getIssued(m2cert, evt)
         except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+            self.sf.debug("Error processing response: " + str(e))
             return None
 
         return None

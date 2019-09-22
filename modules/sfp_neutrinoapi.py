@@ -12,7 +12,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_neutrinoapi(SpiderFootPlugin):

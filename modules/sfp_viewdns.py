@@ -12,7 +12,6 @@
 
 import json
 import socket
-from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_viewdns(SpiderFootPlugin):

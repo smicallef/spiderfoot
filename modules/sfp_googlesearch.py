@@ -10,8 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import urllib
-
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

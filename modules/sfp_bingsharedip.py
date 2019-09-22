@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

@@ -12,10 +12,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError:
-    import re
 import phonenumbers
 from phonenumbers import carrier
 #from phonenumbers import geocoder

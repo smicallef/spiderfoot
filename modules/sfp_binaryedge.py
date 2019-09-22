@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-from datetime import datetime
 import time
 import socket
 from netaddr import IPNetwork

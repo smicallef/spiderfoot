@@ -11,8 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
-from netaddr import IPAddress, IPNetwork
+from netaddr import IPAddress
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

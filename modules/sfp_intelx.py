@@ -14,7 +14,6 @@
 import json
 import time
 import datetime
-from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 

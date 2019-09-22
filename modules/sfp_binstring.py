@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 import string
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

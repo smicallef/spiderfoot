@@ -10,8 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-import socket
 import datetime
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

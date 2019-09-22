@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import base64
 from datetime import datetime
 import time
 from netaddr import IPNetwork
