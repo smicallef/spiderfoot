@@ -53,6 +53,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
     portlist = list()
     portResults = dict()
     lock = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -66,12 +67,16 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         if self.opts['ports'][0].startswith("http://") or \
                 self.opts['ports'][0].startswith("https://") or \
                 self.opts['ports'][0].startswith("@"):
-            self.portlist = self.sf.optValueToData(self.opts['ports'][0])
+            portlist = self.sf.optValueToData(self.opts['ports'][0])
         else:
-            self.portlist = self.opts['ports']
+            portlist = self.opts['ports']
 
         # Convert to integers
-        self.portlist = [int(x) for x in self.portlist]
+        for port in set(portlist):
+            try:
+                self.portlist.append(int(port))
+            except ValueError as e:
+                self.sf.debug('Skipping invalid port specified in port list')
 
         if self.opts['randomize']:
             random.SystemRandom().shuffle(self.portlist)
@@ -154,7 +159,15 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         eventData = event.data
         scanIps = list()
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if not self.portlist:
+            self.sf.error('No ports specified in port list', False)
+            self.errorState = True
+            return None
 
         try:
             if eventName == "NETBLOCK_OWNER" and self.opts['netblockscan']:
