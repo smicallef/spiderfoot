@@ -67,35 +67,20 @@ class sfp_skymem(SpiderFootPlugin):
             return None
 
         # Extract emails from results page
-        pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
-        matches = re.findall(pat, res['content'])
-        if not matches:
-            return None
+        emails = self.sf.parseEmails(res['content'])
 
-        for match in matches:
-            self.sf.debug("Found possible email: " + match)
-
-            # Handle false positive matches
-            if len(match) < 5:
-                self.sf.debug("Likely invalid address.")
-                continue
-
-            # Handle messed up encodings
-            if "%" in match:
-                self.sf.debug("Skipped address: " + match)
-                continue
-
+        for email in emails:
             # Skip unrelated emails
-            mailDom = match.lower().split('@')[1]
+            mailDom = email.lower().split('@')[1]
             if not self.getTarget().matches(mailDom):
-                self.sf.debug("Skipped address: " + match)
+                self.sf.debug("Skipped address: " + email)
                 continue
 
-            self.sf.info("Found e-mail address: " + match)
-            if match not in self.results:
-                evt = SpiderFootEvent("EMAILADDR", match, self.__name__, event)
+            self.sf.info("Found e-mail address: " + email)
+            if emnail not in self.results:
+                evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
                 self.notifyListeners(evt)
-                self.results[match] = True
+                self.results[email] = True
 
         # Loop through first 20 pages of results
         domain_ids = re.findall(r'<a href="/domain/([a-z0-9]+)\?p=', res['content'])
@@ -111,32 +96,19 @@ class sfp_skymem(SpiderFootPlugin):
             if res['content'] is None:
                 break
 
-            pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
-            matches = re.findall(pat, res['content'])
-            for match in matches:
-                self.sf.debug("Found possible email: " + match)
-
-                # Handle false positive matches
-                if len(match) < 5:
-                    self.sf.debug("Likely invalid address.")
-                    continue
-
-                # Handle messed up encodings
-                if "%" in match:
-                    self.sf.debug("Skipped address: " + match)
-                    continue
-
+            emails = self.sf.parseEmails(res['content'])
+            for email in emails:
                 # Skip unrelated emails
-                mailDom = match.lower().split('@')[1]
+                mailDom = email.lower().split('@')[1]
                 if not self.getTarget().matches(mailDom):
-                    self.sf.debug("Skipped address: " + match)
+                    self.sf.debug("Skipped address: " + email)
                     continue
 
-                self.sf.info("Found e-mail address: " + match)
-                if match not in self.results:
-                    evt = SpiderFootEvent("EMAILADDR", match, self.__name__, event)
+                self.sf.info("Found e-mail address: " + email)
+                if email not in self.results:
+                    evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
                     self.notifyListeners(evt)
-                    self.results[match] = True
+                    self.results[email] = True
 
             # Check if we're on the last page of results
             max_page = 0
