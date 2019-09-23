@@ -893,7 +893,7 @@ class SpiderFoot:
     # Returns an Array
     def parseEmails(self, data):
         emails = list()
-        matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', str(data).decode('unicode-escape'))
+        matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
 
         for match in matches:
             self.debug("Found possible email: " + match)
