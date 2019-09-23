@@ -77,7 +77,7 @@ class sfp_skymem(SpiderFootPlugin):
                 continue
 
             self.sf.info("Found e-mail address: " + email)
-            if emnail not in self.results:
+            if email not in self.results:
                 evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
                 self.notifyListeners(evt)
                 self.results[email] = True
