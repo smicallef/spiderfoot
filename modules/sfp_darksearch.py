@@ -31,13 +31,13 @@ class sfp_darksearch(SpiderFootPlugin):
         'max_pages': "Maximum number of pages of results to fetch."
     }
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "Darksearch"
-        self.results = dict()
+        self.results = self.tempStorage()
         self.errorState = False
 
         for opt in userOpts.keys():
