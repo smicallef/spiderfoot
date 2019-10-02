@@ -16,6 +16,7 @@ import csv
 import time
 import random
 import re
+from cherrypy import _cperror
 from operator import itemgetter
 from copy import deepcopy
 from mako.lookup import TemplateLookup
@@ -50,7 +51,8 @@ class SpiderFootWebUi:
         self.docroot = self.config['__docroot'].rstrip('/')
 
         cherrypy.config.update({
-          'error_page.404': self.error_page_404
+          'error_page.404': self.error_page_404,
+          'request.error_response': self.error_page
         })
 
         print("")
@@ -61,6 +63,14 @@ class SpiderFootWebUi:
         print("*************************************************************")
         print("")
         print("")
+
+    def error_page(self):
+        cherrypy.response.status = 500
+
+        if self.config['_debug']:
+            cherrypy.response.body = _cperror.get_error_page(status=500, traceback=_cperror.format_exc())
+        else:
+            cherrypy.response.body = '<html><body>Error</body></html>'
 
     def error_page_404(self, status, message, traceback, version):
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
