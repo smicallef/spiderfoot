@@ -87,10 +87,11 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         c = int(maxip)
 
         while s <= c:
-            sip = str(IPAddress(s))
-            self.sf.debug("Attempting look-aside lookup of: " + sip)
             if self.checkForStop():
                 return None
+
+            sip = str(IPAddress(s))
+            self.sf.debug("Attempting look-aside lookup of: " + sip)
 
             if sip in self.hostresults or sip == eventData:
                 s += 1

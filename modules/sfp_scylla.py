@@ -110,6 +110,9 @@ class sfp_scylla(SpiderFootPlugin):
         passwords = list()
 
         while position < (per_page * max_pages):
+            if self.checkForStop():
+                return None
+
             if self.errorState:
                 break
 

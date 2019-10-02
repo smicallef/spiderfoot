@@ -89,6 +89,9 @@ class sfp_darksearch(SpiderFootPlugin):
         page = 1
         pages = self.opts['max_pages']
         while page <= pages:
+            if self.checkForStop():
+                return None
+
             res = self.query(eventData, page)
 
             if res is None:

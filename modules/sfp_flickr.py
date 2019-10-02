@@ -105,6 +105,9 @@ class sfp_flickr(SpiderFootPlugin):
         pages = self.opts['maxpages']
         per_page = self.opts['per_page']
         while page <= pages:
+            if self.checkForStop():
+                return None
+
             res = self.query("@"+eventData, api_key, page=page, per_page=per_page)
 
             if res is None:
