@@ -252,6 +252,10 @@ class sfp_bgpview(SpiderFootPlugin):
                 p = prefix.get('prefix')
                 if not p:
                     continue
+
+                # Not supporting IPv6 prefixes
+                if ":" in p:
+                    continue
                 if not prefix.get('asn'):
                     continue
                 asn = prefix.get('asn').get('asn')
