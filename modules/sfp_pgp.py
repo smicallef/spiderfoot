@@ -48,7 +48,7 @@ class sfp_pgp(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["EMAILADDR", "DOMAIN_NAME"]
+        return ['INTERNET_NAME', "EMAILADDR", "DOMAIN_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -86,7 +86,7 @@ class sfp_pgp(SpiderFootPlugin):
                     evttype = "EMAILADDR"
 
                     mailDom = email.lower().split('@')[1]
-                    if not self.getTarget().matches(mailDom):
+                    if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
                         evttype = "AFFILIATE_EMAILADDR"
 
                     self.sf.info("Found e-mail address: " + email)
