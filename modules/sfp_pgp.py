@@ -81,21 +81,16 @@ class sfp_pgp(SpiderFootPlugin):
                                        useragent=self.opts['_useragent'])
 
             if res['content'] is not None:
-                pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
-                matches = re.findall(pat, res['content'])
-                for match in matches:
+                emails = self.sf.parseEmails(res['content'])
+                for email in emails:
                     evttype = "EMAILADDR"
-                    self.sf.debug("Found possible email: " + match)
-                    if len(match) < 4:
-                        self.sf.debug("Likely invalid address.")
-                        continue
 
-                    mailDom = match.lower().split('@')[1]
+                    mailDom = email.lower().split('@')[1]
                     if not self.getTarget().matches(mailDom):
                         evttype = "AFFILIATE_EMAILADDR"
 
-                    self.sf.info("Found e-mail address: " + match)
-                    evt = SpiderFootEvent(evttype, match, self.__name__, event)
+                    self.sf.info("Found e-mail address: " + email)
+                    evt = SpiderFootEvent(evttype, email, self.__name__, event)
                     self.notifyListeners(evt)
 
         if eventName == "EMAILADDR":

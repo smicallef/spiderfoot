@@ -59,22 +59,13 @@ class sfp_email(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        pat = re.compile("([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
-        matches = re.findall(pat, eventData)
+        emails = self.sf.parseEmails(eventData)
         myres = list()
-        for match in matches:
+        for email in emails:
             evttype = "EMAILADDR"
-            if len(match) < 4:
-                self.sf.debug("Likely invalid address: " + match)
-                continue
-
-            # Handle messed up encodings
-            if "%" in match:
-                self.sf.debug("Skipped address: " + match)
-                continue
 
             # Get the domain and strip potential ending .
-            mailDom = match.lower().split('@')[1].strip('.')
+            mailDom = email.lower().split('@')[1].strip('.')
             if not self.getTarget().matches(mailDom) and not self.getTarget().matches(match):
                 self.sf.debug("External domain, so possible affiliate e-mail")
                 evttype = "AFFILIATE_EMAILADDR"
@@ -82,17 +73,17 @@ class sfp_email(SpiderFootPlugin):
             if eventName.startswith("AFFILIATE_"):
                 evttype = "AFFILIATE_EMAILADDR"
 
-            self.sf.info("Found e-mail address: " + match)
-            if type(match) == str:
-                mail = unicode(match.strip('.'), 'utf-8', errors='replace')
+            self.sf.info("Found e-mail address: " + email)
+            if type(email) == str:
+                mail = unicode(email.strip('.'), 'utf-8', errors='replace')
             else:
-                mail = match.strip('.')
+                mail = email.strip('.')
 
             if mail in myres:
                 self.sf.debug("Already found from this source.")
                 continue
-            else:
-                myres.append(mail)
+
+            myres.append(mail)
 
             evt = SpiderFootEvent(evttype, mail, self.__name__, event)
             if event.moduleDataSource:
