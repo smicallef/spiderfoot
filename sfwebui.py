@@ -223,7 +223,8 @@ class SpiderFootWebUi:
                   "source_data": source_data,
                   "false_positive": false_positive,
                   "last_seen": lastseen,
-                  "scan_name": scan_name
+                  "scan_name": scan_name,
+                  "scan_target": scan[1]
               })
 
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.json"
