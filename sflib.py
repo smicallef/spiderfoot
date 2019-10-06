@@ -771,7 +771,7 @@ class SpiderFoot:
                     ret.append(unicode(host, 'utf-8', errors='replace'))
             else:
                 ret.append(unicode(addr, 'utf-8', errors='replace'))
-        return ret
+        return set(ret)
 
     # Verify input is OK to execute
     def sanitiseInput(self, cmd):
