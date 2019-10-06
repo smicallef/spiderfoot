@@ -107,7 +107,7 @@ sfOptdescs = {
     '_socks3port': 'SOCKS Server TCP Port. Usually 1080 for 4/5, 8080 for HTTP and 9050 for TOR.',
     '_socks4user': 'SOCKS Username. Valid only for SOCKS4 and SOCKS5 servers.',
     '_socks5pwd': "SOCKS Password. Valid only for SOCKS5 servers.",
-    '_socks6dns': "Resolve DNS through the SOCKS proxy? When TOR is used this will always be True when fetching web content. Otherwise, DNS goes to your configured DNS server.",
+    '_socks6dns': "Resolve DNS through the SOCKS proxy? When SOCKS/TOR is used this will always be True when resolving to fetch web content. Otherwise, all other DNS resolution goes to your configured DNS server.",
     '_torctlport': "The port TOR is taking control commands on. This is necessary for SpiderFoot to tell TOR to re-circuit when it suspects anonymity is compromised.",
     '_fatalerrors': "Abort the scan when modules encounter exceptions.",
     '_modulesenabled': "Modules enabled for the scan."  # This is a hack to get a description for an option not actually available.
