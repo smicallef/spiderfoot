@@ -18,8 +18,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_skymem(SpiderFootPlugin):
     """Skymem:Footprint,Investigate,Passive:Search Engines::Look up e-mail addresses on Skymem."""
 
-
-    results = dict()
+    results = None
 
     # Default options
     opts = {
@@ -32,7 +31,7 @@ class sfp_skymem(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "Skymem"
-        self.results = dict()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

@@ -32,7 +32,7 @@ class sfp_emailformat(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "Email-Format.com"
-        self.results = dict()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
