@@ -195,7 +195,7 @@ class SpiderFootWebUi:
     # Export results from multiple scans in JSON format
     def scanexportjsonmulti(self, ids):
         dbh = SpiderFootDb(self.config)
-        scaninfo = dict()
+        scaninfo = list()
 
         for id in ids.split(','):
           scan = dbh.scanInstanceGet(id)
@@ -204,9 +204,6 @@ class SpiderFootWebUi:
               continue
 
           scan_name = scan[0]
-
-          if scan_name not in scaninfo:
-              scaninfo[scan_name] = []
 
           for row in dbh.scanResultEvent(id):
               lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
@@ -219,13 +216,14 @@ class SpiderFootWebUi:
               if event_type == "ROOT":
                   continue
 
-              scaninfo[scan_name].append({
+              scaninfo.append({
                   "data": event_data,
-                  "type": event_type,
-                  "source_module": source_module,
+                  "event_type": event_type,
+                  "module": source_module,
                   "source_data": source_data,
                   "false_positive": false_positive,
-                  "lastseen": lastseen
+                  "last_seen": lastseen,
+                  "scan_name": scan_name
               })
 
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.json"
