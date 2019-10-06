@@ -18,11 +18,13 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
     """F-Secure Riddler.io:Investigate,Footprint,Passive:Search Engines:apikey:Obtain network information from F-Secure Riddler.io API."""
 
     opts = {
+        'verify': True,
         'username': '',
         'password': ''
     }
 
     optdescs = {
+        'verify': 'Verify domain names resolve',
         'username': 'F-Secure Riddler.io username',
         'password': 'F-Secure Riddler.io password'
     }
@@ -39,7 +41,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ['DOMAIN_NAME', 'INTERNET_NAME', 'IP_ADDRESS']
+        return ['DOMAIN_NAME', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'IP_ADDRESS']
 
     def producedEvents(self):
         return ['INTERNET_NAME', 'IP_ADDRESS',
@@ -125,6 +127,24 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
 
         return data
 
+    # Resolve a host
+    def resolveHost(self, host):
+        try:
+            # IDNA-encode the hostname in case it contains unicode
+            if type(host) != unicode:
+                host = unicode(host, "utf-8", errors='replace').encode("idna")
+            else:
+                host = host.encode("idna")
+
+            addrs = socket.gethostbyname_ex(host)
+            if not addrs:
+                return False
+
+            return True
+        except BaseException as e:
+            self.sf.debug("Unable to resolve " + host + ": " + str(e))
+            return False
+
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -189,11 +209,20 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
 
             coord = result.get('cordinates')
 
-            if coord:
+            if coord and len(coord) == 2:
                 coords.append(str(coord[0]) + ', ' + str(coord[1]))
 
         for domain in set(domains):
-            evt = SpiderFootEvent('INTERNET_NAME', domain, self.__name__, event)
+            if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
+                evt_type = 'INTERNET_NAME'
+            else:
+                evt_type = 'AFFILIATE_DOMAIN'
+
+            if self.opts['verify'] and not self.resolveHost(domain):
+                self.sf.debug("Host " + domain + " could not be resolved")
+                evt_type += '_UNRESOLVED'
+
+            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
             self.notifyListeners(evt)
 
         for addr in set(addrs):
