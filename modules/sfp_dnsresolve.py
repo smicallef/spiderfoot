@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 import re
 import urllib2
 from netaddr import IPNetwork
@@ -39,16 +38,12 @@ class sfp_dnsresolve(SpiderFootPlugin):
     events = dict()
     domresults = dict()
     hostresults = dict()
-    resolveCache = dict()
-    resolveCache6 = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.events = dict()
         self.domresults = dict()
         self.hostresults = dict()
-        self.resolveCache = dict()
-        self.resolveCache6 = dict()
         self.__dataSource__ = "DNS"
 
         for opt in userOpts.keys():
@@ -58,9 +53,9 @@ class sfp_dnsresolve(SpiderFootPlugin):
         ret = list()
         # If it's an IP, get the hostname it reverse resolves to
         if target.getType() == "IP_ADDRESS":
-            ret = self.resolveIP(target.getValue())
+            ret = self.sf.resolveIP(target.getValue())
         if target.getType() == "INTERNET_NAME":
-            ret = self.resolveHost(target.getValue())
+            ret = self.sf.resolveHost(target.getValue())
         if target.getType() == "NETBLOCK_OWNER":
             ret = list()
             for addr in IPNetwork(target.getValue()):
@@ -72,15 +67,18 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 ret.append(ipaddr)
 
                 # Add the reverse-resolved hostnames as aliases too..
-                names = self.resolveIP(ipaddr)
+                names = self.sf.resolveIP(ipaddr)
 
                 if self.opts['validatereverse']:
                     for host in names:
-                        chk = self.resolveHost(host)
+                        chk = self.sf.resolveHost(host)
                         if ipaddr in chk:
                             ret.append(host)
                 else:
                     ret.extend(names)
+
+        if not ret:
+            return target
 
         for host in ret:
             if self.sf.validIP(host):
@@ -201,7 +199,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
                 if self.checkForStop():
                     return None
-                addrs = self.resolveIP(ipaddr)
+                addrs = self.sf.resolveIP(ipaddr)
 
                 if len(addrs) > 0:
                     self.sf.debug("Found a reversed hostname from " + ipaddr +
@@ -220,9 +218,12 @@ class sfp_dnsresolve(SpiderFootPlugin):
                          "AFFILIATE_IPADDR", "AFFILIATE_INTERNET_NAME"]:
 
             if "_NAME" in eventName:
-                addrs = self.resolveHost(eventData)
+                addrs = self.sf.resolveHost(eventData)
             else:
-                addrs = self.resolveIP(eventData)
+                addrs = self.sf.resolveIP(eventData)
+
+            if not addrs:
+                return None
 
             # We now have a set of hosts/IPs to do something with.
             for addr in addrs:
@@ -239,72 +240,6 @@ class sfp_dnsresolve(SpiderFootPlugin):
                         self.processHost(addr, parentEvent, False)
                     else:
                         self.processHost(addr, parentEvent, True)
-
-    # Resolve an IP
-    def resolveIP(self, ipaddr):
-        ret = list()
-        self.sf.debug("Performing reverse-resolve of " + ipaddr)
-
-        if ipaddr in self.resolveCache:
-            self.sf.debug("Returning cached result for " + ipaddr + " (" +
-                          str(self.resolveCache[ipaddr]) + ")")
-            return self.resolveCache[ipaddr]
-
-        try:
-            addrs = self.sf.normalizeDNS(socket.gethostbyaddr(ipaddr))
-            self.resolveCache[ipaddr] = addrs
-            self.sf.debug("Resolved " + ipaddr + " to: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
-            self.resolveCache[ipaddr] = list()
-            return ret
-
-    # Resolve a host
-    def resolveHost(self, hostname):
-        if not hostname:
-            return list()
-
-        if hostname in self.resolveCache:
-            self.sf.debug("Returning cached result for " + hostname + " (" +
-                          str(self.resolveCache[hostname]) + ")")
-            return self.resolveCache[hostname]
-
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(hostname) != unicode:
-                hostname = unicode(hostname, "utf-8", errors='replace').encode("idna")
-            else:
-                hostname = hostname.encode("idna")
-            addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
-            self.resolveCache[hostname] = addrs
-            self.sf.debug("Resolved " + hostname + " to: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + hostname + " (" + str(e) + ")")
-            return list()
-
-    # Resolve a host to IPv6
-    def resolveHost6(self, hostname):
-        if hostname in self.resolveCache6:
-            self.sf.debug("Returning IPv6 cached result for " + hostname + " (" +
-                          str(self.resolveCache6[hostname]) + ")")
-            return self.resolveCache6[hostname]
-
-        try:
-            addrs = list()
-            res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
-            for addr in res:
-                if addr[4][0] not in addrs:
-                    addrs.append(addr[4][0])
-            if len(addrs) < 1:
-                return None
-            self.resolveCache6[hostname] = addrs
-            self.sf.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
-            return list()
 
     # Process a host/IP, parentEvent is the event that represents this entity
     def processHost(self, host, parentEvent, affiliate=None):
@@ -328,9 +263,11 @@ class sfp_dnsresolve(SpiderFootPlugin):
             # If the IP the host resolves to is in our
             # list of aliases, 
             if not self.sf.validIP(host):
-                for hostip in self.resolveHost(host):
-                    if self.getTarget().matches(hostip):
-                        affil = False
+                hostips = self.sf.resolveHost(host)
+                if hostips:
+                    for hostip in hostips:
+                        if self.getTarget().matches(hostip):
+                            affil = False
         else:
             affil = affiliate
 
@@ -346,7 +283,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 htype = "INTERNET_NAME"
 
         if htype.endswith("INTERNET_NAME"):
-            resolved = len(self.resolveHost(host)) > 0
+            resolved = self.sf.resolveHost(host)
             if htype == "INTERNET_NAME" and not resolved:
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host,
                                       self.__name__, parentEvent)
@@ -368,7 +305,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
             self.processDomain(dom, evt)
 
             # Try obtain the IPv6 address
-            for ip6 in self.resolveHost6(host):
+            ip6s = self.sf.resolveHost6(host)
+            if not ip6s:
+                return None
+            for ip6 in ip6s:
                 evt6 = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
                 self.notifyListeners(evt6)
 

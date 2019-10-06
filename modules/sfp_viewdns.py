@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_viewdns(SpiderFootPlugin):
@@ -58,23 +57,6 @@ class sfp_viewdns(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["AFFILIATE_DOMAIN", "CO_HOSTED_SITE"]
-
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
 
     # Search ViewDNS.info
     def query(self, qry, querytype, page=1):
@@ -191,7 +173,7 @@ class sfp_viewdns(SpiderFootPlugin):
                             continue
                         self.cohostcount += 1
                         if eventName == "IP_ADDRESS" and self.opts['verify']:
-                            if not self.validateIP(h, eventData):
+                            if not self.sf.validateIP(h, eventData):
                                 self.sf.debug("Host no longer resolves to our IP.")
                                 continue
                         e = SpiderFootEvent("CO_HOSTED_SITE", h, self.__name__, event)

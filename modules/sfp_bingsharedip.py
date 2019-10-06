@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -59,23 +58,6 @@ class sfp_bingsharedip(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["CO_HOSTED_SITE", "IP_ADDRESS", "RAW_RIR_DATA"]
-
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -151,7 +133,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
                                 + " because it is on the same domain."
                             )
                             continue
-                    if self.opts["verify"] and not self.validateIP(site, ip):
+                    if self.opts["verify"] and not self.sf.validateIP(site, ip):
                         self.sf.debug("Host " + site + " no longer resolves to " + ip)
                         continue
                     # Create an IP Address event stemming from the netblock as the

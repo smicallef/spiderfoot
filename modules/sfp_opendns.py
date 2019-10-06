@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 import dns.resolver
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -79,7 +78,7 @@ class sfp_opendns(SpiderFootPlugin):
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by OpenDNS.
         try:
-            if self.sf.normalizeDNS(socket.gethostbyname_ex(eventData)):
+            if self.sf.resolveHost(eventData):
                 resolved = True
         except BaseException as e:
             return None

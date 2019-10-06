@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 from netaddr import IPAddress
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -33,16 +32,12 @@ class sfp_dnsneighbor(SpiderFootPlugin):
     events = dict()
     domresults = dict()
     hostresults = dict()
-    resolveCache = dict()
-    resolveCache6 = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.events = dict()
         self.domresults = dict()
         self.hostresults = dict()
-        self.resolveCache = dict()
-        self.resolveCache6 = dict()
         self.__dataSource__ = "DNS"
 
         for opt in userOpts.keys():
@@ -97,8 +92,8 @@ class sfp_dnsneighbor(SpiderFootPlugin):
                 s += 1
                 continue
 
-            addrs = self.resolveIP(sip)
-            if len(addrs) == 0:
+            addrs = self.sf.resolveIP(sip)
+            if not addrs:
                 self.sf.debug("Look-aside resolve for " + sip + " failed.")
                 s += 1
                 continue
@@ -139,48 +134,6 @@ class sfp_dnsneighbor(SpiderFootPlugin):
                     self.processHost(addr, parent, True)
             s += 1
 
-    # Resolve an IP
-    def resolveIP(self, ipaddr):
-        ret = list()
-        self.sf.debug("Performing reverse-resolve of " + ipaddr)
-
-        if ipaddr in self.resolveCache:
-            self.sf.debug("Returning cached result for " + ipaddr + " (" +
-                          str(self.resolveCache[ipaddr]) + ")")
-            return self.resolveCache[ipaddr]
-
-        try:
-            addrs = self.sf.normalizeDNS(socket.gethostbyaddr(ipaddr))
-            self.resolveCache[ipaddr] = addrs
-            self.sf.debug("Resolved " + ipaddr + " to: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
-            self.resolveCache[ipaddr] = list()
-            return ret
-
-    # Resolve a host
-    def resolveHost(self, hostname):
-        if hostname in self.resolveCache:
-            self.sf.debug("Returning cached result for " + hostname + " (" +
-                          str(self.resolveCache[hostname]) + ")")
-            return self.resolveCache[hostname]
-
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(hostname) != unicode:
-                hostname = unicode(hostname, "utf-8", errors='replace').encode("idna")
-            else:
-                hostname = hostname.encode("idna")
-
-            addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
-            self.resolveCache[hostname] = addrs
-            self.sf.debug("Resolved " + hostname + " to: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + hostname + " (" + str(e) + ")")
-            return list()
-
     # Process a host/IP, parentEvent is the event that represents this entity
     def processHost(self, host, parentEvent, affiliate=None):
         parentHash = self.sf.hashstring(parentEvent.data)
@@ -203,9 +156,11 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             # If the IP the host resolves to is in our
             # list of aliases, 
             if not self.sf.validIP(host):
-                for hostip in self.resolveHost(host):
-                    if self.getTarget().matches(hostip):
-                        affil = False
+                hostips = self.sf.resolveHost(host)
+                if hostips:
+                    for hostip in hostips:
+                        if self.getTarget().matches(hostip):
+                            affil = False
         else:
             affil = affiliate
 

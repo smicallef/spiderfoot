@@ -12,7 +12,6 @@
 
 import json
 import time
-import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_securitytrails(SpiderFootPlugin):
@@ -61,24 +60,6 @@ class sfp_securitytrails(SpiderFootPlugin):
     def producedEvents(self):
         return ["CO_HOSTED_SITE", "AFFILIATE_DOMAIN", "INTERNET_NAME",
                 "PROVIDER_HOSTING"]
-
-    # Verify a host resolves to an IP
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
 
     # Search SecurityTrails
     def query(self, qry, querytype, page=1, accum=None):
@@ -181,7 +162,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                                 continue
 
                         if h not in myres and h != ip:
-                            if self.opts['verify'] and not self.validateIP(h, ip):
+                            if self.opts['verify'] and not self.sf.validateIP(h, ip):
                                 self.sf.debug("Host " + h + " no longer resolves to our IP.")
                                 continue
                         myres.append(h.lower())

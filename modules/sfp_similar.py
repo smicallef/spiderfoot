@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 nearchars = {
@@ -142,9 +141,9 @@ class sfp_similar(SpiderFootPlugin):
         for d in domlist:
             resolved = False
             try:
-                if len(self.sf.normalizeDNS(socket.gethostbyname_ex(d + tld))) > 0:
+                if self.sf.resolveHost(d + tld):
                     resolved = True
-                if len(self.sf.normalizeDNS(socket.gethostbyname_ex("www." + d + tld))) > 0:
+                if self.sf.resolveHost("www." + d + tld):
                     resolved = True
 
                 if resolved:

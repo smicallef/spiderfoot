@@ -12,7 +12,6 @@
 
 import json
 import M2Crypto
-import socket
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -101,24 +100,6 @@ class sfp_ssltools(SpiderFootPlugin):
 
         return data
 
-    # Resolve a host
-    def resolveHost(self, host):
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(host) != unicode:
-                host = unicode(host, "utf-8", errors='replace').encode("idna")
-            else:
-                host = host.encode("idna")
-
-            addrs = socket.gethostbyname_ex(host)
-            if not addrs:
-                return False
-        
-            return True
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -205,7 +186,7 @@ class sfp_ssltools(SpiderFootPlugin):
             else:
                 evt_type = 'AFFILIATE_DOMAIN'
 
-            if self.opts['verify'] and not self.resolveHost(domain):
+            if self.opts['verify'] and not self.sf.resolveHost(domain):
                 self.sf.debug("Host " + san + " could not be resolved")
                 evt_type += '_UNRESOLVED'
 

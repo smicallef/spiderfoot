@@ -13,7 +13,6 @@
 
 import datetime
 import json
-import socket
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -54,24 +53,6 @@ class sfp_spyonweb(SpiderFootPlugin):
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-    # Verify a host resolves to an IP
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -274,7 +255,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                     self.sf.debug("Record found too old, skipping.")
                     continue
 
-                if self.opts['verify'] and not self.validateIP(co, eventData):
+                if self.opts['verify'] and not self.sf.validateIP(co, eventData):
                     self.sf.debug("Host " + co + " no longer resolves to " + eventData)
                     continue
 

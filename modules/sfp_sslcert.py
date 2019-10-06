@@ -10,12 +10,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 import ssl
 import time
 import M2Crypto
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
-
 
 class sfp_sslcert(SpiderFootPlugin):
     """SSL Certificates:Footprint,Investigate:Crawling and Scanning::Gather information about SSL certificates used by the target's HTTPS sites."""
@@ -67,24 +65,6 @@ class sfp_sslcert(SpiderFootPlugin):
                 "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
                 "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW"]
 
-    # Resolve a host
-    def resolveHost(self, host):
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(host) != unicode:
-                host = unicode(host, "utf-8", errors='replace').encode("idna")
-            else:
-                host = host.encode("idna")
-
-            addrs = socket.gethostbyname_ex(host)
-            if not addrs:
-                return False
-
-            return True
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -110,11 +90,7 @@ class sfp_sslcert(SpiderFootPlugin):
         self.sf.debug("Testing SSL for: " + eventData + ':' + str(port))
         # Re-fetch the certificate from the site and process
         try:
-            s = socket.socket()
-            s.settimeout(int(self.opts['ssltimeout']))
-            s.connect((fqdn, port))
-            sock = ssl.wrap_socket(s)
-            sock.do_handshake()
+            sock = self.sf.safeSSLSocket(fqdn, port, int(self.opts['ssltimeout']))
             rawcert = sock.getpeercert(True)
             cert = ssl.DER_cert_to_PEM_cert(rawcert)
             m2cert = M2Crypto.X509.load_cert_string(str(cert).replace('\r', ''))
@@ -159,7 +135,7 @@ class sfp_sslcert(SpiderFootPlugin):
             else:
                 evt_type = 'AFFILIATE_DOMAIN'
 
-            if self.opts['verify'] and not self.resolveHost(domain):
+            if self.opts['verify'] and not self.sf.resolveHost(domain):
                 self.sf.debug("Host " + san + " could not be resolved")
                 evt_type += '_UNRESOLVED'
 

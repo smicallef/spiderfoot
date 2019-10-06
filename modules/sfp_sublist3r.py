@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_sublist3r(SpiderFootPlugin):
@@ -43,22 +42,6 @@ class sfp_sublist3r(SpiderFootPlugin):
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-    # Verify a host resolves
-    def resolveHost(self, host):
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(host) != unicode:
-                host = unicode(host, "utf-8", errors='replace').encode("idna")
-            else:
-                host = host.encode("idna")
-
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        return True
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -108,7 +91,7 @@ class sfp_sublist3r(SpiderFootPlugin):
         if ret:
             for res in ret:
                 if self.opts['verify']:
-                    if not self.resolveHost(res):
+                    if not self.sf.resolveHost(res):
                         e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", res, self.__name__, event)
                         self.notifyListeners(e)
                         continue

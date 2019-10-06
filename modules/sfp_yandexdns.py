@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 import dns.resolver
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -82,7 +81,7 @@ class sfp_yandexdns(SpiderFootPlugin):
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by Yandex.
         try:
-            if self.sf.normalizeDNS(socket.gethostbyname_ex(eventData)):
+            if self.sf.resolveHost(eventData):
                 resolved = True
         except BaseException as e:
             self.sf.debug("Unable to resolve " + eventData)

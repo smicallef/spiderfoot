@@ -14,7 +14,6 @@
 
 import json
 import re
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -70,41 +69,6 @@ class sfp_hackertarget(SpiderFootPlugin):
                 'WEBSERVER_HTTPHEADERS', 'DOMAIN_NAME', 'RAW_DNS_RECORDS',
                 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
                 'AFFILIATE_DOMAIN', 'AFFILIATE_DOMAIN_UNRESOLVED']
-
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
-
-    # Resolve a host
-    def resolveHost(self, host):
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(host) != unicode:
-                host = unicode(host, "utf-8", errors='replace').encode("idna")
-            else:
-                host = host.encode("idna")
-
-            addrs = socket.gethostbyname_ex(host)
-            if not addrs:
-                return False
-
-            return True
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
 
     # Port scan for commonly open UDP ports
     def portScanUDP(self, ip):
@@ -280,7 +244,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                     else:
                         evt_type = 'AFFILIATE_DOMAIN'
 
-                    if self.opts['verify'] and not self.resolveHost(domain):
+                    if self.opts['verify'] and not self.sf.resolveHost(domain):
                         self.sf.debug("Host " + domain + " could not be resolved")
                         evt_type += '_UNRESOLVED'
 
@@ -319,7 +283,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                         continue
 
                 if h not in myres and h != ip:
-                    if self.opts['verify'] and not self.validateIP(h, ip):
+                    if self.opts['verify'] and not self.sf.validateIP(h, ip):
                         self.sf.debug("Host " + h + " no longer resolves to " + ip)
                         continue
                     if self.cohostcount < self.opts['maxcohost']:

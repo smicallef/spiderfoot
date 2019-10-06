@@ -12,7 +12,6 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-import socket
 import random
 import threading
 import time
@@ -93,8 +92,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
 
     def tryPort(self, ip, port):
         try:
-            sock = socket.create_connection((ip, port), self.opts['timeout'])
-            sock.settimeout(self.opts['timeout'])
+            sock = self.sf.safeSocket(ip, port, self.opts['timeout'])
             with self.lock:
                 self.portResults[ip + ":" + str(port)] = True
         except Exception as e:

@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 import random
 import threading
 import time
@@ -64,13 +63,14 @@ class sfp_tldsearch(SpiderFootPlugin):
     def tryTld(self, target, tld):
         if self.opts['skipwildcards'] and self.sf.checkDnsWildcard(tld):
             return None 
-        try:
-            addrs = socket.gethostbyname_ex(target)
-            with self.lock:
-                self.tldResults[target] = True
-        except BaseException as e:
+
+        addrs = self.sf.resolveHost(target)
+        if not addrs:
             with self.lock:
                 self.tldResults[target] = False
+        else:
+            with self.lock:
+                self.tldResults[target] = True
 
     def tryTldWrapper(self, tldList, sourceEvent):
         self.tldResults = dict()

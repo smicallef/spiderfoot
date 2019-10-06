@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -111,7 +110,9 @@ class sfp_honeypot(SpiderFootPlugin):
                      self.reverseAddr(qaddr) + ".dnsbl.httpbl.org"
 
             self.sf.debug("Checking Honeypot: " + lookup)
-            addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(lookup))
+            addrs = self.sf.resolveHost(lookup)
+            if not addrs:
+                return None
             self.sf.debug("Addresses returned: " + str(addrs))
 
             text = None

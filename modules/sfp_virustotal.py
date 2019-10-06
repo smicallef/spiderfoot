@@ -12,7 +12,6 @@
 
 import json
 import time
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -76,22 +75,6 @@ class sfp_virustotal(SpiderFootPlugin):
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
                 "MALICIOUS_SUBNET", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
                 "INTERNET_NAME_UNRESOLVED"]
-
-    # Verify a host resolves
-    def resolveHost(self, host):
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(host) != unicode:
-                host = unicode(host, "utf-8", errors='replace').encode("idna")
-            else:
-                host = host.encode("idna")
-
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        return True
 
     def query(self, qry):
         ret = None
@@ -222,7 +205,7 @@ class sfp_virustotal(SpiderFootPlugin):
                         if self.getTarget().matches(s):
                             if s not in self.results:
                                 if self.opts['verify']:
-                                    if not self.resolveHost(s):
+                                    if not self.sf.resolveHost(s):
                                         e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", s, self.__name__, event)
                                         self.notifyListeners(e)
                                     else:
@@ -237,7 +220,7 @@ class sfp_virustotal(SpiderFootPlugin):
                 for n in info['subdomains']:
                     if n not in self.results:
                         if self.opts['verify']:
-                            if not self.resolveHost(n):
+                            if not self.sf.resolveHost(n):
                                 e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", n, self.__name__, event)
                                 self.notifyListeners(e)
                         else:

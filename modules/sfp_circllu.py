@@ -14,7 +14,6 @@ import json
 import base64
 import re
 import time
-import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_circllu(SpiderFootPlugin):
@@ -57,24 +56,6 @@ class sfp_circllu(SpiderFootPlugin):
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
-
-    # Verify a host resolves to an IP
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -217,7 +198,7 @@ class sfp_circllu(SpiderFootPlugin):
                             cohosts.append(rec['rrname'])
 
                 for co in cohosts:
-                    if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.validateIP(co, eventData)):
+                    if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.sf.validateIP(co, eventData)):
                         self.sf.debug("Host no longer resolves to our IP.")
                         continue
 

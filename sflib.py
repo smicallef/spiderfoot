@@ -33,6 +33,7 @@ import urllib2
 import StringIO
 import threading
 import traceback
+import ssl
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy, copy
 
@@ -872,6 +873,84 @@ class SpiderFoot:
     #
     # General helper functions to automate many common tasks between modules
     #
+
+    # Return a normalised resolution or None if not resolved.
+    def resolveHost(self, host):
+        try:
+            # IDNA-encode the hostname in case it contains unicode
+            if type(host) != unicode:
+                host = unicode(host, "utf-8", errors='replace').encode("idna")
+            else:
+                host = host.encode("idna")
+
+            addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
+            if len(addrs) > 0:
+                return addrs
+            return None
+        except BaseException as e:
+            self.debug("Unable to resolve " + host + ": " + str(e))
+            return None
+
+    # Return a normalised resolution of an IP or None if not resolved.
+    def resolveIP(self, ipaddr):
+        self.debug("Performing reverse-resolve of " + ipaddr)
+
+        try:
+            addrs = self.normalizeDNS(socket.gethostbyaddr(ipaddr))
+            if len(addrs) > 0:
+                return addrs
+            return None
+        except BaseException as e:
+            self.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
+            return None
+
+    def resolveHost6(self, hostname):
+        try:
+            addrs = list()
+            res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
+            for addr in res:
+                if addr[4][0] not in addrs:
+                    addrs.append(addr[4][0])
+            if len(addrs) < 1:
+                return None
+            self.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
+            return addrs
+        except BaseException as e:
+            self.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
+            return None
+
+    # Verify a host resolves to a given IP
+    def validateIP(self, host, ip):
+        try:
+            addrs = socket.gethostbyname_ex(host)
+        except BaseException as e:
+            self.debug("Unable to resolve " + host + ": " + str(e))
+            return False
+
+        for addr in addrs:
+            if type(addr) == list:
+                for a in addr:
+                    if str(a) == ip:
+                        return True
+            else:
+                if str(addr) == ip:
+                    return True
+        return False
+
+    # Create a safe socket that's using SOCKS/TOR if it was enabled
+    def safeSocket(self, host, port, timeout):
+        sock = socket.create_connection((host, int(port)), int(timeout))
+        sock.settimeout(int(timeout))
+        return sock
+
+    # Create a safe SSL connection that's using SOCKs/TOR if it was enabled
+    def safeSSLSocket(self, host, port, timeout):
+        s = socket.socket()
+        s.settimeout(int(timeout))
+        s.connect((host, int(port)))
+        sock = ssl.wrap_socket(s)
+        sock.do_handshake()
+        return sock
 
     # Parse the contents of robots.txt, returns a list of patterns
     # which should not be followed

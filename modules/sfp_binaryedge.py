@@ -12,7 +12,6 @@
 
 import json
 import time
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -84,21 +83,6 @@ class sfp_binaryedge(SpiderFootPlugin):
                 "TCP_PORT_OPEN_BANNER", "EMAILADDR_COMPROMISED", 
                 "UDP_PORT_OPEN", "UDP_PORT_OPEN_INFO",
                 "CO_HOSTED_SITE", "MALICIOUS_IPADDR"]
-
-    # Verify a host resolves
-    def resolveHost(self, host):
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(host) != unicode:
-                host = unicode(host, "utf-8", errors='replace').encode("idna")
-            else:
-                host = host.encode("idna")
-
-            addrs = socket.gethostbyname_ex(host)
-            return True
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
 
     def query(self, qry, querytype, page=1):
         ret = None
@@ -232,7 +216,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                         continue
                     if self.getTarget().matches(host, includeParents=True):
                         if self.opts['verify']:
-                            if not self.resolveHost(host):
+                            if not self.sf.resolveHost(host):
                                 continue
                         evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
                         self.notifyListeners(evt)
@@ -280,7 +264,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                     else:
                         self.reportedhosts[rec] = True
                     if self.opts['verify']:
-                        if not self.resolveHost(rec):
+                        if not self.sf.resolveHost(rec):
                             self.sf.debug("Couldn't resolve " + rec + ", so skipping.")
                             continue
                     e = SpiderFootEvent(evtType, rec, self.__name__, event)

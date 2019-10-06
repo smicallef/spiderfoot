@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 import json
 import time
 from netaddr import IPNetwork
@@ -59,23 +58,6 @@ class sfp_robtex(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["CO_HOSTED_SITE", "IP_ADDRESS"]
-
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -160,7 +142,7 @@ class sfp_robtex(SpiderFootPlugin):
                             self.sf.debug("Skipping " + r['o'] + " because it is on the same domain.")
                             continue
 
-                    if self.opts['verify'] and not self.validateIP(r['o'], ip):
+                    if self.opts['verify'] and not self.sf.validateIP(r['o'], ip):
                         self.sf.debug("Host " + r['o'] + " no longer resolves to " + ip)
                         continue
                     if eventName == "NETBLOCK_OWNER":

@@ -12,7 +12,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -81,8 +80,11 @@ class sfp_spamcop(SpiderFootPlugin):
             try:
                 lookup = self.reverseAddr(qaddr) + "." + domain
                 self.sf.debug("Checking Blacklist: " + lookup)
-                addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(lookup))
+                addrs = self.sf.resolveHost(lookup)
                 self.sf.debug("Addresses returned: " + str(addrs))
+
+                if not addrs:
+                    continue
 
                 text = None
                 for addr in addrs:
