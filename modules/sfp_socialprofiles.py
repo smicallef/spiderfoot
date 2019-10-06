@@ -220,7 +220,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     self.sf.info("Social Media Profile found at " + site + ": " + match)
                     match = urllib2.unquote(match)
                     evt = SpiderFootEvent(
-                        "SOCIAL_MEDIA", site + ": " + match, self.__name__, event
+                        "SOCIAL_MEDIA", site + ": <SFURL>" + match + "</SFURL>", self.__name__, event
                     )
                     self.notifyListeners(evt)
 
