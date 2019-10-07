@@ -206,7 +206,7 @@ class sfp_apility(SpiderFootPlugin):
 
             if res.get('ip'):
                 ip_address = res.get('ip').get('address')
-                if ip_address:
+                if ip_address and self.sf.validIP(ip_address):
                     evt = SpiderFootEvent('IP_ADDRESS', ip_address, self.__name__, event)
                     self.notifyListeners(evt)
 
@@ -225,11 +225,15 @@ class sfp_apility(SpiderFootPlugin):
 
             if domain.get('mx'):
                 for mx in domain.get('mx'):
+                    if mx == '.':
+                        continue
                     evt = SpiderFootEvent('PROVIDER_MAIL', mx, self.__name__, event)
                     self.notifyListeners(evt)
 
             if domain.get('ns'):
                 for ns in domain.get('ns'):
+                    if ns == '.':
+                        continue
                     evt = SpiderFootEvent('PROVIDER_DNS', ns, self.__name__, event)
                     self.notifyListeners(evt)
 
