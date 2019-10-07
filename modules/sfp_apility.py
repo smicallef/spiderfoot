@@ -206,7 +206,7 @@ class sfp_apility(SpiderFootPlugin):
 
             if res.get('ip'):
                 ip_address = res.get('ip').get('address')
-                if ip_address:
+                if ip_address and self.sf.validIP(ip_address):
                     evt = SpiderFootEvent('IP_ADDRESS', ip_address, self.__name__, event)
                     self.notifyListeners(evt)
 
