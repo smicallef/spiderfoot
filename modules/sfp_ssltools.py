@@ -122,8 +122,9 @@ class sfp_ssltools(SpiderFootPlugin):
         addresses = data.get('addresses')
 
         for address in addresses:
-            evt = SpiderFootEvent('IP_ADDRESS', address, self.__name__, event)
-            self.notifyListeners(evt)
+            if self.sf.validIP(address):
+                evt = SpiderFootEvent('IP_ADDRESS', address, self.__name__, event)
+                self.notifyListeners(evt)
 
         port = 443
         data = self.queryScan(eventData, port)

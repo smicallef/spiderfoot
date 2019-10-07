@@ -145,12 +145,14 @@ class sfp_mnemonic(SpiderFootPlugin):
                     continue
 
                 if r['rrtype'] == 'a':
-                    evt = SpiderFootEvent("IP_ADDRESS", r['answer'], self.__name__, event)
-                    self.notifyListeners(evt)
+                    if self.sf.validIP(r['answer']):
+                        evt = SpiderFootEvent("IP_ADDRESS", r['answer'], self.__name__, event)
+                        self.notifyListeners(evt)
 
                 if r['rrtype'] == 'aaaa':
-                    evt = SpiderFootEvent("IPV6_ADDRESS", r['answer'], self.__name__, event)
-                    self.notifyListeners(evt)
+                    if self.sf.validIP6(r['answer']):
+                        evt = SpiderFootEvent("IPV6_ADDRESS", r['answer'], self.__name__, event)
+                        self.notifyListeners(evt)
 
                 if r['rrtype'] == 'cname':
                     if not self.getTarget().matches(r['query'], includeParents=True):

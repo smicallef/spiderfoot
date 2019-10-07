@@ -208,8 +208,9 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         for addr in set(addrs):
-            evt = SpiderFootEvent('IP_ADDRESS', addr, self.__name__, event)
-            self.notifyListeners(evt)
+            if self.sf.validIP(addr):
+                evt = SpiderFootEvent('IP_ADDRESS', addr, self.__name__, event)
+                self.notifyListeners(evt)
 
         for coord in set(coords):
             evt = SpiderFootEvent('PHYSICAL_COORDINATES', coord, self.__name__, event)
