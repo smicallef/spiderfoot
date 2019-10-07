@@ -33,7 +33,6 @@ import urllib2
 import StringIO
 import threading
 import traceback
-import ssl
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy, copy
 
@@ -758,9 +757,13 @@ class SpiderFoot:
         ps = PublicSuffixList(tldList)
         return ps.get_public_suffix(hostname)
 
-    # Simple way to verify IPs.
+    # Simple way to verify IPv4 addresses.
     def validIP(self, address):
         return netaddr.valid_ipv4(address)
+
+    # Simple way to verify IPv6 addresses.
+    def validIP6(self, address):
+        return netaddr.valid_ipv6(address)
 
     # Clean DNS results to be a simple list
     def normalizeDNS(self, res):
@@ -800,8 +803,12 @@ class SpiderFoot:
         dicts = [ "english", "german", "french", "spanish" ]
 
         for d in dicts:
-            wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
-            dlines = wdct.readlines()
+            try:
+                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
+                dlines = wdct.readlines()
+            except BaseException as e:
+                self.debug("Could not read dictionary: " + str(e))
+                continue
 
             for w in dlines:
                 w = w.strip().lower()
@@ -816,8 +823,12 @@ class SpiderFoot:
         dicts = [ "names" ]
 
         for d in dicts:
-            wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
-            dlines = wdct.readlines()
+            try:
+                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
+                dlines = wdct.readlines()
+            except BaseException as e:
+                self.debug("Could not read dictionary: " + str(e))
+                continue
 
             for w in dlines:
                 w = w.strip().lower()
@@ -891,7 +902,7 @@ class SpiderFoot:
             self.debug("Unable to resolve " + host + ": " + str(e))
             return None
 
-    # Return a normalised resolution of an IP or None if not resolved.
+    # Return a normalised resolution of an IPv4 address or None if not resolved.
     def resolveIP(self, ipaddr):
         self.debug("Performing reverse-resolve of " + ipaddr)
 
@@ -904,6 +915,7 @@ class SpiderFoot:
             self.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
             return None
 
+    # Return a normalised resolution of an IPv6 address or None if not resolved.
     def resolveHost6(self, hostname):
         try:
             addrs = list()
@@ -921,20 +933,15 @@ class SpiderFoot:
 
     # Verify a host resolves to a given IP
     def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.debug("Unable to resolve " + host + ": " + str(e))
+        addrs = self.resolveHost(host)
+
+        if addrs is None:
             return False
 
         for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
+            if str(addr) == ip:
+                return True
+
         return False
 
     # Create a safe socket that's using SOCKS/TOR if it was enabled
