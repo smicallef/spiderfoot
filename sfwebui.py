@@ -180,6 +180,8 @@ class SpiderFootWebUi:
         fileobj = BytesIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
+        if not data:
+            return None
         for row in data:
             if row[10] == "ROOT":
                 continue
