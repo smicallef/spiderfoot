@@ -935,6 +935,9 @@ class SpiderFoot:
     def validateIP(self, host, ip):
         addrs = self.resolveHost(host)
 
+        if addrs is None:
+            return False
+
         for addr in addrs:
             if str(addr) == ip:
                 return True
