@@ -319,6 +319,23 @@ class sfp_webanalytics(SpiderFootPlugin):
                                       self.__name__, parentEvent)
                 self.notifyListeners(evt)
 
+            # have-i-been-pwned Verification
+            matches = re.findall(r'have-i-been-pwned-verification=([a-f0-9]+)$', eventData.strip(), re.IGNORECASE)
+            for m in matches:
+                evt = SpiderFootEvent("WEB_ANALYTICS_ID",
+                                      "have-i-been-pwned Verification: " + m,
+                                      self.__name__, parentEvent)
+                self.notifyListeners(evt)
+
+            # Cisco Live Domain Verification
+            # https://www.ciscolive.com/c/dam/r/ciscolive/us/docs/2016/pdf/TECCOL-2982.pdf
+            matches = re.findall(r'cisco-ci-domain-verification=([a-f0-9]+)$', eventData.strip(), re.IGNORECASE)
+            for m in matches:
+                evt = SpiderFootEvent("WEB_ANALYTICS_ID",
+                                      "Cisco Live Domain Verification: " + m,
+                                      self.__name__, parentEvent)
+                self.notifyListeners(evt)
+
         return None
 
 # End of sfp_webanalytics class
