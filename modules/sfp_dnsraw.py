@@ -124,7 +124,9 @@ class sfp_dnsraw(SpiderFootPlugin):
                                 matches = re.findall(r'include:(.+?) ', strdata, re.IGNORECASE | re.DOTALL)
                                 if matches:
                                     for domain in matches:
-                                        if self.getTarget().matches(domain, includeChildren=True):
+                                        if '_' in domain:
+                                            continue
+                                        if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
                                             evt_type = 'INTERNET_NAME'
                                         else:
                                             evt_type = 'AFFILIATE_DOMAIN'
