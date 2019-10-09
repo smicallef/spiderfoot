@@ -102,7 +102,7 @@ class sfp_citadel(SpiderFootPlugin):
         error = data.get('error')
         message = data.get('message')
 
-        if data.get('error') == 'true':
+        if error == 'true':
             self.sf.error("Error encountered processing {}: {}".format( eventData, message ), False)
             return None
 
