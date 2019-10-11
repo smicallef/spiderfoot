@@ -129,10 +129,7 @@ class sfp_sslcert(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         for san in set(cert.get('altnames', list())):
-            if "*." in san:
-                dom = san.replace("*.", ".")
-            else:
-                dom =san 
+                dom = san.replace("*.", "")
 
             if self.getTarget().matches(dom, includeChildren=True):
                 evt_type = 'INTERNET_NAME'
