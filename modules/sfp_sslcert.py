@@ -10,10 +10,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import ssl
 import time
-import M2Crypto
+import urlparse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_sslcert(SpiderFootPlugin):
     """SSL Certificates:Footprint,Investigate:Crawling and Scanning::Gather information about SSL certificates used by the target's HTTPS sites."""
@@ -58,8 +58,7 @@ class sfp_sslcert(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ['TCP_PORT_OPEN',
-                'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
+        return ['TCP_PORT_OPEN', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
                 'AFFILIATE_DOMAIN', 'AFFILIATE_DOMAIN_UNRESOLVED',
                 "SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
                 "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
@@ -77,166 +76,84 @@ class sfp_sslcert(SpiderFootPlugin):
             if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
                 return None
 
+            # Handle URLs containing port numbers
+            u = urlparse.urlparse(eventData)
+            port = 443
+            if url.port:
+                port = url.port
             fqdn = self.sf.urlFQDN(eventData.lower())
         else:
             fqdn = eventData
+            port = 443
 
         if fqdn not in self.results:
             self.results[fqdn] = True
         else:
             return None
 
-        port = 443
-        self.sf.debug("Testing SSL for: " + eventData + ':' + str(port))
+        self.sf.debug("Testing SSL for: " + fqdn + ':' + str(port))
         # Re-fetch the certificate from the site and process
         try:
-            sock = self.sf.safeSSLSocket(fqdn, port, int(self.opts['ssltimeout']))
-            rawcert = sock.getpeercert(True)
-            cert = ssl.DER_cert_to_PEM_cert(rawcert)
-            m2cert = M2Crypto.X509.load_cert_string(str(cert).replace('\r', ''))
+            sock = self.sf.safeSSLSocket(fqdn, port, self.opts['ssltimeout'])
+            sock.do_handshake()
+            dercert = sock.getpeercert(True)
+            pemcert = self.sf.sslDerToPem(dercert)
+            cert = self.sf.parseCert(str(pemcert), fqdn, self.opts['certexpiringdays'])
         except BaseException as x:
-            self.sf.info("Unable to SSL-connect to " + fqdn)
+            self.sf.info("Unable to SSL-connect to " + fqdn + " (" + str(x) + ")")
             return None
 
         if eventName in ['INTERNET_NAME', 'IP_ADDRESS']:
-            evt = SpiderFootEvent('TCP_PORT_OPEN', eventData + ':' + str(port), self.__name__, event)
+            evt = SpiderFootEvent('TCP_PORT_OPEN', fqdn + ':' + str(port), self.__name__, event)
             self.notifyListeners(evt)
+
+        if not cert.get('text'):
+            self.sf.info("Failed to parse the SSL cert for " + fqdn)
+            return None
 
         # Generate the event for the raw cert (in text form)
         # Cert raw data text contains a lot of gems..
-        rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW", 
-                                 m2cert.as_text().encode('raw_unicode_escape'), 
-                                 self.__name__, event)
+        rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW", cert['text'], self.__name__, event)
         self.notifyListeners(rawevt)
 
-        issued = self.getIssued(m2cert)
-
-        if issued is not None:
-            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUED', issued, self.__name__, event)
+        if cert.get('issued'):
+            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUED', cert['issued'], self.__name__, event)
             self.notifyListeners(evt)
 
-        issuer = self.getIssuer(m2cert)
-
-        if issuer is not None:
-            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUER', issuer, self.__name__, event)
+        if cert.get('issuer'):
+            evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUER', cert['issuer'], self.__name__, event)
             self.notifyListeners(evt)
 
-        if eventName != "IP_ADDRESS":
-            self.checkHostMatch(m2cert, fqdn, event)
+        if eventName != "IP_ADDRESS" and cert.get('mismatch'):
+            evt = SpiderFootEvent('SSL_CERTIFICATE_MISMATCH', ', '.join(cert.get('hosts')), self.__name__, event)
+            self.notifyListeners(evt)
 
-        # extract certificate Subject Alternative Names
-        domains = list()
-        for san in self.getSubjectAltNames(m2cert):
-            domains.append(san.replace('DNS:', '').replace('*.', ''))
+        for san in set(cert.get('altnames', list())):
+            if "*." in san:
+                dom = san.replace("*.", ".")
+            else:
+                dom =san 
 
-        for domain in set(domains):
-            if self.getTarget().matches(domain, includeChildren=True):
+            if self.getTarget().matches(dom, includeChildren=True):
                 evt_type = 'INTERNET_NAME'
             else:
                 evt_type = 'AFFILIATE_DOMAIN'
 
-            if self.opts['verify'] and not self.sf.resolveHost(domain):
-                self.sf.debug("Host " + san + " could not be resolved")
-                evt_type += '_UNRESOLVED'
+            if self.opts['verify'] and not self.sf.resolveHost(dom):
+                    self.sf.debug("Host " + san + " could not be resolved")
+                    evt_type += '_UNRESOLVED'
 
-            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
-            self.notifyListeners(evt)
+            if "*." not in san:
+                evt = SpiderFootEvent(evt_type, san, self.__name__, event)
+                self.notifyListeners(evt)
 
-        # check certificate expiry
-        try:
-            self.checkExpiry(m2cert, event)
-        except M2Crypto.X509.X509Error as e:
-            self.sf.error("Error processing certificate: " + str(e), False)
-
-    # Retrieve the entity to whom the certificate was issued
-    def getIssued(self, cert):
-        try:
-            issued = cert.get_subject().as_text().encode('raw_unicode_escape')
-        except BaseException as e:
-            self.sf.error("Error processing certificate: " + str(e), False)
-            return None
-
-        return issued
-
-    # Retrieve the certificate issuer
-    def getIssuer(self, cert):
-        try:
-            issuer = cert.get_issuer().as_text().encode('raw_unicode_escape')
-        except BaseException as e:
-            self.sf.error("Error processing certificate: " + str(e), False)
-            return None
-
-        return issuer
-
-    # Extract the Subject Alternative Names from the certificate subject
-    def getSubjectAltNames(self, cert):
-        names = list()
-
-        try:
-            sans = cert.get_ext('subjectAltName').get_value().encode('raw_unicode_escape')
-
-            if sans is None:
-                return names
-
-            for san in sans.split(','):
-                names.append(san.strip())
-        except LookupError as e:
-            self.sf.debug("No alternative name found in certificate.")
-        except BaseException as e:
-            self.sf.debug("Error parsing certificate:" + str(e))
-
-        return names
-
-    # Check if the hostname matches the name of the server
-    def checkHostMatch(self, cert, fqdn, sevt):
-        fqdn = fqdn.lower()
-        hosts = list()
-
-        # Extract the CN from the issued section
-        issued = self.getIssued(cert)
-
-        if not issued:
-            return False
-
-        if "cn=" + fqdn in issued.lower():
-            hosts.append('dns:' + fqdn)
-
-        # Extract subject alternative names
-        for host in self.getSubjectAltNames(cert):
-            hosts.append(host.lower())
-
-        self.sf.debug("Checking for " + fqdn + " in certificate subject")
-        fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
-
-        for host in hosts:
-            if host == "dns:" + fqdn:
-                return True
-            if host == "dns:*." + fqdn_tld:
-                return True
-
-        evt = SpiderFootEvent('SSL_CERTIFICATE_MISMATCH', ', '.join(hosts), self.__name__, sevt)
-        self.notifyListeners(evt)
-
-        return False
-
-    # Check if the expiration date is in the future
-    def checkExpiry(self, cert, sevt):
-        try:
-            exp = int(time.mktime(cert.get_not_after().get_datetime().timetuple()))
-            expstr = cert.get_not_after().get_datetime().strftime("%Y-%m-%d %H:%M:%S")
-            now = int(time.time())
-            warnexp = now + self.opts['certexpiringdays'] * 86400
-        except ValueError as e:
-            self.sf.error("Couldn't process date in certificate.", False)
-            return None
-
-        if exp <= now:
-            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", expstr, self.__name__, sevt)
+        if cert.get('expired'):
+            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", cert.get('expirystr', 'Unknown'), self.__name__, event)
             self.notifyListeners(evt)
             return None
 
-        if exp <= warnexp:
-            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRING", expstr, self.__name__, sevt)
+        if cert.get('expiring'):
+            evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRING", cert.get('expirystr', 'Unknown'), self.__name__, event)
             self.notifyListeners(evt)
             return None
 

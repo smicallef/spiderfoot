@@ -33,6 +33,9 @@ import urllib2
 import StringIO
 import threading
 import traceback
+import OpenSSL
+import cryptography
+from datetime import datetime
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy, copy
 
@@ -1002,6 +1005,97 @@ class SpiderFoot:
             emails.append(match)
 
         return set(emails)
+
+    # Return a PEM for a DER
+    def sslDerToPem(self, der):
+        return ssl.DER_cert_to_PEM_cert(der)
+
+    # Parse a PEM-format SSL certificate
+    def parseCert(self, rawcert, fqdn=None, expiringdays=30):
+        ret = dict()
+        if '\r' in rawcert:
+            rawcert = rawcert.replace('\r', '')
+        if type(rawcert) == str:
+            rawcert = rawcert.encode('utf-8')
+
+        from cryptography.hazmat.backends.openssl import backend
+        cert = cryptography.x509.load_pem_x509_certificate(rawcert, backend)
+        sslcert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, rawcert)
+        sslcert_dump = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_TEXT, sslcert)
+
+        ret['text'] = sslcert_dump.decode('utf-8', errors='replace')
+        ret['issuer'] = cert.issuer.rfc4514_string()
+        ret['altnames'] = list()
+        ret['expired'] = False
+        ret['expiring'] = False
+        ret['mismatch'] = False
+        ret['certerror'] = False
+        ret['issued'] = cert.subject.rfc4514_string()
+
+        # Expiry info
+        try:
+            notafter = datetime.strptime(sslcert.get_notAfter(), "%Y%m%d%H%M%SZ")
+            ret['expiry'] = int(notafter.strftime("%s"))
+            ret['expirystr'] = notafter.strftime("%Y-%m-%d %H:%M:%S")
+            now = int(time.time())
+            warnexp = now + (expiringdays * 86400)
+            if ret['expiry'] <= warnexp:
+                ret['expiring'] = True
+            if ret['expiry'] <= now:
+                ret['expired'] = True
+        except ValueError as e:
+            self.error("Error processing date in certificate.", False)
+            ret['certerror'] = True
+            return ret
+
+        # SANs
+        try:
+            ext = cert.extensions.get_extension_for_class(cryptography.x509.SubjectAlternativeName)
+            for x in ext.value:
+                if isinstance(x, cryptography.x509.DNSName):
+                    ret['altnames'].append(x.value.lower().encode('raw_unicode_escape'))
+        except cryptography.x509.extensions.ExtensionNotFound:
+            pass
+
+        hosts = list()
+        try:
+            attrs = cert.subject.get_attributes_for_oid(cryptography.x509.oid.NameOID.COMMON_NAME)
+            if len(attrs) == 1:
+                name = attrs[0].value.lower()
+                # CN often duplicates one of the SANs, don't add it then
+                if name not in ret['altnames']:
+                    hosts.append(name.encode('raw_unicode_escape'))
+
+            # Check for mismatch
+            if fqdn and ret['issued']:
+                fqdn = fqdn.lower()
+
+                # Extract the CN from the issued section
+                if "cn=" + fqdn in ret['issued'].lower():
+                    hosts.append(fqdn)
+
+                # Extract subject alternative names
+                for host in ret['altnames']:
+                    hosts.append(host.replace("dns:", "").lower())
+
+                ret['hosts'] = hosts
+
+                self.debug("Checking for " + fqdn + " in certificate subject")
+                fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
+
+                for host in hosts:
+                    if host == fqdn:
+                        break
+                    if host == "*." + fqdn_tld:
+                        break
+                    if host == fqdn_tld:
+                        break
+                    ret['mismatch'] = True
+        except BaseException as e:
+            self.error("Error processing certificate.", False)
+            ret['certerror'] = True
+
+        return ret
 
     # Find all URLs within the supplied content. This does not fetch any URLs!
     # A dictionary will be returned, where each link will have the keys
