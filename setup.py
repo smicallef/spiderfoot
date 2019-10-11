@@ -7,8 +7,8 @@ setup(
     options={
         "py2exe": {
             "packages": ["modules", "ext.dns", "sflib", "sfwebui", "sfdb", "mako",
-                         "cherrypy", "M2Crypto", "netaddr", "ext.socks", "ext.PyPDF2",
-                         "ext.openxmllib", "ext.stem", "ext.whois",
+                         "cherrypy", "netaddr", "ext.socks", "ext.PyPDF2",
+                         "ext.openxmllib", "ext.stem", "ext.whois", "pyOpenSSL",
                          "phonenumbers", "ext.gexf", "bs4", "requests" ],
             "bundle_files": 1,
             "compressed": True,

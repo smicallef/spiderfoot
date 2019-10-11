@@ -24,7 +24,7 @@ cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(insp
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
-deps = ['M2Crypto', 'netaddr', 'dns', 'cherrypy', 'mako', 'socks', 'whois',
+deps = ['netaddr', 'dns', 'cherrypy', 'mako', 'socks', 'whois', 'OpenSSL',
         'PyPDF2', 'openxmllib', 'stem', 'bs4', 'gexf', 'phonenumbers', 'ipaddr',
         'ipwhois']
 for mod in deps:
