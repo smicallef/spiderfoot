@@ -167,9 +167,9 @@ class sfp_censys(SpiderFootPlugin):
                     continue
 
                 if 'location' in rec:
-                    dat = rec['location'].get('country')
-                    if dat:
-                        e = SpiderFootEvent("GEOINFO", dat, self.__name__, event)
+                    location = ', '.join(filter(None, [rec['location'].get('city'), rec['location'].get('province'), rec['location'].get('postal_code'), rec['location'].get('country')]))
+                    if location:
+                        e = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                         self.notifyListeners(e)
 
                 if 'headers' in rec:
