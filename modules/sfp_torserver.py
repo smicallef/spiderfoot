@@ -52,7 +52,7 @@ class sfp_torserver(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.__dataSource__ = "blutmagie.de"
 
         # Clear / reset any other class member variables here

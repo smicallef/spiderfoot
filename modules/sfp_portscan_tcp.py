@@ -56,7 +56,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.__dataSource__ = "Target Network"
         self.lock = threading.Lock()
 

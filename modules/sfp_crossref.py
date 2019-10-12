@@ -37,7 +37,7 @@ class sfp_crossref(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.fetched = list()
 
         for opt in userOpts.keys():

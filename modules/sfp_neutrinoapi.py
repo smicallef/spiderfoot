@@ -38,7 +38,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "NeutrinoAPI"
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.errorState = False
 
         for opt in userOpts.keys():

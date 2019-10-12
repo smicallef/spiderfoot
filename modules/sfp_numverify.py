@@ -34,7 +34,7 @@ class sfp_numverify(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "numverify"
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.errorState = False
 
         for opt in userOpts.keys():

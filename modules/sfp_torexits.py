@@ -53,7 +53,7 @@ class sfp_torexits(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.__dataSource__ = "torproject.org"
 
         # Clear / reset any other class member variables here

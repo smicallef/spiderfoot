@@ -37,7 +37,7 @@ class sfp_names(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.d = set(self.sf.dictwords())
         self.n = set(self.sf.dictnames())
 

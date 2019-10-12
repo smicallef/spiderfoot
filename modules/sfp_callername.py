@@ -31,7 +31,7 @@ class sfp_callername(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = 'CallerName'
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.errorState = False
 
         for opt in userOpts.keys():

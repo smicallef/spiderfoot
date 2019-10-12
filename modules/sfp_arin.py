@@ -29,7 +29,7 @@ class sfp_arin(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.memCache = dict()
         self.currentEventSrc = None
 

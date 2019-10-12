@@ -36,7 +36,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.indexBase = list()
         self.errorState = False
 

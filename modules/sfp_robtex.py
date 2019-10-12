@@ -43,7 +43,7 @@ class sfp_robtex(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.cohostcount = 0
 
         for opt in userOpts.keys():

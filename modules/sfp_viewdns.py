@@ -40,7 +40,7 @@ class sfp_viewdns(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.accum = list()
         self.cohostcount = 0
 

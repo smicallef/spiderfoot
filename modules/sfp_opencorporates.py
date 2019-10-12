@@ -34,7 +34,7 @@ class sfp_opencorporates(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "OpenCorporates"
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

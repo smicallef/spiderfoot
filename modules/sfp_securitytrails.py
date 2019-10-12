@@ -42,7 +42,7 @@ class sfp_securitytrails(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.cohostcount = 0
 
         # Clear / reset any other class member variables here

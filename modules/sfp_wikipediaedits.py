@@ -36,7 +36,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.__dataSource__ = "Wikipedia"
 
         # Clear / reset any other class member variables here

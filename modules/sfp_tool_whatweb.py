@@ -39,7 +39,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.errorState = False
         self.__dataSource__ = "Target Website"
 

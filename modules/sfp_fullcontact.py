@@ -38,7 +38,7 @@ class sfp_fullcontact(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()()
+        self.results = self.tempStorage()
         self.errorState = False
 
         # Clear / reset any other class member variables here
