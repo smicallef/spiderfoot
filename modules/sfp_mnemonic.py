@@ -49,6 +49,7 @@ class sfp_mnemonic(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0                                                                                                                                                                                       
+        self.errorState = False
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
