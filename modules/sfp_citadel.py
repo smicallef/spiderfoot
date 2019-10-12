@@ -87,7 +87,7 @@ class sfp_citadel(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
             
-	# Don't look up stuff twice
+	    # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already searched.")
             return None

@@ -66,7 +66,7 @@ class sfp_hackertarget(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["CO_HOSTED_SITE", "UDP_PORT_OPEN", "TCP_PORT_OPEN", "IP_ADDRESS",
-                'WEBSERVER_HTTPHEADERS', 'DOMAIN_NAME', 'RAW_DNS_RECORDS',
+                'WEBSERVER_HTTPHEADERS', 'RAW_DNS_RECORDS',
                 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
                 'AFFILIATE_DOMAIN', 'AFFILIATE_DOMAIN_UNRESOLVED']
 

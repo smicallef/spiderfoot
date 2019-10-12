@@ -63,8 +63,7 @@ class sfp_circllu(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["IP_ADDRESS", "INTERNET_NAME", "SSL_CERTIFICATE_ISSUED", 
-                "CO_HOSTED_SITE"]
+        return ["IP_ADDRESS", "SSL_CERTIFICATE_ISSUED", "CO_HOSTED_SITE"]
 
     def query(self, qry, qtype):
         ret = None
