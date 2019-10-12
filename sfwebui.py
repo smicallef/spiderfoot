@@ -15,7 +15,6 @@ import cgi
 import csv
 import time
 import random
-import re
 from cherrypy import _cperror
 from operator import itemgetter
 from copy import deepcopy
@@ -239,7 +238,6 @@ class SpiderFootWebUi:
 
     # Export entities from scan results for visualising
     def scanviz(self, id, gexf="0"):
-        types = list()
         dbh = SpiderFootDb(self.config)
         sf = SpiderFoot(self.config)
         data = dbh.scanResultEvent(id, filterFp=True)
@@ -257,7 +255,6 @@ class SpiderFootWebUi:
 
     # Export entities results from multiple scans in GEXF format
     def scanvizmulti(self, ids, gexf="1"):
-        types = list()
         dbh = SpiderFootDb(self.config)
         sf = SpiderFoot(self.config)
         data = list()
@@ -297,7 +294,6 @@ class SpiderFootWebUi:
 
                 ret['configdesc'][key] = self.config['__modules__'][modName]['optdescs'][modOpt]
 
-        sf = SpiderFoot(self.config)
         meta = dbh.scanInstanceGet(id)
         if not meta:
             return json.dumps([])
@@ -747,8 +743,6 @@ class SpiderFootWebUi:
         modopts = dict()  # Not used yet as module options are set globally
         modlist = list()
         sf = SpiderFoot(cfg)
-        dbh = SpiderFootDb(cfg)
-        types = dbh.eventTypes()
         targetType = None
         [scanname, scantarget] = self.cleanUserInput([scanname, scantarget])
 
