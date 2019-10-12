@@ -46,12 +46,12 @@ class sfp_hackertarget(SpiderFootPlugin):
         'udp_portscan': "Scan IP for commonly open UDP ports using HackerTarget.com UDP port scan."
     }
 
-    results = dict()
+    results = None
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.cohostcount = 0
 
         for opt in userOpts.keys():
