@@ -23,7 +23,7 @@ class sfp_ripe(SpiderFootPlugin):
     # Default options
     opts = {}
 
-    results = dict()
+    results = None
     currentEventSrc = None
     memCache = dict()
     nbreported = dict()
@@ -32,7 +32,7 @@ class sfp_ripe(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()()
         self.memCache = dict()
         self.currentEventSrc = None
         self.nbreported = dict()

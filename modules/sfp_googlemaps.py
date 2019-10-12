@@ -26,12 +26,12 @@ class sfp_googlemaps(SpiderFootPlugin):
     optdescs = {
         "api_key": "Google Geocoding API Key."
     }
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()()
         self.errorState = False
 
         for opt in userOpts.keys():

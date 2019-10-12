@@ -43,7 +43,7 @@ class sfp_honeypot(SpiderFootPlugin):
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    results = dict()
+    results = None
     errorState = False
 
     # Status codes according to:
@@ -64,7 +64,7 @@ class sfp_honeypot(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

@@ -48,7 +48,7 @@ class sfp_spyonweb(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "SpyOnWeb"
-        self.results = dict()
+        self.results = self.tempStorage()()
         self.cohostcount = 0                                                                                                                                                                                       
 
         for opt in userOpts.keys():

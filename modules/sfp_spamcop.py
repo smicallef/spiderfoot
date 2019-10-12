@@ -37,7 +37,7 @@ class sfp_spamcop(SpiderFootPlugin):
     }
 
     # Target
-    results = dict()
+    results = None
 
     # Whole bunch here:
     # http://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists
@@ -49,7 +49,7 @@ class sfp_spamcop(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

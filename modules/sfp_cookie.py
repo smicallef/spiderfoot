@@ -20,11 +20,11 @@ class sfp_cookie(SpiderFootPlugin):
     # Default options
     opts = {}
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

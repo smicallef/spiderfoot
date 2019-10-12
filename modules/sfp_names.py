@@ -31,13 +31,13 @@ class sfp_names(SpiderFootPlugin):
         'filterjscss': "Filter out names that originated from CSS/JS content. Enabling this avoids detection of popular Javascript and web framework author names."
     }
 
-    results = dict()
+    results = None
     d = None
     n = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()()
         self.d = set(self.sf.dictwords())
         self.n = set(self.sf.dictnames())
 

@@ -36,7 +36,7 @@ class sfp_scylla(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()()
         self.errorState = False
 
         for opt in userOpts.keys():

@@ -28,13 +28,13 @@ class sfp_numverify(SpiderFootPlugin):
         'api_key': 'numverify API key.'
     }
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "numverify"
-        self.results = dict()
+        self.results = self.tempStorage()()
         self.errorState = False
 
         for opt in userOpts.keys():

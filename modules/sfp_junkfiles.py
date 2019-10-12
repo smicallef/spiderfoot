@@ -36,14 +36,14 @@ class sfp_junkfiles(SpiderFootPlugin):
         'skipfake': "Try to fetch an obviously fake page and if no 404 is returned, stop trying that particular host for junk files. Good for avoiding false positives in cases where servers return content for pages that don't exist."
     }
 
-    results = dict()
+    results = None
     hosts = dict()
     skiphosts = dict()
     bases = dict()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()()
         self.hosts = dict()
         self.skiphosts = dict()
         self.bases = dict()
