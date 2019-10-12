@@ -38,12 +38,12 @@ class sfp_robtex(SpiderFootPlugin):
         'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
 
-    results = dict()
+    results = None
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.cohostcount = 0
 
         for opt in userOpts.keys():

@@ -37,7 +37,7 @@ class sfp_clearbit(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.errorState = False
 
         # Clear / reset any other class member variables here

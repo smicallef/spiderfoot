@@ -30,11 +30,11 @@ class sfp_XXX(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     # Target
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.

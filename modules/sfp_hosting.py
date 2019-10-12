@@ -28,11 +28,11 @@ class sfp_hosting(SpiderFootPlugin):
     }
 
     # Target
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.__dataSource__ = "DNS"
 
         for opt in userOpts.keys():

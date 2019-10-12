@@ -43,11 +43,11 @@ class sfp_social(SpiderFootPlugin):
         # to the end-user.
     }
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.__dataSource__ = "Target Website"
 
         for opt in userOpts.keys():

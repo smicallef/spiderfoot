@@ -30,13 +30,13 @@ class sfp_commoncrawl(SpiderFootPlugin):
         "indexes": "Number of most recent indexes to attempt, because results tend to be occasionally patchy."
     }
 
-    results = dict()
+    results = None
     indexBase = list()
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.indexBase = list()
         self.errorState = False
 

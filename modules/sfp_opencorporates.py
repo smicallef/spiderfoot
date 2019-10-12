@@ -29,12 +29,12 @@ class sfp_opencorporates(SpiderFootPlugin):
         'api_key': 'OpenCorporates.com API key.'
     }
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "OpenCorporates"
-        self.results = dict()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
