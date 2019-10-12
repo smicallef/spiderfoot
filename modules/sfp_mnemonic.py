@@ -46,7 +46,6 @@ class sfp_mnemonic(SpiderFootPlugin):
         self.__dataSource__ = "Mnemonic PassiveDNS"
         self.results = self.tempStorage()
         self.cohostcount = 0                                                                                                                                                                                       
-
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
@@ -56,7 +55,8 @@ class sfp_mnemonic(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['IP_ADDRESS', 'IPV6_ADDRESS', 'CO_HOSTED_SITE', 'INTERNET_NAME']
+        return ['IP_ADDRESS', 'IPV6_ADDRESS', 'CO_HOSTED_SITE', 
+                'INTERNET_NAME', 'DOMAIN_NAME']
 
     # Query the PassiveDNS Mnemonic REST API
     def query(self, qry, limit=1000, offset=0):
@@ -175,6 +175,9 @@ class sfp_mnemonic(SpiderFootPlugin):
                 if self.getTarget().matches(co, includeParents=True):
                     evt = SpiderFootEvent("INTERNET_NAME", co, self.__name__, event)
                     self.notifyListeners(evt)
+                    if self.sf.isDomain(co, self.opts['_internettlds']):
+                        evt = SpiderFootEvent("DOMAIN_NAME", co, self.__name__, event)
+                        self.notifyListeners(evt)
                     continue
 
             if self.cohostcount < self.opts['maxcohost']:

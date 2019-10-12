@@ -67,7 +67,7 @@ class sfp_hackertarget(SpiderFootPlugin):
     def producedEvents(self):
         return ["CO_HOSTED_SITE", "UDP_PORT_OPEN", "TCP_PORT_OPEN", "IP_ADDRESS",
                 'WEBSERVER_HTTPHEADERS', 'RAW_DNS_RECORDS',
-                'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
+                'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'DOMAIN_NAME',
                 'AFFILIATE_DOMAIN', 'AFFILIATE_DOMAIN_UNRESOLVED']
 
     # Port scan for commonly open UDP ports
@@ -229,28 +229,30 @@ class sfp_hackertarget(SpiderFootPlugin):
                 if len(grps) == 0:
                     continue
 
-                domains = list()
+                hosts = list()
 
                 for strdata in grps:
                     self.sf.debug("Matched: " + strdata)
                     if strdata.endswith("."):
-                        domains.append(strdata[:-1])
+                        hosts.append(strdata[:-1])
                     else:
-                        domains.append(strdata + "." + name)
+                        hosts.append(strdata + "." + name)
 
-                for domain in set(domains):
-                    if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
+                for host in set(hosts):
+                    if self.getTarget().matches(host, includeChildren=True, includeParents=True):
                         evt_type = 'INTERNET_NAME'
                     else:
                         evt_type = 'AFFILIATE_DOMAIN'
 
-                    if self.opts['verify'] and not self.sf.resolveHost(domain):
-                        self.sf.debug("Host " + domain + " could not be resolved")
+                    if self.opts['verify'] and not self.sf.resolveHost(host):
+                        self.sf.debug("Host " + host + " could not be resolved")
                         evt_type += '_UNRESOLVED'
 
-                    evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
+                    evt = SpiderFootEvent(evt_type, host, self.__name__, event)
                     self.notifyListeners(evt)
-
+                    if not evt_type.startswith('AFFILIATE') and self.sf.isDomain(host, self.opts['_internettlds']):
+                        evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
+                        self.notifyListeners(evt)
             return None
 
         qrylist = list()

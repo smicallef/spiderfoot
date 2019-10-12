@@ -60,7 +60,8 @@ class sfp_spyonweb(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['CO_HOSTED_SITE', 'INTERNET_NAME', 'AFFILIATE_DOMAIN', 'WEB_ANALYTICS_ID']
+        return ['CO_HOSTED_SITE', 'INTERNET_NAME', 'AFFILIATE_DOMAIN', 
+                'WEB_ANALYTICS_ID', 'DOMAIN_NAME']
 
     # Query the REST API
     # https://api.spyonweb.com/v1/docs
@@ -263,6 +264,9 @@ class sfp_spyonweb(SpiderFootPlugin):
                     if self.getTarget().matches(co, includeParents=True):
                         evt = SpiderFootEvent("INTERNET_NAME", co, self.__name__, event)
                         self.notifyListeners(evt)
+                        if self.sf.isDomain(co, self.opts['_internettlds']):
+                            evt = SpiderFootEvent("DOMAIN_NAME", co, self.__name__, event)
+                            self.notifyListeners(evt)
                         continue
 
                 if self.cohostcount < self.opts['maxcohost']:

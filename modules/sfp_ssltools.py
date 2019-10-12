@@ -51,7 +51,8 @@ class sfp_ssltools(SpiderFootPlugin):
                 'AFFILIATE_DOMAIN', 'AFFILIATE_DOMAIN_UNRESOLVED',
                 'SSL_CERTIFICATE_ISSUED', 'SSL_CERTIFICATE_ISSUER',
                 'SSL_CERTIFICATE_MISMATCH', 'SSL_CERTIFICATE_EXPIRED',
-                'SSL_CERTIFICATE_EXPIRING', 'SSL_CERTIFICATE_RAW']
+                'SSL_CERTIFICATE_EXPIRING', 'SSL_CERTIFICATE_RAW',
+                'DOMAIN_NAME']
 
     # Query SSL Tools for DNS
     def queryDns(self, domain):
@@ -194,6 +195,9 @@ class sfp_ssltools(SpiderFootPlugin):
             if "*." not in san:
                 evt = SpiderFootEvent(evt_type, san, self.__name__, event)
                 self.notifyListeners(evt)
+                if not evt_type.startswith('AFFILIATE') and self.sf.isDomain(san, self.opts['_internettlds']):
+                    evt = SpiderFootEvent('DOMAIN_NAME', san, self.__name__, event)
+                    self.notifyListeners(evt)
 
         if cert.get('expired'):
             evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", cert.get('expirystr', 'Unknown'), self.__name__, event)

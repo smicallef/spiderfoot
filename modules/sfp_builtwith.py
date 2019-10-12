@@ -54,7 +54,7 @@ class sfp_builtwith(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return [ "INTERNET_NAME", "EMAILADDR", "RAW_RIR_DATA", 
-                 "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER" ]
+                 "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME" ]
 
     def query(self, t):
         ret = None
@@ -135,10 +135,12 @@ class sfp_builtwith(SpiderFootPlugin):
         if "Paths" in data.get("Result", []):
             for p in data["Result"]['Paths']:
                 if p.get("SubDomain", ""):
-                    ev = SpiderFootEvent("INTERNET_NAME", 
-                                        p["SubDomain"] + "." + eventData,
-                                        self.__name__, event)
+                    h = p["SubDomain"] + "." + eventData
+                    ev = SpiderFootEvent("INTERNET_NAME", h, self.__name__, event)
                     self.notifyListeners(ev)
+                    if self.sf.isDomain(h, self.opts['_internettlds']):
+                        ev = SpiderFootEvent("DOMAIN_NAME", h, self.__name__, event)
+                        self.notifyListeners(ev)
                 else:
                     ev = None
 

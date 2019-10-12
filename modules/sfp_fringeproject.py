@@ -39,7 +39,7 @@ class sfp_fringeproject(SpiderFootPlugin):
         return ['DOMAIN_NAME', 'INTERNET_NAME']
 
     def producedEvents(self):
-        return ['INTERNET_NAME', 'LINKED_URL_INTERNAL',
+        return ['INTERNET_NAME', 'LINKED_URL_INTERNAL', 'DOMAIN_NAME',
                 'TCP_PORT_OPEN', 'SOFTWARE_USED', 'RAW_RIR_DATA']
 
     def query(self, qry):
@@ -99,7 +99,7 @@ class sfp_fringeproject(SpiderFootPlugin):
         e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)
 
-        domains = list()
+        hosts = list()
 
         for result in data:
             data_type = result.get('type')
@@ -117,15 +117,15 @@ class sfp_fringeproject(SpiderFootPlugin):
                 if not self.getTarget().matches(value, includeChildren=True, includeParents=True):
                     continue
 
-                domains.append(value)
+                hosts.append(value)
 
             if data_type == 'url':
-                domain = self.sf.urlFQDN(value.lower())
+                host = self.sf.urlFQDN(value.lower())
 
-                if not self.getTarget().matches(domain, includeChildren=True, includeParents=True):
+                if not self.getTarget().matches(host, includeChildren=True, includeParents=True):
                     continue
 
-                domains.append(domain)
+                hosts.append(host)
 
                 evt = SpiderFootEvent('LINKED_URL_INTERNAL', value, self.__name__, event)
                 self.notifyListeners(evt)
@@ -141,8 +141,11 @@ class sfp_fringeproject(SpiderFootPlugin):
                     evt = SpiderFootEvent('TCP_PORT_OPEN', value + ':' + str(port[0]), self.__name__, event)
                     self.notifyListeners(evt)
 
-        for domain in set(domains):
-            evt = SpiderFootEvent('INTERNET_NAME', domain, self.__name__, event)
+        for host in set(hosts):
+            evt = SpiderFootEvent('INTERNET_NAME', host, self.__name__, event)
             self.notifyListeners(evt)
+            if self.sf.isDomain(host, self.opts['_internettlds']):
+                evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_fringeproject class

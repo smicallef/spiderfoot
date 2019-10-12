@@ -62,7 +62,8 @@ class sfp_sslcert(SpiderFootPlugin):
                 'AFFILIATE_DOMAIN', 'AFFILIATE_DOMAIN_UNRESOLVED',
                 "SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
                 "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
-                "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW"]
+                "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW",
+                "DOMAIN_NAME"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -143,6 +144,9 @@ class sfp_sslcert(SpiderFootPlugin):
             if "*." not in san:
                 evt = SpiderFootEvent(evt_type, san, self.__name__, event)
                 self.notifyListeners(evt)
+                if not evt_type.startswith('AFFILIATE') and self.sf.isDomain(san, self.opts['_internettlds']):
+                    evt = SpiderFootEvent('DOMAIN_NAME', san, self.__name__, event)
+                    self.notifyListeners(evt)
 
         if cert.get('expired'):
             evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", cert.get('expirystr', 'Unknown'), self.__name__, event)

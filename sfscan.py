@@ -270,6 +270,13 @@ class SpiderFootScanner(threading.Thread):
             firstEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue,
                                          "SpiderFoot UI", rootEvent)
             psMod.notifyListeners(firstEvent)
+        
+            # Special case.. check if an INTERNET_NAME is also a domain
+            if self.ts.targetType == 'INTERNET_NAME':
+                if self.ts.sf.isDomain(self.ts.targetValue, self.ts.config['_internettlds']):
+                    firstEvent = SpiderFootEvent('DOMAIN_NAME', self.ts.targetValue,
+                                                 "SpiderFoot UI", rootEvent)
+                    psMod.notifyListeners(firstEvent)
 
             # If in interactive mode, loop through this shared global variable
             # waiting for inputs, and process them until my status is set to

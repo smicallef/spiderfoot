@@ -41,8 +41,9 @@ class sfp_urlscan(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['GEOINFO', 'LINKED_URL_INTERNAL', 'RAW_RIR_DATA',
-                'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'BGP_AS_MEMBER', 'WEBSERVER_BANNER']
+        return ['GEOINFO', 'LINKED_URL_INTERNAL', 'RAW_RIR_DATA', 
+                'DOMAIN_NAME', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 
+                'BGP_AS_MEMBER', 'WEBSERVER_BANNER']
 
     # https://urlscan.io/about-api/
     def query(self, qry):
@@ -164,6 +165,10 @@ class sfp_urlscan(SpiderFootPlugin):
                 self.notifyListeners(evt)
             else:
                 evt = SpiderFootEvent('INTERNET_NAME', domain, self.__name__, event)
+                self.notifyListeners(evt)
+
+            if self.sf.isDomain(domain, self.opts['_internettlds']):
+                evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
                 self.notifyListeners(evt)
 
         for asn in set(asns):

@@ -760,6 +760,15 @@ class SpiderFoot:
         ps = PublicSuffixList(tldList)
         return ps.get_public_suffix(hostname)
 
+    # Given a possible hostname, check if it's a domain name
+    # By checking whether it rests atop a TLD.
+    # e.g. www.example.com = False because tld of hostname is com,
+    # and www.example has a . in it.
+    def isDomain(self, hostname, tldList):
+        ps = PublicSuffixList(tldList)
+        suffix = ps.get_public_suffix(hostname)
+        return hostname == suffix
+
     # Simple way to verify IPv4 addresses.
     def validIP(self, address):
         return netaddr.valid_ipv4(address)

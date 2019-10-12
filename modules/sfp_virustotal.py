@@ -74,7 +74,7 @@ class sfp_virustotal(SpiderFootPlugin):
                 "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
                 "MALICIOUS_SUBNET", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
-                "INTERNET_NAME_UNRESOLVED"]
+                "INTERNET_NAME_UNRESOLVED", 'DOMAIN_NAME']
 
     def query(self, qry):
         ret = None
@@ -211,6 +211,10 @@ class sfp_virustotal(SpiderFootPlugin):
                                     else:
                                         e = SpiderFootEvent("INTERNET_NAME", s, self.__name__, event)
                                         self.notifyListeners(e)
+
+                                if self.sf.isDomain(s, self.opts['_internettlds']):
+                                    e = SpiderFootEvent("DOMAIN_NAME", s, self.__name__, event)
+                                    self.notifyListeners(e)
                         else:
                             if s not in self.results:
                                 e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", s, self.__name__, event)
@@ -225,6 +229,10 @@ class sfp_virustotal(SpiderFootPlugin):
                                 self.notifyListeners(e)
                         else:
                             e = SpiderFootEvent("INTERNET_NAME", n, self.__name__, event)
+                            self.notifyListeners(e)
+
+                        if self.sf.isDomain(n, self.opts['_internettlds']):
+                            e = SpiderFootEvent("DOMAIN_NAME", n, self.__name__, event)
                             self.notifyListeners(e)
 
 # End of sfp_virustotal class

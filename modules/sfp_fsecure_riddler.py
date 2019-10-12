@@ -24,7 +24,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
     }
 
     optdescs = {
-        'verify': 'Verify domain names resolve',
+        'verify': 'Verify host names resolve',
         'username': 'F-Secure Riddler.io username',
         'password': 'F-Secure Riddler.io password'
     }
@@ -41,10 +41,11 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ['DOMAIN_NAME', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'IP_ADDRESS']
+        return ['DOMAIN_NAME', 'INTERNET_NAME', 
+                'INTERNET_NAME_UNRESOLVED', 'IP_ADDRESS']
 
     def producedEvents(self):
-        return ['INTERNET_NAME', 'IP_ADDRESS',
+        return ['INTERNET_NAME', 'IP_ADDRESS', 'DOMAIN_NAME',
                 'PHYSICAL_COORDINATES', 'RAW_RIR_DATA']
 
     # https://riddler.io/help/api
@@ -169,7 +170,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)
 
-        domains = list()
+        hosts = list()
         addrs = list()
         coords = list()
 
@@ -182,7 +183,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             if not self.getTarget().matches(host, includeChildren=True, includeParents=True):
                 continue
 
-            domains.append(host)
+            hosts.append(host)
 
             addr = result.get('addr')
 
@@ -194,18 +195,21 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             if coord and len(coord) == 2:
                 coords.append(str(coord[0]) + ', ' + str(coord[1]))
 
-        for domain in set(domains):
-            if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
+        for host in set(hosts):
+            if self.getTarget().matches(host, includeChildren=True, includeParents=True):
                 evt_type = 'INTERNET_NAME'
             else:
                 evt_type = 'AFFILIATE_DOMAIN'
 
-            if self.opts['verify'] and not self.sf.resolveHost(domain):
-                self.sf.debug("Host " + domain + " could not be resolved")
+            if self.opts['verify'] and not self.sf.resolveHost(host):
+                self.sf.debug("Host " + host + " could not be resolved")
                 evt_type += '_UNRESOLVED'
 
-            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
+            evt = SpiderFootEvent(evt_type, host, self.__name__, event)
             self.notifyListeners(evt)
+            if not evt_type.startswith('AFFILIATE') and self.sf.isDomain(host, self.opts['_internettlds']):
+                evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
+                self.notifyListeners(evt)
 
         for addr in set(addrs):
             if self.sf.validIP(addr):

@@ -61,7 +61,7 @@ class sfp_riskiq(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_DOMAIN", 
-                "CO_HOSTED_SITE", "NETBLOCK_OWNER"]
+                "CO_HOSTED_SITE", "NETBLOCK_OWNER", 'DOMAIN_NAME']
 
     def query(self, qry, qtype, opts=dict()):
         ret = None
@@ -154,6 +154,10 @@ class sfp_riskiq(SpiderFootPlugin):
                             e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'], 
                                                 self.__name__, event)
                             self.notifyListeners(e)
+                            if self.sf.isDomain(res['subjectCommonName'], self.opts['_internettlds']):
+                                e = SpiderFootEvent("DOMAIN_NAME", res['subjectCommonName'],
+                                                    self.__name__, event)
+                                self.notifyListeners(e)
                 except BaseException as e:
                     self.sf.error("Invalid response returned from RiskIQ: " + str(e), False)
 
@@ -202,6 +206,9 @@ class sfp_riskiq(SpiderFootPlugin):
                     if self.getTarget().matches(co, includeParents=True):
                         e = SpiderFootEvent("INTERNET_NAME", co, self.__name__, event)
                         self.notifyListeners(e)
+                        if self.sf.isDomain(co, self.opts['_internettlds']):
+                            e = SpiderFootEvent("DOMAIN_NAME", co, self.__name__, event)
+                            self.notifyListeners(e)
                         continue
 
                 if self.cohostcount < self.opts['maxcohost']:

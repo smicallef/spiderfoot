@@ -81,7 +81,7 @@ class sfp_binaryedge(SpiderFootPlugin):
     def producedEvents(self):
         return ["INTERNET_NAME", "VULNERABILITY", "TCP_PORT_OPEN",
                 "TCP_PORT_OPEN_BANNER", "EMAILADDR_COMPROMISED", 
-                "UDP_PORT_OPEN", "UDP_PORT_OPEN_INFO",
+                "UDP_PORT_OPEN", "UDP_PORT_OPEN_INFO", "DOMAIN_NAME",
                 "CO_HOSTED_SITE", "MALICIOUS_IPADDR"]
 
     def query(self, qry, querytype, page=1):
@@ -220,6 +220,10 @@ class sfp_binaryedge(SpiderFootPlugin):
                                 continue
                         evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
                         self.notifyListeners(evt)
+                        if self.sf.isDomain(host, self.opts['_internettlds']):
+                            evt = SpiderFootEvent("DOMAIN_NAME", host, self.__name__, event)
+                            self.notifyListeners(evt)
+
                         self.reportedhosts[host] = True
                         continue
 

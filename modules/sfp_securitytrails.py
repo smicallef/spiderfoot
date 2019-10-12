@@ -201,5 +201,4 @@ class sfp_securitytrails(SpiderFootPlugin):
                                         self.__name__, event)
                     self.notifyListeners(e)
 
-
 # End of sfp_securitytrails class
