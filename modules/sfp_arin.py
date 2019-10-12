@@ -22,14 +22,14 @@ class sfp_arin(SpiderFootPlugin):
     # Default options
     opts = {}
 
-    results = dict()
+    results = None
     currentEventSrc = None
     memCache = dict()
     keywords = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.memCache = dict()
         self.currentEventSrc = None
 

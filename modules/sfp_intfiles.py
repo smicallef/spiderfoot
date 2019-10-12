@@ -27,11 +27,11 @@ class sfp_intfiles(SpiderFootPlugin):
         'fileexts': "File extensions of files you consider interesting."
     }
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]

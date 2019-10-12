@@ -38,13 +38,13 @@ class sfp_whatcms(SpiderFootPlugin):
         'delay': 'Delay between requests, in seconds.'
     }
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = 'WhatCMS'
-        self.results = dict()
+        self.results = self.tempStorage()
         self.errorState = False
 
         for opt in userOpts.keys():

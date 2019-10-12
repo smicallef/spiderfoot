@@ -37,7 +37,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.errorState = False
         self.__dataSource__ = "DNS"
 

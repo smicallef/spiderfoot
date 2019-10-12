@@ -48,7 +48,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    results = dict()
+    results = None
     portlist = list()
     portResults = dict()
     lock = None
@@ -56,7 +56,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.__dataSource__ = "Target Network"
         self.lock = threading.Lock()
 
