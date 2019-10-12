@@ -1057,14 +1057,14 @@ class SpiderFoot:
         except cryptography.x509.extensions.ExtensionNotFound:
             pass
 
-        hosts = list()
+        certhosts = list()
         try:
             attrs = cert.subject.get_attributes_for_oid(cryptography.x509.oid.NameOID.COMMON_NAME)
             if len(attrs) == 1:
                 name = attrs[0].value.lower()
                 # CN often duplicates one of the SANs, don't add it then
                 if name not in ret['altnames']:
-                    hosts.append(name.encode('raw_unicode_escape'))
+                    certhosts.append(name.encode('raw_unicode_escape'))
 
             # Check for mismatch
             if fqdn and ret['issued']:
@@ -1072,25 +1072,29 @@ class SpiderFoot:
 
                 # Extract the CN from the issued section
                 if "cn=" + fqdn in ret['issued'].lower():
-                    hosts.append(fqdn)
+                    certhosts.append(fqdn)
 
                 # Extract subject alternative names
                 for host in ret['altnames']:
-                    hosts.append(host.replace("dns:", "").lower())
+                    certhosts.append(host.replace("dns:", ""))
 
-                ret['hosts'] = hosts
+                ret['hosts'] = certhosts
 
                 self.debug("Checking for " + fqdn + " in certificate subject")
                 fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
 
-                for host in hosts:
-                    if host == fqdn:
-                        break
-                    if host == "*." + fqdn_tld:
-                        break
-                    if host == fqdn_tld:
-                        break
+                found = False
+                for chost in certhosts:
+                    if chost == fqdn:
+                        found = True
+                    if chost == "*." + fqdn_tld:
+                        found = True
+                    if chost == fqdn_tld:
+                        found = True
+
+                if not found:
                     ret['mismatch'] = True
+
         except BaseException as e:
             self.error("Error processing certificate.", False)
             ret['certerror'] = True
