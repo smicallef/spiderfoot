@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_commoncrawl(SpiderFootPlugin):
-    """CommonCrawl:Footprint:Crawling and Scanning::Searches for URLs found through CommonCrawl.org."""
+    """CommonCrawl:Footprint,Passive:Crawling and Scanning::Searches for URLs found through CommonCrawl.org."""
 
 
     # Default options

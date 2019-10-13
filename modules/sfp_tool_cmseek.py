@@ -20,7 +20,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_tool_cmseek(SpiderFootPlugin):
     """Tool - CMSeeK:Footprint,Investigate:Content Analysis:tool:Identify what Content Management System (CMS) might be used."""
 
-
     # Default options
     opts = {
         'pythonpath': "python3",

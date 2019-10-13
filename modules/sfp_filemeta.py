@@ -23,9 +23,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_filemeta(SpiderFootPlugin):
     """File Metadata:Footprint:Content Analysis::Extracts meta data from documents and images."""
 
-
-
-
     # Default options
     opts = {
         'fileexts': ["docx", "pptx", 'xlsx', 'pdf', 'jpg', 'jpeg', 'tiff', 'tif'],

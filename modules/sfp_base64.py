@@ -15,8 +15,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_base64(SpiderFootPlugin):
-    """Base64:Investigate:Content Analysis::Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information."""
-
+    """Base64:Investigate,Passive:Content Analysis::Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information."""
 
     # Default options
     opts = {

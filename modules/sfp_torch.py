@@ -17,7 +17,6 @@ import re
 class sfp_torch(SpiderFootPlugin):
     """TORCH:Footprint,Investigate:Search Engines:errorprone:Search Tor 'TORCH' search engine for mentions of the target domain."""
 
-
     # Default options
     opts = {
         'fetchlinks': True,

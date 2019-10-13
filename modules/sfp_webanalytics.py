@@ -15,7 +15,7 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_webanalytics(SpiderFootPlugin):
-    """Web Analytics:Footprint,Investigate:Content Analysis::Identify web analytics IDs in scraped webpages and DNS TXT records."""
+    """Web Analytics:Footprint,Investigate,Passive:Content Analysis::Identify web analytics IDs in scraped webpages and DNS TXT records."""
 
     opts = {}
     optdescs = {}

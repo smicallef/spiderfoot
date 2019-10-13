@@ -18,7 +18,7 @@ except ImportError:
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_ethereum(SpiderFootPlugin):
-    """Ethereum Finder:Footprint,Investigate:Content Analysis::Identify ethereum addresses in scraped webpages."""
+    """Ethereum Finder:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
 
     # Default options
     opts = {}

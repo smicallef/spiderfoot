@@ -17,9 +17,6 @@ import re
 class sfp_ahmia(SpiderFootPlugin):
     """Ahmia:Footprint,Investigate:Search Engines::Search Tor 'Ahmia' search engine for mentions of the target domain."""
 
-
-
-
     # Default options
     opts = {
         # We don't bother with pagination as ahmia seems fairly limited in coverage

@@ -21,7 +21,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_portscan_tcp(SpiderFootPlugin):
     """Port Scanner - TCP:Footprint,Investigate:Crawling and Scanning:slow,invasive:Scans for commonly open TCP ports on Internet-facing systems."""
 
-
     # Default options
     opts = {
         # Commonly used ports on external-facing systems
