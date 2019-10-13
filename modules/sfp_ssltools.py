@@ -57,9 +57,11 @@ class sfp_ssltools(SpiderFootPlugin):
     # Query SSL Tools for DNS
     def queryDns(self, domain):
         postdata = 'url=' + domain
+        hdr = { 'Content-type': 'application/x-www-form-urlencoded' }
  
         res = self.sf.fetchUrl('http://www.ssltools.com/api/dns',
                                postData=postdata,
+                               headers=hdr,
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
@@ -80,9 +82,11 @@ class sfp_ssltools(SpiderFootPlugin):
     # Query SSL Tools for certificate information
     def queryScan(self, domain, port):
         postdata = 'url=' + domain + '&path=/&port=' + str(port) + '&live_scan=true'
+        hdr = { 'Content-type': 'application/x-www-form-urlencoded' }
  
         res = self.sf.fetchUrl('http://www.ssltools.com/api/scan',
                                postData=postdata,
+                               headers=hdr,
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
