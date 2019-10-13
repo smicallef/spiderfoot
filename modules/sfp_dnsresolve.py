@@ -169,6 +169,9 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 matches = re.findall(pat, data)
                 if matches:
                     for match in matches:
+                        # Wildcard certs will come in as .blah.blah
+                        if match[1].startswith("."):
+                            match[1] = match[1][1:]
                         self.processHost(match[1], parentEvent, False)
             # Nothing left to do with internal links and raw data
             return None
