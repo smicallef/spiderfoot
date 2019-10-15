@@ -19,7 +19,7 @@ COPY requirements.txt .
 
 # Run everything as one command so that only one layer is created
 RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py2-pip swig \
-        tinyxml-dev python2-dev musl-dev openssl-dev libxslt-dev \
+        tinyxml-dev python2-dev musl-dev openssl-dev libffi-dev libxslt-dev \
     && apk --update --no-cache add python2 musl openssl libxslt tinyxml \
     && pip --no-cache-dir install wheel \
     && pip --no-cache-dir install -r requirements.txt \
