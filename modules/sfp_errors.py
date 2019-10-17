@@ -10,10 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError:
-    import re
+import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Taken from Google Dorks on exploit-db.com
@@ -27,7 +24,6 @@ regexps = dict({
     "ODBC Error": ["\[ODBC SQL"]
 
 })
-
 
 class sfp_errors(SpiderFootPlugin):
     """Errors:Footprint,Passive:Content Analysis::Identify common error messages in content like SQL errors, etc."""
@@ -74,7 +70,8 @@ class sfp_errors(SpiderFootPlugin):
         if srcModuleName != "sfp_spider":
             return None
 
-        eventSource = event.sourceEvent.data
+        eventSource = event.actualSource
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if eventSource not in self.results.keys():
@@ -94,9 +91,9 @@ class sfp_errors(SpiderFootPlugin):
                 matches = re.findall(pat, eventData)
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
-                    self.results[eventSource].append(regexpGrp)
+                    self.results[eventSource] = self.results[eventSource] + [regexpGrp]
                     evt = SpiderFootEvent("ERROR_MESSAGE", regexpGrp,
-                                          self.__name__, event.sourceEvent)
+                                          self.__name__, event)
                     self.notifyListeners(evt)
 
         return None

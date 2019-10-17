@@ -85,7 +85,6 @@ class sfp__stor_stdout(SpiderFootPlugin):
             d['type'] = self.opts['_eventtypes'][event.eventType]
             print(json.dumps(d))
 
-
     # Handle events sent to this module
     def handleEvent(self, sfEvent):
         if sfEvent.eventType == "ROOT":

@@ -25,17 +25,17 @@ class sfp_ripe(SpiderFootPlugin):
 
     results = None
     currentEventSrc = None
-    memCache = dict()
-    nbreported = dict()
+    memCache = None
+    nbreported = None
     keywords = None
     lastContent = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-        self.memCache = dict()
+        self.memCache = self.tempStorage()
         self.currentEventSrc = None
-        self.nbreported = dict()
+        self.nbreported = self.tempStorage()
         self.lastContent = None
 
         for opt in userOpts.keys():
@@ -194,8 +194,9 @@ class sfp_ripe(SpiderFootPlugin):
     # and the string supplied.
     def findName(self, string):
         # Simplest check to perform..
-        if self.getTarget().getValue() in string:
-            return True
+        for n in self.getTarget().getNames():
+            if n in string:
+                return True
 
         if self.keywords is None:
             self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),

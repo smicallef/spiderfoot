@@ -26,11 +26,11 @@ class sfp_dnszonexfer(SpiderFootPlugin):
     optdescs = {
     }
 
-    events = dict()
+    events = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.events = dict()
+        self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
 
 

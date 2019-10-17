@@ -70,11 +70,11 @@ class sfp_similar(SpiderFootPlugin):
     }
 
     # Internal results tracking
-    results = list()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
         self.__dataSource__ = "DNS"
 
         for opt in userOpts.keys():
@@ -104,7 +104,7 @@ class sfp_similar(SpiderFootPlugin):
         if dom in self.results:
             return None
         else:
-            self.results.append(dom)
+            self.results[dom] = True
 
         # Search for typos
         pos = 0

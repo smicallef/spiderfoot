@@ -898,7 +898,7 @@ class SpiderFoot:
     #
 
     # Return a normalised resolution or None if not resolved.
-    def resolveHost(self, host):
+    def resolveHost(self, host, resolver=None):
         try:
             # IDNA-encode the hostname in case it contains unicode
             if type(host) != unicode:
@@ -906,9 +906,12 @@ class SpiderFoot:
             else:
                 host = host.encode("idna")
 
-            addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
+            if not resolver:
+                addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
+            else:
+                addrs = self.normalizeDNS(resolver.query(host))
             if len(addrs) > 0:
-                return addrs
+                return set(addrs)
             return None
         except BaseException as e:
             self.debug("Unable to resolve " + host + ": " + str(e))
@@ -921,7 +924,7 @@ class SpiderFoot:
         try:
             addrs = self.normalizeDNS(socket.gethostbyaddr(ipaddr))
             if len(addrs) > 0:
-                return addrs
+                return set(addrs)
             return None
         except BaseException as e:
             self.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
@@ -938,7 +941,7 @@ class SpiderFoot:
             if len(addrs) < 1:
                 return None
             self.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
-            return addrs
+            return set(addrs)
         except BaseException as e:
             self.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
             return None
@@ -955,6 +958,43 @@ class SpiderFoot:
                 return True
 
         return False
+
+    # Resolve alternative names for a given target
+    def resolveTargets(self, target, validateReverse):
+        ret = list()
+        t = target.getType()
+        v = target.getValue()
+
+        if t == "IP_ADDRESS":
+            r = self.resolveIP(v)
+            if r:
+                ret.extend(r)
+        if t == "INTERNET_NAME":
+            r = self.resolveHost(v)
+            if r:
+                ret.extend(r)
+        if t == "NETBLOCK_OWNER":
+            for addr in IPNetwork(v):
+                ipaddr = str(addr)
+                if ipaddr.split(".")[3] in ['255', '0']:
+                    continue
+                if '255' in ipaddr.split("."):
+                    continue
+                ret.append(ipaddr)
+
+                # Add the reverse-resolved hostnames as aliases too..
+                names = self.resolveIP(ipaddr)
+                if names:
+                    if validateReverse:
+                        for host in names:
+                            chk = self.resolveHost(host)
+                            if ipaddr in chk:
+                                ret.append(host)
+                    else:
+                        ret.extend(names)
+        if len(ret) > 0:
+            return set(ret)
+        return None
 
     # Create a safe socket that's using SOCKS/TOR if it was enabled
     def safeSocket(self, host, port, timeout):
@@ -1300,15 +1340,43 @@ class SpiderFoot:
         if url is None:
             return None
 
-        # Clean the URL
-        if type(url) != unicode:
-            url = unicode(url, 'utf-8', errors='replace')
+        proxies = dict()
+        if self.opts['_socks1type']:
+            neverProxyNames = [ self.opts['_socks2addr'] ]
+            neverProxySubnets = [ "192.168.", "127.", "10." ]
+            host = self.urlFQDN(url)
 
-        # Convert any unicode chars in the URL
-        url = str(self.urlEncodeUnicode(url))
+            # Completely on or off?
+            if self.opts['_socks1type']:
+                proxy = True
+            else:
+                proxy = False
+
+            # Never proxy these system/internal locations
+            # This logic also exists in ext/socks.py and may not be
+            # needed anymore.
+            if host in neverProxyNames:
+                proxy = False
+            for s in neverProxyNames:
+                if host.endswith(s):
+                    proxy = False
+            for sub in neverProxySubnets:
+                if host.startswith(sub):
+                    proxy = False
+
+            if proxy:
+                self.debug("Using proxy for " + host)
+                self.debug("Proxy set to " + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']))
+                proxies = {
+                    'http': 'socks5h://' + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']),
+                    'https': 'socks5h://' + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port'])
+                }
+            else:
+                self.debug("Not using proxy for " + host)
 
         try:
             header = dict()
+            btime = time.time()
             if type(useragent) is list:
                 header['User-Agent'] = random.SystemRandom().choice(useragent)
             else:
@@ -1317,15 +1385,19 @@ class SpiderFoot:
             # Add custom headers
             if headers is not None:
                 for k in headers.keys():
-                    header[k] = headers[k]
+                    if type(headers[k]) != unicode:
+                        header[k] = unicode(headers[k], 'utf-8', errors='replace')
+                    else:
+                        header[k] = headers[k]
 
             if sizeLimit or headOnly:
                 if not noLog:
                     self.info("Fetching (HEAD only): " + url + \
-                          " [timeout: " + \
+                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
 
-                hdr = requests.head(url, headers=header, verify=verify, timeout=timeout)
+                hdr = requests.head(url, headers=header, proxies=proxies,
+                                    verify=False, timeout=timeout)
                 size = int(hdr.headers.get('content-length', 0))
                 result['realurl'] = hdr.headers.get('location', url)
                 result['code'] = str(hdr.status_code)
@@ -1339,74 +1411,99 @@ class SpiderFoot:
                 if result['realurl'] != url:
                     if not noLog:
                        self.info("Fetching (HEAD only): " + url + \
-                              " [timeout: " + \
+                              " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                               str(timeout) + "]")
 
-                    hdr = requests.head(result['realurl'], headers=header, verify=verify)
+                    hdr = requests.head(result['realurl'], headers=header, proxies=proxies,
+                                        verify=False, timeout=timeout)
                     size = int(hdr.headers.get('content-length', 0))
                     result['realurl'] = hdr.headers.get('location', result['realurl'])
                     result['code'] = str(hdr.status_code)
 
                     if size > sizeLimit:
                         return result
-
-            req = urllib2.Request(url, postData, header)
             if cookies is not None:
-                req.add_header('cookie', cookies)
+                #req.add_header('cookie', cookies)
                 if not noLog:
                     self.info("Fetching (incl. cookies): " + url + \
-                          " [timeout: " + \
+                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
             else:
                 if not noLog:
-                    self.info("Fetching: " + url + " [timeout: " + str(timeout) + "]")
+                    self.info("Fetching: " + url + " [user-agent: " + \
+                          header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
+            #
+            # MAKE THE REQUEST
+            # 
+            if postData:
+                res = requests.post(url, data=postData, headers=header, proxies=proxies,
+                                    cookies=cookies, timeout=timeout, verify=False)
+            else:
+                res = requests.get(url, headers=header, proxies=proxies,
+                                   cookies=cookies, timeout=timeout, verify=False)
 
             result['headers'] = dict()
-            opener = urllib2.build_opener(SmartRedirectHandler())
-            fullPage = opener.open(req, timeout=timeout)
-            content = fullPage.read()
+            for h in res.headers:
+                if type(h) != unicode:
+                    hu = unicode(h, 'utf-8', errors='replace')
+                else:
+                    hu = h
+                v = res.headers.get(h)
+                if type(v) != unicode:
+                    vu = unicode(v, 'utf-8', errors='replace')
+                else:
+                    vu = v
+                result['headers'][hu.lower()] = vu
 
-            for k, v in fullPage.info().items():
-                result['headers'][k.lower()] = v
+            # Sometimes content exceeds the size limit after decompression
+            if sizeLimit and len(res.content) > sizeLimit:
+                self.debug("Content exceeded size limit, so returning no data just headers")
+                result['realurl'] = res.url
+                result['code'] = str(res.status_code)
+                return result
 
-            # Content is compressed
-            if 'gzip' in result['headers'].get('content-encoding', ''):
-                content = gzip.GzipFile(fileobj=StringIO.StringIO(content)).read()
+            if 'refresh' in result['headers']:
+                try:
+                    newurl = result['headers']['refresh'].split(";url=")[1]
+                except BaseException as e:
+                    self.debug("Refresh header found but was not parsable: " + result['headers']['refresh'])
+                    return result
+                self.debug("Refresh header found, re-directing to " + newurl)
+                return self.fetchUrl(newurl, fatal, cookies, timeout,
+                                     useragent, headers, noLog, postData,
+                                     dontMangle, sizeLimit, headOnly)
 
+            #print "FOR: " + url
+            #print "HEADERS: " + str(result['headers'])
+            result['realurl'] = res.url
+            result['code'] = str(res.status_code)
             if dontMangle:
-                result['content'] = content
+                result['content'] = res.content
             else:
-                result['content'] = unicode(content, 'utf-8', errors='replace')
-
-            #print("FOR: " + url)
-            #print("HEADERS: " + str(result['headers']))
-            result['realurl'] = fullPage.geturl()
-            result['code'] = str(fullPage.getcode())
-            result['status'] = 'OK'
-        except urllib2.HTTPError as h:
-            if not noLog:
-                self.info("HTTP code " + str(h.code) + " encountered for " + url)
-            # Capture the HTTP error code
-            result['code'] = str(h.code)
-            for k, v in h.info().items():
-                result['headers'][k.lower()] = v
+                result['content'] = unicode(res.content, 'utf-8', errors='replace')
             if fatal:
-                self.fatal('URL could not be fetched (' + str(h.code) + ')')
-        except urllib2.URLError as e:
-            if not noLog:
-                self.info("Error fetching " + url + "(" + str(e) + ")")
-            result['status'] = str(e)
-            if fatal:
-                self.fatal('URL could not be fetched (' + str(e) + ')')
+                res.raise_for_status()
+        except requests.exceptions.HTTPError as h:
+            self.fatal('URL could not be fetched (' + str(res.status_code) + ' / ' + res.content + ')')
         except Exception as x:
             if not noLog:
-                self.info("Unexpected exception occurred fetching: " + url + " (" + str(x) + ")")
+                try:
+                    self.error("Unexpected exception (" + str(x) + ") occurred fetching: " + url, False)
+                    self.error(traceback.format_exc(), False)
+                except BaseException as f:
+                    return result
             result['content'] = None
             result['status'] = str(x)
             if fatal:
                 self.fatal('URL could not be fetched (' + str(x) + ')')
 
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        m = mod.__name__
+        atime = time.time()
+        t = str(atime - btime)
+        self.info("Fetched data: " + str(len(result['content'] or '')) + " (" + url + "), took " + t + "s")
         return result
 
     # Check if wildcard DNS is enabled by looking up two random hostnames
@@ -1860,6 +1957,7 @@ class SpiderFootEvent(object):
     sourceEvent = None
     sourceEventHash = None
     moduleDataSource = None
+    actualSource = None
     __id = None
 
     def __init__(self, eventType, data, module, sourceEvent,
@@ -1921,23 +2019,6 @@ class SpiderFootEvent(object):
 
     def setSourceEventHash(self, srcHash):
         self.sourceEventHash = srcHash
-
-
-# Override the default redirectors to re-use cookies
-class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
-    def http_error_301(self, req, fp, code, msg, headers):
-        if "Set-Cookie" in headers:
-            req.add_header('cookie', headers['Set-Cookie'])
-        result = urllib2.HTTPRedirectHandler.http_error_301(
-            self, req, fp, code, msg, headers)
-        return result
-
-    def http_error_302(self, req, fp, code, msg, headers):
-        if "Set-Cookie" in headers:
-            req.add_header('cookie', headers['Set-Cookie'])
-        result = urllib2.HTTPRedirectHandler.http_error_302(
-            self, req, fp, code, msg, headers)
-        return result
 
 
 """

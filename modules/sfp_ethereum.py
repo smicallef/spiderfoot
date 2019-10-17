@@ -11,10 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError:
-    import re
+import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_ethereum(SpiderFootPlugin):

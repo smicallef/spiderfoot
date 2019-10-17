@@ -33,7 +33,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
     }
 
     results = None
-    s3results = None
+    s3results = dict()
     lock = None
 
     def setup(self, sfc, userOpts=dict()):
@@ -56,16 +56,17 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         return ["CLOUD_STORAGE_BUCKET", "CLOUD_STORAGE_BUCKET_OPEN"]
 
     def checkSite(self, url):
-        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
+        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot")
 
         if res['code'] not in [ "301", "302", "200" ] and \
             (res['content'] is None or "NoSuchBucket" in res['content']):
             self.sf.debug("Not a valid bucket: " + url)
         else:
-            with self.lock:
-                if "ListBucketResult" in res['content']:
+            if "ListBucketResult" in res['content']:
+                with self.lock:
                     self.s3results[url] = res['content'].count("<Key>")
-                else:
+            else:
+                with self.lock:
                     self.s3results[url] = 0
 
     def threadSites(self, siteList):
@@ -80,7 +81,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
                 return None
 
             self.sf.info("Spawning thread to check bucket: " + site)
-            t.append(threading.Thread(name='sfp_digitaloceanspaces_' + site,
+            t.append(threading.Thread(name='thread_sfp_digitaloceanspaces_' + site,
                                       target=self.checkSite, args=(site,)))
             t[i].start()
             i += 1
@@ -89,7 +90,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         while running:
             found = False
             for rt in threading.enumerate():
-                if rt.name.startswith("sfp_digitaloceanspaces_"):
+                if rt.name.startswith("thread_sfp_digitaloceanspaces_"):
                     found = True
 
             if not found:
@@ -163,7 +164,8 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
             evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", bucket[0] + ":" + bucket[1], self.__name__, event)
             self.notifyListeners(evt)
             if bucket[2] != "0":
-                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET_OPEN", bucket[0] + ":" + bucket[1] + ": " + bucket[2] + " files found.", 
+                bucketname = bucket[1].replace("//", "")
+                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET_OPEN", bucketname + ":" + bucket[1] + ": " + bucket[2] + " files found.", 
                                       self.__name__, evt)
                 self.notifyListeners(evt)
 

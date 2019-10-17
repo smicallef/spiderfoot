@@ -157,7 +157,7 @@ class sfp_accounts(SpiderFootPlugin):
 
             self.sf.info("Spawning thread to check site: " + site['name'] + \
                         " / " + site['check_uri'].format(account=name))
-            t.append(threading.Thread(name='sfp_accounts_' + site['name'],
+            t.append(threading.Thread(name='thread_sfp_accounts_' + site['name'],
                                       target=self.checkSite, args=(name, site)))
             t[i].start()
             i += 1
@@ -166,7 +166,7 @@ class sfp_accounts(SpiderFootPlugin):
         while running:
             found = False
             for rt in threading.enumerate():
-                if rt.name.startswith("sfp_accounts_"):
+                if rt.name.startswith("thread_sfp_accounts_"):
                     found = True
 
             if not found:

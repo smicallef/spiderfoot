@@ -11,16 +11,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError:
-    import re
-
+import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_company(SpiderFootPlugin):
     """Company Names:Footprint,Investigate,Passive:Content Analysis::Identify company names in any obtained data."""
-
 
     # Default options
     opts = {
@@ -85,7 +80,7 @@ class sfp_company(SpiderFootPlugin):
             return None
 
         if eventName == "TARGET_WEB_CONTENT":
-            url = event.sourceEvent.data
+            url = event.actualSource
             if self.opts['filterjscss'] and (".js" in url or ".css" in url):
                 self.sf.debug("Ignoring web content from CSS/JS.")
                 return None

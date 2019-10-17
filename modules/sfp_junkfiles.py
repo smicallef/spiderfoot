@@ -36,16 +36,16 @@ class sfp_junkfiles(SpiderFootPlugin):
     }
 
     results = None
-    hosts = dict()
-    skiphosts = dict()
-    bases = dict()
+    hosts = None
+    skiphosts = None
+    bases = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-        self.hosts = dict()
-        self.skiphosts = dict()
-        self.bases = dict()
+        self.hosts = self.tempStorage()
+        self.skiphosts = self.tempStorage()
+        self.bases = self.tempStorage()
         self.__dataSource__ = "Target Website"
 
         for opt in userOpts.keys():

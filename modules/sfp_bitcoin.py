@@ -11,10 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError:
-    import re
+import re
 from hashlib import sha256
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -24,11 +21,11 @@ class sfp_bitcoin(SpiderFootPlugin):
     # Default options
     opts = {}
 
-    results = list()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -69,7 +66,7 @@ class sfp_bitcoin(SpiderFootPlugin):
         if sourceData in self.results:
             return None
         else:
-            self.results.append(sourceData)
+            self.results[sourceData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 

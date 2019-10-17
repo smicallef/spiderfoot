@@ -47,12 +47,12 @@ class sfp_archiveorg(SpiderFootPlugin):
         "javascriptpages": "Query the Wayback Machine for historic versions of URLs using Javascript."
     }
 
-    results = list()
+    results = None
     foundDates = list()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
         self.foundDates = list()
 
         for opt in userOpts.keys():
@@ -104,7 +104,7 @@ class sfp_archiveorg(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         for daysback in self.opts['farback'].split(","):
             newDate = datetime.datetime.now() - datetime.timedelta(days=int(daysback))

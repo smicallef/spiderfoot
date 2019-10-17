@@ -21,7 +21,6 @@ malchecks = {
     }
 }
 
-
 class sfp_hostsfilenet(SpiderFootPlugin):
     """hosts-file.net Malicious Hosts:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to hosts-file.net Malicious Hosts."""
 
@@ -44,11 +43,11 @@ class sfp_hostsfilenet(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -89,6 +88,9 @@ class sfp_hostsfilenet(SpiderFootPlugin):
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
 
+                if type(data['content']) != unicode:
+                    data['content'] = unicode(data['content'], 'utf-8', errors='replace')
+
                 # Check for the domain and the hostname
                 if targetType == "domain" and "127.0.0.1\t" + targetDom + "\n" in data['content']:
                     self.sf.debug(targetDom + " found in " + check + " list.")
@@ -121,7 +123,7 @@ class sfp_hostsfilenet(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None

@@ -56,7 +56,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # https://www.neutrinoapi.com/api/phone-validate/
     def queryPhoneValidate(self, qry):
         res = self.sf.fetchUrl('https://neutrinoapi.com/phone-validate',
-            postData="output-format=json&number=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
+            postData={"output-format": "json", "number": qry, "user-id":  self.opts['user_id'], "api-key": self.opts['api_key']},
             timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
 
         return self.parseApiResponse(res)
@@ -65,7 +65,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # https://www.neutrinoapi.com/api/ip-info/
     def queryIpInfo(self, qry):
         res = self.sf.fetchUrl("https://neutrinoapi.com/ip-info",
-            postData="output-format=json&ip=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
+            postData={"output-format": "json", "ip": qry, "user-id":  self.opts['user_id'], "api-key": self.opts['api_key']},
             timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
 
         return self.parseApiResponse(res)
@@ -74,7 +74,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # https://www.neutrinoapi.com/api/ip-blocklist/
     def queryIpBlocklist(self, qry):
         res = self.sf.fetchUrl("https://neutrinoapi.com/ip-blocklist",
-            postData="output-format=json&ip=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
+            postData={"output-format": "json", "ip": qry, "user-id":  self.opts['user_id'], "api-key": self.opts['api_key']},
             timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
 
         return self.parseApiResponse(res)
@@ -83,7 +83,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # https://www.neutrinoapi.com/api/host-reputation/
     def queryHostReputation(self, qry):
         res = self.sf.fetchUrl("https://neutrinoapi.com/host-reputation",
-            postData="output-format=json&host=" + qry + "&user-id=" + self.opts['user_id'] + "&api-key=" + self.opts['api_key'],
+            postData={"output-format": "json", "host": qry, "user-id":  self.opts['user_id'], "api-key": self.opts['api_key']},
             timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
 
         return self.parseApiResponse(res)

@@ -72,14 +72,10 @@ class sfp_ahmia(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            # Submit the search results for analysis
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
-                                  self.__name__, event)
-            self.notifyListeners(evt)
-
             links = re.findall("redirect_url=(.[^\"]+)\"", 
                              data['content'], re.IGNORECASE | re.DOTALL)
 
+            reported = False
             for link in links:
                 if link in self.results:
                     continue
@@ -110,14 +106,21 @@ class sfp_ahmia(SpiderFootPlugin):
                                 self.sf.debug("String not found in content.")
                                 continue
 
-                            data = res['content'][startIndex:endIndex]
-                            evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + data + "...",
+                            wdata = res['content'][startIndex:endIndex]
+                            evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + wdata + "...",
                                                   self.__name__, evt)
                             self.notifyListeners(evt)
-
+                            reported = True
                         else:
                             evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                             self.notifyListeners(evt)
+                            reported = True
+
+            if reported:
+                # Submit the search results for analysis
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
+                                      self.__name__, event)
+                self.notifyListeners(evt)
 
 
 # End of sfp_ahmia class

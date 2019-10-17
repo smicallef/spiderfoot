@@ -32,14 +32,14 @@ class sfp_s3bucket(SpiderFootPlugin):
         "suffixes": "List of suffixes to append to domains tried as bucket names"
     }
 
-    results = list()
+    results = None
     s3results = dict()
     lock = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.s3results = dict()
-        self.results = list()
+        self.results = self.tempStorage()
         self.lock = threading.Lock()
 
         for opt in userOpts.keys():
@@ -56,12 +56,11 @@ class sfp_s3bucket(SpiderFootPlugin):
         return ["CLOUD_STORAGE_BUCKET", "CLOUD_STORAGE_BUCKET_OPEN"]
 
     def checkSite(self, url):
-        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
+        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot")
 
         if res['code'] not in [ "301", "302", "200" ] and \
             (res['content'] is None or "NoSuchBucket" in res['content']):
-            #self.sf.debug("Not a valid bucket: " + url)
-            return None
+            self.sf.debug("Not a valid bucket: " + url)
         else:
             if "ListBucketResult" in res['content']:
                 with self.lock:
@@ -82,7 +81,7 @@ class sfp_s3bucket(SpiderFootPlugin):
                 return None
 
             self.sf.info("Spawning thread to check bucket: " + site)
-            t.append(threading.Thread(name='sfp_s3buckets_' + site,
+            t.append(threading.Thread(name='thread_sfp_s3buckets_' + site,
                                       target=self.checkSite, args=(site,)))
             t[i].start()
             i += 1
@@ -91,7 +90,7 @@ class sfp_s3bucket(SpiderFootPlugin):
         while running:
             found = False
             for rt in threading.enumerate():
-                if rt.name.startswith("sfp_s3buckets_"):
+                if rt.name.startswith("thread_sfp_s3buckets_"):
                     found = True
 
             if not found:
@@ -134,7 +133,7 @@ class sfp_s3bucket(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
@@ -165,7 +164,8 @@ class sfp_s3bucket(SpiderFootPlugin):
             evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", bucket[0] + ":" + bucket[1], self.__name__, event)
             self.notifyListeners(evt)
             if bucket[2] != "0":
-                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET_OPEN", bucket[0] + ": " + bucket[2] + " files found.", 
+                bucketname = bucket[1].replace("//", "")
+                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET_OPEN", bucketname + ": " + bucket[2] + " files found.", 
                                       self.__name__, evt)
                 self.notifyListeners(evt)
 

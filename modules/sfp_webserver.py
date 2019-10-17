@@ -14,7 +14,6 @@
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-
 class sfp_webserver(SpiderFootPlugin):
     """Web Server:Footprint,Investigate,Passive:Content Analysis::Obtain web server banners to identify versions of web servers being used."""
 
@@ -47,8 +46,7 @@ class sfp_webserver(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        parentEvent = event.sourceEvent
-        eventSource = event.sourceEvent.data
+        eventSource = event.actualSource
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
         if eventSource in self.results:
@@ -72,10 +70,10 @@ class sfp_webserver(SpiderFootPlugin):
         if 'location' in jdata:
             if jdata['location'].startswith('http://') or jdata['location'].startswith('https://'):
                 if self.getTarget().matches(self.sf.urlFQDN(jdata['location'])):
-                    evt = SpiderFootEvent('LINKED_URL_INTERNAL', jdata['location'], self.__name__, parentEvent)
+                    evt = SpiderFootEvent('LINKED_URL_INTERNAL', jdata['location'], self.__name__, event)
                     self.notifyListeners(evt)
                 else:
-                    evt = SpiderFootEvent('LINKED_URL_EXTERNAL', jdata['location'], self.__name__, parentEvent)
+                    evt = SpiderFootEvent('LINKED_URL_EXTERNAL', jdata['location'], self.__name__, event)
                     self.notifyListeners(evt)
 
         # Check CSP header for linked URLs
@@ -84,10 +82,10 @@ class sfp_webserver(SpiderFootPlugin):
                 for string in directive.split(' '):
                     if string.startswith('http://') or string.startswith('https://'):
                         if self.getTarget().matches(self.sf.urlFQDN(string)):
-                            evt = SpiderFootEvent('LINKED_URL_INTERNAL', string, self.__name__, parentEvent)
+                            evt = SpiderFootEvent('LINKED_URL_INTERNAL', string, self.__name__, event)
                             self.notifyListeners(evt)
                         else:
-                            evt = SpiderFootEvent('LINKED_URL_EXTERNAL', string, self.__name__, parentEvent)
+                            evt = SpiderFootEvent('LINKED_URL_EXTERNAL', string, self.__name__, event)
                             self.notifyListeners(evt)
 
         # Could apply some smarts here, for instance looking for certain
@@ -96,14 +94,14 @@ class sfp_webserver(SpiderFootPlugin):
         # and other errors to see what the header looks like.
         if 'server' in jdata:
             evt = SpiderFootEvent("WEBSERVER_BANNER", jdata['server'],
-                                  self.__name__, parentEvent)
+                                  self.__name__, event)
             self.notifyListeners(evt)
 
             self.sf.info("Found web server: " + jdata['server'] + " (" + eventSource + ")")
 
         if 'x-powered-by' in jdata:
             evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", jdata['x-powered-by'],
-                                  self.__name__, parentEvent)
+                                  self.__name__, event)
             self.notifyListeners(evt)
             return None
 
@@ -127,7 +125,7 @@ class sfp_webserver(SpiderFootPlugin):
             tech = "PHP"
 
         if tech is not None:
-            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, parentEvent)
+            evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", tech, self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_webserver class

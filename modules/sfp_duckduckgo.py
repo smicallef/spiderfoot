@@ -16,9 +16,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_duckduckgo(SpiderFootPlugin):
     """DuckDuckGo:Footprint,Investigate,Passive:Search Engines::Query DuckDuckGo's API for descriptive information about your target."""
 
-
-
-
     # Default options
     opts = {
             "affiliatedomains": True
@@ -29,11 +26,11 @@ class sfp_duckduckgo(SpiderFootPlugin):
             "affiliatedomains": "For affiliates, look up the domain name, not the hostname. This will usually return more meaningful information about the affiliate."
     }
 
-    results = list()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -64,7 +61,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
 	url = "https://api.duckduckgo.com/?q=" + eventData + "&format=json&pretty=1"
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],

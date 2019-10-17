@@ -10,8 +10,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
-
 
 class sfp_cookie(SpiderFootPlugin):
     """Cookies:Footprint,Investigate,Passive:Crawling and Scanning::Extract Cookies from HTTP headers."""
@@ -43,8 +43,7 @@ class sfp_cookie(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        parentEvent = event.sourceEvent
-        eventSource = event.sourceEvent.data
+        eventSource = event.actualSource
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
         if eventSource in self.results:
@@ -56,9 +55,17 @@ class sfp_cookie(SpiderFootPlugin):
             self.sf.debug("Not collecting cookies from external sites.")
             return None
 
-        if 'set-cookie' in eventData:
-            evt = SpiderFootEvent("TARGET_WEB_COOKIE", eventData['set-cookie'],
-                                  self.__name__, parentEvent)
+        try:
+            jdata = json.loads(eventData)
+            if jdata == None:
+                return None
+        except BaseException as e:
+            self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
+            return None
+
+        if 'set-cookie' in jdata:
+            evt = SpiderFootEvent("TARGET_WEB_COOKIE", jdata['set-cookie'],
+                                  self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_cookie class

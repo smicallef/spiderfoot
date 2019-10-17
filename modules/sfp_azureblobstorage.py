@@ -32,7 +32,6 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 
     results = None
     s3results = None
-    lock = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -72,7 +71,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
                 return None
 
             self.sf.info("Spawning thread to check bucket: " + site)
-            t.append(threading.Thread(name='sfp_azureblobstorages_' + site,
+            t.append(threading.Thread(name='thread_sfp_azureblobstorages_' + site,
                                       target=self.checkSite, args=(site,)))
             t[i].start()
             i += 1
@@ -81,7 +80,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
         while running:
             found = False
             for rt in threading.enumerate():
-                if rt.name.startswith("sfp_azureblobstorages_"):
+                if rt.name.startswith("thread_sfp_azureblobstorages_"):
                     found = True
 
             if not found:

@@ -16,10 +16,8 @@
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-
 class sfp_crossref(SpiderFootPlugin):
     """Cross-Reference:Footprint:Crawling and Scanning::Identify whether other domains are associated ('Affiliates') of the target."""
-
 
     # Default options
     opts = {
@@ -32,21 +30,18 @@ class sfp_crossref(SpiderFootPlugin):
     }
 
     # Internal results tracking
-    results = None
-    fetched = list()
+    fetched = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = self.tempStorage()
-        self.fetched = list()
+        self.fetched = self.tempStorage()
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['LINKED_URL_EXTERNAL', 'SIMILARDOMAIN', 
-                'CO_HOSTED_SITE', 'DARKNET_MENTION_URL']
+        return ['LINKED_URL_EXTERNAL', 'SIMILARDOMAIN', 'CO_HOSTED_SITE', 'DARKNET_MENTION_URL']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -78,11 +73,11 @@ class sfp_crossref(SpiderFootPlugin):
             self.sf.debug("Ignoring " + eventData + " as already tested")
             return
         else:
-            self.fetched.append(eventData)
+            self.fetched[eventData] = True
 
         self.sf.debug("Testing for affiliation: " + eventData)
         res = self.sf.fetchUrl(eventData, timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'])
+                               useragent=self.opts['_useragent'], sizeLimit=10000000)
 
         if res['content'] is None:
             self.sf.debug("Ignoring " + eventData + " as no data returned")
@@ -108,10 +103,11 @@ class sfp_crossref(SpiderFootPlugin):
                 if url in self.fetched:
                     return None
                 else:
-                    self.fetched.append(url)
+                    self.fetched[url] = True
 
                 res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                                       useragent=self.opts['_useragent'])
+                                       useragent=self.opts['_useragent'],
+                                       sizeLimit=10000000)
                 if res['content'] is not None:
                     for name in self.getTarget().getNames():
                         pat = re.compile("([\.\'\/\"\ ]" + name + "[\'\/\"\ ])",
@@ -134,4 +130,3 @@ class sfp_crossref(SpiderFootPlugin):
             evt2.moduleDataSource = event.moduleDataSource
             self.notifyListeners(evt2)
 
-# End of sfp_crossref class

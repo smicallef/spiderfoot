@@ -27,13 +27,13 @@ class sfp_adblock(SpiderFootPlugin):
         "blocklist": "AdBlockPlus block list."
     }
 
-    results = list()
+    results = None
     rules = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
         self.rules = None
         self.errorState = False
 
@@ -81,7 +81,7 @@ class sfp_adblock(SpiderFootPlugin):
             pagetype = "_INTERNAL"
 
         if eventData not in self.results:
-            self.results.append(eventData)
+            self.results[eventData] = True
         else:
             self.sf.debug("Already checked this page for AdBlock matching, skipping.")
             return None

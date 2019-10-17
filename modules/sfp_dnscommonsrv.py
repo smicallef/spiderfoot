@@ -24,7 +24,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
     # Option descriptions
     optdescs = {}
 
-    events = dict()
+    events = None
 
     commonsrv = [ # LDAP/Kerberos, used for Active Directory
                   # https://technet.microsoft.com/en-us/library/cc961719.aspx
@@ -67,7 +67,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.events = dict()
+        self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
 
     # What events is this module interested in for input

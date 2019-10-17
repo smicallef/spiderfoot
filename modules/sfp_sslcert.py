@@ -80,8 +80,8 @@ class sfp_sslcert(SpiderFootPlugin):
             # Handle URLs containing port numbers
             u = urlparse.urlparse(eventData)
             port = 443
-            if url.port:
-                port = url.port
+            if u.port:
+                port = u.port
             fqdn = self.sf.urlFQDN(eventData.lower())
         else:
             fqdn = eventData
