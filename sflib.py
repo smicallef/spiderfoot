@@ -779,7 +779,7 @@ class SpiderFoot:
 
     # Simple way to verify netblock.
     def validIpNetwork(self, cidr):
-       try:
+        try:
             if '/' in str(cidr) and netaddr.IPNetwork(str(cidr)).size > 0:
                 return True
            else:
