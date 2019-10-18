@@ -777,6 +777,16 @@ class SpiderFoot:
     def validIP6(self, address):
         return netaddr.valid_ipv6(address)
 
+    # Simple way to verify netblock.
+    def validIpNetwork(self, cidr):
+       try:
+            if '/' in str(cidr) and netaddr.IPNetwork(str(cidr)).size > 0:
+                return True
+           else:
+                return False
+        except:
+            return False
+
     # Clean DNS results to be a simple list
     def normalizeDNS(self, res):
         ret = list()
