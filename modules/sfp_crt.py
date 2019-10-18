@@ -11,20 +11,22 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
-
+import json
+import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_crt(SpiderFootPlugin):
     """Certificate Transparency:Footprint,Investigate,Passive:Search Engines::Gather hostnames from historical certificates in crt.sh."""
 
+    opts = {
+        'verify': True,
+    }
 
-    # Default options
-    opts = {}
+    optdescs = {
+        'verify': 'Verify certificate subject alternative names resolve.'
+    }
+
     results = None
 
     def setup(self, sfc, userOpts=dict()):
@@ -42,7 +44,9 @@ class sfp_crt(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SSL_CERTIFICATE_RAW"]
+        return ["SSL_CERTIFICATE_RAW",
+                'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'DOMAIN_NAME',
+                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED', 'AFFILIATE_DOMAIN_NAME']
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -50,43 +54,95 @@ class sfp_crt(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if eventData in self.results:
+            return None
+
+        self.results[eventData] = True
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        # Don't look up stuff twice
-        if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
-            return None
-        else:
-            self.results[eventData] = True
+        params = {
+            'q': '%.' + eventData.encode('raw_unicode_escape'),
+            'output': 'json'
+        }
 
-        res = self.sf.fetchUrl("https://crt.sh/?CN=%25." + eventData + "&output=json",
-                               timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl('https://crt.sh/?' + urllib.urlencode(params),
+                               timeout=self.opts['_fetchtimeout'],
+                               useragent=self.opts['_useragent'])
+
         if res['content'] is None:
             self.sf.info("No certificate transparency info found for " + eventData)
             return None
 
-        if res['content'] == "[]":
+        try:
+            data = json.loads(res['content'])
+        except BaseException as e:
+            self.sf.debug('Error processing JSON response: ' + str(e))
             return None
 
-        try:
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'], self.__name__, event)
+        if data is None or len(data) == 0:
+            return None
+
+        evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(data), self.__name__, event)
+        self.notifyListeners(evt)
+
+        cert_ids = list()
+        domains = list()
+
+        for cert_info in data:
+            cert_id = cert_info.get('min_cert_id')
+
+            if cert_id:
+                cert_ids.append(cert_id)
+
+            domain = cert_info.get('name_value')
+
+            if domain and domain != eventData:
+                domains.append(domain.replace("*.", ""))
+
+        for domain in set(domains):
+            if domain in self.results:
+                continue
+
+            if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
+                evt_type = 'INTERNET_NAME'
+            else:
+                evt_type = 'AFFILIATE_INTERNET_NAME'
+
+            if self.opts['verify'] and not self.sf.resolveHost(domain):
+                    self.sf.debug("Host " + domain + " could not be resolved")
+                    evt_type += '_UNRESOLVED'
+
+            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
             self.notifyListeners(evt)
 
-            matches = re.findall("\"min_cert_id\":(\d+),", res['content'], re.IGNORECASE)
-            for m in matches:
-                if self.checkForStop():
-                    return None
-                dat = self.sf.fetchUrl("https://crt.sh/?d=" + m, timeout=self.opts['_fetchtimeout'], 
-                                       useragent=self.opts['_useragent'])
+            if self.sf.isDomain(domain, self.opts['_internettlds']):
+                if evt_type.startswith('AFFILIATE'):
+                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
+                    self.notifyListeners(evt)
 
-                cert = self.sf.parseCert(str(dat['content']))
-                rawevt = SpiderFootEvent("SSL_CERTIFICATE_RAW", cert['text'],
-                                         self.__name__, event)
-                self.notifyListeners(rawevt)
-        except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
-            return None
+        for cert_id in set(cert_ids):
+            if self.checkForStop():
+                return None
 
-        return None
+            params = {
+                'd': str(cert_id)
+            }
+
+            res = self.sf.fetchUrl('https://crt.sh/?' + urllib.urlencode(params),
+                                   timeout=self.opts['_fetchtimeout'],
+                                   useragent=self.opts['_useragent'])
+
+            try:
+                cert = self.sf.parseCert(str(res['content']))
+            except BaseException as e:
+                self.sf.info('Error parsing certificate: ' + str(e))
+                continue
+
+            evt = SpiderFootEvent("SSL_CERTIFICATE_RAW", cert['text'], self.__name__, event)
+            self.notifyListeners(evt)
 
 # End of sfp_crt class
