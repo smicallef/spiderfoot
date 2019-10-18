@@ -11,7 +11,11 @@
 # -------------------------------------------------------------------------------
 
 import json
-import re
+try:
+    import re2 as re
+except ImportError as e:
+    import re
+
 import time
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

@@ -13,7 +13,11 @@
 # -------------------------------------------------------------------------------
 
 import json
-import re
+try:
+    import re2 as re
+except ImportError as e:
+    import re
+
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

@@ -11,7 +11,11 @@
 #-------------------------------------------------------------------------------
 
 import datetime
-import re
+try:
+    import re2 as re
+except ImportError as e:
+    import re
+
 from HTMLParser import HTMLParser
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

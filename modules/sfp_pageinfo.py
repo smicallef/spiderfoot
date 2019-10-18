@@ -12,7 +12,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
+try:
+    import re2 as re
+except ImportError as e:
+    import re
+
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Indentify pages that use Javascript libs, handle passwords, have forms,

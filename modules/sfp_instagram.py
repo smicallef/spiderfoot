@@ -10,7 +10,11 @@
 #-------------------------------------------------------------------------------
 
 import json
-import re
+try:
+    import re2 as re
+except ImportError as e:
+    import re
+
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_instagram(SpiderFootPlugin):

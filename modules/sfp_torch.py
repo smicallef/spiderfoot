@@ -12,7 +12,11 @@
 # -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
-import re
+try:
+    import re2 as re
+except ImportError as e:
+    import re
+
 
 class sfp_torch(SpiderFootPlugin):
     """TORCH:Footprint,Investigate:Search Engines:errorprone:Search Tor 'TORCH' search engine for mentions of the target domain."""

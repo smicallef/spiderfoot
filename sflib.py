@@ -782,7 +782,7 @@ class SpiderFoot:
         try:
             if '/' in str(cidr) and netaddr.IPNetwork(str(cidr)).size > 0:
                 return True
-           else:
+            else:
                 return False
         except:
             return False

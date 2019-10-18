@@ -10,7 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
+try:
+    import re2 as re
+except ImportError as e:
+    import re
+
 import urllib2
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
