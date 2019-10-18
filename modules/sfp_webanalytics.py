@@ -319,7 +319,7 @@ class sfp_webanalytics(SpiderFootPlugin):
             for m in matches:
                 evt = SpiderFootEvent("WEB_ANALYTICS_ID",
                                       "Brave Ledger Verification: " + m,
-                                      self.__name__, parentEvent)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
             # have-i-been-pwned Verification
@@ -327,7 +327,7 @@ class sfp_webanalytics(SpiderFootPlugin):
             for m in matches:
                 evt = SpiderFootEvent("WEB_ANALYTICS_ID",
                                       "have-i-been-pwned Verification: " + m,
-                                      self.__name__, parentEvent)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
             # Cisco Live Domain Verification
@@ -336,7 +336,7 @@ class sfp_webanalytics(SpiderFootPlugin):
             for m in matches:
                 evt = SpiderFootEvent("WEB_ANALYTICS_ID",
                                       "Cisco Live Domain Verification: " + m,
-                                      self.__name__, parentEvent)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
         return None
