@@ -19,8 +19,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_crt(SpiderFootPlugin):
     """Certificate Transparency:Footprint,Investigate,Passive:Search Engines::Gather hostnames from historical certificates in crt.sh."""
 
-    opts = {}
-    optdescs = {}
+    opts = {
+        'verify': True,
+    }
+
+    optdescs = {
+        'verify': 'Verify certificate subject alternative names resolve.'
+    }
 
     results = None
 
@@ -39,7 +44,9 @@ class sfp_crt(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SSL_CERTIFICATE_RAW"]
+        return ["SSL_CERTIFICATE_RAW",
+                'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'DOMAIN_NAME',
+                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED', 'AFFILIATE_DOMAIN_NAME']
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -55,7 +62,7 @@ class sfp_crt(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         params = {
-            'CN': '%.' + eventData.encode('raw_unicode_escape'),
+            'q': '%.' + eventData.encode('raw_unicode_escape'),
             'output': 'json'
         }
 
@@ -63,7 +70,7 @@ class sfp_crt(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
-        if res['content'] is None or res['content'] == "[]":
+        if res['content'] is None:
             self.sf.info("No certificate transparency info found for " + eventData)
             return None
 
@@ -73,15 +80,49 @@ class sfp_crt(SpiderFootPlugin):
             self.sf.debug('Error processing JSON response: ' + str(e))
             return None
 
+        if data is None or len(data) == 0:
+            return None
+
         evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
         cert_ids = list()
+        domains = list()
 
         for cert_info in data:
             cert_id = cert_info.get('min_cert_id')
+
             if cert_id:
                 cert_ids.append(cert_id)
+
+            domain = cert_info.get('name_value')
+
+            if domain and domain != eventData:
+                domains.append(domain.replace("*.", ""))
+
+        for domain in set(domains):
+            if domain in self.results:
+                continue
+
+            if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
+                evt_type = 'INTERNET_NAME'
+            else:
+                evt_type = 'AFFILIATE_INTERNET_NAME'
+
+            if self.opts['verify'] and not self.sf.resolveHost(domain):
+                    self.sf.debug("Host " + domain + " could not be resolved")
+                    evt_type += '_UNRESOLVED'
+
+            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
+            self.notifyListeners(evt)
+
+            if self.sf.isDomain(domain, self.opts['_internettlds']):
+                if evt_type.startswith('AFFILIATE'):
+                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
+                    self.notifyListeners(evt)
 
         for cert_id in set(cert_ids):
             if self.checkForStop():
