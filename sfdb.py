@@ -370,9 +370,11 @@ class SpiderFootDb:
         except sqlite3.Error as e:
             if "locked" in e.args[0]:
                 # TODO: Do something smarter here to handle locked databases
-                self.sf.fatal("Unable to log event in DB due to lock: " + e.args[0])
+                print("Couldn't log due to locking issue.")
+                #self.sf.fatal("Unable to log event in DB due to lock: " + e.args[0])
             else:
-                self.sf.fatal("Unable to log event in DB: " + e.args[0])
+                print("Couldn't log due to: " + str(e.args[0]))
+                #self.sf.fatal("Unable to log event in DB: " + e.args[0])
 
         return True
 

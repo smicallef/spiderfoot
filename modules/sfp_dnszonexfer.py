@@ -37,7 +37,6 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
@@ -72,11 +71,32 @@ class sfp_dnszonexfer(SpiderFootPlugin):
 
         self.events[eventDataHash] = True
 
+        res = dns.resolver.Resolver()
+        if self.opts.get('_dnsserver', "") != "":
+            res.nameservers = [self.opts['_dnsserver']]
+
+        # Get the name server's IP. This is to avoid DNS leaks
+        # when attempting to resolve the name server during
+        # the zone transfer.
+        if not self.sf.validIP(eventData):
+            nsips = self.sf.resolveHost(eventData)
+            if len(nsips) > 0:
+                for n in nsips:
+                    if self.sf.validIP(n):
+                        nsip = n
+                        break
+            else:
+                self.sf.error("Couldn't resolve the name server, " + \
+                              "so not attempting zone transfer.", False)
+                return None
+        else:
+            nsip = eventData
+
         for name in self.getTarget().getNames():
             self.sf.debug("Trying for name: " + name)
             try:
                 ret = list()
-                z = dns.zone.from_xfr(dns.query.xfr(eventData, name))
+                z = dns.zone.from_xfr(dns.query.xfr(nsip, name))
                 names = z.nodes.keys()
                 for n in names:
                     ret.append(z[n].to_text(n))

@@ -64,7 +64,7 @@ class SpiderFoot:
         if sys.version_info >= (2, 7, 9):
             ssl._create_default_https_context = ssl._create_unverified_context
 
-        if self.opts['_dnsserver'] != "":
+        if self.opts.get('_dnsserver', "") != "":
             res = dns.resolver.Resolver()
             res.nameservers = [self.opts['_dnsserver']]
             dns.resolver.override_system_resolver(res)
@@ -802,7 +802,7 @@ class SpiderFoot:
                     ret.append(unicode(host, 'utf-8', errors='replace'))
             else:
                 ret.append(unicode(addr, 'utf-8', errors='replace'))
-        return set(ret)
+        return list(set(ret))
 
     # Verify input is OK to execute
     def sanitiseInput(self, cmd):
@@ -924,7 +924,7 @@ class SpiderFoot:
 
             addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
             if len(addrs) > 0:
-                return set(addrs)
+                return list(set(addrs))
             return None
         except BaseException as e:
             self.debug("Unable to resolve " + host + ": " + str(e))
@@ -937,7 +937,7 @@ class SpiderFoot:
         try:
             addrs = self.normalizeDNS(socket.gethostbyaddr(ipaddr))
             if len(addrs) > 0:
-                return set(addrs)
+                return list(set(addrs))
             return None
         except BaseException as e:
             self.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
@@ -954,7 +954,7 @@ class SpiderFoot:
             if len(addrs) < 1:
                 return None
             self.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
-            return set(addrs)
+            return list(set(addrs))
         except BaseException as e:
             self.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
             return None
@@ -987,7 +987,7 @@ class SpiderFoot:
             if r:
                 ret.extend(r)
         if t == "NETBLOCK_OWNER":
-            for addr in IPNetwork(v):
+            for addr in netaddr.IPNetwork(v):
                 ipaddr = str(addr)
                 if ipaddr.split(".")[3] in ['255', '0']:
                     continue
@@ -1006,7 +1006,7 @@ class SpiderFoot:
                     else:
                         ret.extend(names)
         if len(ret) > 0:
-            return set(ret)
+            return list(set(ret))
         return None
 
     # Create a safe socket that's using SOCKS/TOR if it was enabled
@@ -1066,7 +1066,7 @@ class SpiderFoot:
 
             emails.append(match)
 
-        return set(emails)
+        return list(set(emails))
 
     # Return a PEM for a DER
     def sslDerToPem(self, der):

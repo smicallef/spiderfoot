@@ -14,7 +14,6 @@
 import dns.resolver
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
-
 class sfp_dnscommonsrv(SpiderFootPlugin):
     """DNS Common SRV:Footprint,Investigate,Passive:DNS::Attempts to identify hostnames through common SRV."""
 
@@ -70,6 +69,9 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
 
+        for opt in userOpts.keys():
+            self.opts[opt] = userOpts[opt]
+
     # What events is this module interested in for input
     def watchedEvents(self):
         return ['INTERNET_NAME', 'DOMAIN_NAME']
@@ -101,6 +103,10 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
         self.events[eventDataHash] = True
 
+        res = dns.resolver.Resolver()
+        if self.opts.get('_dnsserver', "") != "":
+            res.nameservers = [self.opts['_dnsserver']]
+
         self.sf.debug("Iterating through possible SRV records.")
         # Try resolving common names
         for srv in self.commonsrv:
@@ -114,7 +120,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
                 continue
 
             try:
-                answers = dns.resolver.query(name, 'SRV')
+                answers = res.query(name, 'SRV')
             except BaseException as e:
                 answers = []
 

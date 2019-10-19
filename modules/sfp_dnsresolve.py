@@ -115,8 +115,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         addrs = None
         parentEvent = event
 
-        # Don't be recursive
-        if srcModuleName in [ "sfp_dnsresolve" ]:
+        # Don't be recursive for names
+        if srcModuleName in [ "sfp_dnsresolve" ] and "_NAME" in eventName:
             return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
@@ -137,9 +137,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
             self.notifyListeners(evt)
             return None
 
-        # Search for IPs/hosts in raw data, but obviously nothing this module
-        # already produces, as those things are already entities, not raw data.
-        if eventName not in self.producedEvents():
+        # Search for IPs/hosts in raw data
+        if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", 
+                              "NETBLOCK_OWNER", "IP_ADDRESS", 
+                              "INTERNET_NAME", "AFFILIATE_IPADDR"]:
             data = urllib2.unquote(eventData)
             for name in self.getTarget().getNames():
                 if self.checkForStop():
@@ -180,15 +181,15 @@ class sfp_dnsresolve(SpiderFootPlugin):
             # Nothing left to do with internal links and raw data
             return None
 
-            if eventName == 'NETBLOCK_OWNER':
-                if not self.opts['netblocklookup']:
+        if eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
+                return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxnetblock']))
                     return None
-                else:
-                    if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                        self.sf.debug("Network size bigger than permitted: " +
-                                      str(IPNetwork(eventData).prefixlen) + " > " +
-                                      str(self.opts['maxnetblock']))
-                        return None
 
             # Not handling IPv6 (yet)
             if "::" in eventData:

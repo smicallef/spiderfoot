@@ -16,7 +16,9 @@ try:
 except ImportError as e:
     import re
 
-import dns
+import dns.resolver
+import dns.query
+import dns.rdatatype
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsraw(SpiderFootPlugin):
@@ -90,7 +92,7 @@ class sfp_dnsraw(SpiderFootPlugin):
             try:
                 req = dns.message.make_query(eventData, dns.rdatatype.from_text(rec))
 
-                if self.opts.get('_dnsserver', None):
+                if self.opts.get('_dnsserver', "") != "":
                     n = self.opts['_dnsserver']
                 else:
                     ns = dns.resolver.get_default_resolver()

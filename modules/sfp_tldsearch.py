@@ -14,7 +14,7 @@
 import random
 import threading
 import time
-import dns
+import dns.resolver
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tldsearch(SpiderFootPlugin):
@@ -64,12 +64,14 @@ class sfp_tldsearch(SpiderFootPlugin):
         resolver.timeout = 1
         resolver.lifetime = 1
         resolver.search = list()
+        if self.opts.get('_dnsserver', "") != "":
+            resolver.nameservers = [self.opts['_dnsserver']]
 
         if self.opts['skipwildcards'] and self.sf.checkDnsWildcard(tld):
             return None 
 
         try:
-            addrs = self.sf.resolveHost(target, resolver)
+            addrs = self.sf.resolveHost(target)
             if not addrs:
                 with self.lock:
                     self.tldResults[target] = False
@@ -122,7 +124,9 @@ class sfp_tldsearch(SpiderFootPlugin):
                 return None
 
             pageContent = self.sf.fetchUrl('http://' + result,
-                                           timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                                           timeout=self.opts['_fetchtimeout'],
+                                           useragent=self.opts['_useragent'],
+                                           noLog=True)
             if pageContent['content'] is not None:
                 evt = SpiderFootEvent("SIMILARDOMAIN", result, self.__name__, source)
                 self.notifyListeners(evt)

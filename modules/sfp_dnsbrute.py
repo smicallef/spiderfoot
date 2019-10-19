@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import dns
 import random
 import threading
 import time
@@ -86,19 +85,8 @@ class sfp_dnsbrute(SpiderFootPlugin):
         return ["INTERNET_NAME"]
 
     def tryHost(self, name):
-        resolver = dns.resolver.Resolver()
-        resolver.timeout = 2
-        resolver.lifetime = 2
-        resolver.search = list()
-
         try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(name) != unicode:
-                name = unicode(name, "utf-8", errors='replace').encode("idna")
-            else:
-                name = name.encode("idna")
-
-            addrs = resolver.query(name)
+            addrs = self.sf.resolveHost(name)
             with self.lock:
                 self.hostResults[name] = True
         except BaseException as e:
