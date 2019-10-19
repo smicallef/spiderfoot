@@ -195,6 +195,9 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             if coord and len(coord) == 2:
                 coords.append(str(coord[0]) + ', ' + str(coord[1]))
 
+        if self.opts['verify'] and len(hosts) > 0:
+            self.sf.info("Resolving " + str(len(set(hosts))) + " domains ...")
+
         for host in set(hosts):
             if self.getTarget().matches(host, includeChildren=True, includeParents=True):
                 evt_type = 'INTERNET_NAME'
@@ -207,6 +210,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
 
             evt = SpiderFootEvent(evt_type, host, self.__name__, event)
             self.notifyListeners(evt)
+
             if not evt_type.startswith('AFFILIATE') and self.sf.isDomain(host, self.opts['_internettlds']):
                 evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
                 self.notifyListeners(evt)
