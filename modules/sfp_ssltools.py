@@ -12,6 +12,7 @@
 
 import json
 import time
+import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -56,12 +57,15 @@ class sfp_ssltools(SpiderFootPlugin):
 
     # Query SSL Tools for DNS
     def queryDns(self, domain):
-        postdata = 'url=' + domain
-        hdr = { 'Content-type': 'application/x-www-form-urlencoded' }
+        params = {
+            'url': domain.encode('raw_unicode_escape')
+        }
+
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
  
         res = self.sf.fetchUrl('http://www.ssltools.com/api/dns',
-                               postData=postdata,
-                               headers=hdr,
+                               postData=urllib.urlencode(params),
+                               headers=headers,
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
@@ -81,12 +85,18 @@ class sfp_ssltools(SpiderFootPlugin):
 
     # Query SSL Tools for certificate information
     def queryScan(self, domain, port):
-        postdata = 'url=' + domain + '&path=/&port=' + str(port) + '&live_scan=true'
-        hdr = { 'Content-type': 'application/x-www-form-urlencoded' }
+        params = {
+            'url': domain.encode('raw_unicode_escape'),
+            'path': '/',
+            'port': str(port),
+            'live_scan': 'true'
+        }
+
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
  
         res = self.sf.fetchUrl('http://www.ssltools.com/api/scan',
-                               postData=postdata,
-                               headers=hdr,
+                               postData=urllib.urlencode(params),
+                               headers=headers,
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
