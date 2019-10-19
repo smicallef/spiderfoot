@@ -159,6 +159,9 @@ class sfp_urlscan(SpiderFootPlugin):
             evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
             self.notifyListeners(evt)
 
+        if self.opts['verify'] and len(domains) > 0:
+            self.sf.info("Resolving " + str(len(set(domains))) + " domains ...")
+
         for domain in set(domains):
             if self.opts['verify'] and not self.sf.resolveHost(domain):
                 evt = SpiderFootEvent('INTERNET_NAME_UNRESOLVED', domain, self.__name__, event)

@@ -100,6 +100,9 @@ class sfp_crt(SpiderFootPlugin):
             if domain and domain != eventData:
                 domains.append(domain.replace("*.", ""))
 
+        if self.opts['verify'] and len(domains) > 0:
+            self.sf.info("Resolving " + str(len(set(domains))) + " domains ...")
+
         for domain in set(domains):
             if domain in self.results:
                 continue
