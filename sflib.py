@@ -35,6 +35,7 @@ import threading
 import traceback
 import OpenSSL
 import cryptography
+import dns.resolver
 from datetime import datetime
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy, copy
@@ -62,6 +63,11 @@ class SpiderFoot:
         # to encounter unverified SSL certs!
         if sys.version_info >= (2, 7, 9):
             ssl._create_default_https_context = ssl._create_unverified_context
+
+        if self.opts['_dnsserver'] != "":
+            res = dns.resolver.Resolver()
+            res.nameservers = [self.opts['_dnsserver']]
+            dns.resolver.override_system_resolver(res)
 
     # Bit of a hack to support SOCKS because of the loading order of
     # modules. sfscan will call this to update the socket reference
@@ -908,7 +914,7 @@ class SpiderFoot:
     #
 
     # Return a normalised resolution or None if not resolved.
-    def resolveHost(self, host, resolver=None):
+    def resolveHost(self, host):
         try:
             # IDNA-encode the hostname in case it contains unicode
             if type(host) != unicode:
@@ -916,10 +922,7 @@ class SpiderFoot:
             else:
                 host = host.encode("idna")
 
-            if not resolver:
-                addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
-            else:
-                addrs = self.normalizeDNS(resolver.query(host))
+            addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
             if len(addrs) > 0:
                 return set(addrs)
             return None
