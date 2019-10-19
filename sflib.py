@@ -1516,17 +1516,15 @@ class SpiderFoot:
         self.info("Fetched data: " + str(len(result['content'] or '')) + " (" + url + "), took " + t + "s")
         return result
 
-    # Check if wildcard DNS is enabled by looking up two random hostnames
+    # Check if wildcard DNS is enabled by looking up a random hostname
     def checkDnsWildcard(self, target):
         randpool = 'bcdfghjklmnpqrstvwxyz3456789'
         randhost = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
 
-        # An exception will be raised if the resolution fails
-        try:
-            addrs = socket.gethostbyname_ex(randhost + "." + target)
-            return True
-        except BaseException as e:
+        if self.resolveHost(randhost + "." + target) is None:
             return False
+
+        return True
 
     # Request search results from the Google API. Will return a dict:
     # {
