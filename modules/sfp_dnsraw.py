@@ -56,7 +56,6 @@ class sfp_dnsraw(SpiderFootPlugin):
     def producedEvents(self):
         return ["PROVIDER_MAIL", "PROVIDER_DNS", "RAW_DNS_RECORDS", "DNS_TEXT", "DNS_SPF",
                 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
-                'DOMAIN_NAME', 'AFFILIATE_DOMAIN_NAME',
                 'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED']
 
     # Handle events sent to this module
@@ -143,14 +142,6 @@ class sfp_dnsraw(SpiderFootPlugin):
 
                                         evt = SpiderFootEvent(evt_type, domain, self.__name__, parentEvent)
                                         self.notifyListeners(evt)
-
-                                        if self.sf.isDomain(domain, self.opts['_internettlds']):
-                                            if evt_type.startswith('AFFILIATE'):
-                                                evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
-                                                self.notifyListeners(evt)
-                                            else:
-                                                evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
-                                                self.notifyListeners(evt)
 
                     strdata = unicode(str(x), 'utf-8', errors='replace')
                     evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata,
