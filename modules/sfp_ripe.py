@@ -342,9 +342,10 @@ class sfp_ripe(SpiderFootPlugin):
                 self.sf.debug("Could not identify BGP AS for " + prefix)
                 return None
 
-            self.sf.info("Netblock found: " + prefix + "(" + asn + ")")
-            evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
-            self.notifyListeners(evt)
+            if self.sf.validIpNetwork(prefix):
+                self.sf.info("Netblock found: " + prefix + "(" + asn + ")")
+                evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
+                self.notifyListeners(evt)
 
         return None
 
