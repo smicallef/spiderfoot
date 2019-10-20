@@ -87,8 +87,9 @@ class sfp_dnsbrute(SpiderFootPlugin):
     def tryHost(self, name):
         try:
             addrs = self.sf.resolveHost(name)
-            with self.lock:
-                self.hostResults[name] = True
+            if addrs:
+                with self.lock:
+                    self.hostResults[name] = True
         except BaseException as e:
             with self.lock:
                 self.hostResults[name] = False
@@ -139,6 +140,9 @@ class sfp_dnsbrute(SpiderFootPlugin):
         parentEvent = event
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if srcModuleName == "sfp_dnsbrute":
+            return None
 
         if eventDataHash in self.events:
             return None
