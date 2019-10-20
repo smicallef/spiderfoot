@@ -102,7 +102,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
     def producedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
                 "AFFILIATE_IPADDR", "DOMAIN_NAME", "IPV6_ADDRESS",
-                "DOMAIN_NAME_PARENT", "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN",
+                "DOMAIN_NAME_PARENT", "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN_NAME",
                 "INTERNET_NAME_UNRESOLVED"]
 
 
@@ -130,7 +130,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if eventName in ["CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME"]:
             dom = self.sf.hostDomain(eventData, self.opts['_internettlds'])
             if "AFFILIATE_" in eventName:
-                ev = "AFFILIATE_DOMAIN"
+                ev = "AFFILIATE_DOMAIN_NAME"
             else:
                 ev = "CO_HOSTED_SITE_DOMAIN"
             evt = SpiderFootEvent(ev, dom, self.__name__, parentEvent)
@@ -334,7 +334,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             return None
 
         if affil:
-            domevt = SpiderFootEvent("AFFILIATE_DOMAIN", domainName,
+            domevt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", domainName,
                                      self.__name__, parentEvent)
             self.notifyListeners(domevt)
             return None

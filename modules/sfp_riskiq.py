@@ -60,8 +60,9 @@ class sfp_riskiq(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_DOMAIN", 
-                "CO_HOSTED_SITE", "NETBLOCK_OWNER", 'DOMAIN_NAME']
+        return ["IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
+                "DOMAIN_NAME", "AFFILIATE_DOMAIN_NAME",
+                "CO_HOSTED_SITE", "NETBLOCK_OWNER"]
 
     def query(self, qry, qtype, opts=dict()):
         ret = None
@@ -172,7 +173,7 @@ class sfp_riskiq(SpiderFootPlugin):
                     if self.sf.validIP(r['domain']):
                         t = "NETBLOCK_OWNER"
                     else:
-                        t = "AFFILIATE_DOMAIN"
+                        t = "AFFILIATE_INTERNET_NAME"
                     e = SpiderFootEvent(t, r['domain'], self.__name__, event)
                     self.notifyListeners(e)
             return None
