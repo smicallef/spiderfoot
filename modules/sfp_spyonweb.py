@@ -239,6 +239,10 @@ class sfp_spyonweb(SpiderFootPlugin):
                 evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", r, self.__name__, event)
                 self.notifyListeners(evt)
 
+                if self.sf.isDomain(r, self.opts['_internettlds']):
+                    evt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", r, self.__name__, event)
+                    self.notifyListeners(evt)
+
         # Find co-hosts on the same IP address
         if eventName in [ 'IP_ADDRESS' ]:
             data = self.queryIP(eventData, limit=self.opts['limit'])
