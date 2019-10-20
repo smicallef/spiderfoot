@@ -236,7 +236,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                     self.sf.debug("Record found too old, skipping.")
                     continue
 
-                evt = SpiderFootEvent("AFFILIATE_INETERNET_NAME", r, self.__name__, event)
+                evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", r, self.__name__, event)
                 self.notifyListeners(evt)
 
         # Find co-hosts on the same IP address
