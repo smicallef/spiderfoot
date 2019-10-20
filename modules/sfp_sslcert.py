@@ -59,11 +59,11 @@ class sfp_sslcert(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ['TCP_PORT_OPEN', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
-                'AFFILIATE_DOMAIN', 'AFFILIATE_DOMAIN_UNRESOLVED',
+                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED',
                 "SSL_CERTIFICATE_ISSUED", "SSL_CERTIFICATE_ISSUER",
                 "SSL_CERTIFICATE_MISMATCH", "SSL_CERTIFICATE_EXPIRED",
                 "SSL_CERTIFICATE_EXPIRING", "SSL_CERTIFICATE_RAW",
-                "DOMAIN_NAME"]
+                "DOMAIN_NAME", 'AFFILIATE_DOMAIN_NAME']
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -130,22 +130,26 @@ class sfp_sslcert(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         for san in set(cert.get('altnames', list())):
-            dom = san.replace("*.", "")
+            domain = san.replace("*.", "")
 
-            if self.getTarget().matches(dom, includeChildren=True):
+            if self.getTarget().matches(domain, includeChildren=True):
                 evt_type = 'INTERNET_NAME'
             else:
-                evt_type = 'AFFILIATE_DOMAIN'
+                evt_type = 'AFFILIATE_INTERNET_NAME'
 
-            if self.opts['verify'] and not self.sf.resolveHost(dom):
-                    self.sf.debug("Host " + san + " could not be resolved")
+            if self.opts['verify'] and not self.sf.resolveHost(domain):
+                    self.sf.debug("Host " + domain + " could not be resolved")
                     evt_type += '_UNRESOLVED'
 
-            if "*." not in san:
-                evt = SpiderFootEvent(evt_type, san, self.__name__, event)
-                self.notifyListeners(evt)
-                if not evt_type.startswith('AFFILIATE') and self.sf.isDomain(san, self.opts['_internettlds']):
-                    evt = SpiderFootEvent('DOMAIN_NAME', san, self.__name__, event)
+            evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
+            self.notifyListeners(evt)
+
+            if self.sf.isDomain(domain, self.opts['_internettlds']):
+                if evt_type.startswith('AFFILIATE'):
+                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
                     self.notifyListeners(evt)
 
         if cert.get('expired'):
