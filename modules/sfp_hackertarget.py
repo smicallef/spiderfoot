@@ -258,7 +258,7 @@ class sfp_hackertarget(SpiderFootPlugin):
 
                     if self.sf.isDomain(host, self.opts['_internettlds']):
                         if evt_type.startswith('AFFILIATE'):
-                            evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', hsot, self.__name__, event)
+                            evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', host, self.__name__, event)
                             self.notifyListeners(evt)
                         else:
                             evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
