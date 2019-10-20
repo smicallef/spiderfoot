@@ -370,7 +370,7 @@ class SpiderFootDb:
             if "locked" in e.args[0] or "thread" in e.args[0]:
                 # TODO: Do something smarter here to handle locked databases
                 #print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
-                #self.sf.fatal("Unable to log event in DB due to lock: " + e.args[0])
+                self.sf.debug("Unable to log event in DB due to lock: " + e.args[0])
             else:
                 print("[warning] Couldn't log due to: " + str(e.args[0]))
                 #self.sf.fatal("Unable to log event in DB: " + e.args[0])
