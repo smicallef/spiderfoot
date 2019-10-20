@@ -1046,7 +1046,7 @@ class SpiderFootCli(cmd.Cmd):
             return
         j = list()
         serverconfig = dict()
-        token = ""
+        token = "" # nosec
         if not d:
             self.edprint("Unable to obtain SpiderFoot server-side config.")
         else:
@@ -1161,7 +1161,7 @@ class SpiderFootCli(cmd.Cmd):
         """shell
         Run a shell command locally."""
         self.dprint("Running shell command:" + str(line))
-        self.dprint(os.popen(line).read(), plain=True)
+        self.dprint(os.popen(line).read(), plain=True) # nosec
 
     def do_clear(self, line):
         """clear
