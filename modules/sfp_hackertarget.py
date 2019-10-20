@@ -71,8 +71,9 @@ class sfp_hackertarget(SpiderFootPlugin):
     def producedEvents(self):
         return ["CO_HOSTED_SITE", "UDP_PORT_OPEN", "TCP_PORT_OPEN", "IP_ADDRESS",
                 'WEBSERVER_HTTPHEADERS', 'RAW_DNS_RECORDS',
-                'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'DOMAIN_NAME',
-                'AFFILIATE_DOMAIN', 'AFFILIATE_DOMAIN_UNRESOLVED']
+                'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
+                'DOMAIN_NAME', 'AFFILIATE_DOMAIN_NAME',
+                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED']
 
     # Port scan for commonly open UDP ports
     def portScanUDP(self, ip):
@@ -246,7 +247,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                     if self.getTarget().matches(host, includeChildren=True, includeParents=True):
                         evt_type = 'INTERNET_NAME'
                     else:
-                        evt_type = 'AFFILIATE_DOMAIN'
+                        evt_type = 'AFFILIATE_INTERNET_NAME'
 
                     if self.opts['verify'] and not self.sf.resolveHost(host):
                         self.sf.debug("Host " + host + " could not be resolved")
@@ -254,9 +255,15 @@ class sfp_hackertarget(SpiderFootPlugin):
 
                     evt = SpiderFootEvent(evt_type, host, self.__name__, event)
                     self.notifyListeners(evt)
-                    if not evt_type.startswith('AFFILIATE') and self.sf.isDomain(host, self.opts['_internettlds']):
-                        evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
-                        self.notifyListeners(evt)
+
+                    if self.sf.isDomain(host, self.opts['_internettlds']):
+                        if evt_type.startswith('AFFILIATE'):
+                            evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', host, self.__name__, event)
+                            self.notifyListeners(evt)
+                        else:
+                            evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
+                            self.notifyListeners(evt)
+
             return None
 
         qrylist = list()

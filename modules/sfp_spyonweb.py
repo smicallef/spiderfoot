@@ -60,8 +60,8 @@ class sfp_spyonweb(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['CO_HOSTED_SITE', 'INTERNET_NAME', 'AFFILIATE_DOMAIN', 
-                'WEB_ANALYTICS_ID', 'DOMAIN_NAME']
+        return ['CO_HOSTED_SITE', 'INTERNET_NAME', 'AFFILIATE_INTERNET_NAME',
+                'WEB_ANALYTICS_ID', 'DOMAIN_NAME', 'AFFILIATE_DOMAIN_NAME']
 
     # Query the REST API
     # https://api.spyonweb.com/v1/docs
@@ -236,8 +236,12 @@ class sfp_spyonweb(SpiderFootPlugin):
                     self.sf.debug("Record found too old, skipping.")
                     continue
 
-                evt = SpiderFootEvent("AFFILIATE_DOMAIN", r, self.__name__, event)
+                evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", r, self.__name__, event)
                 self.notifyListeners(evt)
+
+                if self.sf.isDomain(r, self.opts['_internettlds']):
+                    evt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", r, self.__name__, event)
+                    self.notifyListeners(evt)
 
         # Find co-hosts on the same IP address
         if eventName in [ 'IP_ADDRESS' ]:

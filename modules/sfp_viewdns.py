@@ -56,7 +56,7 @@ class sfp_viewdns(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["AFFILIATE_DOMAIN", "CO_HOSTED_SITE"]
+        return ['AFFILIATE_INTERNET_NAME', 'AFFILIATE_DOMAIN_NAME', 'CO_HOSTED_SITE']
 
     # Search ViewDNS.info
     def query(self, qry, querytype, page=1):
@@ -167,7 +167,11 @@ class sfp_viewdns(SpiderFootPlugin):
                     if h.lower() in [ "demo1.com", "demo2.com", "demo3.com", "demo4.com", "demo5.com" ]:
                         continue
                     if eventName in [ "HUMAN_NAME", "EMAILADDR" ]:
-                        e = SpiderFootEvent("AFFILIATE_DOMAIN", h, self.__name__, event)
+                        e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
+
+                        if self.sf.isDomain(h, self.opts['_internettlds']):
+                            evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
+                            self.notifyListeners(evt)
                     else:
                         if self.cohostcount >= self.opts['maxcohost']:
                             continue

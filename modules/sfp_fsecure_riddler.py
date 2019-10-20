@@ -45,7 +45,10 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
                 'INTERNET_NAME_UNRESOLVED', 'IP_ADDRESS']
 
     def producedEvents(self):
-        return ['INTERNET_NAME', 'IP_ADDRESS', 'DOMAIN_NAME',
+        return ['INTERNET_NAME', 'AFFILIATE_INTERNET_NAME',
+                'INTERNET_NAME_UNRESOLVED', 'AFFILIATE_INTERNET_NAME_UNRESOLVED',
+                'DOMAIN_NAME', 'AFFILIATE_DOMAIN_NAME',
+                'IP_ADDRESS',
                 'PHYSICAL_COORDINATES', 'RAW_RIR_DATA']
 
     # https://riddler.io/help/api
@@ -202,7 +205,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             if self.getTarget().matches(host, includeChildren=True, includeParents=True):
                 evt_type = 'INTERNET_NAME'
             else:
-                evt_type = 'AFFILIATE_DOMAIN'
+                evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(host):
                 self.sf.debug("Host " + host + " could not be resolved")
@@ -211,9 +214,13 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             evt = SpiderFootEvent(evt_type, host, self.__name__, event)
             self.notifyListeners(evt)
 
-            if not evt_type.startswith('AFFILIATE') and self.sf.isDomain(host, self.opts['_internettlds']):
-                evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
-                self.notifyListeners(evt)
+            if self.sf.isDomain(host, self.opts['_internettlds']):
+                if evt_type.startswith('AFFILIATE'):
+                    evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', host, self.__name__, event)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
+                    self.notifyListeners(evt)
 
         for addr in set(addrs):
             if self.sf.validIP(addr):

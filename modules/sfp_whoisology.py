@@ -48,7 +48,7 @@ class sfp_whoisology(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["AFFILIATE_DOMAIN"]
+        return ['AFFILIATE_INTERNET_NAME', 'AFFILIATE_DOMAIN_NAME']
 
     # Search Whoisology
     def query(self, qry, querytype):
@@ -122,7 +122,12 @@ class sfp_whoisology(SpiderFootPlugin):
                         myres.append(h.lower())
                     else:
                         continue
-                    e = SpiderFootEvent("AFFILIATE_DOMAIN", h, self.__name__, event)
+
+                    e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
                     self.notifyListeners(e)
+
+                    if self.sf.isDomain(h, self.opts['_internettlds']):
+                        evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', h, self.__name__, event)
+                        self.notifyListeners(evt)
 
 # End of sfp_whoisology class

@@ -58,7 +58,9 @@ class sfp_securitytrails(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["CO_HOSTED_SITE", "AFFILIATE_DOMAIN", "INTERNET_NAME",
+        return ["CO_HOSTED_SITE",
+                "DOMAIN_NAME", "AFFILIATE_DOMAIN_NAME",
+                "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
                 "PROVIDER_HOSTING"]
 
     # Search SecurityTrails
@@ -184,10 +186,10 @@ class sfp_securitytrails(SpiderFootPlugin):
                             myres.append(h.lower())
                         else:
                             continue
-                        e = SpiderFootEvent("AFFILIATE_DOMAIN", h, self.__name__, event)
+                        e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
                         self.notifyListeners(e)
 
-        if eventName in [ "DOMAIN_NAME"]:
+        if eventName in ["DOMAIN_NAME"]:
             domain = eventData
             rec = self.query(domain, "domain")
             myres = list()
