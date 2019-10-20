@@ -265,7 +265,9 @@ class sfp_bgpview(SpiderFootPlugin):
                 self.sf.info("Netblock found: " + p + " (" + str(asn) + ")")
                 evt = SpiderFootEvent("BGP_AS_MEMBER", str(asn), self.__name__, event)
                 self.notifyListeners(evt)
-                evt = SpiderFootEvent("NETBLOCK_MEMBER", p, self.__name__, event)
-                self.notifyListeners(evt)
+
+                if self.sf.validIpNetwork(p):
+                    evt = SpiderFootEvent("NETBLOCK_MEMBER", p, self.__name__, event)
+                    self.notifyListeners(evt)
 
 # End of sfp_bgpview class
