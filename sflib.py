@@ -1981,10 +1981,10 @@ class SpiderFootEvent(object):
         self.module = module
         self.sourceEvent = sourceEvent
 
-        if type(data) in [ list, dict ]:
-            print("FATAL: Only string events are accepted, not lists or dicts.")
-            print("FATAL: Offending module: " + module)
-            print("FATAL: Offending type: " + eventType)
+        if type(data) != str and type(data) != unicode:
+            print(("FATAL: Only string events are accepted, not '%s'." % type(data)))
+            print(("FATAL: Offending module: %s" % module))
+            print(("FATAL: Offending type: %s" % eventType))
             sys.exit(-1)
 
         if type(data) != unicode and data != None:
@@ -1998,18 +1998,30 @@ class SpiderFootEvent(object):
             self.sourceEventHash = "ROOT"
             return
 
+        if type(sourceEvent) != SpiderFootEvent:
+            print(("FATAL: Invalid source event: %s" % sourceEvent))
+            print(("FATAL: Offending module: %s" % module))
+            print(("FATAL: Offending type: %s" % eventType))
+            sys.exit(-1)
+
         self.sourceEventHash = sourceEvent.getHash()
         self.__id = self.eventType + str(self.generated) + self.module + \
                     str(random.SystemRandom().randint(0, 99999999))
 
     def asDict(self):
-        return {
+        evt_dict = {
             'generated': int(self.generated),
             'type': self.eventType,
             'data': self.data,
-            'module': self.module,
-            'source': self.sourceEvent.data
+            'module': self.module
         }
+
+        if self.eventType == 'ROOT':
+            evt_dict['source'] = ''
+        else:
+            evt_dict['source'] = self.sourceEvent.data
+
+        return evt_dict
 
     # Unique hash of this event
     def getHash(self):
