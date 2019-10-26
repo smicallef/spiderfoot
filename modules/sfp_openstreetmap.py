@@ -11,12 +11,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 try:
     import re2 as re
 except ImportError as e:
     import re
-
+import json
 import time
 import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

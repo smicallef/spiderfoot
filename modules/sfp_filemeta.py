@@ -13,7 +13,8 @@
 
 import mimetypes
 import PyPDF2
-import openxmllib
+import docx
+import pptx
 import exifread
 import lxml
 from StringIO import StringIO
@@ -25,7 +26,7 @@ class sfp_filemeta(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'fileexts': ["docx", "pptx", 'xlsx', 'pdf', 'jpg', 'jpeg', 'tiff', 'tif'],
+        'fileexts': ["docx", "pptx", 'pdf', 'jpg', 'jpeg', 'tiff', 'tif'],
         'timeout': 300
     }
 
@@ -103,21 +104,31 @@ class sfp_filemeta(SpiderFootPlugin):
                                       eventData + "(" + str(e) + ")", False)
                         return None
 
-                if fileExt.lower() in ["pptx", "docx", "xlsx"]:
+                if fileExt.lower() in ["docx"]:
                     try:
+                        c = StringIO(ret['content'])
+                        doc = docx.Document(c)
                         mtype = mimetypes.guess_type(eventData)[0]
-                        doc = openxmllib.openXmlDocument(data=ret['content'], mime_type=mtype)
-                        self.sf.debug("Office type: " + doc.mimeType)
-                        data = doc.allProperties
-                        meta = str(data)
-                    except ValueError as e:
-                        self.sf.error("Unable to parse meta data from: " +
+                        self.sf.debug("Office type: " + str(mtype))
+                        a = doc.core_properties.author
+                        c = doc.core_properties.comments
+                        data = filter(None, [a, c])
+                        meta = ", ".join(data)
+                    except BaseException as e:
+                        self.sf.error("Unable to process file: " +
                                       eventData + "(" + str(e) + ")", False)
                         return None
-                    except lxml.etree.XMLSyntaxError as e:
-                        self.sf.error("Unable to parse XML within: " +
-                                      eventData + "(" + str(e) + ")", False)
-                        return None
+
+                if fileExt.lower() in ["pptx"]:
+                    try:
+                        c = StringIO(ret['content'])
+                        doc = pptx.Presentation(c)
+                        mtype = mimetypes.guess_type(eventData)[0]
+                        self.sf.debug("Office type: " + str(mtype))
+                        a = doc.core_properties.author
+                        c = doc.core_properties.comments
+                        data = filter(None, [a, c])
+                        meta = ", ".join(data)
                     except BaseException as e:
                         self.sf.error("Unable to process file: " +
                                       eventData + "(" + str(e) + ")", False)
