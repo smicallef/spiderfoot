@@ -62,6 +62,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             return target
 
         for host in ret:
+            self.sf.debug("Found an alias: " + host)
             if self.sf.validIP(host):
                 target.setAlias(host, "IP_ADDRESS")
             else:

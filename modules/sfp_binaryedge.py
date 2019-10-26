@@ -246,7 +246,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                 self.sf.debug("Found compromised account results in BinaryEdge.io")
                 res = rec["events"]
                 for rec in res:
-                    e = SpiderFootEvent(evtType, rec, self.__name__, event)
+                    e = SpiderFootEvent(evtType, eventData + " [" + rec + "]", self.__name__, event)
                     self.notifyListeners(e)
 
         if eventName == "DOMAIN_NAME":

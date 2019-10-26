@@ -122,6 +122,9 @@ class sfp_commoncrawl(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.errorState:
+            return None
+
         if eventData in self.results:
             return None
         else:

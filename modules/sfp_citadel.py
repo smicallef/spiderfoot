@@ -86,6 +86,9 @@ class sfp_citadel(SpiderFootPlugin):
         eventData = event.data
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.errorState:
+            return None
             
 	    # Don't look up stuff twice
         if eventData in self.results:
@@ -104,6 +107,9 @@ class sfp_citadel(SpiderFootPlugin):
 
         if error == 'true':
             self.sf.error("Error encountered processing {}: {}".format( eventData, message ), False)
+            if "MISSING API" in message:
+                self.errorState = True
+                return None
             return None
 
         if not message:

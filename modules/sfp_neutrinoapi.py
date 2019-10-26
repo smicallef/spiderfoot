@@ -107,6 +107,9 @@ class sfp_neutrinoapi(SpiderFootPlugin):
         if res['code'] == "400":
             if data.get('api-error-msg'):
                 self.sf.error("Error: " + data.get('api-error-msg'), False)
+                if "EXCEED" in data.get('api-error-msg'):
+                    self.errorState = True
+                    return None
             else:
                 self.sf.error("Error: HTTP 400", False)
             return None

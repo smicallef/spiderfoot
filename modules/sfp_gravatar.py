@@ -160,7 +160,7 @@ class sfp_gravatar(SpiderFootPlugin):
                 url = account.get('url')
                 platform = account.get('shortname')
                 if platform is not None and url is not None:
-                    t = platform.capitalize() + ": " + url
+                    t = platform.capitalize() + ": <SFURL>" + url + "</SFURL>"
                     evt = SpiderFootEvent("SOCIAL_MEDIA", t, self.__name__, event)
                     self.notifyListeners(evt)
 

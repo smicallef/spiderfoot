@@ -142,8 +142,6 @@ class sfp_censys(SpiderFootPlugin):
             if rec is None:
                 continue
 
-            self.sf.debug("Censys raw data: " + str(rec))
-
             if 'error' in rec:
                 if rec['error_type'] == "unknown":
                     self.sf.debug("Censys returned no data for " + addr)
@@ -158,7 +156,7 @@ class sfp_censys(SpiderFootPlugin):
 
             try:
                 # Date format: 2016-12-24T07:25:35+00:00'
-                created_dt = datetime.strptime(rec.get('updated_at'), '%Y-%m-%dT%H:%M:%S+00:00')
+                created_dt = datetime.strptime(rec.get('updated_at', "1970-01-01T00:00:00+00:00"), '%Y-%m-%dT%H:%M:%S+00:00')
                 created_ts = int(time.mktime(created_dt.timetuple()))
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
 

@@ -92,11 +92,13 @@ class sfp_openstreetmap(SpiderFootPlugin):
             self.sf.debug("Skipping PO BOX address")
             return None
 
+        rx1 = re.compile(r'^(c/o|care of|attn:|attention:)\s+[0-9a-z\s\.]', flags=re.IGNORECASE)
         # Remove address prefixes for delivery instructions
-        address = re.sub(r'^(c/o|care of|attn:|attention:)\s+[0-9a-z\s\.],', r'', address, flags=re.IGNORECASE)
+        address = re.sub(rx1, r'', address)
 
+        rx2 = re.compile(r'^(Level|Floor|Suite|Room)\s+[0-9a-z]+,', flags=re.IGNORECASE)
         # Remove address prefixes known to return no results (floor, level, suite, etc).
-        address = re.sub(r'^(Level|Floor|Suite|Room)\s+[0-9a-z]+,', r'', address, flags=re.IGNORECASE)
+        address = re.sub(rx2, r'', address)
 
         # Search for address
         data = self.query(eventData)

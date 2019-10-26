@@ -93,7 +93,6 @@ class sfp_pulsedive(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            print(str(res['content']))
             self.sf.error("Error processing JSON response from Pulsedive.", False)
             return None
 
