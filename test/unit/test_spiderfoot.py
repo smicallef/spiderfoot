@@ -7,13 +7,45 @@ class TestSpiderFoot(unittest.TestCase):
     Test SpiderFoot
     """
 
-    default_config = dict()
+    default_options = {
+      '_debug': False,  # Debug
+      '__logging': True, # Logging in general
+      '__outputfilter': None, # Event types to filter from modules' output
+      '__blocknotif': False,  # Block notifications
+      '_fatalerrors': False,
+      '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
+      '_dnsserver': '',  # Override the default resolver
+      '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
+      '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
+      '_internettlds_cache': 72,
+      '__version__': '3.0',
+      '__database': 'spiderfoot.db',
+      '__webaddr': '127.0.0.1',
+      '__webport': 5001,
+      '__docroot': '',  # don't put trailing /
+      '__modules__': None,  # List of modules. Will be set after start-up.
+      '_socks1type': '',
+      '_socks2addr': '',
+      '_socks3port': '',
+      '_socks4user': '',
+      '_socks5pwd': '',
+      '_socks6dns': True,
+      '_torctlport': 9051,
+      '__logstdout': False
+    }
+
+    def test_init_no_options(self):
+        """
+        Test __init__(self, options, handle=None):
+        """
+        sf = SpiderFoot(None)
+        self.assertEqual('TBD', 'TBD')
 
     def test_init(self):
         """
         Test __init__(self, options, handle=None):
         """
-        sf = SpiderFoot(None)
+        sf = SpiderFoot(self.default_options)
         self.assertEqual('TBD', 'TBD')
 
     def test_update_socket(self):
@@ -51,6 +83,15 @@ class TestSpiderFoot(unittest.TestCase):
 
         sf.optValueToData(None)
         self.assertEqual('TBD', 'TBD')
+
+    def test_opt_value_to_data_no_value_should_return_none(self):
+        """
+        Test optValueToData(self, val, fatal=True, splitLines=True)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        res = sf.optValueToData(None)
+        self.assertEqual(None, res)
 
     def test_build_graph_data(self):
         """
@@ -110,7 +151,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test error(self, error, exception=True)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
         sf.error(None)
         self.assertEqual('TBD', 'TBD')
@@ -119,7 +160,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test fatal(self, error)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
         sf.fatal(None)
         self.assertEqual('TBD', 'TBD')
@@ -128,7 +169,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test status(self, message)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
         sf.status(None)
         self.assertEqual('TBD', 'TBD')
@@ -137,7 +178,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test info(self, message)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
         sf.info(None)
         self.assertEqual('TBD', 'TBD')
@@ -146,7 +187,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test debug(self, message)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
         sf.debug(None)
         self.assertEqual('TBD', 'TBD')
@@ -449,18 +490,36 @@ class TestSpiderFoot(unittest.TestCase):
                  postData=None, dontMangle=False, sizeLimit=None,
                  headOnly=False, verify=False)
         """
-        sf = SpiderFoot(dict())
-
-        sf.fetchUrl(None)
         self.assertEqual('TBD', 'TBD')
+
+    def test_fetch_url_invalid_url_should_return_none(self):
+        """
+        Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
+                 useragent="SpiderFoot", headers=None, noLog=False,
+                 postData=None, dontMangle=False, sizeLimit=None,
+                 headOnly=False, verify=False)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        res = sf.fetchUrl(None)
+        self.assertEqual(None, res)
+
+    def test_check_dns_wildcard_invalid_target_should_return_none(self):
+        """
+        Test checkDnsWildcard(self, target)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        check_dns_wildcard = sf.checkDnsWildcard(None)
+        self.assertEqual(bool, type(check_dns_wildcard))
 
     def test_check_dns_wildcard_should_return_a_boolean(self):
         """
         Test checkDnsWildcard(self, target)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
-        check_dns_wildcard = sf.checkDnsWildcard(None)
+        check_dns_wildcard = sf.checkDnsWildcard('local')
         self.assertEqual(bool, type(check_dns_wildcard))
 
     def test_google_iterate(self):
