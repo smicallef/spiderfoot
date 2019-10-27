@@ -100,6 +100,10 @@ class SpiderFoot:
     # if val is a file path it will be loaded and get back the contents,
     # and if a string it will simply be returned back.
     def optValueToData(self, val, fatal=True, splitLines=True):
+        if val is None:
+            #self.debug("fetchUrl: No val")
+            return None
+
         if val.startswith('@'):
             fname = val.split('@')[1]
             try:
@@ -1351,6 +1355,7 @@ class SpiderFoot:
         }
 
         if url is None:
+            #self.debug("fetchUrl: No url")
             return None
 
         proxies = dict()
@@ -1521,6 +1526,10 @@ class SpiderFoot:
 
     # Check if wildcard DNS is enabled by looking up a random hostname
     def checkDnsWildcard(self, target):
+        if not target:
+            #self.debug("checkDnsWildcard: No target")
+            return False
+
         randpool = 'bcdfghjklmnpqrstvwxyz3456789'
         randhost = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
 
