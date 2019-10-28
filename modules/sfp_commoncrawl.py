@@ -146,6 +146,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
             self.sf.error("Unable to obtain content from CommonCrawl.", False)
             return None
 
+        sent = list()
         for content in data:
             try:
                 for line in content.split("\n"):
@@ -157,6 +158,10 @@ class sfp_commoncrawl(SpiderFootPlugin):
                     link = json.loads(line)
                     if 'url' not in link:
                         continue
+                    if link['url'] in sent:
+                        continue
+                    sent.append(link['url'])
+
                     evt = SpiderFootEvent("LINKED_URL_INTERNAL", link['url'],
                                           self.__name__, event)
                     self.notifyListeners(evt)

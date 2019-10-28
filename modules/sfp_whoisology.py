@@ -44,7 +44,7 @@ class sfp_whoisology(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["EMAILADDR", "HUMAN_NAME"]
+        return ["EMAILADDR"]
 
     # What events this module produces
     def producedEvents(self):
@@ -107,12 +107,7 @@ class sfp_whoisology(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName == "HUMAN_NAME":
-            ident = "name"
-        if eventName == "EMAILADDR":
-            ident = "email"
-
-        rec = self.query(eventData, ident)
+        rec = self.query(eventData, "email")
         myres = list()
         if rec is not None:
             for r in rec:

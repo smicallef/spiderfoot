@@ -106,10 +106,11 @@ class sfp_accounts(SpiderFootPlugin):
                 self.siteResults[retname] = False
             return
 
-        if res['code'].startswith("4") or res['code'].startswith("5"):
-            with self.lock:
-                self.siteResults[retname] = False
-            return
+        if res['code']:
+            if res['code'].startswith("4") or res['code'].startswith("5"):
+                with self.lock:
+                    self.siteResults[retname] = False
+                return
 
         try:
             found = False

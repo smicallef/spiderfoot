@@ -107,7 +107,7 @@ class sfp_onioncity(SpiderFootPlugin):
             timeout=self.opts["_fetchtimeout"],
             useragent=self.opts["_useragent"],
         )
-        if response['code'].startswith('2'):
+        if response['code'] in [ "200", "201", "202" ]:
             evt = SpiderFootEvent(
                 "RAW_RIR_DATA", response["content"], self.__name__, event
             )

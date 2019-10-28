@@ -52,7 +52,7 @@ class sfp_viewdns(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["EMAILADDR", "HUMAN_NAME", "IP_ADDRESS", "PROVIDER_DNS"]
+        return ["EMAILADDR", "IP_ADDRESS", "PROVIDER_DNS"]
 
     # What events this module produces
     def producedEvents(self):
@@ -136,7 +136,7 @@ class sfp_viewdns(SpiderFootPlugin):
             self.results[eventData] = True
 
         valkey = ""
-        if eventName in [ "HUMAN_NAME", "EMAILADDR" ]:
+        if eventName == "EMAILADDR":
             ident = "reversewhois"
             valkey = "domain"
         if eventName == "IP_ADDRESS":
@@ -166,7 +166,7 @@ class sfp_viewdns(SpiderFootPlugin):
                         continue
                     if h.lower() in [ "demo1.com", "demo2.com", "demo3.com", "demo4.com", "demo5.com" ]:
                         continue
-                    if eventName in [ "HUMAN_NAME", "EMAILADDR" ]:
+                    if eventName == "EMAILADDR":
                         e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
 
                         if self.sf.isDomain(h, self.opts['_internettlds']):
