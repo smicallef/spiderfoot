@@ -325,7 +325,7 @@ class SpiderFoot:
 
     def fatal(self, error):
         if self.dbh is None:
-            print('[Fatal] ' + error)
+            print(('[Fatal] %s' % error))
         else:
             self._dblog("FATAL", error)
         print(str(inspect.stack()))
@@ -336,11 +336,11 @@ class SpiderFoot:
             return None
 
         if self.dbh is None:
-            print("[Status] " + message)
+            print(("[Status] %s" % message))
         else:
             self._dblog("STATUS", message)
         if self.opts.get('__logstdout'):
-            print("[*] " + message)
+            print(("[*] %s" % message))
 
     def info(self, message):
         if not self.opts['__logging']:
@@ -363,11 +363,11 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print('[' + modName + '] ' + message)
+            print(('[%s] %s' % (modName, message)))
         else:
             self._dblog("INFO", message, modName)
         if self.opts.get('__logstdout'):
-            print("[*] " + message)
+            print(("[*] %s" % message))
         return
 
     def debug(self, message):
@@ -392,11 +392,11 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print('[' + modName + '] ' + message)
+            print(('[%s] %s' % (modName, message)))
         else:
             self._dblog("DEBUG", message, modName)
         if self.opts.get('__logstdout'):
-            print("[d:" + modName +"] " + message)
+            print(("[d:%s] %s" % (modName, message)))
         return
 
     def myPath(self):
