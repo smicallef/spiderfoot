@@ -63,6 +63,7 @@ class sfp_email(SpiderFootPlugin):
         myres = list()
         for email in emails:
             evttype = "EMAILADDR"
+            email = email.lower()
 
             # Get the domain and strip potential ending .
             mailDom = email.lower().split('@')[1].strip('.')

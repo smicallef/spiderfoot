@@ -79,6 +79,11 @@ class sfp_emailformat(SpiderFootPlugin):
                 self.sf.debug("Skipped address: " + email)
                 continue
 
+            # Skip masked emails
+            if re.match("^[0-9a-f]{8}\.[0-9]{7}@", email):
+                self.sf.debug("Skipped address: " + email)
+                continue
+
             self.sf.info("Found e-mail address: " + email)
             evt = SpiderFootEvent(evttype, email, self.__name__, event)
             self.notifyListeners(evt)

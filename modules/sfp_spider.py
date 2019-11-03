@@ -34,8 +34,7 @@ class sfp_spider(SpiderFootPlugin):
         'filtermime': ['image/'],
         'filterusers': True,  # Don't follow /~user directories
         'nosubs': False,  # Should links to subdomains be ignored?
-        'reportduplicates': False,
-        'parsetext': True
+        'reportduplicates': False
     }
 
     # Option descriptions
@@ -50,8 +49,7 @@ class sfp_spider(SpiderFootPlugin):
         'filtermime': "MIME types to ignore.",
         'filterusers': "Skip spidering of /~user directories?",
         'nosubs': "Skip spidering of subdomains of the target?",
-        'reportduplicates': "Report links every time one is found, even if found before?",
-        'parsetext': "Parse content for possible hostnames/links, not just in valid HTML tags?"
+        'reportduplicates': "Report links every time one is found, even if found before?"
     }
 
     # If using robots.txt, this will get populated with filter rules
@@ -120,8 +118,7 @@ class sfp_spider(SpiderFootPlugin):
 
         # Extract links from the content
         links = self.sf.parseLinks(url, fetched['content'], 
-                                   self.getTarget().getNames(), 
-                                   self.opts['parsetext'])
+                                   self.getTarget().getNames())
 
         if links is None or len(links) == 0:
             self.sf.info("No links found at " + url)

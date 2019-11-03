@@ -17,7 +17,6 @@ except ImportError as e:
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-
 class sfp_names(SpiderFootPlugin):
     """Name Extractor:Footprint,Passive:Real World:errorprone:Attempt to identify human names in fetched content."""
 
@@ -84,6 +83,11 @@ class sfp_names(SpiderFootPlugin):
                 else:
                     name = " ".join(map(str.capitalize, eventData.split("@")[0].split(".")))
                     name = unicode(name, 'utf-8', errors='replace')
+
+                # Names don't have numbers
+                if re.match("[0-9]", name):
+                    return None
+
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
                 if event.moduleDataSource:

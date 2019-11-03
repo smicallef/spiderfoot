@@ -17,7 +17,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_github(SpiderFootPlugin):
     """Github:Footprint,Passive:Social Media::Identify associated public code repositories on Github."""
 
-
     # Default options
     opts = {
         'namesonly':    True
@@ -64,7 +63,6 @@ class sfp_github(SpiderFootPlugin):
                     "\n" + "Description: " + item['description']
 
         return repo_info
-
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -170,7 +168,7 @@ class sfp_github(SpiderFootPlugin):
             for item in ret['items']:
                 repo_info = self.buildRepoInfo(item)
                 if repo_info != None:
-                    if self.opts['namesonly'] and name not in item['name']:
+                    if self.opts['namesonly'] and name != item['name']:
                         continue
 
                     evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info, 
@@ -237,7 +235,9 @@ class sfp_github(SpiderFootPlugin):
 
                     repo_info = self.buildRepoInfo(item)
                     if repo_info != None:
-                        if self.opts['namesonly'] and name not in item['name']:
+                        if self.opts['namesonly'] and item['name'] != name:
+                            continue
+                        if eventName == "USERNAME" and "/" + name + "/" not in item.get('html_url', ''):
                             continue
 
                         evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info, 

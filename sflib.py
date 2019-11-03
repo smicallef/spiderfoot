@@ -1174,7 +1174,7 @@ class SpiderFoot:
     # The key will be the *absolute* URL of the link obtained, so for example if
     # the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
     # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
-    def parseLinks(self, url, data, domains, parseText=True):
+    def parseLinks(self, url, data, domains):
         returnLinks = dict()
         urlsRel = []
 
@@ -1211,72 +1211,6 @@ class SpiderFoot:
         except BaseException as e:
             self.error("Error parsing with BeautifulSoup: " + str(e), False)
             return None
-
-        # Find potential links that aren't links (text possibly in comments, etc.)
-        parsedata = urllib2.unquote(data.lower())
-
-        if parseText:
-            # Find chunks of text encapsulating the data we care about
-            offset = parsedata.find("http")
-            regRelurl = re.compile('()(https?://.[a-zA-Z0-9\-\.\:\/_]+[^<\"\'])')
-            while offset >= 0:
-                offset = parsedata.find("http", offset)
-                #print "found at offset: " + str(offset)
-                if offset < 0:
-                    break
-
-                # Get the trailing part for urls (some URLs are big..)
-                chunkurl = parsedata[offset:(offset+2000)]
-
-                try:
-                    m = regRelurl.findall(chunkurl)
-                    urlsRel.extend(regRelurl.findall(chunkurl))
-                except Exception as e:
-                    self.error("Error applying regex3 to data (" + str(e) + ")", False)
-                offset += len("http")
-
-        # Internal links
-        for domain in domains:
-            if parseText:
-                # Find chunks of text encapsulating the data we care about
-                offset = parsedata.find(domain)
-                if offset < 0:
-                    #print "skipping " + domain
-                    continue
-
-                # If the text started with the domain, then start from after it
-                if offset == 0:
-                    offset += len(domain)
-
-                try:
-                    regRelhost = re.compile('(.)([a-z0-9\-\.]+\.' + domain + ')', re.IGNORECASE)
-                    regRelurl = re.compile('([>\"])([a-zA-Z0-9\-\.\:\/]+\.' + domain + '/.[^<\"]+)', re.IGNORECASE)
-                except BaseException as e:
-                    self.error("Unable to form proper regexp trying to parse " + domain, False)
-                    continue
-
-                while offset >= 0:
-                    offset = parsedata.find(domain, offset)
-                    #print "found at offset: " + str(offset)
-                    if offset < 0:
-                        break
-
-                    # Get 200 bytes before the domain to try and get hostnames
-                    chunkhost = parsedata[(offset-200):(offset+len(domain)+1)]
-                    # Get the trailing part for urls (some URLs are big..)
-                    chunkurl = parsedata[(offset-200):(offset+len(domain)+2000)]
-
-                    try:
-                        urlsRel.extend(regRelhost.findall(chunkhost))
-                    except Exception as e:
-                        self.error("Error applying regex2 to data (" + str(e) + ")", False)
-
-                    try:
-                        urlsRel.extend(regRelurl.findall(chunkurl))
-                    except Exception as e:
-                        self.error("Error applying regex3 to data (" + str(e) + ")", False)
-
-                    offset += len(domain)
 
         # Loop through all the URLs/links found
         for linkTuple in urlsRel:
