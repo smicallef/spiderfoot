@@ -85,10 +85,10 @@
             %>
             % for it in sorted(modlist, key=lambda v: v.upper()):
                 <% item = modlist[it] %>
-                <% keylist = dict((k, v) for k, v in modules[item]['opts'].iteritems() if not k.startswith('_')) %>
+                <% keylist = dict((k, v) for k, v in modules[item]['opts'].items() if not k.startswith('_')) %>
                 <% keyicon = "" %>
                 % if len(keylist) > 0:
-                    <% apikeylist = dict((k, v) for k, v in modules[item]['opts'].iteritems() if k.find("api_key") >= 0) %>
+                    <% apikeylist = dict((k, v) for k, v in modules[item]['opts'].items() if k.find("api_key") >= 0) %>
                     <%
                     if len(apikeylist) > 0:
                         keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\" rel='tooltip' title='Needs API key'></i>"

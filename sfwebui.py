@@ -456,7 +456,7 @@ class SpiderFootWebUi:
         if res is None:
             return self.error("Scan ID not found.")
 
-        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup, disable_unicode=True, input_encoding='utf-8')
+        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup, input_encoding='utf-8')
         return templ.render(id=id, name=cgi.escape(res[0]), status=res[5], docroot=self.docroot,
                             pageid="SCANLIST")
 
