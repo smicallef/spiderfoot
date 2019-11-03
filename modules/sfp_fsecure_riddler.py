@@ -37,7 +37,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):

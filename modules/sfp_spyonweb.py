@@ -51,7 +51,7 @@ class sfp_spyonweb(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.cohostcount = 0                                                                                                                                                                                       
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -196,14 +196,14 @@ class sfp_spyonweb(SpiderFootPlugin):
             google_adsense = data.get('adsense')
 
             if google_adsense:
-                for r in google_adsense.keys():
+                for r in list(google_adsense.keys()):
                     evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google AdSense: " + r, self.__name__, event)
                     self.notifyListeners(evt)
 
             google_analytics = data.get('analytics')
 
             if google_analytics:
-                for r in google_analytics.keys():
+                for r in list(google_analytics.keys()):
                     evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google Analytics: " + r, self.__name__, event)
                     self.notifyListeners(evt)
 
@@ -229,7 +229,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                 self.sf.info("No data found for " + eventData)
                 return None
 
-            for r in data.keys():
+            for r in list(data.keys()):
                 last_seen = int(datetime.datetime.strptime(data[r], '%Y-%m-%d').strftime('%s')) * 1000
 
                 if last_seen < agelimit:                                                                                                                                                                           
@@ -253,7 +253,7 @@ class sfp_spyonweb(SpiderFootPlugin):
 
             cohostcount = 0
 
-            for co in data.keys():
+            for co in list(data.keys()):
                 last_seen = int(datetime.datetime.strptime(data[co], '%Y-%m-%d').strftime('%s')) * 1000
 
                 if last_seen < agelimit:

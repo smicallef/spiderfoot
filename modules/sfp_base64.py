@@ -35,7 +35,7 @@ class sfp_base64(SpiderFootPlugin):
         self.sf = sfc
         self.__dataSource__ = "Target Website"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -69,10 +69,8 @@ class sfp_base64(SpiderFootPlugin):
                 if caps < (minlen/4):
                     return None
                 self.sf.info("Found Base64 string: " + match)
-                if type(match) == str:
-                    string = unicode(match, 'utf-8', errors='replace')
-                else:
-                    string = match
+                if type(match) != str:
+                    string = str(match, 'utf-8', errors='replace')
 
                 try:
                     string += " (" + base64.b64decode(match) + ")"

@@ -13,7 +13,7 @@
 
 import json
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_mnemonic(SpiderFootPlugin):
@@ -51,7 +51,7 @@ class sfp_mnemonic(SpiderFootPlugin):
         self.cohostcount = 0                                                                                                                                                                                       
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -71,7 +71,7 @@ class sfp_mnemonic(SpiderFootPlugin):
             'offset': str(offset)
         }
 
-        url = 'https://api.mnemonic.no/pdns/v3/' + qry + '?' + urllib.urlencode(params)
+        url = 'https://api.mnemonic.no/pdns/v3/' + qry + '?' + urllib.parse.urlencode(params)
         res = self.sf.fetchUrl(url, timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
 
         # Unauthenticated users are limited to 100 requests per minute, and 1000 requests per day.

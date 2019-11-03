@@ -50,7 +50,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         self.hostresults = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def enrichTarget(self, target):

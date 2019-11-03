@@ -33,7 +33,7 @@ class sfp_email(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -76,7 +76,7 @@ class sfp_email(SpiderFootPlugin):
 
             self.sf.info("Found e-mail address: " + email)
             if type(email) == str:
-                mail = unicode(email.strip('.'), 'utf-8', errors='replace')
+                mail = str(email.strip('.'), 'utf-8', errors='replace')
             else:
                 mail = email.strip('.')
 

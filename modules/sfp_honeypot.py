@@ -66,7 +66,7 @@ class sfp_honeypot(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input

@@ -46,7 +46,7 @@ class sfp_tldsearch(SpiderFootPlugin):
         self.__dataSource__ = "DNS"
         self.lock = threading.Lock()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -156,8 +156,8 @@ class sfp_tldsearch(SpiderFootPlugin):
 
         # Look through all TLDs for the existence of this target keyword
         for tld in self.opts['_internettlds']:
-            if type(tld) != unicode:
-                tld = unicode(tld.strip(), errors='ignore')
+            if type(tld) != str:
+                tld = str(tld.strip(), errors='ignore')
             else:
                 tld = tld.strip()
 

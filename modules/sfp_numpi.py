@@ -38,7 +38,7 @@ class sfp_numpi(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -145,7 +145,7 @@ class sfp_numpi(SpiderFootPlugin):
         else:
             self.sf.debug("No carrier information found for " + eventData)
 
-        location = ', '.join(filter(None, [data.get('City'), data.get('County'), data.get('State'), data.get('ZIP Code')]))
+        location = ', '.join([_f for _f in [data.get('City'), data.get('County'), data.get('State'), data.get('ZIP Code')] if _f])
         if location:
             evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
             self.notifyListeners(evt)

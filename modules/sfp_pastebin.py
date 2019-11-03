@@ -47,7 +47,7 @@ class sfp_pastebin(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -78,7 +78,7 @@ class sfp_pastebin(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        for dom in self.domains.keys():
+        for dom in list(self.domains.keys()):
             links = list()
             target = self.domains[dom]
             res = self.sf.googleIterate(

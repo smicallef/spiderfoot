@@ -59,7 +59,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         self.__dataSource__ = "Target Network"
         self.lock = threading.Lock()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
         if self.opts['ports'][0].startswith("http://") or \

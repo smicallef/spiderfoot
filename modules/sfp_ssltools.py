@@ -12,7 +12,7 @@
 
 import json
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -38,7 +38,7 @@ class sfp_ssltools(SpiderFootPlugin):
         self.__dataSource__ = 'SSL Tools'
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -64,7 +64,7 @@ class sfp_ssltools(SpiderFootPlugin):
         headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
  
         res = self.sf.fetchUrl('http://www.ssltools.com/api/dns',
-                               postData=urllib.urlencode(params),
+                               postData=urllib.parse.urlencode(params),
                                headers=headers,
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
@@ -95,7 +95,7 @@ class sfp_ssltools(SpiderFootPlugin):
         headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
  
         res = self.sf.fetchUrl('http://www.ssltools.com/api/scan',
-                               postData=urllib.urlencode(params),
+                               postData=urllib.parse.urlencode(params),
                                headers=headers,
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])

@@ -46,7 +46,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         self.__dataSource__ = "Bing"
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input

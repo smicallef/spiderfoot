@@ -300,7 +300,7 @@ class SpiderFootDb:
     #  - regex (search values for a regular expression)
     # ** at least two criteria must be set **
     def search(self, criteria, filterFp=False):
-        if criteria.values().count(None) == 3:
+        if list(criteria.values()).count(None) == 3:
             return False
 
         qvars = list()
@@ -590,7 +590,7 @@ class SpiderFootDb:
     # Store the default configuration
     def configSet(self, optMap=dict()):
         qry = "REPLACE INTO tbl_config (scope, opt, val) VALUES (?, ?, ?)"
-        for opt in optMap.keys():
+        for opt in list(optMap.keys()):
             # Module option
             if ":" in opt:
                 parts = opt.split(':')
@@ -637,7 +637,7 @@ class SpiderFootDb:
         qry = "REPLACE INTO tbl_scan_config \
                 (scan_instance_id, component, opt, val) VALUES (?, ?, ?, ?)"
 
-        for opt in optMap.keys():
+        for opt in list(optMap.keys()):
             # Module option
             if ":" in opt:
                 parts = opt.split(':')
@@ -684,14 +684,14 @@ class SpiderFootDb:
     def scanEventStore(self, instanceId, sfEvent, truncateSize=0):
         storeData = ''
 
-        if type(sfEvent.data) is not unicode:
+        if type(sfEvent.data) is not str:
             # If sfEvent.data is a dict or list, convert it to a string first, as
             # those types do not have a unicode converter.
             if type(sfEvent.data) is str:
-                storeData = unicode(sfEvent.data, 'utf-8', errors='replace')
+                storeData = str(sfEvent.data, 'utf-8', errors='replace')
             else:
                 try:
-                    storeData = unicode(str(sfEvent.data), 'utf-8', errors='replace')
+                    storeData = str(sfEvent.data)
                 except BaseException as e:
                     self.sf.fatal("Unhandled type detected: " + str(type(sfEvent.data)))
         else:

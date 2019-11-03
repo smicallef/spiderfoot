@@ -40,7 +40,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
         self.errorState = False
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input

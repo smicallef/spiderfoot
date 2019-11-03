@@ -43,7 +43,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         self.errorState = False
         self.__dataSource__ = "Target Website"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):

@@ -59,7 +59,7 @@ class sfp_accounts(SpiderFootPlugin):
         self.__dataSource__ = "Social Media"
         self.lock = threading.Lock()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
         self.commonNames = set(self.sf.dictnames())
@@ -191,7 +191,7 @@ class sfp_accounts(SpiderFootPlugin):
                 if data == None:
                     return res
 
-                for ret in data.keys():
+                for ret in list(data.keys()):
                     if data[ret]:
                         res.append(ret)
                 i = 0
@@ -218,7 +218,7 @@ class sfp_accounts(SpiderFootPlugin):
         if eventName != "USERNAME" and srcModuleName == "sfp_accounts":
             return None
 
-        if eventData not in self.results.keys():
+        if eventData not in list(self.results.keys()):
             self.results[eventData] = True
         else:
             return None

@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -44,7 +44,7 @@ class sfp_shodan(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -96,7 +96,7 @@ class sfp_shodan(SpiderFootPlugin):
             'key': self.opts['api_key']
         }
 
-        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?" + urllib.urlencode(params),
+        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?" + urllib.parse.urlencode(params),
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
@@ -205,7 +205,7 @@ class sfp_shodan(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             if rec.get('country_name') is not None:
-                location = ', '.join(filter(None, [rec.get('city'), rec.get('country_name')]))
+                location = ', '.join([_f for _f in [rec.get('city'), rec.get('country_name')] if _f])
                 evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                 self.notifyListeners(evt)
 
@@ -242,7 +242,7 @@ class sfp_shodan(SpiderFootPlugin):
                         self.notifyListeners(evt)
 
                     if vulns is not None:
-                        for vuln in vulns.keys():
+                        for vuln in list(vulns.keys()):
                             evt = SpiderFootEvent('VULNERABILITY', vuln,
                                                   self.__name__, event)
                             self.notifyListeners(evt)

@@ -33,7 +33,7 @@ class sfp_whois(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -102,7 +102,7 @@ class sfp_whois(SpiderFootPlugin):
         rawevt = SpiderFootEvent(typ, data, self.__name__, event)
         self.notifyListeners(rawevt)
 
-        if whoisdata.has_key('registrar'):
+        if 'registrar' in whoisdata:
             if eventName.startswith("DOMAIN_NAME") and whoisdata['registrar'] is not None:
                 evt = SpiderFootEvent("DOMAIN_REGISTRAR", whoisdata['registrar'],
                                       self.__name__, event)

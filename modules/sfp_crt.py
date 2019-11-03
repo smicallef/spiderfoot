@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -33,7 +33,7 @@ class sfp_crt(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -66,7 +66,7 @@ class sfp_crt(SpiderFootPlugin):
             'output': 'json'
         }
 
-        res = self.sf.fetchUrl('https://crt.sh/?' + urllib.urlencode(params),
+        res = self.sf.fetchUrl('https://crt.sh/?' + urllib.parse.urlencode(params),
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
@@ -135,7 +135,7 @@ class sfp_crt(SpiderFootPlugin):
                 'd': str(cert_id)
             }
 
-            res = self.sf.fetchUrl('https://crt.sh/?' + urllib.urlencode(params),
+            res = self.sf.fetchUrl('https://crt.sh/?' + urllib.parse.urlencode(params),
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 

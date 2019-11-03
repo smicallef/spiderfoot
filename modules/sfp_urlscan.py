@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_urlscan(SpiderFootPlugin):
@@ -32,7 +32,7 @@ class sfp_urlscan(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -51,7 +51,7 @@ class sfp_urlscan(SpiderFootPlugin):
             'q': 'domain:' + qry.encode('raw_unicode_escape')
         }
 
-        res = self.sf.fetchUrl('https://urlscan.io/api/v1/search/?' + urllib.urlencode(params),
+        res = self.sf.fetchUrl('https://urlscan.io/api/v1/search/?' + urllib.parse.urlencode(params),
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
@@ -131,7 +131,7 @@ class sfp_urlscan(SpiderFootPlugin):
             if asn:
                 asns.append(asn.replace('AS', ''))
 
-            location = ', '.join(filter(None, [page.get('city'), page.get('country')]))
+            location = ', '.join([_f for _f in [page.get('city'), page.get('country')] if _f])
 
             if location:
                 locations.append(location)

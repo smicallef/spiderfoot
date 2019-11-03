@@ -13,7 +13,7 @@
 
 import json
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_darksearch(SpiderFootPlugin):
@@ -40,7 +40,7 @@ class sfp_darksearch(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
@@ -56,7 +56,7 @@ class sfp_darksearch(SpiderFootPlugin):
             'page': str(page)
         }
 
-        res = self.sf.fetchUrl("https://darksearch.io/api/search?" + urllib.urlencode(params),
+        res = self.sf.fetchUrl("https://darksearch.io/api/search?" + urllib.parse.urlencode(params),
                                useragent=self.opts['_useragent'],
                                timeout=self.opts['_fetchtimeout'])
 

@@ -39,7 +39,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.lock = threading.Lock()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -102,7 +102,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
                 if data == None:
                     return res
 
-                for ret in data.keys():
+                for ret in list(data.keys()):
                     if data[ret]:
                         res.append(ret)
                 i = 0

@@ -44,7 +44,7 @@ class sfp_names(SpiderFootPlugin):
         self.d = set(self.sf.dictwords())
         self.n = set(self.sf.dictnames())
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -78,11 +78,11 @@ class sfp_names(SpiderFootPlugin):
 
         if eventName == "EMAILADDR" and self.opts['emailtoname']:
             if "." in eventData.split("@")[0]:
-                if type(eventData) == unicode:
-                    name = " ".join(map(unicode.capitalize, eventData.split("@")[0].split(".")))
+                if type(eventData) == str:
+                    name = " ".join(map(str.capitalize, eventData.split("@")[0].split(".")))
                 else:
                     name = " ".join(map(str.capitalize, eventData.split("@")[0].split(".")))
-                    name = unicode(name, 'utf-8', errors='replace')
+                    name = str(name, 'utf-8', errors='replace')
 
                 # Names don't have numbers
                 if re.match("[0-9]", name):

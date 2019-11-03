@@ -36,7 +36,7 @@ class sfp__stor_stdout(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -48,20 +48,20 @@ class sfp__stor_stdout(SpiderFootPlugin):
     def output(self, event):
         d = self.opts['_csvdelim']
         if type(event.data) in [list, dict]:
-            data = unicode(str(event.data), 'utf-8', errors='replace')
+            data = str(event.data)
         else:
             data = event.data
 
-        if type(data) != unicode:
-            data = unicode(event.data, 'utf-8', errors='replace')
+        if type(data) != str:
+            data = str(event.data)
 
         if type(event.sourceEvent.data) in [list, dict]:
-            srcdata = unicode(str(event.sourceEvent.data), 'utf-8', errors='replace')
+            srcdata = str(event.sourceEvent.data)
         else:
             srcdata = event.sourceEvent.data
 
-        if type(srcdata) != unicode:
-            srcdata = unicode(event.sourceEvent.data, 'utf-8', errors='replace')
+        if type(srcdata) != str:
+            srcdata = str(event.sourceEvent.data)
 
         if self.opts['_stripnewline']:
             data = data.replace("\n", "").replace("\r", "")
@@ -73,12 +73,12 @@ class sfp__stor_stdout(SpiderFootPlugin):
 
         if self.opts['_format'] == "tab":
             if self.opts['_showsource']:
-                print('{0:30}\t{1:45}\t{2}\t{3}'.format(event.module, self.opts['_eventtypes'][event.eventType], srcdata, data))
+                print(('{0:30}\t{1:45}\t{2}\t{3}'.format(event.module, self.opts['_eventtypes'][event.eventType], srcdata, data)))
             else:
-                print('{0:30}\t{1:45}\t{2}'.format(event.module, self.opts['_eventtypes'][event.eventType], data))
+                print(('{0:30}\t{1:45}\t{2}'.format(event.module, self.opts['_eventtypes'][event.eventType], data)))
 
         if self.opts['_format'] == "csv":
-            print(event.module + d + self.opts['_eventtypes'][event.eventType] + d + srcdata + d + data)
+            print((event.module + d + self.opts['_eventtypes'][event.eventType] + d + srcdata + d + data))
 
         if self.opts['_format'] == "json":
             d = event.asDict()

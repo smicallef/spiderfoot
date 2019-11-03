@@ -11,7 +11,7 @@
 #-------------------------------------------------------------------------------
 
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -37,7 +37,7 @@ class sfp_numverify(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -61,7 +61,7 @@ class sfp_numverify(SpiderFootPlugin):
         }
 
         # Free API does not support HTTPS for no adequately explained reason
-        res = self.sf.fetchUrl("http://apilayer.net/api/validate?" + urllib.urlencode(params),
+        res = self.sf.fetchUrl("http://apilayer.net/api/validate?" + urllib.parse.urlencode(params),
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
@@ -129,7 +129,7 @@ class sfp_numverify(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         if data.get('country_code') is not None:
-            location = ', '.join(filter(None, [data.get('location'), data.get('country_code')]))
+            location = ', '.join([_f for _f in [data.get('location'), data.get('country_code')] if _f])
             evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(evt)
         else:

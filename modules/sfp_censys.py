@@ -47,7 +47,7 @@ class sfp_censys(SpiderFootPlugin):
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -165,7 +165,7 @@ class sfp_censys(SpiderFootPlugin):
                     continue
 
                 if 'location' in rec:
-                    location = ', '.join(filter(None, [rec['location'].get('city'), rec['location'].get('province'), rec['location'].get('postal_code'), rec['location'].get('country')]))
+                    location = ', '.join([_f for _f in [rec['location'].get('city'), rec['location'].get('province'), rec['location'].get('postal_code'), rec['location'].get('country')] if _f])
                     if location:
                         e = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                         self.notifyListeners(e)

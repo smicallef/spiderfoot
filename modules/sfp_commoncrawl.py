@@ -44,7 +44,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
         self.indexBase = list()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def search(self, target):
@@ -91,7 +91,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
             ms = m.replace("CC-MAIN-", "").replace("-", "")
             indexlist[ms] = True
 
-        topindexes = sorted(indexlist.keys(), reverse=True)[0:self.opts['indexes']]
+        topindexes = sorted(list(indexlist.keys()), reverse=True)[0:self.opts['indexes']]
 
         if len(topindexes) < self.opts['indexes']:
             self.sf.error("Not able to find latest CommonCrawl indexes.", False)

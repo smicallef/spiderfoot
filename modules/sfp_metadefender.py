@@ -40,7 +40,7 @@ class sfp_metadefender(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -142,7 +142,7 @@ class sfp_metadefender(SpiderFootPlugin):
             geo_info = data.get('geo_info')
 
             if geo_info:
-                location = ', '.join(filter(None, [geo_info.get('city').get('name'), geo_info.get('country').get('name')]))
+                location = ', '.join([_f for _f in [geo_info.get('city').get('name'), geo_info.get('country').get('name')] if _f])
                 evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
                 self.notifyListeners(evt)
 

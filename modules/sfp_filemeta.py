@@ -42,7 +42,7 @@ class sfp_filemeta(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -112,7 +112,7 @@ class sfp_filemeta(SpiderFootPlugin):
                         self.sf.debug("Office type: " + str(mtype))
                         a = doc.core_properties.author
                         c = doc.core_properties.comments
-                        data = filter(None, [a, c])
+                        data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
                     except BaseException as e:
                         self.sf.error("Unable to process file: " +
@@ -127,7 +127,7 @@ class sfp_filemeta(SpiderFootPlugin):
                         self.sf.debug("Office type: " + str(mtype))
                         a = doc.core_properties.author
                         c = doc.core_properties.comments
-                        data = filter(None, [a, c])
+                        data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
                     except BaseException as e:
                         self.sf.error("Unable to process file: " +

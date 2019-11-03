@@ -197,10 +197,10 @@ class SpiderFootCli(cmd.Cmd):
         # Get the column titles
         maxsize = dict()
         if type(data[0]) == dict:
-            cols = data[0].keys()
+            cols = list(data[0].keys())
         else:
             # for lists, use the index numbers as titles
-            cols = map(str, range(0, len(data[0])))
+            cols = list(map(str, list(range(0, len(data[0])))))
 
         # Strip out columns that don't have titles
         if titlemap:
@@ -221,8 +221,8 @@ class SpiderFootCli(cmd.Cmd):
                     if type(c) == int:
                         v = str(c)
                     if type(c) == str:
-                        v = unicode(c, errors='replace')
-                    if type(c) == unicode:
+                        v = str(c, errors='replace')
+                    if type(c) == str:
                         v = c
                 else:
                     # we have a dict key
@@ -285,8 +285,8 @@ class SpiderFootCli(cmd.Cmd):
                     if tc == int:
                         v = str(c)
                     if tc == str:
-                        v = unicode(c, errors='replace')
-                    if tc == unicode:
+                        v = str(c, errors='replace')
+                    if tc == str:
                         v = c
                 else:
                     # we have a dict key
@@ -1061,7 +1061,7 @@ class SpiderFootCli(cmd.Cmd):
         self.ddprint(str(serverconfig))
 
         if not cfg or not val:
-            ks = self.ownopts.keys()
+            ks = list(self.ownopts.keys())
             ks.sort()
             output = list()
             for k in ks:
@@ -1134,7 +1134,7 @@ class SpiderFootCli(cmd.Cmd):
                         confdata[optstr] = ','.join(serverconfig[k])
                     if type(serverconfig[k]) == int:
                         confdata[optstr] = str(serverconfig[k])
-                    if type(serverconfig[k]) in [ str, unicode ]:
+                    if type(serverconfig[k]) in == str:
                         confdata[optstr] = serverconfig[k]
     
                 self.ddprint(str(confdata))

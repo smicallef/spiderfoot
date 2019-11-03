@@ -37,7 +37,7 @@ class sfp_skymem(SpiderFootPlugin):
         self.__dataSource__ = "Skymem"
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input

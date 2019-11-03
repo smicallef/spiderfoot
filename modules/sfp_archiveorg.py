@@ -55,7 +55,7 @@ class sfp_archiveorg(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.foundDates = list()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input

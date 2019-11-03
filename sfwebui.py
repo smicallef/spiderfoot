@@ -281,15 +281,15 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.config)
         ret['config'] = dbh.scanConfigGet(id)
         ret['configdesc'] = dict()
-        for key in ret['config'].keys():
+        for key in list(ret['config'].keys()):
             if ':' not in key:
                 ret['configdesc'][key] = self.config['__globaloptdescs__'][key]
             else:
                 [modName, modOpt] = key.split(':')
-                if modName not in self.config['__modules__'].keys():
+                if modName not in list(self.config['__modules__'].keys()):
                     continue
 
-                if modOpt not in self.config['__modules__'][modName]['optdescs'].keys():
+                if modOpt not in list(self.config['__modules__'][modName]['optdescs'].keys()):
                     continue
 
                 ret['configdesc'][key] = self.config['__modules__'][modName]['optdescs'][modOpt]
@@ -351,7 +351,7 @@ class SpiderFootWebUi:
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=newId, name=unicode(scanname, 'utf-8', errors='replace'), docroot=self.docroot,
+        return templ.render(id=newId, name=str(scanname, 'utf-8', errors='replace'), docroot=self.docroot,
             status=globalScanStatus.getStatus(newId), pageid="SCANLIST")
 
     rerunscan.exposed = True
@@ -384,8 +384,8 @@ class SpiderFootWebUi:
 
             # Start running a new scan
             newId = sf.genScanInstanceGUID(scanname)
-            t = SpiderFootScanner(unicode(scanname, 'utf-8', errors='replace'), 
-                                  unicode(scantarget, 'utf-8', errors='replace').lower(), 
+            t = SpiderFootScanner(str(scanname, 'utf-8', errors='replace'), 
+                                  str(scantarget, 'utf-8', errors='replace').lower(), 
                                   targetType, newId, modlist, cfg, modopts)
             t.start()
 
@@ -436,8 +436,8 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
                             modules=self.config['__modules__'], selectedmods=modlist,
-                            scanname=unicode(scanname, 'utf-8', errors='replace'), 
-                            scantarget=unicode(scantarget, 'utf-8', errors='replace'))
+                            scanname=str(scanname, 'utf-8', errors='replace'), 
+                            scantarget=str(scantarget, 'utf-8', errors='replace'))
 
     clonescan.exposed = True
 
@@ -530,7 +530,7 @@ class SpiderFootWebUi:
                 return json.dumps(["SUCCESS", ""])
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=id, name=unicode(res[0], 'utf-8', errors='replace'), 
+            return templ.render(id=id, name=str(res[0], 'utf-8', errors='replace'), 
                                 names=list(), ids=list(),
                                 pageid="SCANLIST", docroot=self.docroot)
 
@@ -543,7 +543,7 @@ class SpiderFootWebUi:
 
         for id in ids.split(','):
             res = dbh.scanInstanceGet(id)
-            names.append(unicode(res[0], 'utf-8', errors='replace'))
+            names.append(str(res[0], 'utf-8', errors='replace'))
             if res is None:
                 return self.error("Scan ID not found (" + id + ").")
 
@@ -591,7 +591,7 @@ class SpiderFootWebUi:
             else:
                 useropts = json.loads(allopts)
                 cleanopts = dict()
-                for opt in useropts.keys():
+                for opt in list(useropts.keys()):
                     cleanopts[opt] = self.cleanUserInput([useropts[opt]])[0]
 
                 currentopts = deepcopy(self.config)
@@ -625,7 +625,7 @@ class SpiderFootWebUi:
             else:
                 useropts = json.loads(allopts)
                 cleanopts = dict()
-                for opt in useropts.keys():
+                for opt in list(useropts.keys()):
                     cleanopts[opt] = self.cleanUserInput([useropts[opt]])[0]
 
                 currentopts = deepcopy(self.config)
@@ -697,7 +697,7 @@ class SpiderFootWebUi:
 
     # For the CLI to fetch a list of modules.
     def modules(self):
-        modinfo = self.config['__modules__'].keys()
+        modinfo = list(self.config['__modules__'].keys())
         modinfo.sort()
         ret = list()
         for m in modinfo:
@@ -840,7 +840,7 @@ class SpiderFootWebUi:
             if scaninfo is None:
                 return self.error("Invalid scan ID specified.")
 
-            scanname = unicode(scaninfo[0], 'utf-8', errors='replace')
+            scanname = str(scaninfo[0], 'utf-8', errors='replace')
 
             if globalScanStatus.getStatus(id) == "FINISHED" or scaninfo[5] == "FINISHED":
                 error.append("Scan '" + scanname + "' is in a finished state. <a href='/scandelete?id=" + \
@@ -935,7 +935,7 @@ class SpiderFootWebUi:
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
             retdata.append([generated, row[1],
-                            cgi.escape(unicode(row[2], errors='replace'))])
+                            cgi.escape(str(row[2], errors='replace'))])
         return json.dumps(retdata)
 
     scanerrors.exposed = True
