@@ -1259,8 +1259,9 @@ class SpiderFoot:
                 absLink = proto + ':' + link
 
             # Maybe the domain was just mentioned and not a link, so we make it one
-            if absLink is None and domain.lower() in link.lower():
-                absLink = proto + '://' + link
+            for domain in domains:
+                if absLink is None and domain.lower() in link.lower():
+                    absLink = proto + '://' + link
 
             # Otherwise, it's a flat link within the current directory
             if absLink is None:
