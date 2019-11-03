@@ -16,7 +16,7 @@ try:
 except ImportError as e:
     import re
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -142,7 +142,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", 
                               "NETBLOCK_OWNER", "IP_ADDRESS", 
                               "INTERNET_NAME", "AFFILIATE_IPADDR"]:
-            data = urllib2.unquote(eventData)
+            data = urllib.parse.unquote(eventData)
             for name in self.getTarget().getNames():
                 if self.checkForStop():
                     return None

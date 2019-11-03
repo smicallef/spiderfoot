@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import time
-import urlparse
+from urllib.parse import urlparse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -78,7 +78,7 @@ class sfp_sslcert(SpiderFootPlugin):
                 return None
 
             # Handle URLs containing port numbers
-            u = urlparse.urlparse(eventData)
+            u = urlparse(eventData)
             port = 443
             if u.port:
                 port = u.port

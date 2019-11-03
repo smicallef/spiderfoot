@@ -17,7 +17,7 @@ import docx
 import pptx
 import exifread
 import lxml
-from StringIO import StringIO
+import io
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -93,7 +93,7 @@ class sfp_filemeta(SpiderFootPlugin):
                 # Based on the file extension, handle it
                 if fileExt.lower() == "pdf":
                     try:
-                        raw = StringIO(ret['content'])
+                        raw = io.BytesIO(ret['content'])
                         #data = metapdf.MetaPdfReader().read_metadata(raw)
                         pdf = PyPDF2.PdfFileReader(raw, strict=False)
                         data = pdf.getDocumentInfo()
@@ -106,7 +106,7 @@ class sfp_filemeta(SpiderFootPlugin):
 
                 if fileExt.lower() in ["docx"]:
                     try:
-                        c = StringIO(ret['content'])
+                        c = io.BytesIO(ret['content'])
                         doc = docx.Document(c)
                         mtype = mimetypes.guess_type(eventData)[0]
                         self.sf.debug("Office type: " + str(mtype))
@@ -121,7 +121,7 @@ class sfp_filemeta(SpiderFootPlugin):
 
                 if fileExt.lower() in ["pptx"]:
                     try:
-                        c = StringIO(ret['content'])
+                        c = io.BytesIO(ret['content'])
                         doc = pptx.Presentation(c)
                         mtype = mimetypes.guess_type(eventData)[0]
                         self.sf.debug("Office type: " + str(mtype))
@@ -136,7 +136,7 @@ class sfp_filemeta(SpiderFootPlugin):
 
                 if fileExt.lower() in ["jpg", "jpeg", "tiff"]:
                     try:
-                        raw = StringIO(ret['content'])
+                        raw = io.BytesIO(ret['content'])
                         data = exifread.process_file(raw)
                         if data is None or len(data) == 0:
                             continue

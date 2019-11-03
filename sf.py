@@ -25,8 +25,8 @@ if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
 deps = ['netaddr', 'dns', 'cherrypy', 'mako', 'socks', 'whois', 'OpenSSL',
-        'PyPDF2', 'openxmllib', 'stem', 'bs4', 'gexf', 'phonenumbers', 'ipaddr',
-        'ipwhois']
+        'PyPDF2', 'stem', 'bs4', 'phonenumbers', 'ipaddr', 'ipwhois',
+        'networkx']
 for mod in deps:
     try:
         if mod.startswith("lib."):
@@ -36,7 +36,7 @@ for mod in deps:
             __import__(mod)
     except ImportError as e:
         print("")
-        print("Critical Start-up Failure: " + str(e))
+        print(("Critical Start-up Failure: " + str(e)))
         print("=================================")
         print("It appears you are missing a module required for SpiderFoot")
         print("to function. Please refer to the documentation for the list")
@@ -44,7 +44,7 @@ for mod in deps:
         print("")
         print("Python modules required are: ")
         for mod in deps:
-            print(" - " + mod)
+            print((" - " + mod))
         print("")
         print("****************************************************************")
         print("Please note that if you are seeing this after doing a git pull")
@@ -99,7 +99,7 @@ sfOptdescs = {
     '_debug': "Enable debugging?",
     '_internettlds': "List of Internet TLDs.",
     '_internettlds_cache': "Hours to cache the Internet TLD list. This can safely be quite a long time given that the list doesn't change too often.",
-    '_useragent': "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
+    '_useragent': "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
     '_dnsserver': "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
     '_fetchtimeout': "Number of seconds before giving up on a HTTP request.",
     '_socks1type': "SOCKS Server Type. Can be '4', '5', 'HTTP' or 'TOR'",
@@ -187,7 +187,7 @@ if __name__ == '__main__':
             if hasattr(sfModules[modName]['object'], 'optdescs'):
                 sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
 
-    if len(sfModules.keys()) < 1:
+    if len(list(sfModules.keys())) < 1:
         print("No modules found in the modules directory.")
         sys.exit(-1)
 
@@ -205,7 +205,7 @@ if __name__ == '__main__':
             for m in sorted(sfModules.keys()):
                 if "__" in m:
                     continue
-                print('{0:25}  {1}'.format(m, sfModules[m]['descr']))
+                print(('{0:25}  {1}'.format(m, sfModules[m]['descr'])))
             sys.exit(0)
 
         if args.types:
@@ -216,7 +216,7 @@ if __name__ == '__main__':
                 types[r[1]] = r[0]
 
             for t in sorted(types.keys()):
-                print('{0:45}  {1}'.format(t, types[t]))
+                print(('{0:45}  {1}'.format(t, types[t])))
             sys.exit(0)
 
         if not args.s:
@@ -245,7 +245,7 @@ if __name__ == '__main__':
         modlist = list()
         if not args.t and not args.m:
             print("WARNING: You didn't specify any modules or types, so all will be enabled.")
-            for m in sfModules.keys():
+            for m in list(sfModules.keys()):
                 if "__" in m:
                     continue
                 modlist.append(m)
@@ -327,7 +327,7 @@ if __name__ == '__main__':
 
         # Run the scan
         if not args.q:
-            print("[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist))
+            print(("[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist)))
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
         scanId = sf.genScanInstanceGUID(target)
 
@@ -353,7 +353,7 @@ if __name__ == '__main__':
                 continue
             if info[5] in [ "ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED" ]:
                 if not args.q:
-                    print("[*] Scan completed with status " + info[5])
+                    print(("[*] Scan completed with status " + info[5]))
                 sys.exit(0)
             time.sleep(1)
 
@@ -361,7 +361,7 @@ if __name__ == '__main__':
 
     # Start the web server so you can start looking at results
     url = 'http://' + sfConfig['__webaddr'] + ":" + str(sfConfig['__webport']) + sfConfig['__docroot']
-    print('Starting web server at %s ...' % url)
+    print(('Starting web server at %s ...' % url))
 
     cherrypy.config.update({
         'server.socket_host': sfConfig['__webaddr'],

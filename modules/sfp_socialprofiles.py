@@ -15,7 +15,7 @@ try:
 except ImportError as e:
     import re
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 sites = {
@@ -197,7 +197,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     # for a firm relationship.
                     # Keywords might be empty if the target was an IP, subnet or name.
                     if self.opts["tighten"] and self.keywords:
-                        match = urllib2.unquote(match)
+                        match = urllib.parse.unquote(match)
                         self.sf.debug(
                             "Tightening results to look for " + str(self.keywords)
                         )
@@ -222,7 +222,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                                 continue
 
                     self.sf.info("Social Media Profile found at " + site + ": " + match)
-                    match = urllib2.unquote(match)
+                    match = urllib.parse.unquote(match)
                     evt = SpiderFootEvent(
                         "SOCIAL_MEDIA", site + ": <SFURL>" + match + "</SFURL>", self.__name__, event
                     )

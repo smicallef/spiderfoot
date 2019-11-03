@@ -49,8 +49,8 @@ class SpiderFootScanner(threading.Thread):
     # Set the status of the currently running scan (if any)
     def setStatus(self, status, started=None, ended=None):
         if self.ts is None:
-            print("Internal Error: Status set attempted before " + \
-                  "SpiderFootScanner was ready.")
+            print(("Internal Error: Status set attempted before " + \
+                  "SpiderFootScanner was ready."))
             exit(-1)
 
         self.ts.status = status
@@ -102,69 +102,32 @@ class SpiderFootScanner(threading.Thread):
         try:
             # Process global options that point to other places for data
 
-            # Save default socket methods that will be overridden
-            if not hasattr(socket, 'savedsocket'):
-                socket.savedsocket = socket.socket
-                socket.savedcreate_connection = socket.create_connection
-                #socket.savedgetaddrinfo = socket.getaddrinfo
-
             # If a SOCKS server was specified, set it up
             if self.ts.config['_socks1type'] != '':
-                socksType = socks.PROXY_TYPE_SOCKS4
                 socksDns = self.ts.config['_socks6dns']
                 socksAddr = self.ts.config['_socks2addr']
                 socksPort = int(self.ts.config['_socks3port'])
-                socksUsername = ''
-                socksPassword = ''
+                socksUsername = self.ts.config['_socks4user'] or ''
+                socksPassword = self.ts.config['_socks5pwd'] or ''
+                creds = ""
+                if socksUsername and socksPassword:
+                    creds = socksUsername + ":" + socksPassword + "@"
+                proxy = creds + socksAddr + ":" + socksPort
 
                 if self.ts.config['_socks1type'] == '4':
-                    socksType = socks.PROXY_TYPE_SOCKS4
-                if self.ts.config['_socks1type'] == '5':
-                    socksType = socks.PROXY_TYPE_SOCKS5
-                    socksUsername = self.ts.config['_socks4user']
-                    socksPassword = self.ts.config['_socks5pwd']
-
-                if self.ts.config['_socks1type'] == 'HTTP':
-                    socksType = socks.PROXY_TYPE_HTTP
-
-                if self.ts.config['_socks1type'] == 'TOR':
-                    socksType = socks.PROXY_TYPE_SOCKS5
+                    proxy = 'socks4://' + proxy
+                elif self.ts.config['_socks1type'] == '5':
+                    proxy = 'socks5://' + proxy
+                elif self.ts.config['_socks1type'] == 'HTTP':
+                    proxy = 'http://' + proxy
+                elif self.ts.config['_socks1type'] == 'TOR':
+                    proxy = 'socks5h://' + proxy
 
                 self.ts.sf.debug("SOCKS: " + socksAddr + ":" + str(socksPort) + \
                                  "(" + socksUsername + ":" + socksPassword + ")")
-                socks.setdefaultproxy(socksType, socksAddr, socksPort,
-                                      socksDns, socksUsername, socksPassword)
 
-                # Override the default socket and getaddrinfo calls with the 
-                # SOCKS ones. Just ensure we don't also try and SOCKS-proxy
-                # connectivity to the TOR control port.
-                def _create_connection(address, timeout=None, source_address=None):
-                    if socksAddr not in address:
-                        sock = socks.socksocket()
-                        sock.setproxy(socks.PROXY_TYPE_SOCKS5, socksAddr, socksPort)
-                        sock.settimeout(self.ts.config['_fetchtimeout'])
-                        sock.connect(address)
-                        return sock
-                    else:
-                        sock = socket.socket
-                        sock.settimeout(self.ts.config['_fetchtimeout'])
-                        sock.connect(address)
-                        return sock
-
-                socket.socket = socks.socksocket
-                socket.setdefaulttimeout(self.ts.config['_fetchtimeout'])
-                socket.create_connection = _create_connection
-                #socket.getaddrinfo = socks.getaddrinfo
-                self.ts.sf.updateSocket(socket)
+                self.ts.sf.updateSocket(proxy)
             else:
-                # BUG: If the user had a SOCKS proxy set
-                # and then decided to unset it, the original socket class
-                # is not reverted to its default state - we still have
-                # the SOCKS version of socket.
-                socket.socket = socket.savedsocket
-                socket.setdefaulttimeout(self.ts.config['_fetchtimeout'])
-                socket.create_connection = socket.savedcreate_connection
-                #socket.getaddrinfo = socket.savedgetaddrinfo
                 self.ts.sf.revertSocket()
 
             # Override the default DNS server
@@ -211,7 +174,7 @@ class SpiderFootScanner(threading.Thread):
                 # Set up the module
                 # Configuration is a combined global config with module-specific options
                 self.ts.modconfig[modName] = deepcopy(self.ts.config['__modules__'][modName]['opts'])
-                for opt in self.ts.config.keys():
+                for opt in list(self.ts.config.keys()):
                     self.ts.modconfig[modName][opt] = deepcopy(self.ts.config[opt])
 
                 mod.clearListeners()  # clear any listener relationships from the past
@@ -238,11 +201,11 @@ class SpiderFootScanner(threading.Thread):
                 self.ts.sf.status(modName + " module loaded.")
 
             # Register listener modules and then start all modules sequentially
-            for module in self.ts.moduleInstances.values():
+            for module in list(self.ts.moduleInstances.values()):
                 # Register the target with the module
                 module.setTarget(target)
 
-                for listenerModule in self.ts.moduleInstances.values():
+                for listenerModule in list(self.ts.moduleInstances.values()):
                     # Careful not to register twice or you will get duplicate events
                     if listenerModule in module._listenerModules:
                         continue
@@ -260,7 +223,7 @@ class SpiderFootScanner(threading.Thread):
             psMod.__name__ = "SpiderFoot UI"
             psMod.setTarget(target)
             psMod.clearListeners()
-            for mod in self.ts.moduleInstances.values():
+            for mod in list(self.ts.moduleInstances.values()):
                 if mod.watchedEvents() is not None:
                     psMod.registerListener(mod)
 
@@ -284,7 +247,7 @@ class SpiderFootScanner(threading.Thread):
 
             # Check in case the user requested to stop the scan between modules 
             # initializing
-            for module in self.ts.moduleInstances.values():
+            for module in list(self.ts.moduleInstances.values()):
                 if module.checkForStop():
                     self.setStatus('ABORTING')
                     aborted = True

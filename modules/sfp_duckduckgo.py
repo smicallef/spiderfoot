@@ -63,7 +63,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-	url = "https://api.duckduckgo.com/?q=" + eventData + "&format=json&pretty=1"
+        url = "https://api.duckduckgo.com/?q=" + eventData + "&format=json&pretty=1"
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 

@@ -16,7 +16,7 @@ try:
 except ImportError as e:
     import re
 
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_wikipediaedits(SpiderFootPlugin):

@@ -15,10 +15,8 @@ from stem import Signal
 from stem.control import Controller
 import inspect
 import hashlib
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import binascii
-import gzip
-import gexf
 import json
 import re
 import os
@@ -29,20 +27,21 @@ import ssl
 import sys
 import time
 import netaddr
-import urllib2
-import StringIO
+import urllib.request, urllib.error, urllib.parse
+import io
 import threading
 import traceback
 import OpenSSL
 import cryptography
 import dns.resolver
+from networkx import nx
+from networkx.readwrite.gexf import GEXFWriter
 from datetime import datetime
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy, copy
 
 # For hiding the SSL warnings coming from the requests lib
 import urllib3
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -50,7 +49,7 @@ class SpiderFoot:
     dbh = None
     GUID = None
     savedsock = socket
-    urllib2.savedsock = urllib2.socket
+    socksProxy = None
 
     # 'options' is a dictionary of options which changes the behaviour
     # of how certain things are done in this module
@@ -72,13 +71,11 @@ class SpiderFoot:
     # Bit of a hack to support SOCKS because of the loading order of
     # modules. sfscan will call this to update the socket reference
     # to the SOCKS one.
-    def updateSocket(self, sock):
-        socket = sock
-        urllib2.socket = sock
+    def updateSocket(self, socksProxy):
+        self.socksProxy = socksProxy
 
     def revertSocket(self):
-        socket = self.savedsock
-        urllib2.socket = urllib2.savedsock
+        self.socksProxy = None
 
     # Tell TOR to re-circuit
     def refreshTorIdent(self):
@@ -126,12 +123,12 @@ class SpiderFoot:
         if val.lower().startswith('http://') or val.lower().startswith('https://'):
             try:
                 self.info("Downloading configuration data from: " + val)
-                res = urllib2.urlopen(val)
-                data = res.read()
+                session = self.getSession()
+                res = session.get(val)
                 if splitLines:
-                    return data.splitlines()
+                    return res.content.splitlines()
                 else:
-                    return data
+                    return res.content
             except BaseException as e:
                 if fatal:
                     self.error("Unable to open option URL, " + val + ": " + str(e))
@@ -197,8 +194,7 @@ class SpiderFoot:
     # included.
     def buildGraphGexf(self, root, title, data, flt=[]):
         mapping = self.buildGraphData(data, flt)
-        g = gexf.Gexf(title, title)
-        graph = g.addGraph("undirected", "static", "SpiderFoot Export")
+        graph = nx.Graph()
 
         nodelist = dict()
         ecounter = 0
@@ -210,28 +206,28 @@ class SpiderFoot:
             # Leave out this special case
             if dst == "ROOT" or src == "ROOT":
                 continue
+
             if dst not in nodelist:
                 ncounter = ncounter + 1
                 if dst in root:
                     col = ["255", "0", "0"]
-                graph.addNode(str(ncounter), unicode(dst, errors="replace"),
-                              r=col[0], g=col[1], b=col[2])
+                node = graph.add_node(dst)
+                graph.node[dst]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
                 ncounter = ncounter + 1
                 if src in root:
                     col = ["255", "0", "0"]
-                graph.addNode(str(ncounter), unicode(src, errors="replace"),
-                              r=col[0], g=col[1], b=col[2])
+                graph.add_node(src)
+                graph.node[src]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
                 nodelist[src] = ncounter
 
             ecounter = ecounter + 1
             graph.addEdge(str(ecounter), str(nodelist[src]), str(nodelist[dst]))
 
-        output = StringIO.StringIO()
-        g.write(output)
-        return output.getvalue()
+        gexf = GEXFWriter(graph=graph)
+        return str(gexf).encode('utf-8')
 
     # Convert supplied raw data into JSON format for SigmaJS
     def buildGraphJson(self, root, data, flt=list()):
@@ -255,7 +251,7 @@ class SpiderFoot:
                 if dst in root:
                     col = "#f00"
                 ret['nodes'].append({'id': str(ncounter),
-                                    'label': unicode(dst, errors="replace"),
+                                    'label': str(dst, errors="replace"),
                                     'x': random.SystemRandom().randint(1, 1000),
                                     'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
@@ -268,7 +264,7 @@ class SpiderFoot:
                     col = "#f00"
                 ncounter = ncounter + 1
                 ret['nodes'].append({'id': str(ncounter),
-                                    'label': unicode(src, errors="replace"),
+                                    'label': str(src, errors="replace"),
                                     'x': random.SystemRandom().randint(1, 1000),
                                     'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
@@ -315,11 +311,11 @@ class SpiderFoot:
             return None
 
         if self.dbh is None:
-            print('[Error] ' + error)
+            print(('[Error] ' + error))
         else:
             self._dblog("ERROR", error)
         if self.opts.get('__logstdout'):
-            print("[Error] " + error)
+            print(("[Error] " + error))
         if exception:
             raise BaseException("Internal Error Encountered: " + error)
 
@@ -328,7 +324,7 @@ class SpiderFoot:
             print(('[Fatal] %s' % error))
         else:
             self._dblog("FATAL", error)
-        print(str(inspect.stack()))
+        print((str(inspect.stack())))
         sys.exit(-1)
 
     def status(self, message):
@@ -404,16 +400,16 @@ class SpiderFoot:
 
         # Determine whether we've been compiled by py2exe
         if hasattr(sys, "frozen"):
-            return os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding()))
+            return os.path.dirname(sys.executable)
 
-        return os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
+        return os.path.dirname(__file__)
 
     def hashstring(self, string):
         s = string
         if type(string) in [list, dict]:
             s = str(string)
         if type(s) == str:
-            s = unicode(s, 'utf-8', errors='replace')
+            s = str(s, 'utf-8', errors='replace')
         return hashlib.sha256(s.encode('raw_unicode_escape')).hexdigest()
 
     #
@@ -470,7 +466,7 @@ class SpiderFoot:
     def configSerialize(self, opts, filterSystem=True):
         storeopts = dict()
 
-        for opt in opts.keys():
+        for opt in list(opts.keys()):
             # Filter out system temporary variables like GUID and others
             if opt.startswith('__') and filterSystem:
                 continue
@@ -517,7 +513,7 @@ class SpiderFoot:
         returnOpts = referencePoint
 
         # Global options
-        for opt in referencePoint.keys():
+        for opt in list(referencePoint.keys()):
             if opt.startswith('__') and filterSystem:
                 # Leave out system variables
                 continue
@@ -594,9 +590,9 @@ class SpiderFoot:
 
         # Parse the target and set the targetType
         for rxpair in regexToType:
-            rx = rxpair.keys()[0]
+            rx = list(rxpair.keys())[0]
             if re.match(rx, target, re.IGNORECASE|re.UNICODE):
-                targetType = rxpair.values()[0]
+                targetType = list(rxpair.values())[0]
                 break
         return targetType
 
@@ -604,7 +600,7 @@ class SpiderFoot:
     # types specified.
     def modulesProducing(self, events):
         modlist = list()
-        for mod in self.opts['__modules__'].keys():
+        for mod in list(self.opts['__modules__'].keys()):
             if self.opts['__modules__'][mod]['provides'] is None:
                 continue
 
@@ -620,7 +616,7 @@ class SpiderFoot:
     # specified.
     def modulesConsuming(self, events):
         modlist = list()
-        for mod in self.opts['__modules__'].keys():
+        for mod in list(self.opts['__modules__'].keys()):
             if self.opts['__modules__'][mod]['consumes'] is None:
                 continue
 
@@ -638,7 +634,7 @@ class SpiderFoot:
     def eventsFromModules(self, modules):
         evtlist = list()
         for mod in modules:
-            if mod in self.opts['__modules__'].keys():
+            if mod in list(self.opts['__modules__'].keys()):
                 if self.opts['__modules__'][mod]['provides'] is not None:
                     for evt in self.opts['__modules__'][mod]['provides']:
                         evtlist.append(evt)
@@ -650,7 +646,7 @@ class SpiderFoot:
     def eventsToModules(self, modules):
         evtlist = list()
         for mod in modules:
-            if mod in self.opts['__modules__'].keys():
+            if mod in list(self.opts['__modules__'].keys()):
                 if self.opts['__modules__'][mod]['consumes'] is not None:
                     for evt in self.opts['__modules__'][mod]['consumes']:
                         evtlist.append(evt)
@@ -803,9 +799,9 @@ class SpiderFoot:
         for addr in res:
             if type(addr) == list:
                 for host in addr:
-                    ret.append(unicode(host, 'utf-8', errors='replace'))
+                    ret.append(str(host, 'utf-8', errors='replace'))
             else:
-                ret.append(unicode(addr, 'utf-8', errors='replace'))
+                ret.append(str(addr, 'utf-8', errors='replace'))
         return list(set(ret))
 
     # Verify input is OK to execute
@@ -846,7 +842,7 @@ class SpiderFoot:
                 w = w.strip().lower()
                 wd[w.split('/')[0]] = True
 
-        return wd.keys()
+        return list(wd.keys())
 
     # Return dictionary names
     def dictnames(self):
@@ -866,7 +862,7 @@ class SpiderFoot:
                 w = w.strip().lower()
                 wd[w.split('/')[0]] = True
 
-        return wd.keys()
+        return list(wd.keys())
 
 
     # Converts a dictionary of k -> array to a nested
@@ -876,7 +872,7 @@ class SpiderFoot:
             #print("called")
             ret = list()
 
-            if needle not in haystack.keys():
+            if needle not in list(haystack.keys()):
                 return None
 
             if haystack[needle] is None:
@@ -889,12 +885,12 @@ class SpiderFoot:
 
         # Find the element with no parents, that's our root.
         root = None
-        for k in data.keys():
+        for k in list(data.keys()):
             if data[k] is None:
                 continue
 
             contender = True
-            for ck in data.keys():
+            for ck in list(data.keys()):
                 if data[ck] is None:
                     continue
 
@@ -921,8 +917,8 @@ class SpiderFoot:
     def resolveHost(self, host):
         try:
             # IDNA-encode the hostname in case it contains unicode
-            if type(host) != unicode:
-                host = unicode(host, "utf-8", errors='replace').encode("idna")
+            if type(host) != str:
+                host = str(host, "utf-8", errors='replace').encode("idna")
             else:
                 host = host.encode("idna")
 
@@ -1203,7 +1199,7 @@ class SpiderFoot:
             return None
 
         try:
-            for t in tags.keys():
+            for t in list(tags.keys()):
                 for lnk in BeautifulSoup(data, "lxml",
                     parse_only=SoupStrainer(t)).find_all(t):
                     if lnk.has_attr(tags[t]):
@@ -1217,8 +1213,8 @@ class SpiderFoot:
             # Remember the regex will return two vars (two groups captured)
             junk = linkTuple[0]
             link = linkTuple[1]
-            if type(link) != unicode:
-                link = unicode(link, 'utf-8', errors='replace')
+            if type(link) != str:
+                link = str(link, 'utf-8', errors='replace')
             linkl = link.lower()
             absLink = None
 
@@ -1243,7 +1239,7 @@ class SpiderFoot:
 
             # URL decode links
             if '%2f' in linkl:
-                link = urllib2.unquote(link)
+                link = urllib.parse.unquote(link)
 
             # Capture the absolute link:
             # If the link contains ://, it is already an absolute link
@@ -1275,6 +1271,15 @@ class SpiderFoot:
 
     def urlEncodeUnicode(self, url):
         return re.sub('[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), url)
+
+    def getSession(self):
+        session = requests.session()
+        if self.socksProxy:
+            session.proxies = {
+                'http': self.socksProxy,
+                'https': self.socksProxy,
+            }
+        return session
 
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
@@ -1337,9 +1342,9 @@ class SpiderFoot:
 
             # Add custom headers
             if headers is not None:
-                for k in headers.keys():
-                    if type(headers[k]) != unicode:
-                        header[k] = unicode(headers[k], 'utf-8', errors='replace')
+                for k in list(headers.keys()):
+                    if type(headers[k]) != str:
+                        header[k] = str(headers[k], 'utf-8', errors='replace')
                     else:
                         header[k] = headers[k]
 
@@ -1349,8 +1354,8 @@ class SpiderFoot:
                           " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
 
-                hdr = requests.head(url, headers=header, proxies=proxies,
-                                    verify=False, timeout=timeout)
+                hdr = self.getSession().head(url, headers=header, proxies=proxies,
+                                    verify=verify, timeout=timeout)
                 size = int(hdr.headers.get('content-length', 0))
                 result['realurl'] = hdr.headers.get('location', url)
                 result['code'] = str(hdr.status_code)
@@ -1367,8 +1372,8 @@ class SpiderFoot:
                               " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                               str(timeout) + "]")
 
-                    hdr = requests.head(result['realurl'], headers=header, proxies=proxies,
-                                        verify=False, timeout=timeout)
+                    hdr = self.getSession().head(result['realurl'], headers=header, proxies=proxies,
+                                        verify=verify, timeout=timeout)
                     size = int(hdr.headers.get('content-length', 0))
                     result['realurl'] = hdr.headers.get('location', result['realurl'])
                     result['code'] = str(hdr.status_code)
@@ -1390,21 +1395,22 @@ class SpiderFoot:
             # MAKE THE REQUEST
             # 
             if postData:
-                res = requests.post(url, data=postData, headers=header, proxies=proxies,
-                                    cookies=cookies, timeout=timeout, verify=False)
+                res = self.getSession().post(url, data=postData, headers=header, proxies=proxies,
+                                    allow_redirects=True, cookies=cookies, 
+                                    timeout=timeout, verify=verify)
             else:
-                res = requests.get(url, headers=header, proxies=proxies,
-                                   cookies=cookies, timeout=timeout, verify=False)
+                res = self.getSession().get(url, headers=header, proxies=proxies, allow_redirects=True,
+                                   cookies=cookies, timeout=timeout, verify=verify)
 
             result['headers'] = dict()
             for h in res.headers:
-                if type(h) != unicode:
-                    hu = unicode(h, 'utf-8', errors='replace')
+                if type(h) != str:
+                    hu = str(h, 'utf-8', errors='replace')
                 else:
                     hu = h
                 v = res.headers.get(h)
-                if type(v) != unicode:
-                    vu = unicode(v, 'utf-8', errors='replace')
+                if type(v) != str:
+                    vu = str(v, 'utf-8', errors='replace')
                 else:
                     vu = v
                 result['headers'][hu.lower()] = vu
@@ -1434,7 +1440,7 @@ class SpiderFoot:
             if dontMangle:
                 result['content'] = res.content
             else:
-                result['content'] = unicode(res.content, 'utf-8', errors='replace')
+                result['content'] = str(res.content, 'utf-8', errors='replace')
             if fatal:
                 res.raise_for_status()
         except requests.exceptions.HTTPError as h:
@@ -1491,7 +1497,7 @@ class SpiderFoot:
         }
 
         response = self.fetchUrl(
-            endpoint + urllib.urlencode(params),
+            endpoint + urllib.parse.urlencode(params),
             timeout=opts["timeout"],
         )
 
@@ -1514,9 +1520,9 @@ class SpiderFoot:
                 "rls": "org.mozilla:en-US:official",
                 "client": "firefox-a",
             }
-            search_url = u"https://www.google.com/search?q={search_string}&{params}".format(
+            search_url = "https://www.google.com/search?q={search_string}&{params}".format(
                 search_string=searchString.replace(" ", "%20"),
-                params=urllib.urlencode(params)
+                params=urllib.parse.urlencode(params)
             )
             results = {
                 "urls": [str(k['link']) for k in response_json['items']],
@@ -1548,7 +1554,7 @@ class SpiderFoot:
         }
 
         response = self.fetchUrl(
-            endpoint + urllib.urlencode(params),
+            endpoint + urllib.parse.urlencode(params),
             timeout=opts["timeout"],
             useragent=opts["useragent"],
             headers={"Ocp-Apim-Subscription-Key": opts["api_key"]},
@@ -1608,9 +1614,8 @@ class SpiderFootPlugin(object):
 
     # Hack to override module's use of socket, replacing it with
     # one that uses the supplied SOCKS server
-    def _updateSocket(self, sock):
-        socket = sock
-        urllib2.socket = sock
+    def _updateSocket(self, socksProxy):
+        self.socksProxy = socksProxy
 
     # Used to clear any listener relationships, etc. This is needed because
     # Python seems to cache local variables even between threads.
@@ -1678,11 +1683,11 @@ class SpiderFootPlugin(object):
 
         # Convert strings to unicode
         if type(sfEvent.data) == str:
-            sfEvent.data = unicode(sfEvent.data, 'utf-8', errors='replace')
+            sfEvent.data = str(sfEvent.data, 'utf-8', errors='replace')
 
         storeOnly = False  # Under some conditions, only store and don't notify
 
-        if sfEvent.data is None or (type(sfEvent.data) is unicode and len(sfEvent.data) == 0):
+        if sfEvent.data is None or (type(sfEvent.data) is str and len(sfEvent.data) == 0):
             #print("No data to send for " + eventName + " to " + listener.__module__)
             return None
 
@@ -1793,8 +1798,8 @@ class SpiderFootTarget(object):
     def __init__(self, targetValue, typeName):
         if typeName in self._validTypes:
             self.targetType = typeName
-            if type(targetValue) != unicode:
-                self.targetValue = unicode(targetValue, 'utf-8', errors='replace').lower()
+            if type(targetValue) != str:
+                self.targetValue = str(targetValue, 'utf-8', errors='replace').lower()
             else:
                 self.targetValue = targetValue
             self.targetAliases = list()
@@ -1925,14 +1930,14 @@ class SpiderFootEvent(object):
         self.module = module
         self.sourceEvent = sourceEvent
 
-        if type(data) != str and type(data) != unicode:
+        if type(data) != str and type(data) != str:
             print(("FATAL: Only string events are accepted, not '%s'." % type(data)))
             print(("FATAL: Offending module: %s" % module))
             print(("FATAL: Offending type: %s" % eventType))
             sys.exit(-1)
 
-        if type(data) != unicode and data != None:
-            self.data = unicode(data, 'utf-8', errors='replace')
+        if type(data) != str and data != None:
+            self.data = str(data, 'utf-8', errors='replace')
         else:
             self.data = data
 
@@ -2046,7 +2051,7 @@ class PublicSuffixList(object):
         if len(node) == 1:
             return node[0]
 
-        return (node[0], dict((k, self._simplify(v)) for (k, v) in node[1].items()))
+        return (node[0], dict((k, self._simplify(v)) for (k, v) in list(node[1].items())))
 
     def _build_structure(self, fp):
         root = [0]
