@@ -37,7 +37,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-        for opt in list(userOpts.keys()):
+        for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -80,6 +80,9 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         # the zone transfer.
         if not self.sf.validIP(eventData):
             nsips = self.sf.resolveHost(eventData)
+            if not nsips:
+                return None
+
             if len(nsips) > 0:
                 for n in nsips:
                     if self.sf.validIP(n):
@@ -97,7 +100,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
             try:
                 ret = list()
                 z = dns.zone.from_xfr(dns.query.xfr(nsip, name))
-                names = list(z.nodes.keys())
+                names = z.nodes.keys()
                 for n in names:
                     ret.append(z[n].to_text(n))
 
