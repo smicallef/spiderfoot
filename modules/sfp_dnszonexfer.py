@@ -80,6 +80,9 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         # the zone transfer.
         if not self.sf.validIP(eventData):
             nsips = self.sf.resolveHost(eventData)
+            if not nsips:
+                return None
+
             if len(nsips) > 0:
                 for n in nsips:
                     if self.sf.validIP(n):
