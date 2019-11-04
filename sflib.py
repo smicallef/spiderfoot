@@ -933,7 +933,7 @@ class SpiderFoot:
                 return list(set(addrs))
             return None
         except BaseException as e:
-            self.debug("Unable to resolve " + host + ": " + str(e))
+            self.debug("Unable to resolve " + str(host) + ": " + str(e))
             return None
 
     # Return a normalised resolution of an IPv4 address or None if not resolved.
@@ -1686,10 +1686,6 @@ class SpiderFootPlugin(object):
             if eventName != 'ROOT' and eventName != self.getTarget().getType() \
                 and eventName not in self.__outputFilter__:
                 return None
-
-        # Convert strings to unicode
-        if type(sfEvent.data) == str:
-            sfEvent.data = str(sfEvent.data, 'utf-8', errors='replace')
 
         storeOnly = False  # Under some conditions, only store and don't notify
 
