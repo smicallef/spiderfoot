@@ -109,7 +109,7 @@ class sfp_fringeproject(SpiderFootPlugin):
             data_type = result.get('type')
 
             if data_type not in ['url', 'hostname']:
-                self.sf.debug('Unknown result data type: ' + event_type)
+                self.sf.debug('Unknown result data type: ' + data_type)
                 continue
 
             value = result.get('value')
