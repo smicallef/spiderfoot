@@ -766,6 +766,12 @@ class SpiderFoot:
         ps = PublicSuffixList(tldList)
         return ps.get_public_suffix(hostname)
 
+    # Is the host a valid host (some filenames look like hosts)
+    def validHost(self, hostname, tldList):
+        ps = PublicSuffixList(tldList)
+        sfx = ps.get_public_suffix(hostname, strict=True)
+        return sfx != None
+
     # Given a possible hostname, check if it's a domain name
     # By checking whether it rests atop a TLD.
     # e.g. www.example.com = False because tld of hostname is com,
@@ -2080,7 +2086,7 @@ class PublicSuffixList(object):
                 if child is not None:
                     self._lookup_node(matches, depth + 1, child, parts)
 
-    def get_public_suffix(self, domain):
+    def get_public_suffix(self, domain, strict=False):
         """get_public_suffix("www.example.com") -> "example.com"
 
         Calling this function with a DNS name will return the
@@ -2093,6 +2099,9 @@ class PublicSuffixList(object):
 
         parts = domain.lower().lstrip('.').split('.')
         hits = [None] * len(parts)
+
+        if strict and parts[-1] not in self.root[1]:
+            return None
 
         self._lookup_node(hits, 1, self.root, parts)
 
