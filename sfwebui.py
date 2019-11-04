@@ -935,7 +935,7 @@ class SpiderFootWebUi:
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
             retdata.append([generated, row[1],
-                            cgi.escape(str(row[2], errors='replace'))])
+                            cgi.escape(str(row[2]))])
         return json.dumps(retdata)
 
     scanerrors.exposed = True

@@ -32,6 +32,7 @@ import io
 import threading
 import traceback
 import OpenSSL
+import uuid
 import cryptography
 import dns.resolver
 from networkx import nx
@@ -298,9 +299,7 @@ class SpiderFoot:
  #           str(time.time() * 1000) +
  #           str(random.SystemRandom().randint(100000, 999999))
  #       ).hexdigest()
-        rstr = str(time.time()) + str(random.SystemRandom().randint(100000, 999999))
-        hashStr = "%08X" % int(binascii.crc32(rstr) & 0xffffffff)
-        return hashStr
+        return str(uuid.uuid4()).split("-")[0].upper()
 
     def _dblog(self, level, message, component=None):
         #print(str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component))
@@ -425,20 +424,21 @@ class SpiderFoot:
 
     # Store data to the cache
     def cachePut(self, label, data):
-        pathLabel = hashlib.sha224(label).hexdigest()
+        pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
-        fp = file(cacheFile, "w")
+        fp = open(cacheFile, "w")
         if type(data) is list:
             for line in data:
-                fp.write(line + '\n')
+                fp.write(line.decode('utf-8') + '\n')
+        elif type(data) is bytes:
+            fp.write(data.decode('utf-8'))
         else:
-            data = data.encode('utf-8')
             fp.write(data)
         fp.close()
 
     # Retreive data from the cache
     def cacheGet(self, label, timeoutHrs):
-        pathLabel = hashlib.sha224(label).hexdigest()
+        pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
         try:
             (m, i, d, n, u, g, sz, atime, mtime, ctime) = os.stat(cacheFile)
