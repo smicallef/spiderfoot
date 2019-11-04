@@ -37,7 +37,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -100,7 +100,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
             try:
                 ret = list()
                 z = dns.zone.from_xfr(dns.query.xfr(nsip, name))
-                names = z.nodes.keys()
+                names = list(z.nodes.keys())
                 for n in names:
                     ret.append(z[n].to_text(n))
 
