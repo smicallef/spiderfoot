@@ -67,6 +67,10 @@ class sfp_email(SpiderFootPlugin):
 
             # Get the domain and strip potential ending .
             mailDom = email.lower().split('@')[1].strip('.')
+            if not self.sf.validHost(mailDom, self.opts['_internettlds']):
+                self.sf.debug("Skipping " + email + " as not a valid e-mail.")
+                return None
+
             if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True) and not self.getTarget().matches(email):
                 self.sf.debug("External domain, so possible affiliate e-mail")
                 evttype = "AFFILIATE_EMAILADDR"
