@@ -12,10 +12,7 @@
 
 import json
 import base64
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

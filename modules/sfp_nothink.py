@@ -10,11 +10,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import re
 from netaddr import IPAddress, IPNetwork
-try:
-    import re2 as re
-except ImportError as e:
-    import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

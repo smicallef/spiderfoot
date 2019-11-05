@@ -11,10 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 import time
 import urllib.request, urllib.parse, urllib.error
