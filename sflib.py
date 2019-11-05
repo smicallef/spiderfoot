@@ -1397,27 +1397,24 @@ class SpiderFoot:
 
             #
             # MAKE THE REQUEST
-            # 
+            #
             if postData:
                 res = self.getSession().post(url, data=postData, headers=header, proxies=proxies,
-                                    allow_redirects=True, cookies=cookies, 
+                                    allow_redirects=True, cookies=cookies,
                                     timeout=timeout, verify=verify)
             else:
                 res = self.getSession().get(url, headers=header, proxies=proxies, allow_redirects=True,
                                    cookies=cookies, timeout=timeout, verify=verify)
 
             result['headers'] = dict()
-            for h in res.headers:
-                if type(h) != str:
-                    hu = str(h, 'utf-8', errors='replace')
-                else:
-                    hu = h
-                v = res.headers.get(h)
-                if type(v) != str:
-                    vu = str(v, 'utf-8', errors='replace')
-                else:
-                    vu = v
-                result['headers'][hu.lower()] = vu
+            for header, value in res.headers.items():
+                if type(header) != str:
+                    header = str(header, 'utf-8', errors='replace')
+
+                if type(value) != str:
+                    value = str(value, 'utf-8', errors='replace')
+
+                result['headers'][header.lower()] = value
 
             # Sometimes content exceeds the size limit after decompression
             if sizeLimit and len(res.content) > sizeLimit:
