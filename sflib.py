@@ -252,7 +252,7 @@ class SpiderFoot:
                 if dst in root:
                     col = "#f00"
                 ret['nodes'].append({'id': str(ncounter),
-                                    'label': str(dst, errors="replace"),
+                                    'label': str(dst),
                                     'x': random.SystemRandom().randint(1, 1000),
                                     'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
@@ -265,7 +265,7 @@ class SpiderFoot:
                     col = "#f00"
                 ncounter = ncounter + 1
                 ret['nodes'].append({'id': str(ncounter),
-                                    'label': str(src, errors="replace"),
+                                    'label': str(src),
                                     'x': random.SystemRandom().randint(1, 1000),
                                     'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
