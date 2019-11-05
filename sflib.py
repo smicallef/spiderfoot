@@ -447,10 +447,8 @@ class SpiderFoot:
                 return None
 
             if mtime > time.time() - timeoutHrs * 3600 or timeoutHrs == 0:
-                fp = file(cacheFile, "r")
-                fileContents = fp.read()
-                fp.close()
-                fileContents = fileContents.decode('utf-8')
+                with open(cacheFile, "r") as fp:
+                    fileContents = fp.read()
                 return fileContents
             else:
                 return None
