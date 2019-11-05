@@ -2057,7 +2057,7 @@ class PublicSuffixList(object):
         root = [0]
 
         for line in fp:
-            line = line.strip()
+            line = str(line).strip()
             if line.startswith('//') or not line:
                 continue
 

@@ -384,9 +384,7 @@ class SpiderFootWebUi:
 
             # Start running a new scan
             newId = sf.genScanInstanceGUID(scanname)
-            t = SpiderFootScanner(str(scanname, 'utf-8', errors='replace'), 
-                                  str(scantarget, 'utf-8', errors='replace').lower(), 
-                                  targetType, newId, modlist, cfg, modopts)
+            t = SpiderFootScanner(scanname, scantarget.lower(), targetType, newId, modlist, cfg, modopts)
             t.start()
 
             # Wait until the scan has initialized
