@@ -1502,7 +1502,7 @@ class SpiderFoot:
             timeout=opts["timeout"],
         )
 
-        if response['status'] != 'OK':
+        if response['code'] != '200':
             self.error("Failed to get a valid response from the Google API", exception=False)
             return None
 
@@ -1547,7 +1547,7 @@ class SpiderFoot:
     def bingIterate(self, searchString, opts=dict()):
         endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&".format(
             search_string=searchString.replace(" ", "%20")
-        ) 
+        )
 
         params = {
             "responseFilter": "Webpages",
@@ -1561,7 +1561,7 @@ class SpiderFoot:
             headers={"Ocp-Apim-Subscription-Key": opts["api_key"]},
         )
 
-        if response['status'] != 'OK':
+        if response['code'] != '200':
             self.error("Failed to get a valid response from the bing API", exception=False)
             return None
 
