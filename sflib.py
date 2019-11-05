@@ -252,7 +252,7 @@ class SpiderFoot:
                 if dst in root:
                     col = "#f00"
                 ret['nodes'].append({'id': str(ncounter),
-                                    'label': str(dst, errors="replace"),
+                                    'label': str(dst),
                                     'x': random.SystemRandom().randint(1, 1000),
                                     'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
@@ -265,7 +265,7 @@ class SpiderFoot:
                     col = "#f00"
                 ncounter = ncounter + 1
                 ret['nodes'].append({'id': str(ncounter),
-                                    'label': str(src, errors="replace"),
+                                    'label': str(src),
                                     'x': random.SystemRandom().randint(1, 1000),
                                     'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
@@ -447,10 +447,8 @@ class SpiderFoot:
                 return None
 
             if mtime > time.time() - timeoutHrs * 3600 or timeoutHrs == 0:
-                fp = file(cacheFile, "r")
-                fileContents = fp.read()
-                fp.close()
-                fileContents = fileContents.decode('utf-8')
+                with open(cacheFile, "r") as fp:
+                    fileContents = fp.read()
                 return fileContents
             else:
                 return None
@@ -1399,27 +1397,24 @@ class SpiderFoot:
 
             #
             # MAKE THE REQUEST
-            # 
+            #
             if postData:
                 res = self.getSession().post(url, data=postData, headers=header, proxies=proxies,
-                                    allow_redirects=True, cookies=cookies, 
+                                    allow_redirects=True, cookies=cookies,
                                     timeout=timeout, verify=verify)
             else:
                 res = self.getSession().get(url, headers=header, proxies=proxies, allow_redirects=True,
                                    cookies=cookies, timeout=timeout, verify=verify)
 
             result['headers'] = dict()
-            for h in res.headers:
-                if type(h) != str:
-                    hu = str(h, 'utf-8', errors='replace')
-                else:
-                    hu = h
-                v = res.headers.get(h)
-                if type(v) != str:
-                    vu = str(v, 'utf-8', errors='replace')
-                else:
-                    vu = v
-                result['headers'][hu.lower()] = vu
+            for header, value in res.headers.items():
+                if type(header) != str:
+                    header = str(header, 'utf-8', errors='replace')
+
+                if type(value) != str:
+                    value = str(value, 'utf-8', errors='replace')
+
+                result['headers'][header.lower()] = value
 
             # Sometimes content exceeds the size limit after decompression
             if sizeLimit and len(res.content) > sizeLimit:
@@ -1507,7 +1502,7 @@ class SpiderFoot:
             timeout=opts["timeout"],
         )
 
-        if response['status'] != 'OK':
+        if response['code'] != '200':
             self.error("Failed to get a valid response from the Google API", exception=False)
             return None
 
@@ -1552,7 +1547,7 @@ class SpiderFoot:
     def bingIterate(self, searchString, opts=dict()):
         endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&".format(
             search_string=searchString.replace(" ", "%20")
-        ) 
+        )
 
         params = {
             "responseFilter": "Webpages",
@@ -1566,7 +1561,7 @@ class SpiderFoot:
             headers={"Ocp-Apim-Subscription-Key": opts["api_key"]},
         )
 
-        if response['status'] != 'OK':
+        if response['code'] != '200':
             self.error("Failed to get a valid response from the bing API", exception=False)
             return None
 
@@ -1720,7 +1715,7 @@ class SpiderFootPlugin(object):
                     break
             prevEvent = prevEvent.sourceEvent
 
-        self._listenerModules.sort()
+        # self._listenerModules.sort()
         for listener in self._listenerModules:
             #print(listener.__module__ + ": " + listener.watchedEvents().__str__())
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
@@ -2059,7 +2054,7 @@ class PublicSuffixList(object):
         root = [0]
 
         for line in fp:
-            line = line.strip()
+            line = str(line).strip()
             if line.startswith('//') or not line:
                 continue
 

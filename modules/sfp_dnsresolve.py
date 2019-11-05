@@ -11,10 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 import urllib.request, urllib.error, urllib.parse
 from netaddr import IPNetwork

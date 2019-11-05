@@ -11,10 +11,7 @@
 
 import json
 import time
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
