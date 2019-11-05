@@ -1715,7 +1715,7 @@ class SpiderFootPlugin(object):
                     break
             prevEvent = prevEvent.sourceEvent
 
-        self._listenerModules.sort()
+        # self._listenerModules.sort()
         for listener in self._listenerModules:
             #print(listener.__module__ + ": " + listener.watchedEvents().__str__())
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
