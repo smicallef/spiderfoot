@@ -407,8 +407,6 @@ class SpiderFoot:
         s = string
         if type(string) in [list, dict]:
             s = str(string)
-        if type(s) == str:
-            s = str(s, 'utf-8', errors='replace')
         return hashlib.sha256(s.encode('raw_unicode_escape')).hexdigest()
 
     #
@@ -802,10 +800,9 @@ class SpiderFoot:
         ret = list()
         for addr in res:
             if type(addr) == list:
-                for host in addr:
-                    ret.append(str(host, 'utf-8', errors='replace'))
+                ret.extend(addr)
             else:
-                ret.append(str(addr, 'utf-8', errors='replace'))
+                ret.append(addr)
         return list(set(ret))
 
     # Verify input is OK to execute
@@ -920,12 +917,6 @@ class SpiderFoot:
     # Return a normalised resolution or None if not resolved.
     def resolveHost(self, host):
         try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(host) != str:
-                host = str(host, "utf-8", errors='replace').encode("idna")
-            else:
-                host = host.encode("idna")
-
             addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
             if len(addrs) > 0:
                 return list(set(addrs))
@@ -1218,7 +1209,7 @@ class SpiderFoot:
             junk = linkTuple[0]
             link = linkTuple[1]
             if type(link) != str:
-                link = str(link, 'utf-8', errors='replace')
+                link = str(link)
             linkl = link.lower()
             absLink = None
 
@@ -1348,7 +1339,7 @@ class SpiderFoot:
             if headers is not None:
                 for k in list(headers.keys()):
                     if type(headers[k]) != str:
-                        header[k] = str(headers[k], 'utf-8', errors='replace')
+                        header[k] = str(headers[k])
                     else:
                         header[k] = headers[k]
 
@@ -1409,10 +1400,10 @@ class SpiderFoot:
             result['headers'] = dict()
             for header, value in res.headers.items():
                 if type(header) != str:
-                    header = str(header, 'utf-8', errors='replace')
+                    header = str(header)
 
                 if type(value) != str:
-                    value = str(value, 'utf-8', errors='replace')
+                    value = str(value)
 
                 result['headers'][header.lower()] = value
 
@@ -1441,7 +1432,7 @@ class SpiderFoot:
             if dontMangle:
                 result['content'] = res.content
             else:
-                result['content'] = str(res.content, 'utf-8', errors='replace')
+                result['content'] = res.content.decode("utf-8")
             if fatal:
                 res.raise_for_status()
         except requests.exceptions.HTTPError as h:
@@ -1799,7 +1790,7 @@ class SpiderFootTarget(object):
         if typeName in self._validTypes:
             self.targetType = typeName
             if type(targetValue) != str:
-                self.targetValue = str(targetValue, 'utf-8', errors='replace').lower()
+                self.targetValue = str(targetValue).lower()
             else:
                 self.targetValue = targetValue
             self.targetAliases = list()
@@ -1937,7 +1928,7 @@ class SpiderFootEvent(object):
             sys.exit(-1)
 
         if type(data) != str and data != None:
-            self.data = str(data, 'utf-8', errors='replace')
+            self.data = str(data)
         else:
             self.data = data
 

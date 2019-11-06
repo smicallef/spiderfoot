@@ -148,16 +148,6 @@ class sfp_dnsbrute(SpiderFootPlugin):
             return None
         self.events[eventDataHash] = True
 
-        # Handle Unicode characters in the name
-        try:
-            if type(eventData) != str:
-                eventData = str(eventData, "utf-8", errors='replace').encode("idna")
-            else:
-                eventData = eventData.encode("idna")
-        except BaseException as e:
-            self.sf.debug("IDNA-parsing issue for " + eventData + ": " + str(e))
-            return None
-
         if eventName == "INTERNET_NAME" and not self.getTarget().matches(eventData, includeChildren=False):
             if not self.opts['numbersuffix']:
                 return None
