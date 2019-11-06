@@ -89,7 +89,7 @@ class sfp_hostsfilenet(SpiderFootPlugin):
                         self.sf.cachePut("sfmal_" + cid, data['content'])
 
                 if type(data['content']) != str:
-                    data['content'] = str(data['content'], 'utf-8', errors='replace')
+                    data['content'] = str(data['content'])
 
                 # Check for the domain and the hostname
                 if targetType == "domain" and "127.0.0.1\t" + targetDom + "\n" in data['content']:

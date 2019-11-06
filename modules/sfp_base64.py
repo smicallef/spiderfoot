@@ -67,7 +67,7 @@ class sfp_base64(SpiderFootPlugin):
                     return None
                 self.sf.info("Found Base64 string: " + match)
                 if type(match) != str:
-                    string = str(match, 'utf-8', errors='replace')
+                    string = str(match)
 
                 try:
                     string += " (" + base64.b64decode(match) + ")"

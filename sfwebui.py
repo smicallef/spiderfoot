@@ -351,7 +351,7 @@ class SpiderFootWebUi:
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=newId, name=str(scanname, 'utf-8', errors='replace'), docroot=self.docroot,
+        return templ.render(id=newId, name=str(scanname), docroot=self.docroot,
             status=globalScanStatus.getStatus(newId), pageid="SCANLIST")
 
     rerunscan.exposed = True
@@ -434,8 +434,8 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
                             modules=self.config['__modules__'], selectedmods=modlist,
-                            scanname=str(scanname, 'utf-8', errors='replace'), 
-                            scantarget=str(scantarget, 'utf-8', errors='replace'))
+                            scanname=str(scanname), 
+                            scantarget=str(scantarget))
 
     clonescan.exposed = True
 
@@ -528,7 +528,7 @@ class SpiderFootWebUi:
                 return json.dumps(["SUCCESS", ""])
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=id, name=str(res[0], 'utf-8', errors='replace'), 
+            return templ.render(id=id, name=str(res[0]), 
                                 names=list(), ids=list(),
                                 pageid="SCANLIST", docroot=self.docroot)
 
@@ -541,7 +541,7 @@ class SpiderFootWebUi:
 
         for id in ids.split(','):
             res = dbh.scanInstanceGet(id)
-            names.append(str(res[0], 'utf-8', errors='replace'))
+            names.append(str(res[0]))
             if res is None:
                 return self.error("Scan ID not found (" + id + ").")
 
@@ -838,7 +838,7 @@ class SpiderFootWebUi:
             if scaninfo is None:
                 return self.error("Invalid scan ID specified.")
 
-            scanname = str(scaninfo[0], 'utf-8', errors='replace')
+            scanname = str(scaninfo[0])
 
             if globalScanStatus.getStatus(id) == "FINISHED" or scaninfo[5] == "FINISHED":
                 error.append("Scan '" + scanname + "' is in a finished state. <a href='/scandelete?id=" + \

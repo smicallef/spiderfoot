@@ -688,7 +688,7 @@ class SpiderFootDb:
             # If sfEvent.data is a dict or list, convert it to a string first, as
             # those types do not have a unicode converter.
             if type(sfEvent.data) is str:
-                storeData = str(sfEvent.data, 'utf-8', errors='replace')
+                storeData = str(sfEvent.data)
             else:
                 try:
                     storeData = str(sfEvent.data)

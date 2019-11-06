@@ -77,7 +77,7 @@ class sfp_email(SpiderFootPlugin):
 
             self.sf.info("Found e-mail address: " + email)
             if type(email) == str:
-                mail = unicode(email.strip('.'), 'utf-8', errors='replace')
+                mail = unicode(email.strip('.'))
             else:
                 mail = email.strip('.')
 
