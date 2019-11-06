@@ -1608,6 +1608,8 @@ class SpiderFootPlugin(object):
     __dataSource__ = None
     # If set, events not matching this list are dropped
     __outputFilter__ = None
+    # Priority, smaller numbers should run first
+    _priority = 1
 
     # Not really needed in most cases.
     def __init__(self):
@@ -1715,7 +1717,8 @@ class SpiderFootPlugin(object):
                     break
             prevEvent = prevEvent.sourceEvent
 
-        # self._listenerModules.sort()
+        self._listenerModules.sort(key=lambda m: m._priority)
+
         for listener in self._listenerModules:
             #print(listener.__module__ + ": " + listener.watchedEvents().__str__())
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
