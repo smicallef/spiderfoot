@@ -51,10 +51,11 @@ class sfp_hunter(SpiderFootPlugin):
     def producedEvents(self):
         return [ "EMAILADDR", "RAW_RIR_DATA" ]
 
-    def query(self, t):
+    def query(self, t, offset=0, limit=10):
         ret = None
 
-        url = "https://api.hunter.io/v2/domain-search?domain=" + t + "&api_key=" + self.opts['api_key']
+        url = "https://api.hunter.io/v2/domain-search?domain=" + t + "&api_key=" + self.opts['api_key'] + \
+              "&offset=" + str(offset) + "&limit=" + str(limit)
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot")
@@ -66,7 +67,7 @@ class sfp_hunter(SpiderFootPlugin):
             return None
 
         try:
-            ret = json.loads(res['content'])['data']
+            ret = json.loads(res['content'])
         except Exception as e:
             self.sf.error("Error processing JSON response from hunter.io: " + str(e), False)
             return None
@@ -96,24 +97,46 @@ class sfp_hunter(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        data = self.query(eventData)
-        if data == None:
+        data = self.query(eventData, 0, 100)
+        if not data:
             return None
 
-        if 'emails' not in data:
+        if "data" not in data:
             return None
 
-        for email in data['emails']:
-            # Notify other modules of what you've found
-            e = SpiderFootEvent("EMAILADDR", email['value'], self.__name__, event)
-            self.notifyListeners(e)
+        # Check if we have more results on further pages
+        if "meta" in data:
+            maxgoal = data['meta'].get('results', 100)
+        else:
+            maxgoal = 100
 
-            if 'first_name' in email and 'last_name' in email:
-                if email['first_name'] != None and email['last_name'] != None:
-                    n = email['first_name'] + " " + email['last_name']
-                    e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n, 
-                                        self.__name__, event)
-                    self.notifyListeners(e)
+        rescount = len(data['data'].get('emails', list()))
+        print("RESCOUNT:" + str(rescount))
+        print("MAXGOAL: " + str(maxgoal))
+        while rescount <= maxgoal:
+            for email in data['data'].get('emails', list()):
+                # Notify other modules of what you've found
+                e = SpiderFootEvent("EMAILADDR", email['value'], self.__name__, event)
+                self.notifyListeners(e)
+
+                if 'first_name' in email and 'last_name' in email:
+                    if email['first_name'] != None and email['last_name'] != None:
+                        n = email['first_name'] + " " + email['last_name']
+                        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n, 
+                                            self.__name__, event)
+                        self.notifyListeners(e)
+
+            if rescount >= maxgoal:
+                return None
+
+            data = self.query(eventData, rescount, 100)
+            if data == None:
+                return None
+            if "data" not in data:
+                return None
+
+            rescount += len(data['data'].get('emails', list()))
+            print("NEWRESCOUNT:" + str(rescount))
 
 
 # End of sfp_hunter class
