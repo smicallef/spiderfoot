@@ -109,7 +109,7 @@ class sfp_dnsraw(SpiderFootPlugin):
 
                         for m in grps:
                             self.sf.debug("Matched: " + m)
-                            strdata = str(m, 'utf-8', errors='replace')
+                            strdata = str(m)
                             evt = SpiderFootEvent(recs[rx][1], strdata,
                                                       self.__name__, parentEvent)
                             self.notifyListeners(evt)
@@ -140,7 +140,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                                         evt = SpiderFootEvent(evt_type, domain, self.__name__, parentEvent)
                                         self.notifyListeners(evt)
 
-                    strdata = str(x, 'utf-8', errors='replace')
+                    strdata = str(x)
                     evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata,
                                           self.__name__, parentEvent)
                     self.notifyListeners(evt)

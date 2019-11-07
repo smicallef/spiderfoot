@@ -79,7 +79,7 @@ class sfp_names(SpiderFootPlugin):
                     name = " ".join(map(str.capitalize, eventData.split("@")[0].split(".")))
                 else:
                     name = " ".join(map(str.capitalize, eventData.split("@")[0].split(".")))
-                    name = str(name, 'utf-8', errors='replace')
+                    name = str(name)
 
                 # Names don't have numbers
                 if re.match("[0-9]", name):
