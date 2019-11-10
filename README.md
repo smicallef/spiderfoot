@@ -5,5 +5,6 @@ SpiderFoot is an open source intelligence (OSINT) automation tool. Its goal is t
 
 SpiderFoot can be used offensively, i.e. as part of a black-box penetration test to gather information about the target, or defensively to identify what information you or your organisation are freely providing for attackers to use against you.
 
-Read more at the project website: https://www.spiderfoot.net
+Read more at the project website: https://www.spiderfoot.net.
 
+Latest updates announced on [Twitter](https://twitter.com/spiderfoot).
