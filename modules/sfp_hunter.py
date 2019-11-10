@@ -111,8 +111,8 @@ class sfp_hunter(SpiderFootPlugin):
             maxgoal = 100
 
         rescount = len(data['data'].get('emails', list()))
-        print "RESCOUNT:" + str(rescount)
-        print "MAXGOAL: " + str(maxgoal)
+        #print(("RESCOUNT: %s" % rescount))
+        #print(("MAXGOAL: %s" % maxgoal))
         while rescount <= maxgoal:
             for email in data['data'].get('emails', list()):
                 # Notify other modules of what you've found
@@ -136,7 +136,6 @@ class sfp_hunter(SpiderFootPlugin):
                 return None
 
             rescount += len(data['data'].get('emails', list()))
-            print "NEWRESCOUNT:" + str(rescount)
-
+            #print(("NEWRESCOUNT: %s" % rescount))
 
 # End of sfp_hunter class
