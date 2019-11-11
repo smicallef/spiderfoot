@@ -175,7 +175,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                                     m = match[1]
                                 self.processHost(m, parentEvent, False)
                     except Exception as e:
-                        self.error("Error applying regex to data (" + str(e) + ")", False)
+                        self.sf.error("Error applying regex to data (" + str(e) + ")", False)
 
                     offset += len(name)
 
