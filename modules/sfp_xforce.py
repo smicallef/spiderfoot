@@ -85,9 +85,10 @@ class sfp_xforce(SpiderFootPlugin):
             querytype = "ipr/malware"
 
         xforce_url = "https://api.xforce.ibmcloud.com"
+        xforce_token = f"{self.opts['xforce_api_key']}:{self.opts['xforce_api_key_password']}"
         headers = {
             'Accept': 'application/json',
-            'Authorization': "Basic " + base64.b64encode(self.opts['xforce_api_key'] + ":" + self.opts['xforce_api_key_password'])
+            'Authorization': "Basic " + base64.b64encode(xforce_token.encode("utf-8"))
         }
         url = xforce_url + "/" + querytype + "/" + qry
         res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)

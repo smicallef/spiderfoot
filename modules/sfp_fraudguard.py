@@ -65,8 +65,10 @@ class sfp_fraudguard(SpiderFootPlugin):
 
     def query(self, qry):
         fraudguard_url = "https://api.fraudguard.io/ip/" + qry
+
+        token = self.opts['fraudguard_api_key_account'] + ":" + self.opts['fraudguard_api_key_password']
         headers = {
-            'Authorization': "Basic " + base64.b64encode(self.opts['fraudguard_api_key_account'] + ":" + self.opts['fraudguard_api_key_password'])
+            'Authorization': "Basic " + base64.b64encode(token.encode("utf-8"))
         }
 
         res = self.sf.fetchUrl(fraudguard_url , timeout=self.opts['_fetchtimeout'], 

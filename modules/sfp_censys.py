@@ -68,8 +68,9 @@ class sfp_censys(SpiderFootPlugin):
         if querytype == "host":
             querytype = "websites/{0}"
         
+        token = self.opts['censys_api_key_uid'] + ":" + self.opts['censys_api_key_secret']
         headers = {
-            'Authorization': "Basic " + base64.b64encode(self.opts['censys_api_key_uid'] + ":" + self.opts['censys_api_key_secret'])
+            'Authorization': "Basic " + base64.b64encode(token.encode("utf-8"))
         }
         res = self.sf.fetchUrl('https://censys.io/api/v1/view/' + querytype.format(qry.encode('utf-8', errors='replace')),
                                timeout=self.opts['_fetchtimeout'],

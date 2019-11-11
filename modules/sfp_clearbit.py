@@ -59,9 +59,10 @@ class sfp_clearbit(SpiderFootPlugin):
         ret = None
 
         url = "https://person.clearbit.com/v2/combined/find?email=" + t
+        token = self.opts['api_key'] + ":"
         headers = {
             'Accept': 'application/json',
-            'Authorization': "Basic " + base64.b64encode(self.opts['api_key'] + ":")
+            'Authorization': "Basic " + base64.b64encode(token.encode("utf-8"))
         }
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot", headers=headers)
