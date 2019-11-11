@@ -54,8 +54,8 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
     # https://riddler.io/help/api
     def login(self):
         params = {
-            'email': self.opts['username'].encode('raw_unicode_escape'),
-            'password': self.opts['password'].encode('raw_unicode_escape')
+            'email': self.opts['username'].encode('raw_unicode_escape').decode("ascii"),
+            'password': self.opts['password'].encode('raw_unicode_escape').decode("ascii")
         }
         headers = {
             'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
     # https://riddler.io/help/search
     def query(self, qry):
         params = {
-            'query': qry.encode('raw_unicode_escape')
+            'query': qry.encode('raw_unicode_escape').decode("ascii")
         }
         headers = {
             'Authentication-Token': self.token,

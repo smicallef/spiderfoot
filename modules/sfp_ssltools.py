@@ -58,7 +58,7 @@ class sfp_ssltools(SpiderFootPlugin):
     # Query SSL Tools for DNS
     def queryDns(self, domain):
         params = {
-            'url': domain.encode('raw_unicode_escape')
+            'url': domain.encode('raw_unicode_escape').decode("ascii")
         }
 
         headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -86,7 +86,7 @@ class sfp_ssltools(SpiderFootPlugin):
     # Query SSL Tools for certificate information
     def queryScan(self, domain, port):
         params = {
-            'url': domain.encode('raw_unicode_escape'),
+            'url': domain.encode('raw_unicode_escape').decode("ascii"),
             'path': '/',
             'port': str(port),
             'live_scan': 'true'

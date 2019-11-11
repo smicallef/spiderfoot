@@ -76,10 +76,7 @@ class sfp_email(SpiderFootPlugin):
                 evttype = "AFFILIATE_EMAILADDR"
 
             self.sf.info("Found e-mail address: " + email)
-            if type(email) == str:
-                mail = unicode(email.strip('.'))
-            else:
-                mail = email.strip('.')
+            mail = email.strip('.')
 
             if mail in myres:
                 self.sf.debug("Already found from this source.")

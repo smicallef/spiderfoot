@@ -53,7 +53,7 @@ class sfp_scylla(SpiderFootPlugin):
     # Query Scylla API
     def query(self, qry, per_page=20, start=0):
         params = {
-            'q': 'Email:@' + qry.encode('raw_unicode_escape'),
+            'q': 'Email:@' + qry.encode('raw_unicode_escape').decode("ascii"),
             'num': str(per_page),
             'from': str(start)
         }

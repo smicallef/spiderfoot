@@ -73,7 +73,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                 return None
 
             params = {
-                'search': '"' + eventData.encode('raw_unicode_escape') + '"',
+                'search': '"' + eventData.encode('raw_unicode_escape').decode("ascii") + '"',
                 'submit': 'Search',
                 'page': str(page)
             }
