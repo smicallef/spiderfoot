@@ -54,7 +54,7 @@ class sfp_numverify(SpiderFootPlugin):
         number = qry.strip('+').strip('(').strip(')')
 
         params = {
-            'number': number.encode('raw_unicode_escape'),
+            'number': number.encode('raw_unicode_escape').decode("ascii"),
             'country_code': '',
             'format': '0', # set to "1" for prettified debug output
             'access_key': self.opts['api_key']

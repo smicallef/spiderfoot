@@ -92,7 +92,7 @@ class sfp_shodan(SpiderFootPlugin):
 
     def searchHtml(self, qry):
         params = {
-            'query': 'http.html:"' + qry.encode('raw_unicode_escape') + '"',
+            'query': 'http.html:"' + qry.encode('raw_unicode_escape').decode("ascii") + '"',
             'key': self.opts['api_key']
         }
 
