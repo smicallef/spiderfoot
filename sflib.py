@@ -1601,6 +1601,8 @@ class SpiderFootPlugin(object):
     __outputFilter__ = None
     # Priority, smaller numbers should run first
     _priority = 1
+    # Error state of the module
+    errorState = False
 
     # Not really needed in most cases.
     def __init__(self):
