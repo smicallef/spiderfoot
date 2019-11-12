@@ -1835,7 +1835,11 @@ class SpiderFootTarget(object):
         e = self._getEquivalents("INTERNET_NAME")
         if self.targetType == "INTERNET_NAME" and self.targetValue.lower() not in e:
             e.append(self.targetValue.lower())
-        return e
+
+        names = list()
+        for name in e:
+            names.append(name.decode("utf-8") if type(name) == bytes else name)
+        return names
 
     # Get all IP Subnets or IP Addresses associated with the target
     def getAddresses(self):
@@ -1863,6 +1867,8 @@ class SpiderFootTarget(object):
     # that is a child of the target to be a tight relation.
     def matches(self, value, includeParents=False, includeChildren=True):
         value = value.lower()
+
+        value = value.decode("utf-8") if type(value) == bytes else value
 
         if value is None or value == "":
             return False

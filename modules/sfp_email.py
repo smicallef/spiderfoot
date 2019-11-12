@@ -12,7 +12,6 @@
 # -------------------------------------------------------------------------------
 
 import re
-
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_email(SpiderFootPlugin):
