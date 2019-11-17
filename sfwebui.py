@@ -24,7 +24,7 @@ from mako.template import Template
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, globalScanStatus
 from sfscan import SpiderFootScanner
-from io import BytesIO
+from io import StringIO
 
 
 class SpiderFootWebUi:
@@ -139,7 +139,7 @@ class SpiderFootWebUi:
     def scaneventresultexport(self, id, type, dialect="excel"):
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
-        fileobj = BytesIO()
+        fileobj = StringIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
@@ -151,7 +151,7 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
-        return fileobj.getvalue()
+        return fileobj.getvalue().encode("utf-8")
 
     scaneventresultexport.exposed = True
 
@@ -164,7 +164,7 @@ class SpiderFootWebUi:
             scaninfo[id] = dbh.scanInstanceGet(id)
             data = data + dbh.scanResultEvent(id)
 
-        fileobj = BytesIO()
+        fileobj = StringIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Scan Name", "Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
@@ -177,14 +177,14 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
-        return fileobj.getvalue()
+        return fileobj.getvalue().encode("Utf-8")
 
     scaneventresultexportmulti.exposed = True
 
     # Get search result data in CSV format
     def scansearchresultexport(self, id, eventType=None, value=None, dialect="excel"):
         data = self.searchBase(id, eventType, value)
-        fileobj = BytesIO()
+        fileobj = StringIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
         if not data:
@@ -197,7 +197,7 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
-        return fileobj.getvalue()
+        return fileobj.getvalue().encode("Utf-8")
 
     scansearchresultexport.exposed = True
 
