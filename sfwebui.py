@@ -574,6 +574,9 @@ class SpiderFootWebUi:
         if configFile:  # configFile seems to get set even if a file isn't uploaded
             if configFile.file:
                 contents = configFile.file.read()
+
+                if type(contents) == bytes:
+                    contents = contents.decode("utf-8")
                 try:
                     tmp = dict()
                     for line in contents.split("\n"):
