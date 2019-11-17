@@ -223,7 +223,7 @@ class SpiderFoot:
                 graph.node[src]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
                 nodelist[src] = ncounter
 
-            graph.add_edge(str(nodelist[src]), str(nodelist[dst]))
+            graph.add_edge(src, dst)
 
         gexf = GEXFWriter(graph=graph)
         return str(gexf).encode('utf-8')
