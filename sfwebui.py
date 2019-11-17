@@ -15,6 +15,7 @@ import cgi
 import csv
 import time
 import random
+from secure import SecureHeaders
 from cherrypy import _cperror
 from operator import itemgetter
 from copy import deepcopy
@@ -52,6 +53,13 @@ class SpiderFootWebUi:
         cherrypy.config.update({
           'error_page.404': self.error_page_404,
           'request.error_response': self.error_page
+        })
+
+        secure_headers = SecureHeaders()
+
+        cherrypy.config.update({
+            "tools.response_headers.on": True,
+            "tools.response_headers.headers": secure_headers.cherrypy()
         })
 
         print("")
