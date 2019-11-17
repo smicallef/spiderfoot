@@ -1134,7 +1134,7 @@ class SpiderFootCli(cmd.Cmd):
                         confdata[optstr] = ','.join(serverconfig[k])
                     if type(serverconfig[k]) == int:
                         confdata[optstr] = str(serverconfig[k])
-                    if type(serverconfig[k]) in == str:
+                    if type(serverconfig[k]) == str:
                         confdata[optstr] = serverconfig[k]
     
                 self.ddprint(str(confdata))
