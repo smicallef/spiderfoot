@@ -198,7 +198,6 @@ class SpiderFoot:
         graph = nx.Graph()
 
         nodelist = dict()
-        ecounter = 0
         ncounter = 0
         for pair in mapping:
             (dst, src) = pair
@@ -224,8 +223,7 @@ class SpiderFoot:
                 graph.node[src]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
                 nodelist[src] = ncounter
 
-            ecounter = ecounter + 1
-            graph.addEdge(str(ecounter), str(nodelist[src]), str(nodelist[dst]))
+            graph.add_edge(str(nodelist[src]), str(nodelist[dst]))
 
         gexf = GEXFWriter(graph=graph)
         return str(gexf).encode('utf-8')
