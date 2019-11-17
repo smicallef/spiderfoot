@@ -16,9 +16,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_clearbit(SpiderFootPlugin):
     """Clearbit:Footprint,Investigate,Passive:Search Engines:apikey:Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com."""
 
-
-
-
     # Default options
     opts = { 
         "api_key": ""
@@ -58,12 +55,16 @@ class sfp_clearbit(SpiderFootPlugin):
     def query(self, t):
         ret = None
 
+        api_key = self.opts['api_key']
+        if type(api_key) == str:
+            api_key = api_key.encode('utf-8')
         url = "https://person.clearbit.com/v2/combined/find?email=" + t
-        token = self.opts['api_key'] + ":"
+        token = base64.b64encode(api_key + ':'.encode('utf-8'))
         headers = {
             'Accept': 'application/json',
-            'Authorization': "Basic " + base64.b64encode(token.encode("utf-8"))
+            'Authorization': "Basic " + token.decode('utf-8')
         }
+
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot", headers=headers)
 

@@ -81,10 +81,15 @@ class sfp_riskiq(SpiderFootPlugin):
             url = "https://api.passivetotal.org/v2/whois/search"
             post = '{"field": "email", "query": "' + qry + '"}'
 
-        token = f"{self.opts['api_key_login']}:{self.opts['api_key_password']}"
-        cred = base64.b64encode(token.encode("utf-8"))
+        api_key_login = self.opts['api_key_login']
+        if type(api_key_login) == str:
+            api_key_login = api_key_login.encode('utf-8')
+        api_key_password = self.opts['api_key_password']
+        if type(api_key_password) == str:
+            api_key_password = api_key_password.encode('utf-8')
+        cred = base64.b64encode(api_key_login + ":".encode('utf-8') + api_key_password)
         headers = {
-            'Authorization': "Basic " + cred,
+            'Authorization': "Basic " + cred.decode('utf-8'),
             'Content-Type': 'application/json'
         }
 

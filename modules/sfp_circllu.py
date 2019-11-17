@@ -77,10 +77,10 @@ class sfp_circllu(SpiderFootPlugin):
         else:
             url = "https://www.circl.lu/v2pssl/query/" + qry
 
-        token = f"{self.opts['api_key_login']}:{self.opts['api_key_password']}"
-        cred = base64.b64encode(token.encode("utf-8"))
+        secret = self.opts['api_key_login'] + ':' + self.opts['api_key_password']
+        b64_val = base64.b64encode(secret.encode('utf-8'))
         headers = {
-            'Authorization': "Basic " + cred
+            'Authorization': 'Basic %s' % b64_val
         }
 
         # Be more forgiving with the timeout as some queries for subnets can be slow

@@ -1732,6 +1732,9 @@ class SpiderFootPlugin(object):
 
             #print("EVENT: " + str(sfEvent))
             try:
+                if type(sfEvent.data) == bytes:
+                    sfEvent.data = sfEvent.data.decode('utf-8', 'ignore')
+
                 listener.handleEvent(sfEvent)
             except BaseException as e:
                 f = open("sferror.log", "a")
@@ -2012,7 +2015,7 @@ class PublicSuffixList(object):
 
         #if input_file is None:
         #input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
-        #input_file = codecs.open(input_path, "r", "utf8")
+        #input_file = codecs.open(input_path, "r", "utf-8")
 
         root = self._build_structure(input_data)
         self.root = self._simplify(root)
