@@ -19,4 +19,4 @@ secure
 pyOpenSSL>=16.2.0
 python-docx>=0.8.10
 python-pptx>=0.6.18
-networkx>=2.4
+networkx==2.3
