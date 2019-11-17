@@ -15,6 +15,7 @@ PyPDF2>=1.26.0
 stem>=1.7.1
 python-whois>=0.7.1
 future
+secure
 pyOpenSSL>=16.2.0
 python-docx>=0.8.10
 python-pptx>=0.6.18
