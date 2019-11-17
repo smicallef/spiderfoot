@@ -239,8 +239,7 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.json"
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
         cherrypy.response.headers['Pragma'] = "no-cache"
-
-        return json.dumps(scaninfo)
+        return json.dumps(scaninfo).encode("utf-8")
 
     scanexportjsonmulti.exposed = True
 
