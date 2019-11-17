@@ -221,8 +221,6 @@ class SpiderFootCli(cmd.Cmd):
                     if type(c) == int:
                         v = str(c)
                     if type(c) == str:
-                        v = str(c, errors='replace')
-                    if type(c) == str:
                         v = c
                 else:
                     # we have a dict key
@@ -284,8 +282,6 @@ class SpiderFootCli(cmd.Cmd):
                     tc = type(c)
                     if tc == int:
                         v = str(c)
-                    if tc == str:
-                        v = str(c, errors='replace')
                     if tc == str:
                         v = c
                 else:
@@ -371,7 +367,7 @@ class SpiderFootCli(cmd.Cmd):
     # [[ 'blahblah test' ], [[ 'top', '10' ], [ 'grep', 'foo']]]
     def myparseline(self, cmdline, replace=True):
         ret = [list(),list()]
-        s = shlex.split(cmdline.decode('string_escape'))
+        s = shlex.split(cmdline)
         for c in s:
             if c == '|':
                 break
@@ -1134,7 +1130,7 @@ class SpiderFootCli(cmd.Cmd):
                         confdata[optstr] = ','.join(serverconfig[k])
                     if type(serverconfig[k]) == int:
                         confdata[optstr] = str(serverconfig[k])
-                    if type(serverconfig[k]) in == str:
+                    if type(serverconfig[k]) == str:
                         confdata[optstr] = serverconfig[k]
     
                 self.ddprint(str(confdata))
