@@ -146,7 +146,7 @@ class sfp_flickr(SpiderFootPlugin):
 
             # Extract emails
             for photo in data['photos']['photo']:
-                emails = self.sf.parseEmails(bytes(str(photo), "ascii").decode('unicode-escape'))
+                emails = self.sf.parseEmails(str(bytes(photo).decode('unicode-escape')))
                 for email in emails:
                     # Skip unrelated emails
                     mailDom = email.lower().split('@')[1]
