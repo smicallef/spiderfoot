@@ -62,6 +62,7 @@ class sfp_binstring(SpiderFootPlugin):
             return None
 
         for c in content:
+            c = str(c)
             if len(words) >= self.opts['maxwords']:
                 break
             if c in string.printable and c not in string.whitespace:

@@ -205,10 +205,11 @@ class sfp_spider(SpiderFootPlugin):
                         sendcontent = False
 
         if sendcontent:
-            event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
-                                    self.__name__, parentEvent)
-            event.actualSource = url
-            self.notifyListeners(event)
+            if httpresult['content'] != None:
+                event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
+                                        self.__name__, parentEvent)
+                event.actualSource = url
+                self.notifyListeners(event)
 
         event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", json.dumps(httpresult['headers'], ensure_ascii=False),
                                 self.__name__, parentEvent)
