@@ -1036,7 +1036,7 @@ class SpiderFoot:
     # Find all emails within the supplied content
     # Returns an Array
     def parseEmails(self, data):
-        emails = list()
+        emails = set()
         matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
 
         for match in matches:
@@ -1057,9 +1057,9 @@ class SpiderFoot:
                 self.debug("Skipped incomplete e-mail address: " + match)
                 continue
 
-            emails.append(match)
+            emails.add(match)
 
-        return list(set(emails))
+        return list(emails)
 
     # Return a PEM for a DER
     def sslDerToPem(self, der):
