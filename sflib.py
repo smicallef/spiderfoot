@@ -1196,16 +1196,13 @@ class SpiderFoot:
                 for lnk in BeautifulSoup(data, "lxml",
                     parse_only=SoupStrainer(t)).find_all(t):
                     if lnk.has_attr(tags[t]):
-                        urlsRel.append([None, lnk[tags[t]]])
+                        urlsRel.append(lnk[tags[t]])
         except BaseException as e:
             self.error("Error parsing with BeautifulSoup: " + str(e), False)
             return None
 
         # Loop through all the URLs/links found
-        for linkTuple in urlsRel:
-            # Remember the regex will return two vars (two groups captured)
-            junk = linkTuple[0]
-            link = linkTuple[1]
+        for link in urlsRel:
             if type(link) != str:
                 link = str(link)
             linkl = link.lower()
