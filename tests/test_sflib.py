@@ -1,5 +1,5 @@
 import pytest
-from sflib import SpiderFoot
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class TestSflib:
@@ -52,3 +52,26 @@ class TestSflib:
         )
 
         assert parsed_links == expected_links
+
+
+class TestSfPlugin:
+    def test_notify_listeners_works(self, mocker):
+        """Tests when a module calls notifyListeners with an event,
+        all listener modules have 'handleEvent' called"""
+
+        mocked_fn = mocker.patch("sflib.SpiderFootPlugin.handleEvent")
+
+        sf_plugin = SpiderFootPlugin()
+        sf_plugin_2 = SpiderFootPlugin()
+        sf_plugin.registerListener(listener=sf_plugin_2)
+
+        root_event = SpiderFootEvent(
+            eventType="ROOT",
+            data=u'binarypool.com',
+            module="",
+            sourceEvent=None
+        )
+
+        sf_plugin.notifyListeners(sfEvent=root_event)
+        mocked_fn.assert_called_once()
+        mocked_fn.assert_called_with(root_event)
