@@ -336,6 +336,7 @@ class SpiderFootWebUi:
             return self.error("Something went wrong internally.")
 
         modlist = scanconfig['_modulesenabled'].split(',')
+        modlist.remove("sfp__stor_stdout")
 
         targetType = sf.targetType(scantarget)
         if targetType == None:
@@ -382,6 +383,7 @@ class SpiderFootWebUi:
                 return self.error("Something went wrong internally.")
 
             modlist = scanconfig['_modulesenabled'].split(',')
+            modlist.remove("sfp__stor_stdout")
 
             targetType = sf.targetType(scantarget)
             if targetType == None:
@@ -808,6 +810,8 @@ class SpiderFootWebUi:
             else:
                 return json.dumps(["ERROR", "Unrecognised target type."])
 
+        # Delete the stdout module in case it crept in
+        modlist.remove("sfp__stor_stdout")
 
         # Start running a new scan
         scanId = sf.genScanInstanceGUID(scanname)

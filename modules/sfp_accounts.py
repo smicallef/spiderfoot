@@ -128,11 +128,12 @@ class sfp_accounts(SpiderFootPlugin):
                 if site['account_missing_string'] in res['content']:
                     found = False
         except BaseException:
-            #self.sf.debug("Error parsing configuration: " + str(site))
+            self.sf.debug("Error parsing configuration: " + str(site))
             found = False
 
         if found and self.opts['musthavename']:
             if name not in res['content']:
+                self.sf.debug("Skipping " + site['name'] + " as username not mentioned.")
                 found = False
 
         # Some sites can't handle periods so treat bob.abc and bob as the same
@@ -185,6 +186,7 @@ class sfp_accounts(SpiderFootPlugin):
 
         for site in self.sites:
             if not site['valid'] or 'check_uri' not in site:
+                self.sf.debug("Skipping " + site['name'])
                 continue
             if i >= self.opts['_maxthreads']:
                 data = self.threadSites(name, siteList)

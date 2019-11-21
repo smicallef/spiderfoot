@@ -1430,7 +1430,12 @@ class SpiderFoot:
             if dontMangle:
                 result['content'] = res.content
             else:
-                result['content'] = res.content.decode("utf-8")
+                try:
+                    result['content'] = res.content.decode("utf-8")
+                except UnicodeDecodeError as e:
+                    result['content'] = res.content.decode("latin-1")
+                except UnicodeDecodeError as e2:
+                    result['content'] = res.content.decode("ascii")
             if fatal:
                 res.raise_for_status()
         except requests.exceptions.HTTPError as h:

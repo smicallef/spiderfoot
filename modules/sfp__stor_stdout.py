@@ -16,6 +16,7 @@ import json
 
 class sfp__stor_stdout(SpiderFootPlugin):
     """Command-line output::::Dumps output to standard out. Used for when a SpiderFoot scan is run via the command-line."""
+    _priority = 0
 
     # Default options
     opts = {
