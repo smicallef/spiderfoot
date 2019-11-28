@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import re
-
+import codecs
 from hashlib import sha256
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -43,7 +43,7 @@ class sfp_bitcoin(SpiderFootPlugin):
 
     def to_bytes(self, n, length):
         h = '%x' % n
-        s = ('0'*(len(h) % 2) + h).zfill(length*2).decode('hex')
+        s = codecs.decode(('0'*(len(h) % 2) + h).zfill(length*2), "hex")
         return s
       
     def decode_base58(self, bc, length):

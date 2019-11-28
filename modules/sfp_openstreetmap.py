@@ -47,7 +47,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
     # https://operations.osmfoundation.org/policies/nominatim/
     def query(self, qry):
         params = {
-            'q': qry.encode('raw_unicode_escape').decode("ascii"),
+            'q': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'format': 'json',
             'polygon': '0',
             'addressdetails': '0'
