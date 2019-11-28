@@ -16,7 +16,6 @@ from stem.control import Controller
 import inspect
 import hashlib
 import urllib.request, urllib.parse, urllib.error
-import binascii
 import json
 import re
 import os
@@ -28,7 +27,6 @@ import sys
 import time
 import netaddr
 import urllib.request, urllib.error, urllib.parse
-import io
 import threading
 import traceback
 import OpenSSL
@@ -39,7 +37,7 @@ from networkx import nx
 from networkx.readwrite.gexf import GEXFWriter
 from datetime import datetime
 from bs4 import BeautifulSoup, SoupStrainer
-from copy import deepcopy, copy
+from copy import deepcopy
 
 # For hiding the SSL warnings coming from the requests lib
 import urllib3
@@ -303,25 +301,25 @@ class SpiderFoot:
         #print(str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component))
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
-    def error(self, error, exception=True):
+    def error(self, message, exception=True):
         if not self.opts['__logging']:
             return None
 
         if self.dbh is None:
-            print(('[Error] ' + error))
+            print('[Error] %s' % message)
         else:
-            self._dblog("ERROR", error)
+            self._dblog("ERROR", message)
         if self.opts.get('__logstdout'):
-            print(("[Error] " + error))
+            print("[Error] %s" % message)
         if exception:
-            raise BaseException("Internal Error Encountered: " + error)
+            raise BaseException("Internal Error Encountered: " + message)
 
     def fatal(self, error):
         if self.dbh is None:
-            print(('[Fatal] %s' % error))
+            print('[Fatal] %s' % error)
         else:
             self._dblog("FATAL", error)
-        print((str(inspect.stack())))
+        print(str(inspect.stack()))
         sys.exit(-1)
 
     def status(self, message):
@@ -329,11 +327,11 @@ class SpiderFoot:
             return None
 
         if self.dbh is None:
-            print(("[Status] %s" % message))
+            print("[Status] %s" % message)
         else:
             self._dblog("STATUS", message)
         if self.opts.get('__logstdout'):
-            print(("[*] %s" % message))
+            print("[*] %s" % message)
 
     def info(self, message):
         if not self.opts['__logging']:
@@ -356,11 +354,11 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print(('[%s] %s' % (modName, message)))
+            print('[%s] %s' % (modName, message))
         else:
             self._dblog("INFO", message, modName)
         if self.opts.get('__logstdout'):
-            print(("[*] %s" % message))
+            print("[*] %s" % message)
         return
 
     def debug(self, message):
@@ -385,11 +383,11 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print(('[%s] %s' % (modName, message)))
+            print('[%s] %s' % (modName, message))
         else:
             self._dblog("DEBUG", message, modName)
         if self.opts.get('__logstdout'):
-            print(("[d:%s] %s" % (modName, message)))
+            print("[d:%s] %s" % (modName, message))
         return
 
     def myPath(self):
@@ -1079,17 +1077,17 @@ class SpiderFoot:
         sslcert_dump = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_TEXT, sslcert)
 
         ret['text'] = sslcert_dump.decode('utf-8', errors='replace')
-        ret['issuer'] = cert.issuer.rfc4514_string()
+        ret['issuer'] = str(cert.issuer)
         ret['altnames'] = list()
         ret['expired'] = False
         ret['expiring'] = False
         ret['mismatch'] = False
         ret['certerror'] = False
-        ret['issued'] = cert.subject.rfc4514_string()
+        ret['issued'] = str(cert.subject)
 
         # Expiry info
         try:
-            notafter = datetime.strptime(sslcert.get_notAfter(), "%Y%m%d%H%M%SZ")
+            notafter = datetime.strptime(str(sslcert.get_notAfter()), "%Y%m%d%H%M%SZ")
             ret['expiry'] = int(notafter.strftime("%s"))
             ret['expirystr'] = notafter.strftime("%Y-%m-%d %H:%M:%S")
             now = int(time.time())
@@ -1933,9 +1931,9 @@ class SpiderFootEvent(object):
         self.sourceEvent = sourceEvent
 
         if type(data) != str and type(data) != str:
-            print(("FATAL: Only string events are accepted, not '%s'." % type(data)))
-            print(("FATAL: Offending module: %s" % module))
-            print(("FATAL: Offending type: %s" % eventType))
+            print("FATAL: Only string events are accepted, not '%s'." % type(data))
+            print("FATAL: Offending module: %s" % module)
+            print("FATAL: Offending type: %s" % eventType)
             sys.exit(-1)
 
         if type(data) != str and data != None:
@@ -1950,9 +1948,9 @@ class SpiderFootEvent(object):
             return
 
         if type(sourceEvent) != SpiderFootEvent:
-            print(("FATAL: Invalid source event: %s" % sourceEvent))
-            print(("FATAL: Offending module: %s" % module))
-            print(("FATAL: Offending type: %s" % eventType))
+            print("FATAL: Invalid source event: %s" % sourceEvent)
+            print("FATAL: Offending module: %s" % module)
+            print("FATAL: Offending type: %s" % eventType)
             sys.exit(-1)
 
         self.sourceEventHash = sourceEvent.getHash()

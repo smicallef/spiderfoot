@@ -193,7 +193,7 @@ class SpiderFootWebUi:
             if row[10] == "ROOT":
                 continue
             datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
-            parser.writerow([row[0], str(row[10]), str(row[3]), str(row[2]), row[13], datafield])
+            parser.writerow([row[0], str(row[10]), str(row[3]), str(row[2]), row[11], datafield])
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
@@ -534,7 +534,7 @@ class SpiderFootWebUi:
         if confirm is not None:
             dbh.scanInstanceDelete(id)
             if not raw:
-                raise cherrypy.HTTPRedirect(self.docroot)
+                raise cherrypy.HTTPRedirect("/")
             else:
                 return json.dumps(["SUCCESS", ""])
         else:
@@ -562,7 +562,7 @@ class SpiderFootWebUi:
         if confirm is not None:
             for id in ids.split(','):
                 dbh.scanInstanceDelete(id)
-            raise cherrypy.HTTPRedirect(self.docroot)
+            raise cherrypy.HTTPRedirect("/")
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
             return templ.render(id=None, name=None, ids=ids.split(','), names=names, 

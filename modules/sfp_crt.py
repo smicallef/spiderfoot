@@ -46,7 +46,8 @@ class sfp_crt(SpiderFootPlugin):
     def producedEvents(self):
         return ["SSL_CERTIFICATE_RAW",
                 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'DOMAIN_NAME',
-                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED', 'AFFILIATE_DOMAIN_NAME']
+                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED', 
+                'AFFILIATE_DOMAIN_NAME']
 
     # Handle events sent to this module
     def handleEvent(self, event):

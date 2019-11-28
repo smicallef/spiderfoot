@@ -12,12 +12,11 @@
 import traceback
 import time
 import sys
-import socks
 import socket
 import dns.resolver
 import threading
 import random
-from copy import deepcopy, copy
+from copy import deepcopy
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, \
     SpiderFootPlugin, globalScanStatus
