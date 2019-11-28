@@ -46,3 +46,14 @@ spiderfoot.key
 Icon?
 ehthumbs.db
 Thumbs.db
+
+# Virtual environments #
+########################
+venv/
+venv3/
+
+# Test Report & Coverage #
+##########################
+.coverage
+coverage/
+report/
