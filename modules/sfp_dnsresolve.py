@@ -126,11 +126,19 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         # Simply translates these to their domains
         if eventName in ["CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME"]:
+            # If the co-host or affiliate is a domain name, generate
+            # a domain event.
+            if self.sf.isDomain(eventData, self.opts['_internettlds']):
+                if "AFFILIATE_" in eventName:
+                    ev = "AFFILIATE_DOMAIN_NAME"
+                else:
+                    ev = "CO_HOSTED_SITE_DOMAIN"
+                evt = SpiderFootEvent(ev, eventData, self.__name__, parentEvent)
+                self.notifyListeners(evt)
+
             dom = self.sf.hostDomain(eventData, self.opts['_internettlds'])
-            if "AFFILIATE_" in eventName:
-                ev = "AFFILIATE_DOMAIN_NAME"
-            else:
-                ev = "CO_HOSTED_SITE_DOMAIN"
+            if dom == eventData:
+                return None
             evt = SpiderFootEvent(ev, dom, self.__name__, parentEvent)
             self.notifyListeners(evt)
             return None
@@ -320,6 +328,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         if htype == "AFFILIATE_INTERNET_NAME":
             dom = self.sf.hostDomain(host, self.opts['_internettlds'])
+            if dom == host and not self.sf.isDomain(dom, self.opts['_internettlds']):
+                return evt
             self.processDomain(dom, evt, True)
 
         return evt

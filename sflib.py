@@ -1106,7 +1106,7 @@ class SpiderFoot:
             ext = cert.extensions.get_extension_for_class(cryptography.x509.SubjectAlternativeName)
             for x in ext.value:
                 if isinstance(x, cryptography.x509.DNSName):
-                    ret['altnames'].append(x.value.lower().encode('raw_unicode_escape'))
+                    ret['altnames'].append(x.value.lower().encode('raw_unicode_escape').decode("ascii", errors='replace'))
         except BaseException as e:
             self.debug("Problem processing certificate: " + str(e))
             pass
@@ -1119,7 +1119,7 @@ class SpiderFoot:
                 name = attrs[0].value.lower()
                 # CN often duplicates one of the SANs, don't add it then
                 if name not in ret['altnames']:
-                    certhosts.append(name.encode('raw_unicode_escape'))
+                    certhosts.append(name)
         except BaseException as e:
             self.debug("Problem processing certificate: " + str(e))
             pass
@@ -1135,7 +1135,7 @@ class SpiderFoot:
 
                 # Extract subject alternative names
                 for host in ret['altnames']:
-                    certhosts.append(host.decode("ascii", errors='replace').replace("dns:", ""))
+                    certhosts.append(host.replace("dns:", ""))
 
                 ret['hosts'] = certhosts
 
