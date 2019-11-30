@@ -111,7 +111,7 @@ class SpiderFootScanner(threading.Thread):
                 creds = ""
                 if socksUsername and socksPassword:
                     creds = socksUsername + ":" + socksPassword + "@"
-                proxy = creds + socksAddr + ":" + socksPort
+                proxy = creds + socksAddr + ":" + str(socksPort)
 
                 if self.ts.config['_socks1type'] == '4':
                     proxy = 'socks4://' + proxy
