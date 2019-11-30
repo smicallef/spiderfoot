@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#  -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sflib
 # Purpose:      Common functions used by SpiderFoot modules.
@@ -1096,7 +1096,7 @@ class SpiderFoot:
                 ret['expiring'] = True
             if ret['expiry'] <= now:
                 ret['expired'] = True
-        except ValueError as e:
+        except BaseException as e:
             self.error("Error processing date in certificate: " + str(e) , False)
             ret['certerror'] = True
             return ret
@@ -1107,29 +1107,35 @@ class SpiderFoot:
             for x in ext.value:
                 if isinstance(x, cryptography.x509.DNSName):
                     ret['altnames'].append(x.value.lower().encode('raw_unicode_escape'))
-        except cryptography.x509.extensions.ExtensionNotFound:
+        except BaseException as e:
+            self.debug("Problem processing certificate: " + str(e))
             pass
 
         certhosts = list()
         try:
             attrs = cert.subject.get_attributes_for_oid(cryptography.x509.oid.NameOID.COMMON_NAME)
+
             if len(attrs) == 1:
                 name = attrs[0].value.lower()
                 # CN often duplicates one of the SANs, don't add it then
                 if name not in ret['altnames']:
                     certhosts.append(name.encode('raw_unicode_escape'))
+        except BaseException as e:
+            self.debug("Problem processing certificate: " + str(e))
+            pass
 
-            # Check for mismatch
-            if fqdn and ret['issued']:
-                fqdn = fqdn.lower()
-
+        # Check for mismatch
+        if fqdn and ret['issued']:
+            fqdn = fqdn.lower()
+    
+            try:
                 # Extract the CN from the issued section
                 if "cn=" + fqdn in ret['issued'].lower():
                     certhosts.append(fqdn)
 
                 # Extract subject alternative names
                 for host in ret['altnames']:
-                    certhosts.append(host.replace("dns:", ""))
+                    certhosts.append(host.decode("ascii", errors='replace').replace("dns:", ""))
 
                 ret['hosts'] = certhosts
 
@@ -1147,10 +1153,9 @@ class SpiderFoot:
 
                 if not found:
                     ret['mismatch'] = True
-
-        except BaseException as e:
-            self.error("Error processing certificate: " + str(e), False)
-            ret['certerror'] = True
+            except BaseException as e:
+                self.error("Error processing certificate: " + str(e), False)
+                ret['certerror'] = True
 
         return ret
 
