@@ -93,7 +93,7 @@ class sfp_arin(SpiderFootPlugin):
             j = json.loads(res['content'])
             return j
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug("Error processing JSON response: " + str(e))
             return None
 
     # Handle events sent to this module
