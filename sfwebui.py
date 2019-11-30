@@ -98,8 +98,8 @@ class SpiderFootWebUi:
 
     def searchBase(self, id=None, eventType=None, value=None):
         regex = ""
-        if [id, eventType, value].count('') == 2 or \
-                        [id, eventType, value].count(None) == 2:
+        if [id, eventType, value].count('') == 3 or \
+                        [id, eventType, value].count(None) == 3:
             return None
 
         if value.startswith("/") and value.endswith("/"):
@@ -336,7 +336,7 @@ class SpiderFootWebUi:
             return self.error("Something went wrong internally.")
 
         modlist = scanconfig['_modulesenabled'].split(',')
-        if "stp__stor_stdout" in modlist:
+        if "sfp__stor_stdout" in modlist:
             modlist.remove("sfp__stor_stdout")
 
         targetType = sf.targetType(scantarget)
@@ -384,7 +384,7 @@ class SpiderFootWebUi:
                 return self.error("Something went wrong internally.")
 
             modlist = scanconfig['_modulesenabled'].split(',')
-            if "stp__stor_stdout" in modlist:
+            if "sfp__stor_stdout" in modlist:
                 modlist.remove("sfp__stor_stdout")
 
             targetType = sf.targetType(scantarget)
@@ -813,7 +813,7 @@ class SpiderFootWebUi:
                 return json.dumps(["ERROR", "Unrecognised target type."])
 
         # Delete the stdout module in case it crept in
-        if "stp__stor_stdout" in modlist:
+        if "sfp__stor_stdout" in modlist:
             modlist.remove("sfp__stor_stdout")
 
         # Start running a new scan
