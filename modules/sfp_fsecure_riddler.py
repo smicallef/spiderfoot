@@ -95,7 +95,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
     # https://riddler.io/help/search
     def query(self, qry):
         params = {
-            'query': qry.encode('raw_unicode_escape').decode("ascii")
+            'query': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
         headers = {
             'Authentication-Token': self.token,

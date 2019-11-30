@@ -73,7 +73,7 @@ class sfp_pulsedive(SpiderFootPlugin):
     # https://pulsedive.com/api/
     def query(self, qry):
         params = {
-            'indicator': qry.encode('raw_unicode_escape').decode("ascii"),
+            'indicator': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'key': self.opts['api_key']
         }
 

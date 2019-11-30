@@ -62,7 +62,7 @@ class sfp_whatcms(SpiderFootPlugin):
     # https://whatcms.org/Documentation
     def queryCmsDetect(self, qry):
         params = {
-            'url': qry,
+            'url': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'key': self.opts['api_key']
         }
 
@@ -78,7 +78,7 @@ class sfp_whatcms(SpiderFootPlugin):
     # https://whatcms.org/Documentation
     def queryCmsTechnology(self, qry):
         params = {
-            'url': qry,
+            'url': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'key': self.opts['api_key']
         }
 

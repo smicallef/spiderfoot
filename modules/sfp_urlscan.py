@@ -48,7 +48,7 @@ class sfp_urlscan(SpiderFootPlugin):
     # https://urlscan.io/about-api/
     def query(self, qry):
         params = {
-            'q': 'domain:' + qry.encode('raw_unicode_escape').decode("ascii")
+            'q': 'domain:' + qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
 
         res = self.sf.fetchUrl('https://urlscan.io/api/v1/search/?' + urllib.parse.urlencode(params),

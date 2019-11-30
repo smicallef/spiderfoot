@@ -57,7 +57,7 @@ class sfp_citadel(SpiderFootPlugin):
             apikey = "3edfb5603418f101926c64ca5dd0e409"
 
         params = {
-            'query': email.encode('raw_unicode_escape').decode("ascii"),
+            'query': email.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'type': 'email_address',
             'key': apikey
         }

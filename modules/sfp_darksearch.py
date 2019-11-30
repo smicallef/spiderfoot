@@ -52,7 +52,7 @@ class sfp_darksearch(SpiderFootPlugin):
     # https://darksearch.io/apidoc
     def query(self, qry, page):
         params = {
-            'query': '"' + qry.encode('raw_unicode_escape').decode("ascii") + '"',
+            'query': '"' + qry.encode('raw_unicode_escape').decode("ascii", errors='replace') + '"',
             'page': str(page)
         }
 

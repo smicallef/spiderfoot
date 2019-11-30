@@ -45,7 +45,7 @@ class sfp_fringeproject(SpiderFootPlugin):
 
     def query(self, qry):
         params = {
-            'q': qry.encode('raw_unicode_escape').decode("ascii")
+            'q': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
 
         res = self.sf.fetchUrl('https://api.fringeproject.com/api/search?' + urllib.parse.urlencode(params),
