@@ -1087,7 +1087,7 @@ class SpiderFoot:
 
         # Expiry info
         try:
-            notafter = datetime.strptime(str(sslcert.get_notAfter()), "%Y%m%d%H%M%SZ")
+            notafter = datetime.strptime(sslcert.get_notAfter().decode('utf-8'), "%Y%m%d%H%M%SZ")
             ret['expiry'] = int(notafter.strftime("%s"))
             ret['expirystr'] = notafter.strftime("%Y-%m-%d %H:%M:%S")
             now = int(time.time())
@@ -1097,7 +1097,7 @@ class SpiderFoot:
             if ret['expiry'] <= now:
                 ret['expired'] = True
         except ValueError as e:
-            self.error("Error processing date in certificate.", False)
+            self.error("Error processing date in certificate: " + str(e) , False)
             ret['certerror'] = True
             return ret
 
@@ -1149,7 +1149,7 @@ class SpiderFoot:
                     ret['mismatch'] = True
 
         except BaseException as e:
-            self.error("Error processing certificate.", False)
+            self.error("Error processing certificate: " + str(e), False)
             ret['certerror'] = True
 
         return ret
@@ -1269,6 +1269,21 @@ class SpiderFoot:
             }
         return session
 
+    # Remove key= and others from URLs to avoid credentials in logs
+    def removeUrlCreds(self, url):
+        pats = {
+            "key=\S+": "key=XXX",
+            "pass=\S+": "pass=XXX",
+            "user=\S+": "user=XXX",
+            "password=\S+": "password=XXX"
+        }
+
+        ret = url
+        for pat in pats:
+            ret = re.sub(pat, pats[pat], ret, re.IGNORECASE)
+
+        return ret
+
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
@@ -1338,7 +1353,7 @@ class SpiderFoot:
 
             if sizeLimit or headOnly:
                 if not noLog:
-                    self.info("Fetching (HEAD only): " + url + \
+                    self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
                           " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
 
@@ -1356,7 +1371,7 @@ class SpiderFoot:
 
                 if result['realurl'] != url:
                     if not noLog:
-                       self.info("Fetching (HEAD only): " + url + \
+                       self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
                               " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                               str(timeout) + "]")
 
@@ -1371,12 +1386,12 @@ class SpiderFoot:
             if cookies is not None:
                 #req.add_header('cookie', cookies)
                 if not noLog:
-                    self.info("Fetching (incl. cookies): " + url + \
+                    self.info("Fetching (incl. cookies): " + self.removeUrlCreds(url) + \
                           " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
             else:
                 if not noLog:
-                    self.info("Fetching: " + url + " [user-agent: " + \
+                    self.info("Fetching: " + self.removeUrlCreds(url) + " [user-agent: " + \
                           header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
             #
@@ -1413,7 +1428,7 @@ class SpiderFoot:
                 except BaseException as e:
                     self.debug("Refresh header found but was not parsable: " + result['headers']['refresh'])
                     return result
-                self.debug("Refresh header found, re-directing to " + newurl)
+                self.debug("Refresh header found, re-directing to " + self.removeUrlCreds(newurl))
                 return self.fetchUrl(newurl, fatal, cookies, timeout,
                                      useragent, headers, noLog, postData,
                                      dontMangle, sizeLimit, headOnly)
@@ -1452,7 +1467,8 @@ class SpiderFoot:
         m = mod.__name__
         atime = time.time()
         t = str(atime - btime)
-        self.info("Fetched data: " + str(len(result['content'] or '')) + " (" + url + "), took " + t + "s")
+        self.info("Fetched data: " + str(len(result['content'] or '')) + \
+                  " (" + self.removeUrlCreds(url) + "), took " + t + "s")
         return result
 
     # Check if wildcard DNS is enabled by looking up a random hostname
