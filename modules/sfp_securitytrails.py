@@ -189,6 +189,10 @@ class sfp_securitytrails(SpiderFootPlugin):
                         e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
                         self.notifyListeners(e)
 
+                        if self.sf.isDomain(h, self.opts['_internettlds']):
+                            evt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", h, self.__name__, event)
+                            self.notifyListeners(evt)
+
         if eventName in ["DOMAIN_NAME"]:
             domain = eventData
             rec = self.query(domain, "domain")

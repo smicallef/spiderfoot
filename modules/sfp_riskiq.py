@@ -157,7 +157,7 @@ class sfp_riskiq(SpiderFootPlugin):
                     # Generate an event for the IP first, and then link the cert
                     # to that event.
                     for res in ret:
-                        if res['subjectCommonName'].endswith("." + eventData):
+                        if self.getTarget().matches(res['subjectCommonName'], includeChildren=True):
                             e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'], 
                                                 self.__name__, event)
                             self.notifyListeners(e)
@@ -168,7 +168,7 @@ class sfp_riskiq(SpiderFootPlugin):
                 except BaseException as e:
                     self.sf.error("Invalid response returned from RiskIQ: " + str(e), False)
 
-        if eventName in [ 'EMAILADDR']:
+        if eventName == 'EMAILADDR':
             ret = self.query(eventData, "WHOIS")
             if not ret:
                 self.sf.info("No RiskIQ passive DNS data found for " + eventData)
@@ -182,6 +182,11 @@ class sfp_riskiq(SpiderFootPlugin):
                         t = "AFFILIATE_INTERNET_NAME"
                     e = SpiderFootEvent(t, r['domain'], self.__name__, event)
                     self.notifyListeners(e)
+
+                    if t == "AFFILIATE_INTERNET_NAME" and self.sf.isDomain(r['domain'], self.opts['_internettlds']):
+                        evt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", r['domain'], self.__name__, event)
+                        self.notifyListeners(evt)
+
             return None
 
         if eventName in [ 'IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME' ]:
@@ -193,6 +198,9 @@ class sfp_riskiq(SpiderFootPlugin):
             cohosts = list()
             if eventName == "IP_ADDRESS":
                 for r in ret:
+                    if r['focusPoint'].endswith("."):
+                        r['focusPoint'] = r['focusPoint'][:-1]
+
                     # Record could be pointing to our IP, or from our IP
                     if not self.getTarget().matches(r['focusPoint']) and "*" not in r['focusPoint']:
                         # We found a co-host
@@ -201,6 +209,9 @@ class sfp_riskiq(SpiderFootPlugin):
             if eventName in [ "INTERNET_NAME", "DOMAIN_NAME" ]:
                 # Record could be an A/CNAME of this entity, or something pointing to it
                 for r in ret:
+                    if r['focusPoint'].endswith("."):
+                        r['focusPoint'] = r['focusPoint'][:-1]
+
                     if r['focusPoint'] != eventData and "*" not in r['focusPoint']:
                         cohosts.append(r['focusPoint'])
 

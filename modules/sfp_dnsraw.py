@@ -113,7 +113,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                             evt = SpiderFootEvent(recs[rx][1], strdata,
                                                       self.__name__, parentEvent)
                             self.notifyListeners(evt)
-                            if rec != "TXT" and not strdata.endswith(eventData):
+                            if rec != "TXT" and not self.getTarget().matches(eventData, includeChildren=True, includeParents=True):
                                 evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME",
                                                       strdata, self.__name__, parentEvent)
                                 self.notifyListeners(evt)
