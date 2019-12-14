@@ -1127,7 +1127,7 @@ class SpiderFoot:
         # Check for mismatch
         if fqdn and ret['issued']:
             fqdn = fqdn.lower()
-    
+
             try:
                 # Extract the CN from the issued section
                 if "cn=" + fqdn in ret['issued'].lower():
@@ -1438,8 +1438,6 @@ class SpiderFoot:
                                      useragent, headers, noLog, postData,
                                      dontMangle, sizeLimit, headOnly)
 
-            #print "FOR: " + url
-            #print "HEADERS: " + str(result['headers'])
             result['realurl'] = res.url
             result['code'] = str(res.status_code)
             if dontMangle:
@@ -1451,10 +1449,13 @@ class SpiderFoot:
                     result['content'] = res.content.decode("latin-1")
                 except UnicodeDecodeError as e2:
                     result['content'] = res.content.decode("ascii")
+
             if fatal:
-                res.raise_for_status()
-        except requests.exceptions.HTTPError as h:
-            self.fatal('URL could not be fetched (' + str(res.status_code) + ' / ' + res.content + ')')
+                try:
+                    res.raise_for_status()
+                except requests.exceptions.HTTPError as h:
+                    self.fatal('URL could not be fetched (' + str(res.status_code) + ' / ' + res.content + ')')
+
         except Exception as x:
             if not noLog:
                 try:
