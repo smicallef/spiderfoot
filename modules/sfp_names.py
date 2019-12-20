@@ -82,7 +82,7 @@ class sfp_names(SpiderFootPlugin):
                     name = str(name)
 
                 # Names don't have numbers
-                if re.match("[0-9]", name):
+                if re.match("[0-9]*", name):
                     return None
 
                 # Notify other modules of what you've found

@@ -82,8 +82,9 @@ class sfp_social(SpiderFootPlugin):
                 bits = re.match(regex, eventData, re.IGNORECASE)
                 if bits is not None:
                     self.sf.info("Matched " + regexpGrp + " in " + eventData)
-                    evt = SpiderFootEvent("SOCIAL_MEDIA", regexpGrp + ": " +
-                                          eventData, self.__name__, event)
+                    evt = SpiderFootEvent("SOCIAL_MEDIA", regexpGrp + ": " + \
+                                          "<SFURL>" + eventData + "</SFURL>",
+                                          self.__name__, event)
                     self.notifyListeners(evt)
 
                     # Except for Google+, the link includes potential usernames

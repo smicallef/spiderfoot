@@ -99,6 +99,7 @@ class sfp_virustotal(SpiderFootPlugin):
             ret = json.loads(res['content'])
         except Exception as e:
             self.sf.error("Error processing JSON response from VirusTotal.", False)
+            self.errorState = True
             return None
 
         return ret

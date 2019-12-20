@@ -157,6 +157,8 @@ class sfp_riskiq(SpiderFootPlugin):
                     # Generate an event for the IP first, and then link the cert
                     # to that event.
                     for res in ret:
+                        if res['subjectCommonName'] == eventData:
+                            continue
                         if self.getTarget().matches(res['subjectCommonName'], includeChildren=True):
                             e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'], 
                                                 self.__name__, event)
@@ -216,6 +218,9 @@ class sfp_riskiq(SpiderFootPlugin):
                         cohosts.append(r['focusPoint'])
 
             for co in cohosts:
+                if co == eventData:
+                    continue
+
                 if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.sf.validateIP(co, eventData)):
                     self.sf.debug("Host no longer resolves to our IP.")
                     continue

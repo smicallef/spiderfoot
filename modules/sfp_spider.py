@@ -211,10 +211,12 @@ class sfp_spider(SpiderFootPlugin):
                 event.actualSource = url
                 self.notifyListeners(event)
 
-        event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", json.dumps(httpresult['headers'], ensure_ascii=False),
-                                self.__name__, parentEvent)
-        event.actualSource = url
-        self.notifyListeners(event)
+        hdr = httpresult['headers']
+        if hdr != None:
+            event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", json.dumps(hdr, ensure_ascii=False),
+                                    self.__name__, parentEvent)
+            event.actualSource = url
+            self.notifyListeners(event)
 
         event = SpiderFootEvent("HTTP_CODE", str(httpresult['code']),
                                 self.__name__, parentEvent)
