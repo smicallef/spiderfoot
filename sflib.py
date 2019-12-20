@@ -796,10 +796,13 @@ class SpiderFoot:
         ret = list()
         for addr in res:
             if type(addr) == list:
-                ret.extend(addr)
+                for host in addr:
+                    host = str(host).rstrip(".")
+                    ret.append(host)
             else:
+                addr = str(addr).rstrip(".")
                 ret.append(addr)
-        return list(set(ret))
+        return ret
 
     # Verify input is OK to execute
     def sanitiseInput(self, cmd):
