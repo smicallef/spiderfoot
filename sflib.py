@@ -574,7 +574,8 @@ class SpiderFoot:
             {"^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER"},
             {"^.*@.*$": "EMAILADDR"},
             {"^\+\d+$": "PHONE_NUMBER"},
-            {"^\".*\"$": "HUMAN_NAME"},
+            {"^\".*\s+.*\"$": "HUMAN_NAME"},
+            {"^\".*\"$": "USERNAME"},
             {"^\d+$": "BGP_AS_OWNER"},
             {"^[0-9a-f:]+$": "IPV6_ADDRESS"},
             {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
@@ -972,7 +973,7 @@ class SpiderFoot:
         t = target.getType()
         v = target.getValue()
 
-        if t == "IP_ADDRESS":
+        if t in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
             r = self.resolveIP(v)
             if r:
                 ret.extend(r)
@@ -1809,7 +1810,7 @@ class SpiderFootPlugin(object):
 # Class for targets
 class SpiderFootTarget(object):
     _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
-                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER']
+                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME"]
     targetType = None
     targetValue = None
     targetAliases = list()
@@ -1872,6 +1873,9 @@ class SpiderFootTarget(object):
         e = self._getEquivalents("IP_ADDRESS")
         if self.targetType == "IP_ADDRESS":
             e.append(self.targetValue)
+        e = self._getEquivalents("IPV6_ADDRESS")
+        if self.targetType == "IPV6_ADDRESS":
+            e.append(self.targetValue)
         return e
 
     # Check whether the supplied value is "tightly" related
@@ -1899,8 +1903,9 @@ class SpiderFootTarget(object):
         if value is None or value == "":
             return False
 
-        # We can't really say anything about names or phone numbers, so everything matches
-        if self.targetType == "HUMAN_NAME" or self.targetType == "PHONE_NUMBER":
+        # We can't really say anything about names, username or phone numbers, 
+        # so everything matches
+        if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME" ]:
             return True
 
         if netaddr.valid_ipv4(value):
@@ -1911,7 +1916,7 @@ class SpiderFootTarget(object):
             if self.targetType == "NETBLOCK_OWNER":
                 if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
                     return True
-            if self.targetType == "IP_ADDRESS":
+            if self.targetType in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
                 if netaddr.IPAddress(value) in \
                         netaddr.IPNetwork(netaddr.IPAddress(self.targetValue)):
                     return True

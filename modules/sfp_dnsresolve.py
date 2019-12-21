@@ -13,7 +13,7 @@
 
 import re
 
-import urllib.request, urllib.error, urllib.parse
+import urllib
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -62,6 +62,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
             self.sf.debug("Found an alias: " + host)
             if self.sf.validIP(host):
                 target.setAlias(host, "IP_ADDRESS")
+            elif self.sf.validIP6(host):
+                target.setAlias(host, "IPV6_ADDRESS")
             else:
                 target.setAlias(host, "INTERNET_NAME")
                 idnahost = host.encode("idna")
@@ -84,7 +86,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         return [
                 # Events that need some kind of DNS treatment
                 "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", "NETBLOCK_OWNER",
-                "IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_IPADDR",
+                "IP_ADDRESS", "IPV6_ADDRESS", "INTERNET_NAME", "AFFILIATE_IPADDR",
                 # Events that may contain hostnames in their content
                 "TARGET_WEB_CONTENT", "BASE64_DATA", "AFFILIATE_DOMAIN_WHOIS",
                 "CO_HOSTED_SITE_DOMAIN_WHOIS", "DOMAN_WHOIS", "NETBLOCK_WHOIS",
@@ -148,9 +150,9 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         # Search for IPs/hosts in raw data
         if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", 
-                              "NETBLOCK_OWNER", "IP_ADDRESS", 
+                              "NETBLOCK_OWNER", "IP_ADDRESS", "IPV6_ADDRESS",
                               "INTERNET_NAME", "AFFILIATE_IPADDR"]:
-            data = urllib.parse.unquote(eventData)
+            data = urllib.parse.unquote(eventData).lower()
             for name in self.getTarget().getNames():
                 if self.checkForStop():
                     return None
@@ -162,7 +164,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 if offset == 0:
                     offset += len(name)
 
-                pat = re.compile("(%..)?([a-zA-Z0-9\-\.]+\." + name + ")", re.IGNORECASE)
+                pat = re.compile("[^a-z0-9\-\.\%]([a-z0-9\-\.\%]*\." + name + ")", re.DOTALL|re.MULTILINE)
                 while offset >= 0:
                     offset = data.find(name, offset)
                     #print "found at offset: " + str(offset)
@@ -177,10 +179,13 @@ class sfp_dnsresolve(SpiderFootPlugin):
                         if matches:
                             for match in matches:
                                 # Wildcard certs will come in as .blah.blah
-                                if match[1].startswith("."):
-                                    m = match[1][1:]
+                                if match.startswith("."):
+                                    m = match[1:]
                                 else:
-                                    m = match[1]
+                                    m = match
+                                # Remove URL-encoded stuff
+                                if '%' in m:
+                                    m = urllib.parse.unquote(m)
                                 self.processHost(m, parentEvent, False)
                     except Exception as e:
                         self.sf.error("Error applying regex to data (" + str(e) + ")", False)
@@ -231,7 +236,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                         self.processHost(ipaddr, parentEvent, False)
             return None
 
-        if eventName in ["IP_ADDRESS", "INTERNET_NAME", 
+        if eventName in ["IP_ADDRESS", "INTERNET_NAME", "IPV6_ADDRESS",
                          "AFFILIATE_IPADDR", "AFFILIATE_INTERNET_NAME"]:
 
             if "_NAME" in eventName:
@@ -296,6 +301,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         else:
             if self.sf.validIP(host):
                 htype = "IP_ADDRESS"
+            elif self.sf.validIP6(host):
+                htype = "IPV6_ADDRESS"
             else:
                 htype = "INTERNET_NAME"
 

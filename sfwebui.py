@@ -818,7 +818,7 @@ class SpiderFootWebUi:
 
         # Start running a new scan
         scanId = sf.genScanInstanceGUID(scanname)
-        if targetType == "HUMAN_NAME":
+        if targetType in [ "HUMAN_NAME", "USERNAME" ]:
             scantarget = scantarget.replace("\"", "")
         else:
             scantarget = scantarget.lower()

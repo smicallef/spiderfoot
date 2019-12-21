@@ -243,46 +243,40 @@ class sfp_accounts(SpiderFootPlugin):
         if eventName == "HUMAN_NAME":
             names = [ eventData.lower().replace(" ", ""), eventData.lower().replace(" ", ".") ]
             for name in names:
-                res = self.batchSites(name)
-                for site in res:
-                    evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", site,
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
-                    users.append(name)
+                users.append(name)
 
         if eventName == "DOMAIN_NAME":
             kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
+            users.append(kw)
 
-            res = self.batchSites(kw)
+        if eventName == "EMAILADDR":
+            name = eventData.split("@")[0].lower()
+            users.append(name)
+
+        if eventName == "USERNAME":
+            users.append(eventData)
+
+        for user in users:
+            adduser = True
+            if self.opts['generic'] is list() and user in self.opts['generic']:
+                self.sf.debug(user + " is a generic account name, skipping.")
+                continue
+
+            if self.opts['ignorenamedict'] and user in self.commonNames:
+                self.sf.debug(user + " is found in our name dictionary, skipping.")
+                continue
+
+            if self.opts['ignoreworddict'] and user in self.words:
+                self.sf.debug(user + " is found in our word dictionary, skipping.")
+                continue
+
+            res = self.batchSites(user)
             for site in res:
                 evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", site,
                                       self.__name__, event)
                 self.notifyListeners(evt)
-                users.append(kw)
 
-        if eventName in ["EMAILADDR", "USERNAME"]:
-            name = eventData.split("@")[0].lower()
-            adduser = True
-            if self.opts['generic'] is list() and name in self.opts['generic']:
-                self.sf.debug(name + " is a generic account name, skipping.")
-                adduser = False
-
-            if self.opts['ignorenamedict'] and name in self.commonNames:
-                self.sf.debug(name + " is found in our name dictionary, skipping.")
-                adduser = False
-
-            if self.opts['ignoreworddict'] and name in self.words:
-                self.sf.debug(name + " is found in our word dictionary, skipping.")
-                adduser = False
-
-            if eventName == "EMAILADDR" and not self.opts['userfromemail']:
-                adduser = False
-
-            if adduser:
-                users.append(name)
-
-        for user in users:
-            if user not in self.reportedUsers and user != eventData:
+            if user not in self.reportedUsers and eventData != user:
                 evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
                 self.notifyListeners(evt)
                 self.reportedUsers.append(user)
