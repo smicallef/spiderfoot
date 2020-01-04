@@ -21,13 +21,15 @@ class sfp_torch(SpiderFootPlugin):
     # Default options
     opts = {
         'fetchlinks': True,
-        'pages': 20
+        'pages': 20,
+        'fullnames': True
     }
 
     # Option descriptions
     optdescs = {
         'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target.",
-        'pages': "Number of results pages to iterate through."
+        'pages': "Number of results pages to iterate through.",
+        'fullnames': "Search for human names?"
     }
 
     # Target
@@ -54,6 +56,9 @@ class sfp_torch(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+
+        if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
+            return None
 
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")

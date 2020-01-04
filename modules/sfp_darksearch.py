@@ -22,13 +22,15 @@ class sfp_darksearch(SpiderFootPlugin):
     # Default options
     opts = {
         'fetchlinks': True,
-        'max_pages': 20
+        'max_pages': 20,
+        'fullnames': True
     }
 
     # Option descriptions
     optdescs = {
         'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target.",
-        'max_pages': "Maximum number of pages of results to fetch."
+        'max_pages': "Maximum number of pages of results to fetch.",
+        'fullnames': "Search for human names?"
     }
 
     results = None
@@ -78,6 +80,9 @@ class sfp_darksearch(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+
+        if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
+            return None
 
         if eventData in self.results:
             return None
