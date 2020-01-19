@@ -28,7 +28,7 @@ RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py3-pi
                -g "SpiderFoot User" -D spiderfoot \
     && rmdir /home/spiderfoot \
     && cd /home \
-    && curl -sSL https://github.com/smicallef/spiderfoot/archive/py3.tar.gz \
+    && curl -sSL https://github.com/smicallef/spiderfoot/archive/master.tar.gz \
        | tar -v -C /home -xz \
     && mv /home/spiderfoot-py3 /home/spiderfoot \
     && chown -R spiderfoot:spiderfoot /home/spiderfoot \
