@@ -84,43 +84,50 @@ def handle_abort(signal, frame):
     sys.exit(-1)
 
 if __name__ == '__main__':
+    if len(sys.argv) == 0:
+        print("SpiderFoot 3.0 now requires -l <ip>:<port> to start the web server.")
+        sys.exit(-1)
+
+    if len(sys.argv) > 1:
+        if not sys.argv[1].startswith("-"):
+            print("SpiderFoot 3.0 now requires -l <ip>:<port> to start the web server.")
+            sys.exit(-1)
+
     # Legacy way to run the server
     args = None
-    if (len(sys.argv) > 1 and ":" in sys.argv[1]) or len(sys.argv) == 1:
-        if len(sys.argv) > 1:
-            (addr, port) = sys.argv[1].split(":")
-            sfConfig['__webaddr'] = addr
-            sfConfig['__webport'] = int(port)
-            sfConfig['__logstdout'] = False
+    p = argparse.ArgumentParser(description='SpiderFoot 3.0: Open Source Intelligence Automation.')
+    p.add_argument("-d", "--debug", action='store_true', help="Enable debug output.")
+    p.add_argument("-l", metavar="IP:port", help="IP and port to listen on.")
+    p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")
+    p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
+    p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
+    p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect.")
+    p.add_argument("-T", "--types", action='store_true', help="List available event types.")
+    p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
+    p.add_argument("-n", action='store_true', help="Strip newlines from data.")
+    p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
+    p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
+    p.add_argument("-D", metavar='DELIMITER', type=str, help="Delimiter to use for CSV output. Default is ,.")
+    p.add_argument("-f", action='store_true', help="Filter out other event types that weren't requested with -t.")
+    p.add_argument("-F", metavar="FILTER", type=str, help="Filter out a set of event types.")
+    p.add_argument("-x", action='store_true', help="STRICT MODE. Will only enable modules that can directly consume your target, and if -t was specified only those events will be consumed by modules. This overrides -t and -m options.")
+    p.add_argument("-q", action='store_true', help="Disable logging.")
+    args = p.parse_args()
+
+    sfConfig['__logstdout'] = True
+        
+    if args.debug:
+        sfConfig['_debug'] = True
     else:
-        p = argparse.ArgumentParser(description='SpiderFoot 3.0: Open Source Intelligence Automation.')
-        p.add_argument("-d", "--debug", action='store_true', help="Enable debug output.")
-        p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")
-        p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
-        p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
-        p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect.")
-        p.add_argument("-T", "--types", action='store_true', help="List available event types.")
-        p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
-        p.add_argument("-n", action='store_true', help="Strip newlines from data.")
-        p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
-        p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
-        p.add_argument("-D", metavar='DELIMITER', type=str, help="Delimiter to use for CSV output. Default is ,.")
-        p.add_argument("-f", action='store_true', help="Filter out other event types that weren't requested with -t.")
-        p.add_argument("-F", metavar="FILTER", type=str, help="Filter out a set of event types.")
-        p.add_argument("-x", action='store_true', help="STRICT MODE. Will only enable modules that can directly consume your target, and if -t was specified only those events will be consumed by modules. This overrides -t and -m options.")
-        p.add_argument("-q", action='store_true', help="Disable logging.")
-        args = p.parse_args()
+        sfConfig['_debug'] = False
 
-        sfConfig['__logstdout'] = True
-            
-        if args.debug:
-            sfConfig['_debug'] = True
-        else:
-            sfConfig['_debug'] = False
+    if args.q:
+        sfConfig['__logging'] = False
 
-        if args.q:
-            sfConfig['__logging'] = False
-
+    if args.l:
+        (addr, port) = args.l.split(":")
+        sfConfig['__webaddr'] = addr
+        sfConfig['__webport'] = int(port)
 
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
@@ -160,7 +167,7 @@ if __name__ == '__main__':
     sf = SpiderFoot(sfConfig)
     dbh = SpiderFootDb(sfConfig, init=True)
 
-    if args:
+    if not args.l:
         if args.modules:
             print("Modules available:")
             for m in sorted(sfModules.keys()):
@@ -181,7 +188,7 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if not args.s:
-            print("You must specify a target when running in scan mode. Try sf.py --help for guidance.")
+            print("You must specify a target when running in CLI mode. Try --help for guidance.")
             sys.exit(-1)
 
         if args.x and not args.t:
