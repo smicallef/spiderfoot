@@ -173,7 +173,7 @@ class sfp_ssltools(SpiderFootPlugin):
             return None
 
         if not cert.get('text'):
-            self.sf.info("Failed to parse the SSL cert for " + fqdn)
+            self.sf.info("Failed to parse the SSL cert for " + eventData)
             return None
 
         evt = SpiderFootEvent('SSL_CERTIFICATE_RAW', cert['text'], self.__name__, event)

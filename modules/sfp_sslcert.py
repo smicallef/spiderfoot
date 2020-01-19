@@ -77,12 +77,16 @@ class sfp_sslcert(SpiderFootPlugin):
             if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
                 return None
 
-            # Handle URLs containing port numbers
-            u = urlparse(eventData)
-            port = 443
-            if u.port:
-                port = u.port
-            fqdn = self.sf.urlFQDN(eventData.lower())
+            try:
+                # Handle URLs containing port numbers
+                u = urlparse(eventData)
+                port = 443
+                if u.port:
+                    port = u.port
+                fqdn = self.sf.urlFQDN(eventData.lower())
+            except BaseException as e:
+                self.sf.debug("Couldn't parse URL: " + eventData)
+                return None
         else:
             fqdn = eventData
             port = 443

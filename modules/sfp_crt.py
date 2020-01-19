@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -68,7 +68,7 @@ class sfp_crt(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl('https://crt.sh/?' + urllib.parse.urlencode(params),
-                               timeout=15,
+                               timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:
@@ -91,15 +91,19 @@ class sfp_crt(SpiderFootPlugin):
         domains = list()
 
         for cert_info in data:
-            cert_id = cert_info.get('min_cert_id')
+            cert_id = cert_info.get('id')
 
             if cert_id:
                 cert_ids.append(cert_id)
 
             domain = cert_info.get('name_value')
-
-            if domain and domain != eventData:
-                domains.append(domain.replace("*.", ""))
+            if '\n' in domain:
+                doms = domain.split("\n")
+                for d in doms:
+                    domains.append(d.replace("*.", ""))
+            else:
+                if domain and domain != eventData:
+                    domains.append(domain.replace("*.", ""))
 
         if self.opts['verify'] and len(domains) > 0:
             self.sf.info("Resolving " + str(len(set(domains))) + " domains ...")
@@ -137,7 +141,7 @@ class sfp_crt(SpiderFootPlugin):
             }
 
             res = self.sf.fetchUrl('https://crt.sh/?' + urllib.parse.urlencode(params),
-                                   timeout=15,
+                                   timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
             try:

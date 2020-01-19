@@ -13,9 +13,7 @@
 # -------------------------------------------------------------------------------
 
 import re
-
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
-
 
 class sfp_pgp(SpiderFootPlugin):
     """PGP Key Look-up:Footprint,Investigate,Passive:Public Registries::Look up e-mail addresses in PGP public key servers."""
@@ -76,12 +74,12 @@ class sfp_pgp(SpiderFootPlugin):
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
-            if res['content'] is None:
+            if res['content'] is None or res['code'] == "503":
                 res = self.sf.fetchUrl(self.opts['keyserver_search2'] + eventData,
                                        timeout=self.opts['_fetchtimeout'],
                                        useragent=self.opts['_useragent'])
 
-            if res['content'] is not None:
+            if res['content'] is not None and res['code'] != "503":
                 emails = self.sf.parseEmails(res['content'])
                 for email in emails:
                     evttype = "EMAILADDR"
@@ -99,12 +97,12 @@ class sfp_pgp(SpiderFootPlugin):
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
-            if res['content'] is None:
+            if res['content'] is None or res['code'] == "503":
                res = self.sf.fetchUrl(self.opts['keyserver_fetch2'] + eventData,
                                       timeout=self.opts['_fetchtimeout'],
                                       useragent=self.opts['_useragent'])
 
-            if res['content'] is not None:
+            if res['content'] is not None and res['code'] != "503":
                 pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE | re.DOTALL)
                 matches = re.findall(pat, res['content'])
                 for match in matches:

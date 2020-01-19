@@ -69,9 +69,10 @@ class sfp_names(SpiderFootPlugin):
         # or CSS, in which case optionally ignore it.
         if eventName == "TARGET_WEB_CONTENT":
             url = event.actualSource
-            if self.opts['filterjscss'] and (".js" in url or ".css" in url):
-                self.sf.debug("Ignoring web content from CSS/JS.")
-                return None
+            if url is not None:
+                if self.opts['filterjscss'] and (".js" in url or ".css" in url):
+                    self.sf.debug("Ignoring web content from CSS/JS.")
+                    return None
 
         if eventName == "EMAILADDR" and self.opts['emailtoname']:
             if "." in eventData.split("@")[0]:

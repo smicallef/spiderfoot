@@ -12,7 +12,6 @@
 
 import datetime
 import re
-
 from html.parser import HTMLParser
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -69,6 +68,9 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         links = list()
         try:
             parser = HTMLParser()
+            if not res['content']:
+                return None
+
             for line in res['content'].split("\n"):
                 matches = re.findall("<link>(.*?)</link>", line, re.IGNORECASE)
                 for m in matches:

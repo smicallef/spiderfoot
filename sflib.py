@@ -776,10 +776,14 @@ class SpiderFoot:
 
     # Simple way to verify IPv4 addresses.
     def validIP(self, address):
+        if not address:
+            return False
         return netaddr.valid_ipv4(address)
 
     # Simple way to verify IPv6 addresses.
     def validIP6(self, address):
+        if not address:
+            return False
         return netaddr.valid_ipv6(address)
 
     # Simple way to verify netblock.
