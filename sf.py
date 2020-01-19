@@ -188,7 +188,7 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if not args.s:
-            print("You must specify a target when running in CLI mode. Try --help for guidance.")
+            print("You must specify a target when running in scan mode. Try --help for guidance.")
             sys.exit(-1)
 
         if args.x and not args.t:
