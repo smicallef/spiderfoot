@@ -43,4 +43,4 @@ EXPOSE 5001
 
 # Run the application.
 ENTRYPOINT ["/usr/bin/python3"] 
-CMD ["./sf.py", "0.0.0.0:5001"]
+CMD ["./sf.py", "-l", "0.0.0.0:5001"]
