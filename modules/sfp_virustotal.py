@@ -59,7 +59,7 @@ class sfp_virustotal(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -99,6 +99,7 @@ class sfp_virustotal(SpiderFootPlugin):
             ret = json.loads(res['content'])
         except Exception as e:
             self.sf.error("Error processing JSON response from VirusTotal.", False)
+            self.errorState = True
             return None
 
         return ret

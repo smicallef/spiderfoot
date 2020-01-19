@@ -52,7 +52,7 @@ class sfp_fraudguard(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -65,8 +65,15 @@ class sfp_fraudguard(SpiderFootPlugin):
 
     def query(self, qry):
         fraudguard_url = "https://api.fraudguard.io/ip/" + qry
+        api_key_account = self.opts['fraudguard_api_key_account']
+        if type(api_key_account) == str:
+            api_key_account = api_key_account.encode('utf-8')
+        api_key_password = self.opts['fraudguard_api_key_password']
+        if type(api_key_password) == str:
+            api_key_password = api_key_password.encode('utf-8')
+        token = base64.b64encode(api_key_account + ':'.encode('utf-8') + api_key_password)
         headers = {
-            'Authorization': "Basic " + base64.b64encode(self.opts['fraudguard_api_key_account'] + ":" + self.opts['fraudguard_api_key_password'])
+            'Authorization': "Basic " + token.decode('utf-8')
         }
 
         res = self.sf.fetchUrl(fraudguard_url , timeout=self.opts['_fetchtimeout'], 

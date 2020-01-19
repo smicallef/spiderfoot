@@ -11,7 +11,7 @@
 #-------------------------------------------------------------------------------
 
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -47,7 +47,7 @@ class sfp_whatcms(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -62,11 +62,11 @@ class sfp_whatcms(SpiderFootPlugin):
     # https://whatcms.org/Documentation
     def queryCmsDetect(self, qry):
         params = {
-            'url': qry,
+            'url': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'key': self.opts['api_key']
         }
 
-        res = self.sf.fetchUrl('https://whatcms.org/APIEndpoint/Detect?' + urllib.urlencode(params),
+        res = self.sf.fetchUrl('https://whatcms.org/APIEndpoint/Detect?' + urllib.parse.urlencode(params),
                                timeout=self.opts['timeout'],
                                useragent=self.opts['_useragent'])
 
@@ -78,11 +78,11 @@ class sfp_whatcms(SpiderFootPlugin):
     # https://whatcms.org/Documentation
     def queryCmsTechnology(self, qry):
         params = {
-            'url': qry,
+            'url': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'key': self.opts['api_key']
         }
 
-        res = self.sf.fetchUrl('https://whatcms.org/APIEndpoint/Technology?' + urllib.urlencode(params),
+        res = self.sf.fetchUrl('https://whatcms.org/APIEndpoint/Technology?' + urllib.parse.urlencode(params),
                                timeout=self.opts['timeout'],
                                useragent=self.opts['_useragent'])
 
@@ -199,7 +199,7 @@ class sfp_whatcms(SpiderFootPlugin):
 
         for result in results:
             if result.get('name'):
-                software = ' '.join(filter(None, [result.get('name'), result.get('version')]))
+                software = ' '.join([_f for _f in [result.get('name'), result.get('version')] if _f])
                 evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', software, self.__name__, event)
                 self.notifyListeners(evt)
             else:

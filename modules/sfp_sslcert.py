@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import time
-import urlparse
+from urllib.parse import urlparse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -46,7 +46,7 @@ class sfp_sslcert(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -77,12 +77,16 @@ class sfp_sslcert(SpiderFootPlugin):
             if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
                 return None
 
-            # Handle URLs containing port numbers
-            u = urlparse.urlparse(eventData)
-            port = 443
-            if u.port:
-                port = u.port
-            fqdn = self.sf.urlFQDN(eventData.lower())
+            try:
+                # Handle URLs containing port numbers
+                u = urlparse(eventData)
+                port = 443
+                if u.port:
+                    port = u.port
+                fqdn = self.sf.urlFQDN(eventData.lower())
+            except BaseException as e:
+                self.sf.debug("Couldn't parse URL: " + eventData)
+                return None
         else:
             fqdn = eventData
             port = 443

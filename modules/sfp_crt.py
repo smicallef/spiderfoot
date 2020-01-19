@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib
+import urllib.parse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -33,7 +33,7 @@ class sfp_crt(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -46,7 +46,8 @@ class sfp_crt(SpiderFootPlugin):
     def producedEvents(self):
         return ["SSL_CERTIFICATE_RAW",
                 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'DOMAIN_NAME',
-                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED', 'AFFILIATE_DOMAIN_NAME']
+                'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED', 
+                'AFFILIATE_DOMAIN_NAME']
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -62,11 +63,11 @@ class sfp_crt(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         params = {
-            'q': '%.' + eventData.encode('raw_unicode_escape'),
+            'q': '%.' + str(eventData),
             'output': 'json'
         }
 
-        res = self.sf.fetchUrl('https://crt.sh/?' + urllib.urlencode(params),
+        res = self.sf.fetchUrl('https://crt.sh/?' + urllib.parse.urlencode(params),
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
@@ -90,15 +91,19 @@ class sfp_crt(SpiderFootPlugin):
         domains = list()
 
         for cert_info in data:
-            cert_id = cert_info.get('min_cert_id')
+            cert_id = cert_info.get('id')
 
             if cert_id:
                 cert_ids.append(cert_id)
 
             domain = cert_info.get('name_value')
-
-            if domain and domain != eventData:
-                domains.append(domain.replace("*.", ""))
+            if '\n' in domain:
+                doms = domain.split("\n")
+                for d in doms:
+                    domains.append(d.replace("*.", ""))
+            else:
+                if domain and domain != eventData:
+                    domains.append(domain.replace("*.", ""))
 
         if self.opts['verify'] and len(domains) > 0:
             self.sf.info("Resolving " + str(len(set(domains))) + " domains ...")
@@ -135,7 +140,7 @@ class sfp_crt(SpiderFootPlugin):
                 'd': str(cert_id)
             }
 
-            res = self.sf.fetchUrl('https://crt.sh/?' + urllib.urlencode(params),
+            res = self.sf.fetchUrl('https://crt.sh/?' + urllib.parse.urlencode(params),
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 

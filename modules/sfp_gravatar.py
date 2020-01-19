@@ -36,7 +36,7 @@ class sfp_gravatar(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.reportedUsers = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -53,7 +53,7 @@ class sfp_gravatar(SpiderFootPlugin):
     # https://secure.gravatar.com/site/implement/
     # https://secure.gravatar.com/site/implement/profiles/
     def query(self, qry):
-        email_hash = hashlib.md5(qry.encode('utf-8').lower()).hexdigest()
+        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()
         output = 'json'
 
         res = self.sf.fetchUrl("https://secure.gravatar.com/" + email_hash + '.' + output,

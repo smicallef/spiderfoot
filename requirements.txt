@@ -6,6 +6,7 @@ Mako>=1.0.4
 beautifulsoup4>=4.4.1
 lxml>=3.4.4
 netaddr>=0.7.18
+pysocks>=1.7.1
 requests>=2.20.0
 ipwhois==1.0.0
 ipaddr>=2.2.0
@@ -15,6 +16,9 @@ PyPDF2>=1.26.0
 stem>=1.7.1
 python-whois>=0.7.1
 future
+secure
 pyOpenSSL>=16.2.0
 python-docx>=0.8.10
 python-pptx>=0.6.18
+networkx==2.3
+cryptography>=2.5

@@ -10,12 +10,9 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 sites = {
@@ -78,7 +75,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
         self.keywords = None
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -123,7 +120,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 self.keywords = None
 
         for site in sites:
-            s = unicode(sites[site][0]).format(name=eventData)
+            s = str(sites[site][0]).format(name=eventData)
             searchStr = s.replace(" ", "%20")
             res = None
 
@@ -197,7 +194,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     # for a firm relationship.
                     # Keywords might be empty if the target was an IP, subnet or name.
                     if self.opts["tighten"] and self.keywords:
-                        match = urllib2.unquote(match)
+                        match = urllib.parse.unquote(match)
                         self.sf.debug(
                             "Tightening results to look for " + str(self.keywords)
                         )
@@ -222,7 +219,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                                 continue
 
                     self.sf.info("Social Media Profile found at " + site + ": " + match)
-                    match = urllib2.unquote(match)
+                    match = urllib.parse.unquote(match)
                     evt = SpiderFootEvent(
                         "SOCIAL_MEDIA", site + ": <SFURL>" + match + "</SFURL>", self.__name__, event
                     )

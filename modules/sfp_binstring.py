@@ -51,7 +51,7 @@ class sfp_binstring(SpiderFootPlugin):
 
         self.d = set(self.sf.dictwords())
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def getStrings(self, content):
@@ -62,6 +62,7 @@ class sfp_binstring(SpiderFootPlugin):
             return None
 
         for c in content:
+            c = str(c)
             if len(words) >= self.opts['maxwords']:
                 break
             if c in string.printable and c not in string.whitespace:

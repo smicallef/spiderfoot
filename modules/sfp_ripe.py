@@ -11,10 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
@@ -42,7 +39,7 @@ class sfp_ripe(SpiderFootPlugin):
         self.nbreported = self.tempStorage()
         self.lastContent = None
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -236,7 +233,7 @@ class sfp_ripe(SpiderFootPlugin):
         owned = False
 
         if ownerinfo is not None:
-            for k in ownerinfo.keys():
+            for k in list(ownerinfo.keys()):
                 items = ownerinfo[k]
                 for item in items:
                     if self.findName(item.lower()):
@@ -273,7 +270,7 @@ class sfp_ripe(SpiderFootPlugin):
                 ownerinfo = self.asOwnerInfo(nasn)
                 ownertext = ''
                 if ownerinfo is not None:
-                    for k, v in ownerinfo.iteritems():
+                    for k, v in ownerinfo.items():
                         ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
 
                     if len(ownerinfo) > 0:

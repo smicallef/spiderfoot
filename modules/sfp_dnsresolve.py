@@ -11,12 +11,9 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
-import urllib2
+import urllib
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -50,7 +47,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         self.hostresults = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def enrichTarget(self, target):
@@ -65,6 +62,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
             self.sf.debug("Found an alias: " + host)
             if self.sf.validIP(host):
                 target.setAlias(host, "IP_ADDRESS")
+            elif self.sf.validIP6(host):
+                target.setAlias(host, "IPV6_ADDRESS")
             else:
                 target.setAlias(host, "INTERNET_NAME")
                 idnahost = host.encode("idna")
@@ -87,7 +86,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         return [
                 # Events that need some kind of DNS treatment
                 "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", "NETBLOCK_OWNER",
-                "IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_IPADDR",
+                "IP_ADDRESS", "IPV6_ADDRESS", "INTERNET_NAME", "AFFILIATE_IPADDR",
                 # Events that may contain hostnames in their content
                 "TARGET_WEB_CONTENT", "BASE64_DATA", "AFFILIATE_DOMAIN_WHOIS",
                 "CO_HOSTED_SITE_DOMAIN_WHOIS", "DOMAN_WHOIS", "NETBLOCK_WHOIS",
@@ -129,20 +128,31 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         # Simply translates these to their domains
         if eventName in ["CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME"]:
-            dom = self.sf.hostDomain(eventData, self.opts['_internettlds'])
+            # If the co-host or affiliate is a domain name, generate
+            # a domain event.
             if "AFFILIATE_" in eventName:
                 ev = "AFFILIATE_DOMAIN_NAME"
             else:
                 ev = "CO_HOSTED_SITE_DOMAIN"
+
+            # What we've been provided might be a domain, so report it
+            if self.sf.isDomain(eventData, self.opts['_internettlds']):
+                evt = SpiderFootEvent(ev, eventData, self.__name__, parentEvent)
+                self.notifyListeners(evt)
+
+            # In case the domain of the provided host is different, report that too
+            dom = self.sf.hostDomain(eventData, self.opts['_internettlds'])
+            if dom == eventData:
+                return None
             evt = SpiderFootEvent(ev, dom, self.__name__, parentEvent)
             self.notifyListeners(evt)
             return None
 
         # Search for IPs/hosts in raw data
         if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", 
-                              "NETBLOCK_OWNER", "IP_ADDRESS", 
+                              "NETBLOCK_OWNER", "IP_ADDRESS", "IPV6_ADDRESS",
                               "INTERNET_NAME", "AFFILIATE_IPADDR"]:
-            data = urllib2.unquote(eventData)
+            data = urllib.parse.unquote(eventData).lower()
             for name in self.getTarget().getNames():
                 if self.checkForStop():
                     return None
@@ -154,7 +164,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 if offset == 0:
                     offset += len(name)
 
-                pat = re.compile("(%..)?([a-zA-Z0-9\-\.]+\." + name + ")", re.IGNORECASE)
+                pat = re.compile("[^a-z0-9\-\.\%]([a-z0-9\-\.\%]*\." + name + ")", re.DOTALL|re.MULTILINE)
                 while offset >= 0:
                     offset = data.find(name, offset)
                     #print "found at offset: " + str(offset)
@@ -169,10 +179,13 @@ class sfp_dnsresolve(SpiderFootPlugin):
                         if matches:
                             for match in matches:
                                 # Wildcard certs will come in as .blah.blah
-                                if match[1].startswith("."):
-                                    m = match[1][1:]
+                                if match.startswith("."):
+                                    m = match[1:]
                                 else:
-                                    m = match[1]
+                                    m = match
+                                # Remove URL-encoded stuff
+                                if '%' in m:
+                                    m = urllib.parse.unquote(m)
                                 self.processHost(m, parentEvent, False)
                     except Exception as e:
                         self.sf.error("Error applying regex to data (" + str(e) + ")", False)
@@ -223,7 +236,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                         self.processHost(ipaddr, parentEvent, False)
             return None
 
-        if eventName in ["IP_ADDRESS", "INTERNET_NAME", 
+        if eventName in ["IP_ADDRESS", "INTERNET_NAME", "IPV6_ADDRESS",
                          "AFFILIATE_IPADDR", "AFFILIATE_INTERNET_NAME"]:
 
             if "_NAME" in eventName:
@@ -288,6 +301,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         else:
             if self.sf.validIP(host):
                 htype = "IP_ADDRESS"
+            elif self.sf.validIP6(host):
+                htype = "IPV6_ADDRESS"
             else:
                 htype = "INTERNET_NAME"
 
@@ -323,6 +338,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         if htype == "AFFILIATE_INTERNET_NAME":
             dom = self.sf.hostDomain(host, self.opts['_internettlds'])
+            if dom == host and not self.sf.isDomain(dom, self.opts['_internettlds']):
+                return evt
             self.processDomain(dom, evt, True)
 
         return evt

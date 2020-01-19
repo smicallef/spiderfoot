@@ -11,13 +11,10 @@
 # -------------------------------------------------------------------------------
 
 import json
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_fringeproject(SpiderFootPlugin):
@@ -36,7 +33,7 @@ class sfp_fringeproject(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
@@ -48,10 +45,10 @@ class sfp_fringeproject(SpiderFootPlugin):
 
     def query(self, qry):
         params = {
-            'q': qry.encode('raw_unicode_escape')
+            'q': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
 
-        res = self.sf.fetchUrl('https://api.fringeproject.com/api/search?' + urllib.urlencode(params),
+        res = self.sf.fetchUrl('https://api.fringeproject.com/api/search?' + urllib.parse.urlencode(params),
                                useragent=self.opts['_useragent'],
                                timeout=self.opts['_fetchtimeout'])
 

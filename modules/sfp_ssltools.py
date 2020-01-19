@@ -12,7 +12,7 @@
 
 import json
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -38,7 +38,7 @@ class sfp_ssltools(SpiderFootPlugin):
         self.__dataSource__ = 'SSL Tools'
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -58,13 +58,13 @@ class sfp_ssltools(SpiderFootPlugin):
     # Query SSL Tools for DNS
     def queryDns(self, domain):
         params = {
-            'url': domain.encode('raw_unicode_escape')
+            'url': domain.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
 
         headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
  
         res = self.sf.fetchUrl('http://www.ssltools.com/api/dns',
-                               postData=urllib.urlencode(params),
+                               postData=urllib.parse.urlencode(params),
                                headers=headers,
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
@@ -86,7 +86,7 @@ class sfp_ssltools(SpiderFootPlugin):
     # Query SSL Tools for certificate information
     def queryScan(self, domain, port):
         params = {
-            'url': domain.encode('raw_unicode_escape'),
+            'url': domain.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'path': '/',
             'port': str(port),
             'live_scan': 'true'
@@ -95,7 +95,7 @@ class sfp_ssltools(SpiderFootPlugin):
         headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
  
         res = self.sf.fetchUrl('http://www.ssltools.com/api/scan',
-                               postData=urllib.urlencode(params),
+                               postData=urllib.parse.urlencode(params),
                                headers=headers,
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
@@ -173,7 +173,7 @@ class sfp_ssltools(SpiderFootPlugin):
             return None
 
         if not cert.get('text'):
-            self.sf.info("Failed to parse the SSL cert for " + fqdn)
+            self.sf.info("Failed to parse the SSL cert for " + eventData)
             return None
 
         evt = SpiderFootEvent('SSL_CERTIFICATE_RAW', cert['text'], self.__name__, event)

@@ -11,7 +11,7 @@
 
 import json
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_scylla(SpiderFootPlugin):
@@ -39,7 +39,7 @@ class sfp_scylla(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -53,7 +53,7 @@ class sfp_scylla(SpiderFootPlugin):
     # Query Scylla API
     def query(self, qry, per_page=20, start=0):
         params = {
-            'q': 'Email:@' + qry.encode('raw_unicode_escape'),
+            'q': 'Email:@' + qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'num': str(per_page),
             'from': str(start)
         }
@@ -61,7 +61,7 @@ class sfp_scylla(SpiderFootPlugin):
         headers = {
             'Accept': 'application/json',
         }
-        res = self.sf.fetchUrl('https://scylla.sh/search?' + urllib.urlencode(params),
+        res = self.sf.fetchUrl('https://scylla.sh/search?' + urllib.parse.urlencode(params),
                                headers=headers,
                                timeout=15,
                                useragent=self.opts['_useragent'])

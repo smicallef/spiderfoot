@@ -51,7 +51,7 @@ class sfp_riskiq(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -81,9 +81,15 @@ class sfp_riskiq(SpiderFootPlugin):
             url = "https://api.passivetotal.org/v2/whois/search"
             post = '{"field": "email", "query": "' + qry + '"}'
 
-        cred = base64.b64encode(self.opts['api_key_login'] + ":" + self.opts['api_key_password'])
+        api_key_login = self.opts['api_key_login']
+        if type(api_key_login) == str:
+            api_key_login = api_key_login.encode('utf-8')
+        api_key_password = self.opts['api_key_password']
+        if type(api_key_password) == str:
+            api_key_password = api_key_password.encode('utf-8')
+        cred = base64.b64encode(api_key_login + ":".encode('utf-8') + api_key_password)
         headers = {
-            'Authorization': "Basic " + cred,
+            'Authorization': "Basic " + cred.decode('utf-8'),
             'Content-Type': 'application/json'
         }
 
@@ -151,7 +157,9 @@ class sfp_riskiq(SpiderFootPlugin):
                     # Generate an event for the IP first, and then link the cert
                     # to that event.
                     for res in ret:
-                        if res['subjectCommonName'].endswith("." + eventData):
+                        if res['subjectCommonName'] == eventData:
+                            continue
+                        if self.getTarget().matches(res['subjectCommonName'], includeChildren=True):
                             e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'], 
                                                 self.__name__, event)
                             self.notifyListeners(e)
@@ -162,7 +170,7 @@ class sfp_riskiq(SpiderFootPlugin):
                 except BaseException as e:
                     self.sf.error("Invalid response returned from RiskIQ: " + str(e), False)
 
-        if eventName in [ 'EMAILADDR']:
+        if eventName == 'EMAILADDR':
             ret = self.query(eventData, "WHOIS")
             if not ret:
                 self.sf.info("No RiskIQ passive DNS data found for " + eventData)
@@ -176,6 +184,11 @@ class sfp_riskiq(SpiderFootPlugin):
                         t = "AFFILIATE_INTERNET_NAME"
                     e = SpiderFootEvent(t, r['domain'], self.__name__, event)
                     self.notifyListeners(e)
+
+                    if t == "AFFILIATE_INTERNET_NAME" and self.sf.isDomain(r['domain'], self.opts['_internettlds']):
+                        evt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", r['domain'], self.__name__, event)
+                        self.notifyListeners(evt)
+
             return None
 
         if eventName in [ 'IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME' ]:
@@ -187,6 +200,9 @@ class sfp_riskiq(SpiderFootPlugin):
             cohosts = list()
             if eventName == "IP_ADDRESS":
                 for r in ret:
+                    if r['focusPoint'].endswith("."):
+                        r['focusPoint'] = r['focusPoint'][:-1]
+
                     # Record could be pointing to our IP, or from our IP
                     if not self.getTarget().matches(r['focusPoint']) and "*" not in r['focusPoint']:
                         # We found a co-host
@@ -195,10 +211,16 @@ class sfp_riskiq(SpiderFootPlugin):
             if eventName in [ "INTERNET_NAME", "DOMAIN_NAME" ]:
                 # Record could be an A/CNAME of this entity, or something pointing to it
                 for r in ret:
+                    if r['focusPoint'].endswith("."):
+                        r['focusPoint'] = r['focusPoint'][:-1]
+
                     if r['focusPoint'] != eventData and "*" not in r['focusPoint']:
                         cohosts.append(r['focusPoint'])
 
             for co in cohosts:
+                if co == eventData:
+                    continue
+
                 if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.sf.validateIP(co, eventData)):
                     self.sf.debug("Host no longer resolves to our IP.")
                     continue

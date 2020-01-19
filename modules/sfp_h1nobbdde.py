@@ -9,10 +9,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -39,7 +36,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 	
     def watchedEvents(self):
@@ -79,7 +76,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.results.has_key(eventData):
+        if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:

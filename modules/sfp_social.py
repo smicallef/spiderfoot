@@ -10,10 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -53,7 +50,7 @@ class sfp_social(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.__dataSource__ = "Target Website"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -75,18 +72,19 @@ class sfp_social(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if eventData not in self.results.keys():
+        if eventData not in list(self.results.keys()):
             self.results[eventData] = True
         else:
             return None
 
-        for regexpGrp in regexps.keys():
+        for regexpGrp in list(regexps.keys()):
             for regex in regexps[regexpGrp]:
                 bits = re.match(regex, eventData, re.IGNORECASE)
                 if bits is not None:
                     self.sf.info("Matched " + regexpGrp + " in " + eventData)
-                    evt = SpiderFootEvent("SOCIAL_MEDIA", regexpGrp + ": " +
-                                          eventData, self.__name__, event)
+                    evt = SpiderFootEvent("SOCIAL_MEDIA", regexpGrp + ": " + \
+                                          "<SFURL>" + eventData + "</SFURL>",
+                                          self.__name__, event)
                     self.notifyListeners(evt)
 
                     # Except for Google+, the link includes potential usernames

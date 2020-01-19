@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_citadel(SpiderFootPlugin):
@@ -34,7 +34,7 @@ class sfp_citadel(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.__dataSource__ = "Leak-Lookup.com"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -57,13 +57,13 @@ class sfp_citadel(SpiderFootPlugin):
             apikey = "3edfb5603418f101926c64ca5dd0e409"
 
         params = {
-            'query': email.encode('raw_unicode_escape'),
+            'query': email.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'type': 'email_address',
             'key': apikey
         }
 
         res = self.sf.fetchUrl("https://leak-lookup.com/api/search",
-                               postData=urllib.urlencode(params),
+                               postData=urllib.parse.urlencode(params),
                                timeout=self.opts['timeout'],
                                useragent=self.opts['_useragent'])
 

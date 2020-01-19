@@ -30,7 +30,7 @@ class sfp_bgpview(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
@@ -183,7 +183,7 @@ class sfp_bgpview(SpiderFootPlugin):
             if not address:
                 return None
 
-            evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join(filter(None, address)), self.__name__, event)
+            evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join([_f for _f in address if _f]), self.__name__, event)
             self.notifyListeners(evt)
 
             data = self.queryAsnPeers(eventData)
@@ -229,7 +229,7 @@ class sfp_bgpview(SpiderFootPlugin):
             if not address:
                 return None
 
-            evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join(filter(None, address)), self.__name__, event)
+            evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join([_f for _f in address if _f]), self.__name__, event)
             self.notifyListeners(evt)
 
         if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:

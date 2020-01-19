@@ -13,7 +13,7 @@
 
 import json
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_darksearch(SpiderFootPlugin):
@@ -22,13 +22,15 @@ class sfp_darksearch(SpiderFootPlugin):
     # Default options
     opts = {
         'fetchlinks': True,
-        'max_pages': 20
+        'max_pages': 20,
+        'fullnames': True
     }
 
     # Option descriptions
     optdescs = {
         'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target.",
-        'max_pages': "Maximum number of pages of results to fetch."
+        'max_pages': "Maximum number of pages of results to fetch.",
+        'fullnames': "Search for human names?"
     }
 
     results = None
@@ -40,7 +42,7 @@ class sfp_darksearch(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
@@ -52,11 +54,11 @@ class sfp_darksearch(SpiderFootPlugin):
     # https://darksearch.io/apidoc
     def query(self, qry, page):
         params = {
-            'query': '"' + qry.encode('raw_unicode_escape') + '"',
+            'query': '"' + qry.encode('raw_unicode_escape').decode("ascii", errors='replace') + '"',
             'page': str(page)
         }
 
-        res = self.sf.fetchUrl("https://darksearch.io/api/search?" + urllib.urlencode(params),
+        res = self.sf.fetchUrl("https://darksearch.io/api/search?" + urllib.parse.urlencode(params),
                                useragent=self.opts['_useragent'],
                                timeout=self.opts['_fetchtimeout'])
 
@@ -78,6 +80,9 @@ class sfp_darksearch(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+
+        if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
+            return None
 
         if eventData in self.results:
             return None

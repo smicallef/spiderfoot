@@ -34,7 +34,7 @@ class sfp_ipinfo(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -105,7 +105,7 @@ class sfp_ipinfo(SpiderFootPlugin):
         if 'country' not in data:
             return None
 
-        location = ', '.join(filter(None, [data.get('city'), data.get('region'), data.get('country')]))
+        location = ', '.join([_f for _f in [data.get('city'), data.get('region'), data.get('country')] if _f])
         self.sf.info("Found GeoIP for " + eventData + ": " + location)
 
         evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)

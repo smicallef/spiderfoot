@@ -32,7 +32,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -63,7 +63,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-	url = "https://api.duckduckgo.com/?q=" + eventData + "&format=json&pretty=1"
+        url = "https://api.duckduckgo.com/?q=" + eventData + "&format=json&pretty=1"
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 

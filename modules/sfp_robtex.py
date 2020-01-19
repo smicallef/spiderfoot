@@ -26,7 +26,9 @@ class sfp_robtex(SpiderFootPlugin):
         'netblocklookup': True,
         'maxnetblock': 24,
         'cohostsamedomain': False,
-        'maxcohost': 100
+        'maxcohost': 100,
+        'subnetlookup': False,
+        'maxsubnet': 24
     }
 
     # Option descriptions
@@ -35,7 +37,9 @@ class sfp_robtex(SpiderFootPlugin):
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible co-hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
-        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
+        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
+        'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
     results = None
@@ -46,7 +50,7 @@ class sfp_robtex(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.cohostcount = 0
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -58,6 +62,10 @@ class sfp_robtex(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["CO_HOSTED_SITE", "IP_ADDRESS"]
+
+    # Don't notify me about events from myself
+    def watchOpts(self):
+        return [ 'noself' ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -88,6 +96,16 @@ class sfp_robtex(SpiderFootPlugin):
                     self.sf.debug("Network size bigger than permitted: " +
                                   str(IPNetwork(eventData).prefixlen) + " > " +
                                   str(self.opts['maxnetblock']))
+                    return None
+
+        if eventName == 'NETBLOCK_MEMBER':
+            if not self.opts['subnetlookup']:
+                return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxsubnet']))
                     return None
 
         qrylist = list()

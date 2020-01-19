@@ -17,7 +17,7 @@ import docx
 import pptx
 import exifread
 import lxml
-from StringIO import StringIO
+import io
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -42,7 +42,7 @@ class sfp_filemeta(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -93,7 +93,7 @@ class sfp_filemeta(SpiderFootPlugin):
                 # Based on the file extension, handle it
                 if fileExt.lower() == "pdf":
                     try:
-                        raw = StringIO(ret['content'])
+                        raw = io.BytesIO(ret['content'])
                         #data = metapdf.MetaPdfReader().read_metadata(raw)
                         pdf = PyPDF2.PdfFileReader(raw, strict=False)
                         data = pdf.getDocumentInfo()
@@ -106,13 +106,13 @@ class sfp_filemeta(SpiderFootPlugin):
 
                 if fileExt.lower() in ["docx"]:
                     try:
-                        c = StringIO(ret['content'])
+                        c = io.BytesIO(ret['content'])
                         doc = docx.Document(c)
                         mtype = mimetypes.guess_type(eventData)[0]
                         self.sf.debug("Office type: " + str(mtype))
                         a = doc.core_properties.author
                         c = doc.core_properties.comments
-                        data = filter(None, [a, c])
+                        data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
                     except BaseException as e:
                         self.sf.error("Unable to process file: " +
@@ -121,13 +121,13 @@ class sfp_filemeta(SpiderFootPlugin):
 
                 if fileExt.lower() in ["pptx"]:
                     try:
-                        c = StringIO(ret['content'])
+                        c = io.BytesIO(ret['content'])
                         doc = pptx.Presentation(c)
                         mtype = mimetypes.guess_type(eventData)[0]
                         self.sf.debug("Office type: " + str(mtype))
                         a = doc.core_properties.author
                         c = doc.core_properties.comments
-                        data = filter(None, [a, c])
+                        data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
                     except BaseException as e:
                         self.sf.error("Unable to process file: " +
@@ -136,7 +136,7 @@ class sfp_filemeta(SpiderFootPlugin):
 
                 if fileExt.lower() in ["jpg", "jpeg", "tiff"]:
                     try:
-                        raw = StringIO(ret['content'])
+                        raw = io.BytesIO(ret['content'])
                         data = exifread.process_file(raw)
                         if data is None or len(data) == 0:
                             continue

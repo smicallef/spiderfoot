@@ -15,6 +15,7 @@ import cgi
 import csv
 import time
 import random
+from secure import SecureHeaders
 from cherrypy import _cperror
 from operator import itemgetter
 from copy import deepcopy
@@ -23,7 +24,7 @@ from mako.template import Template
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, globalScanStatus
 from sfscan import SpiderFootScanner
-from io import BytesIO
+from io import StringIO
 
 
 class SpiderFootWebUi:
@@ -52,6 +53,13 @@ class SpiderFootWebUi:
         cherrypy.config.update({
           'error_page.404': self.error_page_404,
           'request.error_response': self.error_page
+        })
+
+        secure_headers = SecureHeaders()
+
+        cherrypy.config.update({
+            "tools.response_headers.on": True,
+            "tools.response_headers.headers": secure_headers.cherrypy()
         })
 
         print("")
@@ -90,8 +98,8 @@ class SpiderFootWebUi:
 
     def searchBase(self, id=None, eventType=None, value=None):
         regex = ""
-        if [id, eventType, value].count('') == 2 or \
-                        [id, eventType, value].count(None) == 2:
+        if [id, eventType, value].count('') == 3 or \
+                        [id, eventType, value].count(None) == 3:
             return None
 
         if value.startswith("/") and value.endswith("/"):
@@ -131,7 +139,7 @@ class SpiderFootWebUi:
     def scaneventresultexport(self, id, type, dialect="excel"):
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
-        fileobj = BytesIO()
+        fileobj = StringIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
@@ -143,7 +151,7 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
-        return fileobj.getvalue()
+        return fileobj.getvalue().encode("utf-8")
 
     scaneventresultexport.exposed = True
 
@@ -156,7 +164,7 @@ class SpiderFootWebUi:
             scaninfo[id] = dbh.scanInstanceGet(id)
             data = data + dbh.scanResultEvent(id)
 
-        fileobj = BytesIO()
+        fileobj = StringIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Scan Name", "Updated", "Type", "Module", "Source", "F/P", "Data"])
         for row in data:
@@ -169,14 +177,14 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
-        return fileobj.getvalue()
+        return fileobj.getvalue().encode("Utf-8")
 
     scaneventresultexportmulti.exposed = True
 
     # Get search result data in CSV format
     def scansearchresultexport(self, id, eventType=None, value=None, dialect="excel"):
         data = self.searchBase(id, eventType, value)
-        fileobj = BytesIO()
+        fileobj = StringIO()
         parser = csv.writer(fileobj, dialect=dialect)
         parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
         if not data:
@@ -185,11 +193,11 @@ class SpiderFootWebUi:
             if row[10] == "ROOT":
                 continue
             datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
-            parser.writerow([row[0], str(row[10]), str(row[3]), str(row[2]), row[13], datafield])
+            parser.writerow([row[0], str(row[10]), str(row[3]), str(row[2]), row[11], datafield])
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
-        return fileobj.getvalue()
+        return fileobj.getvalue().encode("Utf-8")
 
     scansearchresultexport.exposed = True
 
@@ -231,8 +239,7 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.json"
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
         cherrypy.response.headers['Pragma'] = "no-cache"
-
-        return json.dumps(scaninfo)
+        return json.dumps(scaninfo).encode("utf-8")
 
     scanexportjsonmulti.exposed = True
 
@@ -281,15 +288,15 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.config)
         ret['config'] = dbh.scanConfigGet(id)
         ret['configdesc'] = dict()
-        for key in ret['config'].keys():
+        for key in list(ret['config'].keys()):
             if ':' not in key:
                 ret['configdesc'][key] = self.config['__globaloptdescs__'][key]
             else:
                 [modName, modOpt] = key.split(':')
-                if modName not in self.config['__modules__'].keys():
+                if modName not in list(self.config['__modules__'].keys()):
                     continue
 
-                if modOpt not in self.config['__modules__'][modName]['optdescs'].keys():
+                if modOpt not in list(self.config['__modules__'][modName]['optdescs'].keys()):
                     continue
 
                 ret['configdesc'][key] = self.config['__modules__'][modName]['optdescs'][modOpt]
@@ -329,6 +336,8 @@ class SpiderFootWebUi:
             return self.error("Something went wrong internally.")
 
         modlist = scanconfig['_modulesenabled'].split(',')
+        if "sfp__stor_stdout" in modlist:
+            modlist.remove("sfp__stor_stdout")
 
         targetType = sf.targetType(scantarget)
         if targetType == None:
@@ -351,7 +360,7 @@ class SpiderFootWebUi:
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=newId, name=unicode(scanname, 'utf-8', errors='replace'), docroot=self.docroot,
+        return templ.render(id=newId, name=str(scanname), docroot=self.docroot,
             status=globalScanStatus.getStatus(newId), pageid="SCANLIST")
 
     rerunscan.exposed = True
@@ -375,6 +384,8 @@ class SpiderFootWebUi:
                 return self.error("Something went wrong internally.")
 
             modlist = scanconfig['_modulesenabled'].split(',')
+            if "sfp__stor_stdout" in modlist:
+                modlist.remove("sfp__stor_stdout")
 
             targetType = sf.targetType(scantarget)
             if targetType == None:
@@ -384,9 +395,7 @@ class SpiderFootWebUi:
 
             # Start running a new scan
             newId = sf.genScanInstanceGUID(scanname)
-            t = SpiderFootScanner(unicode(scanname, 'utf-8', errors='replace'), 
-                                  unicode(scantarget, 'utf-8', errors='replace').lower(), 
-                                  targetType, newId, modlist, cfg, modopts)
+            t = SpiderFootScanner(scanname, scantarget.lower(), targetType, newId, modlist, cfg, modopts)
             t.start()
 
             # Wait until the scan has initialized
@@ -436,8 +445,8 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
                             modules=self.config['__modules__'], selectedmods=modlist,
-                            scanname=unicode(scanname, 'utf-8', errors='replace'), 
-                            scantarget=unicode(scantarget, 'utf-8', errors='replace'))
+                            scanname=str(scanname), 
+                            scantarget=str(scantarget))
 
     clonescan.exposed = True
 
@@ -456,7 +465,7 @@ class SpiderFootWebUi:
         if res is None:
             return self.error("Scan ID not found.")
 
-        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup, disable_unicode=True, input_encoding='utf-8')
+        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup, input_encoding='utf-8')
         return templ.render(id=id, name=cgi.escape(res[0]), status=res[5], docroot=self.docroot,
                             pageid="SCANLIST")
 
@@ -525,12 +534,12 @@ class SpiderFootWebUi:
         if confirm is not None:
             dbh.scanInstanceDelete(id)
             if not raw:
-                raise cherrypy.HTTPRedirect(self.docroot)
+                raise cherrypy.HTTPRedirect("/")
             else:
                 return json.dumps(["SUCCESS", ""])
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=id, name=unicode(res[0], 'utf-8', errors='replace'), 
+            return templ.render(id=id, name=str(res[0]), 
                                 names=list(), ids=list(),
                                 pageid="SCANLIST", docroot=self.docroot)
 
@@ -543,7 +552,7 @@ class SpiderFootWebUi:
 
         for id in ids.split(','):
             res = dbh.scanInstanceGet(id)
-            names.append(unicode(res[0], 'utf-8', errors='replace'))
+            names.append(str(res[0]))
             if res is None:
                 return self.error("Scan ID not found (" + id + ").")
 
@@ -553,7 +562,7 @@ class SpiderFootWebUi:
         if confirm is not None:
             for id in ids.split(','):
                 dbh.scanInstanceDelete(id)
-            raise cherrypy.HTTPRedirect(self.docroot)
+            raise cherrypy.HTTPRedirect("/")
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
             return templ.render(id=None, name=None, ids=ids.split(','), names=names, 
@@ -569,6 +578,9 @@ class SpiderFootWebUi:
         if configFile:  # configFile seems to get set even if a file isn't uploaded
             if configFile.file:
                 contents = configFile.file.read()
+
+                if type(contents) == bytes:
+                    contents = contents.decode("utf-8")
                 try:
                     tmp = dict()
                     for line in contents.split("\n"):
@@ -591,7 +603,7 @@ class SpiderFootWebUi:
             else:
                 useropts = json.loads(allopts)
                 cleanopts = dict()
-                for opt in useropts.keys():
+                for opt in list(useropts.keys()):
                     cleanopts[opt] = self.cleanUserInput([useropts[opt]])[0]
 
                 currentopts = deepcopy(self.config)
@@ -625,7 +637,7 @@ class SpiderFootWebUi:
             else:
                 useropts = json.loads(allopts)
                 cleanopts = dict()
-                for opt in useropts.keys():
+                for opt in list(useropts.keys()):
                     cleanopts[opt] = self.cleanUserInput([useropts[opt]])[0]
 
                 currentopts = deepcopy(self.config)
@@ -697,7 +709,7 @@ class SpiderFootWebUi:
 
     # For the CLI to fetch a list of modules.
     def modules(self):
-        modinfo = self.config['__modules__'].keys()
+        modinfo = list(self.config['__modules__'].keys())
         modinfo.sort()
         ret = list()
         for m in modinfo:
@@ -800,10 +812,13 @@ class SpiderFootWebUi:
             else:
                 return json.dumps(["ERROR", "Unrecognised target type."])
 
+        # Delete the stdout module in case it crept in
+        if "sfp__stor_stdout" in modlist:
+            modlist.remove("sfp__stor_stdout")
 
         # Start running a new scan
         scanId = sf.genScanInstanceGUID(scanname)
-        if targetType == "HUMAN_NAME":
+        if targetType in [ "HUMAN_NAME", "USERNAME" ]:
             scantarget = scantarget.replace("\"", "")
         else:
             scantarget = scantarget.lower()
@@ -840,7 +855,7 @@ class SpiderFootWebUi:
             if scaninfo is None:
                 return self.error("Invalid scan ID specified.")
 
-            scanname = unicode(scaninfo[0], 'utf-8', errors='replace')
+            scanname = str(scaninfo[0])
 
             if globalScanStatus.getStatus(id) == "FINISHED" or scaninfo[5] == "FINISHED":
                 error.append("Scan '" + scanname + "' is in a finished state. <a href='/scandelete?id=" + \
@@ -935,7 +950,7 @@ class SpiderFootWebUi:
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
             retdata.append([generated, row[1],
-                            cgi.escape(unicode(row[2], errors='replace'))])
+                            cgi.escape(str(row[2]))])
         return json.dumps(retdata)
 
     scanerrors.exposed = True

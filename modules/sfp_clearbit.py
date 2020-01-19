@@ -16,9 +16,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_clearbit(SpiderFootPlugin):
     """Clearbit:Footprint,Investigate,Passive:Search Engines:apikey:Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com."""
 
-
-
-
     # Default options
     opts = { 
         "api_key": ""
@@ -43,7 +40,7 @@ class sfp_clearbit(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -58,11 +55,16 @@ class sfp_clearbit(SpiderFootPlugin):
     def query(self, t):
         ret = None
 
+        api_key = self.opts['api_key']
+        if type(api_key) == str:
+            api_key = api_key.encode('utf-8')
         url = "https://person.clearbit.com/v2/combined/find?email=" + t
+        token = base64.b64encode(api_key + ':'.encode('utf-8'))
         headers = {
             'Accept': 'application/json',
-            'Authorization': "Basic " + base64.b64encode(self.opts['api_key'] + ":")
+            'Authorization': "Basic " + token.decode('utf-8')
         }
+
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
             useragent="SpiderFoot", headers=headers)
 
@@ -97,7 +99,7 @@ class sfp_clearbit(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
        # Don't look up stuff twice
-        if self.results.has_key(eventData):
+        if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:

@@ -10,10 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -50,7 +47,7 @@ class sfp_webframework(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.__dataSource__ = "Target Website"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -85,7 +82,7 @@ class sfp_webframework(SpiderFootPlugin):
             self.sf.debug("Not collecting web content information for external sites.")
             return None
 
-        for regexpGrp in regexps.keys():
+        for regexpGrp in list(regexps.keys()):
             if regexpGrp in self.results[eventSource]:
                 continue
 

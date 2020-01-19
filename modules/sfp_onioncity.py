@@ -12,10 +12,7 @@
 # -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 
 class sfp_onioncity(SpiderFootPlugin):
@@ -25,14 +22,16 @@ class sfp_onioncity(SpiderFootPlugin):
     opts = {
         "api_key": "", 
         "cse_id": "013611106330597893267:tfgl3wxdtbp", 
-        'fetchlinks': True
+        'fetchlinks': True,
+        'fullnames': True
     }
 
     # Option descriptions
     optdescs = {
         "api_key": "Google API Key for Onion.link search.",
         "cse_id": "Google Custom Search Engine ID.",
-        'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target."
+        'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target.",
+        'fullnames': "Search for human names?"
     }
 
     # Target
@@ -44,7 +43,7 @@ class sfp_onioncity(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -64,6 +63,9 @@ class sfp_onioncity(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
+            return None
+
+        if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
             return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)

@@ -11,11 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
-
+import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_email(SpiderFootPlugin):
@@ -79,10 +75,7 @@ class sfp_email(SpiderFootPlugin):
                 evttype = "AFFILIATE_EMAILADDR"
 
             self.sf.info("Found e-mail address: " + email)
-            if type(email) == str:
-                mail = unicode(email.strip('.'), 'utf-8', errors='replace')
-            else:
-                mail = email.strip('.')
+            mail = email.strip('.')
 
             if mail in myres:
                 self.sf.debug("Already found from this source.")

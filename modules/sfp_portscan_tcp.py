@@ -59,7 +59,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         self.__dataSource__ = "Target Network"
         self.lock = threading.Lock()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
         if self.opts['ports'][0].startswith("http://") or \
@@ -144,7 +144,8 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                 evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
                 self.notifyListeners(evt)
                 if resArray[cp] != "" and resArray[cp] != True:
-                    bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", resArray[cp],
+                    banner = str(resArray[cp], 'utf-8', errors='replace')
+                    bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
                                            self.__name__, evt)
                     self.notifyListeners(bevt)
 

@@ -52,7 +52,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.__dataSource__ = "DNS"
         self.lock = threading.Lock()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
         cslines = list()
@@ -148,16 +148,6 @@ class sfp_dnsbrute(SpiderFootPlugin):
             return None
         self.events[eventDataHash] = True
 
-        # Handle Unicode characters in the name
-        try:
-            if type(eventData) != unicode:
-                eventData = unicode(eventData, "utf-8", errors='replace').encode("idna")
-            else:
-                eventData = eventData.encode("idna")
-        except BaseException as e:
-            self.sf.debug("IDNA-parsing issue for " + eventData + ": " + str(e))
-            return None
-
         if eventName == "INTERNET_NAME" and not self.getTarget().matches(eventData, includeChildren=False):
             if not self.opts['numbersuffix']:
                 return None
@@ -183,7 +173,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
                 nextsubs[h + "-0" + str(i) + dom] = True
                 nextsubs[h + "-00" + str(i) + dom] = True
 
-            self.tryHostWrapper(nextsubs.keys(), event)
+            self.tryHostWrapper(list(nextsubs.keys()), event)
 
             # The rest of the module is for handling targets only
             return None
@@ -231,13 +221,13 @@ class sfp_dnsbrute(SpiderFootPlugin):
                     nextsubs[s + "-0" + str(i) + dom] = True
                     nextsubs[s + "-00" + str(i) + dom] = True
 
-                if len(nextsubs.keys()) >= self.opts['_maxthreads']:
-                    self.tryHostWrapper(nextsubs.keys(), event)
+                if len(list(nextsubs.keys())) >= self.opts['_maxthreads']:
+                    self.tryHostWrapper(list(nextsubs.keys()), event)
                     nextsubs = dict()
 
             # Scan whatever may be left over.
             if len(nextsubs) > 0:
-                self.tryHostWrapper(nextsubs.keys(), event)
+                self.tryHostWrapper(list(nextsubs.keys()), event)
 
 
 # End of sfp_dnsbrute class

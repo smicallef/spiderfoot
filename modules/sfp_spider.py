@@ -71,7 +71,7 @@ class sfp_spider(SpiderFootPlugin):
         self.siteCookies = self.tempStorage()
         self.__dataSource__ = "Target Website"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # Fetch data from a URL and obtain all links that should be followed
@@ -81,7 +81,7 @@ class sfp_spider(SpiderFootPlugin):
 
         # Filter out certain file types (if user chooses to)
         checkExts = lambda ext: url.lower().split('?')[0].endswith('.' + ext.lower())
-        if filter(checkExts, self.opts['filterfiles']):
+        if list(filter(checkExts, self.opts['filterfiles'])):
             #self.sf.debug('Ignoring filtered extension: ' + link)
             return None
 
@@ -169,7 +169,7 @@ class sfp_spider(SpiderFootPlugin):
             # If we are respecting robots.txt, filter those out too
             if linkBase in self.robotsRules and self.opts['robotsonly']:
                 checkRobots = lambda blocked: type(blocked).lower(blocked) in link.lower() or blocked == '*'
-                if filter(checkRobots, self.robotsRules[linkBase]):
+                if list(filter(checkRobots, self.robotsRules[linkBase])):
                     #self.sf.debug("Ignoring page found in robots.txt: " + link)
                     continue
 
@@ -186,8 +186,8 @@ class sfp_spider(SpiderFootPlugin):
         else:
             utype = "LINKED_URL_EXTERNAL"
 
-        if type(url) != unicode:
-            url = unicode(url, "utf-8", errors='replace')
+        if type(url) != str:
+            url = str(url, "utf-8", errors='replace')
         event = SpiderFootEvent(utype, url, self.__name__, parentEvent)
         self.notifyListeners(event)
         return event
@@ -205,15 +205,18 @@ class sfp_spider(SpiderFootPlugin):
                         sendcontent = False
 
         if sendcontent:
-            event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
+            if httpresult['content'] != None:
+                event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
+                                        self.__name__, parentEvent)
+                event.actualSource = url
+                self.notifyListeners(event)
+
+        hdr = httpresult['headers']
+        if hdr != None:
+            event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", json.dumps(hdr, ensure_ascii=False),
                                     self.__name__, parentEvent)
             event.actualSource = url
             self.notifyListeners(event)
-
-        event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", json.dumps(httpresult['headers'], ensure_ascii=False),
-                                self.__name__, parentEvent)
-        event.actualSource = url
-        self.notifyListeners(event)
 
         event = SpiderFootEvent("HTTP_CODE", str(httpresult['code']),
                                 self.__name__, parentEvent)

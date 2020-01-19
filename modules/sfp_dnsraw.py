@@ -11,10 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
 import dns.resolver
 import dns.query
@@ -43,7 +40,7 @@ class sfp_dnsraw(SpiderFootPlugin):
         self.checked = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -84,7 +81,7 @@ class sfp_dnsraw(SpiderFootPlugin):
             'TXT': ['\S+\s+TXT\s+\"(.[^\"]*)"', 'DNS_TEXT']
         }
 
-        for rec in recs.keys():
+        for rec in list(recs.keys()):
             if self.checkForStop():
                 return None
 
@@ -102,7 +99,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                     if str(x) in self.checked:
                         continue
                     self.checked[str(x)] = True
-                    for rx in recs.keys():
+                    for rx in list(recs.keys()):
                         self.sf.debug("Checking " + str(x) + " + against " + recs[rx][0])
                         pat = re.compile(recs[rx][0], re.IGNORECASE | re.DOTALL)
                         grps = re.findall(pat, str(x))
@@ -112,11 +109,11 @@ class sfp_dnsraw(SpiderFootPlugin):
 
                         for m in grps:
                             self.sf.debug("Matched: " + m)
-                            strdata = unicode(m, 'utf-8', errors='replace')
+                            strdata = str(m)
                             evt = SpiderFootEvent(recs[rx][1], strdata,
                                                       self.__name__, parentEvent)
                             self.notifyListeners(evt)
-                            if rec != "TXT" and not strdata.endswith(eventData):
+                            if rec != "TXT" and not self.getTarget().matches(strdata, includeChildren=True, includeParents=True):
                                 evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME",
                                                       strdata, self.__name__, parentEvent)
                                 self.notifyListeners(evt)
@@ -143,7 +140,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                                         evt = SpiderFootEvent(evt_type, domain, self.__name__, parentEvent)
                                         self.notifyListeners(evt)
 
-                    strdata = unicode(str(x), 'utf-8', errors='replace')
+                    strdata = str(x)
                     evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata,
                                           self.__name__, parentEvent)
                     self.notifyListeners(evt)

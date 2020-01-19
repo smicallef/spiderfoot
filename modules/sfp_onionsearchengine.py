@@ -11,12 +11,9 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError as e:
-    import re
+import re
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_onionsearchengine(SpiderFootPlugin):
@@ -27,7 +24,8 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         'timeout': 10,
         'max_pages': 20,
         'fetchlinks': True,
-        'blacklist': [ '.*://relate.*' ]
+        'blacklist': [ '.*://relate.*' ],
+        'fullnames': True
     }
 
     # Option descriptions
@@ -35,7 +33,8 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         'timeout': "Query timeout, in seconds.",
         'max_pages': "Maximum number of pages of results to fetch.",
         'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target.",
-        'blacklist': "Exclude results from sites matching these patterns."
+        'blacklist': "Exclude results from sites matching these patterns.",
+        'fullnames': "Search for human names?"
     }
 
     results = None
@@ -44,7 +43,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -62,6 +61,9 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
+            return None
+
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
@@ -76,13 +78,13 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                 return None
 
             params = {
-                'search': '"' + eventData.encode('raw_unicode_escape') + '"',
+                'search': '"' + eventData.encode('raw_unicode_escape').decode("ascii", errors='replace') + '"',
                 'submit': 'Search',
                 'page': str(page)
             }
 
             # Sites hosted on the domain
-            data = self.sf.fetchUrl('https://onionsearchengine.com/search.php?' + urllib.urlencode(params),
+            data = self.sf.fetchUrl('https://onionsearchengine.com/search.php?' + urllib.parse.urlencode(params),
                                     useragent=self.opts['_useragent'], 
                                     timeout=self.opts['timeout'])
 

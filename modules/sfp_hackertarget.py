@@ -12,11 +12,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import re
 import json
-try:
-    import re2 as re
-except ImportError as e:
-    import re
 
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
@@ -58,7 +55,7 @@ class sfp_hackertarget(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.cohostcount = 0
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input

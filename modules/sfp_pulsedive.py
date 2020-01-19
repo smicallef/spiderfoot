@@ -14,7 +14,7 @@ import json
 from datetime import datetime
 import time
 from netaddr import IPNetwork
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pulsedive(SpiderFootPlugin):
@@ -56,7 +56,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -73,11 +73,11 @@ class sfp_pulsedive(SpiderFootPlugin):
     # https://pulsedive.com/api/
     def query(self, qry):
         params = {
-            'indicator': qry.encode('raw_unicode_escape'),
+            'indicator': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'key': self.opts['api_key']
         }
 
-        url = 'https://pulsedive.com/api/info.php?' + urllib.urlencode(params)
+        url = 'https://pulsedive.com/api/info.php?' + urllib.parse.urlencode(params)
         res = self.sf.fetchUrl(url, timeout=30, useragent="SpiderFoot")
 
         time.sleep(self.opts['delay'])
