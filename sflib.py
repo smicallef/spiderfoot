@@ -774,6 +774,12 @@ class SpiderFoot:
         suffix = ps.get_public_suffix(hostname)
         return hostname == suffix
 
+    # Is the host a valid host (some filenames look like hosts)
+    def validHost(self, hostname, tldList):
+        ps = PublicSuffixList(tldList)
+        sfx = ps.get_public_suffix(hostname, strict=True)
+        return sfx != None
+
     # Simple way to verify IPv4 addresses.
     def validIP(self, address):
         if not address:

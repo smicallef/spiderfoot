@@ -239,4 +239,3 @@ sfp_zoneh.py|Zone-H Defacement Check|Check if a hostname/domain appears on the z
 Read more at the [project website](https://www.spiderfoot.net), including more complete documentation, blog posts with tutorials/guides, plus information about [SpiderFoot HX](https://www.spiderfoot.net/hx).
 
 Latest updates announced on [Twitter](https://twitter.com/spiderfoot).
-
