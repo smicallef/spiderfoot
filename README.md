@@ -1,5 +1,4 @@
 <h1 align="center">
-  <br>
   <a href="https://www.spiderfoot.net"><img src="https://www.spiderfoot.net/wp-content/themes/spiderfoot/img/spiderfoot-wide.png"></a>
 </h1>
 
