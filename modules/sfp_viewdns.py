@@ -170,7 +170,7 @@ class sfp_viewdns(SpiderFootPlugin):
                         e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
 
                         if self.sf.isDomain(h, self.opts['_internettlds']):
-                            evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', domain, self.__name__, event)
+                            evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', h, self.__name__, event)
                             self.notifyListeners(evt)
                     else:
                         if self.cohostcount >= self.opts['maxcohost']:
