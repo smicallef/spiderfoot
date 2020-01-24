@@ -114,8 +114,6 @@ if __name__ == '__main__':
     p.add_argument("-q", action='store_true', help="Disable logging.")
     args = p.parse_args()
 
-    sfConfig['__logstdout'] = True
-        
     if args.debug:
         sfConfig['_debug'] = True
     else:
@@ -128,6 +126,8 @@ if __name__ == '__main__':
         (addr, port) = args.l.split(":")
         sfConfig['__webaddr'] = addr
         sfConfig['__webport'] = int(port)
+    else:
+        sfConfig['__logstdout'] = True
 
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
@@ -208,7 +208,14 @@ if __name__ == '__main__':
             sys.exit(-1)
 
         target = args.s
-        targetType = sf.targetType(args.s)
+        # Usernames and names - quoted on the commandline - won't have quotes,
+        # so add them.
+        if " " in target:
+            target = "\"" + target + "\""
+        if "." not in target and not target.startswith("+") and "\"" not in target:
+            target = "\"" + target + "\""
+        targetType = sf.targetType(target)
+        target = target.strip('"')
 
         modlist = list()
         if not args.t and not args.m:

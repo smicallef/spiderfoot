@@ -1261,7 +1261,7 @@ if __name__ == "__main__":
                 Open Source Intelligence Automation.", plain=True, 
                 color=bcolors.GREYBLUE)
         s.dprint("\
-               by Steve Micallef | @binarypool\n", plain=True, 
+               by Steve Micallef | @spiderfoot\n", plain=True, 
                  color=bcolors.GREYBLUE_DARK)
         s.dprint("Version " + s.version + ".")
         if args.b:

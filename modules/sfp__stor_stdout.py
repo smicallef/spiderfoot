@@ -65,8 +65,13 @@ class sfp__stor_stdout(SpiderFootPlugin):
             srcdata = str(event.sourceEvent.data)
 
         if self.opts['_stripnewline']:
-            data = data.replace("\n", "").replace("\r", "")
-            srcdata = srcdata.replace("\n", "").replace("\r", "")
+            data = data.replace("\n", " ").replace("\r", "")
+            srcdata = srcdata.replace("\n", " ").replace("\r", "")
+
+        if "<SFURL>" in data:
+            data = data.replace("<SFURL>", "").replace("</SFURL>", "")
+        if "<SFURL>" in srcdata:
+            srcdata = srcdata.replace("<SFURL>", "").replace("</SFURL>", "")
 
         if self.opts['_maxlength'] > 0:
             data = data[0:self.opts['_maxlength']]

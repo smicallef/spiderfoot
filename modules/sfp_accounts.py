@@ -29,7 +29,7 @@ class sfp_accounts(SpiderFootPlugin):
         "ignoreworddict": True,
         "musthavename": True,
         "userfromemail": True,
-        "_maxthreads": 25
+        "_maxthreads": 50
     }
 
     # Option descriptions
@@ -202,6 +202,15 @@ class sfp_accounts(SpiderFootPlugin):
             siteList.append(site)
             i += 1
 
+        if i > 0 and i < self.opts['_maxthreads']:
+            data = self.threadSites(name, siteList)
+            if data == None:
+                return res
+
+            for ret in list(data.keys()):
+                if data[ret]:
+                    res.append(ret)
+
         return res
 
     # Handle events sent to this module
@@ -228,16 +237,28 @@ class sfp_accounts(SpiderFootPlugin):
         # If being called for the first time, let's see how trusted the
         # sites are by attempting to fetch a garbage user.
         if not self.distrustedChecked:
-            randpool = 'abcdefghijklmnopqrstuvwxyz1234567890'
-            randuser = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
-            res = self.batchSites(randuser)
-            if len(res) > 0:
+            # Check if a state cache exists first, to not have to do this all the time
+            content = self.sf.cacheGet("sfaccounts_state", 72)
+            if content:
                 delsites = list()
-                for site in res:
-                    sitename = site.split(" (Category:")[0]
-                    self.sf.debug("Distrusting " + sitename)
-                    delsites.append(sitename)
+                for line in content.split("\n"):
+                    if line == '':
+                        continue
+                    delsites.append(line)
                 self.sites = [d for d in self.sites if d['name'] not in delsites]
+            else:
+                randpool = 'abcdefghijklmnopqrstuvwxyz1234567890'
+                randuser = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
+                res = self.batchSites(randuser)
+                if len(res) > 0:
+                    delsites = list()
+                    for site in res:
+                        sitename = site.split(" (Category:")[0]
+                        self.sf.debug("Distrusting " + sitename)
+                        delsites.append(sitename)
+                    self.sites = [d for d in self.sites if d['name'] not in delsites]
+                    self.sf.cachePut("sfaccounts_state", delsites)
+
             self.distrustedChecked = True
 
         if eventName == "HUMAN_NAME":

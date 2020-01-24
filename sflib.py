@@ -423,7 +423,11 @@ class SpiderFoot:
         fp = open(cacheFile, "w")
         if type(data) is list:
             for line in data:
-                fp.write(line.decode('utf-8') + '\n')
+                if type(line) is str:
+                    fp.write(line)
+                    fp.write("\n")
+                else:
+                    fp.write(line.decode('utf-8') + '\n')
         elif type(data) is bytes:
             fp.write(data.decode('utf-8'))
         else:
