@@ -97,7 +97,7 @@ class sfp_ssltools(SpiderFootPlugin):
         res = self.sf.fetchUrl('http://www.ssltools.com/api/scan',
                                postData=urllib.parse.urlencode(params),
                                headers=headers,
-                               timeout=self.opts['_fetchtimeout'],
+                               timeout=30, # needs longer as it scans
                                useragent=self.opts['_useragent'])
 
         time.sleep(1)

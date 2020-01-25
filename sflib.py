@@ -1427,13 +1427,16 @@ class SpiderFoot:
             #
             # MAKE THE REQUEST
             #
-            if postData:
-                res = self.getSession().post(url, data=postData, headers=header, proxies=proxies,
-                                    allow_redirects=True, cookies=cookies,
-                                    timeout=timeout, verify=verify)
-            else:
-                res = self.getSession().get(url, headers=header, proxies=proxies, allow_redirects=True,
-                                   cookies=cookies, timeout=timeout, verify=verify)
+            try:
+                if postData:
+                    res = self.getSession().post(url, data=postData, headers=header, proxies=proxies,
+                                        allow_redirects=True, cookies=cookies,
+                                        timeout=timeout, verify=verify)
+                else:
+                    res = self.getSession().get(url, headers=header, proxies=proxies, allow_redirects=True,
+                                       cookies=cookies, timeout=timeout, verify=verify)
+            except requests.exceptions.RequestException:
+                raise Exception('Failed to connect to %s' % url) from None
 
             result['headers'] = dict()
             for header, value in res.headers.items():
@@ -1471,17 +1474,14 @@ class SpiderFoot:
                 try:
                     result['content'] = res.content.decode("utf-8")
                 except UnicodeDecodeError as e:
-                    result['content'] = res.content.decode("latin-1")
-                except UnicodeDecodeError as e2:
                     result['content'] = res.content.decode("ascii")
-
             if fatal:
                 try:
                     res.raise_for_status()
                 except requests.exceptions.HTTPError as h:
                     self.fatal('URL could not be fetched (' + str(res.status_code) + ' / ' + res.content + ')')
 
-        except Exception as x:
+        except BaseException as x:
             if not noLog:
                 try:
                     self.error("Unexpected exception (" + str(x) + ") occurred fetching: " + url, False)
