@@ -146,7 +146,7 @@ class sfp_robtex(SpiderFootPlugin):
             except BaseException as e:
                 self.sf.error("Error parsing JSON from robtex API.", False)
                 return None
-            
+
             pas = data.get('pas')
             if not pas:
                 return None

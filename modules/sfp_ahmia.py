@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_ahmia
-# Purpose:      Searches the Tor search engine 'Ahmia' for content related 
+# Purpose:      Searches the Tor search engine 'Ahmia' for content related
 #               to the domain in question.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -78,7 +78,7 @@ class sfp_ahmia(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            links = re.findall("redirect_url=(.[^\"]+)\"", 
+            links = re.findall("redirect_url=(.[^\"]+)\"",
                              data['content'], re.IGNORECASE | re.DOTALL)
 
             reported = False

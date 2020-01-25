@@ -45,7 +45,7 @@ class sfp_bitcoin(SpiderFootPlugin):
         h = '%x' % n
         s = codecs.decode(('0'*(len(h) % 2) + h).zfill(length*2), "hex")
         return s
-      
+
     def decode_base58(self, bc, length):
         digits58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
         n = 0
@@ -56,7 +56,7 @@ class sfp_bitcoin(SpiderFootPlugin):
     def check_bc(self, bc):
         bcbytes = self.decode_base58(bc, 25)
         return bcbytes[-4:] == sha256(sha256(bcbytes[:-4]).digest()).digest()[:4]
- 
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType

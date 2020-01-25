@@ -117,7 +117,7 @@ class sfp_spider(SpiderFootPlugin):
             url = fetched['realurl']  # override the URL if we had a redirect
 
         # Extract links from the content
-        links = self.sf.parseLinks(url, fetched['content'], 
+        links = self.sf.parseLinks(url, fetched['content'],
                                    self.getTarget().getNames())
 
         if links is None or len(links) == 0:

@@ -68,7 +68,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             resolver.nameservers = [self.opts['_dnsserver']]
 
         if self.opts['skipwildcards'] and self.sf.checkDnsWildcard(tld):
-            return None 
+            return None
 
         try:
             addrs = self.sf.resolveHost(target)

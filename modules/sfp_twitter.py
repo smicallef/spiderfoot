@@ -17,7 +17,7 @@ class sfp_twitter(SpiderFootPlugin):
     """Twitter:Footprint,Investigate,Passive:Social Media::Gather name and location from Twitter profiles."""
 
     # Default options
-    opts = { 
+    opts = {
     }
 
     # Option descriptions
@@ -66,7 +66,7 @@ class sfp_twitter(SpiderFootPlugin):
             self.sf.debug("Skipping social network profile, " + url + ", as not a Twitter profile")
             return None
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
         if res['content'] is None:
@@ -77,11 +77,11 @@ class sfp_twitter(SpiderFootPlugin):
             return None
 
         # Retrieve name
-        human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>', 
+        human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>',
                                 res['content'], re.MULTILINE)
 
         if human_name:
-            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0], 
+            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0],
                                 self.__name__, event)
             self.notifyListeners(e)
 

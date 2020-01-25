@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_ripe
-# Purpose:      Queries Internet registryes like RIPE (incl. ARIN) to get 
+# Purpose:      Queries Internet registryes like RIPE (incl. ARIN) to get
 #               netblocks and other bits of info.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -191,7 +191,7 @@ class sfp_ripe(SpiderFootPlugin):
 
         return neighbours
 
-    # Determine whether there is a textual link between the target 
+    # Determine whether there is a textual link between the target
     # and the string supplied.
     def findName(self, string):
         # Simplest check to perform..

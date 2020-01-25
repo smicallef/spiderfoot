@@ -57,7 +57,7 @@ class sfp_whoxy(SpiderFootPlugin):
         url = "https://api.whoxy.com/?key=" + self.opts['api_key'] + "&reverse=whois"
         url += "&" + querytype + "=" + qry + "&page=" + str(page)
 
-        res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
         if res['code'] in [ "400", "429", "500", "403" ]:

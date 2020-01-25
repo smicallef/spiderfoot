@@ -78,7 +78,7 @@ class sfp_viewdns(SpiderFootPlugin):
         url = "https://api.viewdns.info/" + querytype + "/?apikey=" + self.opts['api_key']
         url += "&" + attr + "=" + qry + "&page=" + str(page) + "&output=json"
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
         if res['code'] in [ "400", "429", "500", "403" ]:

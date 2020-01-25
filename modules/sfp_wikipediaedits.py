@@ -20,7 +20,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "days_limit": "365"
     }
 
@@ -60,7 +60,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
             y = dt.strftime("%Y")
             m = dt.strftime("%m")
             url += "&year=" + y + "&month=" + m
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
         if res['code'] in [ "404", "403", "500" ]:
             return None
@@ -91,7 +91,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None

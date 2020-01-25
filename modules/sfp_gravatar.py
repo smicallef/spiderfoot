@@ -45,7 +45,7 @@ class sfp_gravatar(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'HUMAN_NAME', 'USERNAME', 
+        return ['RAW_RIR_DATA', 'HUMAN_NAME', 'USERNAME',
                 'EMAILADDR', 'PHONE_NUMBER', 'GEOINFO',
                 'ACCOUNT_EXTERNAL_OWNED', 'SOCIAL_MEDIA']
 

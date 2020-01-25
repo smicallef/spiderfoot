@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_onioncity
-# Purpose:      Searches the Tor search engine 'Onion City' for content related 
+# Purpose:      Searches the Tor search engine 'Onion City' for content related
 #               to the domain in question.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -20,8 +20,8 @@ class sfp_onioncity(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "api_key": "", 
-        "cse_id": "013611106330597893267:tfgl3wxdtbp", 
+        "api_key": "",
+        "cse_id": "013611106330597893267:tfgl3wxdtbp",
         'fetchlinks': True,
         'fullnames': True
     }
@@ -54,7 +54,7 @@ class sfp_onioncity(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT", 
+        return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT",
                 "RAW_RIR_DATA"]
 
     def handleEvent(self, event):
@@ -153,7 +153,7 @@ class sfp_onioncity(SpiderFootPlugin):
                     continue
 
                 data = res['content'][startIndex:endIndex]
-                evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + data + "...", 
+                evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + data + "...",
                                         self.__name__, evt)
                 self.notifyListeners(evt)
             else:

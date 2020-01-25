@@ -98,7 +98,7 @@ class sfp_xforce(SpiderFootPlugin):
             'Authorization': "Basic " + token.decode('utf-8')
         }
         url = xforce_url + "/" + querytype + "/" + qry
-        res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
 
         if res['code'] in [ "400", "401", "402", "403" ]:
             self.sf.error("XForce API key seems to have been rejected or you have exceeded usage limits for the month.", False)

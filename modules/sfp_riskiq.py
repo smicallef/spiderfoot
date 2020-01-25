@@ -94,7 +94,7 @@ class sfp_riskiq(SpiderFootPlugin):
         }
 
         # Be more forgiving with the timeout as some queries for subnets can be slow
-        res = self.sf.fetchUrl(url , timeout=30, 
+        res = self.sf.fetchUrl(url, timeout=30,
                                useragent="SpiderFoot", headers=headers,
                                postData=post)
 
@@ -160,7 +160,7 @@ class sfp_riskiq(SpiderFootPlugin):
                         if res['subjectCommonName'] == eventData:
                             continue
                         if self.getTarget().matches(res['subjectCommonName'], includeChildren=True):
-                            e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'], 
+                            e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'],
                                                 self.__name__, event)
                             self.notifyListeners(e)
                             if self.sf.isDomain(res['subjectCommonName'], self.opts['_internettlds']):

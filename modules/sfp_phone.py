@@ -60,7 +60,7 @@ class sfp_phone(SpiderFootPlugin):
 
         if eventName in ['TARGET_WEB_CONTENT', 'DOMAIN_WHOIS', 'NETBLOCK_WHOIS']:
             # Make potential phone numbers more friendly to parse
-            content = eventData.replace('.','-')
+            content = eventData.replace('.', '-')
 
             for match in phonenumbers.PhoneNumberMatcher(content, region=None):
                 n = phonenumbers.format_number(match.number,

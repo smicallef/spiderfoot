@@ -33,7 +33,7 @@ class sfp_openphish(SpiderFootPlugin):
     # Default options
     opts = {
         '_openphish': True,
-        'checkaffiliates': True,  
+        'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18
     }
@@ -69,7 +69,7 @@ class sfp_openphish(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME", 
+        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_COHOST"]
 
     # Check the regexps to see whether the content indicates maliciousness
@@ -134,7 +134,7 @@ class sfp_openphish(SpiderFootPlugin):
                 # If we're looking at netblocks
                 if targetType == "netblock":
                     iplist = list()
-                    # Get the regex, replace {0} with an IP address matcher to 
+                    # Get the regex, replace {0} with an IP address matcher to
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:

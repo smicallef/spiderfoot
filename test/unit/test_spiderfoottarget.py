@@ -1,7 +1,7 @@
 # test_spiderfoottarget.py
 from sflib import SpiderFootTarget
 import unittest
- 
+
 class TestSpiderFootTarget(unittest.TestCase):
     """
     Test SpiderFootTarget
@@ -40,7 +40,7 @@ class TestSpiderFootTarget(unittest.TestCase):
 
     def test_set_alias(self):
         """
-	Test setAlias(self, value, typeName)
+        Test setAlias(self, value, typeName)
         """
         target_value = 'example target value'
         target_type = 'IP_ADDRESS'
@@ -51,7 +51,7 @@ class TestSpiderFootTarget(unittest.TestCase):
 
     def test_get_aliases_should_return_a_list(self):
         """
-	Test getAliases(self)
+        Test getAliases(self)
         """
         target_value = 'example target value'
         target_type = 'IP_ADDRESS'
@@ -73,7 +73,7 @@ class TestSpiderFootTarget(unittest.TestCase):
 
     def test_get_names_should_return_a_list(self):
         """
-	Test getNames(self)
+        Test getNames(self)
         """
         target_value = 'example target value'
         target_type = 'IP_ADDRESS'
@@ -95,7 +95,7 @@ class TestSpiderFootTarget(unittest.TestCase):
 
     def test_matches(self):
         """
-	Test matches(self, value, includeParents=False, includeChildren=True)
+        Test matches(self, value, includeParents=False, includeChildren=True)
         """
         target_value = 'example target value'
         target_type = 'IP_ADDRESS'

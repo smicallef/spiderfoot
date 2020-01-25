@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_h1.nobbd.de
-# Purpose:      Query the the unofficial HackerOne disclosure timeline database 
+# Purpose:      Query the the unofficial HackerOne disclosure timeline database
 #               to see if our target appears.
 #
 # Author:      Dhiraj Mishra <dhiraj@notsosecure.com>
@@ -38,7 +38,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-	
+
     def watchedEvents(self):
         return ["DOMAIN_NAME"]
 

@@ -20,7 +20,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "api_key": "",
         "maxage": 30
     }
@@ -54,7 +54,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "INTERNET_NAME", "EMAILADDR", "RAW_RIR_DATA", 
+        return [ "INTERNET_NAME", "EMAILADDR", "RAW_RIR_DATA",
                  "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME" ]
 
     def query(self, t):
@@ -62,7 +62,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
         url = "https://api.builtwith.com/v11/api.json?LOOKUP=" + t + "&KEY=" + self.opts['api_key']
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
             useragent="SpiderFoot")
 
         if res['code'] == "404":
@@ -95,7 +95,7 @@ class sfp_builtwith(SpiderFootPlugin):
             self.errorState = True
             return None
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
@@ -111,12 +111,12 @@ class sfp_builtwith(SpiderFootPlugin):
             pat = re.compile("([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
             if data['Meta'].get("Names", []):
                 for nb in data['Meta']['Names']:
-                    e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + nb['Name'], 
+                    e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + nb['Name'],
                                         self.__name__, event)
                     self.notifyListeners(e)
                     if nb.get('Email', None):
                         if (re.match(pat, nb['Email'])):
-                            e = SpiderFootEvent("EMAILADDR", nb['Email'], 
+                            e = SpiderFootEvent("EMAILADDR", nb['Email'],
                                                 self.__name__, event)
                             self.notifyListeners(e)
 

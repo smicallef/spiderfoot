@@ -126,7 +126,7 @@ class SpiderFootWebUi:
             escapeddata = cgi.escape(row[1])
             escapedsrc = cgi.escape(row[2])
             retdata.append([lastseen, escapeddata, escapedsrc,
-                            row[3], row[5], row[6], row[7], row[8], row[10], 
+                            row[3], row[5], row[6], row[7], row[8], row[10],
                             row[11], row[4], row[13], row[14]])
 
         return retdata
@@ -172,7 +172,7 @@ class SpiderFootWebUi:
                 continue
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
-            parser.writerow([scaninfo[row[12]][0], lastseen, str(row[4]), str(row[3]), 
+            parser.writerow([scaninfo[row[12]][0], lastseen, str(row[4]), str(row[3]),
                             str(row[2]), row[13], datafield])
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
         cherrypy.response.headers['Content-Type'] = "application/csv"
@@ -207,34 +207,34 @@ class SpiderFootWebUi:
         scaninfo = list()
 
         for id in ids.split(','):
-          scan = dbh.scanInstanceGet(id)
+            scan = dbh.scanInstanceGet(id)
 
-          if scan is None:
-              continue
+            if scan is None:
+                continue
 
-          scan_name = scan[0]
+            scan_name = scan[0]
 
-          for row in dbh.scanResultEvent(id):
-              lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
-              event_data = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
-              source_data = str(row[2])
-              source_module = str(row[3])
-              event_type = row[4]
-              false_positive = row[13]
+            for row in dbh.scanResultEvent(id):
+                lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
+                event_data = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
+                source_data = str(row[2])
+                source_module = str(row[3])
+                event_type = row[4]
+                false_positive = row[13]
 
-              if event_type == "ROOT":
-                  continue
+                if event_type == "ROOT":
+                    continue
 
-              scaninfo.append({
-                  "data": event_data,
-                  "event_type": event_type,
-                  "module": source_module,
-                  "source_data": source_data,
-                  "false_positive": false_positive,
-                  "last_seen": lastseen,
-                  "scan_name": scan_name,
-                  "scan_target": scan[1]
-              })
+                scaninfo.append({
+                    "data": event_data,
+                    "event_type": event_type,
+                    "module": source_module,
+                    "source_data": source_data,
+                    "false_positive": false_positive,
+                    "last_seen": lastseen,
+                    "scan_name": scan_name,
+                    "scan_target": scan[1]
+                })
 
         cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.json"
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
@@ -257,7 +257,7 @@ class SpiderFootWebUi:
             return sf.buildGraphGexf([root], "SpiderFoot Export", data)
         else:
             return sf.buildGraphJson([root], data)
-        
+
     scanviz.exposed = True
 
     # Export entities results from multiple scans in GEXF format
@@ -420,7 +420,7 @@ class SpiderFootWebUi:
 
     newscan.exposed = True
 
-    
+
     # Clone an existing scan (pre-selected options in the newscan page)
     def clonescan(self, id):
         sf = SpiderFoot(self.config)
@@ -445,7 +445,7 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
                             modules=self.config['__modules__'], selectedmods=modlist,
-                            scanname=str(scanname), 
+                            scanname=str(scanname),
                             scantarget=str(scantarget))
 
     clonescan.exposed = True
@@ -539,7 +539,7 @@ class SpiderFootWebUi:
                 return json.dumps(["SUCCESS", ""])
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=id, name=str(res[0]), 
+            return templ.render(id=id, name=str(res[0]),
                                 names=list(), ids=list(),
                                 pageid="SCANLIST", docroot=self.docroot)
 
@@ -565,7 +565,7 @@ class SpiderFootWebUi:
             raise cherrypy.HTTPRedirect("/")
         else:
             templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-            return templ.render(id=None, name=None, ids=ids.split(','), names=names, 
+            return templ.render(id=None, name=None, ids=ids.split(','), names=names,
                                 pageid="SCANLIST", docroot=self.docroot)
 
     scandeletemulti.exposed = True
@@ -676,7 +676,7 @@ class SpiderFootWebUi:
             data = dbh.scanElementSourcesDirect(id, ids)
             for row in data:
                 if str(row[14]) == "1":
-                    return json.dumps(["WARNING", 
+                    return json.dumps(["WARNING",
                         "You cannot unset an element as False Positive " + \
                         "if a parent element is still False Positive."]);
 
@@ -687,7 +687,7 @@ class SpiderFootWebUi:
         ret = dbh.scanResultsUpdateFP(id, allIds, fp)
         if not ret:
             return json.dumps(["ERROR", "Exception encountered."])
-        else: 
+        else:
             return json.dumps(["SUCCESS", ""])
 
     resultsetfp.exposed = True
@@ -871,12 +871,12 @@ class SpiderFootWebUi:
                              "error for this scan probably exists. <a href='/scandelete?id=" + \
                              id + "&confirm=1'>Click here to delete it.</a>")
                 errState = True
-            
+
             if not errState:
                 globalScanStatus.setStatus(id, "ABORT-REQUESTED")
 
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST', stoppedscan=True, 
+        return templ.render(pageid='SCANLIST', stoppedscan=True,
                             errors=error, docroot=self.docroot)
 
     stopscanmulti.exposed = True

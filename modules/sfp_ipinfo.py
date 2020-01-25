@@ -19,8 +19,8 @@ class sfp_ipinfo(SpiderFootPlugin):
     """IPInfo.io:Footprint,Investigate,Passive:Real World:apikey:Identifies the physical location of IP addresses identified using ipinfo.io."""
 
     # Default options
-    opts = { 
-        "api_key": "" 
+    opts = {
+        "api_key": ""
     }
     optdescs = {
         "api_key": "Ipinfo.io access token."

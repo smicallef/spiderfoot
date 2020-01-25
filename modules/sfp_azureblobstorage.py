@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_azureblobstorage
-# Purpose:      SpiderFoot plug-in for identifying potential Azure blobs related 
+# Purpose:      SpiderFoot plug-in for identifying potential Azure blobs related
 #               to the target.
 #
 # Author:      Steve Micallef <steve@binarypool.com>

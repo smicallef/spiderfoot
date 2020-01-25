@@ -41,7 +41,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ['DOMAIN_NAME', 'INTERNET_NAME', 
+        return ['DOMAIN_NAME', 'INTERNET_NAME',
                 'INTERNET_NAME_UNRESOLVED', 'IP_ADDRESS']
 
     def producedEvents(self):
@@ -82,14 +82,14 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             self.sf.error('Login failed', False)
             self.errorState = True
             return None
- 
+
         if not token:
             self.sf.error('Login failed', False)
             self.errorState = True
             return None
- 
+
         self.token = token
- 
+
         return None
 
     # https://riddler.io/help/search

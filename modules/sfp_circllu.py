@@ -84,7 +84,7 @@ class sfp_circllu(SpiderFootPlugin):
         }
 
         # Be more forgiving with the timeout as some queries for subnets can be slow
-        res = self.sf.fetchUrl(url , timeout=30, 
+        res = self.sf.fetchUrl(url, timeout=30,
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] in [ "400", "429", "500", "403" ]:
@@ -154,7 +154,7 @@ class sfp_circllu(SpiderFootPlugin):
                             ipe = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
                             self.notifyListeners(ipe)
                         for crt in j[ip]['subjects']:
-                            r = re.findall(".*[\"\'](.+CN=([a-zA-Z0-9\-\*\.])+)[\"\'].*", 
+                            r = re.findall(".*[\"\'](.+CN=([a-zA-Z0-9\-\*\.])+)[\"\'].*",
                                            str(j[ip]['subjects'][crt]), re.IGNORECASE)
                             if r:
                                 e = SpiderFootEvent("SSL_CERTIFICATE_ISSUED", r[0][0], self.__name__, ipe)
