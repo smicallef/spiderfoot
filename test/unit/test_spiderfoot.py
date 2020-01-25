@@ -192,14 +192,14 @@ class TestSpiderFoot(unittest.TestCase):
         sf.debug(None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_my_path_should_return_a_unicode(self):
+    def test_my_path_should_return_a_str(self):
         """
         Test myPath(self)
         """
         sf = SpiderFoot(dict())
 
         path = sf.myPath()
-        self.assertEqual(unicode, type(path))
+        self.assertEqual(str, type(path))
 
     def test_hash_string_should_return_a_string(self):
         """
@@ -210,14 +210,14 @@ class TestSpiderFoot(unittest.TestCase):
         hash_string = sf.hashstring('example string')
         self.assertEqual(str, type(hash_string))
 
-    def test_cache_path_should_return_a_unicode(self):
+    def test_cache_path_should_return_a_string(self):
         """
         Test cachePath(self)
         """
         sf = SpiderFoot(dict())
 
         cache_path = sf.cachePath()
-        self.assertEqual(unicode, type(cache_path))
+        self.assertEqual(str, type(cache_path))
 
     def test_cache_put(self):
         """
@@ -297,7 +297,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(dict())
 
-        relative_url = sf.urlRelativeToAbsolute(None)
+        relative_url = sf.urlRelativeToAbsolute('http://localhost.local/path')
         self.assertEqual(str, type(relative_url))
 
     def test_url_base_dir_should_return_a_string(self):
@@ -306,7 +306,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(dict())
 
-        base_dir = sf.urlBaseDir(None)
+        base_dir = sf.urlBaseDir('http://localhost.local/path')
         self.assertEqual(str, type(base_dir))
 
     def test_url_base_url_should_return_a_string(self):
@@ -315,7 +315,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(dict())
 
-        base_url = sf.urlBaseUrl(None)
+        base_url = sf.urlBaseUrl('http://localhost.local/path')
         self.assertEqual(str, type(base_url))
 
     def test_url_fqdn_should_return_a_string(self):
@@ -324,7 +324,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(dict())
 
-        fqdn = sf.urlFQDN(None)
+        fqdn = sf.urlFQDN('http://localhost.local')
         self.assertEqual(str, type(fqdn))
 
     def test_domain_keyword(self):
