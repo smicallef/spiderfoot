@@ -110,7 +110,7 @@ if __name__ == '__main__':
     p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
     p.add_argument("-D", metavar='DELIMITER', type=str, help="Delimiter to use for CSV output. Default is ,.")
     p.add_argument("-f", action='store_true', help="Filter out other event types that weren't requested with -t.")
-    p.add_argument("-F", metavar="FILTER", type=str, help="Filter out a set of event types.")
+    p.add_argument("-F", metavar="FILTER", type=str, help="Show only a set of event types, comma-separated.")
     p.add_argument("-x", action='store_true', help="STRICT MODE. Will only enable modules that can directly consume your target, and if -t was specified only those events will be consumed by modules. This overrides -t and -m options.")
     p.add_argument("-q", action='store_true', help="Disable logging. This will also hide errors!")
     args = p.parse_args()
