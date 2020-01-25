@@ -127,7 +127,7 @@ class sfp_junkfiles(SpiderFootPlugin):
                         self.notifyListeners(evt)
 
         base = self.sf.urlBaseDir(eventData)
-        if base in self.bases:
+        if not base or base in self.bases:
             return None
         else:
             self.bases[base] = True
