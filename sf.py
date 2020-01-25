@@ -104,6 +104,7 @@ if __name__ == '__main__':
     p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect.")
     p.add_argument("-T", "--types", action='store_true', help="List available event types.")
     p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
+    p.add_argument("-H", action='store_true', help="Don't print field headers, just data.")
     p.add_argument("-n", action='store_true', help="Strip newlines from data.")
     p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
     p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
@@ -201,6 +202,10 @@ if __name__ == '__main__':
 
         if args.r and (args.o and args.o not in ["tab", "csv"]):
             print("-r can only be used when your output format is tab or csv.")
+            sys.exit(-1)
+
+        if args.H and (args.o and args.o not in ["tab", "csv"]):
+            print("-H can only be used when your output format is tab or csv.")
             sys.exit(-1)
 
         if args.D and args.o != "csv":
@@ -321,6 +326,28 @@ if __name__ == '__main__':
         t.daemon = True
         t.start()
 
+        # If field headers weren't disabled, print them
+        if not args.H and args.o != "json":
+            if args.D:
+                delim = args.D
+            else:
+                if args.o in [ "tab", None ]:
+                    delim = "\t"
+
+                if args.o == "csv":
+                    delim = ","
+
+            if not args.r:
+                if delim != "\t":
+                    print('{0}{1}{2}{3}{4}'.format("Source", delim, "Type", delim, "Data"))
+                else:
+                    print('{0:30}{1}{2:45}{3}{4}'.format("Source", delim, "Type", delim, "Data"))
+            else:
+                if delim != "\t":
+                    print('{0}{1}{2}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
+                else:
+                    print('{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
+
         while True:
             info = dbh.scanInstanceGet(scanId)
             if not info:
@@ -328,7 +355,7 @@ if __name__ == '__main__':
                 continue
             if info[5] in [ "ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED" ]:
                 if not args.q:
-                    print(("[*] Scan completed with status " + info[5]))
+                    print("[*] Scan completed with status " + info[5])
                 sys.exit(0)
             time.sleep(1)
 

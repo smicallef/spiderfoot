@@ -262,7 +262,6 @@ class SpiderFootDb:
             return
 
         if init:
-            print("Attempting to verify database and update if necessary...")
             for qry in self.createTypeQueries:
                 try:
                     self.dbh.execute(qry)
