@@ -44,7 +44,7 @@ class sfp_crt(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SSL_CERTIFICATE_RAW",
+        return ["SSL_CERTIFICATE_RAW", "RAW_RIR_DATA",
                 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'DOMAIN_NAME',
                 'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED', 
                 'AFFILIATE_DOMAIN_NAME']
@@ -84,7 +84,7 @@ class sfp_crt(SpiderFootPlugin):
         if data is None or len(data) == 0:
             return None
 
-        evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(data), self.__name__, event)
+        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
         cert_ids = list()
@@ -112,14 +112,17 @@ class sfp_crt(SpiderFootPlugin):
             if domain in self.results:
                 continue
 
+            if not self.sf.validHost(domain, self.opts['_internettlds']):
+                continue
+
             if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
                 evt_type = 'INTERNET_NAME'
             else:
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(domain):
-                    self.sf.debug("Host " + domain + " could not be resolved")
-                    evt_type += '_UNRESOLVED'
+                self.sf.debug("Host " + domain + " could not be resolved")
+                evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
             self.notifyListeners(evt)

@@ -768,6 +768,14 @@ class SpiderFoot:
 
     # Is the host a valid host (some filenames look like hosts)
     def validHost(self, hostname, tldList):
+        # First basic content checks
+        if "." not in hostname:
+            return False
+
+        if not re.match("^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
+            return False
+
+        # Finally check if it's on a valid TLD
         ps = PublicSuffixList(tldList)
         sfx = ps.get_public_suffix(hostname, strict=True)
         return sfx != None
@@ -780,12 +788,6 @@ class SpiderFoot:
         ps = PublicSuffixList(tldList)
         suffix = ps.get_public_suffix(hostname)
         return hostname == suffix
-
-    # Is the host a valid host (some filenames look like hosts)
-    def validHost(self, hostname, tldList):
-        ps = PublicSuffixList(tldList)
-        sfx = ps.get_public_suffix(hostname, strict=True)
-        return sfx != None
 
     # Simple way to verify IPv4 addresses.
     def validIP(self, address):
