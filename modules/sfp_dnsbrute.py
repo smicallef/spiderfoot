@@ -165,7 +165,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
             dom = "." + dom
             nextsubs = dict()
-            for i in range(0, 9):
+            for i in range(10):
                 nextsubs[h + str(i) + dom] = True
                 nextsubs[h + "0" + str(i) + dom] = True
                 nextsubs[h + "00" + str(i) + dom] = True
@@ -213,7 +213,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
                 if self.checkForStop():
                     return None
 
-                for i in range(0, 9):
+                for i in range(10):
                     nextsubs[s + str(i) + dom] = True
                     nextsubs[s + "0" + str(i) + dom] = True
                     nextsubs[s + "00" + str(i) + dom] = True
