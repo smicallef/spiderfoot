@@ -194,6 +194,9 @@ class sfp_ssltools(SpiderFootPlugin):
         for san in set(cert.get('altnames', list())):
             domain = san.replace("*.", "")
 
+            if not self.sf.validHost(domain, self.opts['_internettlds']):
+                continue
+
             if self.getTarget().matches(domain, includeChildren=True):
                 evt_type = 'INTERNET_NAME'
             else:
