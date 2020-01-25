@@ -105,6 +105,7 @@ class SpiderFoot:
             try:
                 self.info("Loading configuration data from: " + fname)
                 f = open(fname, "r")
+
                 if splitLines:
                     arr = f.readlines()
                     ret = list()
@@ -112,6 +113,8 @@ class SpiderFoot:
                         ret.append(x.rstrip('\n'))
                 else:
                     ret = f.read()
+
+                f.close()
                 return ret
             except BaseException as b:
                 if fatal:
@@ -849,6 +852,7 @@ class SpiderFoot:
             try:
                 wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
                 dlines = wdct.readlines()
+                wdct.close()
             except BaseException as e:
                 self.debug("Could not read dictionary: " + str(e))
                 continue
@@ -869,6 +873,7 @@ class SpiderFoot:
             try:
                 wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
                 dlines = wdct.readlines()
+                wdct.close()
             except BaseException as e:
                 self.debug("Could not read dictionary: " + str(e))
                 continue
