@@ -46,6 +46,10 @@ SpiderFoot's 170+ modules feed each other in a pub/sub model to ensure maximum d
 - Dark web searches
 - So much more...
 
+See it in action here, performing some DNS recon:
+
+[![asciicast](https://asciinema.org/a/295912.svg)](https://asciinema.org/a/295912)
+
 ### PURPOSE
 
 SpiderFoot can be used offensively (e.g. in a red team exercise or penetration test) for reconnaissance of your target or defensively to gather information about what you or your organisation might have exposed over the Internet.
