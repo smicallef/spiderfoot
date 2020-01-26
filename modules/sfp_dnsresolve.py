@@ -149,7 +149,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             return None
 
         # Search for IPs/hosts in raw data
-        if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", 
+        if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME",
                               "NETBLOCK_OWNER", "IP_ADDRESS", "IPV6_ADDRESS",
                               "INTERNET_NAME", "AFFILIATE_IPADDR"]:
             data = urllib.parse.unquote(eventData).lower()
@@ -283,7 +283,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if self.getTarget().matches(host):
                 affil = False
             # If the IP the host resolves to is in our
-            # list of aliases, 
+            # list of aliases,
             if not self.sf.validIP(host):
                 hostips = self.sf.resolveHost(host)
                 if hostips:
@@ -309,7 +309,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if htype.endswith("INTERNET_NAME"):
             resolved = self.sf.resolveHost(host)
             if htype == "INTERNET_NAME" and not resolved:
-                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, 
+                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host,
                                       self.__name__, parentEvent)
                 self.notifyListeners(evt)
                 return None

@@ -17,7 +17,7 @@ class sfp_slideshare(SpiderFootPlugin):
     """SlideShare:Footprint,Investigate,Passive:Social Media::Gather name and location from SlideShare profiles."""
 
     # Default options
-    opts = { 
+    opts = {
     }
 
     # Option descriptions
@@ -71,7 +71,7 @@ class sfp_slideshare(SpiderFootPlugin):
                           ", as not a SlideShare profile")
             return None
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:

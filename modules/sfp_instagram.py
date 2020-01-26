@@ -18,7 +18,7 @@ class sfp_instagram(SpiderFootPlugin):
     """Instagram:Footprint,Investigate,Passive:Social Media::Gather information from Instagram profiles."""
 
     # Default options
-    opts = { 
+    opts = {
     }
 
     # Option descriptions
@@ -87,7 +87,7 @@ class sfp_instagram(SpiderFootPlugin):
 
         # Retrieve profile
         res = self.sf.fetchUrl(url,
-                               timeout=self.opts['_fetchtimeout'], 
+                               timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:

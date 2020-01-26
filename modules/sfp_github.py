@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_github
-# Purpose:      Identifies public code repositories in Github associated with 
+# Purpose:      Identifies public code repositories in Github associated with
 #               your target.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -139,7 +139,7 @@ class sfp_github(SpiderFootPlugin):
 
         self.sf.debug("Looking at " + name)
         failed = False
-        # Get all the repositories based on direct matches with the 
+        # Get all the repositories based on direct matches with the
         # name identified
         url = "https://api.github.com/search/repositories?q=" + name
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
@@ -171,7 +171,7 @@ class sfp_github(SpiderFootPlugin):
                     if self.opts['namesonly'] and name != item['name']:
                         continue
 
-                    evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info, 
+                    evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info,
                                           self.__name__, event)
                     self.notifyListeners(evt)
 
@@ -211,8 +211,8 @@ class sfp_github(SpiderFootPlugin):
 
                 url = item['repos_url']
                 res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-	                               useragent=self.opts['_useragent'])
-    
+                                       useragent=self.opts['_useragent'])
+
                 if res['content'] == None:
                     self.sf.error("Unable to fetch " + url, False)
                     continue
@@ -231,7 +231,7 @@ class sfp_github(SpiderFootPlugin):
                 for item in repret:
                     if type(item) != dict:
                         self.sf.debug("Encountered an unexpected or empty response from Github.")
-                        continue 
+                        continue
 
                     repo_info = self.buildRepoInfo(item)
                     if repo_info != None:
@@ -240,7 +240,7 @@ class sfp_github(SpiderFootPlugin):
                         if eventName == "USERNAME" and "/" + name + "/" not in item.get('html_url', ''):
                             continue
 
-                        evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info, 
+                        evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info,
                                               self.__name__, event)
                         self.notifyListeners(evt)
 

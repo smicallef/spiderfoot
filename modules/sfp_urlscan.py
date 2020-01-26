@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_urlscan(SpiderFootPlugin):
     """URLScan.io:Footprint,Investigate,Passive:Search Engines::Search URLScan.io cache for domain information."""
 
-    opts = { 
+    opts = {
         'verify': True
     }
     optdescs = {
@@ -41,8 +41,8 @@ class sfp_urlscan(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['GEOINFO', 'LINKED_URL_INTERNAL', 'RAW_RIR_DATA', 
-                'DOMAIN_NAME', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 
+        return ['GEOINFO', 'LINKED_URL_INTERNAL', 'RAW_RIR_DATA',
+                'DOMAIN_NAME', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
                 'BGP_AS_MEMBER', 'WEBSERVER_BANNER']
 
     # https://urlscan.io/about-api/

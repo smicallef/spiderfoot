@@ -115,7 +115,7 @@ class sfp_wikileaks(SpiderFootPlugin):
                     self.sf.debug("Found a link: " + link)
                     if self.checkForStop():
                         return None
-    
+
                     # Wikileaks leak links will have a nested folder structure link
                     if link.count('/') >= 4:
                         if not link.endswith(".js") and not link.endswith(".css"):
@@ -124,7 +124,7 @@ class sfp_wikileaks(SpiderFootPlugin):
                             valid = True
 
             if valid:
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'], 
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
                                       self.__name__, event)
                 self.notifyListeners(evt)
 

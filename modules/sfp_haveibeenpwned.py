@@ -18,7 +18,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "api_key": ""
     }
 
@@ -65,11 +65,11 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
         if self.opts['api_key']:
             hdrs['hibp-api-key'] = self.opts['api_key']
-            
+
         while retry < 2:
             # https://haveibeenpwned.com/API/v2#RateLimiting
             time.sleep(1.5)
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent="SpiderFoot", headers=hdrs)
 
             if res['code'] == "200":
@@ -107,7 +107,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None

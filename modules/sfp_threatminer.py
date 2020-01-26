@@ -64,7 +64,7 @@ class sfp_threatminer(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "DOMAIN_NAME", "NETBLOCK_OWNER", 
+        return ["IP_ADDRESS", "DOMAIN_NAME", "NETBLOCK_OWNER",
                 "NETBLOCK_MEMBER"]
 
     # What events this module produces

@@ -23,8 +23,8 @@ nearchars = {
  'g': [ 'f', 'h' ],
  'h': [ 'g', 'j', 'n' ],
  'i': [ 'o', 'u', '1' ],
- 'j': [ 'k', 'h' ,'i' ],
- 'k': [ 'l' ,'j' ],
+ 'j': [ 'k', 'h' , 'i' ],
+ 'k': [ 'l' , 'j' ],
  'l': [ 'i', '1', 'k' ],
  'm': [ 'n' ],
  'n': [ 'm' ],
@@ -150,7 +150,7 @@ class sfp_similar(SpiderFootPlugin):
                     evt = SpiderFootEvent("SIMILARDOMAIN", d + tld, self.__name__, event)
                     self.notifyListeners(evt)
             except BaseException as e:
-                continue                   
+                continue
 
         return None
 

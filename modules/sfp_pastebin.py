@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_pastebin
-# Purpose:      Searches Google for PasteBin content related to the domain in 
+# Purpose:      Searches Google for PasteBin content related to the domain in
 #               question.
 #
 # Author:      Steve Micallef <steve@binarypool.com> and ShellCodeNoobx
@@ -22,7 +22,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "api_key": "", 
+        "api_key": "",
         "cse_id": "013611106330597893267:tfgl3wxdtbp"
     }
 
@@ -105,7 +105,7 @@ class sfp_pastebin(SpiderFootPlugin):
             relevant_links = [
                 link for link in new_links if self.sf.urlBaseUrl(link).endswith(target)
             ]
-            
+
             for link in relevant_links:
                 self.sf.debug("Found a link: " + link)
 

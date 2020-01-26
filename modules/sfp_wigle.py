@@ -19,7 +19,7 @@ class sfp_wigle(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "api_key_encoded": "",
         "days_limit": "365",
         "variance": "0.01"
@@ -30,7 +30,7 @@ class sfp_wigle(SpiderFootPlugin):
         "api_key_encoded": "Wigle.net base64-encoded API name/token pair.",
         "days_limit": "Maximum age of data to be considered valid.",
         "variance": "How tightly to bound queries against the latitude/longitude box extracted from idenified addresses. This value must be between 0.001 and 0.2."
-    
+
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -61,12 +61,12 @@ class sfp_wigle(SpiderFootPlugin):
     def getcoords(self, qry):
         url = "https://api.wigle.net/api/v2/network/geocode?" + \
               urllib.parse.urlencode({'addresscode': qry.encode('utf-8', errors='replace')})
-        hdrs = { 
+        hdrs = {
                     "Accept": "application/json",
                     "Authorization": "Basic " + self.opts['api_key_encoded']
                }
 
-        res = self.sf.fetchUrl(url, timeout=30, 
+        res = self.sf.fetchUrl(url, timeout=30,
                                useragent="SpiderFoot", headers=hdrs)
         if res['code'] == "404" or not res['content']:
             return None
@@ -137,7 +137,7 @@ class sfp_wigle(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None

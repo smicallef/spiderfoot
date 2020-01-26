@@ -47,8 +47,8 @@ class sfp_names(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["TARGET_WEB_CONTENT", "EMAILADDR", 
-                "DOMAIN_WHOIS", "NETBLOCK_WHOIS", 
+        return ["TARGET_WEB_CONTENT", "EMAILADDR",
+                "DOMAIN_WHOIS", "NETBLOCK_WHOIS",
                 "RAW_RIR_DATA", "RAW_FILE_META_DATA"]
 
     # What events this module produces

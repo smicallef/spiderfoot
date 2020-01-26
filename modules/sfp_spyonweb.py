@@ -49,7 +49,7 @@ class sfp_spyonweb(SpiderFootPlugin):
         self.sf = sfc
         self.__dataSource__ = "SpyOnWeb"
         self.results = self.tempStorage()
-        self.cohostcount = 0                                                                                                                                                                                       
+        self.cohostcount = 0
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -232,7 +232,7 @@ class sfp_spyonweb(SpiderFootPlugin):
             for r in list(data.keys()):
                 last_seen = int(datetime.datetime.strptime(data[r], '%Y-%m-%d').strftime('%s')) * 1000
 
-                if last_seen < agelimit:                                                                                                                                                                           
+                if last_seen < agelimit:
                     self.sf.debug("Record found too old, skipping.")
                     continue
 

@@ -66,7 +66,7 @@ class sfp_pulsedive(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_IPADDR", 
+        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_IPADDR",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
                 'TCP_PORT_OPEN']
 

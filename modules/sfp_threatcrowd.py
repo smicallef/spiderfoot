@@ -75,10 +75,10 @@ class sfp_threatcrowd(SpiderFootPlugin):
 
         if self.sf.validIP(qry):
             url = "https://www.threatcrowd.org/searchApi/v2/ip/report/?ip=" + qry
-        
+
         if "@" in qry:
             url = "https://www.threatcrowd.org/searchApi/v2/email/report/?email=" + qry
-        
+
         if not url:
             url = "https://www.threatcrowd.org/searchApi/v2/domain/report/?domain=" + qry
 

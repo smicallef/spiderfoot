@@ -30,7 +30,7 @@ class sfp_flickr(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'pause': "Number of seconds to pause between fetches.",                                                                                                                                                    
+        'pause': "Number of seconds to pause between fetches.",
         'per_page': "Maximum number of results per page.",
         'maxpages': "Maximum number of pages of results to fetch."
     }
@@ -161,6 +161,6 @@ class sfp_flickr(SpiderFootPlugin):
                         self.results[email] = True
 
             page += 1
-            time.sleep(self.opts['pause'])                                                                                                                                                                             
+            time.sleep(self.opts['pause'])
 
 # End of sfp_flickr class

@@ -94,7 +94,7 @@ class sfp__stor_stdout(SpiderFootPlugin):
             if self.firstEvent:
                 self.firstEvent = False
             else:
-                print(",") 
+                print(",")
             print(json.dumps(d), end='')
 
     # Handle events sent to this module

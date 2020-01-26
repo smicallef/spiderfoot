@@ -89,8 +89,8 @@ class sfp_citadel(SpiderFootPlugin):
 
         if self.errorState:
             return None
-            
-	    # Don't look up stuff twice
+
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already searched.")
             return None

@@ -30,7 +30,7 @@ class sfp_customfeed(SpiderFootPlugin):
     # Default options
     opts = {
         '_customfeed': True,
-        'checkaffiliates': True, 
+        'checkaffiliates': True,
         'checkcohosts': True,
         'url': "",
         'cacheperiod': 0
@@ -64,7 +64,7 @@ class sfp_customfeed(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "IP_ADDRESS", "AFFILIATE_INTERNET_NAME", 
+        return ["INTERNET_NAME", "IP_ADDRESS", "AFFILIATE_INTERNET_NAME",
                 "AFFILIATE_IPADDR", "CO_HOSTED_SITE"]
 
     # What events this module produces
@@ -119,7 +119,7 @@ class sfp_customfeed(SpiderFootPlugin):
                 # If we're looking at netblocks
                 if targetType == "netblock":
                     iplist = list()
-                    # Get the regex, replace {0} with an IP address matcher to 
+                    # Get the regex, replace {0} with an IP address matcher to
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:

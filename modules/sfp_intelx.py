@@ -91,10 +91,10 @@ class sfp_intelx(SpiderFootPlugin):
             "sort": 4,
             "media": 0,
             "terminate": []
-        } 
+        }
 
         url = 'https://' + self.opts['base_url']  + '/intelligent/search'
-        res = self.sf.fetchUrl(url, postData=json.dumps(payload), 
+        res = self.sf.fetchUrl(url, postData=json.dumps(payload),
                                headers=headers, timeout=self.opts['_fetchtimeout'])
 
         if res['content'] is None:
@@ -138,7 +138,7 @@ class sfp_intelx(SpiderFootPlugin):
                     return ret
 
                 time.sleep(1)
-                
+
         self.sf.debug("No results found.")
         return None
 
@@ -180,7 +180,7 @@ class sfp_intelx(SpiderFootPlugin):
         for rec in info.get("records", dict()):
             try:
                 last_seen = int(datetime.datetime.strptime(rec['added'].split(".")[0], '%Y-%m-%dT%H:%M:%S').strftime('%s')) * 1000
-                if last_seen < agelimit:                                                                                                                             
+                if last_seen < agelimit:
                     self.sf.debug("Record found but too old, skipping.")
                     continue
 
@@ -199,7 +199,7 @@ class sfp_intelx(SpiderFootPlugin):
             except BaseException as e:
                 self.sf.error("Error processing content from IntelX: " + str(e), False)
                 continue
-                
+
             # Notify other modules of what you've found
             e = SpiderFootEvent(evt, val, self.__name__, event)
             self.notifyListeners(e)

@@ -90,7 +90,7 @@ class sfp_quad9(SpiderFootPlugin):
                 typ = "MALICIOUS_COHOST"
             if not found:
                 evt = SpiderFootEvent(typ, "Blocked by Quad9 [" + eventData + "]\n" +\
-                                      "<SFURL>https://quad9.net/result/?url=" + eventData + "</SFURL>", 
+                                      "<SFURL>https://quad9.net/result/?url=" + eventData + "</SFURL>",
                                       self.__name__, parentEvent)
                 self.notifyListeners(evt)
 

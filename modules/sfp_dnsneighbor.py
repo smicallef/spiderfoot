@@ -157,7 +157,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             if self.getTarget().matches(host):
                 affil = False
             # If the IP the host resolves to is in our
-            # list of aliases, 
+            # list of aliases,
             if not self.sf.validIP(host):
                 hostips = self.sf.resolveHost(host)
                 if hostips:

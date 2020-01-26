@@ -61,14 +61,14 @@ class sfp_fortinet(SpiderFootPlugin):
     # * = be notified about all events.
     def watchedEvents(self):
         return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
-                
+
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
         return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
-                
+
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
@@ -132,7 +132,7 @@ class sfp_fortinet(SpiderFootPlugin):
                 # If we're looking at netblocks
                 if targetType == "netblock":
                     iplist = list()
-                    # Get the regex, replace {0} with an IP address matcher to 
+                    # Get the regex, replace {0} with an IP address matcher to
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:

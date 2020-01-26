@@ -19,7 +19,7 @@ class sfp_fullcontact(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "api_key": "",
         "max_age_days": "365"
     }
@@ -53,7 +53,7 @@ class sfp_fullcontact(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "EMAILADDR", "RAW_RIR_DATA", "PHONE_NUMBER", 
+        return [ "EMAILADDR", "RAW_RIR_DATA", "PHONE_NUMBER",
                  "GEOINFO", "PHYSICAL_ADDRESS" ]
 
     def query(self, url, data, failcount=0):
@@ -61,7 +61,7 @@ class sfp_fullcontact(SpiderFootPlugin):
         ret = None
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot", postData=json.dumps(data), 
+                               useragent="SpiderFoot", postData=json.dumps(data),
                                headers={"Authorization": header})
 
         if res['code'] in [ "401", "400" ]:
@@ -129,7 +129,7 @@ class sfp_fullcontact(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
@@ -166,13 +166,13 @@ class sfp_fullcontact(SpiderFootPlugin):
             if data.get("locations"):
                 for r in data['locations']:
                     if r.get("city") and r.get("country"):
-                        e = SpiderFootEvent("GEOINFO", r['city'] + ", " + r['country'], 
+                        e = SpiderFootEvent("GEOINFO", r['city'] + ", " + r['country'],
                                             self.__name__, event)
                         self.notifyListeners(e)
                     if r.get("formatted"):
                         # Seems to contain some junk sometimes
                         if len(r['formatted']) > 10:
-                            e = SpiderFootEvent("PHYSICAL_ADDRESS", r['formatted'], 
+                            e = SpiderFootEvent("PHYSICAL_ADDRESS", r['formatted'],
                                                 self.__name__, event)
                             self.notifyListeners(e)
 

@@ -98,9 +98,9 @@ class sfp_pgp(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None or res['code'] == "503":
-               res = self.sf.fetchUrl(self.opts['keyserver_fetch2'] + eventData,
-                                      timeout=self.opts['_fetchtimeout'],
-                                      useragent=self.opts['_useragent'])
+                res = self.sf.fetchUrl(self.opts['keyserver_fetch2'] + eventData,
+                                       timeout=self.opts['_fetchtimeout'],
+                                       useragent=self.opts['_useragent'])
 
             if res['content'] is not None and res['code'] != "503":
                 pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE | re.DOTALL)

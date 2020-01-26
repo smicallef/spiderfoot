@@ -76,7 +76,7 @@ class sfp_fraudguard(SpiderFootPlugin):
             'Authorization': "Basic " + token.decode('utf-8')
         }
 
-        res = self.sf.fetchUrl(fraudguard_url , timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(fraudguard_url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] in [ "400", "429", "500", "403" ]:
@@ -165,5 +165,5 @@ class sfp_fraudguard(SpiderFootPlugin):
                     dat = rec['threat'] + " (risk level: " + rec['risk_level'] + ") [" + eventData + "]"
                     e = SpiderFootEvent("MALICIOUS_" + rtype, dat, self.__name__, event)
                     self.notifyListeners(e)
-    
+
 # End of sfp_fraudguard class
