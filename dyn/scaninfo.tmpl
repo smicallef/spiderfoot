@@ -162,7 +162,7 @@
                             if (data.length == 0) {
                                 var table = "<div id='scansummary-content'>&nbsp;&nbsp;No results found. Try broadening your search criteria.</div>";
                             } else {
-                                var table = "<table id='scansummary-content' class='table table-bordered table-striped small'><thead><tr>";
+                                var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'><thead><tr>";
                                 if (typeName == null) {
                                     table += "<th>Data Element Type</th>";
                                 }
@@ -186,6 +186,7 @@
                             }
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(crumbs + table);
+                            $("#scansummary-content").tablesorter();
             });
         }
 
@@ -482,7 +483,7 @@
                             }
                             crumbs += "</ul>";
 
-                            var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
+                            var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'>";
                             table += "<thead><tr>";
                             table += "<th style='text-align: center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'>";
                             table += "</th>";
@@ -515,6 +516,7 @@
                             table += "</tbody></table>"
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(crumbs + table);
+                            $("#scansummary-content").tablesorter({ headers: { 0: { sorter: false } } });
                             lastChecked = null;
                             var chkboxes = $('input[id*=cb_]');
                             chkboxes.click(function(e) {
