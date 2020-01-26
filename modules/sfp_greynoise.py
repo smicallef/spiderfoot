@@ -140,6 +140,10 @@ class sfp_greynoise(SpiderFootPlugin):
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
 
         ret = self.queryIP(eventData)
+
+        if not ret:
+            return None
+
         if "data" not in ret:
             return None
 
