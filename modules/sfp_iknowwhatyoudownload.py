@@ -17,7 +17,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "daysback": 30,
         "api_key": ""
     }
@@ -65,7 +65,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         url = base + qry + "&days=" + str(self.opts['daysback'])
         url += "&key=" + self.opts['api_key']
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
             useragent="SpiderFoot")
 
         if res['code'] in ["403", "500"]:
@@ -83,7 +83,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
                 self.errorState = True
                 self.sf.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.", False)
                 return None
-        
+
         if 'contents' in ret:
             if len(ret['contents']) > 0:
                 retdata = "<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip=" + qry + "</SFURL>\n"
@@ -93,7 +93,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
             else:
                 return None
         else:
-            return None    
+            return None
 
         return retdata
 
@@ -113,7 +113,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
             self.errorState = True
             return None
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None

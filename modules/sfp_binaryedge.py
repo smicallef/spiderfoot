@@ -74,13 +74,13 @@ class sfp_binaryedge(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "DOMAIN_NAME", "EMAILADDR", 
+        return ["IP_ADDRESS", "DOMAIN_NAME", "EMAILADDR",
                 "NETBLOCK_OWNER", "NETBLOCK_MEMBER" ]
 
     # What events this module produces
     def producedEvents(self):
         return ["INTERNET_NAME", "VULNERABILITY", "TCP_PORT_OPEN",
-                "TCP_PORT_OPEN_BANNER", "EMAILADDR_COMPROMISED", 
+                "TCP_PORT_OPEN_BANNER", "EMAILADDR_COMPROMISED",
                 "UDP_PORT_OPEN", "UDP_PORT_OPEN_INFO", "DOMAIN_NAME",
                 "CO_HOSTED_SITE", "MALICIOUS_IPADDR"]
 
@@ -103,13 +103,13 @@ class sfp_binaryedge(SpiderFootPlugin):
             queryurl = "/v2/query/domains/subdomain/{0}?page={1}"
         if querytype == "passive":
             queryurl = "/v2/query/domains/ip/{0}?page={1}"
-        
+
         binaryedgeurl = "https://api.binaryedge.io"
         headers = {
             'X-Key': self.opts['binaryedge_api_key']
         }
         url = binaryedgeurl + queryurl.format(qry.encode('utf-8', errors='replace'), page)
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] in [ "429", "500" ]:

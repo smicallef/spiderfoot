@@ -65,7 +65,7 @@ class sfp_hosting(SpiderFootPlugin):
             if "," not in line:
                 continue
             try:
-                [start,end,title,url] = line.split(",")
+                [start, end, title, url] = line.split(",")
             except BaseException as e:
                 continue
 

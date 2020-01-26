@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_accounts
-# Purpose:      Identify the existence of a given acount on various sites thanks 
+# Purpose:      Identify the existence of a given acount on various sites thanks
 #               to Micah Hoffman's (https://github.com/WebBreacher) list.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -118,7 +118,7 @@ class sfp_accounts(SpiderFootPlugin):
             if site['account_existence_code']:
                 if site['account_existence_code'] == res['code']:
                     found = True
-            if site['account_missing_code']: 
+            if site['account_missing_code']:
                 if site['account_missing_code'] == res['code']:
                     found = False
             if site['account_existence_string']:
@@ -174,7 +174,7 @@ class sfp_accounts(SpiderFootPlugin):
             if not found:
                 running = False
 
-            time.sleep(0.25) 
+            time.sleep(0.25)
 
         # Return once the scanning has completed
         return self.siteResults

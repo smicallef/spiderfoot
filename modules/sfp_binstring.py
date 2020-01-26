@@ -88,7 +88,7 @@ class sfp_binstring(SpiderFootPlugin):
 
                 if accept:
                     words.append(result)
-                    
+
                 result = ""
 
         if len(words) == 0:
@@ -125,11 +125,11 @@ class sfp_binstring(SpiderFootPlugin):
         res = None
         for fileExt in self.opts['fileexts']:
             if eventData.lower().endswith("." + fileExt.lower()) or "." + fileExt + "?" in eventData.lower():
-                res = self.sf.fetchUrl(eventData, 
-                                       useragent=self.opts['_useragent'], 
+                res = self.sf.fetchUrl(eventData,
+                                       useragent=self.opts['_useragent'],
                                        dontMangle=True,
                                        sizeLimit=self.opts['maxfilesize'])
-                
+
         if res:
             self.sf.debug("Searching for strings")
             words = self.getStrings(res['content'])

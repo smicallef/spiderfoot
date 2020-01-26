@@ -60,7 +60,7 @@ class sfp_greynoise(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", 
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
                 "NETBLOCK_MEMBER", "NETBLOCK_OWNER"]
 
     # What events this module produces
@@ -75,7 +75,7 @@ class sfp_greynoise(SpiderFootPlugin):
 
         header = { "key": self.opts['api_key'] }
         url = "https://" + "enterprise.api.greynoise.io/v2/experimental/gnql?query=" + qry
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=header)
 
         if res['code'] not in [ "200" ]:

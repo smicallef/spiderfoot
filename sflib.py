@@ -293,11 +293,11 @@ class SpiderFoot:
 
     # Generate an globally unique ID for this scan
     def genScanInstanceGUID(self, scanName):
- #       hashStr = hashlib.sha256(
- #           scanName +
- #           str(time.time() * 1000) +
- #           str(random.SystemRandom().randint(100000, 999999))
- #       ).hexdigest()
+        # hashStr = hashlib.sha256(
+        #     scanName +
+        #     str(time.time() * 1000) +
+        #     str(random.SystemRandom().randint(100000, 999999))
+        # ).hexdigest()
         return str(uuid.uuid4()).split("-")[0].upper()
 
     def _dblog(self, level, message, component=None):
@@ -826,9 +826,9 @@ class SpiderFoot:
 
     # Verify input is OK to execute
     def sanitiseInput(self, cmd):
-        chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m',
-         'n','o','p','q','r','s','t','u','v','w','x','y','z',
-         '0','1','2','3','4','5','6','7','8','9','-','.']
+        chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
         for c in cmd:
             if c.lower() not in chars:
                 return False
@@ -1401,9 +1401,9 @@ class SpiderFoot:
 
                 if result['realurl'] != url:
                     if not noLog:
-                       self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
-                              " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
-                              str(timeout) + "]")
+                        self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
+                            " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                            str(timeout) + "]")
 
                     hdr = self.getSession().head(result['realurl'], headers=header, proxies=proxies,
                                         verify=verify, timeout=timeout)
@@ -1924,7 +1924,7 @@ class SpiderFootTarget(object):
         if value is None or value == "":
             return False
 
-        # We can't really say anything about names, username or phone numbers, 
+        # We can't really say anything about names, username or phone numbers,
         # so everything matches
         if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME" ]:
             return True

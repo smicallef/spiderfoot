@@ -37,8 +37,8 @@ class sfp_company(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["TARGET_WEB_CONTENT", "SSL_CERTIFICATE_ISSUED", 
-                "DOMAIN_WHOIS", "NETBLOCK_WHOIS", 
+        return ["TARGET_WEB_CONTENT", "SSL_CERTIFICATE_ISSUED",
+                "DOMAIN_WHOIS", "NETBLOCK_WHOIS",
                 "AFFILIATE_DOMAIN_WHOIS", "AFFILIATE_WEB_CONTENT"]
 
     # What events this module produces
@@ -58,7 +58,7 @@ class sfp_company(SpiderFootPlugin):
         # a capital letter, allowing for hyphens brackets and numbers within.
         pattern_prefix = "(?=[,;:\'\">\(= ]|^)\s?([A-Z0-9\(\)][A-Za-z0-9\-&,\.][^ \"\';:><]*)?\s?([A-Z0-9\(\)][A-Za-z0-9\-&,\.]?[^ \"\';:><]*|[Aa]nd)?\s?([A-Z0-9\(\)][A-Za-z0-9\-&,\.]?[^ \"\';:><]*)?\s+"
         pattern_match_re = [
-            'LLC', 'L\.L\.C\.?', 'AG', 'A\.G\.?', 'GmbH', 'Pty\.?\s+Ltd\.?', 
+            'LLC', 'L\.L\.C\.?', 'AG', 'A\.G\.?', 'GmbH', 'Pty\.?\s+Ltd\.?',
             'Ltd\.?', 'Pte\.?', 'Inc\.?', 'INC\.?', 'Incorporated', 'Foundation',
             'Corp\.?', 'Corporation', 'SA', 'S\.A\.?', 'SIA', 'BV', 'B\.V\.?',
             'NV', 'N\.V\.?' 'PLC', 'Limited', 'Pvt\.?\s+Ltd\.?', 'SARL' ]
@@ -142,12 +142,12 @@ class sfp_company(SpiderFootPlugin):
                         flt = False
                         for f in filterpatterns:
                             if re.match(f, m):
-                               flt = True 
+                                flt = True
                         if not flt:
                             fullcompany += m + " "
 
                     fullcompany = re.sub("\s+", " ", fullcompany.strip())
-                    
+
                     self.sf.info("Found company name: " + fullcompany)
                     if fullcompany in myres:
                         self.sf.debug("Already found from this source.")

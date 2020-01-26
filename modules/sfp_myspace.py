@@ -17,7 +17,7 @@ class sfp_myspace(SpiderFootPlugin):
     """MySpace:Footprint,Investigate,Passive:Social Media::Gather username and location from MySpace.com profiles."""
 
     # Default options
-    opts = { 
+    opts = {
     }
 
     # Option descriptions
@@ -58,8 +58,8 @@ class sfp_myspace(SpiderFootPlugin):
         # Search by email address
         if eventName == "EMAILADDR":
             email = eventData
-            res = self.sf.fetchUrl("https://myspace.com/search/people?q=" + email, 
-                                   timeout=self.opts['_fetchtimeout'], 
+            res = self.sf.fetchUrl("https://myspace.com/search/people?q=" + email,
+                                   timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None:
@@ -108,7 +108,7 @@ class sfp_myspace(SpiderFootPlugin):
                               ", as not a MySpace profile")
                 return None
 
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None:
@@ -122,8 +122,8 @@ class sfp_myspace(SpiderFootPlugin):
             location = data[0]
 
             if len(location) < 5 or len(location) > 100:
-               self.sf.debug("Skipping likely invalid location.")
-               return None
+                self.sf.debug("Skipping likely invalid location.")
+                return None
 
             e = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(e)

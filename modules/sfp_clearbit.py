@@ -17,7 +17,7 @@ class sfp_clearbit(SpiderFootPlugin):
     """Clearbit:Footprint,Investigate,Passive:Search Engines:apikey:Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com."""
 
     # Default options
-    opts = { 
+    opts = {
         "api_key": ""
     }
 
@@ -65,11 +65,11 @@ class sfp_clearbit(SpiderFootPlugin):
             'Authorization': "Basic " + token.decode('utf-8')
         }
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
             useragent="SpiderFoot", headers=headers)
 
         if res['code'] != "200":
-            self.sf.error("Return code indicates no results or potential API key failure or exceeded limits.", 
+            self.sf.error("Return code indicates no results or potential API key failure or exceeded limits.",
                        False)
             return None
 
@@ -98,7 +98,7 @@ class sfp_clearbit(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
@@ -113,7 +113,7 @@ class sfp_clearbit(SpiderFootPlugin):
             # Get the name associated with the e-mail
             if "person" in data:
                 name = data['person']['name']['fullName']
-                evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name, 
+                evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name,
                                       self.__name__, event)
                 self.notifyListeners(evt)
         except Exception:
@@ -148,7 +148,7 @@ class sfp_clearbit(SpiderFootPlugin):
             if "company" in data:
                 if 'domainAliases' in data['company']:
                     for d in data['company']['domainAliases']:
-                        evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", d, 
+                        evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", d,
                                               self.__name__, event)
                         self.notifyListeners(evt)
 
@@ -166,7 +166,7 @@ class sfp_clearbit(SpiderFootPlugin):
                 # the location of the employer.
                 if 'geo' in data['company']:
                     loc = ""
-    
+
                     if 'streetNumber' in data['company']['geo']:
                         loc += data['company']['geo']['streetNumber'] + ", "
                     if 'streetName' in data['company']['geo']:

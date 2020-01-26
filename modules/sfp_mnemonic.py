@@ -48,7 +48,7 @@ class sfp_mnemonic(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-        self.cohostcount = 0                                                                                                                                                                                       
+        self.cohostcount = 0
         self.errorState = False
 
         for opt in list(userOpts.keys()):
@@ -143,8 +143,8 @@ class sfp_mnemonic(SpiderFootPlugin):
         max_pages = int(self.opts['max_pages'])
         per_page = int(self.opts['per_page'])
         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
-        cohostcount = 0                                                                                                                                                                                                
-        cohosts = list()                                                                                                                                                                                       
+        cohostcount = 0
+        cohosts = list()
 
         while position < (per_page * max_pages):
             if self.checkForStop():

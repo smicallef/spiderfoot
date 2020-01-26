@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_botscout
-# Purpose:      SpiderFoot plug-in to search botsout.com using their API, for 
+# Purpose:      SpiderFoot plug-in to search botsout.com using their API, for
 #               potential malicious IPs and e-mail addresses.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -36,7 +36,7 @@ class sfp_botscout(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS','EMAILADDR']
+        return ['IP_ADDRESS', 'EMAILADDR']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -73,7 +73,7 @@ class sfp_botscout(SpiderFootPlugin):
             url = "http://botscout.com/test/?all="
 
         res = self.sf.fetchUrl(url + eventData,
-                               timeout=self.opts['_fetchtimeout'], 
+                               timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
         if res['content'] is None or "|" not in res['content']:
             self.sf.error("Error encountered processing " + eventData, False)

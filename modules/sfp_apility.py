@@ -85,7 +85,7 @@ class sfp_apility(SpiderFootPlugin):
 
         return self.parseApiResponse(res)
 
- 
+
     # Query IP REST API
     # https://apility.io/apidocs/#full-ip-address-reputation
     # Note: currently unused

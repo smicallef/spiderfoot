@@ -517,7 +517,7 @@ class SpiderFootDb:
             type, message, rowid FROM tbl_scan_log WHERE scan_instance_id = ?"
         if fromRowId:
             qry += " and rowid > ?"
-        
+
         qry += " ORDER BY generated "
         if reverse:
             qry += "ASC"
@@ -722,7 +722,7 @@ class SpiderFootDb:
     # List of all previously run scans
     def scanInstanceList(self):
         # SQLite doesn't support OUTER JOINs, so we need a work-around that
-        # does a UNION of scans with results and scans without results to 
+        # does a UNION of scans with results and scans without results to
         # get a complete listing.
         qry = "SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
             ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, COUNT(r.type) \
@@ -803,7 +803,7 @@ class SpiderFootDb:
         except sqlite3.Error as e:
             self.sf.error("SQL error encountered when getting child element IDs: " + e.args[0])
 
-    # Get the full set of upstream IDs which are parents to the 
+    # Get the full set of upstream IDs which are parents to the
     # supplied set of IDs.
     # Data has to be in the format of output from scanElementSourcesDirect
     # and produce output in the same format.
@@ -856,7 +856,7 @@ class SpiderFootDb:
         datamap[parentId] = row
         return [datamap, pc]
 
-    # Get the full set of downstream IDs which are children of the 
+    # Get the full set of downstream IDs which are children of the
     # supplied set of IDs
     # NOTE FOR NOW THE BEHAVIOR IS NOT THE SAME AS THE scanElementParent*
     # FUNCTIONS - THIS ONLY RETURNS IDS!!

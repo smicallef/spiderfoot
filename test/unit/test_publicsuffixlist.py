@@ -6,7 +6,7 @@ class TestPublicSuffixList(unittest.TestCase):
     """
     Test PublicSuffixList
     """
- 
+
     def test_init(self):
         """
         Test __init__(self, input_data)

@@ -95,7 +95,7 @@ class sfp_bgpview(SpiderFootPlugin):
             return None
 
         return data
- 
+
     def queryIp(self, qry):
         res = self.sf.fetchUrl("https://api.bgpview.io/ip/" + qry,
                                useragent=self.opts['_useragent'],

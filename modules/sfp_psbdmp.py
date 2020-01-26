@@ -19,7 +19,7 @@ class sfp_psbdmp(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
     }
 
     # Option descriptions
@@ -61,7 +61,7 @@ class sfp_psbdmp(SpiderFootPlugin):
         else:
             url = "https://psbdmp.cc/api/search/domain/" + qry
 
-        res = self.sf.fetchUrl(url, timeout=15, 
+        res = self.sf.fetchUrl(url, timeout=15,
             useragent="SpiderFoot")
 
         if res['code'] == "403" or res['content'] is None:
@@ -73,7 +73,7 @@ class sfp_psbdmp(SpiderFootPlugin):
         except Exception as e:
             self.sf.error("Error processing JSON response from psbdmp.cc: " + str(e), False)
             return None
-        
+
         ids = list()
         if 'count' in ret:
             if ret['count'] > 0:
@@ -82,7 +82,7 @@ class sfp_psbdmp(SpiderFootPlugin):
             else:
                 return None
         else:
-            return None    
+            return None
 
         return ids
 
@@ -94,7 +94,7 @@ class sfp_psbdmp(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
@@ -119,7 +119,7 @@ class sfp_psbdmp(SpiderFootPlugin):
             # Sometimes pastes search results false positives
             if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
                          "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
-              continue
+                continue
 
             try:
                 startIndex = res['content'].index(eventData)

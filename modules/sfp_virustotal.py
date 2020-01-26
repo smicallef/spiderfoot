@@ -220,7 +220,7 @@ class sfp_virustotal(SpiderFootPlugin):
                             if s not in self.results:
                                 e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", s, self.__name__, event)
                                 self.notifyListeners(e)
-                    
+
             if 'subdomains' in info and eventName == "INTERNET_NAME":
                 for n in info['subdomains']:
                     if n not in self.results:

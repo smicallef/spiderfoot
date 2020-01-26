@@ -53,7 +53,7 @@ class sfp_securitytrails(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "IPV6_ADDRESS", "DOMAIN_NAME", 
+        return ["IP_ADDRESS", "IPV6_ADDRESS", "DOMAIN_NAME",
                 "EMAILADDR", "NETBLOCK_OWNER"]
 
     # What events this module produces
@@ -79,7 +79,7 @@ class sfp_securitytrails(SpiderFootPlugin):
             request = '{"filter": { "' + querytype + '": "' + qry + '" } }'
             headers['Content-Type'] = 'application/json'
 
-        res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers,
                                postData=request)
 
@@ -149,7 +149,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                         for dat in r['host_provider']:
                             if dat in hosters:
                                 continue
-                            e = SpiderFootEvent("PROVIDER_HOSTING", dat, 
+                            e = SpiderFootEvent("PROVIDER_HOSTING", dat,
                                                 self.__name__, event)
                             self.notifyListeners(e)
                             hosters.append(dat)
@@ -203,7 +203,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                         myres.append(h.lower())
                     else:
                         continue
-                    e = SpiderFootEvent("INTERNET_NAME", h + "." + domain, 
+                    e = SpiderFootEvent("INTERNET_NAME", h + "." + domain,
                                         self.__name__, event)
                     self.notifyListeners(e)
 

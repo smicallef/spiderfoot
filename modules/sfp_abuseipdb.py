@@ -69,7 +69,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "NETBLOCK_OWNER", "NETBLOCK_MEMBER"] 
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -108,7 +108,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
             if id == cid and malchecks[check]['type'] == "query":
                 url = str(malchecks[check]['url'])
                 res = self.sf.fetchUrl(url.format(target, apikey, daysback),
-                                       timeout=self.opts['_fetchtimeout'], 
+                                       timeout=self.opts['_fetchtimeout'],
                                        useragent=self.opts['_useragent'])
                 if res['content'] is None:
                     self.sf.error("Unable to fetch " + url.format(target, "masked", daysback), False)

@@ -19,7 +19,7 @@ class sfp_junkfiles(SpiderFootPlugin):
     # Default options
     opts = {
         'fileexts': ['tmp', 'bak', 'old'],
-        'urlextstry': ['asp', 'php', 'jsp',],
+        'urlextstry': ['asp', 'php', 'jsp', ],
         'files': ["old", "passwd", ".htaccess", ".htpasswd",
                   "Thumbs.db", "backup"],
         'dirs': ['zip', 'tar.gz', 'tgz', 'tar'],
@@ -97,7 +97,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             if self.opts['skipfake'] and host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
                 return None
- 
+
             if "." + ext + "?" in eventData or "." + ext + "#" in eventData or \
                     eventData.endswith("." + ext):
                 bits = eventData.split("?")

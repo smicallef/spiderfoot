@@ -232,7 +232,7 @@ class SpiderFootScanner(threading.Thread):
             firstEvent = SpiderFootEvent(self.ts.targetType, self.ts.targetValue,
                                          "SpiderFoot UI", rootEvent)
             psMod.notifyListeners(firstEvent)
-        
+
             # Special case.. check if an INTERNET_NAME is also a domain
             if self.ts.targetType == 'INTERNET_NAME':
                 if self.ts.sf.isDomain(self.ts.targetValue, self.ts.config['_internettlds']):
@@ -244,7 +244,7 @@ class SpiderFootScanner(threading.Thread):
             # waiting for inputs, and process them until my status is set to
             # FINISHED.
 
-            # Check in case the user requested to stop the scan between modules 
+            # Check in case the user requested to stop the scan between modules
             # initializing
             for module in list(self.ts.moduleInstances.values()):
                 if module.checkForStop():

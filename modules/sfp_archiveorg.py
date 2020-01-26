@@ -68,9 +68,9 @@ class sfp_archiveorg(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["INTERESTING_FILE_HISTORIC", "URL_PASSWORD_HISTORIC", 
+        return ["INTERESTING_FILE_HISTORIC", "URL_PASSWORD_HISTORIC",
                 "URL_FORM_HISTORIC", "URL_FLASH_HISTORIC",
-                "URL_STATIC_HISTORIC", "URL_JAVA_APPLET_HISTORIC", 
+                "URL_STATIC_HISTORIC", "URL_JAVA_APPLET_HISTORIC",
                 "URL_UPLOAD_HISTORIC", "URL_WEB_FRAMEWORK_HISTORIC",
                 "URL_JAVASCRIPT_HISTORIC"]
 
@@ -112,7 +112,7 @@ class sfp_archiveorg(SpiderFootPlugin):
 
             url = "https://archive.org/wayback/available?url=" + eventData + \
                   "&timestamp=" + maxDate
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
             if res['content'] == None:

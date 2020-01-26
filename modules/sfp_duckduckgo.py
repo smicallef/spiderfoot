@@ -45,7 +45,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["DESCRIPTION_CATEGORY", "DESCRIPTION_ABSTRACT",
-                "AFFILIATE_DESCRIPTION_CATEGORY", 
+                "AFFILIATE_DESCRIPTION_CATEGORY",
                 "AFFILIATE_DESCRIPTION_ABSTRACT"]
 
 
@@ -90,7 +90,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
             if "AFFILIATE" in eventName:
                 name = "AFFILIATE_" + name
 
-            evt = SpiderFootEvent(name, ret['AbstractText'], 
+            evt = SpiderFootEvent(name, ret['AbstractText'],
                                   self.__name__, event)
             self.notifyListeners(evt)
 

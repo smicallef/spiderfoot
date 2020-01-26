@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_torch
-# Purpose:      Searches the Tor search engine 'TORCH' for content related 
+# Purpose:      Searches the Tor search engine 'TORCH' for content related
 #               to the domain in question.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -75,7 +75,7 @@ class sfp_torch(SpiderFootPlugin):
             return None
         else:
             # Need the form ID to submit later for the search
-            m = re.findall("\<form method=\"get\" action=\"/(\S+)/search.cgi\"\>", 
+            m = re.findall("\<form method=\"get\" action=\"/(\S+)/search.cgi\"\>",
                            formpage['content'], re.IGNORECASE | re.DOTALL)
             if not m:
                 return None
@@ -126,11 +126,11 @@ class sfp_torch(SpiderFootPlugin):
                             if self.opts['fetchlinks']:
                                 res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
                                                        useragent=self.opts['_useragent'])
-    
+
                                 if res['content'] is None:
                                     self.sf.debug("Ignoring " + link + " as no data returned")
                                     continue
-    
+
                                 if eventData not in res['content']:
                                     self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
                                     continue

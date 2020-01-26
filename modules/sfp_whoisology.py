@@ -57,7 +57,7 @@ class sfp_whoisology(SpiderFootPlugin):
         url = "https://whoisology.com/api?auth=" + self.opts['api_key'] + "&request=flat"
         url += "&field=" + querytype + "&value=" + qry + "&level=Registrant|Admin|Tec|Billing|Other"
 
-        res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
         if res['code'] in [ "400", "429", "500", "403" ]:

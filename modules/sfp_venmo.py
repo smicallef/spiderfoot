@@ -17,7 +17,7 @@ class sfp_venmo(SpiderFootPlugin):
     """Venmo:Footprint,Investigate,Passive:Social Media::Gather user information from Venmo API."""
 
     # Default options
-    opts = { 
+    opts = {
     }
 
     # Option descriptions
@@ -44,7 +44,7 @@ class sfp_venmo(SpiderFootPlugin):
     # Query Venmo API
     def query(self, qry):
         res = self.sf.fetchUrl('https://api.venmo.com/v1/users/' + qry,
-                               timeout=self.opts['_fetchtimeout'], 
+                               timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
         time.sleep(1)

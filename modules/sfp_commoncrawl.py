@@ -49,7 +49,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
         for index in self.indexBase:
             url = "https://index.commoncrawl.org/" + index + \
                   "-index?url=" + target + "/*&output=json"
-            res = self.sf.fetchUrl(url , timeout=60,
+            res = self.sf.fetchUrl(url, timeout=60,
                                    useragent="SpiderFoot")
 
             if res['code'] in [ "400", "401", "402", "403", "404" ]:
@@ -65,10 +65,10 @@ class sfp_commoncrawl(SpiderFootPlugin):
             ret.append(res['content'])
 
         return ret
-        
+
     def getLatestIndexes(self):
         url = "https://commoncrawl.s3.amazonaws.com/cc-index/collections/index.html"
-        res = self.sf.fetchUrl(url , timeout=60, 
+        res = self.sf.fetchUrl(url, timeout=60,
                                useragent="SpiderFoot")
 
         if res['code'] in [ "400", "401", "402", "403", "404" ]:

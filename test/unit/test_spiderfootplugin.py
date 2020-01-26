@@ -2,12 +2,12 @@
 import sflib
 from sflib import SpiderFootPlugin, SpiderFootEvent
 import unittest
- 
+
 class TestSpiderFootPlugin(unittest.TestCase):
     """
     Test SpiderFoot
     """
- 
+
     def test_init(self):
         """
         Test __init__(self)

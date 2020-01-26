@@ -62,7 +62,7 @@ class sfp_ssltools(SpiderFootPlugin):
         }
 
         headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
- 
+
         res = self.sf.fetchUrl('http://www.ssltools.com/api/dns',
                                postData=urllib.parse.urlencode(params),
                                headers=headers,
@@ -93,7 +93,7 @@ class sfp_ssltools(SpiderFootPlugin):
         }
 
         headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
- 
+
         res = self.sf.fetchUrl('http://www.ssltools.com/api/scan',
                                postData=urllib.parse.urlencode(params),
                                headers=headers,

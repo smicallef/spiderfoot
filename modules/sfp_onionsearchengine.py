@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_onionsearchengine
-# Purpose:      Searches the Tor search engine onionsearchengine.com for content 
+# Purpose:      Searches the Tor search engine onionsearchengine.com for content
 #               related to the domain in question.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -85,7 +85,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
 
             # Sites hosted on the domain
             data = self.sf.fetchUrl('https://onionsearchengine.com/search.php?' + urllib.parse.urlencode(params),
-                                    useragent=self.opts['_useragent'], 
+                                    useragent=self.opts['_useragent'],
                                     timeout=self.opts['timeout'])
 
             if data is None or not data.get('content'):
@@ -108,7 +108,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                                   self.__name__, event)
             self.notifyListeners(evt)
 
-            links = re.findall("url\.php\?u=(.[^\"\']+)[\"\']", 
+            links = re.findall("url\.php\?u=(.[^\"\']+)[\"\']",
                                data['content'], re.IGNORECASE | re.DOTALL)
 
             for link in links:

@@ -17,7 +17,7 @@ class sfp_hunter(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "api_key": ""
     }
 
@@ -57,7 +57,7 @@ class sfp_hunter(SpiderFootPlugin):
         url = "https://api.hunter.io/v2/domain-search?domain=" + t + "&api_key=" + self.opts['api_key'] + \
               "&offset=" + str(offset) + "&limit=" + str(limit)
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
             useragent="SpiderFoot")
 
         if res['code'] == "404":
@@ -85,7 +85,7 @@ class sfp_hunter(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
@@ -121,7 +121,7 @@ class sfp_hunter(SpiderFootPlugin):
                 if 'first_name' in email and 'last_name' in email:
                     if email['first_name'] != None and email['last_name'] != None:
                         n = email['first_name'] + " " + email['last_name']
-                        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n, 
+                        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n,
                                             self.__name__, event)
                         self.notifyListeners(e)
 

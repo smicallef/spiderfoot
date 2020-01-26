@@ -6,7 +6,7 @@ class TestSpiderFootEvent(unittest.TestCase):
     """
     Test SpiderFootEvent
     """
- 
+
     def test_init_root_event(self):
         """
         Test __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0)
