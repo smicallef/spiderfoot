@@ -11,7 +11,7 @@
 # -----------------------------------------------------------------
 import json
 import cherrypy
-import cgi
+import html
 import csv
 import time
 import random
@@ -88,7 +88,7 @@ class SpiderFootWebUi:
         ret = list()
 
         for item in inputList:
-            c = cgi.escape(item, True)
+            c = html.escape(item, True)
             c = c.replace('\'', '&quot;')
             # We don't actually want & translated to &amp;
             c = c.replace("&amp;", "&").replace("&quot;", "\"")
@@ -123,8 +123,8 @@ class SpiderFootWebUi:
         retdata = []
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
-            escapeddata = cgi.escape(row[1])
-            escapedsrc = cgi.escape(row[2])
+            escapeddata = html.escape(row[1])
+            escapedsrc = html.escape(row[2])
             retdata.append([lastseen, escapeddata, escapedsrc,
                             row[3], row[5], row[6], row[7], row[8], row[10], 
                             row[11], row[4], row[13], row[14]])
@@ -466,7 +466,7 @@ class SpiderFootWebUi:
             return self.error("Scan ID not found.")
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup, input_encoding='utf-8')
-        return templ.render(id=id, name=cgi.escape(res[0]), status=res[5], docroot=self.docroot,
+        return templ.render(id=id, name=html.escape(res[0]), status=res[5], docroot=self.docroot,
                             pageid="SCANLIST")
 
     scaninfo.exposed = True
@@ -937,7 +937,7 @@ class SpiderFootWebUi:
         retdata = []
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
-            retdata.append([generated, row[1], row[2], cgi.escape(row[3]), row[4]])
+            retdata.append([generated, row[1], row[2], html.escape(row[3]), row[4]])
         return json.dumps(retdata)
 
     scanlog.exposed = True
@@ -950,7 +950,7 @@ class SpiderFootWebUi:
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
             retdata.append([generated, row[1],
-                            cgi.escape(str(row[2]))])
+                            html.escape(str(row[2]))])
         return json.dumps(retdata)
 
     scanerrors.exposed = True
@@ -1010,8 +1010,8 @@ class SpiderFootWebUi:
         retdata = []
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
-            escapeddata = cgi.escape(row[1])
-            escapedsrc = cgi.escape(row[2])
+            escapeddata = html.escape(row[1])
+            escapedsrc = html.escape(row[2])
             retdata.append([lastseen, escapeddata, escapedsrc,
                             row[3], row[5], row[6], row[7], row[8],
                             row[13], row[14], row[4]])
@@ -1025,7 +1025,7 @@ class SpiderFootWebUi:
         data = dbh.scanResultEventUnique(id, eventType, filterfp)
         retdata = []
         for row in data:
-            escaped = cgi.escape(row[0])
+            escaped = html.escape(row[0])
             retdata.append([escaped, row[1], row[2]])
         return json.dumps(retdata, ensure_ascii=False)
 

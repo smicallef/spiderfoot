@@ -103,14 +103,14 @@ if __name__ == '__main__':
     p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
     p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect.")
     p.add_argument("-T", "--types", action='store_true', help="List available event types.")
-    p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
+    p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default. If using json, -q is enforced.")
     p.add_argument("-H", action='store_true', help="Don't print field headers, just data.")
     p.add_argument("-n", action='store_true', help="Strip newlines from data.")
     p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
     p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
     p.add_argument("-D", metavar='DELIMITER', type=str, help="Delimiter to use for CSV output. Default is ,.")
     p.add_argument("-f", action='store_true', help="Filter out other event types that weren't requested with -t.")
-    p.add_argument("-F", metavar="FILTER", type=str, help="Filter out a set of event types.")
+    p.add_argument("-F", metavar="FILTER", type=str, help="Show only a set of event types, comma-separated.")
     p.add_argument("-x", action='store_true', help="STRICT MODE. Will only enable modules that can directly consume your target, and if -t was specified only those events will be consumed by modules. This overrides -t and -m options.")
     p.add_argument("-q", action='store_true', help="Disable logging. This will also hide errors!")
     args = p.parse_args()
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     else:
         sfConfig['_debug'] = False
 
-    if args.q:
+    if args.q or args.o == "json":
         sfConfig['__logging'] = False
 
     if args.l:
@@ -306,7 +306,7 @@ if __name__ == '__main__':
         modlist += ["sfp__stor_db", "sfp__stor_stdout"]
 
         # Run the scan
-        if not args.q:
+        if sfConfig['__logging']:
             print(("[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist)))
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
         scanId = sf.genScanInstanceGUID(target)
@@ -348,17 +348,21 @@ if __name__ == '__main__':
                 else:
                     print('{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
 
+        if args.o == "json":
+            print("[", end='')
+
         while True:
             info = dbh.scanInstanceGet(scanId)
             if not info:
                 time.sleep(1)
                 continue
             if info[5] in [ "ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED" ]:
-                if not args.q:
+                if sfConfig['__logging']:
                     print("[*] Scan completed with status " + info[5])
+                if args.o == "json":
+                    print("]")
                 sys.exit(0)
             time.sleep(1)
-
         sys.exit(0)
 
     # Start the web server so you can start looking at results

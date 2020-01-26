@@ -17,6 +17,7 @@ import json
 class sfp__stor_stdout(SpiderFootPlugin):
     """Command-line output::::Dumps output to standard out. Used for when a SpiderFoot scan is run via the command-line."""
     _priority = 0
+    firstEvent = True
 
     # Default options
     opts = {
@@ -90,7 +91,11 @@ class sfp__stor_stdout(SpiderFootPlugin):
         if self.opts['_format'] == "json":
             d = event.asDict()
             d['type'] = self.opts['_eventtypes'][event.eventType]
-            print(json.dumps(d))
+            if self.firstEvent:
+                self.firstEvent = False
+            else:
+                print(",") 
+            print(json.dumps(d), end='')
 
     # Handle events sent to this module
     def handleEvent(self, sfEvent):

@@ -68,7 +68,7 @@ class sfp_crt(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl('https://crt.sh/?' + urllib.parse.urlencode(params),
-                               timeout=self.opts['_fetchtimeout'],
+                               timeout=30,
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:
@@ -144,7 +144,7 @@ class sfp_crt(SpiderFootPlugin):
             }
 
             res = self.sf.fetchUrl('https://crt.sh/?' + urllib.parse.urlencode(params),
-                                   timeout=self.opts['_fetchtimeout'],
+                                   timeout=30,
                                    useragent=self.opts['_useragent'])
 
             try:
