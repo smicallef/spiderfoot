@@ -30,7 +30,7 @@ RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py3-pi
     && cd /home \
     && curl -sSL https://github.com/smicallef/spiderfoot/archive/v3.0.tar.gz \
        | tar -v -C /home -xz \
-    && mv /home/spiderfoot-v3.0 /home/spiderfoot \
+    && mv /home/spiderfoot-3.0 /home/spiderfoot \
     && chown -R spiderfoot:spiderfoot /home/spiderfoot \
     && apk del --purge build-dependencies \
     && rm -rf /var/cache/apk/* \
