@@ -6,16 +6,10 @@ on:
 jobs:
   lint_python:
     runs-on: ubuntu-latest
-    container: debian:stable
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@master
-      - run: which -a python
-      - run: ${pythonLocation}/python --version || true
-      - run: ${pythonLocation}/bin/python --version || true
-      - run: PYTHON=/__t/Python/3.8.1/x64/python
-      - run: $PYTHON --version ; $PYTHON -m pip --version
-      - run: $PYTHON -m pip install black codespell flake8 isort pytest
+      - run: pip install black codespell flake8 isort pytest
       - run: black . --diff || true
       - run: codespell --quiet-level=2 || true  # --ignore-words-list="" --skip=""
       - run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
