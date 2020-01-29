@@ -238,7 +238,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                     if strdata.endswith("."):
                         hosts.append(strdata[:-1])
                     else:
-                        hosts.append(strdata + "." + name)
+                        hosts.append(strdata + "." + eventData)
 
                 for host in set(hosts):
                     if self.getTarget().matches(host, includeChildren=True, includeParents=True):
