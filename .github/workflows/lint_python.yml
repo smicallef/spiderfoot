@@ -12,6 +12,7 @@ jobs:
       - uses: actions/setup-python@master
       - run: python --version || true
       - run: python3 --version || true
+      - run: apt update
       - run: apt-get install python3 python3-pip
       - run: python3 --version ; pip --version
       - run: pip install black codespell flake8 isort pytest
