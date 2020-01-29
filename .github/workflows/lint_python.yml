@@ -10,8 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@master
-      - run: python3 --version
-      - run: apt-get install python3-pip
+      - run: python --version || true
+      - run: python3 --version || true
+      - run: apt-get install python3 python3-pip
+      - run: python3 --version ; pip --version
       - run: pip install black codespell flake8 isort pytest
       - run: black . --diff || true
       - run: codespell --quiet-level=2 || true  # --ignore-words-list="" --skip=""
