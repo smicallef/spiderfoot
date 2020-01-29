@@ -11,8 +11,8 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-python@master
       - run: which -a python
-      - run: ${pythonLocation)/python --version || true
-      - run: ${pythonLocation)/bin/python --version || true
+      - run: ${pythonLocation}/python --version || true
+      - run: ${pythonLocation}/bin/python --version || true
       - run: PYTHON=/__t/Python/3.8.1/x64/python
       - run: $PYTHON --version ; $PYTHON -m pip --version
       - run: $PYTHON -m pip install black codespell flake8 isort pytest
