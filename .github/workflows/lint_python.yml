@@ -1,5 +1,8 @@
 name: lint_python
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches: [master]
 jobs:
   lint_python:
     runs-on: ubuntu-latest
@@ -7,6 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@master
+      - run: python3 --version
+      - run: apt-get install python3-pip
       - run: pip install black codespell flake8 isort pytest
       - run: black . --diff || true
       - run: codespell --quiet-level=2 || true  # --ignore-words-list="" --skip=""
