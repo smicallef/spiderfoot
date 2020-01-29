@@ -10,17 +10,20 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@master
-      - run: which python || true
       - run: which -a python || true
-      - run: whereis python || true
-      - run: whereis -a python || true
-      - run: which python3 || true
-      - run: which -a python3 || true
-      - run: whereis python3 || true
-      - run: whereis -a python3 || true
-      - run: apt update
-      - run: apt-get --yes install python3 python3-pip
-      - run: which -a python3 || true
+      - run: echo $PATH
+      - run: PATH=$PATH:/__t/Python/3.8.1/x64/bin
+      #- run: which python || true
+      #- run: which -a python || true
+      #- run: whereis python || true
+      #- run: whereis -a python || true
+      #- run: which python3 || true
+      #- run: which -a python3 || true
+      #- run: whereis python3 || true
+      #- run: whereis -a python3 || true
+      #- run: apt update
+      #- run: apt-get --yes install python3 python3-pip
+      #- run: which -a python3 || true
       - run: python3 --version ; pip --version
       - run: pip install black codespell flake8 isort pytest
       - run: black . --diff || true
