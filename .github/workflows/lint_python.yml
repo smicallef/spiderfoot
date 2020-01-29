@@ -3,6 +3,7 @@ on: [push, pull_request]
 jobs:
   lint_python:
     runs-on: ubuntu-latest
+    container: debian:stable
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-python@master
