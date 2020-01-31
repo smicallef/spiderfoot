@@ -1017,8 +1017,9 @@ class SpiderFoot:
                     if validateReverse:
                         for host in names:
                             chk = self.resolveHost(host)
-                            if ipaddr in chk:
-                                ret.append(host)
+                            if chk:
+                                if ipaddr in chk:
+                                    ret.append(host)
                     else:
                         ret.extend(names)
         if len(ret) > 0:
