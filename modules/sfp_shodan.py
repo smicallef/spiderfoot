@@ -55,8 +55,7 @@ class sfp_shodan(SpiderFootPlugin):
     def producedEvents(self):
         return ["OPERATING_SYSTEM", "DEVICE_TYPE",
                 "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
-                "SEARCH_ENGINE_WEB_CONTENT", 'RAW_RIR_DATA',
-                'GEOINFO', 'VULNERABILITY']
+                'RAW_RIR_DATA', 'GEOINFO', 'VULNERABILITY']
 
     def query(self, qry):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
@@ -137,8 +136,8 @@ class sfp_shodan(SpiderFootPlugin):
             hosts = self.searchHosts(eventData)
             if hosts is None:
                 return None
-
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(hosts), self.__name__, event)
+            
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(hosts), self.__name__, event)
             self.notifyListeners(evt)
 
         if eventName == 'WEB_ANALYTICS_ID':
@@ -159,7 +158,7 @@ class sfp_shodan(SpiderFootPlugin):
             if rec is None:
                 return None
 
-            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(rec), self.__name__, event)
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
             self.notifyListeners(evt)
             return None
 
@@ -186,7 +185,15 @@ class sfp_shodan(SpiderFootPlugin):
             if rec is None:
                 continue
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
+            # For netblocks, we need to create the IP address event so that
+            # the threat intel event is more meaningful.
+            if eventName.startswith('NETBLOCK_'):
+                pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                self.notifyListeners(pevent)
+            else:
+                pevent = event
+
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, pevent)
             self.notifyListeners(evt)
 
             if self.checkForStop():
@@ -195,18 +202,18 @@ class sfp_shodan(SpiderFootPlugin):
             if rec.get('os') is not None:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os') +
-                                      " (" + addr + ")", self.__name__, event)
+                                      " (" + addr + ")", self.__name__, pevent)
                 self.notifyListeners(evt)
 
             if rec.get('devtype') is not None:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("DEVICE_TYPE", rec.get('devtype') +
-                                      " (" + addr + ")", self.__name__, event)
+                                      " (" + addr + ")", self.__name__, pevent)
                 self.notifyListeners(evt)
 
             if rec.get('country_name') is not None:
                 location = ', '.join([_f for _f in [rec.get('city'), rec.get('country_name')] if _f])
-                evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
+                evt = SpiderFootEvent("GEOINFO", location, self.__name__, pevent)
                 self.notifyListeners(evt)
 
             if 'data' in rec:
@@ -222,29 +229,29 @@ class sfp_shodan(SpiderFootPlugin):
                         # Notify other modules of what you've found
                         cp = addr + ":" + port
                         evt = SpiderFootEvent("TCP_PORT_OPEN", cp,
-                                              self.__name__, event)
+                                              self.__name__, pevent)
                         self.notifyListeners(evt)
 
                     if banner is not None:
                         # Notify other modules of what you've found
                         evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
-                                              self.__name__, event)
+                                              self.__name__, pevent)
                         self.notifyListeners(evt)
 
                     if product is not None:
                         evt = SpiderFootEvent("SOFTWARE_USED", product,
-                                              self.__name__, event)
+                                              self.__name__, pevent)
                         self.notifyListeners(evt)
 
                     if asn is not None:
                         evt = SpiderFootEvent("BGP_AS_MEMBER", asn.replace("AS", ""),
-                                              self.__name__, event)
+                                              self.__name__, pevent)
                         self.notifyListeners(evt)
 
                     if vulns is not None:
                         for vuln in list(vulns.keys()):
                             evt = SpiderFootEvent('VULNERABILITY', vuln,
-                                                  self.__name__, event)
+                                                  self.__name__, pevent)
                             self.notifyListeners(evt)
 
         return None

@@ -56,7 +56,7 @@ class sfp_censys(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["BGP_AS_MEMBER", "TCP_PORT_OPEN", "OPERATING_SYSTEM",
+        return ["BGP_AS_MEMBER", "TCP_PORT_OPEN", "OPERATING_SYSTEM", 
                 "WEBSERVER_HTTPHEADERS", "NETBLOCK_MEMBER", "GEOINFO",
                 'RAW_RIR_DATA']
 
@@ -67,7 +67,7 @@ class sfp_censys(SpiderFootPlugin):
             querytype = "ipv4/{0}"
         if querytype == "host":
             querytype = "websites/{0}"
-
+        
         secret = self.opts['censys_api_key_uid'] + ':' + self.opts['censys_api_key_secret']
         b64_val = base64.b64encode(secret.encode('utf-8'))
         headers = {
@@ -154,7 +154,15 @@ class sfp_censys(SpiderFootPlugin):
 
             self.sf.debug("Found results in Censys.io")
 
-            e = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
+            # For netblocks, we need to create the IP address event so that
+            # the threat intel event is more meaningful.
+            if eventName.startswith('NETBLOCK_'):
+                pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                self.notifyListeners(pevent)
+            else:
+                pevent = event
+
+            e = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, pevent)
             self.notifyListeners(e)
 
             try:
@@ -170,21 +178,21 @@ class sfp_censys(SpiderFootPlugin):
                 if 'location' in rec:
                     location = ', '.join([_f for _f in [rec['location'].get('city'), rec['location'].get('province'), rec['location'].get('postal_code'), rec['location'].get('country')] if _f])
                     if location:
-                        e = SpiderFootEvent("GEOINFO", location, self.__name__, event)
+                        e = SpiderFootEvent("GEOINFO", location, self.__name__, pevent)
                         self.notifyListeners(e)
 
                 if 'headers' in rec:
                     dat = json.dumps(rec['headers'], ensure_ascii=False)
-                    e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, event)
+                    e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, pevent)
                     self.notifyListeners(e)
 
                 if 'autonomous_system' in rec:
                     dat = str(rec['autonomous_system']['asn'])
-                    e = SpiderFootEvent("BGP_AS_MEMBER", dat, self.__name__, event)
+                    e = SpiderFootEvent("BGP_AS_MEMBER", dat, self.__name__, pevent)
                     self.notifyListeners(e)
 
                     dat = rec['autonomous_system']['routed_prefix']
-                    e = SpiderFootEvent("NETBLOCK_MEMBER", dat, self.__name__, event)
+                    e = SpiderFootEvent("NETBLOCK_MEMBER", dat, self.__name__, pevent)
                     self.notifyListeners(e)
 
                 if 'protocols' in rec:
@@ -192,15 +200,15 @@ class sfp_censys(SpiderFootPlugin):
                         if 'ip' not in rec:
                             continue
                         dat = rec['ip'] + ":" + p.split("/")[0]
-                        e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, event)
+                        e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, pevent)
                         self.notifyListeners(e)
 
                 if 'metadata' in rec:
                     if 'os_description' in rec['metadata']:
                         dat = rec['metadata']['os_description']
-                        e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, event)
+                        e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, pevent)
                         self.notifyListeners(e)
             except BaseException as e:
                 self.sf.error("Error encountered processing record for " + eventData + " (" + str(e) + ")", False)
-
+        
 # End of sfp_censys class

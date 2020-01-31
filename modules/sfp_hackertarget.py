@@ -238,7 +238,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                     if strdata.endswith("."):
                         hosts.append(strdata[:-1])
                     else:
-                        hosts.append(strdata + "." + name)
+                        hosts.append(strdata)
 
                 for host in set(hosts):
                     if self.getTarget().matches(host, includeChildren=True, includeParents=True):
@@ -280,6 +280,8 @@ class sfp_hackertarget(SpiderFootPlugin):
                 return None
 
             hosts = self.reverseIpLookup(ip)
+            if not hosts:
+                continue
 
             for h in hosts:
                 if " " in h:
@@ -311,22 +313,30 @@ class sfp_hackertarget(SpiderFootPlugin):
                         myres.append(h.lower())
                         self.cohostcount += 1
 
+            # For netblocks, we need to create the IP address event so that
+            # the threat intel event is more meaningful.
+            if eventName.startswith('NETBLOCK_'):
+                pevent = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
+                self.notifyListeners(pevent)
+            else:
+                pevent = event
+
             if self.opts.get('http_headers', True):
                 http_headers = self.httpHeaders(ip)
                 if http_headers is not None:
-                    e = SpiderFootEvent('WEBSERVER_HTTPHEADERS', json.dumps(http_headers), self.__name__, event)
+                    e = SpiderFootEvent('WEBSERVER_HTTPHEADERS', json.dumps(http_headers), self.__name__, pevent)
                     self.notifyListeners(e)
 
             if self.opts.get('udp_portscan', True):
                 udp_ports = self.portScanUDP(ip)
                 for port in udp_ports:
-                    e = SpiderFootEvent("UDP_PORT_OPEN", ip + ":" + port, self.__name__, event)
+                    e = SpiderFootEvent("UDP_PORT_OPEN", ip + ":" + port, self.__name__, pevent)
                     self.notifyListeners(e)
 
             if self.opts.get('tcp_portscan', True):
                 tcp_ports = self.portScanTCP(ip)
                 for port in tcp_ports:
-                    e = SpiderFootEvent("TCP_PORT_OPEN", ip + ":" + port, self.__name__, event)
+                    e = SpiderFootEvent("TCP_PORT_OPEN", ip + ":" + port, self.__name__, pevent)
                     self.notifyListeners(e)
 
 # End of sfp_hackertarget class
