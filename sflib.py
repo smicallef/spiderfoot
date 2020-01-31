@@ -1017,8 +1017,9 @@ class SpiderFoot:
                     if validateReverse:
                         for host in names:
                             chk = self.resolveHost(host)
-                            if ipaddr in chk:
-                                ret.append(host)
+                            if chk:
+                                if ipaddr in chk:
+                                    ret.append(host)
                     else:
                         ret.extend(names)
         if len(ret) > 0:
@@ -1055,6 +1056,24 @@ class SpiderFoot:
                 continue
 
         return returnArr
+
+    # Finds all hashes within the supplied content
+    def parseHashes(self, data):
+        ret = list()
+        hashes = {
+            "MD5": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{32})(?:[^a-fA-F\d]|\b)"),
+            "SHA1": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{40})(?:[^a-fA-F\d]|\b)"),
+            "SHA256": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{64})(?:[^a-fA-F\d]|\b)"),
+            "SHA512": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{128})(?:[^a-fA-F\d]|\b)")
+        }
+
+        for h in hashes:
+            matches = re.findall(hashes[h], data)
+            for match in matches:
+                self.debug("Found hash: " + match)
+                ret.append((h, match))
+
+        return ret
 
     # Find all emails within the supplied content
     # Returns an Array
