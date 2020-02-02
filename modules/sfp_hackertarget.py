@@ -319,14 +319,16 @@ class sfp_hackertarget(SpiderFootPlugin):
 
             if self.opts.get('udp_portscan', True):
                 udp_ports = self.portScanUDP(ip)
-                for port in udp_ports:
-                    e = SpiderFootEvent("UDP_PORT_OPEN", ip + ":" + port, self.__name__, event)
-                    self.notifyListeners(e)
+                if udp_ports:
+                    for port in udp_ports:
+                        e = SpiderFootEvent("UDP_PORT_OPEN", ip + ":" + port, self.__name__, event)
+                        self.notifyListeners(e)
 
             if self.opts.get('tcp_portscan', True):
                 tcp_ports = self.portScanTCP(ip)
-                for port in tcp_ports:
-                    e = SpiderFootEvent("TCP_PORT_OPEN", ip + ":" + port, self.__name__, event)
-                    self.notifyListeners(e)
+                if tcp_ports:
+                    for port in tcp_ports:
+                        e = SpiderFootEvent("TCP_PORT_OPEN", ip + ":" + port, self.__name__, event)
+                        self.notifyListeners(e)
 
 # End of sfp_hackertarget class
