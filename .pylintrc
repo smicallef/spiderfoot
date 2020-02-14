@@ -18,7 +18,7 @@ ignore-patterns=
 #init-hook=
 
 # Use multiple processes to speed up Pylint.
-jobs=1
+jobs=0
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
@@ -133,7 +133,9 @@ disable=print-statement,
         xreadlines-attribute,
         deprecated-sys-function,
         exception-escape,
-        comprehension-escape
+        comprehension-escape,
+        bad-continuation, # Black and pylint disagree about this
+        line-too-long # Black would have fixed that if it could have
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
