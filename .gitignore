@@ -51,9 +51,11 @@ Thumbs.db
 ########################
 venv/
 venv3/
+.venv/
 
 # Test Report & Coverage #
 ##########################
 .coverage
 coverage/
 report/
+.mypy_cache/
