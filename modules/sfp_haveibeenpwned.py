@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_haveibeenpwned
 # Purpose:      Query haveibeenpwned.com to see if an e-mail account has been hacked.
 #
@@ -7,25 +7,21 @@
 # Created:     19/02/2015
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_haveibeenpwned(SpiderFootPlugin):
     """HaveIBeenPwned:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches."""
 
-
     # Default options
-    opts = {
-        "api_key": ""
-    }
+    opts = {"api_key": ""}
 
     # Option descriptions
-    optdescs = {
-        "api_key": "HaveIBeenPwned.com API key."
-    }
+    optdescs = {"api_key": "HaveIBeenPwned.com API key."}
 
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
@@ -54,42 +50,43 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
     def query(self, qry):
         ret = None
-        if self.opts['api_key']:
+        if self.opts["api_key"]:
             v = "3"
         else:
             v = "2"
 
         url = "https://haveibeenpwned.com/api/v" + v + "/breachedaccount/" + qry
-        hdrs = { "Accept": "application/vnd.haveibeenpwned.v" + v + "+json" }
+        hdrs = {"Accept": "application/vnd.haveibeenpwned.v" + v + "+json"}
         retry = 0
 
-        if self.opts['api_key']:
-            hdrs['hibp-api-key'] = self.opts['api_key']
+        if self.opts["api_key"]:
+            hdrs["hibp-api-key"] = self.opts["api_key"]
 
         while retry < 2:
             # https://haveibeenpwned.com/API/v2#RateLimiting
             time.sleep(1.5)
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                                   useragent="SpiderFoot", headers=hdrs)
+            res = self.sf.fetchUrl(
+                url, timeout=self.opts["_fetchtimeout"], useragent="SpiderFoot", headers=hdrs
+            )
 
-            if res['code'] == "200":
+            if res["code"] == "200":
                 break
 
-            if res['code'] == "404":
+            if res["code"] == "404":
                 return None
 
-            if res['code'] == "429":
+            if res["code"] == "429":
                 # Back off a little further
                 time.sleep(2)
             retry += 1
 
-            if res['code'] == "401":
+            if res["code"] == "401":
                 self.sf.error("Failed to authenticate key with HaveIBeenPwned.com.", False)
                 self.errorState = True
                 return None
 
         try:
-            ret = json.loads(res['content'])
+            ret = json.loads(res["content"])
         except Exception as e:
             self.sf.error("Error processing JSON response from HaveIBeenPwned?: " + str(e), False)
             return None
@@ -119,14 +116,14 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             return None
 
         for n in data:
-            if not self.opts['api_key']:
+            if not self.opts["api_key"]:
                 site = n["Title"]
             else:
                 site = n["Name"]
             evt = eventName + "_COMPROMISED"
             # Notify other modules of what you've found
-            e = SpiderFootEvent(evt, eventData + " [" + site + "]",
-                                self.__name__, event)
+            e = SpiderFootEvent(evt, eventData + " [" + site + "]", self.__name__, event)
             self.notifyListeners(e)
+
 
 # End of sfp_haveibeenpwned class

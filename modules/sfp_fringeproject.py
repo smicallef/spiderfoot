@@ -17,14 +17,13 @@ import time
 import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_fringeproject(SpiderFootPlugin):
     """Fringe Project:Investigate,Footprint,Passive:Search Engines::Obtain network information from Fringe Project API."""
 
-    opts = {
-    }
+    opts = {}
 
-    optdescs = {
-    }
+    optdescs = {}
 
     results = None
     errorState = False
@@ -37,33 +36,39 @@ class sfp_fringeproject(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ['DOMAIN_NAME', 'INTERNET_NAME']
+        return ["DOMAIN_NAME", "INTERNET_NAME"]
 
     def producedEvents(self):
-        return ['INTERNET_NAME', 'LINKED_URL_INTERNAL', 'DOMAIN_NAME',
-                'TCP_PORT_OPEN', 'SOFTWARE_USED', 'RAW_RIR_DATA']
+        return [
+            "INTERNET_NAME",
+            "LINKED_URL_INTERNAL",
+            "DOMAIN_NAME",
+            "TCP_PORT_OPEN",
+            "SOFTWARE_USED",
+            "RAW_RIR_DATA",
+        ]
 
     def query(self, qry):
-        params = {
-            'q': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
-        }
+        params = {"q": qry.encode("raw_unicode_escape").decode("ascii", errors="replace")}
 
-        res = self.sf.fetchUrl('https://api.fringeproject.com/api/search?' + urllib.parse.urlencode(params),
-                               useragent=self.opts['_useragent'],
-                               timeout=self.opts['_fetchtimeout'])
+        res = self.sf.fetchUrl(
+            "https://api.fringeproject.com/api/search?" + urllib.parse.urlencode(params),
+            useragent=self.opts["_useragent"],
+            timeout=self.opts["_fetchtimeout"],
+        )
 
         time.sleep(1)
 
-        if res['content'] is None:
+        if res["content"] is None:
             return None
 
         try:
-            json_data = json.loads(res['content'])
+            json_data = json.loads(res["content"])
         except BaseException as e:
             self.sf.debug("Error processing JSON response from Fringe Project: " + str(e))
             return None
 
-        data = json_data.get('results')
+        data = json_data.get("results")
 
         if not data:
             self.sf.debug("No results found for " + qry)
@@ -81,7 +86,7 @@ class sfp_fringeproject(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if srcModuleName == 'sfp_fringeproject':
+        if srcModuleName == "sfp_fringeproject":
             self.sf.debug("Ignoring " + eventData + ", from self.")
             return None
 
@@ -97,30 +102,30 @@ class sfp_fringeproject(SpiderFootPlugin):
             self.sf.info("No results found for " + eventData)
             return None
 
-        e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        e = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(e)
 
         hosts = list()
 
         for result in data:
-            data_type = result.get('type')
+            data_type = result.get("type")
 
-            if data_type not in ['url', 'hostname']:
-                self.sf.debug('Unknown result data type: ' + data_type)
+            if data_type not in ["url", "hostname"]:
+                self.sf.debug("Unknown result data type: " + data_type)
                 continue
 
-            value = result.get('value')
+            value = result.get("value")
 
             if not value:
                 continue
 
-            if data_type == 'hostname':
+            if data_type == "hostname":
                 if not self.getTarget().matches(value, includeChildren=True, includeParents=True):
                     continue
 
                 hosts.append(value)
 
-            if data_type == 'url':
+            if data_type == "url":
                 host = self.sf.urlFQDN(value.lower())
 
                 if not self.getTarget().matches(host, includeChildren=True, includeParents=True):
@@ -128,25 +133,28 @@ class sfp_fringeproject(SpiderFootPlugin):
 
                 hosts.append(host)
 
-                evt = SpiderFootEvent('LINKED_URL_INTERNAL', value, self.__name__, event)
+                evt = SpiderFootEvent("LINKED_URL_INTERNAL", value, self.__name__, event)
                 self.notifyListeners(evt)
 
-            tags = result.get('tags')
+            tags = result.get("tags")
 
             if not tags:
                 continue
 
             for tag in tags:
-                port = re.findall(r'^port:([0-9]+)', tag)
+                port = re.findall(r"^port:([0-9]+)", tag)
                 if len(port) > 0:
-                    evt = SpiderFootEvent('TCP_PORT_OPEN', value + ':' + str(port[0]), self.__name__, event)
+                    evt = SpiderFootEvent(
+                        "TCP_PORT_OPEN", value + ":" + str(port[0]), self.__name__, event
+                    )
                     self.notifyListeners(evt)
 
         for host in set(hosts):
-            evt = SpiderFootEvent('INTERNET_NAME', host, self.__name__, event)
+            evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
             self.notifyListeners(evt)
-            if self.sf.isDomain(host, self.opts['_internettlds']):
-                evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
+            if self.sf.isDomain(host, self.opts["_internettlds"]):
+                evt = SpiderFootEvent("DOMAIN_NAME", host, self.__name__, event)
                 self.notifyListeners(evt)
+
 
 # End of sfp_fringeproject class

@@ -13,6 +13,7 @@
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_cookie(SpiderFootPlugin):
     """Cookies:Footprint,Investigate,Passive:Crawling and Scanning::Extract Cookies from HTTP headers."""
 
@@ -60,12 +61,14 @@ class sfp_cookie(SpiderFootPlugin):
             if jdata == None:
                 return None
         except BaseException as e:
-            self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
+            self.sf.error(
+                "Received HTTP headers from another module in an unexpected format.", False
+            )
             return None
 
-        if 'set-cookie' in jdata:
-            evt = SpiderFootEvent("TARGET_WEB_COOKIE", jdata['set-cookie'],
-                                  self.__name__, event)
+        if "set-cookie" in jdata:
+            evt = SpiderFootEvent("TARGET_WEB_COOKIE", jdata["set-cookie"], self.__name__, event)
             self.notifyListeners(evt)
+
 
 # End of sfp_cookie class

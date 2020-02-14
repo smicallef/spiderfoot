@@ -19,7 +19,7 @@ from sflib import SpiderFoot
 # a custom function to do so..
 def __dbregex__(qry, data):
     try:
-        rx = re.compile(qry, re.IGNORECASE|re.DOTALL)
+        rx = re.compile(qry, re.IGNORECASE | re.DOTALL)
         ret = rx.match(data)
     except BaseException as e:
         return False
@@ -85,8 +85,7 @@ class SpiderFootDb:
         "CREATE INDEX idx_scan_results_type ON tbl_scan_results (scan_instance_id, type)",
         "CREATE INDEX idx_scan_results_hash ON tbl_scan_results (scan_instance_id, hash)",
         "CREATE INDEX idx_scan_results_srchash ON tbl_scan_results (scan_instance_id, source_event_hash)",
-        "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)"
-
+        "CREATE INDEX idx_scan_logs ON tbl_scan_log (scan_instance_id)",
     ]
 
     createTypeQueries = [
@@ -231,7 +230,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_STRANGEHEADER', 'Non-Standard HTTP Header', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WEBSERVER_TECHNOLOGY', 'Web Technology', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WIFI_ACCESS_POINT', 'WiFi Access Point Nearby', 0, 'ENTITY')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WIKIPEDIA_PAGE_EDIT', 'Wikipedia Page Edit', 0, 'DESCRIPTOR')"
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('WIKIPEDIA_PAGE_EDIT', 'Wikipedia Page Edit', 0, 'DESCRIPTOR')",
     ]
 
     def __init__(self, opts, init=False):
@@ -240,9 +239,11 @@ class SpiderFootDb:
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
         # read and write to such a file.
-        dbh = sqlite3.connect(self.sf.myPath() + "/" + opts['__database'], timeout=10)
+        dbh = sqlite3.connect(self.sf.myPath() + "/" + opts["__database"], timeout=10)
         if dbh is None:
-            self.sf.fatal("Could not connect to internal database, and couldn't create " + opts['__database'])
+            self.sf.fatal(
+                "Could not connect to internal database, and couldn't create " + opts["__database"]
+            )
         dbh.text_factory = str
 
         self.conn = dbh
@@ -251,7 +252,7 @@ class SpiderFootDb:
         # Now we actually check to ensure the database file has the schema set
         # up correctly.
         try:
-            self.dbh.execute('SELECT COUNT(*) FROM tbl_scan_config')
+            self.dbh.execute("SELECT COUNT(*) FROM tbl_scan_config")
             self.conn.create_function("REGEXP", 2, __dbregex__)
         except sqlite3.Error:
             # .. If not set up, we set it up.
@@ -259,7 +260,9 @@ class SpiderFootDb:
                 self.create()
                 init = True
             except BaseException as e:
-                self.sf.error("Tried to set up the SpiderFoot database schema, but failed: " + e.args[0])
+                self.sf.error(
+                    "Tried to set up the SpiderFoot database schema, but failed: " + e.args[0]
+                )
             return
 
         if init:
@@ -270,7 +273,7 @@ class SpiderFootDb:
                 except BaseException as e:
                     continue
             self.conn.commit()
-            #self.conn.close()
+            # self.conn.close()
 
     #
     # Back-end database operations
@@ -316,29 +319,29 @@ class SpiderFootDb:
         if filterFp:
             qry += " AND c.false_positive <> 1 "
 
-        if criteria.get('scan_id') is not None:
+        if criteria.get("scan_id") is not None:
             qry += "AND c.scan_instance_id = ? "
-            qvars.append(criteria['scan_id'])
+            qvars.append(criteria["scan_id"])
 
-        if criteria.get('type') is not None:
+        if criteria.get("type") is not None:
             qry += " AND c.type = ? "
-            qvars.append(criteria['type'])
+            qvars.append(criteria["type"])
 
-        if criteria.get('value') is not None:
+        if criteria.get("value") is not None:
             qry += " AND (c.data LIKE ? OR s.data LIKE ?) "
-            qvars.append(criteria['value'])
-            qvars.append(criteria['value'])
+            qvars.append(criteria["value"])
+            qvars.append(criteria["value"])
 
-        if criteria.get('regex') is not None:
+        if criteria.get("regex") is not None:
             qry += " AND (c.data REGEXP ? OR s.data REGEXP ?) "
-            qvars.append(criteria['regex'])
-            qvars.append(criteria['regex'])
+            qvars.append(criteria["regex"])
+            qvars.append(criteria["regex"])
 
         qry += " ORDER BY c.data"
 
         try:
-            #print(qry)
-            #print(str(qvars))
+            # print(qry)
+            # print(str(qvars))
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
@@ -362,19 +365,19 @@ class SpiderFootDb:
             (scan_instance_id, generated, component, type, message) \
             VALUES (?, ?, ?, ?, ?)"
         try:
-            self.dbh.execute(qry, (
-                instanceId, time.time() * 1000, component, classification, message
-            ))
+            self.dbh.execute(
+                qry, (instanceId, time.time() * 1000, component, classification, message)
+            )
             self.conn.commit()
         except sqlite3.Error as e:
             if "locked" in e.args[0] or "thread" in e.args[0]:
                 # TODO: Do something smarter here to handle locked databases
-                #print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
-                #self.sf.fatal("Unable to log event in DB due to lock: " + e.args[0])
+                # print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
+                # self.sf.fatal("Unable to log event in DB due to lock: " + e.args[0])
                 pass
             else:
                 print("[warning] Couldn't log due to: " + str(e.args[0]))
-                #self.sf.fatal("Unable to log event in DB: " + e.args[0])
+                # self.sf.fatal("Unable to log event in DB: " + e.args[0])
 
         return True
 
@@ -384,9 +387,9 @@ class SpiderFootDb:
             (guid, name, seed_target, created, status) \
             VALUES (?, ?, ?, ?, ?)"
         try:
-            self.dbh.execute(qry, (
-                instanceId, scanName, scanTarget, time.time() * 1000, 'CREATED'
-            ))
+            self.dbh.execute(
+                qry, (instanceId, scanName, scanTarget, time.time() * 1000, "CREATED")
+            )
             self.conn.commit()
         except sqlite3.Error as e:
             self.sf.fatal("Unable to create instance in DB: " + e.args[0])
@@ -463,7 +466,7 @@ class SpiderFootDb:
             self.sf.error("SQL error encountered when fetching result summary: " + e.args[0])
 
     # Obtain the data for a scan and event type
-    def scanResultEvent(self, instanceId, eventType='ALL', filterFp=False):
+    def scanResultEvent(self, instanceId, eventType="ALL", filterFp=False):
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
@@ -492,7 +495,7 @@ class SpiderFootDb:
             self.sf.error("SQL error encountered when fetching result events: " + e.args[0])
 
     # Obtain a unique list of elements
-    def scanResultEventUnique(self, instanceId, eventType='ALL', filterFp=False):
+    def scanResultEventUnique(self, instanceId, eventType="ALL", filterFp=False):
         qry = "SELECT DISTINCT data, type, COUNT(*) FROM tbl_scan_results \
             WHERE scan_instance_id = ?"
         qvars = [instanceId]
@@ -593,7 +596,7 @@ class SpiderFootDb:
         for opt in list(optMap.keys()):
             # Module option
             if ":" in opt:
-                parts = opt.split(':')
+                parts = opt.split(":")
                 qvals = [parts[0], parts[1], optMap[opt]]
             else:
                 # Global option
@@ -640,7 +643,7 @@ class SpiderFootDb:
         for opt in list(optMap.keys()):
             # Module option
             if ":" in opt:
-                parts = opt.split(':')
+                parts = opt.split(":")
                 qvals = [id, parts[0], parts[1], optMap[opt]]
             else:
                 # Global option
@@ -682,7 +685,7 @@ class SpiderFootDb:
     # - sourceEventHash: hash of the event that triggered this event
     # And getHash() will return the event hash.
     def scanEventStore(self, instanceId, sfEvent, truncateSize=0):
-        storeData = ''
+        storeData = ""
 
         if type(sfEvent.data) is not str:
             # If sfEvent.data is a dict or list, convert it to a string first, as
@@ -707,18 +710,32 @@ class SpiderFootDb:
             (scan_instance_id, hash, type, generated, confidence, \
             visibility, risk, module, data, source_event_hash) \
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        qvals = [instanceId, sfEvent.getHash(), sfEvent.eventType, sfEvent.generated,
-                 sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
-                 sfEvent.module, storeData, sfEvent.sourceEventHash]
+        qvals = [
+            instanceId,
+            sfEvent.getHash(),
+            sfEvent.eventType,
+            sfEvent.generated,
+            sfEvent.confidence,
+            sfEvent.visibility,
+            sfEvent.risk,
+            sfEvent.module,
+            storeData,
+            sfEvent.sourceEventHash,
+        ]
 
-        #print("STORING: " + str(qvals))
+        # print("STORING: " + str(qvals))
 
         try:
             self.dbh.execute(qry, qvals)
             self.conn.commit()
             return None
         except sqlite3.Error as e:
-            self.sf.fatal("SQL error encountered when storing event data (" + str(self.dbh) + ": " + e.args[0])
+            self.sf.fatal(
+                "SQL error encountered when storing event data ("
+                + str(self.dbh)
+                + ": "
+                + e.args[0]
+            )
 
     # List of all previously run scans
     def scanInstanceList(self):
@@ -752,7 +769,6 @@ class SpiderFootDb:
             return self.dbh.fetchall()
         except sqlite3.Error as e:
             self.sf.error("SQL error encountered when fetching scan history: " + e.args[0])
-
 
     # Get the source IDs, types and data for a set of IDs
     def scanElementSourcesDirect(self, instanceId, elementIdList):
@@ -840,7 +856,7 @@ class SpiderFootDb:
                 parentId = row[9]
                 childId = row[8]
                 datamap[childId] = row
-                #print(childId + " = " + str(row))
+                # print(childId + " = " + str(row))
 
                 if parentId in pc:
                     if childId not in pc[parentId]:

@@ -18,7 +18,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_blockchain(SpiderFootPlugin):
     """Blockchain:Footprint,Investigate,Passive:Public Registries::Queries blockchain.info to find the balance of identified bitcoin wallet addresses."""
 
-
     # Default options
     opts = {}
     results = None
@@ -32,7 +31,7 @@ class sfp_blockchain(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['BITCOIN_ADDRESS']
+        return ["BITCOIN_ADDRESS"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -56,14 +55,17 @@ class sfp_blockchain(SpiderFootPlugin):
             self.results[eventData] = True
 
         # Wallet balance
-        res = self.sf.fetchUrl("https://blockchain.info/balance?active=" + eventData,
-                               timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-        if res['content'] is None:
+        res = self.sf.fetchUrl(
+            "https://blockchain.info/balance?active=" + eventData,
+            timeout=self.opts["_fetchtimeout"],
+            useragent=self.opts["_useragent"],
+        )
+        if res["content"] is None:
             self.sf.info("No Blockchain info found for " + eventData)
             return None
         try:
-            data = json.loads(res['content'])
-            balance = float(data[eventData]['final_balance']) / 100000000
+            data = json.loads(res["content"])
+            balance = float(data[eventData]["final_balance"]) / 100000000
         except Exception as e:
             self.sf.debug("Error processing JSON response.")
             return None
@@ -72,5 +74,6 @@ class sfp_blockchain(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         return None
+
 
 # End of sfp_blockchain class

@@ -16,16 +16,15 @@ import dns.query
 import dns.zone
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_dnszonexfer(SpiderFootPlugin):
     """DNS Zone Transfer:Footprint,Investigate:DNS::Attempts to perform a full DNS zone transfer."""
 
     # Default options
-    opts = {
-    }
+    opts = {}
 
     # Option descriptions
-    optdescs = {
-    }
+    optdescs = {}
 
     events = None
 
@@ -39,7 +38,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['PROVIDER_DNS']
+        return ["PROVIDER_DNS"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -69,8 +68,8 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         self.events[eventDataHash] = True
 
         res = dns.resolver.Resolver()
-        if self.opts.get('_dnsserver', "") != "":
-            res.nameservers = [self.opts['_dnsserver']]
+        if self.opts.get("_dnsserver", "") != "":
+            res.nameservers = [self.opts["_dnsserver"]]
 
         # Get the name server's IP. This is to avoid DNS leaks
         # when attempting to resolve the name server during
@@ -86,8 +85,10 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                         nsip = n
                         break
             else:
-                self.sf.error("Couldn't resolve the name server, " + \
-                              "so not attempting zone transfer.", False)
+                self.sf.error(
+                    "Couldn't resolve the name server, " + "so not attempting zone transfer.",
+                    False,
+                )
                 return None
         else:
             nsip = eventData
@@ -101,7 +102,9 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                 for n in names:
                     ret.append(z[n].to_text(n))
 
-                evt = SpiderFootEvent("RAW_DNS_RECORDS", "\n".join(ret), self.__name__, parentEvent)
+                evt = SpiderFootEvent(
+                    "RAW_DNS_RECORDS", "\n".join(ret), self.__name__, parentEvent
+                )
                 self.notifyListeners(evt)
 
                 # Try and pull out individual records
@@ -116,12 +119,16 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                             else:
                                 strdata = strdata + "." + name
 
-                            evt = SpiderFootEvent("INTERNET_NAME", strdata,
-                                                  self.__name__, parentEvent)
+                            evt = SpiderFootEvent(
+                                "INTERNET_NAME", strdata, self.__name__, parentEvent
+                            )
                             self.notifyListeners(evt)
 
             except BaseException as e:
-                self.sf.error("Failed to obtain DNS response for " + eventData +
-                              "(" + name + "): " + str(e), False)
+                self.sf.error(
+                    "Failed to obtain DNS response for " + eventData + "(" + name + "): " + str(e),
+                    False,
+                )
+
 
 # End of sfp_dnszonexfer class

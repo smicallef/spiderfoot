@@ -2,6 +2,7 @@
 from sflib import SpiderFootScanStatus
 import unittest
 
+
 class TestSpiderFootScanStatus(unittest.TestCase):
     """
     Test SpiderFootScanStatus
@@ -13,8 +14,8 @@ class TestSpiderFootScanStatus(unittest.TestCase):
         """
         globalScanStatus = SpiderFootScanStatus()
 
-        scan_id = 'example scan id'
-        status = 'example status'
+        scan_id = "example scan id"
+        status = "example status"
 
         scan_status = globalScanStatus.setStatus(scan_id, status)
         self.assertEqual(None, scan_status)
@@ -25,8 +26,8 @@ class TestSpiderFootScanStatus(unittest.TestCase):
         """
         globalScanStatus = SpiderFootScanStatus()
 
-        scan_id = 'example scan id'
-        status = 'example status'
+        scan_id = "example scan id"
+        status = "example status"
         globalScanStatus.setStatus(scan_id, status)
 
         scan_status = globalScanStatus.getStatus(scan_id)
@@ -41,6 +42,6 @@ class TestSpiderFootScanStatus(unittest.TestCase):
         scan_status = globalScanStatus.getStatusAll()
         self.assertEqual(dict, type(scan_status))
 
-if __name__ == '__main__':
-    unittest.main()
 
+if __name__ == "__main__":
+    unittest.main()

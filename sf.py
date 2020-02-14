@@ -30,52 +30,53 @@ from sfscan import SpiderFootScanner
 # These can be overriden on a per-module basis, and some will
 # be overridden from saved configuration settings stored in the DB.
 sfConfig = {
-    '_debug': False,  # Debug
-    '__logging': True, # Logging in general
-    '__outputfilter': None, # Event types to filter from modules' output
-    '__blocknotif': False,  # Block notifications
-    '_fatalerrors': False,
-    '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
-    '_dnsserver': '',  # Override the default resolver
-    '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
-    '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
-    '_internettlds_cache': 72,
-    '__version__': '3.0',
-    '__database': 'spiderfoot.db',
-    '__webaddr': '127.0.0.1',
-    '__webport': 5001,
-    '__docroot': '',  # don't put trailing /
-    '__modules__': None,  # List of modules. Will be set after start-up.
-    '_socks1type': '',
-    '_socks2addr': '',
-    '_socks3port': '',
-    '_socks4user': '',
-    '_socks5pwd': '',
-    '_socks6dns': True,
-    '_torctlport': 9051,
-    '__logstdout': False
+    "_debug": False,  # Debug
+    "__logging": True,  # Logging in general
+    "__outputfilter": None,  # Event types to filter from modules' output
+    "__blocknotif": False,  # Block notifications
+    "_fatalerrors": False,
+    "_useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0",  # User-Agent to use for HTTP requests
+    "_dnsserver": "",  # Override the default resolver
+    "_fetchtimeout": 5,  # number of seconds before giving up on a fetch
+    "_internettlds": "https://publicsuffix.org/list/effective_tld_names.dat",
+    "_internettlds_cache": 72,
+    "__version__": "3.0",
+    "__database": "spiderfoot.db",
+    "__webaddr": "127.0.0.1",
+    "__webport": 5001,
+    "__docroot": "",  # don't put trailing /
+    "__modules__": None,  # List of modules. Will be set after start-up.
+    "_socks1type": "",
+    "_socks2addr": "",
+    "_socks3port": "",
+    "_socks4user": "",
+    "_socks5pwd": "",
+    "_socks6dns": True,
+    "_torctlport": 9051,
+    "__logstdout": False,
 }
 
 sfOptdescs = {
-    '_debug': "Enable debugging?",
-    '_internettlds': "List of Internet TLDs.",
-    '_internettlds_cache': "Hours to cache the Internet TLD list. This can safely be quite a long time given that the list doesn't change too often.",
-    '_useragent': "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
-    '_dnsserver': "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
-    '_fetchtimeout': "Number of seconds before giving up on a HTTP request.",
-    '_socks1type': "SOCKS Server Type. Can be '4', '5', 'HTTP' or 'TOR'",
-    '_socks2addr': 'SOCKS Server IP Address.',
-    '_socks3port': 'SOCKS Server TCP Port. Usually 1080 for 4/5, 8080 for HTTP and 9050 for TOR.',
-    '_socks4user': 'SOCKS Username. Valid only for SOCKS4 and SOCKS5 servers.',
-    '_socks5pwd': "SOCKS Password. Valid only for SOCKS5 servers.",
-    '_socks6dns': "Resolve DNS through the SOCKS proxy? When SOCKS/TOR is used this will always be True when resolving to fetch web content. Otherwise, all other DNS resolution goes to your configured DNS server.",
-    '_torctlport': "The port TOR is taking control commands on. This is necessary for SpiderFoot to tell TOR to re-circuit when it suspects anonymity is compromised.",
-    '_fatalerrors': "Abort the scan when modules encounter exceptions.",
-    '_modulesenabled': "Modules enabled for the scan."  # This is a hack to get a description for an option not actually available.
+    "_debug": "Enable debugging?",
+    "_internettlds": "List of Internet TLDs.",
+    "_internettlds_cache": "Hours to cache the Internet TLD list. This can safely be quite a long time given that the list doesn't change too often.",
+    "_useragent": "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
+    "_dnsserver": "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
+    "_fetchtimeout": "Number of seconds before giving up on a HTTP request.",
+    "_socks1type": "SOCKS Server Type. Can be '4', '5', 'HTTP' or 'TOR'",
+    "_socks2addr": "SOCKS Server IP Address.",
+    "_socks3port": "SOCKS Server TCP Port. Usually 1080 for 4/5, 8080 for HTTP and 9050 for TOR.",
+    "_socks4user": "SOCKS Username. Valid only for SOCKS4 and SOCKS5 servers.",
+    "_socks5pwd": "SOCKS Password. Valid only for SOCKS5 servers.",
+    "_socks6dns": "Resolve DNS through the SOCKS proxy? When SOCKS/TOR is used this will always be True when resolving to fetch web content. Otherwise, all other DNS resolution goes to your configured DNS server.",
+    "_torctlport": "The port TOR is taking control commands on. This is necessary for SpiderFoot to tell TOR to re-circuit when it suspects anonymity is compromised.",
+    "_fatalerrors": "Abort the scan when modules encounter exceptions.",
+    "_modulesenabled": "Modules enabled for the scan.",  # This is a hack to get a description for an option not actually available.
 }
 
 scanId = None
 dbh = None
+
 
 def handle_abort(signal, frame):
     print("[*] Aborting...")
@@ -83,7 +84,8 @@ def handle_abort(signal, frame):
         dbh.scanInstanceSet(scanId, None, None, "ABORTED")
     sys.exit(-1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     if len(sys.argv) == 0:
         print("SpiderFoot 3.0 now requires -l <ip>:<port> to start the web server.")
         sys.exit(-1)
@@ -95,75 +97,111 @@ if __name__ == '__main__':
 
     # Legacy way to run the server
     args = None
-    p = argparse.ArgumentParser(description='SpiderFoot 3.0: Open Source Intelligence Automation.')
-    p.add_argument("-d", "--debug", action='store_true', help="Enable debug output.")
+    p = argparse.ArgumentParser(description="SpiderFoot 3.0: Open Source Intelligence Automation.")
+    p.add_argument("-d", "--debug", action="store_true", help="Enable debug output.")
     p.add_argument("-l", metavar="IP:port", help="IP and port to listen on.")
     p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")
-    p.add_argument("-M", "--modules", action='store_true', help="List available modules.")
+    p.add_argument("-M", "--modules", action="store_true", help="List available modules.")
     p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
-    p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect (modules selected automatically).")
-    p.add_argument("-T", "--types", action='store_true', help="List available event types.")
-    p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default. If using json, -q is enforced.")
-    p.add_argument("-H", action='store_true', help="Don't print field headers, just data.")
-    p.add_argument("-n", action='store_true', help="Strip newlines from data.")
-    p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
-    p.add_argument("-S", metavar="LENGTH", type=int, help="Maximum data length to display. By default, all data is shown.")
-    p.add_argument("-D", metavar='DELIMITER', type=str, help="Delimiter to use for CSV output. Default is ,.")
-    p.add_argument("-f", action='store_true', help="Filter out other event types that weren't requested with -t.")
-    p.add_argument("-F", metavar="type1,type2,...", type=str, help="Show only a set of event types, comma-separated.")
-    p.add_argument("-x", action='store_true', help="STRICT MODE. Will only enable modules that can directly consume your target, and if -t was specified only those events will be consumed by modules. This overrides -t and -m options.")
-    p.add_argument("-q", action='store_true', help="Disable logging. This will also hide errors!")
+    p.add_argument(
+        "-t",
+        metavar="type1,type2,...",
+        type=str,
+        help="Event types to collect (modules selected automatically).",
+    )
+    p.add_argument("-T", "--types", action="store_true", help="List available event types.")
+    p.add_argument(
+        "-o",
+        metavar="tab|csv|json",
+        type=str,
+        help="Output format. Tab is default. If using json, -q is enforced.",
+    )
+    p.add_argument("-H", action="store_true", help="Don't print field headers, just data.")
+    p.add_argument("-n", action="store_true", help="Strip newlines from data.")
+    p.add_argument(
+        "-r", action="store_true", help="Include the source data field in tab/csv output."
+    )
+    p.add_argument(
+        "-S",
+        metavar="LENGTH",
+        type=int,
+        help="Maximum data length to display. By default, all data is shown.",
+    )
+    p.add_argument(
+        "-D", metavar="DELIMITER", type=str, help="Delimiter to use for CSV output. Default is ,."
+    )
+    p.add_argument(
+        "-f",
+        action="store_true",
+        help="Filter out other event types that weren't requested with -t.",
+    )
+    p.add_argument(
+        "-F",
+        metavar="type1,type2,...",
+        type=str,
+        help="Show only a set of event types, comma-separated.",
+    )
+    p.add_argument(
+        "-x",
+        action="store_true",
+        help="STRICT MODE. Will only enable modules that can directly consume your target, and if -t was specified only those events will be consumed by modules. This overrides -t and -m options.",
+    )
+    p.add_argument("-q", action="store_true", help="Disable logging. This will also hide errors!")
     args = p.parse_args()
 
     if args.debug:
-        sfConfig['_debug'] = True
+        sfConfig["_debug"] = True
     else:
-        sfConfig['_debug'] = False
+        sfConfig["_debug"] = False
 
     if args.q or args.o == "json":
-        sfConfig['__logging'] = False
+        sfConfig["__logging"] = False
 
     if args.l:
         (addr, port) = args.l.split(":")
-        sfConfig['__webaddr'] = addr
-        sfConfig['__webport'] = int(port)
+        sfConfig["__webaddr"] = addr
+        sfConfig["__webport"] = int(port)
     else:
-        sfConfig['__logstdout'] = True
+        sfConfig["__logstdout"] = True
 
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
     # Go through each module in the modules directory with a .py extension
-    for filename in os.listdir(sft.myPath() + '/modules/'):
+    for filename in os.listdir(sft.myPath() + "/modules/"):
         if filename.startswith("sfp_") and filename.endswith(".py"):
             # Skip the module template and debugging modules
-            if filename == "sfp_template.py" or filename == 'sfp_stor_print.py':
+            if filename == "sfp_template.py" or filename == "sfp_stor_print.py":
                 continue
-            modName = filename.split('.')[0]
+            modName = filename.split(".")[0]
 
             # Load and instantiate the module
             sfModules[modName] = dict()
-            mod = __import__('modules.' + modName, globals(), locals(), [modName])
-            sfModules[modName]['object'] = getattr(mod, modName)()
-            sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":", 5)[0]
-            sfModules[modName]['cats'] = sfModules[modName]['object'].__doc__.split(":", 5)[1].split(",")
-            sfModules[modName]['group'] = sfModules[modName]['object'].__doc__.split(":", 5)[2]
-            sfModules[modName]['labels'] = sfModules[modName]['object'].__doc__.split(":", 5)[3].split(",")
-            sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":", 5)[4]
-            sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
-            sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
-            if hasattr(sfModules[modName]['object'], 'opts'):
-                sfModules[modName]['opts'] = sfModules[modName]['object'].opts
-            if hasattr(sfModules[modName]['object'], 'optdescs'):
-                sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
+            mod = __import__("modules." + modName, globals(), locals(), [modName])
+            sfModules[modName]["object"] = getattr(mod, modName)()
+            sfModules[modName]["name"] = sfModules[modName]["object"].__doc__.split(":", 5)[0]
+            sfModules[modName]["cats"] = (
+                sfModules[modName]["object"].__doc__.split(":", 5)[1].split(",")
+            )
+            sfModules[modName]["group"] = sfModules[modName]["object"].__doc__.split(":", 5)[2]
+            sfModules[modName]["labels"] = (
+                sfModules[modName]["object"].__doc__.split(":", 5)[3].split(",")
+            )
+            sfModules[modName]["descr"] = sfModules[modName]["object"].__doc__.split(":", 5)[4]
+            sfModules[modName]["provides"] = sfModules[modName]["object"].producedEvents()
+            sfModules[modName]["consumes"] = sfModules[modName]["object"].watchedEvents()
+            if hasattr(sfModules[modName]["object"], "opts"):
+                sfModules[modName]["opts"] = sfModules[modName]["object"].opts
+            if hasattr(sfModules[modName]["object"], "optdescs"):
+                sfModules[modName]["optdescs"] = sfModules[modName]["object"].optdescs
 
     if len(list(sfModules.keys())) < 1:
         print("No modules found in the modules directory.")
         sys.exit(-1)
 
     # Add module info to sfConfig so it can be used by the UI
-    sfConfig['__modules__'] = sfModules
+    sfConfig["__modules__"] = sfModules
     # Add descriptions of the global config options
-    sfConfig['__globaloptdescs__'] = sfOptdescs
+    sfConfig["__globaloptdescs__"] = sfOptdescs
 
     sf = SpiderFoot(sfConfig)
     dbh = SpiderFootDb(sfConfig, init=True)
@@ -174,7 +212,7 @@ if __name__ == '__main__':
             for m in sorted(sfModules.keys()):
                 if "__" in m:
                     continue
-                print(('{0:25}  {1}'.format(m, sfModules[m]['descr'])))
+                print(("{0:25}  {1}".format(m, sfModules[m]["descr"])))
             sys.exit(0)
 
         if args.types:
@@ -185,7 +223,7 @@ if __name__ == '__main__':
                 types[r[1]] = r[0]
 
             for t in sorted(types.keys()):
-                print(('{0:45}  {1}'.format(t, types[t])))
+                print(("{0:45}  {1}".format(t, types[t])))
             sys.exit(0)
 
         if not args.s:
@@ -216,9 +254,9 @@ if __name__ == '__main__':
         # Usernames and names - quoted on the commandline - won't have quotes,
         # so add them.
         if " " in target:
-            target = "\"" + target + "\""
-        if "." not in target and not target.startswith("+") and "\"" not in target:
-            target = "\"" + target + "\""
+            target = '"' + target + '"'
+        if "." not in target and not target.startswith("+") and '"' not in target:
+            target = '"' + target + '"'
         targetType = sf.targetType(target)
         target = target.strip('"')
 
@@ -261,27 +299,27 @@ if __name__ == '__main__':
         for r in typedata:
             types[r[1]] = r[0]
 
-        sfConfig['__modules__']['sfp__stor_stdout']['opts']['_eventtypes'] = types
+        sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_eventtypes"] = types
         if args.f:
             if args.f and not args.t:
                 print("You can only use -f with -t. Use --help for guidance.")
                 sys.exit(-1)
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showonlyrequested'] = True
+            sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_showonlyrequested"] = True
         if args.F:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_requested'] = args.F.split(",")
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showonlyrequested'] = True
+            sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_requested"] = args.F.split(",")
+            sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_showonlyrequested"] = True
         if args.o:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_format'] = args.o
+            sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_format"] = args.o
         if args.t:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_requested'] = args.t.split(",")
+            sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_requested"] = args.t.split(",")
         if args.n:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_stripnewline'] = True
+            sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_stripnewline"] = True
         if args.r:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showsource'] = True
+            sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_showsource"] = True
         if args.S:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_maxlength'] = args.S
+            sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_maxlength"] = args.S
         if args.D:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_csvdelim'] = args.D
+            sfConfig["__modules__"]["sfp__stor_stdout"]["opts"]["_csvdelim"] = args.D
         if args.x:
             tmodlist = list()
             modlist = list()
@@ -294,9 +332,9 @@ if __name__ == '__main__':
             rtypes = args.t.split(",")
             for mod in tmodlist:
                 for r in rtypes:
-                    if not sfModules[mod]['provides']:
+                    if not sfModules[mod]["provides"]:
                         continue
-                    if r in sfModules[mod].get('provides', []) and mod not in modlist:
+                    if r in sfModules[mod].get("provides", []) and mod not in modlist:
                         modlist.append(mod)
 
         if len(modlist) == 0:
@@ -306,23 +344,22 @@ if __name__ == '__main__':
         modlist += ["sfp__stor_db", "sfp__stor_stdout"]
 
         # Run the scan
-        if sfConfig['__logging']:
+        if sfConfig["__logging"]:
             print(("[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist)))
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
         scanId = sf.genScanInstanceGUID(target)
 
         # Debug mode is a variable that gets stored to the DB, so re-apply it
         if args.debug:
-            cfg['_debug'] = True
+            cfg["_debug"] = True
         else:
-            cfg['_debug'] = False
+            cfg["_debug"] = False
 
         # If strict mode is enabled, filter the output from modules.
         if args.x and args.t:
-            cfg['__outputfilter'] = args.t.split(",")
+            cfg["__outputfilter"] = args.t.split(",")
 
-        t = SpiderFootScanner(target, target, targetType, scanId,
-            modlist, cfg, dict())
+        t = SpiderFootScanner(target, target, targetType, scanId, modlist, cfg, dict())
         t.daemon = True
         t.start()
 
@@ -331,7 +368,7 @@ if __name__ == '__main__':
             if args.D:
                 delim = args.D
             else:
-                if args.o in [ "tab", None ]:
+                if args.o in ["tab", None]:
                     delim = "\t"
 
                 if args.o == "csv":
@@ -339,25 +376,33 @@ if __name__ == '__main__':
 
             if not args.r:
                 if delim != "\t":
-                    print('{0}{1}{2}{3}{4}'.format("Source", delim, "Type", delim, "Data"))
+                    print("{0}{1}{2}{3}{4}".format("Source", delim, "Type", delim, "Data"))
                 else:
-                    print('{0:30}{1}{2:45}{3}{4}'.format("Source", delim, "Type", delim, "Data"))
+                    print("{0:30}{1}{2:45}{3}{4}".format("Source", delim, "Type", delim, "Data"))
             else:
                 if delim != "\t":
-                    print('{0}{1}{2}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
+                    print(
+                        "{0}{1}{2}{3}{4}{5}{6}".format(
+                            "Source", delim, "Type", delim, "Source Data", delim, "Data"
+                        )
+                    )
                 else:
-                    print('{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
+                    print(
+                        "{0:30}{1}{2:45}{3}{4}{5}{6}".format(
+                            "Source", delim, "Type", delim, "Source Data", delim, "Data"
+                        )
+                    )
 
         if args.o == "json":
-            print("[", end='')
+            print("[", end="")
 
         while True:
             info = dbh.scanInstanceGet(scanId)
             if not info:
                 time.sleep(1)
                 continue
-            if info[5] in [ "ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED" ]:
-                if sfConfig['__logging']:
+            if info[5] in ["ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED"]:
+                if sfConfig["__logging"]:
                     print("[*] Scan completed with status " + info[5])
                 if args.o == "json":
                     print("]")
@@ -366,25 +411,32 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # Start the web server so you can start looking at results
-    url = 'http://' + sfConfig['__webaddr'] + ":" + str(sfConfig['__webport']) + sfConfig['__docroot']
-    print(('Starting web server at %s ...' % url))
+    url = (
+        "http://"
+        + sfConfig["__webaddr"]
+        + ":"
+        + str(sfConfig["__webport"])
+        + sfConfig["__docroot"]
+    )
+    print(("Starting web server at %s ..." % url))
 
-    cherrypy.config.update({
-        'server.socket_host': sfConfig['__webaddr'],
-        'server.socket_port': sfConfig['__webport']
-    })
+    cherrypy.config.update(
+        {"server.socket_host": sfConfig["__webaddr"], "server.socket_port": sfConfig["__webport"]}
+    )
 
     # Disable auto-reloading of content
     cherrypy.engine.autoreload.unsubscribe()
 
     # Enable access to static files via the web directory
     currentDir = os.path.abspath(sf.myPath())
-    conf = {'/static': {
-        'tools.staticdir.on': True,
-        'tools.staticdir.dir': os.path.join(currentDir, 'static')
-    }}
+    conf = {
+        "/static": {
+            "tools.staticdir.on": True,
+            "tools.staticdir.dir": os.path.join(currentDir, "static"),
+        }
+    }
 
-    passwd_file = sf.myPath() + '/passwd'
+    passwd_file = sf.myPath() + "/passwd"
     if os.path.isfile(passwd_file):
         if not os.access(passwd_file, os.R_OK):
             print("Could not read passwd file. Permission denied.")
@@ -392,15 +444,15 @@ if __name__ == '__main__':
 
         secrets = dict()
 
-        pw = open(passwd_file, 'r')
+        pw = open(passwd_file, "r")
 
         for line in pw.readlines():
-            if ':' not in line:
+            if ":" not in line:
                 print("Incorrect format of passwd file, must be username:password on each line.")
                 sys.exit(-1)
 
             u = line.strip().split(":")[0]
-            p = ':'.join(line.strip().split(":")[1:])
+            p = ":".join(line.strip().split(":")[1:])
 
             if not u or not p:
                 print("Incorrect format of passwd file, must be username:password on each line.")
@@ -410,17 +462,17 @@ if __name__ == '__main__':
 
         if secrets:
             print("Enabling authentication based on supplied passwd file.")
-            conf['/'] = {
-                'tools.auth_digest.on': True,
-                'tools.auth_digest.realm': sfConfig['__webaddr'],
-                'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(secrets),
-                'tools.auth_digest.key': random.SystemRandom().randint(0, 99999999)
+            conf["/"] = {
+                "tools.auth_digest.on": True,
+                "tools.auth_digest.realm": sfConfig["__webaddr"],
+                "tools.auth_digest.get_ha1": auth_digest.get_ha1_dict_plain(secrets),
+                "tools.auth_digest.key": random.SystemRandom().randint(0, 99999999),
             }
         else:
             print("Warning: passwd file contains no passwords. Authentication disabled.")
 
-    key_path = sf.myPath() + '/spiderfoot.key'
-    crt_path = sf.myPath() + '/spiderfoot.crt'
+    key_path = sf.myPath() + "/spiderfoot.key"
+    crt_path = sf.myPath() + "/spiderfoot.crt"
     if os.path.isfile(key_path) and os.path.isfile(crt_path):
         if not os.access(crt_path, os.R_OK):
             print("Could not read spiderfoot.crt file. Permission denied.")
@@ -431,10 +483,10 @@ if __name__ == '__main__':
             sys.exit(-1)
 
         print("Enabling SSL based on supplied key and certificate file.")
-        cherrypy.server.ssl_module = 'builtin'
+        cherrypy.server.ssl_module = "builtin"
         cherrypy.server.ssl_certificate = crt_path
         cherrypy.server.ssl_private_key = key_path
 
     # Try starting the web server. If it fails due to a database being
     # missing, start a smaller web server just for setting up the DB.
-    cherrypy.quickstart(SpiderFootWebUi(sfConfig), script_name=sfConfig['__docroot'], config=conf)
+    cherrypy.quickstart(SpiderFootWebUi(sfConfig), script_name=sfConfig["__docroot"], config=conf)

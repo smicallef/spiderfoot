@@ -21,14 +21,14 @@ class sfp_ahmia(SpiderFootPlugin):
     # Default options
     opts = {
         # We don't bother with pagination as ahmia seems fairly limited in coverage
-        'fetchlinks': True,
-        'fullnames': True
+        "fetchlinks": True,
+        "fullnames": True,
     }
 
     # Option descriptions
     optdescs = {
-        'fetchlinks': "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target.",
-        'fullnames': "Search for human names?"
+        "fetchlinks": "Fetch the darknet pages (via TOR, if enabled) to verify they mention your target.",
+        "fullnames": "Search for human names?",
     }
 
     # Target
@@ -56,7 +56,7 @@ class sfp_ahmia(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
+        if not self.opts["fullnames"] and eventName == "HUMAN_NAME":
             return None
 
         if eventData in self.results:
@@ -66,20 +66,23 @@ class sfp_ahmia(SpiderFootPlugin):
             self.results[eventData] = True
 
         # Sites hosted on the domain
-        data = self.sf.fetchUrl("https://ahmia.fi/search/?q=" + eventData.replace(" ", "%20"),
-                                useragent=self.opts['_useragent'],
-                                timeout=self.opts['_fetchtimeout'])
-        if data is None or not data.get('content'):
+        data = self.sf.fetchUrl(
+            "https://ahmia.fi/search/?q=" + eventData.replace(" ", "%20"),
+            useragent=self.opts["_useragent"],
+            timeout=self.opts["_fetchtimeout"],
+        )
+        if data is None or not data.get("content"):
             self.sf.info("No results returned from ahmia.fi.")
             return None
 
-        if "redirect_url=" in data['content']:
+        if "redirect_url=" in data["content"]:
             # Check if we've been asked to stop
             if self.checkForStop():
                 return None
 
-            links = re.findall("redirect_url=(.[^\"]+)\"",
-                             data['content'], re.IGNORECASE | re.DOTALL)
+            links = re.findall(
+                'redirect_url=(.[^"]+)"', data["content"], re.IGNORECASE | re.DOTALL
+            )
 
             reported = False
             for link in links:
@@ -91,41 +94,55 @@ class sfp_ahmia(SpiderFootPlugin):
                     if self.sf.urlFQDN(link).endswith(".onion"):
                         if self.checkForStop():
                             return None
-                        if self.opts['fetchlinks']:
-                            res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
-                                                   useragent=self.opts['_useragent'])
+                        if self.opts["fetchlinks"]:
+                            res = self.sf.fetchUrl(
+                                link,
+                                timeout=self.opts["_fetchtimeout"],
+                                useragent=self.opts["_useragent"],
+                            )
 
-                            if res['content'] is None:
+                            if res["content"] is None:
                                 self.sf.debug("Ignoring " + link + " as no data returned")
                                 continue
 
-                            if eventData not in res['content']:
-                                self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
+                            if eventData not in res["content"]:
+                                self.sf.debug(
+                                    "Ignoring " + link + " as no mention of " + eventData
+                                )
                                 continue
-                            evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
+                            evt = SpiderFootEvent(
+                                "DARKNET_MENTION_URL", link, self.__name__, event
+                            )
                             self.notifyListeners(evt)
 
                             try:
-                                startIndex = res['content'].index(eventData) - 120
+                                startIndex = res["content"].index(eventData) - 120
                                 endIndex = startIndex + len(eventData) + 240
                             except BaseException as e:
                                 self.sf.debug("String not found in content.")
                                 continue
 
-                            wdata = res['content'][startIndex:endIndex]
-                            evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + wdata + "...",
-                                                  self.__name__, evt)
+                            wdata = res["content"][startIndex:endIndex]
+                            evt = SpiderFootEvent(
+                                "DARKNET_MENTION_CONTENT",
+                                "..." + wdata + "...",
+                                self.__name__,
+                                evt,
+                            )
                             self.notifyListeners(evt)
                             reported = True
                         else:
-                            evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
+                            evt = SpiderFootEvent(
+                                "DARKNET_MENTION_URL", link, self.__name__, event
+                            )
                             self.notifyListeners(evt)
                             reported = True
 
             if reported:
                 # Submit the search results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
-                                      self.__name__, event)
+                evt = SpiderFootEvent(
+                    "SEARCH_ENGINE_WEB_CONTENT", data["content"], self.__name__, event
+                )
                 self.notifyListeners(evt)
 
 

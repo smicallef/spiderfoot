@@ -19,18 +19,11 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_zoneh(SpiderFootPlugin):
     """Zone-H Defacement Check:Investigate,Passive:Leaks, Dumps and Breaches::Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed."""
 
-
     # Default options
-    opts = {
-        'checkcohosts': True,
-        'checkaffiliates': True
-    }
+    opts = {"checkcohosts": True, "checkaffiliates": True}
 
     # Option descriptions
-    optdescs = {
-        'checkcohosts': "Check co-hosted sites?",
-        'checkaffiliates': "Check affiliates?"
-    }
+    optdescs = {"checkcohosts": "Check co-hosted sites?", "checkaffiliates": "Check affiliates?"}
 
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
@@ -52,20 +45,31 @@ class sfp_zoneh(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "IP_ADDRESS",
-                "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
-                "CO_HOSTED_SITE"]
+        return [
+            "INTERNET_NAME",
+            "IP_ADDRESS",
+            "AFFILIATE_INTERNET_NAME",
+            "AFFILIATE_IPADDR",
+            "CO_HOSTED_SITE",
+        ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["DEFACED_INTERNET_NAME", "DEFACED_IPADDR",
-                "DEFACED_AFFILIATE_INTERNET_NAME",
-                "DEFACED_COHOST", "DEFACED_AFFILIATE_IPADDR"]
+        return [
+            "DEFACED_INTERNET_NAME",
+            "DEFACED_IPADDR",
+            "DEFACED_AFFILIATE_INTERNET_NAME",
+            "DEFACED_COHOST",
+            "DEFACED_AFFILIATE_IPADDR",
+        ]
 
     def lookupItem(self, target, content):
-        grps = re.findall("<title><\!\[CDATA\[(.[^\]]*)\]\]></title>\s+<link><\!\[CDATA\[(.[^\]]*)\]\]></link>", content)
+        grps = re.findall(
+            "<title><\!\[CDATA\[(.[^\]]*)\]\]></title>\s+<link><\!\[CDATA\[(.[^\]]*)\]\]></link>",
+            content,
+        )
         for m in grps:
             if target in m[0]:
                 self.sf.info("Found zoneh site: " + m[0])
@@ -90,25 +94,28 @@ class sfp_zoneh(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
+        if eventName == "CO_HOSTED_SITE" and not self.opts["checkcohosts"]:
             return None
-        if eventName == 'AFFILIATE_INTERNET_NAME' or eventName == 'AFFILIATE_IPADDR' \
-                and not self.opts['checkaffiliates']:
+        if (
+            eventName == "AFFILIATE_INTERNET_NAME"
+            or eventName == "AFFILIATE_IPADDR"
+            and not self.opts["checkaffiliates"]
+        ):
             return None
 
-        evtType = 'DEFACED_INTERNET_NAME'
+        evtType = "DEFACED_INTERNET_NAME"
 
-        if eventName == 'IP_ADDRESS':
-            evtType = 'DEFACED_IPADDR'
+        if eventName == "IP_ADDRESS":
+            evtType = "DEFACED_IPADDR"
 
-        if eventName == 'CO_HOSTED_SITE':
-            evtType = 'DEFACED_COHOST'
+        if eventName == "CO_HOSTED_SITE":
+            evtType = "DEFACED_COHOST"
 
-        if eventName == 'AFFILIATE_INTERNET_NAME':
-            evtType = 'DEFACED_AFFILIATE_INTERNET_NAME'
+        if eventName == "AFFILIATE_INTERNET_NAME":
+            evtType = "DEFACED_AFFILIATE_INTERNET_NAME"
 
-        if eventName == 'AFFILIATE_IPADDR':
-            evtType = 'DEFACED_AFFILIATE_IPADDR'
+        if eventName == "AFFILIATE_IPADDR":
+            evtType = "DEFACED_AFFILIATE_IPADDR"
 
         if self.checkForStop():
             return None
@@ -116,18 +123,19 @@ class sfp_zoneh(SpiderFootPlugin):
         url = "https://www.zone-h.org/rss/specialdefacements"
         content = self.sf.cacheGet("sfzoneh", 48)
         if content is None:
-            data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
-            if data['content'] is None:
+            data = self.sf.fetchUrl(url, useragent=self.opts["_useragent"])
+            if data["content"] is None:
                 self.sf.error("Unable to fetch " + url, False)
                 self.errorState = True
                 return None
             else:
-                self.sf.cachePut("sfzoneh", data['content'])
-                content = data['content']
+                self.sf.cachePut("sfzoneh", data["content"])
+                content = data["content"]
 
         ret = self.lookupItem(eventData, content)
         if ret:
             evt = SpiderFootEvent(evtType, ret, self.__name__, event)
             self.notifyListeners(evt)
+
 
 # End of sfp_zoneh class

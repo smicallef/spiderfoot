@@ -2,6 +2,7 @@
 from sflib import SpiderFootEvent
 import unittest
 
+
 class TestSpiderFootEvent(unittest.TestCase):
     """
     Test SpiderFootEvent
@@ -11,11 +12,11 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         Test __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0)
         """
-        event_data = ''
-        module = ''
-        source_event = ''
+        event_data = ""
+        module = ""
+        source_event = ""
 
-        event_type = 'ROOT'
+        event_type = "ROOT"
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         self.assertEqual(SpiderFootEvent, type(evt))
 
@@ -23,14 +24,14 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         Test __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0)
         """
-        event_data = ''
-        module = ''
-        source_event = ''
+        event_data = ""
+        module = ""
+        source_event = ""
 
-        event_type = 'ROOT'
+        event_type = "ROOT"
         source_event = SpiderFootEvent(event_type, event_data, module, source_event)
 
-        event_type = 'example non-root event type'
+        event_type = "example non-root event type"
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         self.assertEqual(SpiderFootEvent, type(evt))
@@ -39,9 +40,9 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         Test __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0)
         """
-        event_type = 'ROOT'
-        module = ''
-        source_event = ''
+        event_type = "ROOT"
+        module = ""
+        source_event = ""
 
         with self.assertRaises(SystemExit) as cm:
             event_data = int(1)
@@ -53,12 +54,12 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         Test __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0)
         """
-        event_data = ''
-        module = ''
+        event_data = ""
+        module = ""
 
         with self.assertRaises(SystemExit) as cm:
-            event_type = 'example non-root event type'
-            source_event = ''
+            event_type = "example non-root event type"
+            source_event = ""
             evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         self.assertEqual(cm.exception.code, -1)
@@ -67,11 +68,11 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         Test asDict(self)
         """
-        event_data = ''
-        module = ''
-        source_event = ''
+        event_data = ""
+        module = ""
+        source_event = ""
 
-        event_type = 'ROOT'
+        event_type = "ROOT"
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         evt_dict = evt.asDict()
 
@@ -81,14 +82,14 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         Test asDict(self)
         """
-        event_data = ''
-        module = ''
-        source_event = ''
+        event_data = ""
+        module = ""
+        source_event = ""
 
-        event_type = 'ROOT'
+        event_type = "ROOT"
         source_event = SpiderFootEvent(event_type, event_data, module, source_event)
 
-        event_type = 'example non-root event type'
+        event_type = "example non-root event type"
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         evt_dict = evt.asDict()
 
@@ -98,24 +99,24 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         Test getHash(self)
         """
-        event_type = 'ROOT'
-        event_data = ''
-        module = ''
-        source_event = ''
+        event_type = "ROOT"
+        event_data = ""
+        module = ""
+        source_event = ""
 
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         evt_hash = evt.getHash()
 
-        self.assertEqual('ROOT', evt_hash)
+        self.assertEqual("ROOT", evt_hash)
 
     def test_nonroot_event_get_hash_should_return_a_string(self):
         """
         Test getHash(self)
         """
-        event_type = 'ROOT'
-        event_data = ''
-        module = ''
-        source_event = ''
+        event_type = "ROOT"
+        event_data = ""
+        module = ""
+        source_event = ""
 
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         evt_hash = evt.getHash()
@@ -127,29 +128,29 @@ class TestSpiderFootEvent(unittest.TestCase):
         Test setConfidence(self, confidence)
         Note: this function is not currently used
         """
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_set_visibility(self):
         """
         Test setVisibility(self, visibility)
         Note: this function is not currently used
         """
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_set_risk(self):
         """
         Test setRisk(self, risk)
         Note: this function is not currently used
         """
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_set_source_event_hash(self):
         """
         Test setSourceEventHash(self, srcHash)
         Note: this function is not currently used
         """
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
-

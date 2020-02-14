@@ -19,12 +19,10 @@ class sfp_quad9(SpiderFootPlugin):
     """Quad9:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Quad9"""
 
     # Default options
-    opts = {
-    }
+    opts = {}
 
     # Option descriptions
-    optdescs = {
-    }
+    optdescs = {}
 
     results = None
 
@@ -43,12 +41,11 @@ class sfp_quad9(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME", "MALICIOUS_COHOST"]
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
-        res.nameservers = [ "9.9.9.9" ]
+        res.nameservers = ["9.9.9.9"]
 
         try:
             addrs = res.query(qaddr)
@@ -89,9 +86,18 @@ class sfp_quad9(SpiderFootPlugin):
             if eventName == "CO_HOSTED_SITE":
                 typ = "MALICIOUS_COHOST"
             if not found:
-                evt = SpiderFootEvent(typ, "Blocked by Quad9 [" + eventData + "]\n" +\
-                                      "<SFURL>https://quad9.net/result/?url=" + eventData + "</SFURL>",
-                                      self.__name__, parentEvent)
+                evt = SpiderFootEvent(
+                    typ,
+                    "Blocked by Quad9 ["
+                    + eventData
+                    + "]\n"
+                    + "<SFURL>https://quad9.net/result/?url="
+                    + eventData
+                    + "</SFURL>",
+                    self.__name__,
+                    parentEvent,
+                )
                 self.notifyListeners(evt)
+
 
 # End of sfp_quad9 class

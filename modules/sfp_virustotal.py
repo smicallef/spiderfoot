@@ -19,31 +19,30 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_virustotal(SpiderFootPlugin):
     """VirusTotal:Investigate,Passive:Reputation Systems:apikey:Obtain information from VirusTotal about identified IP addresses."""
 
-
     # Default options
     opts = {
-        'api_key': '',
-        'verify': True,
-        'publicapi': True,
-        'checkcohosts': True,
-        'checkaffiliates': True,
-        'netblocklookup': True,
-        'maxnetblock': 24,
-        'subnetlookup': True,
-        'maxsubnet': 24
+        "api_key": "",
+        "verify": True,
+        "publicapi": True,
+        "checkcohosts": True,
+        "checkaffiliates": True,
+        "netblocklookup": True,
+        "maxnetblock": 24,
+        "subnetlookup": True,
+        "maxsubnet": 24,
     }
 
     # Option descriptions
     optdescs = {
-        'api_key': 'VirusTotal API Key.',
-        'publicapi': 'Are you using a public key? If so SpiderFoot will pause for 15 seconds after each query to avoid VirusTotal dropping requests.',
-        'checkcohosts': 'Check co-hosted sites?',
-        'checkaffiliates': 'Check affiliates?',
-        'netblocklookup': 'Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?',
-        'maxnetblock': 'If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)',
-        'subnetlookup': 'Look up all IPs on subnets which your target is a part of?',
-        'maxsubnet': 'If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)',
-        'verify': 'Verify that any hostnames found on the target domain still resolve?'
+        "api_key": "VirusTotal API Key.",
+        "publicapi": "Are you using a public key? If so SpiderFoot will pause for 15 seconds after each query to avoid VirusTotal dropping requests.",
+        "checkcohosts": "Check co-hosted sites?",
+        "checkaffiliates": "Check affiliates?",
+        "netblocklookup": "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
+        "maxnetblock": "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        "subnetlookup": "Look up all IPs on subnets which your target is a part of?",
+        "maxsubnet": "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        "verify": "Verify that any hostnames found on the target domain still resolve?",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -64,17 +63,30 @@ class sfp_virustotal(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
-                "CO_HOSTED_SITE", "NETBLOCK_OWNER",
-                "NETBLOCK_MEMBER"]
+        return [
+            "IP_ADDRESS",
+            "AFFILIATE_IPADDR",
+            "INTERNET_NAME",
+            "CO_HOSTED_SITE",
+            "NETBLOCK_OWNER",
+            "NETBLOCK_MEMBER",
+        ]
 
     # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
-                "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-                "MALICIOUS_SUBNET", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
-                "INTERNET_NAME_UNRESOLVED", 'DOMAIN_NAME']
+        return [
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_INTERNET_NAME",
+            "MALICIOUS_COHOST",
+            "MALICIOUS_AFFILIATE_INTERNET_NAME",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_NETBLOCK",
+            "MALICIOUS_SUBNET",
+            "INTERNET_NAME",
+            "AFFILIATE_INTERNET_NAME",
+            "INTERNET_NAME_UNRESOLVED",
+            "DOMAIN_NAME",
+        ]
 
     def query(self, qry):
         ret = None
@@ -84,19 +96,22 @@ class sfp_virustotal(SpiderFootPlugin):
         else:
             url = "https://www.virustotal.com/vtapi/v2/domain/report?domain=" + qry
 
-        res = self.sf.fetchUrl(url + "&apikey=" + self.opts['api_key'],
-                               timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        res = self.sf.fetchUrl(
+            url + "&apikey=" + self.opts["api_key"],
+            timeout=self.opts["_fetchtimeout"],
+            useragent="SpiderFoot",
+        )
 
         # Public API is limited to 4 queries per minute
-        if self.opts['publicapi']:
+        if self.opts["publicapi"]:
             time.sleep(15)
 
-        if res['content'] is None:
+        if res["content"] is None:
             self.sf.info("No VirusTotal info found for " + qry)
             return None
 
         try:
-            ret = json.loads(res['content'])
+            ret = json.loads(res["content"])
         except Exception as e:
             self.sf.error("Error processing JSON response from VirusTotal.", False)
             self.errorState = True
@@ -115,7 +130,7 @@ class sfp_virustotal(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_virustotal but did not set an API key!", False)
             self.errorState = True
             return None
@@ -127,30 +142,36 @@ class sfp_virustotal(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
+        if eventName.startswith("AFFILIATE") and not self.opts["checkaffiliates"]:
             return None
 
-        if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
+        if eventName == "CO_HOSTED_SITE" and not self.opts["checkcohosts"]:
             return None
 
-        if eventName == 'NETBLOCK_OWNER':
-            if not self.opts['netblocklookup']:
+        if eventName == "NETBLOCK_OWNER":
+            if not self.opts["netblocklookup"]:
                 return None
             else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                if IPNetwork(eventData).prefixlen < self.opts["maxnetblock"]:
+                    self.sf.debug(
+                        "Network size bigger than permitted: "
+                        + str(IPNetwork(eventData).prefixlen)
+                        + " > "
+                        + str(self.opts["maxnetblock"])
+                    )
                     return None
 
-        if eventName == 'NETBLOCK_MEMBER':
-            if not self.opts['subnetlookup']:
+        if eventName == "NETBLOCK_MEMBER":
+            if not self.opts["subnetlookup"]:
                 return None
             else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
+                if IPNetwork(eventData).prefixlen < self.opts["maxsubnet"]:
+                    self.sf.debug(
+                        "Network size bigger than permitted: "
+                        + str(IPNetwork(eventData).prefixlen)
+                        + " > "
+                        + str(self.opts["maxsubnet"])
+                    )
                     return None
 
         qrylist = list()
@@ -168,7 +189,7 @@ class sfp_virustotal(SpiderFootPlugin):
             info = self.query(addr)
             if info is None:
                 continue
-            if len(info.get('detected_urls', [])) > 0:
+            if len(info.get("detected_urls", [])) > 0:
                 self.sf.info("Found VirusTotal URL data for " + addr)
                 if eventName in ["IP_ADDRESS"] or eventName.startswith("NETBLOCK_"):
                     evt = "MALICIOUS_IPADDR"
@@ -190,50 +211,65 @@ class sfp_virustotal(SpiderFootPlugin):
                     evt = "MALICIOUS_COHOST"
                     infotype = "domain"
 
-                infourl = "<SFURL>https://www.virustotal.com/en/" + infotype + "/" + \
-                          addr + "/information/</SFURL>"
+                infourl = (
+                    "<SFURL>https://www.virustotal.com/en/"
+                    + infotype
+                    + "/"
+                    + addr
+                    + "/information/</SFURL>"
+                )
 
                 # Notify other modules of what you've found
-                e = SpiderFootEvent(evt, "VirusTotal [" + addr + "]\n" +
-                                    infourl, self.__name__, event)
+                e = SpiderFootEvent(
+                    evt, "VirusTotal [" + addr + "]\n" + infourl, self.__name__, event
+                )
                 self.notifyListeners(e)
 
             # Treat siblings as affiliates if they are of the original target, otherwise
             # they are additional hosts within the target.
-            if 'domain_siblings' in info:
-                if eventName in [ "IP_ADDRESS", "INTERNET_NAME"]:
-                    for s in info['domain_siblings']:
+            if "domain_siblings" in info:
+                if eventName in ["IP_ADDRESS", "INTERNET_NAME"]:
+                    for s in info["domain_siblings"]:
                         if self.getTarget().matches(s):
                             if s not in self.results:
-                                if self.opts['verify']:
+                                if self.opts["verify"]:
                                     if not self.sf.resolveHost(s):
-                                        e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", s, self.__name__, event)
+                                        e = SpiderFootEvent(
+                                            "INTERNET_NAME_UNRESOLVED", s, self.__name__, event
+                                        )
                                         self.notifyListeners(e)
                                     else:
-                                        e = SpiderFootEvent("INTERNET_NAME", s, self.__name__, event)
+                                        e = SpiderFootEvent(
+                                            "INTERNET_NAME", s, self.__name__, event
+                                        )
                                         self.notifyListeners(e)
 
-                                if self.sf.isDomain(s, self.opts['_internettlds']):
+                                if self.sf.isDomain(s, self.opts["_internettlds"]):
                                     e = SpiderFootEvent("DOMAIN_NAME", s, self.__name__, event)
                                     self.notifyListeners(e)
                         else:
                             if s not in self.results:
-                                e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", s, self.__name__, event)
+                                e = SpiderFootEvent(
+                                    "AFFILIATE_INTERNET_NAME", s, self.__name__, event
+                                )
                                 self.notifyListeners(e)
 
-            if 'subdomains' in info and eventName == "INTERNET_NAME":
-                for n in info['subdomains']:
+            if "subdomains" in info and eventName == "INTERNET_NAME":
+                for n in info["subdomains"]:
                     if n not in self.results:
-                        if self.opts['verify']:
+                        if self.opts["verify"]:
                             if not self.sf.resolveHost(n):
-                                e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", n, self.__name__, event)
+                                e = SpiderFootEvent(
+                                    "INTERNET_NAME_UNRESOLVED", n, self.__name__, event
+                                )
                                 self.notifyListeners(e)
                         else:
                             e = SpiderFootEvent("INTERNET_NAME", n, self.__name__, event)
                             self.notifyListeners(e)
 
-                        if self.sf.isDomain(n, self.opts['_internettlds']):
+                        if self.sf.isDomain(n, self.opts["_internettlds"]):
                             e = SpiderFootEvent("DOMAIN_NAME", n, self.__name__, event)
                             self.notifyListeners(e)
+
 
 # End of sfp_virustotal class

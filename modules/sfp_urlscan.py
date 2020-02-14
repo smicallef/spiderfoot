@@ -14,15 +14,12 @@ import json
 import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_urlscan(SpiderFootPlugin):
     """URLScan.io:Footprint,Investigate,Passive:Search Engines::Search URLScan.io cache for domain information."""
 
-    opts = {
-        'verify': True
-    }
-    optdescs = {
-        'verify': 'Verify that any hostnames found on the target domain still resolve?'
-    }
+    opts = {"verify": True}
+    optdescs = {"verify": "Verify that any hostnames found on the target domain still resolve?"}
 
     results = None
     errorState = False
@@ -37,35 +34,44 @@ class sfp_urlscan(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['INTERNET_NAME']
+        return ["INTERNET_NAME"]
 
     # What events this module produces
     def producedEvents(self):
-        return ['GEOINFO', 'LINKED_URL_INTERNAL', 'RAW_RIR_DATA',
-                'DOMAIN_NAME', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
-                'BGP_AS_MEMBER', 'WEBSERVER_BANNER']
+        return [
+            "GEOINFO",
+            "LINKED_URL_INTERNAL",
+            "RAW_RIR_DATA",
+            "DOMAIN_NAME",
+            "INTERNET_NAME",
+            "INTERNET_NAME_UNRESOLVED",
+            "BGP_AS_MEMBER",
+            "WEBSERVER_BANNER",
+        ]
 
     # https://urlscan.io/about-api/
     def query(self, qry):
         params = {
-            'q': 'domain:' + qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
+            "q": "domain:" + qry.encode("raw_unicode_escape").decode("ascii", errors="replace")
         }
 
-        res = self.sf.fetchUrl('https://urlscan.io/api/v1/search/?' + urllib.parse.urlencode(params),
-                               timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(
+            "https://urlscan.io/api/v1/search/?" + urllib.parse.urlencode(params),
+            timeout=self.opts["_fetchtimeout"],
+            useragent=self.opts["_useragent"],
+        )
 
-        if res['code'] == "429":
+        if res["code"] == "429":
             self.sf.error("You are being rate-limited by URLScan.io.", False)
             self.errorState = True
             return None
 
-        if res['content'] is None:
+        if res["content"] is None:
             self.sf.info("No results info found for " + qry)
             return None
 
         try:
-            result = json.loads(res['content'])
+            result = json.loads(res["content"])
         except Exception as e:
             self.sf.debug("Error processing JSON response.")
             return None
@@ -95,12 +101,12 @@ class sfp_urlscan(SpiderFootPlugin):
         if data is None:
             return None
 
-        results = data.get('results')
+        results = data.get("results")
 
         if not results:
             return None
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
+        evt = SpiderFootEvent("RAW_RIR_DATA", str(results), self.__name__, event)
         self.notifyListeners(evt)
 
         urls = list()
@@ -110,12 +116,12 @@ class sfp_urlscan(SpiderFootPlugin):
         servers = list()
 
         for res in results:
-            page = res.get('page')
+            page = res.get("page")
 
             if not page:
                 continue
 
-            domain = page.get('domain')
+            domain = page.get("domain")
 
             if not domain:
                 continue
@@ -126,62 +132,63 @@ class sfp_urlscan(SpiderFootPlugin):
             if domain.lower() != eventData.lower():
                 domains.append(domain)
 
-            asn = page.get('asn')
+            asn = page.get("asn")
 
             if asn:
-                asns.append(asn.replace('AS', ''))
+                asns.append(asn.replace("AS", ""))
 
-            location = ', '.join([_f for _f in [page.get('city'), page.get('country')] if _f])
+            location = ", ".join([_f for _f in [page.get("city"), page.get("country")] if _f])
 
             if location:
                 locations.append(location)
 
-            server = page.get('server')
+            server = page.get("server")
 
             if server:
                 servers.append(server)
 
-            task = res.get('task')
+            task = res.get("task")
 
             if not task:
                 continue
 
-            url = task.get('url')
+            url = task.get("url")
 
             if self.getTarget().matches(self.sf.urlFQDN(url), includeParents=True):
                 urls.append(url)
 
         for url in set(urls):
-            evt = SpiderFootEvent('LINKED_URL_INTERNAL', url, self.__name__, event)
+            evt = SpiderFootEvent("LINKED_URL_INTERNAL", url, self.__name__, event)
             self.notifyListeners(evt)
 
         for location in set(locations):
-            evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
+            evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(evt)
 
-        if self.opts['verify'] and len(domains) > 0:
+        if self.opts["verify"] and len(domains) > 0:
             self.sf.info("Resolving " + str(len(set(domains))) + " domains ...")
 
         for domain in set(domains):
-            if self.opts['verify'] and not self.sf.resolveHost(domain):
-                evt = SpiderFootEvent('INTERNET_NAME_UNRESOLVED', domain, self.__name__, event)
+            if self.opts["verify"] and not self.sf.resolveHost(domain):
+                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
                 self.notifyListeners(evt)
             else:
-                evt = SpiderFootEvent('INTERNET_NAME', domain, self.__name__, event)
+                evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
                 self.notifyListeners(evt)
 
-            if self.sf.isDomain(domain, self.opts['_internettlds']):
-                evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
+            if self.sf.isDomain(domain, self.opts["_internettlds"]):
+                evt = SpiderFootEvent("DOMAIN_NAME", domain, self.__name__, event)
                 self.notifyListeners(evt)
 
         for asn in set(asns):
-            evt = SpiderFootEvent('BGP_AS_MEMBER', asn, self.__name__, event)
+            evt = SpiderFootEvent("BGP_AS_MEMBER", asn, self.__name__, event)
             self.notifyListeners(evt)
 
         for server in set(servers):
-            evt = SpiderFootEvent('WEBSERVER_BANNER', server, self.__name__, event)
+            evt = SpiderFootEvent("WEBSERVER_BANNER", server, self.__name__, event)
             self.notifyListeners(evt)
 
         return None
+
 
 # End of sfp_ipinfo class

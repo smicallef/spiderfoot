@@ -19,13 +19,9 @@ class sfp_adblock(SpiderFootPlugin):
     """AdBlock Check:Investigate,Passive:Reputation Systems::Check if linked pages would be blocked by AdBlock Plus."""
 
     # Default options
-    opts = {
-        "blocklist": "https://easylist-downloads.adblockplus.org/easylist.txt"
-    }
+    opts = {"blocklist": "https://easylist-downloads.adblockplus.org/easylist.txt"}
 
-    optdescs = {
-        "blocklist": "AdBlockPlus block list."
-    }
+    optdescs = {"blocklist": "AdBlockPlus block list."}
 
     results = None
     rules = None
@@ -62,9 +58,9 @@ class sfp_adblock(SpiderFootPlugin):
             return None
 
         if self.rules is None:
-            raw = self.sf.fetchUrl(self.opts['blocklist'], timeout=30)
-            if raw['content'] is not None:
-                lines = raw['content'].split('\n')
+            raw = self.sf.fetchUrl(self.opts["blocklist"], timeout=30)
+            if raw["content"] is not None:
+                lines = raw["content"].split("\n")
                 self.sf.debug("RULE LINES: " + str(len(lines)))
                 try:
                     self.rules = adblockparser.AdblockRules(lines)
@@ -73,7 +69,9 @@ class sfp_adblock(SpiderFootPlugin):
                     self.sf.error("Parsing error handling AdBlock list: " + str(e), False)
             else:
                 self.errorState = True
-                self.sf.error("Unable to download AdBlockPlus list: " + self.opts['blocklist'], False)
+                self.sf.error(
+                    "Unable to download AdBlockPlus list: " + self.opts["blocklist"], False
+                )
 
         if "_EXTERNAL" in eventName:
             pagetype = "_EXTERNAL"
@@ -88,13 +86,13 @@ class sfp_adblock(SpiderFootPlugin):
 
         try:
             if self.rules and self.rules.should_block(eventData):
-                evt = SpiderFootEvent("URL_ADBLOCKED" + pagetype, eventData,
-                                      self.__name__, event)
+                evt = SpiderFootEvent("URL_ADBLOCKED" + pagetype, eventData, self.__name__, event)
                 self.notifyListeners(evt)
         except BaseException as e:
             self.sf.error("Parsing error handling AdBlock list: " + str(e), False)
             self.errorState = True
 
         return None
+
 
 # End of sfp_adblock class

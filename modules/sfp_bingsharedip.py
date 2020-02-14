@@ -23,7 +23,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         "pages": 20,
         "verify": True,
         "maxcohost": 100,
-        "api_key": ""
+        "api_key": "",
     }
 
     # Option descriptions
@@ -32,7 +32,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         "pages": "Number of max bing results to request from API.",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
-        "api_key": "Bing API Key for shared IP search."
+        "api_key": "Bing API Key for shared IP search.",
     }
 
     results = None
@@ -71,7 +71,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['api_key'] == "" and self.opts['api_key'] == "":
+        if self.opts["api_key"] == "" and self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_bingsharedip but did not set a Bing API key!", False)
             self.errorState = True
             return None
@@ -128,9 +128,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
                     if not self.opts["cohostsamedomain"]:
                         if self.getTarget().matches(site, includeParents=True):
                             self.sf.debug(
-                                "Skipping "
-                                + site
-                                + " because it is on the same domain."
+                                "Skipping " + site + " because it is on the same domain."
                             )
                             continue
                     if self.opts["verify"] and not self.sf.validateIP(site, ip):
@@ -141,22 +139,16 @@ class sfp_bingsharedip(SpiderFootPlugin):
                     if eventName == "NETBLOCK_OWNER":
                         ipe = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
                         self.notifyListeners(ipe)
-                        evt = SpiderFootEvent(
-                            "CO_HOSTED_SITE", site, self.__name__, ipe
-                        )
+                        evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, ipe)
                         self.notifyListeners(evt)
                     else:
-                        evt = SpiderFootEvent(
-                            "CO_HOSTED_SITE", site, self.__name__, event
-                        )
+                        evt = SpiderFootEvent("CO_HOSTED_SITE", site, self.__name__, event)
                         self.notifyListeners(evt)
                     self.cohostcount += 1
                     myres.append(site)
 
             if urls:
-                evt = SpiderFootEvent(
-                    "RAW_RIR_DATA", str(res), self.__name__, event
-                )
+                evt = SpiderFootEvent("RAW_RIR_DATA", str(res), self.__name__, event)
                 self.notifyListeners(evt)
 
 

@@ -17,6 +17,7 @@ import re
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_circllu(SpiderFootPlugin):
     """CIRCL.LU:Investigate,Passive:Reputation Systems:apikey:Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases."""
 
@@ -27,7 +28,7 @@ class sfp_circllu(SpiderFootPlugin):
         "age_limit_days": 0,
         "verify": True,
         "cohostsamedomain": False,
-        "maxcohost": 100
+        "maxcohost": 100,
     }
 
     # Option descriptions
@@ -37,7 +38,7 @@ class sfp_circllu(SpiderFootPlugin):
         "age_limit_days": "Ignore any Passive DNS records older than this many days. 0 = unlimited.",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
-        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
+        "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -77,26 +78,26 @@ class sfp_circllu(SpiderFootPlugin):
         else:
             url = "https://www.circl.lu/v2pssl/query/" + qry
 
-        secret = self.opts['api_key_login'] + ':' + self.opts['api_key_password']
-        b64_val = base64.b64encode(secret.encode('utf-8'))
-        headers = {
-            'Authorization': 'Basic %s' % b64_val
-        }
+        secret = self.opts["api_key_login"] + ":" + self.opts["api_key_password"]
+        b64_val = base64.b64encode(secret.encode("utf-8"))
+        headers = {"Authorization": "Basic %s" % b64_val}
 
         # Be more forgiving with the timeout as some queries for subnets can be slow
-        res = self.sf.fetchUrl(url, timeout=30,
-                               useragent="SpiderFoot", headers=headers)
+        res = self.sf.fetchUrl(url, timeout=30, useragent="SpiderFoot", headers=headers)
 
-        if res['code'] in [ "400", "429", "500", "403" ]:
-            self.sf.error("CIRCL.LU access seems to have been rejected or you have exceeded usage limits.", False)
+        if res["code"] in ["400", "429", "500", "403"]:
+            self.sf.error(
+                "CIRCL.LU access seems to have been rejected or you have exceeded usage limits.",
+                False,
+            )
             self.errorState = True
             return None
 
-        if res['content'] is None:
+        if res["content"] is None:
             self.sf.info("No CIRCL.LU info found for " + qry)
             return None
 
-        return res['content']
+        return res["content"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -115,7 +116,7 @@ class sfp_circllu(SpiderFootPlugin):
             self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
-        if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":
+        if self.opts["api_key_login"] == "" or self.opts["api_key_password"] == "":
             self.sf.error("You enabled sfp_circllu but did not set an credentials!", False)
             self.errorState = True
             return None
@@ -127,7 +128,7 @@ class sfp_circllu(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName in [ 'IP_ADDRESS', 'NETBLOCK_OWNER' ]:
+        if eventName in ["IP_ADDRESS", "NETBLOCK_OWNER"]:
             # CIRCL.LU limit the maximum subnet size to 23
             # http://circl.lu/services/passive-ssl/
             if "/" in eventData:
@@ -153,16 +154,21 @@ class sfp_circllu(SpiderFootPlugin):
                         if ip != eventData:
                             ipe = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
                             self.notifyListeners(ipe)
-                        for crt in j[ip]['subjects']:
-                            r = re.findall(".*[\"\'](.+CN=([a-zA-Z0-9\-\*\.])+)[\"\'].*",
-                                           str(j[ip]['subjects'][crt]), re.IGNORECASE)
+                        for crt in j[ip]["subjects"]:
+                            r = re.findall(
+                                ".*[\"'](.+CN=([a-zA-Z0-9\-\*\.])+)[\"'].*",
+                                str(j[ip]["subjects"][crt]),
+                                re.IGNORECASE,
+                            )
                             if r:
-                                e = SpiderFootEvent("SSL_CERTIFICATE_ISSUED", r[0][0], self.__name__, ipe)
+                                e = SpiderFootEvent(
+                                    "SSL_CERTIFICATE_ISSUED", r[0][0], self.__name__, ipe
+                                )
                                 self.notifyListeners(e)
                 except BaseException as e:
                     self.sf.error("Invalid response returned from CIRCL.LU: " + str(e), False)
 
-        if eventName in [ 'IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME' ]:
+        if eventName in ["IP_ADDRESS", "INTERNET_NAME", "DOMAIN_NAME"]:
             ret = self.query(eventData, "PDNS")
             if not ret:
                 self.sf.info("No CIRCL.LU passive DNS data found for " + eventData)
@@ -178,39 +184,42 @@ class sfp_circllu(SpiderFootPlugin):
                     self.sf.error("Invalid response returned from CIRCL.LU: " + str(e), False)
                     continue
 
-                age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
-                if self.opts['age_limit_days'] > 0 and rec['time_last'] < age_limit_ts:
+                age_limit_ts = int(time.time()) - (86400 * self.opts["age_limit_days"])
+                if self.opts["age_limit_days"] > 0 and rec["time_last"] < age_limit_ts:
                     self.sf.debug("Record found but too old, skipping.")
                     continue
 
                 cohosts = list()
                 if eventName == "IP_ADDRESS":
                     # Record could be pointing to our IP, or from our IP
-                    if rec['rrtype'] == "A" and rec['rdata'] == eventData:
-                        if not self.getTarget().matches(rec['rrname']):
+                    if rec["rrtype"] == "A" and rec["rdata"] == eventData:
+                        if not self.getTarget().matches(rec["rrname"]):
                             # We found a co-host
-                            cohosts.append(rec['rrname'])
+                            cohosts.append(rec["rrname"])
 
-                if eventName in [ "INTERNET_NAME", "DOMAIN_NAME" ]:
+                if eventName in ["INTERNET_NAME", "DOMAIN_NAME"]:
                     # Record could be an A/CNAME of this entity, or something pointing to it
-                    if rec['rdata'] == eventData:
-                        if not self.getTarget().matches(rec['rrname']):
+                    if rec["rdata"] == eventData:
+                        if not self.getTarget().matches(rec["rrname"]):
                             # We found a co-host
-                            cohosts.append(rec['rrname'])
+                            cohosts.append(rec["rrname"])
 
                 for co in cohosts:
-                    if eventName == "IP_ADDRESS" and (self.opts['verify'] and not self.sf.validateIP(co, eventData)):
+                    if eventName == "IP_ADDRESS" and (
+                        self.opts["verify"] and not self.sf.validateIP(co, eventData)
+                    ):
                         self.sf.debug("Host no longer resolves to our IP.")
                         continue
 
-                    if not self.opts['cohostsamedomain']:
+                    if not self.opts["cohostsamedomain"]:
                         if self.getTarget().matches(co, includeParents=True):
                             self.sf.debug("Skipping " + co + " because it is on the same domain.")
                             continue
 
-                    if self.cohostcount < self.opts['maxcohost']:
+                    if self.cohostcount < self.opts["maxcohost"]:
                         e = SpiderFootEvent("CO_HOSTED_SITE", co, self.__name__, event)
                         self.notifyListeners(e)
                         self.cohostcount += 1
+
 
 # End of sfp_circllu class

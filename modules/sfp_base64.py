@@ -19,13 +19,11 @@ class sfp_base64(SpiderFootPlugin):
     """Base64:Investigate,Passive:Content Analysis::Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information."""
 
     # Default options
-    opts = {
-        'minlength': 10
-    }
+    opts = {"minlength": 10}
 
     # Option descriptions
     optdescs = {
-        'minlength': "The minimum length a string that looks like a base64-encoded string needs to be."
+        "minlength": "The minimum length a string that looks like a base64-encoded string needs to be."
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -59,11 +57,11 @@ class sfp_base64(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            minlen = int(self.opts['minlength'])
+            minlen = int(self.opts["minlength"])
             if len(match) >= minlen:
                 caps = sum(1 for c in match if c.isupper())
                 # Base64-encoded strings don't look like normal strings
-                if caps < (minlen/4):
+                if caps < (minlen / 4):
                     return None
                 self.sf.info("Found Base64 string: " + match)
                 if type(match) != str:
@@ -77,5 +75,6 @@ class sfp_base64(SpiderFootPlugin):
                     self.sf.debug("Unable to base64-decode a string.")
 
         return None
+
 
 # End of sfp_base64 class

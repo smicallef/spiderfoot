@@ -19,12 +19,10 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
     """Cleanbrowsing.org:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Cleanbrowsing.org DNS"""
 
     # Default options
-    opts = {
-    }
+    opts = {}
 
     # Option descriptions
-    optdescs = {
-    }
+    optdescs = {}
 
     results = None
 
@@ -43,12 +41,11 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME", "MALICIOUS_COHOST"]
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
-        res.nameservers = [ "185.228.168.168", "185.228.168.169" ]
+        res.nameservers = ["185.228.168.168", "185.228.168.169"]
 
         try:
             addrs = res.query(qaddr)
@@ -89,8 +86,13 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
             if eventName == "CO_HOSTED_SITE":
                 typ = "MALICIOUS_COHOST"
             if not found:
-                evt = SpiderFootEvent(typ, "Blocked by Cleanbrowsing.org [" + eventData + "]",
-                                      self.__name__, parentEvent)
+                evt = SpiderFootEvent(
+                    typ,
+                    "Blocked by Cleanbrowsing.org [" + eventData + "]",
+                    self.__name__,
+                    parentEvent,
+                )
                 self.notifyListeners(evt)
+
 
 # End of sfp_cleanbrowsing class

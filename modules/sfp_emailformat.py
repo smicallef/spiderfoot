@@ -19,16 +19,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_emailformat(SpiderFootPlugin):
     """EmailFormat:Footprint,Investigate,Passive:Search Engines::Look up e-mail addresses on email-format.com."""
 
-
     results = None
 
     # Default options
-    opts = {
-    }
+    opts = {}
 
     # Option descriptions
-    optdescs = {
-    }
+    optdescs = {}
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -39,7 +36,7 @@ class sfp_emailformat(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['INTERNET_NAME', "DOMAIN_NAME"]
+        return ["INTERNET_NAME", "DOMAIN_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -61,17 +58,21 @@ class sfp_emailformat(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Get e-mail addresses on this domain
-        res = self.sf.fetchUrl("https://www.email-format.com/d/" + eventData + "/", timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(
+            "https://www.email-format.com/d/" + eventData + "/",
+            timeout=self.opts["_fetchtimeout"],
+            useragent=self.opts["_useragent"],
+        )
 
-        if res['content'] is None:
+        if res["content"] is None:
             return None
 
-        emails = self.sf.parseEmails(res['content'])
+        emails = self.sf.parseEmails(res["content"])
         for email in emails:
             evttype = "EMAILADDR"
 
             # Skip unrelated emails
-            mailDom = email.lower().split('@')[1]
+            mailDom = email.lower().split("@")[1]
             if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
                 self.sf.debug("Skipped address: " + email)
                 continue
@@ -86,5 +87,6 @@ class sfp_emailformat(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         return None
+
 
 # End of sfp_emailformat class

@@ -17,14 +17,10 @@ class sfp_intfiles(SpiderFootPlugin):
     """Interesting Files:Footprint,Passive:Crawling and Scanning::Identifies potential files of interest, e.g. office documents, zip files."""
 
     # Default options
-    opts = {
-        'fileexts': ["doc", "docx", "ppt", "pptx", "pdf", 'xls', 'xlsx', 'zip']
-    }
+    opts = {"fileexts": ["doc", "docx", "ppt", "pptx", "pdf", "xls", "xlsx", "zip"]}
 
     # Option descriptions
-    optdescs = {
-        'fileexts': "File extensions of files you consider interesting."
-    }
+    optdescs = {"fileexts": "File extensions of files you consider interesting."}
 
     results = None
 
@@ -58,10 +54,10 @@ class sfp_intfiles(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        for fileExt in self.opts['fileexts']:
+        for fileExt in self.opts["fileexts"]:
             if "." + fileExt.lower() in eventData.lower():
-                evt = SpiderFootEvent("INTERESTING_FILE", eventData,
-                                      self.__name__, event)
+                evt = SpiderFootEvent("INTERESTING_FILE", eventData, self.__name__, event)
                 self.notifyListeners(evt)
+
 
 # End of sfp_intfiles class

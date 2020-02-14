@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_wikipediaedits
 # Purpose:      Identify edits to Wikipedia articles made from a given IP address
 #               or username.
@@ -8,26 +8,22 @@
 # Created:     10/09/2017
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import datetime
 import re
 from html.parser import HTMLParser
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_wikipediaedits(SpiderFootPlugin):
     """Wikipedia Edits:Footprint,Investigate,Passive:Secondary Networks::Identify edits to Wikipedia articles made from a given IP address or username."""
 
-
     # Default options
-    opts = {
-        "days_limit": "365"
-    }
+    opts = {"days_limit": "365"}
 
     # Option descriptions
-    optdescs = {
-        "days_limit": "Maximum age of data to be considered valid (0 = unlimited)."
-    }
+    optdescs = {"days_limit": "Maximum age of data to be considered valid (0 = unlimited)."}
 
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
@@ -55,23 +51,22 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
     def query(self, qry):
         url = "https://en.wikipedia.org/w/api.php?action=feedcontributions&user=" + qry
-        if self.opts['days_limit'] != "0":
-            dt = datetime.datetime.now() - datetime.timedelta(days=int(self.opts['days_limit']))
+        if self.opts["days_limit"] != "0":
+            dt = datetime.datetime.now() - datetime.timedelta(days=int(self.opts["days_limit"]))
             y = dt.strftime("%Y")
             m = dt.strftime("%m")
             url += "&year=" + y + "&month=" + m
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot")
-        if res['code'] in [ "404", "403", "500" ]:
+        res = self.sf.fetchUrl(url, timeout=self.opts["_fetchtimeout"], useragent="SpiderFoot")
+        if res["code"] in ["404", "403", "500"]:
             return None
 
         links = list()
         try:
             parser = HTMLParser()
-            if not res['content']:
+            if not res["content"]:
                 return None
 
-            for line in res['content'].split("\n"):
+            for line in res["content"].split("\n"):
                 matches = re.findall("<link>(.*?)</link>", line, re.IGNORECASE)
                 for m in matches:
                     if "Special:Contributions" in m:
@@ -103,8 +98,8 @@ class sfp_wikipediaedits(SpiderFootPlugin):
             return None
 
         for l in data:
-            e = SpiderFootEvent("WIKIPEDIA_PAGE_EDIT", l,
-                                self.__name__, event)
+            e = SpiderFootEvent("WIKIPEDIA_PAGE_EDIT", l, self.__name__, event)
             self.notifyListeners(e)
+
 
 # End of sfp_wikipediaedits class

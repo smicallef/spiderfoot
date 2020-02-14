@@ -17,19 +17,33 @@ import json
 import random
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_accounts(SpiderFootPlugin):
     """Accounts:Footprint,Passive:Social Media:slow:Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc."""
 
-
     # Default options
     opts = {
-        "generic": ["root", "abuse", "sysadm", "sysadmin", "noc", "support", "admin",
-                    "contact", "help", "flame", "test", "info", "sales", "hostmaster"],
+        "generic": [
+            "root",
+            "abuse",
+            "sysadm",
+            "sysadmin",
+            "noc",
+            "support",
+            "admin",
+            "contact",
+            "help",
+            "flame",
+            "test",
+            "info",
+            "sales",
+            "hostmaster",
+        ],
         "ignorenamedict": True,
         "ignoreworddict": True,
         "musthavename": True,
         "userfromemail": True,
-        "_maxthreads": 50
+        "_maxthreads": 50,
     }
 
     # Option descriptions
@@ -38,7 +52,7 @@ class sfp_accounts(SpiderFootPlugin):
         "ignorenamedict": "Don't bother looking up names that are just stand-alone first names (too many false positives).",
         "ignoreworddict": "Don't bother looking up names that appear in the dictionary.",
         "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
-        "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts."
+        "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts.",
     }
 
     results = None
@@ -69,15 +83,15 @@ class sfp_accounts(SpiderFootPlugin):
         if content is None:
             url = "https://raw.githubusercontent.com/WebBreacher/WhatsMyName/master/web_accounts_list.json"
             data = self.sf.fetchUrl(url, useragent="SpiderFoot")
-            if data['content'] is None:
+            if data["content"] is None:
                 self.sf.error("Unable to fetch " + url, False)
                 self.errorState = True
                 return None
             else:
-                self.sf.cachePut("sfaccounts", data['content'])
-                content = data['content']
+                self.sf.cachePut("sfaccounts", data["content"])
+                content = data["content"]
 
-        self.sites = json.loads(content)['sites']
+        self.sites = json.loads(content)["sites"]
 
     # What events is this module interested in for input
     # * = be notified about all events.
@@ -91,56 +105,58 @@ class sfp_accounts(SpiderFootPlugin):
         return ["USERNAME", "ACCOUNT_EXTERNAL_OWNED"]
 
     def checkSite(self, name, site):
-        if 'check_uri' not in site:
+        if "check_uri" not in site:
             return None
 
-        url = site['check_uri'].format(account=name)
-        retname = site['name'] + " (Category: " + site['category'] + ")\n<SFURL>" + \
-                url + "</SFURL>"
+        url = site["check_uri"].format(account=name)
+        retname = (
+            site["name"] + " (Category: " + site["category"] + ")\n<SFURL>" + url + "</SFURL>"
+        )
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'], noLog=True)
+        res = self.sf.fetchUrl(
+            url, timeout=self.opts["_fetchtimeout"], useragent=self.opts["_useragent"], noLog=True
+        )
 
-        if not res['content']:
+        if not res["content"]:
             with self.lock:
                 self.siteResults[retname] = False
             return
 
-        if res['code']:
-            if res['code'].startswith("4") or res['code'].startswith("5"):
+        if res["code"]:
+            if res["code"].startswith("4") or res["code"].startswith("5"):
                 with self.lock:
                     self.siteResults[retname] = False
                 return
 
         try:
             found = False
-            site['account_existence_code'] = str(site['account_existence_code'])
-            if site['account_existence_code']:
-                if site['account_existence_code'] == res['code']:
+            site["account_existence_code"] = str(site["account_existence_code"])
+            if site["account_existence_code"]:
+                if site["account_existence_code"] == res["code"]:
                     found = True
-            if site['account_missing_code']:
-                if site['account_missing_code'] == res['code']:
+            if site["account_missing_code"]:
+                if site["account_missing_code"] == res["code"]:
                     found = False
-            if site['account_existence_string']:
-                if site['account_existence_string'] in res['content']:
+            if site["account_existence_string"]:
+                if site["account_existence_string"] in res["content"]:
                     found = True
-            if site['account_missing_string']:
-                if site['account_missing_string'] in res['content']:
+            if site["account_missing_string"]:
+                if site["account_missing_string"] in res["content"]:
                     found = False
         except BaseException:
             self.sf.debug("Error parsing configuration: " + str(site))
             found = False
 
-        if found and self.opts['musthavename']:
-            if name not in res['content']:
-                self.sf.debug("Skipping " + site['name'] + " as username not mentioned.")
+        if found and self.opts["musthavename"]:
+            if name not in res["content"]:
+                self.sf.debug("Skipping " + site["name"] + " as username not mentioned.")
                 found = False
 
         # Some sites can't handle periods so treat bob.abc and bob as the same
         if found and "." in name:
             firstname = name.split(".")[0]
 
-            if firstname + "<" in res['content'] or firstname + '"' in res['content']:
+            if firstname + "<" in res["content"] or firstname + '"' in res["content"]:
                 found = False
 
         with self.lock:
@@ -157,10 +173,19 @@ class sfp_accounts(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            self.sf.info("Spawning thread to check site: " + site['name'] + \
-                        " / " + site['check_uri'].format(account=name))
-            t.append(threading.Thread(name='thread_sfp_accounts_' + site['name'],
-                                      target=self.checkSite, args=(name, site)))
+            self.sf.info(
+                "Spawning thread to check site: "
+                + site["name"]
+                + " / "
+                + site["check_uri"].format(account=name)
+            )
+            t.append(
+                threading.Thread(
+                    name="thread_sfp_accounts_" + site["name"],
+                    target=self.checkSite,
+                    args=(name, site),
+                )
+            )
             t[i].start()
             i += 1
 
@@ -185,10 +210,10 @@ class sfp_accounts(SpiderFootPlugin):
         siteList = list()
 
         for site in self.sites:
-            if not site['valid'] or 'check_uri' not in site:
-                self.sf.debug("Skipping " + site['name'])
+            if not site["valid"] or "check_uri" not in site:
+                self.sf.debug("Skipping " + site["name"])
                 continue
-            if i >= self.opts['_maxthreads']:
+            if i >= self.opts["_maxthreads"]:
                 data = self.threadSites(name, siteList)
                 if data == None:
                     return res
@@ -202,7 +227,7 @@ class sfp_accounts(SpiderFootPlugin):
             siteList.append(site)
             i += 1
 
-        if i > 0 and i < self.opts['_maxthreads']:
+        if i > 0 and i < self.opts["_maxthreads"]:
             data = self.threadSites(name, siteList)
             if data == None:
                 return res
@@ -242,13 +267,13 @@ class sfp_accounts(SpiderFootPlugin):
             if content:
                 delsites = list()
                 for line in content.split("\n"):
-                    if line == '':
+                    if line == "":
                         continue
                     delsites.append(line)
-                self.sites = [d for d in self.sites if d['name'] not in delsites]
+                self.sites = [d for d in self.sites if d["name"] not in delsites]
             else:
-                randpool = 'abcdefghijklmnopqrstuvwxyz1234567890'
-                randuser = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
+                randpool = "abcdefghijklmnopqrstuvwxyz1234567890"
+                randuser = "".join([random.SystemRandom().choice(randpool) for x in range(10)])
                 res = self.batchSites(randuser)
                 if len(res) > 0:
                     delsites = list()
@@ -256,18 +281,18 @@ class sfp_accounts(SpiderFootPlugin):
                         sitename = site.split(" (Category:")[0]
                         self.sf.debug("Distrusting " + sitename)
                         delsites.append(sitename)
-                    self.sites = [d for d in self.sites if d['name'] not in delsites]
+                    self.sites = [d for d in self.sites if d["name"] not in delsites]
                     self.sf.cachePut("sfaccounts_state", delsites)
 
             self.distrustedChecked = True
 
         if eventName == "HUMAN_NAME":
-            names = [ eventData.lower().replace(" ", ""), eventData.lower().replace(" ", ".") ]
+            names = [eventData.lower().replace(" ", ""), eventData.lower().replace(" ", ".")]
             for name in names:
                 users.append(name)
 
         if eventName == "DOMAIN_NAME":
-            kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
+            kw = self.sf.domainKeyword(eventData, self.opts["_internettlds"])
             users.append(kw)
 
         if eventName == "EMAILADDR":
@@ -279,27 +304,27 @@ class sfp_accounts(SpiderFootPlugin):
 
         for user in users:
             adduser = True
-            if self.opts['generic'] is list() and user in self.opts['generic']:
+            if self.opts["generic"] is list() and user in self.opts["generic"]:
                 self.sf.debug(user + " is a generic account name, skipping.")
                 continue
 
-            if self.opts['ignorenamedict'] and user in self.commonNames:
+            if self.opts["ignorenamedict"] and user in self.commonNames:
                 self.sf.debug(user + " is found in our name dictionary, skipping.")
                 continue
 
-            if self.opts['ignoreworddict'] and user in self.words:
+            if self.opts["ignoreworddict"] and user in self.words:
                 self.sf.debug(user + " is found in our word dictionary, skipping.")
                 continue
 
             res = self.batchSites(user)
             for site in res:
-                evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", site,
-                                      self.__name__, event)
+                evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", site, self.__name__, event)
                 self.notifyListeners(evt)
 
             if user not in self.reportedUsers and eventData != user:
                 evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
                 self.notifyListeners(evt)
                 self.reportedUsers.append(user)
+
 
 # End of sfp_accounts class

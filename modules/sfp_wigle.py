@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_wigle
 # Purpose:      Query wigle.net to identify nearby WiFi access points.
 #
@@ -7,30 +7,25 @@
 # Created:     10/09/2017
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 import datetime
 import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_wigle(SpiderFootPlugin):
     """Wigle.net:Footprint,Investigate,Passive:Secondary Networks:apikey:Query wigle.net to identify nearby WiFi access points."""
 
-
     # Default options
-    opts = {
-        "api_key_encoded": "",
-        "days_limit": "365",
-        "variance": "0.01"
-    }
+    opts = {"api_key_encoded": "", "days_limit": "365", "variance": "0.01"}
 
     # Option descriptions
     optdescs = {
         "api_key_encoded": "Wigle.net base64-encoded API name/token pair.",
         "days_limit": "Maximum age of data to be considered valid.",
-        "variance": "How tightly to bound queries against the latitude/longitude box extracted from idenified addresses. This value must be between 0.001 and 0.2."
-
+        "variance": "How tightly to bound queries against the latitude/longitude box extracted from idenified addresses. This value must be between 0.001 and 0.2.",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -59,67 +54,74 @@ class sfp_wigle(SpiderFootPlugin):
         return ["WIFI_ACCESS_POINT"]
 
     def getcoords(self, qry):
-        url = "https://api.wigle.net/api/v2/network/geocode?" + \
-              urllib.parse.urlencode({'addresscode': qry.encode('utf-8', errors='replace')})
+        url = "https://api.wigle.net/api/v2/network/geocode?" + urllib.parse.urlencode(
+            {"addresscode": qry.encode("utf-8", errors="replace")}
+        )
         hdrs = {
-                    "Accept": "application/json",
-                    "Authorization": "Basic " + self.opts['api_key_encoded']
-               }
+            "Accept": "application/json",
+            "Authorization": "Basic " + self.opts["api_key_encoded"],
+        }
 
-        res = self.sf.fetchUrl(url, timeout=30,
-                               useragent="SpiderFoot", headers=hdrs)
-        if res['code'] == "404" or not res['content']:
+        res = self.sf.fetchUrl(url, timeout=30, useragent="SpiderFoot", headers=hdrs)
+        if res["code"] == "404" or not res["content"]:
             return None
-        if "too many queries" in res['content']:
+        if "too many queries" in res["content"]:
             self.sf.error("Wigle.net query limit reached for the day.", False)
             return None
 
         try:
-            info = json.loads(res['content'])
-            if len(info.get('results', [])) == 0:
+            info = json.loads(res["content"])
+            if len(info.get("results", [])) == 0:
                 return None
-            return info['results'][0]['boundingbox']
+            return info["results"][0]["boundingbox"]
         except Exception as e:
             self.sf.error("Error processing JSON response from Wigle.net: " + str(e), False)
             return None
 
     def getnetworks(self, coords):
-        url = "https://api.wigle.net/api/v2/network/search?onlymine=false&" + \
-              "latrange1=" + str(coords[0]) + "&latrange2=" + str(coords[1]) + \
-              "&longrange1=" + str(coords[2]) + "&longrange2=" + str(coords[3]) + \
-              "&freenet=false&paynet=false&variance=" + self.opts['variance']
+        url = (
+            "https://api.wigle.net/api/v2/network/search?onlymine=false&"
+            + "latrange1="
+            + str(coords[0])
+            + "&latrange2="
+            + str(coords[1])
+            + "&longrange1="
+            + str(coords[2])
+            + "&longrange2="
+            + str(coords[3])
+            + "&freenet=false&paynet=false&variance="
+            + self.opts["variance"]
+        )
 
-        if self.opts['days_limit'] != "0":
-            dt = datetime.datetime.now() - datetime.timedelta(days=int(self.opts['days_limit']))
+        if self.opts["days_limit"] != "0":
+            dt = datetime.datetime.now() - datetime.timedelta(days=int(self.opts["days_limit"]))
             date_calc = dt.strftime("%Y%m%d")
             url += "&lastupdt=" + date_calc
 
         hdrs = {
-                    "Accept": "application/json",
-                    "Authorization": "Basic " + self.opts['api_key_encoded']
-               }
+            "Accept": "application/json",
+            "Authorization": "Basic " + self.opts["api_key_encoded"],
+        }
 
-        res = self.sf.fetchUrl(url, timeout=30,
-                               useragent="SpiderFoot", headers=hdrs)
-        if res['code'] == "404" or not res['content']:
+        res = self.sf.fetchUrl(url, timeout=30, useragent="SpiderFoot", headers=hdrs)
+        if res["code"] == "404" or not res["content"]:
             return None
-        if "too many queries" in res['content']:
+        if "too many queries" in res["content"]:
             self.sf.error("Wigle.net query limit reached for the day.", False)
             return None
 
         ret = list()
         try:
-            info = json.loads(res['content'])
-            if len(info.get('results', [])) == 0:
+            info = json.loads(res["content"])
+            if len(info.get("results", [])) == 0:
                 return None
-            for r in info['results']:
-                if None not in [r['ssid'], r['netid']]:
-                    ret.append(r['ssid'] + " (Net ID: " + r['netid'] + ")")
+            for r in info["results"]:
+                if None not in [r["ssid"], r["netid"]]:
+                    ret.append(r["ssid"] + " (Net ID: " + r["netid"] + ")")
             return ret
         except Exception as e:
             self.sf.error("Error processing JSON response from Wigle.net: " + str(e), False)
             return None
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -130,7 +132,7 @@ class sfp_wigle(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        if self.opts['api_key_encoded'] == "":
+        if self.opts["api_key_encoded"] == "":
             self.sf.error("You enabled sfp_wigle but did not set an API key!", False)
             self.errorState = True
             return None
@@ -157,5 +159,6 @@ class sfp_wigle(SpiderFootPlugin):
         for n in nets:
             e = SpiderFootEvent("WIFI_ACCESS_POINT", n, self.__name__, event)
             self.notifyListeners(e)
+
 
 # End of sfp_wigle class

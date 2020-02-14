@@ -14,21 +14,18 @@ import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_names(SpiderFootPlugin):
     """Name Extractor:Footprint,Passive:Real World:errorprone:Attempt to identify human names in fetched content."""
 
     # Default options
-    opts = {
-        'algolimit': 75,
-        'emailtoname': True,
-        'filterjscss': True
-    }
+    opts = {"algolimit": 75, "emailtoname": True, "filterjscss": True}
 
     # Option descriptions
     optdescs = {
-        'algolimit': "A value between 0-100 to tune the sensitivity of the name finder. Less than 40 will give you a lot of junk, over 50 and you'll probably miss things but will have less false positives.",
-        'emailtoname': "Convert e-mail addresses in the form of firstname.surname@target to names?",
-        'filterjscss': "Filter out names that originated from CSS/JS content. Enabling this avoids detection of popular Javascript and web framework author names."
+        "algolimit": "A value between 0-100 to tune the sensitivity of the name finder. Less than 40 will give you a lot of junk, over 50 and you'll probably miss things but will have less false positives.",
+        "emailtoname": "Convert e-mail addresses in the form of firstname.surname@target to names?",
+        "filterjscss": "Filter out names that originated from CSS/JS content. Enabling this avoids detection of popular Javascript and web framework author names.",
     }
 
     results = None
@@ -47,9 +44,14 @@ class sfp_names(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["TARGET_WEB_CONTENT", "EMAILADDR",
-                "DOMAIN_WHOIS", "NETBLOCK_WHOIS",
-                "RAW_RIR_DATA", "RAW_FILE_META_DATA"]
+        return [
+            "TARGET_WEB_CONTENT",
+            "EMAILADDR",
+            "DOMAIN_WHOIS",
+            "NETBLOCK_WHOIS",
+            "RAW_RIR_DATA",
+            "RAW_FILE_META_DATA",
+        ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -70,11 +72,11 @@ class sfp_names(SpiderFootPlugin):
         if eventName == "TARGET_WEB_CONTENT":
             url = event.actualSource
             if url is not None:
-                if self.opts['filterjscss'] and (".js" in url or ".css" in url):
+                if self.opts["filterjscss"] and (".js" in url or ".css" in url):
                     self.sf.debug("Ignoring web content from CSS/JS.")
                     return None
 
-        if eventName == "EMAILADDR" and self.opts['emailtoname']:
+        if eventName == "EMAILADDR" and self.opts["emailtoname"]:
             if "." in eventData.split("@")[0]:
                 if type(eventData) == str:
                     name = " ".join(map(str.capitalize, eventData.split("@")[0].split(".")))
@@ -96,7 +98,7 @@ class sfp_names(SpiderFootPlugin):
                 return None
 
         # Stage 1: Find things that look (very vaguely) like names
-        rx = re.compile("([A-Z][a-z�������������]+)\s+.?.?\s?([A-Z][�������������a-zA-Z\'\-]+)")
+        rx = re.compile("([A-Z][a-z�������������]+)\s+.?.?\s?([A-Z][�������������a-zA-Z'\-]+)")
         m = re.findall(rx, eventData)
         for r in m:
             # Start off each match as 0 points.
@@ -116,7 +118,13 @@ class sfp_names(SpiderFootPlugin):
 
             # If both words are not in the dictionary, add 75 points.
             if first not in self.d and second not in self.d:
-                self.sf.debug("Both first and second names are not in the dictionary, so high chance of name: (" + first +":" + second +").")
+                self.sf.debug(
+                    "Both first and second names are not in the dictionary, so high chance of name: ("
+                    + first
+                    + ":"
+                    + second
+                    + ")."
+                )
                 p += 75
                 notindict = True
             else:
@@ -144,7 +152,7 @@ class sfp_names(SpiderFootPlugin):
             name = r[0] + " " + secondOrig
 
             self.sf.debug("Name of " + name + " has score: " + str(p))
-            if p > self.opts['algolimit']:
+            if p > self.opts["algolimit"]:
                 # Notify other modules of what you've found
                 evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
                 if event.moduleDataSource:

@@ -15,20 +15,18 @@ import threading
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_azureblobstorage(SpiderFootPlugin):
     """Azure Blob Finder:Footprint,Passive:Crawling and Scanning::Search for potential Azure blobs associated with the target and attempt to list their contents."""
-
 
     # Default options
     opts = {
         "suffixes": "test,dev,web,beta,bucket,space,files,content,data,prod,staging,production,stage,app,media,development,-test,-dev,-web,-beta,-bucket,-space,-files,-content,-data,-prod,-staging,-production,-stage,-app,-media,-development",
-        "_maxthreads": 20
+        "_maxthreads": 20,
     }
 
     # Option descriptions
-    optdescs = {
-        "suffixes": "List of suffixes to append to domains tried as blob storage names"
-    }
+    optdescs = {"suffixes": "List of suffixes to append to domains tried as blob storage names"}
 
     results = None
     s3results = None
@@ -55,7 +53,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
     def checkSite(self, url):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
-        if res['code']:
+        if res["code"]:
             with self.lock:
                 self.s3results[url] = True
 
@@ -71,8 +69,13 @@ class sfp_azureblobstorage(SpiderFootPlugin):
                 return None
 
             self.sf.info("Spawning thread to check bucket: " + site)
-            t.append(threading.Thread(name='thread_sfp_azureblobstorages_' + site,
-                                      target=self.checkSite, args=(site,)))
+            t.append(
+                threading.Thread(
+                    name="thread_sfp_azureblobstorages_" + site,
+                    target=self.checkSite,
+                    args=(site,),
+                )
+            )
             t[i].start()
             i += 1
 
@@ -97,7 +100,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
         siteList = list()
 
         for site in sites:
-            if i >= self.opts['_maxthreads']:
+            if i >= self.opts["_maxthreads"]:
                 data = self.threadSites(siteList)
                 if data == None:
                     return res
@@ -133,10 +136,13 @@ class sfp_azureblobstorage(SpiderFootPlugin):
                 self.notifyListeners(evt)
             return None
 
-        targets = [ eventData.replace('.', ''), self.sf.domainKeyword(eventData, self.opts['_internettlds']) ]
+        targets = [
+            eventData.replace(".", ""),
+            self.sf.domainKeyword(eventData, self.opts["_internettlds"]),
+        ]
         urls = list()
         for t in targets:
-            suffixes = [''] + self.opts['suffixes'].split(',')
+            suffixes = [""] + self.opts["suffixes"].split(",")
             for s in suffixes:
                 if self.checkForStop():
                     return None
@@ -150,5 +156,6 @@ class sfp_azureblobstorage(SpiderFootPlugin):
         for b in ret:
             evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", b, self.__name__, event)
             self.notifyListeners(evt)
+
 
 # End of sfp_azureblobstorage class

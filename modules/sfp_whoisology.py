@@ -13,13 +13,12 @@
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_whoisology(SpiderFootPlugin):
     """Whoisology:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using Whoisology.com."""
 
     # Default options
-    opts = {
-        "api_key": ""
-    }
+    opts = {"api_key": ""}
 
     # Option descriptions
     optdescs = {
@@ -48,38 +47,44 @@ class sfp_whoisology(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['AFFILIATE_INTERNET_NAME', 'AFFILIATE_DOMAIN_NAME']
+        return ["AFFILIATE_INTERNET_NAME", "AFFILIATE_DOMAIN_NAME"]
 
     # Search Whoisology
     def query(self, qry, querytype):
         info = None
 
-        url = "https://whoisology.com/api?auth=" + self.opts['api_key'] + "&request=flat"
-        url += "&field=" + querytype + "&value=" + qry + "&level=Registrant|Admin|Tec|Billing|Other"
+        url = "https://whoisology.com/api?auth=" + self.opts["api_key"] + "&request=flat"
+        url += (
+            "&field=" + querytype + "&value=" + qry + "&level=Registrant|Admin|Tec|Billing|Other"
+        )
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=self.opts["_fetchtimeout"], useragent="SpiderFoot")
 
-        if res['code'] in [ "400", "429", "500", "403" ]:
-            self.sf.error("Whoisology API key seems to have been rejected or you have exceeded usage limits.", False)
+        if res["code"] in ["400", "429", "500", "403"]:
+            self.sf.error(
+                "Whoisology API key seems to have been rejected or you have exceeded usage limits.",
+                False,
+            )
             self.errorState = True
             return None
 
-        if res['content'] is None:
+        if res["content"] is None:
             self.sf.info("No Whoisology info found for " + qry)
             return None
 
         try:
-            info = json.loads(res['content'])
+            info = json.loads(res["content"])
             if info.get("domains") == None:
-                self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"), False)
+                self.sf.error(
+                    "Error querying Whoisology: " + info.get("status_reason", "Unknown"), False
+                )
                 return None
 
             if len(info.get("domains", [])) == 0:
                 self.sf.debug("No data found in Whoisology for " + qry)
                 return None
             else:
-                return info.get('domains')
+                return info.get("domains")
         except Exception as e:
             self.sf.error("Error processing JSON response from Whoisology: " + str(e), False)
             return None
@@ -95,7 +100,7 @@ class sfp_whoisology(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_whoisology but did not set an API key!", False)
             self.errorState = True
             return None
@@ -111,7 +116,7 @@ class sfp_whoisology(SpiderFootPlugin):
         myres = list()
         if rec is not None:
             for r in rec:
-                h = r.get('domain_name')
+                h = r.get("domain_name")
                 if h:
                     if h.lower() not in myres:
                         myres.append(h.lower())
@@ -121,8 +126,9 @@ class sfp_whoisology(SpiderFootPlugin):
                     e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
                     self.notifyListeners(e)
 
-                    if self.sf.isDomain(h, self.opts['_internettlds']):
-                        evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', h, self.__name__, event)
+                    if self.sf.isDomain(h, self.opts["_internettlds"]):
+                        evt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", h, self.__name__, event)
                         self.notifyListeners(evt)
+
 
 # End of sfp_whoisology class

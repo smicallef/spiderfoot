@@ -18,29 +18,28 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_honeypot(SpiderFootPlugin):
     """Honeypot Checker:Investigate,Passive:Reputation Systems:apikey:Query the projecthoneypot.org database for entries."""
 
-
     # Default options
     opts = {
-        'api_key': "",
-        'searchengine': False,
-        'threatscore': 0,
-        'timelimit': 30,
-        'netblocklookup': True,
-        'maxnetblock': 24,
-        'subnetlookup': True,
-        'maxsubnet': 24
+        "api_key": "",
+        "searchengine": False,
+        "threatscore": 0,
+        "timelimit": 30,
+        "netblocklookup": True,
+        "maxnetblock": 24,
+        "subnetlookup": True,
+        "maxsubnet": 24,
     }
 
     # Option descriptions
     optdescs = {
-        'api_key': "Projecthoneypot.org API key.",
-        'searchengine': "Include entries considered search engines?",
-        'threatscore': "Threat score minimum, 0 being everything and 255 being only the most serious.",
-        'timelimit': "Maximum days old an entry can be. 255 is the maximum, 0 means you'll get nothing.",
-        'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
-        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        "api_key": "Projecthoneypot.org API key.",
+        "searchengine": "Include entries considered search engines?",
+        "threatscore": "Threat score minimum, 0 being everything and 255 being only the most serious.",
+        "timelimit": "Maximum days old an entry can be. 255 is the maximum, 0 means you'll get nothing.",
+        "netblocklookup": "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
+        "maxnetblock": "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        "subnetlookup": "Look up all IPs on subnets which your target is a part of?",
+        "maxsubnet": "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
     }
 
     results = None
@@ -59,7 +58,7 @@ class sfp_honeypot(SpiderFootPlugin):
         "7": "Suspicious & Harvester & Comment Spammer",
         "8": "Unknown (8)",
         "9": "Unknown (9)",
-        "10": "Unknown (10)"
+        "10": "Unknown (10)",
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -71,43 +70,51 @@ class sfp_honeypot(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS', 'AFFILIATE_IPADDR', 'NETBLOCK_OWNER',
-                'NETBLOCK_MEMBER']
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
-                "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK"]
+        return [
+            "BLACKLISTED_IPADDR",
+            "BLACKLISTED_AFFILIATE_IPADDR",
+            "BLACKLISTED_SUBNET",
+            "BLACKLISTED_NETBLOCK",
+        ]
 
     # Swap 1.2.3.4 to 4.3.2.1
     def reverseAddr(self, ipaddr):
-        return '.'.join(reversed(ipaddr.split('.')))
+        return ".".join(reversed(ipaddr.split(".")))
 
     # Returns text about the IP status returned from DNS
     def reportIP(self, addr):
         bits = addr.split(".")
-        if int(bits[1]) > self.opts['timelimit']:
+        if int(bits[1]) > self.opts["timelimit"]:
             return None
 
-        if int(bits[2]) < self.opts['threatscore']:
+        if int(bits[2]) < self.opts["threatscore"]:
             return None
 
-        if int(bits[3]) == 0 and self.opts['searchengine']:
+        if int(bits[3]) == 0 and self.opts["searchengine"]:
             return None
 
-        text = "Honeypotproject ({0}): " + self.statuses[bits[3]] + \
-               "\nLast Activity: " + bits[1] + " days ago" + \
-               "\nThreat Level: " + bits[2]
+        text = (
+            "Honeypotproject ({0}): "
+            + self.statuses[bits[3]]
+            + "\nLast Activity: "
+            + bits[1]
+            + " days ago"
+            + "\nThreat Level: "
+            + bits[2]
+        )
         return text
 
     def queryAddr(self, qaddr, parentEvent):
         eventName = parentEvent.eventType
 
         try:
-            lookup = self.opts['api_key'] + "." + \
-                     self.reverseAddr(qaddr) + ".dnsbl.httpbl.org"
+            lookup = self.opts["api_key"] + "." + self.reverseAddr(qaddr) + ".dnsbl.httpbl.org"
 
             self.sf.debug("Checking Honeypot: " + lookup)
             addrs = self.sf.resolveHost(lookup)
@@ -153,7 +160,7 @@ class sfp_honeypot(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_honeypot but did not set an API key!", False)
             self.errorState = True
             return None
@@ -162,24 +169,30 @@ class sfp_honeypot(SpiderFootPlugin):
             return None
         self.results[eventData] = True
 
-        if eventName == 'NETBLOCK_OWNER':
-            if not self.opts['netblocklookup']:
+        if eventName == "NETBLOCK_OWNER":
+            if not self.opts["netblocklookup"]:
                 return None
             else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                if IPNetwork(eventData).prefixlen < self.opts["maxnetblock"]:
+                    self.sf.debug(
+                        "Network size bigger than permitted: "
+                        + str(IPNetwork(eventData).prefixlen)
+                        + " > "
+                        + str(self.opts["maxnetblock"])
+                    )
                     return None
 
-        if eventName == 'NETBLOCK_MEMBER':
-            if not self.opts['subnetlookup']:
+        if eventName == "NETBLOCK_MEMBER":
+            if not self.opts["subnetlookup"]:
                 return None
             else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
+                if IPNetwork(eventData).prefixlen < self.opts["maxsubnet"]:
+                    self.sf.debug(
+                        "Network size bigger than permitted: "
+                        + str(IPNetwork(eventData).prefixlen)
+                        + " > "
+                        + str(self.opts["maxsubnet"])
+                    )
                     return None
 
         if eventName.startswith("NETBLOCK_"):
@@ -189,5 +202,6 @@ class sfp_honeypot(SpiderFootPlugin):
                 self.queryAddr(str(addr), parentEvent)
         else:
             self.queryAddr(eventData, parentEvent)
+
 
 # End of sfp_honeypot class

@@ -15,6 +15,7 @@ import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_ethereum(SpiderFootPlugin):
     """Ethereum Finder:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
 
@@ -62,5 +63,6 @@ class sfp_ethereum(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         return None
+
 
 # End of sfp_ethereum class

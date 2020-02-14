@@ -16,17 +16,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_googlesearch(SpiderFootPlugin):
     """Google:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from the Google Custom Search API to identify sub-domains and links."""
 
-
     # Default options
-    opts = {
-        "api_key": "",
-        "cse_id": "013611106330597893267:tfgl3wxdtbp"
-    }
+    opts = {"api_key": "", "cse_id": "013611106330597893267:tfgl3wxdtbp"}
 
     # Option descriptions
     optdescs = {
         "api_key": "Google API Key for Google search.",
-        "cse_id": "Google Custom Search Engine ID."
+        "cse_id": "Google Custom Search Engine ID.",
     }
 
     # Target
@@ -61,7 +57,7 @@ class sfp_googlesearch(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_googlesearch but did not set a Google API key!", False)
             self.errorState = True
             return None
@@ -93,9 +89,7 @@ class sfp_googlesearch(SpiderFootPlugin):
         for l in new_links:
             self.results[l] = True
 
-        internal_links = [
-            link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)
-        ]
+        internal_links = [link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)]
         for link in internal_links:
             self.sf.debug("Found a link: " + link)
 
@@ -103,9 +97,8 @@ class sfp_googlesearch(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if internal_links:
-            evt = SpiderFootEvent(
-                "RAW_RIR_DATA", str(res), self.__name__, event
-            )
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(res), self.__name__, event)
             self.notifyListeners(evt)
+
 
 # End of sfp_googlesearch class

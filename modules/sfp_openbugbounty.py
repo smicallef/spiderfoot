@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_openbugbounty
 # Purpose:      Query the Open Bug Bounty database to see if our target appears.
 #
@@ -7,24 +7,21 @@
 # Created:     04/10/2015
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_openbugbounty(SpiderFootPlugin):
     """Open Bug Bounty:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed."""
 
-
-
     # Default options
-    opts = {
-    }
+    opts = {}
 
     # Option descriptions
-    optdescs = {
-    }
+    optdescs = {}
 
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
@@ -56,17 +53,19 @@ class sfp_openbugbounty(SpiderFootPlugin):
         ret = list()
         base = "https://www.openbugbounty.org"
         url = "https://www.openbugbounty.org/search/?search=" + qry
-        res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts["_useragent"])
 
-        if res['content'] is None:
+        if res["content"] is None:
             self.sf.debug("No content returned from openbugbounty.org")
             return None
 
         try:
-            rx = re.compile(".*<div class=.cell1.><a href=.(.*).>(.*" + qry + ").*?</a></div>.*", re.IGNORECASE)
-            for m in rx.findall(res['content']):
+            rx = re.compile(
+                ".*<div class=.cell1.><a href=.(.*).>(.*" + qry + ").*?</a></div>.*", re.IGNORECASE
+            )
+            for m in rx.findall(res["content"]):
                 # Report it
-                if m[1] == qry or m[1].endswith("."+qry):
+                if m[1] == qry or m[1].endswith("." + qry):
                     ret.append("From openbugbounty.org: <SFURL>" + base + m[0] + "</SFURL>")
         except Exception as e:
             self.sf.error("Error processing response from openbugbounty.org: " + str(e), False)
@@ -97,5 +96,6 @@ class sfp_openbugbounty(SpiderFootPlugin):
             # Notify other modules of what you've found
             e = SpiderFootEvent("VULNERABILITY", n, self.__name__, event)
             self.notifyListeners(e)
+
 
 # End of sfp_openbugbounty class

@@ -18,14 +18,16 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Indentify pages that use Javascript libs, handle passwords, have forms,
 # permit file uploads and more to come.
-regexps = dict({
-    'URL_JAVASCRIPT': list(['text/javascript', '<script ']),
-    'URL_FORM': list(['<form ', 'method=[PG]', '<input ']),
-    'URL_PASSWORD': list(['<input.*type=[\"\']*password']),
-    'URL_UPLOAD': list(['type=[\"\']*file']),
-    'URL_JAVA_APPLET': list(['<applet ']),
-    'URL_FLASH': list(['\.swf[ \'\"]'])
-})
+regexps = dict(
+    {
+        "URL_JAVASCRIPT": list(["text/javascript", "<script "]),
+        "URL_FORM": list(["<form ", "method=[PG]", "<input "]),
+        "URL_PASSWORD": list(["<input.*type=[\"']*password"]),
+        "URL_UPLOAD": list(["type=[\"']*file"]),
+        "URL_JAVA_APPLET": list(["<applet "]),
+        "URL_FLASH": list(["\.swf[ '\"]"]),
+    }
+)
 
 
 class sfp_pageinfo(SpiderFootPlugin):
@@ -52,8 +54,16 @@ class sfp_pageinfo(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["URL_STATIC", "URL_JAVASCRIPT", "URL_FORM", "URL_PASSWORD",
-                "URL_UPLOAD", "URL_JAVA_APPLET", "URL_FLASH", "PROVIDER_JAVASCRIPT"]
+        return [
+            "URL_STATIC",
+            "URL_JAVASCRIPT",
+            "URL_FORM",
+            "URL_PASSWORD",
+            "URL_UPLOAD",
+            "URL_JAVA_APPLET",
+            "URL_FLASH",
+            "PROVIDER_JAVASCRIPT",
+        ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -104,16 +114,16 @@ class sfp_pageinfo(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         # Check for externally referenced Javascript pages
-        pat = re.compile("<script.*src=[\'\"]?([^\'\">]*)", re.IGNORECASE)
+        pat = re.compile("<script.*src=['\"]?([^'\">]*)", re.IGNORECASE)
         matches = re.findall(pat, eventData)
         if len(matches) > 0:
             for match in matches:
-                if '://' in match and not self.getTarget().matches(self.sf.urlFQDN(match)):
+                if "://" in match and not self.getTarget().matches(self.sf.urlFQDN(match)):
                     self.sf.debug("Externally hosted Javascript found at: " + match)
-                    evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match,
-                                          self.__name__, event)
+                    evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match, self.__name__, event)
                     self.notifyListeners(evt)
 
         return None
+
 
 # End of sfp_pageinfo class

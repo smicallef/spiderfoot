@@ -17,14 +17,13 @@ import time
 import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_openstreetmap(SpiderFootPlugin):
     """OpenStreetMap:Footprint,Investigate,Passive:Real World::Retrieves latitude/longitude coordinates for physical addresses from OpenStreetMap API."""
 
-    opts = {
-    }
+    opts = {}
 
-    optdescs = {
-    }
+    optdescs = {}
 
     results = None
 
@@ -37,31 +36,34 @@ class sfp_openstreetmap(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['PHYSICAL_ADDRESS']
+        return ["PHYSICAL_ADDRESS"]
 
     # What events this module produces
     def producedEvents(self):
-        return ['PHYSICAL_COORDINATES']
+        return ["PHYSICAL_COORDINATES"]
 
     # Search for address
     # https://operations.osmfoundation.org/policies/nominatim/
     def query(self, qry):
         params = {
-            'q': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'format': 'json',
-            'polygon': '0',
-            'addressdetails': '0'
+            "q": qry.encode("raw_unicode_escape").decode("ascii", errors="replace"),
+            "format": "json",
+            "polygon": "0",
+            "addressdetails": "0",
         }
 
-        res = self.sf.fetchUrl("https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode(params),
-                               timeout=self.opts['_fetchtimeout'], useragent='SpiderFoot')
+        res = self.sf.fetchUrl(
+            "https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode(params),
+            timeout=self.opts["_fetchtimeout"],
+            useragent="SpiderFoot",
+        )
 
-        if res['content'] is None:
+        if res["content"] is None:
             self.sf.info("No location info found for " + qry)
             return None
 
         try:
-            data = json.loads(res['content'])
+            data = json.loads(res["content"])
         except Exception as e:
             self.sf.debug("Error processing JSON response: " + str(e))
             return None
@@ -85,17 +87,17 @@ class sfp_openstreetmap(SpiderFootPlugin):
         address = eventData
 
         # Skip post office boxes
-        if address.lower().startswith('po box'):
+        if address.lower().startswith("po box"):
             self.sf.debug("Skipping PO BOX address")
             return None
 
-        rx1 = re.compile(r'^(c/o|care of|attn:|attention:)\s+[0-9a-z\s\.]', flags=re.IGNORECASE)
+        rx1 = re.compile(r"^(c/o|care of|attn:|attention:)\s+[0-9a-z\s\.]", flags=re.IGNORECASE)
         # Remove address prefixes for delivery instructions
-        address = re.sub(rx1, r'', address)
+        address = re.sub(rx1, r"", address)
 
-        rx2 = re.compile(r'^(Level|Floor|Suite|Room)\s+[0-9a-z]+,', flags=re.IGNORECASE)
+        rx2 = re.compile(r"^(Level|Floor|Suite|Room)\s+[0-9a-z]+,", flags=re.IGNORECASE)
         # Remove address prefixes known to return no results (floor, level, suite, etc).
-        address = re.sub(rx2, r'', address)
+        address = re.sub(rx2, r"", address)
 
         # Search for address
         data = self.query(eventData)
@@ -111,8 +113,8 @@ class sfp_openstreetmap(SpiderFootPlugin):
 
         for location in data:
             try:
-                lat = location.get('lat')
-                lon = location.get('lon')
+                lat = location.get("lat")
+                lon = location.get("lon")
             except BaseException as e:
                 self.sf.debug("Failed to get lat/lon: " + str(e))
                 continue
@@ -125,5 +127,6 @@ class sfp_openstreetmap(SpiderFootPlugin):
 
             evt = SpiderFootEvent("PHYSICAL_COORDINATES", coords, self.__name__, event)
             self.notifyListeners(evt)
+
 
 # End of sfp_openstreetmap class

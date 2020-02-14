@@ -41,6 +41,7 @@ from copy import deepcopy
 
 # For hiding the SSL warnings coming from the requests lib
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -62,9 +63,9 @@ class SpiderFoot:
         if sys.version_info >= (2, 7, 9):
             ssl._create_default_https_context = ssl._create_unverified_context
 
-        if self.opts.get('_dnsserver', "") != "":
+        if self.opts.get("_dnsserver", "") != "":
             res = dns.resolver.Resolver()
-            res.nameservers = [self.opts['_dnsserver']]
+            res.nameservers = [self.opts["_dnsserver"]]
             dns.resolver.override_system_resolver(res)
 
     # Bit of a hack to support SOCKS because of the loading order of
@@ -78,13 +79,14 @@ class SpiderFoot:
 
     # Tell TOR to re-circuit
     def refreshTorIdent(self):
-        if self.opts['_socks1type'] != "TOR":
+        if self.opts["_socks1type"] != "TOR":
             return None
 
         try:
             self.info("Re-circuiting TOR...")
-            with Controller.from_port(address=self.opts['_socks2addr'],
-                                      port=self.opts['_torctlport']) as controller:
+            with Controller.from_port(
+                address=self.opts["_socks2addr"], port=self.opts["_torctlport"]
+            ) as controller:
                 controller.authenticate()
                 controller.signal(Signal.NEWNYM)
                 time.sleep(10)
@@ -97,11 +99,11 @@ class SpiderFoot:
     # and if a string it will simply be returned back.
     def optValueToData(self, val, fatal=True, splitLines=True):
         if val is None:
-            #self.debug("fetchUrl: No val")
+            # self.debug("fetchUrl: No val")
             return None
 
-        if val.startswith('@'):
-            fname = val.split('@')[1]
+        if val.startswith("@"):
+            fname = val.split("@")[1]
             try:
                 self.info("Loading configuration data from: " + fname)
                 f = open(fname, "r")
@@ -110,7 +112,7 @@ class SpiderFoot:
                     arr = f.readlines()
                     ret = list()
                     for x in arr:
-                        ret.append(x.rstrip('\n'))
+                        ret.append(x.rstrip("\n"))
                 else:
                     ret = f.read()
 
@@ -122,7 +124,7 @@ class SpiderFoot:
                 else:
                     return None
 
-        if val.lower().startswith('http://') or val.lower().startswith('https://'):
+        if val.lower().startswith("http://") or val.lower().startswith("https://"):
             try:
                 self.info("Downloading configuration data from: " + val)
                 session = self.getSession()
@@ -177,15 +179,15 @@ class SpiderFoot:
             for [parent, id] in parents[entity]:
                 if parent in entities:
                     if entity != parent:
-                        #print("Adding entity parent: " + parent)
+                        # print("Adding entity parent: " + parent)
                         mapping.add((entity, parent))
                 else:
                     ppids = list()
-                    #print("Checking " + parent + " for entityship.")
+                    # print("Checking " + parent + " for entityship.")
                     next_parents = get_next_parent_entities(parent, ppids)
                     for next_parent in next_parents:
                         if entity != next_parent:
-                            #print("Adding next entity parent: " + next_parent)
+                            # print("Adding next entity parent: " + next_parent)
                             mapping.add((entity, next_parent))
         return mapping
 
@@ -213,7 +215,7 @@ class SpiderFoot:
                 if dst in root:
                     col = ["255", "0", "0"]
                 node = graph.add_node(dst)
-                graph.node[dst]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
+                graph.node[dst]["viz"] = {"color": {"r": col[0], "g": col[1], "b": col[2]}}
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
@@ -221,20 +223,20 @@ class SpiderFoot:
                 if src in root:
                     col = ["255", "0", "0"]
                 graph.add_node(src)
-                graph.node[src]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
+                graph.node[src]["viz"] = {"color": {"r": col[0], "g": col[1], "b": col[2]}}
                 nodelist[src] = ncounter
 
             graph.add_edge(src, dst)
 
         gexf = GEXFWriter(graph=graph)
-        return str(gexf).encode('utf-8')
+        return str(gexf).encode("utf-8")
 
     # Convert supplied raw data into JSON format for SigmaJS
     def buildGraphJson(self, root, data, flt=list()):
         mapping = self.buildGraphData(data, flt)
         ret = dict()
-        ret['nodes'] = list()
-        ret['edges'] = list()
+        ret["nodes"] = list()
+        ret["edges"] = list()
 
         nodelist = dict()
         ecounter = 0
@@ -250,33 +252,38 @@ class SpiderFoot:
                 ncounter = ncounter + 1
                 if dst in root:
                     col = "#f00"
-                ret['nodes'].append({'id': str(ncounter),
-                                    'label': str(dst),
-                                    'x': random.SystemRandom().randint(1, 1000),
-                                    'y': random.SystemRandom().randint(1, 1000),
-                                    'size': "1",
-                                    'color': col
-                })
+                ret["nodes"].append(
+                    {
+                        "id": str(ncounter),
+                        "label": str(dst),
+                        "x": random.SystemRandom().randint(1, 1000),
+                        "y": random.SystemRandom().randint(1, 1000),
+                        "size": "1",
+                        "color": col,
+                    }
+                )
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
                 if src in root:
                     col = "#f00"
                 ncounter = ncounter + 1
-                ret['nodes'].append({'id': str(ncounter),
-                                    'label': str(src),
-                                    'x': random.SystemRandom().randint(1, 1000),
-                                    'y': random.SystemRandom().randint(1, 1000),
-                                    'size': "1",
-                                    'color': col
-                })
+                ret["nodes"].append(
+                    {
+                        "id": str(ncounter),
+                        "label": str(src),
+                        "x": random.SystemRandom().randint(1, 1000),
+                        "y": random.SystemRandom().randint(1, 1000),
+                        "size": "1",
+                        "color": col,
+                    }
+                )
                 nodelist[src] = ncounter
 
             ecounter = ecounter + 1
-            ret['edges'].append({'id': str(ecounter),
-                                'source': str(nodelist[src]),
-                                'target': str(nodelist[dst])
-            })
+            ret["edges"].append(
+                {"id": str(ecounter), "source": str(nodelist[src]), "target": str(nodelist[dst])}
+            )
 
         return json.dumps(ret)
 
@@ -301,43 +308,43 @@ class SpiderFoot:
         return str(uuid.uuid4()).split("-")[0].upper()
 
     def _dblog(self, level, message, component=None):
-        #print(str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component))
+        # print(str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component))
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, message, exception=True):
-        if not self.opts['__logging']:
+        if not self.opts["__logging"]:
             return None
 
         if self.dbh is None:
-            print('[Error] %s' % message)
+            print("[Error] %s" % message)
         else:
             self._dblog("ERROR", message)
-        if self.opts.get('__logstdout'):
+        if self.opts.get("__logstdout"):
             print("[Error] %s" % message)
         if exception:
             raise BaseException("Internal Error Encountered: " + message)
 
     def fatal(self, error):
         if self.dbh is None:
-            print('[Fatal] %s' % error)
+            print("[Fatal] %s" % error)
         else:
             self._dblog("FATAL", error)
         print(str(inspect.stack()))
         sys.exit(-1)
 
     def status(self, message):
-        if not self.opts['__logging']:
+        if not self.opts["__logging"]:
             return None
 
         if self.dbh is None:
             print("[Status] %s" % message)
         else:
             self._dblog("STATUS", message)
-        if self.opts.get('__logstdout'):
+        if self.opts.get("__logstdout"):
             print("[*] %s" % message)
 
     def info(self, message):
-        if not self.opts['__logging']:
+        if not self.opts["__logging"]:
             return None
 
         frm = inspect.stack()[1]
@@ -357,17 +364,17 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print('[%s] %s' % (modName, message))
+            print("[%s] %s" % (modName, message))
         else:
             self._dblog("INFO", message, modName)
-        if self.opts.get('__logstdout'):
+        if self.opts.get("__logstdout"):
             print("[*] %s" % message)
         return
 
     def debug(self, message):
-        if not self.opts['_debug']:
+        if not self.opts["_debug"]:
             return
-        if not self.opts['__logging']:
+        if not self.opts["__logging"]:
             return None
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
@@ -386,10 +393,10 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print('[%s] %s' % (modName, message))
+            print("[%s] %s" % (modName, message))
         else:
             self._dblog("DEBUG", message, modName)
-        if self.opts.get('__logstdout'):
+        if self.opts.get("__logstdout"):
             print("[d:%s] %s" % (modName, message))
         return
 
@@ -406,7 +413,7 @@ class SpiderFoot:
         s = string
         if type(string) in [list, dict]:
             s = str(string)
-        return hashlib.sha256(s.encode('raw_unicode_escape')).hexdigest()
+        return hashlib.sha256(s.encode("raw_unicode_escape")).hexdigest()
 
     #
     # Caching
@@ -414,14 +421,14 @@ class SpiderFoot:
 
     # Return the cache path
     def cachePath(self):
-        path = self.myPath() + '/cache'
+        path = self.myPath() + "/cache"
         if not os.path.isdir(path):
             os.mkdir(path)
         return path
 
     # Store data to the cache
     def cachePut(self, label, data):
-        pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
+        pathLabel = hashlib.sha224(label.encode("utf-8")).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
         fp = open(cacheFile, "w")
         if type(data) is list:
@@ -430,16 +437,16 @@ class SpiderFoot:
                     fp.write(line)
                     fp.write("\n")
                 else:
-                    fp.write(line.decode('utf-8') + '\n')
+                    fp.write(line.decode("utf-8") + "\n")
         elif type(data) is bytes:
-            fp.write(data.decode('utf-8'))
+            fp.write(data.decode("utf-8"))
         else:
             fp.write(data)
         fp.close()
 
     # Retreive data from the cache
     def cacheGet(self, label, timeoutHrs):
-        pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
+        pathLabel = hashlib.sha224(label.encode("utf-8")).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
         try:
             (m, i, d, n, u, g, sz, atime, mtime, ctime) = os.stat(cacheFile)
@@ -467,7 +474,7 @@ class SpiderFoot:
 
         for opt in list(opts.keys()):
             # Filter out system temporary variables like GUID and others
-            if opt.startswith('__') and filterSystem:
+            if opt.startswith("__") and filterSystem:
                 continue
 
             if type(opts[opt]) is int or type(opts[opt]) is str:
@@ -479,28 +486,31 @@ class SpiderFoot:
                 else:
                     storeopts[opt] = 0
             if type(opts[opt]) is list:
-                storeopts[opt] = ','.join(opts[opt])
+                storeopts[opt] = ",".join(opts[opt])
 
-        if '__modules__' not in opts:
+        if "__modules__" not in opts:
             return storeopts
 
-        for mod in opts['__modules__']:
-            for opt in opts['__modules__'][mod]['opts']:
-                if opt.startswith('_') and filterSystem:
+        for mod in opts["__modules__"]:
+            for opt in opts["__modules__"][mod]["opts"]:
+                if opt.startswith("_") and filterSystem:
                     continue
 
-                if type(opts['__modules__'][mod]['opts'][opt]) is int or \
-                                type(opts['__modules__'][mod]['opts'][opt]) is str:
-                    storeopts[mod + ":" + opt] = opts['__modules__'][mod]['opts'][opt]
+                if (
+                    type(opts["__modules__"][mod]["opts"][opt]) is int
+                    or type(opts["__modules__"][mod]["opts"][opt]) is str
+                ):
+                    storeopts[mod + ":" + opt] = opts["__modules__"][mod]["opts"][opt]
 
-                if type(opts['__modules__'][mod]['opts'][opt]) is bool:
-                    if opts['__modules__'][mod]['opts'][opt]:
+                if type(opts["__modules__"][mod]["opts"][opt]) is bool:
+                    if opts["__modules__"][mod]["opts"][opt]:
                         storeopts[mod + ":" + opt] = 1
                     else:
                         storeopts[mod + ":" + opt] = 0
-                if type(opts['__modules__'][mod]['opts'][opt]) is list:
-                    storeopts[mod + ":" + opt] = ','.join(str(x) \
-                                                          for x in opts['__modules__'][mod]['opts'][opt])
+                if type(opts["__modules__"][mod]["opts"][opt]) is list:
+                    storeopts[mod + ":" + opt] = ",".join(
+                        str(x) for x in opts["__modules__"][mod]["opts"][opt]
+                    )
 
         return storeopts
 
@@ -513,7 +523,7 @@ class SpiderFoot:
 
         # Global options
         for opt in list(referencePoint.keys()):
-            if opt.startswith('__') and filterSystem:
+            if opt.startswith("__") and filterSystem:
                 # Leave out system variables
                 continue
             if opt in opts:
@@ -537,38 +547,41 @@ class SpiderFoot:
                     else:
                         returnOpts[opt] = str(opts[opt]).split(",")
 
-        if '__modules__' not in referencePoint:
+        if "__modules__" not in referencePoint:
             return returnOpts
 
         # Module options
         # A lot of mess to handle typing..
-        for modName in referencePoint['__modules__']:
-            for opt in referencePoint['__modules__'][modName]['opts']:
-                if opt.startswith('_') and filterSystem:
+        for modName in referencePoint["__modules__"]:
+            for opt in referencePoint["__modules__"][modName]["opts"]:
+                if opt.startswith("_") and filterSystem:
                     continue
                 if modName + ":" + opt in opts:
-                    if type(referencePoint['__modules__'][modName]['opts'][opt]) is bool:
+                    if type(referencePoint["__modules__"][modName]["opts"][opt]) is bool:
                         if opts[modName + ":" + opt] == "1":
-                            returnOpts['__modules__'][modName]['opts'][opt] = True
+                            returnOpts["__modules__"][modName]["opts"][opt] = True
                         else:
-                            returnOpts['__modules__'][modName]['opts'][opt] = False
+                            returnOpts["__modules__"][modName]["opts"][opt] = False
 
-                    if type(referencePoint['__modules__'][modName]['opts'][opt]) is str:
-                        returnOpts['__modules__'][modName]['opts'][opt] = \
-                            str(opts[modName + ":" + opt])
+                    if type(referencePoint["__modules__"][modName]["opts"][opt]) is str:
+                        returnOpts["__modules__"][modName]["opts"][opt] = str(
+                            opts[modName + ":" + opt]
+                        )
 
-                    if type(referencePoint['__modules__'][modName]['opts'][opt]) is int:
-                        returnOpts['__modules__'][modName]['opts'][opt] = \
-                            int(opts[modName + ":" + opt])
+                    if type(referencePoint["__modules__"][modName]["opts"][opt]) is int:
+                        returnOpts["__modules__"][modName]["opts"][opt] = int(
+                            opts[modName + ":" + opt]
+                        )
 
-                    if type(referencePoint['__modules__'][modName]['opts'][opt]) is list:
-                        if type(referencePoint['__modules__'][modName]['opts'][opt][0]) is int:
-                            returnOpts['__modules__'][modName]['opts'][opt] = list()
+                    if type(referencePoint["__modules__"][modName]["opts"][opt]) is list:
+                        if type(referencePoint["__modules__"][modName]["opts"][opt][0]) is int:
+                            returnOpts["__modules__"][modName]["opts"][opt] = list()
                             for x in str(opts[modName + ":" + opt]).split(","):
-                                returnOpts['__modules__'][modName]['opts'][opt].append(int(x))
+                                returnOpts["__modules__"][modName]["opts"][opt].append(int(x))
                         else:
-                            returnOpts['__modules__'][modName]['opts'][opt] = \
-                                str(opts[modName + ":" + opt]).split(",")
+                            returnOpts["__modules__"][modName]["opts"][opt] = str(
+                                opts[modName + ":" + opt]
+                            ).split(",")
 
         return returnOpts
 
@@ -581,17 +594,19 @@ class SpiderFoot:
             {"^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER"},
             {"^.*@.*$": "EMAILADDR"},
             {"^\+\d+$": "PHONE_NUMBER"},
-            {"^\".*\s+.*\"$": "HUMAN_NAME"},
-            {"^\".*\"$": "USERNAME"},
+            {'^".*\s+.*"$': "HUMAN_NAME"},
+            {'^".*"$': "USERNAME"},
             {"^\d+$": "BGP_AS_OWNER"},
             {"^[0-9a-f:]+$": "IPV6_ADDRESS"},
-            {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
+            {
+                "^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"
+            },
         ]
 
         # Parse the target and set the targetType
         for rxpair in regexToType:
             rx = list(rxpair.keys())[0]
-            if re.match(rx, target, re.IGNORECASE|re.UNICODE):
+            if re.match(rx, target, re.IGNORECASE | re.UNICODE):
                 targetType = list(rxpair.values())[0]
                 break
         return targetType
@@ -600,11 +615,11 @@ class SpiderFoot:
     # types specified.
     def modulesProducing(self, events):
         modlist = list()
-        for mod in list(self.opts['__modules__'].keys()):
-            if self.opts['__modules__'][mod]['provides'] is None:
+        for mod in list(self.opts["__modules__"].keys()):
+            if self.opts["__modules__"][mod]["provides"] is None:
                 continue
 
-            for evtype in self.opts['__modules__'][mod]['provides']:
+            for evtype in self.opts["__modules__"][mod]["provides"]:
                 if evtype in events and mod not in modlist:
                     modlist.append(mod)
                 if "*" in events and mod not in modlist:
@@ -616,14 +631,14 @@ class SpiderFoot:
     # specified.
     def modulesConsuming(self, events):
         modlist = list()
-        for mod in list(self.opts['__modules__'].keys()):
-            if self.opts['__modules__'][mod]['consumes'] is None:
+        for mod in list(self.opts["__modules__"].keys()):
+            if self.opts["__modules__"][mod]["consumes"] is None:
                 continue
 
-            if "*" in self.opts['__modules__'][mod]['consumes'] and mod not in modlist:
+            if "*" in self.opts["__modules__"][mod]["consumes"] and mod not in modlist:
                 modlist.append(mod)
 
-            for evtype in self.opts['__modules__'][mod]['consumes']:
+            for evtype in self.opts["__modules__"][mod]["consumes"]:
                 if evtype in events and mod not in modlist:
                     modlist.append(mod)
 
@@ -634,9 +649,9 @@ class SpiderFoot:
     def eventsFromModules(self, modules):
         evtlist = list()
         for mod in modules:
-            if mod in list(self.opts['__modules__'].keys()):
-                if self.opts['__modules__'][mod]['provides'] is not None:
-                    for evt in self.opts['__modules__'][mod]['provides']:
+            if mod in list(self.opts["__modules__"].keys()):
+                if self.opts["__modules__"][mod]["provides"] is not None:
+                    for evt in self.opts["__modules__"][mod]["provides"]:
                         evtlist.append(evt)
 
         return evtlist
@@ -646,9 +661,9 @@ class SpiderFoot:
     def eventsToModules(self, modules):
         evtlist = list()
         for mod in modules:
-            if mod in list(self.opts['__modules__'].keys()):
-                if self.opts['__modules__'][mod]['consumes'] is not None:
-                    for evt in self.opts['__modules__'][mod]['consumes']:
+            if mod in list(self.opts["__modules__"].keys()):
+                if self.opts["__modules__"][mod]["consumes"] is not None:
+                    for evt in self.opts["__modules__"][mod]["consumes"]:
                         evtlist.append(evt)
 
         return evtlist
@@ -661,19 +676,19 @@ class SpiderFoot:
     def urlRelativeToAbsolute(self, url):
         finalBits = list()
 
-        if '..' not in url:
+        if ".." not in url:
             return url
 
-        bits = url.split('/')
+        bits = url.split("/")
 
         for chunk in bits:
-            if chunk == '..':
+            if chunk == "..":
                 # Don't pop the last item off if we're at the top
                 if len(finalBits) <= 1:
                     continue
 
                 # Don't pop the last item off if the first bits are not the path
-                if '://' in url and len(finalBits) <= 3:
+                if "://" in url and len(finalBits) <= 3:
                     continue
 
                 finalBits.pop()
@@ -681,64 +696,64 @@ class SpiderFoot:
 
             finalBits.append(chunk)
 
-        #self.debug('xfrmed rel to abs path: ' + url + ' to ' + '/'.join(finalBits))
-        return '/'.join(finalBits)
+        # self.debug('xfrmed rel to abs path: ' + url + ' to ' + '/'.join(finalBits))
+        return "/".join(finalBits)
 
     # Extract the top level directory from a URL
     def urlBaseDir(self, url):
 
-        bits = url.split('/')
+        bits = url.split("/")
 
         # For cases like 'www.somesite.com'
         if len(bits) == 0:
-            #self.debug('base dir of ' + url + ' not identified, using URL as base.')
-            return url + '/'
+            # self.debug('base dir of ' + url + ' not identified, using URL as base.')
+            return url + "/"
 
         # For cases like 'http://www.blah.com'
-        if '://' in url and url.count('/') < 3:
-            #self.debug('base dir of ' + url + ' is: ' + url + '/')
-            return url + '/'
+        if "://" in url and url.count("/") < 3:
+            # self.debug('base dir of ' + url + ' is: ' + url + '/')
+            return url + "/"
 
-        base = '/'.join(bits[:-1])
-        #self.debug('base dir of ' + url + ' is: ' + base + '/')
-        return base + '/'
+        base = "/".join(bits[:-1])
+        # self.debug('base dir of ' + url + ' is: ' + base + '/')
+        return base + "/"
 
     # Extract the scheme and domain from a URL
     # Does not return the trailing slash! So you can do .endswith()
     # checks.
     def urlBaseUrl(self, url):
-        if '://' in url:
-            bits = re.match('(\w+://.[^/:\?]*)[:/\?].*', url)
+        if "://" in url:
+            bits = re.match("(\w+://.[^/:\?]*)[:/\?].*", url)
         else:
-            bits = re.match('(.[^/:\?]*)[:/\?]', url)
+            bits = re.match("(.[^/:\?]*)[:/\?]", url)
 
         if bits is None:
             return url.lower()
 
-        #self.debug('base url of ' + url + ' is: ' + bits.group(1))
+        # self.debug('base url of ' + url + ' is: ' + bits.group(1))
         return bits.group(1).lower()
 
     # Extract the FQDN from a URL
     def urlFQDN(self, url):
         baseurl = self.urlBaseUrl(url)
-        if '://' not in baseurl:
+        if "://" not in baseurl:
             count = 0
         else:
             count = 2
 
         # http://abc.com will split to ['http:', '', 'abc.com']
-        return baseurl.split('/')[count].lower()
+        return baseurl.split("/")[count].lower()
 
     # Extract the keyword (the domain without the TLD or any subdomains)
     # from a domain.
     def domainKeyword(self, domain, tldList):
         # Strip off the TLD
-        tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
-        ret = domain.lower().replace('.' + tld, '')
+        tld = ".".join(self.hostDomain(domain.lower(), tldList).split(".")[1:])
+        ret = domain.lower().replace("." + tld, "")
 
         # If the user supplied a domain with a sub-domain, return the second part
-        if '.' in ret:
-            return ret.split('.')[-1]
+        if "." in ret:
+            return ret.split(".")[-1]
         else:
             return ret
 
@@ -748,12 +763,12 @@ class SpiderFoot:
         arr = list()
         for domain in domainList:
             # Strip off the TLD
-            tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
-            ret = domain.lower().replace('.' + tld, '')
+            tld = ".".join(self.hostDomain(domain.lower(), tldList).split(".")[1:])
+            ret = domain.lower().replace("." + tld, "")
 
             # If the user supplied a domain with a sub-domain, return the second part
-            if '.' in ret:
-                arr.append(ret.split('.')[-1])
+            if "." in ret:
+                arr.append(ret.split(".")[-1])
             else:
                 arr.append(ret)
 
@@ -804,7 +819,7 @@ class SpiderFoot:
     # Simple way to verify netblock.
     def validIpNetwork(self, cidr):
         try:
-            if '/' in str(cidr) and netaddr.IPNetwork(str(cidr)).size > 0:
+            if "/" in str(cidr) and netaddr.IPNetwork(str(cidr)).size > 0:
                 return True
             else:
                 return False
@@ -826,14 +841,51 @@ class SpiderFoot:
 
     # Verify input is OK to execute
     def sanitiseInput(self, cmd):
-        chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
+        chars = [
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f",
+            "g",
+            "h",
+            "i",
+            "j",
+            "k",
+            "l",
+            "m",
+            "n",
+            "o",
+            "p",
+            "q",
+            "r",
+            "s",
+            "t",
+            "u",
+            "v",
+            "w",
+            "x",
+            "y",
+            "z",
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "-",
+            ".",
+        ]
         for c in cmd:
             if c.lower() not in chars:
                 return False
 
-        if '..' in cmd:
+        if ".." in cmd:
             return False
 
         if cmd.startswith("-"):
@@ -848,11 +900,11 @@ class SpiderFoot:
     def dictwords(self):
         wd = dict()
 
-        dicts = [ "english", "german", "french", "spanish" ]
+        dicts = ["english", "german", "french", "spanish"]
 
         for d in dicts:
             try:
-                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
+                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", "r")
                 dlines = wdct.readlines()
                 wdct.close()
             except BaseException as e:
@@ -861,7 +913,7 @@ class SpiderFoot:
 
             for w in dlines:
                 w = w.strip().lower()
-                wd[w.split('/')[0]] = True
+                wd[w.split("/")[0]] = True
 
         return list(wd.keys())
 
@@ -869,11 +921,11 @@ class SpiderFoot:
     def dictnames(self):
         wd = dict()
 
-        dicts = [ "names" ]
+        dicts = ["names"]
 
         for d in dicts:
             try:
-                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
+                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", "r")
                 dlines = wdct.readlines()
                 wdct.close()
             except BaseException as e:
@@ -882,16 +934,15 @@ class SpiderFoot:
 
             for w in dlines:
                 w = w.strip().lower()
-                wd[w.split('/')[0]] = True
+                wd[w.split("/")[0]] = True
 
         return list(wd.keys())
-
 
     # Converts a dictionary of k -> array to a nested
     # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):
         def get_children(needle, haystack):
-            #print("called")
+            # print("called")
             ret = list()
 
             if needle not in list(haystack.keys()):
@@ -901,7 +952,7 @@ class SpiderFoot:
                 return None
 
             for c in haystack[needle]:
-                #print("found child of " + needle + ": " + c)
+                # print("found child of " + needle + ": " + c)
                 ret.append({"name": c, "children": get_children(c, haystack)})
             return ret
 
@@ -924,7 +975,7 @@ class SpiderFoot:
                 break
 
         if root is None:
-            #print("*BUG*: Invalid structure - needs to go back to one root.")
+            # print("*BUG*: Invalid structure - needs to go back to one root.")
             final = {}
         else:
             final = {"name": root, "children": get_children(root, data)}
@@ -994,7 +1045,7 @@ class SpiderFoot:
         t = target.getType()
         v = target.getValue()
 
-        if t in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
+        if t in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             r = self.resolveIP(v)
             if r:
                 ret.extend(r)
@@ -1005,9 +1056,9 @@ class SpiderFoot:
         if t == "NETBLOCK_OWNER":
             for addr in netaddr.IPNetwork(v):
                 ipaddr = str(addr)
-                if ipaddr.split(".")[3] in ['255', '0']:
+                if ipaddr.split(".")[3] in ["255", "0"]:
                     continue
-                if '255' in ipaddr.split("."):
+                if "255" in ipaddr.split("."):
                     continue
                 ret.append(ipaddr)
 
@@ -1049,9 +1100,9 @@ class SpiderFoot:
         # We don't check the User-Agent rule yet.. probably should at some stage
 
         for line in robotsTxtData.splitlines():
-            if line.lower().startswith('disallow:'):
-                m = re.match('disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
-                self.debug('robots.txt parsing found disallow: ' + m.group(1))
+            if line.lower().startswith("disallow:"):
+                m = re.match("disallow:\s*(.[^ #]*)", line, re.IGNORECASE)
+                self.debug("robots.txt parsing found disallow: " + m.group(1))
                 returnArr.append(m.group(1))
                 continue
 
@@ -1064,7 +1115,7 @@ class SpiderFoot:
             "MD5": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{32})(?:[^a-fA-F\d]|\b)"),
             "SHA1": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{40})(?:[^a-fA-F\d]|\b)"),
             "SHA256": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{64})(?:[^a-fA-F\d]|\b)"),
-            "SHA512": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{128})(?:[^a-fA-F\d]|\b)")
+            "SHA512": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{128})(?:[^a-fA-F\d]|\b)"),
         }
 
         for h in hashes:
@@ -1079,7 +1130,7 @@ class SpiderFoot:
     # Returns an Array
     def parseEmails(self, data):
         emails = set()
-        matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
+        matches = re.findall(r"([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)", data)
 
         for match in matches:
             self.debug("Found possible email: " + match)
@@ -1110,39 +1161,40 @@ class SpiderFoot:
     # Parse a PEM-format SSL certificate
     def parseCert(self, rawcert, fqdn=None, expiringdays=30):
         ret = dict()
-        if '\r' in rawcert:
-            rawcert = rawcert.replace('\r', '')
+        if "\r" in rawcert:
+            rawcert = rawcert.replace("\r", "")
         if type(rawcert) == str:
-            rawcert = rawcert.encode('utf-8')
+            rawcert = rawcert.encode("utf-8")
 
         from cryptography.hazmat.backends.openssl import backend
+
         cert = cryptography.x509.load_pem_x509_certificate(rawcert, backend)
         sslcert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, rawcert)
         sslcert_dump = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_TEXT, sslcert)
 
-        ret['text'] = sslcert_dump.decode('utf-8', errors='replace')
-        ret['issuer'] = str(cert.issuer)
-        ret['altnames'] = list()
-        ret['expired'] = False
-        ret['expiring'] = False
-        ret['mismatch'] = False
-        ret['certerror'] = False
-        ret['issued'] = str(cert.subject)
+        ret["text"] = sslcert_dump.decode("utf-8", errors="replace")
+        ret["issuer"] = str(cert.issuer)
+        ret["altnames"] = list()
+        ret["expired"] = False
+        ret["expiring"] = False
+        ret["mismatch"] = False
+        ret["certerror"] = False
+        ret["issued"] = str(cert.subject)
 
         # Expiry info
         try:
-            notafter = datetime.strptime(sslcert.get_notAfter().decode('utf-8'), "%Y%m%d%H%M%SZ")
-            ret['expiry'] = int(notafter.strftime("%s"))
-            ret['expirystr'] = notafter.strftime("%Y-%m-%d %H:%M:%S")
+            notafter = datetime.strptime(sslcert.get_notAfter().decode("utf-8"), "%Y%m%d%H%M%SZ")
+            ret["expiry"] = int(notafter.strftime("%s"))
+            ret["expirystr"] = notafter.strftime("%Y-%m-%d %H:%M:%S")
             now = int(time.time())
             warnexp = now + (expiringdays * 86400)
-            if ret['expiry'] <= warnexp:
-                ret['expiring'] = True
-            if ret['expiry'] <= now:
-                ret['expired'] = True
+            if ret["expiry"] <= warnexp:
+                ret["expiring"] = True
+            if ret["expiry"] <= now:
+                ret["expired"] = True
         except BaseException as e:
-            self.error("Error processing date in certificate: " + str(e) , False)
-            ret['certerror'] = True
+            self.error("Error processing date in certificate: " + str(e), False)
+            ret["certerror"] = True
             return ret
 
         # SANs
@@ -1150,7 +1202,11 @@ class SpiderFoot:
             ext = cert.extensions.get_extension_for_class(cryptography.x509.SubjectAlternativeName)
             for x in ext.value:
                 if isinstance(x, cryptography.x509.DNSName):
-                    ret['altnames'].append(x.value.lower().encode('raw_unicode_escape').decode("ascii", errors='replace'))
+                    ret["altnames"].append(
+                        x.value.lower()
+                        .encode("raw_unicode_escape")
+                        .decode("ascii", errors="replace")
+                    )
         except BaseException as e:
             self.debug("Problem processing certificate: " + str(e))
             pass
@@ -1162,26 +1218,26 @@ class SpiderFoot:
             if len(attrs) == 1:
                 name = attrs[0].value.lower()
                 # CN often duplicates one of the SANs, don't add it then
-                if name not in ret['altnames']:
+                if name not in ret["altnames"]:
                     certhosts.append(name)
         except BaseException as e:
             self.debug("Problem processing certificate: " + str(e))
             pass
 
         # Check for mismatch
-        if fqdn and ret['issued']:
+        if fqdn and ret["issued"]:
             fqdn = fqdn.lower()
 
             try:
                 # Extract the CN from the issued section
-                if "cn=" + fqdn in ret['issued'].lower():
+                if "cn=" + fqdn in ret["issued"].lower():
                     certhosts.append(fqdn)
 
                 # Extract subject alternative names
-                for host in ret['altnames']:
+                for host in ret["altnames"]:
                     certhosts.append(host.replace("dns:", ""))
 
-                ret['hosts'] = certhosts
+                ret["hosts"] = certhosts
 
                 self.debug("Checking for " + fqdn + " in certificate subject")
                 fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
@@ -1196,10 +1252,10 @@ class SpiderFoot:
                         found = True
 
                 if not found:
-                    ret['mismatch'] = True
+                    ret["mismatch"] = True
             except BaseException as e:
                 self.error("Error processing certificate: " + str(e), False)
-                ret['certerror'] = True
+                ret["certerror"] = True
 
         return ret
 
@@ -1218,13 +1274,13 @@ class SpiderFoot:
             domains = [domains]
 
         tags = {
-                    'a': 'href',
-                    'img': 'src',
-                    'script': 'src',
-                    'link': 'href',
-                    'area': 'href',
-                    'base': 'href',
-                    'form': 'action'
+            "a": "href",
+            "img": "src",
+            "script": "src",
+            "link": "href",
+            "area": "href",
+            "base": "href",
+            "form": "action",
         }
 
         try:
@@ -1240,8 +1296,7 @@ class SpiderFoot:
 
         try:
             for t in list(tags.keys()):
-                for lnk in BeautifulSoup(data, "lxml",
-                    parse_only=SoupStrainer(t)).find_all(t):
+                for lnk in BeautifulSoup(data, "lxml", parse_only=SoupStrainer(t)).find_all(t):
                     if lnk.has_attr(tags[t]):
                         urlsRel.append(lnk[tags[t]])
         except BaseException as e:
@@ -1260,41 +1315,45 @@ class SpiderFoot:
 
             # Don't include stuff likely part of some dynamically built incomplete
             # URL found in Javascript code (character is part of some logic)
-            if link[len(link) - 1] == '.' or link[0] == '+' or \
-                            'javascript:' in linkl or '()' in link:
-                self.debug('unlikely link: ' + link)
+            if (
+                link[len(link) - 1] == "."
+                or link[0] == "+"
+                or "javascript:" in linkl
+                or "()" in link
+            ):
+                self.debug("unlikely link: " + link)
                 continue
             # Filter in-page links
-            if re.match('.*#.[^/]+', link):
-                self.debug('in-page link: ' + link)
+            if re.match(".*#.[^/]+", link):
+                self.debug("in-page link: " + link)
                 continue
 
             # Ignore mail links
-            if 'mailto:' in linkl:
+            if "mailto:" in linkl:
                 self.debug("Ignoring mail link: " + link)
                 continue
 
             # URL decode links
-            if '%2f' in linkl:
+            if "%2f" in linkl:
                 link = urllib.parse.unquote(link)
 
             # Capture the absolute link:
             # If the link contains ://, it is already an absolute link
-            if '://' in link:
+            if "://" in link:
                 absLink = link
 
             # If the link starts with a /, the absolute link is off the base URL
-            if link.startswith('/'):
+            if link.startswith("/"):
                 absLink = self.urlBaseUrl(url) + link
 
             # Protocol relative URLs
-            if link.startswith('//'):
-                absLink = proto + ':' + link
+            if link.startswith("//"):
+                absLink = proto + ":" + link
 
             # Maybe the domain was just mentioned and not a link, so we make it one
             for domain in domains:
                 if absLink is None and domain.lower() in link.lower():
-                    absLink = proto + '://' + link
+                    absLink = proto + "://" + link
 
             # Otherwise, it's a flat link within the current directory
             if absLink is None:
@@ -1302,19 +1361,19 @@ class SpiderFoot:
 
             # Translate any relative pathing (../)
             absLink = self.urlRelativeToAbsolute(absLink)
-            returnLinks[absLink] = {'source': url, 'original': link}
+            returnLinks[absLink] = {"source": url, "original": link}
 
         return returnLinks
 
     def urlEncodeUnicode(self, url):
-        return re.sub('[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), url)
+        return re.sub("[\x80-\xFF]", lambda c: "%%%02x" % ord(c.group(0)), url)
 
     def getSession(self):
         session = requests.session()
         if self.socksProxy:
             session.proxies = {
-                'http': self.socksProxy,
-                'https': self.socksProxy,
+                "http": self.socksProxy,
+                "https": self.socksProxy,
             }
         return session
 
@@ -1324,7 +1383,7 @@ class SpiderFoot:
             "key=\S+": "key=XXX",
             "pass=\S+": "pass=XXX",
             "user=\S+": "user=XXX",
-            "password=\S+": "password=XXX"
+            "password=\S+": "password=XXX",
         }
 
         ret = url
@@ -1334,30 +1393,35 @@ class SpiderFoot:
         return ret
 
     # Fetch a URL, return the response object
-    def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
-                 useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
-                 headOnly=False, verify=False):
-        result = {
-            'code': None,
-            'status': None,
-            'content': None,
-            'headers': None,
-            'realurl': url
-        }
+    def fetchUrl(
+        self,
+        url,
+        fatal=False,
+        cookies=None,
+        timeout=30,
+        useragent="SpiderFoot",
+        headers=None,
+        noLog=False,
+        postData=None,
+        dontMangle=False,
+        sizeLimit=None,
+        headOnly=False,
+        verify=False,
+    ):
+        result = {"code": None, "status": None, "content": None, "headers": None, "realurl": url}
 
         if url is None:
-            #self.debug("fetchUrl: No url")
+            # self.debug("fetchUrl: No url")
             return None
 
         proxies = dict()
-        if self.opts['_socks1type']:
-            neverProxyNames = [ self.opts['_socks2addr'] ]
-            neverProxySubnets = [ "192.168.", "127.", "10." ]
+        if self.opts["_socks1type"]:
+            neverProxyNames = [self.opts["_socks2addr"]]
+            neverProxySubnets = ["192.168.", "127.", "10."]
             host = self.urlFQDN(url)
 
             # Completely on or off?
-            if self.opts['_socks1type']:
+            if self.opts["_socks1type"]:
                 proxy = True
             else:
                 proxy = False
@@ -1376,10 +1440,21 @@ class SpiderFoot:
 
             if proxy:
                 self.debug("Using proxy for " + host)
-                self.debug("Proxy set to " + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']))
+                self.debug(
+                    "Proxy set to "
+                    + self.opts["_socks2addr"]
+                    + ":"
+                    + str(self.opts["_socks3port"])
+                )
                 proxies = {
-                    'http': 'socks5h://' + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']),
-                    'https': 'socks5h://' + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port'])
+                    "http": "socks5h://"
+                    + self.opts["_socks2addr"]
+                    + ":"
+                    + str(self.opts["_socks3port"]),
+                    "https": "socks5h://"
+                    + self.opts["_socks2addr"]
+                    + ":"
+                    + str(self.opts["_socks3port"]),
                 }
             else:
                 self.debug("Not using proxy for " + host)
@@ -1388,9 +1463,9 @@ class SpiderFoot:
             header = dict()
             btime = time.time()
             if type(useragent) is list:
-                header['User-Agent'] = random.SystemRandom().choice(useragent)
+                header["User-Agent"] = random.SystemRandom().choice(useragent)
             else:
-                header['User-Agent'] = useragent
+                header["User-Agent"] = useragent
 
             # Add custom headers
             if headers is not None:
@@ -1402,15 +1477,22 @@ class SpiderFoot:
 
             if sizeLimit or headOnly:
                 if not noLog:
-                    self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
-                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
-                          str(timeout) + "]")
+                    self.info(
+                        "Fetching (HEAD only): "
+                        + self.removeUrlCreds(url)
+                        + " [user-agent: "
+                        + header["User-Agent"]
+                        + "] [timeout: "
+                        + str(timeout)
+                        + "]"
+                    )
 
-                hdr = self.getSession().head(url, headers=header, proxies=proxies,
-                                    verify=verify, timeout=timeout)
-                size = int(hdr.headers.get('content-length', 0))
-                result['realurl'] = hdr.headers.get('location', url)
-                result['code'] = str(hdr.status_code)
+                hdr = self.getSession().head(
+                    url, headers=header, proxies=proxies, verify=verify, timeout=timeout
+                )
+                size = int(hdr.headers.get("content-length", 0))
+                result["realurl"] = hdr.headers.get("location", url)
+                result["code"] = str(hdr.status_code)
 
                 if headOnly:
                     return result
@@ -1418,46 +1500,84 @@ class SpiderFoot:
                 if size > sizeLimit:
                     return result
 
-                if result['realurl'] != url:
+                if result["realurl"] != url:
                     if not noLog:
-                        self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
-                            " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
-                            str(timeout) + "]")
+                        self.info(
+                            "Fetching (HEAD only): "
+                            + self.removeUrlCreds(url)
+                            + " [user-agent: "
+                            + header["User-Agent"]
+                            + "] [timeout: "
+                            + str(timeout)
+                            + "]"
+                        )
 
-                    hdr = self.getSession().head(result['realurl'], headers=header, proxies=proxies,
-                                        verify=verify, timeout=timeout)
-                    size = int(hdr.headers.get('content-length', 0))
-                    result['realurl'] = hdr.headers.get('location', result['realurl'])
-                    result['code'] = str(hdr.status_code)
+                    hdr = self.getSession().head(
+                        result["realurl"],
+                        headers=header,
+                        proxies=proxies,
+                        verify=verify,
+                        timeout=timeout,
+                    )
+                    size = int(hdr.headers.get("content-length", 0))
+                    result["realurl"] = hdr.headers.get("location", result["realurl"])
+                    result["code"] = str(hdr.status_code)
 
                     if size > sizeLimit:
                         return result
             if cookies is not None:
-                #req.add_header('cookie', cookies)
+                # req.add_header('cookie', cookies)
                 if not noLog:
-                    self.info("Fetching (incl. cookies): " + self.removeUrlCreds(url) + \
-                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
-                          str(timeout) + "]")
+                    self.info(
+                        "Fetching (incl. cookies): "
+                        + self.removeUrlCreds(url)
+                        + " [user-agent: "
+                        + header["User-Agent"]
+                        + "] [timeout: "
+                        + str(timeout)
+                        + "]"
+                    )
             else:
                 if not noLog:
-                    self.info("Fetching: " + self.removeUrlCreds(url) + " [user-agent: " + \
-                          header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
+                    self.info(
+                        "Fetching: "
+                        + self.removeUrlCreds(url)
+                        + " [user-agent: "
+                        + header["User-Agent"]
+                        + "] [timeout: "
+                        + str(timeout)
+                        + "]"
+                    )
 
             #
             # MAKE THE REQUEST
             #
             try:
                 if postData:
-                    res = self.getSession().post(url, data=postData, headers=header, proxies=proxies,
-                                        allow_redirects=True, cookies=cookies,
-                                        timeout=timeout, verify=verify)
+                    res = self.getSession().post(
+                        url,
+                        data=postData,
+                        headers=header,
+                        proxies=proxies,
+                        allow_redirects=True,
+                        cookies=cookies,
+                        timeout=timeout,
+                        verify=verify,
+                    )
                 else:
-                    res = self.getSession().get(url, headers=header, proxies=proxies, allow_redirects=True,
-                                       cookies=cookies, timeout=timeout, verify=verify)
+                    res = self.getSession().get(
+                        url,
+                        headers=header,
+                        proxies=proxies,
+                        allow_redirects=True,
+                        cookies=cookies,
+                        timeout=timeout,
+                        verify=verify,
+                    )
             except requests.exceptions.RequestException:
-                raise Exception('Failed to connect to %s' % url) from None
+                raise Exception("Failed to connect to %s" % url) from None
 
-            result['headers'] = dict()
+            result["headers"] = dict()
             for header, value in res.headers.items():
                 if type(header) != str:
                     header = str(header)
@@ -1465,70 +1585,98 @@ class SpiderFoot:
                 if type(value) != str:
                     value = str(value)
 
-                result['headers'][header.lower()] = value
+                result["headers"][header.lower()] = value
 
             # Sometimes content exceeds the size limit after decompression
             if sizeLimit and len(res.content) > sizeLimit:
                 self.debug("Content exceeded size limit, so returning no data just headers")
-                result['realurl'] = res.url
-                result['code'] = str(res.status_code)
+                result["realurl"] = res.url
+                result["code"] = str(res.status_code)
                 return result
 
-            if 'refresh' in result['headers']:
+            if "refresh" in result["headers"]:
                 try:
-                    newurl = result['headers']['refresh'].split(";url=")[1]
+                    newurl = result["headers"]["refresh"].split(";url=")[1]
                 except BaseException as e:
-                    self.debug("Refresh header found but was not parsable: " + result['headers']['refresh'])
+                    self.debug(
+                        "Refresh header found but was not parsable: "
+                        + result["headers"]["refresh"]
+                    )
                     return result
                 self.debug("Refresh header found, re-directing to " + self.removeUrlCreds(newurl))
-                return self.fetchUrl(newurl, fatal, cookies, timeout,
-                                     useragent, headers, noLog, postData,
-                                     dontMangle, sizeLimit, headOnly)
+                return self.fetchUrl(
+                    newurl,
+                    fatal,
+                    cookies,
+                    timeout,
+                    useragent,
+                    headers,
+                    noLog,
+                    postData,
+                    dontMangle,
+                    sizeLimit,
+                    headOnly,
+                )
 
-            result['realurl'] = res.url
-            result['code'] = str(res.status_code)
+            result["realurl"] = res.url
+            result["code"] = str(res.status_code)
             if dontMangle:
-                result['content'] = res.content
+                result["content"] = res.content
             else:
                 try:
-                    result['content'] = res.content.decode("utf-8")
+                    result["content"] = res.content.decode("utf-8")
                 except UnicodeDecodeError as e:
-                    result['content'] = res.content.decode("ascii")
+                    result["content"] = res.content.decode("ascii")
             if fatal:
                 try:
                     res.raise_for_status()
                 except requests.exceptions.HTTPError as h:
-                    self.fatal('URL could not be fetched (' + str(res.status_code) + ' / ' + res.content + ')')
+                    self.fatal(
+                        "URL could not be fetched ("
+                        + str(res.status_code)
+                        + " / "
+                        + res.content
+                        + ")"
+                    )
 
         except BaseException as x:
             if not noLog:
                 try:
-                    self.error("Unexpected exception (" + str(x) + ") occurred fetching: " + url, False)
+                    self.error(
+                        "Unexpected exception (" + str(x) + ") occurred fetching: " + url, False
+                    )
                     self.error(traceback.format_exc(), False)
                 except BaseException as f:
                     return result
-            result['content'] = None
-            result['status'] = str(x)
+            result["content"] = None
+            result["status"] = str(x)
             if fatal:
-                self.fatal('URL could not be fetched (' + str(x) + ')')
+                self.fatal("URL could not be fetched (" + str(x) + ")")
 
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
         m = mod.__name__
         atime = time.time()
         t = str(atime - btime)
-        self.info("Fetched data: " + str(len(result['content'] or '')) + \
-                  " (" + self.removeUrlCreds(url) + "), took " + t + "s")
+        self.info(
+            "Fetched data: "
+            + str(len(result["content"] or ""))
+            + " ("
+            + self.removeUrlCreds(url)
+            + "), took "
+            + t
+            + "s"
+        )
         return result
 
     # Check if wildcard DNS is enabled by looking up a random hostname
     def checkDnsWildcard(self, target):
         if not target:
-            #self.debug("checkDnsWildcard: No target")
+            # self.debug("checkDnsWildcard: No target")
             return False
 
-        randpool = 'bcdfghjklmnpqrstvwxyz3456789'
-        randhost = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
+        randpool = "bcdfghjklmnpqrstvwxyz3456789"
+        randhost = "".join([random.SystemRandom().choice(randpool) for x in range(10)])
 
         if self.resolveHost(randhost + "." + target) is None:
             return False
@@ -1553,18 +1701,20 @@ class SpiderFoot:
         }
 
         response = self.fetchUrl(
-            endpoint + urllib.parse.urlencode(params),
-            timeout=opts["timeout"],
+            endpoint + urllib.parse.urlencode(params), timeout=opts["timeout"],
         )
 
-        if response['code'] != '200':
+        if response["code"] != "200":
             self.error("Failed to get a valid response from the Google API", exception=False)
             return None
 
         try:
-            response_json = json.loads(response['content'])
+            response_json = json.loads(response["content"])
         except ValueError:
-            self.error("the key 'content' in the Google API response doesn't contain valid json.", exception=False)
+            self.error(
+                "the key 'content' in the Google API response doesn't contain valid json.",
+                exception=False,
+            )
             return None
 
         if "items" in response_json:
@@ -1578,17 +1728,16 @@ class SpiderFoot:
             }
             search_url = "https://www.google.com/search?q={search_string}&{params}".format(
                 search_string=searchString.replace(" ", "%20"),
-                params=urllib.parse.urlencode(params)
+                params=urllib.parse.urlencode(params),
             )
             results = {
-                "urls": [str(k['link']) for k in response_json['items']],
+                "urls": [str(k["link"]) for k in response_json["items"]],
                 "webSearchUrl": search_url,
             }
         else:
             return None
 
         return results
-
 
     # Request search results from the Bing API. Will return a dict:
     # {
@@ -1616,14 +1765,17 @@ class SpiderFoot:
             headers={"Ocp-Apim-Subscription-Key": opts["api_key"]},
         )
 
-        if response['code'] != '200':
+        if response["code"] != "200":
             self.error("Failed to get a valid response from the bing API", exception=False)
             return None
 
         try:
-            response_json = json.loads(response['content'])
+            response_json = json.loads(response["content"])
         except ValueError:
-            self.error("the key 'content' in the bing API response doesn't contain valid json.", exception=False)
+            self.error(
+                "the key 'content' in the bing API response doesn't contain valid json.",
+                exception=False,
+            )
             return None
 
         if (
@@ -1737,14 +1889,17 @@ class SpiderFootPlugin(object):
         if self.__outputFilter__:
             # Be strict about what events to pass on, unless they are
             # the ROOT event or the event type of the target.
-            if eventName != 'ROOT' and eventName != self.getTarget().getType() \
-                and eventName not in self.__outputFilter__:
+            if (
+                eventName != "ROOT"
+                and eventName != self.getTarget().getType()
+                and eventName not in self.__outputFilter__
+            ):
                 return None
 
         storeOnly = False  # Under some conditions, only store and don't notify
 
         if sfEvent.data is None or (type(sfEvent.data) is str and len(sfEvent.data) == 0):
-            #print("No data to send for " + eventName + " to " + listener.__module__)
+            # print("No data to send for " + eventName + " to " + listener.__module__)
             return None
 
         if self.checkForStop():
@@ -1767,9 +1922,11 @@ class SpiderFootPlugin(object):
         prevEvent = sfEvent.sourceEvent
         while prevEvent is not None:
             if prevEvent.sourceEvent is not None:
-                if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
-                                prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
-                    #print("Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data)
+                if (
+                    prevEvent.sourceEvent.eventType == sfEvent.eventType
+                    and prevEvent.sourceEvent.data.lower() == sfEvent.data.lower()
+                ):
+                    # print("Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data)
                     storeOnly = True
                     break
             prevEvent = prevEvent.sourceEvent
@@ -1777,16 +1934,16 @@ class SpiderFootPlugin(object):
         self._listenerModules.sort(key=lambda m: m._priority)
 
         for listener in self._listenerModules:
-            #print(listener.__module__ + ": " + listener.watchedEvents().__str__())
-            if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
-                #print(listener.__module__ + " not listening for " + eventName)
+            # print(listener.__module__ + ": " + listener.watchedEvents().__str__())
+            if eventName not in listener.watchedEvents() and "*" not in listener.watchedEvents():
+                # print(listener.__module__ + " not listening for " + eventName)
                 continue
 
             if storeOnly and "__stor" not in listener.__module__:
-                #print("Storing only for " + sfEvent.eventType + " / " + sfEvent.data)
+                # print("Storing only for " + sfEvent.eventType + " / " + sfEvent.data)
                 continue
 
-            #print("Notifying " + eventName + " to " + listener.__module__)
+            # print("Notifying " + eventName + " to " + listener.__module__)
             listener._currentEvent = sfEvent
 
             # Check if we've been asked to stop in the meantime, so that
@@ -1794,15 +1951,17 @@ class SpiderFootPlugin(object):
             if self.checkForStop():
                 return None
 
-            #print("EVENT: " + str(sfEvent))
+            # print("EVENT: " + str(sfEvent))
             try:
                 if type(sfEvent.data) == bytes:
-                    sfEvent.data = sfEvent.data.decode('utf-8', 'ignore')
+                    sfEvent.data = sfEvent.data.decode("utf-8", "ignore")
 
                 listener.handleEvent(sfEvent)
             except BaseException as e:
                 f = open("sferror.log", "a")
-                f.write("Module (" + listener.__module__ + ") encountered an error: " + str(e) + "\n")
+                f.write(
+                    "Module (" + listener.__module__ + ") encountered an error: " + str(e) + "\n"
+                )
 
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
@@ -1826,7 +1985,7 @@ class SpiderFootPlugin(object):
     # Will usually be overriden by the implementer, unless it is interested
     # in all events (default behavior).
     def watchedEvents(self):
-        return ['*']
+        return ["*"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -1849,8 +2008,17 @@ class SpiderFootPlugin(object):
 
 # Class for targets
 class SpiderFootTarget(object):
-    _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
-                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME"]
+    _validTypes = [
+        "IP_ADDRESS",
+        "IPV6_ADDRESS",
+        "NETBLOCK_OWNER",
+        "INTERNET_NAME",
+        "EMAILADDR",
+        "HUMAN_NAME",
+        "BGP_AS_OWNER",
+        "PHONE_NUMBER",
+        "USERNAME",
+    ]
     targetType = None
     targetValue = None
     targetAliases = list()
@@ -1880,12 +2048,10 @@ class SpiderFootTarget(object):
     # Or, if a user searched for an IP address, a module
     # might supply the hostname as an alias.
     def setAlias(self, value, typeName):
-        if {'type': typeName, 'value': value} in self.targetAliases:
+        if {"type": typeName, "value": value} in self.targetAliases:
             return None
 
-        self.targetAliases.append(
-            {'type': typeName, 'value': value.lower()}
-        )
+        self.targetAliases.append({"type": typeName, "value": value.lower()})
 
     def getAliases(self):
         return self.targetAliases
@@ -1893,8 +2059,8 @@ class SpiderFootTarget(object):
     def _getEquivalents(self, typeName):
         ret = list()
         for item in self.targetAliases:
-            if item['type'] == typeName:
-                ret.append(item['value'].lower())
+            if item["type"] == typeName:
+                ret.append(item["value"].lower())
         return ret
 
     # Get all domains associated with the target
@@ -1945,7 +2111,7 @@ class SpiderFootTarget(object):
 
         # We can't really say anything about names, username or phone numbers,
         # so everything matches
-        if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME" ]:
+        if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME"]:
             return True
 
         if netaddr.valid_ipv4(value):
@@ -1956,9 +2122,10 @@ class SpiderFootTarget(object):
             if self.targetType == "NETBLOCK_OWNER":
                 if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
                     return True
-            if self.targetType in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
-                if netaddr.IPAddress(value) in \
-                        netaddr.IPNetwork(netaddr.IPAddress(self.targetValue)):
+            if self.targetType in ["IP_ADDRESS", "IPV6_ADDRESS"]:
+                if netaddr.IPAddress(value) in netaddr.IPNetwork(
+                    netaddr.IPAddress(self.targetValue)
+                ):
                     return True
         else:
             for name in self.getNames():
@@ -1990,8 +2157,9 @@ class SpiderFootEvent(object):
     actualSource = None
     __id = None
 
-    def __init__(self, eventType, data, module, sourceEvent,
-                 confidence=100, visibility=100, risk=0):
+    def __init__(
+        self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0
+    ):
         self.eventType = eventType
         self.generated = time.time()
         self.confidence = confidence
@@ -2024,21 +2192,25 @@ class SpiderFootEvent(object):
             sys.exit(-1)
 
         self.sourceEventHash = sourceEvent.getHash()
-        self.__id = self.eventType + str(self.generated) + self.module + \
-                    str(random.SystemRandom().randint(0, 99999999))
+        self.__id = (
+            self.eventType
+            + str(self.generated)
+            + self.module
+            + str(random.SystemRandom().randint(0, 99999999))
+        )
 
     def asDict(self):
         evt_dict = {
-            'generated': int(self.generated),
-            'type': self.eventType,
-            'data': self.data,
-            'module': self.module
+            "generated": int(self.generated),
+            "type": self.eventType,
+            "data": self.data,
+            "module": self.module,
         }
 
-        if self.eventType == 'ROOT':
-            evt_dict['source'] = ''
+        if self.eventType == "ROOT":
+            evt_dict["source"] = ""
         else:
-            evt_dict['source'] = self.sourceEvent.data
+            evt_dict["source"] = self.sourceEvent.data
 
         return evt_dict
 
@@ -2046,7 +2218,7 @@ class SpiderFootEvent(object):
     def getHash(self):
         if self.eventType == "ROOT":
             return "ROOT"
-        digestStr = self.__id.encode('raw_unicode_escape')
+        digestStr = self.__id.encode("raw_unicode_escape")
         return hashlib.sha256(digestStr).hexdigest()
 
     # Update variables as new information becomes available
@@ -2081,9 +2253,9 @@ class PublicSuffixList(object):
         The file format is described at http://publicsuffix.org/list/
         """
 
-        #if input_file is None:
-        #input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
-        #input_file = codecs.open(input_path, "r", "utf-8")
+        # if input_file is None:
+        # input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
+        # input_file = codecs.open(input_path, "r", "utf-8")
 
         root = self._build_structure(input_data)
         self.root = self._simplify(root)
@@ -2108,13 +2280,13 @@ class PublicSuffixList(object):
         return self._find_node(child_node, parts)
 
     def _add_rule(self, root, rule):
-        if rule.startswith('!'):
+        if rule.startswith("!"):
             negate = 1
             rule = rule[1:]
         else:
             negate = 0
 
-        parts = rule.split('.')
+        parts = rule.split(".")
         self._find_node(root, parts)[0] = negate
 
     def _simplify(self, node):
@@ -2128,10 +2300,10 @@ class PublicSuffixList(object):
 
         for line in fp:
             line = str(line).strip()
-            if line.startswith('//') or not line:
+            if line.startswith("//") or not line:
                 continue
 
-            self._add_rule(root, line.split()[0].lstrip('.'))
+            self._add_rule(root, line.split()[0].lstrip("."))
 
         return root
 
@@ -2145,7 +2317,7 @@ class PublicSuffixList(object):
         matches[-depth] = negate
 
         if depth < len(parts) and children:
-            for name in ('*', parts[-depth]):
+            for name in ("*", parts[-depth]):
                 child = children.get(name, None)
                 if child is not None:
                     self._lookup_node(matches, depth + 1, child, parts)
@@ -2161,7 +2333,7 @@ class PublicSuffixList(object):
         up to the caller to decode any Punycode-encoded names.
         """
 
-        parts = domain.lower().lstrip('.').split('.')
+        parts = domain.lower().lstrip(".").split(".")
         hits = [None] * len(parts)
 
         if strict and parts[-1] not in self.root[1]:
@@ -2171,7 +2343,7 @@ class PublicSuffixList(object):
 
         for i, what in enumerate(hits):
             if what is not None and what == 0:
-                return '.'.join(parts[i:])
+                return ".".join(parts[i:])
 
 
 # Class for tracking the status of all running scans. Thread safe.
@@ -2193,7 +2365,7 @@ class SpiderFootScanStatus:
         with self.lock:
             return self.statusTable
 
+
 # Global variable accessed by various places to get the status of
 # running scans.
 globalScanStatus = SpiderFootScanStatus()
-

@@ -15,21 +15,21 @@ import threading
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_s3bucket(SpiderFootPlugin):
     """Amazon S3 Bucket Finder:Footprint,Passive:Crawling and Scanning::Search for potential Amazon S3 buckets associated with the target and attempt to list their contents."""
-
 
     # Default options
     opts = {
         "endpoints": "s3.amazonaws.com,s3-external-1.amazonaws.com,s3-us-west-1.amazonaws.com,s3-us-west-2.amazonaws.com,s3.ap-south-1.amazonaws.com,s3-ap-south-1.amazonaws.com,s3.ap-northeast-2.amazonaws.com,s3-ap-northeast-2.amazonaws.com,s3-ap-southeast-1.amazonaws.com,s3-ap-southeast-2.amazonaws.com,s3-ap-northeast-1.amazonaws.com,s3.eu-central-1.amazonaws.com,s3-eu-central-1.amazonaws.com,s3-eu-west-1.amazonaws.com,s3-sa-east-1.amazonaws.com",
         "suffixes": "test,dev,web,beta,bucket,space,files,content,data,prod,staging,production,stage,app,media,development,-test,-dev,-web,-beta,-bucket,-space,-files,-content,-data,-prod,-staging,-production,-stage,-app,-media,-development",
-        "_maxthreads": 20
+        "_maxthreads": 20,
     }
 
     # Option descriptions
     optdescs = {
         "endpoints": "Different S3 endpoints to check where buckets may exist, as per http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region",
-        "suffixes": "List of suffixes to append to domains tried as bucket names"
+        "suffixes": "List of suffixes to append to domains tried as bucket names",
     }
 
     results = None
@@ -58,13 +58,14 @@ class sfp_s3bucket(SpiderFootPlugin):
     def checkSite(self, url):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
-        if res['code'] not in [ "301", "302", "200" ] and \
-            (res['content'] is None or "NoSuchBucket" in res['content']):
+        if res["code"] not in ["301", "302", "200"] and (
+            res["content"] is None or "NoSuchBucket" in res["content"]
+        ):
             self.sf.debug("Not a valid bucket: " + url)
         else:
-            if "ListBucketResult" in res['content']:
+            if "ListBucketResult" in res["content"]:
                 with self.lock:
-                    self.s3results[url] = res['content'].count("<Key>")
+                    self.s3results[url] = res["content"].count("<Key>")
             else:
                 with self.lock:
                     self.s3results[url] = 0
@@ -81,8 +82,11 @@ class sfp_s3bucket(SpiderFootPlugin):
                 return None
 
             self.sf.info("Spawning thread to check bucket: " + site)
-            t.append(threading.Thread(name='thread_sfp_s3buckets_' + site,
-                                      target=self.checkSite, args=(site,)))
+            t.append(
+                threading.Thread(
+                    name="thread_sfp_s3buckets_" + site, target=self.checkSite, args=(site,)
+                )
+            )
             t[i].start()
             i += 1
 
@@ -107,7 +111,7 @@ class sfp_s3bucket(SpiderFootPlugin):
         siteList = list()
 
         for site in sites:
-            if i >= self.opts['_maxthreads']:
+            if i >= self.opts["_maxthreads"]:
                 data = self.threadSites(siteList)
                 if data == None:
                     return res
@@ -144,11 +148,14 @@ class sfp_s3bucket(SpiderFootPlugin):
                 self.notifyListeners(evt)
             return None
 
-        targets = [ eventData.replace('.', ''), self.sf.domainKeyword(eventData, self.opts['_internettlds']) ]
+        targets = [
+            eventData.replace(".", ""),
+            self.sf.domainKeyword(eventData, self.opts["_internettlds"]),
+        ]
         urls = list()
         for t in targets:
-            for e in self.opts['endpoints'].split(','):
-                suffixes = [''] + self.opts['suffixes'].split(',')
+            for e in self.opts["endpoints"].split(","):
+                suffixes = [""] + self.opts["suffixes"].split(",")
                 for s in suffixes:
                     if self.checkForStop():
                         return None
@@ -161,12 +168,18 @@ class sfp_s3bucket(SpiderFootPlugin):
         ret = self.batchSites(urls)
         for b in ret:
             bucket = b.split(":")
-            evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", bucket[0] + ":" + bucket[1], self.__name__, event)
+            evt = SpiderFootEvent(
+                "CLOUD_STORAGE_BUCKET", bucket[0] + ":" + bucket[1], self.__name__, event
+            )
             self.notifyListeners(evt)
             if bucket[2] != "0":
                 bucketname = bucket[1].replace("//", "")
-                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET_OPEN", bucketname + ": " + bucket[2] + " files found.",
-                                      self.__name__, evt)
+                evt = SpiderFootEvent(
+                    "CLOUD_STORAGE_BUCKET_OPEN",
+                    bucketname + ": " + bucket[2] + " files found.",
+                    self.__name__,
+                    evt,
+                )
                 self.notifyListeners(evt)
 
 

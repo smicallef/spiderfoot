@@ -18,7 +18,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_arin(SpiderFootPlugin):
     """ARIN:Footprint,Investigate,Passive:Public Registries::Queries ARIN registry for contact information."""
 
-
     # Default options
     opts = {}
 
@@ -38,7 +37,7 @@ class sfp_arin(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['DOMAIN_NAME', 'HUMAN_NAME']
+        return ["DOMAIN_NAME", "HUMAN_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -51,13 +50,18 @@ class sfp_arin(SpiderFootPlugin):
         if url in self.memCache:
             res = self.memCache[url]
         else:
-            head = { "Accept": "application/json" }
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                                   useragent=self.opts['_useragent'], headers=head)
-            if res['content'] is not None:
+            head = {"Accept": "application/json"}
+            res = self.sf.fetchUrl(
+                url,
+                timeout=self.opts["_fetchtimeout"],
+                useragent=self.opts["_useragent"],
+                headers=head,
+            )
+            if res["content"] is not None:
                 self.memCache[url] = res
-                evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__,
-                                      self.currentEventSrc)
+                evt = SpiderFootEvent(
+                    "RAW_RIR_DATA", res["content"], self.__name__, self.currentEventSrc
+                )
                 self.notifyListeners(evt)
         return res
 
@@ -85,12 +89,12 @@ class sfp_arin(SpiderFootPlugin):
             url = value
 
         res = self.fetchRir(url)
-        if res['content'] is None:
+        if res["content"] is None:
             self.sf.debug("No info found/available for " + value + " at ARIN.")
             return None
 
         try:
-            j = json.loads(res['content'])
+            j = json.loads(res["content"])
             return j
         except Exception as e:
             self.sf.debug("Error processing JSON response: " + str(e))
@@ -117,15 +121,15 @@ class sfp_arin(SpiderFootPlugin):
             if not ret:
                 return None
             if "pocs" in ret:
-                if "pocRef" in ret['pocs']:
+                if "pocRef" in ret["pocs"]:
                     ref = list()
                     # Might be a list or a dictionary
-                    if type(ret['pocs']['pocRef']) == dict:
-                        ref = [ret['pocs']['pocRef']]
+                    if type(ret["pocs"]["pocRef"]) == dict:
+                        ref = [ret["pocs"]["pocRef"]]
                     else:
-                        ref = ret['pocs']['pocRef']
+                        ref = ret["pocs"]["pocRef"]
                     for p in ref:
-                        name = p['@name']
+                        name = p["@name"]
                         if "," in name:
                             sname = name.split(", ", 1)
                             name = sname[1] + " " + sname[0]
@@ -134,29 +138,34 @@ class sfp_arin(SpiderFootPlugin):
                         # the names are separated in the content and sfp_names
                         # won't recognise it. So we submit this and see if it
                         # really is considered a name.
-                        evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name,
-                                              self.__name__, self.currentEventSrc)
+                        evt = SpiderFootEvent(
+                            "RAW_RIR_DATA",
+                            "Possible full name: " + name,
+                            self.__name__,
+                            self.currentEventSrc,
+                        )
                         self.notifyListeners(evt)
 
                         # We just want the raw data so we can get potential
                         # e-mail addresses.
-                        self.query("contact", p['$'])
+                        self.query("contact", p["$"])
 
         if eventName == "HUMAN_NAME":
             ret = self.query("name", eventData)
             if not ret:
                 return None
             if "pocs" in ret:
-                if "pocRef" in ret['pocs']:
+                if "pocRef" in ret["pocs"]:
                     ref = list()
                     # Might be a list or a dictionary
-                    if type(ret['pocs']['pocRef']) == dict:
-                        ref = [ret['pocs']['pocRef']]
+                    if type(ret["pocs"]["pocRef"]) == dict:
+                        ref = [ret["pocs"]["pocRef"]]
                     else:
-                        ref = ret['pocs']['pocRef']
+                        ref = ret["pocs"]["pocRef"]
                     for p in ref:
                         # We just want the raw data so we can get potential
                         # e-mail addresses.
-                        self.query("contact", p['$'])
+                        self.query("contact", p["$"])
+
 
 # End of sfp_arin class

@@ -18,9 +18,7 @@ class sfp_botscout(SpiderFootPlugin):
     """BotScout:Passive,Investigate:Reputation Systems:apikey:Searches botscout.com's database of spam-bot IPs and e-mail addresses."""
 
     # Default options
-    opts = {
-        "api_key": ""
-    }
+    opts = {"api_key": ""}
     optdescs = {
         "api_key": "Botscout.com API key. Without this you will be limited to 50 look-ups per day."
     }
@@ -36,7 +34,7 @@ class sfp_botscout(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS', 'EMAILADDR']
+        return ["IP_ADDRESS", "EMAILADDR"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -55,7 +53,7 @@ class sfp_botscout(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_botscout but did not set an API key!", False)
             self.errorState = True
             return None
@@ -67,20 +65,20 @@ class sfp_botscout(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if self.opts['api_key']:
-            url = "http://botscout.com/test/?key=" + self.opts['api_key'] + "&all="
+        if self.opts["api_key"]:
+            url = "http://botscout.com/test/?key=" + self.opts["api_key"] + "&all="
         else:
             url = "http://botscout.com/test/?all="
 
-        res = self.sf.fetchUrl(url + eventData,
-                               timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'])
-        if res['content'] is None or "|" not in res['content']:
+        res = self.sf.fetchUrl(
+            url + eventData, timeout=self.opts["_fetchtimeout"], useragent=self.opts["_useragent"]
+        )
+        if res["content"] is None or "|" not in res["content"]:
             self.sf.error("Error encountered processing " + eventData, False)
             return None
 
-        if res['content'].startswith("Y|"):
-            self.sf.info("Found Botscout entry for " + eventData + ": " + res['content'])
+        if res["content"].startswith("Y|"):
+            self.sf.info("Found Botscout entry for " + eventData + ": " + res["content"])
             if eventName == "IP_ADDRESS":
                 t = "MALICIOUS_IPADDR"
             else:
@@ -90,5 +88,6 @@ class sfp_botscout(SpiderFootPlugin):
             self.notifyListeners(evt)
 
             return None
+
 
 # End of sfp_botscout class

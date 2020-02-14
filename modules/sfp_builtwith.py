@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_builtwith
 # Purpose:      Query builtwith.com using their API.
 #
@@ -7,7 +7,7 @@
 # Created:     10/08/2017
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 import time
@@ -15,20 +15,17 @@ import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_builtwith(SpiderFootPlugin):
     """BuiltWith:Footprint,Investigate,Passive:Search Engines:apikey:Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more."""
 
-
     # Default options
-    opts = {
-        "api_key": "",
-        "maxage": 30
-    }
+    opts = {"api_key": "", "maxage": 30}
 
     # Option descriptions
     optdescs = {
         "api_key": "Builtwith.com Domain API key.",
-        "maxage": "The maximum age of the data returned, in days, in order to be considered valid."
+        "maxage": "The maximum age of the data returned, in days, in order to be considered valid.",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -50,29 +47,34 @@ class sfp_builtwith(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME" ]
+        return ["DOMAIN_NAME"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "INTERNET_NAME", "EMAILADDR", "RAW_RIR_DATA",
-                 "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME" ]
+        return [
+            "INTERNET_NAME",
+            "EMAILADDR",
+            "RAW_RIR_DATA",
+            "WEBSERVER_TECHNOLOGY",
+            "PHONE_NUMBER",
+            "DOMAIN_NAME",
+        ]
 
     def query(self, t):
         ret = None
 
-        url = "https://api.builtwith.com/v11/api.json?LOOKUP=" + t + "&KEY=" + self.opts['api_key']
+        url = "https://api.builtwith.com/v11/api.json?LOOKUP=" + t + "&KEY=" + self.opts["api_key"]
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-            useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=self.opts["_fetchtimeout"], useragent="SpiderFoot")
 
-        if res['code'] == "404":
+        if res["code"] == "404":
             return None
 
-        if not res['content']:
+        if not res["content"]:
             return None
 
         try:
-            ret = json.loads(res['content'])['Results'][0]
+            ret = json.loads(res["content"])["Results"][0]
         except Exception as e:
             self.sf.error("Error processing JSON response from builtwith.com: " + str(e), False)
             return None
@@ -90,7 +92,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_builtwith but did not set an API key!", False)
             self.errorState = True
             return None
@@ -109,37 +111,35 @@ class sfp_builtwith(SpiderFootPlugin):
         if "Meta" in data:
             # Verify any email addresses as we sometimes get junk from BuiltWith
             pat = re.compile("([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
-            if data['Meta'].get("Names", []):
-                for nb in data['Meta']['Names']:
-                    e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + nb['Name'],
-                                        self.__name__, event)
+            if data["Meta"].get("Names", []):
+                for nb in data["Meta"]["Names"]:
+                    e = SpiderFootEvent(
+                        "RAW_RIR_DATA", "Possible full name: " + nb["Name"], self.__name__, event
+                    )
                     self.notifyListeners(e)
-                    if nb.get('Email', None):
-                        if (re.match(pat, nb['Email'])):
-                            e = SpiderFootEvent("EMAILADDR", nb['Email'],
-                                                self.__name__, event)
+                    if nb.get("Email", None):
+                        if re.match(pat, nb["Email"]):
+                            e = SpiderFootEvent("EMAILADDR", nb["Email"], self.__name__, event)
                             self.notifyListeners(e)
 
-            if data['Meta'].get("Emails", []):
-                for email in data['Meta']['Emails']:
-                    if (re.match(pat, email)):
-                        e = SpiderFootEvent("EMAILADDR", email,
-                                            self.__name__, event)
+            if data["Meta"].get("Emails", []):
+                for email in data["Meta"]["Emails"]:
+                    if re.match(pat, email):
+                        e = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
                         self.notifyListeners(e)
 
-            if data['Meta'].get("Telephones", []):
-                for phone in data['Meta']['Telephones']:
-                    e = SpiderFootEvent("PHONE_NUMBER", phone,
-                                        self.__name__, event)
+            if data["Meta"].get("Telephones", []):
+                for phone in data["Meta"]["Telephones"]:
+                    e = SpiderFootEvent("PHONE_NUMBER", phone, self.__name__, event)
                     self.notifyListeners(e)
 
         if "Paths" in data.get("Result", []):
-            for p in data["Result"]['Paths']:
+            for p in data["Result"]["Paths"]:
                 if p.get("SubDomain", ""):
                     h = p["SubDomain"] + "." + eventData
                     ev = SpiderFootEvent("INTERNET_NAME", h, self.__name__, event)
                     self.notifyListeners(ev)
-                    if self.sf.isDomain(h, self.opts['_internettlds']):
+                    if self.sf.isDomain(h, self.opts["_internettlds"]):
                         ev = SpiderFootEvent("DOMAIN_NAME", h, self.__name__, event)
                         self.notifyListeners(ev)
                 else:
@@ -152,12 +152,12 @@ class sfp_builtwith(SpiderFootPlugin):
                         src = ev
                     else:
                         src = event
-                    agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
+                    agelimit = int(time.time() * 1000) - (86400000 * self.opts["maxage"])
                     if t.get("LastDetected", 0) < agelimit:
                         self.sf.debug("Data found too old, skipping.")
                         continue
-                    e = SpiderFootEvent("WEBSERVER_TECHNOLOGY", t["Name"],
-                                        self.__name__, src)
+                    e = SpiderFootEvent("WEBSERVER_TECHNOLOGY", t["Name"], self.__name__, src)
                     self.notifyListeners(e)
+
 
 # End of sfp_builtwith class

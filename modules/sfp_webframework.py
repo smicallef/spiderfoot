@@ -14,17 +14,20 @@ import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-regexps = dict({
-    "jQuery": list(['jquery']),  # unlikely false positive
-    "YUI": list(['\/yui\/', 'yui\-', 'yui\.']),
-    "Prototype": list(['\/prototype\/', 'prototype\-', 'prototype\.js']),
-    "ZURB Foundation": list(['\/foundation\/', 'foundation\-', 'foundation\.js']),
-    "Bootstrap": list(['\/bootstrap\/', 'bootstrap\-', 'bootstrap\.js']),
-    "ExtJS": list(['[\'\"\=]ext\.js', 'extjs', '\/ext\/*\.js']),
-    "Mootools": list(['\/mootools\/', 'mootools\-', 'mootools\.js']),
-    "Dojo": list(['\/dojo\/', '[\'\"\=]dojo\-', '[\'\"\=]dojo\.js']),
-    "Wordpress": list(['\/wp-includes\/', '\/wp-content\/'])
-})
+regexps = dict(
+    {
+        "jQuery": list(["jquery"]),  # unlikely false positive
+        "YUI": list(["\/yui\/", "yui\-", "yui\."]),
+        "Prototype": list(["\/prototype\/", "prototype\-", "prototype\.js"]),
+        "ZURB Foundation": list(["\/foundation\/", "foundation\-", "foundation\.js"]),
+        "Bootstrap": list(["\/bootstrap\/", "bootstrap\-", "bootstrap\.js"]),
+        "ExtJS": list(["['\"\=]ext\.js", "extjs", "\/ext\/*\.js"]),
+        "Mootools": list(["\/mootools\/", "mootools\-", "mootools\.js"]),
+        "Dojo": list(["\/dojo\/", "['\"\=]dojo\-", "['\"\=]dojo\.js"]),
+        "Wordpress": list(["\/wp-includes\/", "\/wp-content\/"]),
+    }
+)
+
 
 class sfp_webframework(SpiderFootPlugin):
     """Web Framework:Footprint,Passive:Content Analysis::Identify the usage of popular web frameworks like jQuery, YUI and others."""
@@ -92,10 +95,10 @@ class sfp_webframework(SpiderFootPlugin):
                 if len(matches) > 0 and regexpGrp not in self.results[eventSource]:
                     self.sf.info("Matched " + regexpGrp + " in content from " + eventSource)
                     self.results[eventSource] = self.results[eventSource] + [regexpGrp]
-                    evt = SpiderFootEvent("URL_WEB_FRAMEWORK", regexpGrp,
-                                          self.__name__, event)
+                    evt = SpiderFootEvent("URL_WEB_FRAMEWORK", regexpGrp, self.__name__, event)
                     self.notifyListeners(evt)
 
         return None
+
 
 # End of sfp_webframework class

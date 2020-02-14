@@ -17,21 +17,18 @@ import json
 import os.path
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_tool_whatweb(SpiderFootPlugin):
     """Tool - WhatWeb:Footprint,Investigate:Content Analysis:tool:Identify what software is in use on the specified website."""
 
     # Default options
-    opts = {
-        'aggression': 1,
-        'ruby_path': 'ruby',
-        'whatweb_path': ''
-    }
+    opts = {"aggression": 1, "ruby_path": "ruby", "whatweb_path": ""}
 
     # Option descriptions
     optdescs = {
-        'aggression': 'Set WhatWeb aggression level (1-4)',
-        'ruby_path': "Path to Ruby interpreter to use for WhatWeb. If just 'ruby' then it must be in your $PATH.",
-        'whatweb_path': "Path to the whatweb executable file. Must be set."
+        "aggression": "Set WhatWeb aggression level (1-4)",
+        "ruby_path": "Path to Ruby interpreter to use for WhatWeb. If just 'ruby' then it must be in your $PATH.",
+        "whatweb_path": "Path to the whatweb executable file. Must be set.",
     }
 
     results = None
@@ -47,10 +44,10 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ['INTERNET_NAME']
+        return ["INTERNET_NAME"]
 
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'WEBSERVER_BANNER', 'WEBSERVER_TECHNOLOGY']
+        return ["RAW_RIR_DATA", "WEBSERVER_BANNER", "WEBSERVER_TECHNOLOGY"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -68,14 +65,16 @@ class sfp_tool_whatweb(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if not self.opts['whatweb_path']:
-            self.sf.error("You enabled sfp_tool_whatweb but did not set a path to the tool!", False)
+        if not self.opts["whatweb_path"]:
+            self.sf.error(
+                "You enabled sfp_tool_whatweb but did not set a path to the tool!", False
+            )
             self.errorState = True
             return None
 
-        exe = self.opts['whatweb_path']
-        if self.opts['whatweb_path'].endswith('/'):
-            exe = exe + 'whatweb'
+        exe = self.opts["whatweb_path"]
+        if self.opts["whatweb_path"].endswith("/"):
+            exe = exe + "whatweb"
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
@@ -90,7 +89,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
 
         # Set aggression level
         try:
-            aggression = int(self.opts['aggression'])
+            aggression = int(self.opts["aggression"])
             if aggression > 4:
                 aggression = 4
             if aggression < 1:
@@ -100,14 +99,14 @@ class sfp_tool_whatweb(SpiderFootPlugin):
 
         # Run WhatWeb
         args = [
-            self.opts['ruby_path'],
+            self.opts["ruby_path"],
             exe,
             "--quiet",
             "--aggression=" + str(aggression),
             "--log-json=/dev/stdout",
             "--user-agent=Mozilla/5.0",
             "--follow-redirect=never",
-            eventData
+            eventData,
         ]
         try:
             p = Popen(args, stdout=PIPE, stderr=PIPE)
@@ -131,37 +130,54 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             self.sf.error("Couldn't parse the JSON output of WhatWeb: " + str(e), False)
             return None
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(result_json), self.__name__, event)
+        evt = SpiderFootEvent("RAW_RIR_DATA", str(result_json), self.__name__, event)
         self.notifyListeners(evt)
 
         blacklist = [
-            'Country', 'IP',
-            'Script', 'Title',
-            'HTTPServer', 'RedirectLocation', 'UncommonHeaders', 'Via-Proxy', 'Cookies', 'HttpOnly',
-            'Strict-Transport-Security', 'x-hacker', 'x-machine', 'x-pingback', 'X-Backend', 'X-Cache',
-            'X-UA-Compatible', 'X-Powered-By', 'X-Forwarded-For', 'X-Frame-Options', 'X-XSS-Protection'
+            "Country",
+            "IP",
+            "Script",
+            "Title",
+            "HTTPServer",
+            "RedirectLocation",
+            "UncommonHeaders",
+            "Via-Proxy",
+            "Cookies",
+            "HttpOnly",
+            "Strict-Transport-Security",
+            "x-hacker",
+            "x-machine",
+            "x-pingback",
+            "X-Backend",
+            "X-Cache",
+            "X-UA-Compatible",
+            "X-Powered-By",
+            "X-Forwarded-For",
+            "X-Frame-Options",
+            "X-XSS-Protection",
         ]
 
         for result in result_json:
-            plugin_matches = result.get('plugins')
+            plugin_matches = result.get("plugins")
 
             if not plugin_matches:
                 continue
 
-            if plugin_matches.get('HTTPServer'):
-                for w in plugin_matches.get('HTTPServer').get('string'):
-                    evt = SpiderFootEvent('WEBSERVER_BANNER', w, self.__name__, event)
+            if plugin_matches.get("HTTPServer"):
+                for w in plugin_matches.get("HTTPServer").get("string"):
+                    evt = SpiderFootEvent("WEBSERVER_BANNER", w, self.__name__, event)
                     self.notifyListeners(evt)
 
-            if plugin_matches.get('X-Powered-By'):
-                for w in plugin_matches.get('X-Powered-By').get('string'):
-                    evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', w, self.__name__, event)
+            if plugin_matches.get("X-Powered-By"):
+                for w in plugin_matches.get("X-Powered-By").get("string"):
+                    evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", w, self.__name__, event)
                     self.notifyListeners(evt)
 
             for plugin in plugin_matches:
                 if plugin in blacklist:
                     continue
-                evt = SpiderFootEvent('SOFTWARE_USED', plugin, self.__name__, event)
+                evt = SpiderFootEvent("SOFTWARE_USED", plugin, self.__name__, event)
                 self.notifyListeners(evt)
+
 
 # End of sfp_tool_whatweb class

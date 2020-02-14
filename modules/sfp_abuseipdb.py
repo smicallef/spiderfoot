@@ -16,39 +16,40 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-    'AbuseIPDB Single IP': {
-        'id': 'abuseipdbip',
-        'type': 'query',
-        'checks': ['ip'],
-        'url': 'https://www.abuseipdb.com/check/{0}/json?key={1}&days={2}'
+    "AbuseIPDB Single IP": {
+        "id": "abuseipdbip",
+        "type": "query",
+        "checks": ["ip"],
+        "url": "https://www.abuseipdb.com/check/{0}/json?key={1}&days={2}",
     },
-    'AbuseIPDB Netblock': {
-        'id': 'abuseipdbnetblock',
-        'type': 'query',
-        'checks': ['netblock'],
-        'url': 'https://www.abuseipdb.com/check-block/json?network={0}&key={1}&days={2}'
-    }
+    "AbuseIPDB Netblock": {
+        "id": "abuseipdbnetblock",
+        "type": "query",
+        "checks": ["netblock"],
+        "url": "https://www.abuseipdb.com/check-block/json?network={0}&key={1}&days={2}",
+    },
 }
+
 
 class sfp_abuseipdb(SpiderFootPlugin):
     """AbuseIPDB:Investigate,Passive:Reputation Systems:apikey:Check if a netblock or IP is malicious according to AbuseIPDB.com."""
 
     # Default options
     opts = {
-        'api_key': '',
-        'daysback': 30,
-        'checkaffiliates': True,
-        'checknetblocks': True,
-        'checksubnets': True
+        "api_key": "",
+        "daysback": 30,
+        "checkaffiliates": True,
+        "checknetblocks": True,
+        "checksubnets": True,
     }
 
     # Option descriptions
     optdescs = {
-        'api_key': "AbuseIPDB.com API key.",
-        'daysback': "How far back to query, in days?",
-        'checkaffiliates': "Apply checks to affiliates?",
-        'checknetblocks': "Report if any malicious IPs are found within owned netblocks?",
-        'checksubnets': "Check if any malicious IPs are found within the same subnet of the target?"
+        "api_key": "AbuseIPDB.com API key.",
+        "daysback": "How far back to query, in days?",
+        "checkaffiliates": "Apply checks to affiliates?",
+        "checknetblocks": "Report if any malicious IPs are found within owned netblocks?",
+        "checksubnets": "Check if any malicious IPs are found within the same subnet of the target?",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -75,8 +76,12 @@ class sfp_abuseipdb(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR",
-                "MALICIOUS_SUBNET", "MALICIOUS_NETBLOCK"]
+        return [
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_SUBNET",
+            "MALICIOUS_NETBLOCK",
+        ]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
@@ -100,24 +105,28 @@ class sfp_abuseipdb(SpiderFootPlugin):
 
     # Look up 'query' type sources
     def resourceQuery(self, id, target, targetType):
-        apikey = self.opts['api_key']
-        daysback = self.opts['daysback']
+        apikey = self.opts["api_key"]
+        daysback = self.opts["daysback"]
         self.sf.debug("Querying " + id + " for maliciousness of " + target)
         for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if id == cid and malchecks[check]['type'] == "query":
-                url = str(malchecks[check]['url'])
-                res = self.sf.fetchUrl(url.format(target, apikey, daysback),
-                                       timeout=self.opts['_fetchtimeout'],
-                                       useragent=self.opts['_useragent'])
-                if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target, "masked", daysback), False)
+            cid = malchecks[check]["id"]
+            if id == cid and malchecks[check]["type"] == "query":
+                url = str(malchecks[check]["url"])
+                res = self.sf.fetchUrl(
+                    url.format(target, apikey, daysback),
+                    timeout=self.opts["_fetchtimeout"],
+                    useragent=self.opts["_useragent"],
+                )
+                if res["content"] is None:
+                    self.sf.error(
+                        "Unable to fetch " + url.format(target, "masked", daysback), False
+                    )
                     return None
 
                 try:
-                    if "rate limit" in res['content']:
+                    if "rate limit" in res["content"]:
                         return None
-                    j = json.loads(res['content'])
+                    j = json.loads(res["content"])
                     if len(j) == 0:
                         return None
                 except BaseException as e:
@@ -130,11 +139,12 @@ class sfp_abuseipdb(SpiderFootPlugin):
 
     def lookupItem(self, resourceId, itemType, target):
         for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" +
-                              itemType + ") with: " + cid)
-                if malchecks[check]['type'] == "query":
+            cid = malchecks[check]["id"]
+            if cid == resourceId and itemType in malchecks[check]["checks"]:
+                self.sf.debug(
+                    "Checking maliciousness of " + target + " (" + itemType + ") with: " + cid
+                )
+                if malchecks[check]["type"] == "query":
                     return self.resourceQuery(cid, target, itemType)
         return None
 
@@ -152,29 +162,28 @@ class sfp_abuseipdb(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName == 'AFFILIATE_IPADDR' \
-                and not self.opts.get('checkaffiliates', False):
+        if eventName == "AFFILIATE_IPADDR" and not self.opts.get("checkaffiliates", False):
             return None
-        if eventName == 'NETBLOCK_OWNER' and not self.opts.get('checknetblocks', False):
+        if eventName == "NETBLOCK_OWNER" and not self.opts.get("checknetblocks", False):
             return None
-        if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
+        if eventName == "NETBLOCK_MEMBER" and not self.opts.get("checksubnets", False):
             return None
 
         for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if eventName in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
-                typeId = 'ip'
-                if eventName == 'IP_ADDRESS':
-                    evtType = 'MALICIOUS_IPADDR'
+            cid = malchecks[check]["id"]
+            if eventName in ["IP_ADDRESS", "AFFILIATE_IPADDR"]:
+                typeId = "ip"
+                if eventName == "IP_ADDRESS":
+                    evtType = "MALICIOUS_IPADDR"
                 else:
-                    evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+                    evtType = "MALICIOUS_AFFILIATE_IPADDR"
 
-            if eventName == 'NETBLOCK_OWNER':
-                typeId = 'netblock'
-                evtType = 'MALICIOUS_NETBLOCK'
-            if eventName == 'NETBLOCK_MEMBER':
-                typeId = 'netblock'
-                evtType = 'MALICIOUS_SUBNET'
+            if eventName == "NETBLOCK_OWNER":
+                typeId = "netblock"
+                evtType = "MALICIOUS_NETBLOCK"
+            if eventName == "NETBLOCK_MEMBER":
+                typeId = "netblock"
+                evtType = "MALICIOUS_SUBNET"
 
             url = self.lookupItem(cid, typeId, eventData)
             if self.checkForStop():
@@ -187,5 +196,6 @@ class sfp_abuseipdb(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
         return None
+
 
 # End of sfp_abuseipdb class

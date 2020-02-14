@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_hunter
 # Purpose:      Query hunter.io using their API.
 #
@@ -7,24 +7,20 @@
 # Created:     22/02/2017
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_hunter(SpiderFootPlugin):
     """Hunter.io:Footprint,Investigate,Passive:Search Engines:apikey:Check for e-mail addresses and names on hunter.io."""
 
-
     # Default options
-    opts = {
-        "api_key": ""
-    }
+    opts = {"api_key": ""}
 
     # Option descriptions
-    optdescs = {
-        "api_key": "Hunter.io API key."
-    }
+    optdescs = {"api_key": "Hunter.io API key."}
 
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
@@ -45,29 +41,36 @@ class sfp_hunter(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME", "INTERNET_NAME" ]
+        return ["DOMAIN_NAME", "INTERNET_NAME"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "EMAILADDR", "RAW_RIR_DATA" ]
+        return ["EMAILADDR", "RAW_RIR_DATA"]
 
     def query(self, t, offset=0, limit=10):
         ret = None
 
-        url = "https://api.hunter.io/v2/domain-search?domain=" + t + "&api_key=" + self.opts['api_key'] + \
-              "&offset=" + str(offset) + "&limit=" + str(limit)
+        url = (
+            "https://api.hunter.io/v2/domain-search?domain="
+            + t
+            + "&api_key="
+            + self.opts["api_key"]
+            + "&offset="
+            + str(offset)
+            + "&limit="
+            + str(limit)
+        )
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-            useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=self.opts["_fetchtimeout"], useragent="SpiderFoot")
 
-        if res['code'] == "404":
+        if res["code"] == "404":
             return None
 
-        if not res['content']:
+        if not res["content"]:
             return None
 
         try:
-            ret = json.loads(res['content'])
+            ret = json.loads(res["content"])
         except Exception as e:
             self.sf.error("Error processing JSON response from hunter.io: " + str(e), False)
             return None
@@ -92,7 +95,7 @@ class sfp_hunter(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_hunter but did not set an API key!", False)
             self.errorState = True
             return None
@@ -106,23 +109,24 @@ class sfp_hunter(SpiderFootPlugin):
 
         # Check if we have more results on further pages
         if "meta" in data:
-            maxgoal = data['meta'].get('results', 100)
+            maxgoal = data["meta"].get("results", 100)
         else:
             maxgoal = 100
 
-        rescount = len(data['data'].get('emails', list()))
+        rescount = len(data["data"].get("emails", list()))
 
         while rescount <= maxgoal:
-            for email in data['data'].get('emails', list()):
+            for email in data["data"].get("emails", list()):
                 # Notify other modules of what you've found
-                e = SpiderFootEvent("EMAILADDR", email['value'], self.__name__, event)
+                e = SpiderFootEvent("EMAILADDR", email["value"], self.__name__, event)
                 self.notifyListeners(e)
 
-                if 'first_name' in email and 'last_name' in email:
-                    if email['first_name'] != None and email['last_name'] != None:
-                        n = email['first_name'] + " " + email['last_name']
-                        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n,
-                                            self.__name__, event)
+                if "first_name" in email and "last_name" in email:
+                    if email["first_name"] != None and email["last_name"] != None:
+                        n = email["first_name"] + " " + email["last_name"]
+                        e = SpiderFootEvent(
+                            "RAW_RIR_DATA", "Possible full name: " + n, self.__name__, event
+                        )
                         self.notifyListeners(e)
 
             if rescount >= maxgoal:
@@ -134,6 +138,7 @@ class sfp_hunter(SpiderFootPlugin):
             if "data" not in data:
                 return None
 
-            rescount += len(data['data'].get('emails', list()))
+            rescount += len(data["data"].get("emails", list()))
+
 
 # End of sfp_hunter class

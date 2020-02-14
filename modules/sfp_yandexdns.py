@@ -19,12 +19,10 @@ class sfp_yandexdns(SpiderFootPlugin):
     """Yandex DNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Yandex DNS"""
 
     # Default options
-    opts = {
-    }
+    opts = {}
 
     # Option descriptions
-    optdescs = {
-    }
+    optdescs = {}
 
     results = None
 
@@ -43,14 +41,13 @@ class sfp_yandexdns(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME", "MALICIOUS_COHOST"]
 
     # Query Yandex DNS "safe" servers
     # https://dns.yandex.com/advanced/
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
-        res.nameservers = [ "77.88.8.88", "77.88.8.2" ]
+        res.nameservers = ["77.88.8.88", "77.88.8.2"]
 
         try:
             addrs = res.query(qaddr)
@@ -100,8 +97,10 @@ class sfp_yandexdns(SpiderFootPlugin):
         else:
             typ = "MALICIOUS_" + eventName
 
-        evt = SpiderFootEvent(typ, "Blocked by Yandex [" + eventData + "]",
-                              self.__name__, parentEvent)
+        evt = SpiderFootEvent(
+            typ, "Blocked by Yandex [" + eventData + "]", self.__name__, parentEvent
+        )
         self.notifyListeners(evt)
+
 
 # End of sfp_yandexdns class

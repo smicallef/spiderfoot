@@ -17,19 +17,17 @@ import json
 import os.path
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_tool_cmseek(SpiderFootPlugin):
     """Tool - CMSeeK:Footprint,Investigate:Content Analysis:tool:Identify what Content Management System (CMS) might be used."""
 
     # Default options
-    opts = {
-        'pythonpath': "python3",
-        'cmseekpath': ""
-    }
+    opts = {"pythonpath": "python3", "cmseekpath": ""}
 
     # Option descriptions
     optdescs = {
-        'pythonpath': "Path to Python 3 interpreter to use for CMSeeK. If just 'python3' then it must be in your PATH.",
-        'cmseekpath': "Path to the where the cmseek.py file lives. Must be set."
+        "pythonpath": "Path to Python 3 interpreter to use for CMSeeK. If just 'python3' then it must be in your PATH.",
+        "cmseekpath": "Path to the where the cmseek.py file lives. Must be set.",
     }
 
     results = None
@@ -46,7 +44,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['INTERNET_NAME']
+        return ["INTERNET_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -72,21 +70,21 @@ class sfp_tool_cmseek(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if not self.opts['cmseekpath']:
+        if not self.opts["cmseekpath"]:
             self.sf.error("You enabled sfp_tool_cmseek but did not set a path to the tool!", False)
             self.errorState = True
             return None
 
         # Normalize path
-        if self.opts['cmseekpath'].endswith('cmseek.py'):
-            exe = self.opts['cmseekpath']
-            resultpath = self.opts['cmseekpath'].split("cmseek.py")[0] + "/Result"
-        elif self.opts['cmseekpath'].endswith('/'):
-            exe = self.opts['cmseekpath'] + "cmseek.py"
-            resultpath = self.opts['cmseekpath'] + "Result"
+        if self.opts["cmseekpath"].endswith("cmseek.py"):
+            exe = self.opts["cmseekpath"]
+            resultpath = self.opts["cmseekpath"].split("cmseek.py")[0] + "/Result"
+        elif self.opts["cmseekpath"].endswith("/"):
+            exe = self.opts["cmseekpath"] + "cmseek.py"
+            resultpath = self.opts["cmseekpath"] + "Result"
         else:
-            exe = self.opts['cmseekpath'] + "/cmseek.py"
-            resultpath = self.opts['cmseekpath'] + "/Result"
+            exe = self.opts["cmseekpath"] + "/cmseek.py"
+            resultpath = self.opts["cmseekpath"] + "/Result"
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
@@ -100,7 +98,11 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             return None
 
         try:
-            p = Popen([self.opts['pythonpath'], exe, "--follow-redirect", "-u", eventData], stdout=PIPE, stderr=PIPE)
+            p = Popen(
+                [self.opts["pythonpath"], exe, "--follow-redirect", "-u", eventData],
+                stdout=PIPE,
+                stderr=PIPE,
+            )
             stdout, stderr = p.communicate(input=None)
             if p.returncode == 0:
                 content = stdout
@@ -114,10 +116,9 @@ class sfp_tool_cmseek(SpiderFootPlugin):
                 return None
 
             try:
-                f = io.open(resultpath + "/" + eventData + "/cms.json", encoding='utf-8')
+                f = io.open(resultpath + "/" + eventData + "/cms.json", encoding="utf-8")
                 j = json.loads(f.read())
-                evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", j['cms_name'],
-                                       self.__name__, event)
+                evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", j["cms_name"], self.__name__, event)
                 self.notifyListeners(evt)
             except BaseException as e:
                 self.sf.error("Couldn't parse the JSON output of CMSeeK: " + str(e), False)
@@ -125,5 +126,6 @@ class sfp_tool_cmseek(SpiderFootPlugin):
         except BaseException as e:
             self.sf.error("Unable to run CMSeeK: " + str(e), False)
             return None
+
 
 # End of sfp_tool_cmseek class

@@ -14,6 +14,7 @@
 import dns.resolver
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_dnscommonsrv(SpiderFootPlugin):
     """DNS Common SRV:Footprint,Investigate,Passive:DNS::Attempts to identify hostnames through common SRV."""
 
@@ -25,44 +26,41 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
     events = None
 
-    commonsrv = [ # LDAP/Kerberos, used for Active Directory
-                  # https://technet.microsoft.com/en-us/library/cc961719.aspx
-                 '_ldap._tcp',
-                 '_gc._msdcs',
-                 '_ldap._tcp.pdc._msdcs',
-                 '_ldap._tcp.gc._msdcs',
-                 '_kerberos._tcp.dc._msdcs',
-                 '_kerberos._tcp',
-                 '_kerberos._udp',
-                 '_kerberos-master._tcp',
-                 '_kerberos-master._udp',
-                 '_kpasswd._tcp',
-                 '_kpasswd._udp',
-                 '_ntp._udp',
-
-                 # SIP
-                 '_sip._tcp',
-                 '_sip._udp',
-                 '_sip._tls',
-                 '_sips._tcp',
-
-                 # STUN
-                 # https://tools.ietf.org/html/rfc5389
-                 '_stun._tcp',
-                 '_stun._udp',
-                 '_stuns._tcp',
-
-                 # TURN
-                 # https://tools.ietf.org/html/rfc5928
-                 '_turn._tcp',
-                 '_turn._udp',
-                 '_turns._tcp',
-
-                 # XMPP
-                 # http://xmpp.org/rfcs/rfc6120.html
-                 '_jabber._tcp',
-                 '_xmpp-client._tcp',
-                 '_xmpp-server._tcp']
+    commonsrv = [  # LDAP/Kerberos, used for Active Directory
+        # https://technet.microsoft.com/en-us/library/cc961719.aspx
+        "_ldap._tcp",
+        "_gc._msdcs",
+        "_ldap._tcp.pdc._msdcs",
+        "_ldap._tcp.gc._msdcs",
+        "_kerberos._tcp.dc._msdcs",
+        "_kerberos._tcp",
+        "_kerberos._udp",
+        "_kerberos-master._tcp",
+        "_kerberos-master._udp",
+        "_kpasswd._tcp",
+        "_kpasswd._udp",
+        "_ntp._udp",
+        # SIP
+        "_sip._tcp",
+        "_sip._udp",
+        "_sip._tls",
+        "_sips._tcp",
+        # STUN
+        # https://tools.ietf.org/html/rfc5389
+        "_stun._tcp",
+        "_stun._udp",
+        "_stuns._tcp",
+        # TURN
+        # https://tools.ietf.org/html/rfc5928
+        "_turn._tcp",
+        "_turn._udp",
+        "_turns._tcp",
+        # XMPP
+        # http://xmpp.org/rfcs/rfc6120.html
+        "_jabber._tcp",
+        "_xmpp-client._tcp",
+        "_xmpp-server._tcp",
+    ]
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -74,7 +72,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['INTERNET_NAME', 'DOMAIN_NAME']
+        return ["INTERNET_NAME", "DOMAIN_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -88,8 +86,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName +
-                      ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if srcModuleName == "sfp_dnscommonsrv":
             self.sf.debug("Ignoring " + eventName + ", from self.")
@@ -104,8 +101,8 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         self.events[eventDataHash] = True
 
         res = dns.resolver.Resolver()
-        if self.opts.get('_dnsserver', "") != "":
-            res.nameservers = [self.opts['_dnsserver']]
+        if self.opts.get("_dnsserver", "") != "":
+            res.nameservers = [self.opts["_dnsserver"]]
 
         self.sf.debug("Iterating through possible SRV records.")
         # Try resolving common names
@@ -120,7 +117,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
                 continue
 
             try:
-                answers = res.query(name, 'SRV')
+                answers = res.query(name, "SRV")
             except BaseException as e:
                 answers = []
 
@@ -129,15 +126,16 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
                 tgt_clean = a.target.to_text().rstrip(".")
                 # Report the host
                 if self.getTarget().matches(tgt_clean):
-                    evt = SpiderFootEvent("INTERNET_NAME", tgt_clean,
-                                          self.__name__, parentEvent)
+                    evt = SpiderFootEvent("INTERNET_NAME", tgt_clean, self.__name__, parentEvent)
                     self.notifyListeners(evt)
                 else:
-                    evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", tgt_clean,
-                                          self.__name__, parentEvent)
+                    evt = SpiderFootEvent(
+                        "AFFILIATE_INTERNET_NAME", tgt_clean, self.__name__, parentEvent
+                    )
                     self.notifyListeners(evt)
 
-                evt = SpiderFootEvent("DNS_SRV", name,
-                                      self.__name__, parentEvent)
+                evt = SpiderFootEvent("DNS_SRV", name, self.__name__, parentEvent)
                 self.notifyListeners(evt)
+
+
 # End of sfp_dnscommonsrv class

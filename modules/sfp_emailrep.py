@@ -14,14 +14,13 @@ import json
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_emailrep(SpiderFootPlugin):
     """EmailRep:Footprint,Investigate,Passive:Search Engines::Search EmailRep.io for email address reputation."""
 
-    opts = {
-    }
+    opts = {}
 
-    optdescs = {
-    }
+    optdescs = {}
 
     results = None
     errorState = False
@@ -35,40 +34,42 @@ class sfp_emailrep(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ['EMAILADDR']
+        return ["EMAILADDR"]
 
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'EMAILADDR_COMPROMISED', 'MALICIOUS_EMAILADDR']
+        return ["RAW_RIR_DATA", "EMAILADDR_COMPROMISED", "MALICIOUS_EMAILADDR"]
 
     # https://emailrep.io/docs/
     def query(self, qry):
-        res = self.sf.fetchUrl('https://emailrep.io/' + qry,
-                               useragent='curl', # cURL user-agent appears to be required
-                               timeout=self.opts['_fetchtimeout'])
+        res = self.sf.fetchUrl(
+            "https://emailrep.io/" + qry,
+            useragent="curl",  # cURL user-agent appears to be required
+            timeout=self.opts["_fetchtimeout"],
+        )
 
         # Documentation does not indicate rate limit
         time.sleep(1)
 
-        if res['content'] is None:
+        if res["content"] is None:
             return None
 
-        if res['code'] == '400':
-            self.sf.error('API error: Bad request', False)
+        if res["code"] == "400":
+            self.sf.error("API error: Bad request", False)
             self.errorState = True
             return None
 
-        if res['code'] == '429':
-            self.sf.error('API error: Too Many Requests', False)
+        if res["code"] == "429":
+            self.sf.error("API error: Too Many Requests", False)
             self.errorState = True
             return None
 
-        if res['code'] != '200':
-            self.sf.error('Unexpected reply from EmailRep.io: ' + res['code'], False)
+        if res["code"] != "200":
+            self.sf.error("Unexpected reply from EmailRep.io: " + res["code"], False)
             self.errorState = True
             return None
 
         try:
-            data = json.loads(res['content'])
+            data = json.loads(res["content"])
         except BaseException as e:
             self.sf.debug("Error processing JSON response: " + str(e))
             return None
@@ -92,22 +93,27 @@ class sfp_emailrep(SpiderFootPlugin):
         if res is None:
             return None
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
+        evt = SpiderFootEvent("RAW_RIR_DATA", str(res), self.__name__, event)
         self.notifyListeners(evt)
 
-        details = res.get('details')
+        details = res.get("details")
 
         if not details:
             return None
 
-        credentials_leaked = details.get('credentials_leaked')
+        credentials_leaked = details.get("credentials_leaked")
         if credentials_leaked:
-            evt = SpiderFootEvent('EMAILADDR_COMPROMISED', eventData + " [Unknown]", self.__name__, event)
+            evt = SpiderFootEvent(
+                "EMAILADDR_COMPROMISED", eventData + " [Unknown]", self.__name__, event
+            )
             self.notifyListeners(evt)
 
-        malicious_activity = details.get('malicious_activity')
+        malicious_activity = details.get("malicious_activity")
         if malicious_activity:
-            evt = SpiderFootEvent('MALICIOUS_EMAILADDR', 'EmailRep [' + eventData + ']', self.__name__, event)
+            evt = SpiderFootEvent(
+                "MALICIOUS_EMAILADDR", "EmailRep [" + eventData + "]", self.__name__, event
+            )
             self.notifyListeners(evt)
+
 
 # End of sfp_emailrep class

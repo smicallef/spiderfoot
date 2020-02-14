@@ -2,6 +2,7 @@
 import sflib
 import unittest
 
+
 class TestPublicSuffixList(unittest.TestCase):
     """
     Test PublicSuffixList
@@ -11,8 +12,8 @@ class TestPublicSuffixList(unittest.TestCase):
         """
         Test __init__(self, input_data)
         """
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
-

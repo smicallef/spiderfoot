@@ -19,12 +19,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_pastebin(SpiderFootPlugin):
     """PasteBin:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:PasteBin scraping (via Google) to identify related content."""
 
-
     # Default options
-    opts = {
-        "api_key": "",
-        "cse_id": "013611106330597893267:tfgl3wxdtbp"
-    }
+    opts = {"api_key": "", "cse_id": "013611106330597893267:tfgl3wxdtbp"}
 
     # Option descriptions
     optdescs = {
@@ -32,9 +28,7 @@ class sfp_pastebin(SpiderFootPlugin):
         "cse_id": "Google Custom Search Engine ID.",
     }
 
-    domains = {
-        'pastebin': "pastebin.com"
-    }
+    domains = {"pastebin": "pastebin.com"}
 
     results = None
     errorState = False
@@ -65,7 +59,7 @@ class sfp_pastebin(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_pastebin but did not set a Google API key!", False)
             self.errorState = True
             return None
@@ -79,9 +73,8 @@ class sfp_pastebin(SpiderFootPlugin):
             links = list()
             target = self.domains[dom]
             res = self.sf.googleIterate(
-                searchString="+site:{target_site} \"{search_keyword}\"".format(
-                    target_site=target,
-                    search_keyword=eventData,
+                searchString='+site:{target_site} "{search_keyword}"'.format(
+                    target_site=target, search_keyword=eventData,
                 ),
                 opts={
                     "timeout": self.opts["_fetchtimeout"],
@@ -112,20 +105,27 @@ class sfp_pastebin(SpiderFootPlugin):
                 if self.checkForStop():
                     return None
 
-                res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
-                                        useragent=self.opts['_useragent'])
+                res = self.sf.fetchUrl(
+                    link, timeout=self.opts["_fetchtimeout"], useragent=self.opts["_useragent"]
+                )
 
-                if res['content'] is None:
+                if res["content"] is None:
                     self.sf.debug("Ignoring " + link + " as no data returned")
                     continue
 
                 # Sometimes pastes search results false positives
-                if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                                "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                if (
+                    re.search(
+                        "[^a-zA-Z\-\_0-9]" + re.escape(eventData) + "[^a-zA-Z\-\_0-9]",
+                        res["content"],
+                        re.IGNORECASE,
+                    )
+                    is None
+                ):
                     continue
 
                 try:
-                    startIndex = res['content'].index(eventData)
+                    startIndex = res["content"].index(eventData)
                 except BaseException as e:
                     self.sf.debug("String not found in pastes content.")
                     continue
@@ -133,7 +133,7 @@ class sfp_pastebin(SpiderFootPlugin):
                 evt1 = SpiderFootEvent("LEAKSITE_URL", link, self.__name__, event)
                 self.notifyListeners(evt1)
 
-                evt2 = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, evt1)
+                evt2 = SpiderFootEvent("LEAKSITE_CONTENT", res["content"], self.__name__, evt1)
                 self.notifyListeners(evt2)
 
 

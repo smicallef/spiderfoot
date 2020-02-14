@@ -15,14 +15,52 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 # Standard headers, taken from http://en.wikipedia.org/wiki/List_of_HTTP_header_fields
-headers = ["access-control-allow-origin", "accept-ranges", "age", "allow", "cache-control",
-           "connection", "content-encoding", "content-language", "content-length", "content-location",
-           "content-md5", "content-disposition", "content-range", "content-type", "date", "etag",
-           "expires", "last-modified", "link", "location", "p3p", "pragma", "proxy-authenticate",
-           "refresh", "retry-after", "server", "set-cookie", "status", "strict-transport-security",
-           "trailer", "transfer-encoding", "vary", "via", "warning", "www-authenticate",
-           "x-frame-options", "x-xss-protection", "content-security-policy", "x-content-security-policy",
-           "x-webkit-csp", "x-content-type-options", "x-powered-by", "x-ua-compatible"]
+headers = [
+    "access-control-allow-origin",
+    "accept-ranges",
+    "age",
+    "allow",
+    "cache-control",
+    "connection",
+    "content-encoding",
+    "content-language",
+    "content-length",
+    "content-location",
+    "content-md5",
+    "content-disposition",
+    "content-range",
+    "content-type",
+    "date",
+    "etag",
+    "expires",
+    "last-modified",
+    "link",
+    "location",
+    "p3p",
+    "pragma",
+    "proxy-authenticate",
+    "refresh",
+    "retry-after",
+    "server",
+    "set-cookie",
+    "status",
+    "strict-transport-security",
+    "trailer",
+    "transfer-encoding",
+    "vary",
+    "via",
+    "warning",
+    "www-authenticate",
+    "x-frame-options",
+    "x-xss-protection",
+    "content-security-policy",
+    "x-content-security-policy",
+    "x-webkit-csp",
+    "x-content-type-options",
+    "x-powered-by",
+    "x-ua-compatible",
+]
+
 
 class sfp_strangeheaders(SpiderFootPlugin):
     """Strange Headers:Footprint,Passive:Content Analysis::Obtain non-standard HTTP headers returned by web servers."""
@@ -72,14 +110,16 @@ class sfp_strangeheaders(SpiderFootPlugin):
             if jdata == None:
                 return None
         except BaseException as e:
-            self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
+            self.sf.error(
+                "Received HTTP headers from another module in an unexpected format.", False
+            )
             return None
 
         for key in jdata:
             if key.lower() not in headers:
                 val = key + ": " + jdata[key]
-                evt = SpiderFootEvent("WEBSERVER_STRANGEHEADER", val,
-                                      self.__name__, event)
+                evt = SpiderFootEvent("WEBSERVER_STRANGEHEADER", val, self.__name__, event)
                 self.notifyListeners(evt)
+
 
 # End of sfp_strangeheaders class

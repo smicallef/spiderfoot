@@ -14,20 +14,22 @@ import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-regexps = dict({
-    "LinkedIn (Individual)": list(['.*linkedin.com/in/([a-zA-Z0-9_]+$)']),
-    "LinkedIn (Company)": list(['.*linkedin.com/company/([a-zA-Z0-9_]+$)']),
-    "Github": list(['.*github.com/([a-zA-Z0-9_]+)\/']),
-    "Google+": list(['.*plus.google.com/([0-9]+$)']),
-    "Facebook": list(['.*facebook.com/([a-zA-Z0-9_]+$)']),
-    "MySpace": list(['https?://myspace.com/([a-zA-Z0-9_\.]+$)']),
-    "YouTube": list(['.*youtube.com/([a-zA-Z0-9_]+$)']),
-    "Twitter": list(['.*twitter.com/([a-zA-Z0-9_]{1,15}$)',
-                     '.*twitter.com/#!/([a-zA-Z0-9_]{1,15}$)'
-                     ]),
-    "SlideShare": list(['.*slideshare.net/([a-zA-Z0-9_]+$)']),
-    "Instagram": list(['.*instagram.com/([a-zA-Z0-9_\.]+)/?$'])
-})
+regexps = dict(
+    {
+        "LinkedIn (Individual)": list([".*linkedin.com/in/([a-zA-Z0-9_]+$)"]),
+        "LinkedIn (Company)": list([".*linkedin.com/company/([a-zA-Z0-9_]+$)"]),
+        "Github": list([".*github.com/([a-zA-Z0-9_]+)\/"]),
+        "Google+": list([".*plus.google.com/([0-9]+$)"]),
+        "Facebook": list([".*facebook.com/([a-zA-Z0-9_]+$)"]),
+        "MySpace": list(["https?://myspace.com/([a-zA-Z0-9_\.]+$)"]),
+        "YouTube": list([".*youtube.com/([a-zA-Z0-9_]+$)"]),
+        "Twitter": list(
+            [".*twitter.com/([a-zA-Z0-9_]{1,15}$)", ".*twitter.com/#!/([a-zA-Z0-9_]{1,15}$)"]
+        ),
+        "SlideShare": list([".*slideshare.net/([a-zA-Z0-9_]+$)"]),
+        "Instagram": list([".*instagram.com/([a-zA-Z0-9_\.]+)/?$"]),
+    }
+)
 
 
 class sfp_social(SpiderFootPlugin):
@@ -82,9 +84,12 @@ class sfp_social(SpiderFootPlugin):
                 bits = re.match(regex, eventData, re.IGNORECASE)
                 if bits is not None:
                     self.sf.info("Matched " + regexpGrp + " in " + eventData)
-                    evt = SpiderFootEvent("SOCIAL_MEDIA", regexpGrp + ": " + \
-                                          "<SFURL>" + eventData + "</SFURL>",
-                                          self.__name__, event)
+                    evt = SpiderFootEvent(
+                        "SOCIAL_MEDIA",
+                        regexpGrp + ": " + "<SFURL>" + eventData + "</SFURL>",
+                        self.__name__,
+                        event,
+                    )
                     self.notifyListeners(evt)
 
                     # Except for Google+, the link includes potential usernames
@@ -99,5 +104,6 @@ class sfp_social(SpiderFootPlugin):
     # on events from other modules, then you need to have a start() method
     # and within that method call self.checkForStop() to see if you've been
     # politely asked by the controller to stop your activities (user abort.)
+
 
 # End of sfp_social class

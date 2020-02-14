@@ -20,11 +20,8 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_commoncrawl(SpiderFootPlugin):
     """CommonCrawl:Footprint,Passive:Crawling and Scanning::Searches for URLs found through CommonCrawl.org."""
 
-
     # Default options
-    opts = {
-        "indexes": 6
-    }
+    opts = {"indexes": 6}
 
     # Option descriptions
     optdescs = {
@@ -47,50 +44,53 @@ class sfp_commoncrawl(SpiderFootPlugin):
     def search(self, target):
         ret = list()
         for index in self.indexBase:
-            url = "https://index.commoncrawl.org/" + index + \
-                  "-index?url=" + target + "/*&output=json"
-            res = self.sf.fetchUrl(url, timeout=60,
-                                   useragent="SpiderFoot")
+            url = (
+                "https://index.commoncrawl.org/"
+                + index
+                + "-index?url="
+                + target
+                + "/*&output=json"
+            )
+            res = self.sf.fetchUrl(url, timeout=60, useragent="SpiderFoot")
 
-            if res['code'] in [ "400", "401", "402", "403", "404" ]:
+            if res["code"] in ["400", "401", "402", "403", "404"]:
                 self.sf.error("CommonCrawl search doesn't seem to be available.", False)
                 self.errorState = True
                 return None
 
-            if not res['content']:
+            if not res["content"]:
                 self.sf.error("CommonCrawl search doesn't seem to be available.", False)
                 self.errorState = True
                 return None
 
-            ret.append(res['content'])
+            ret.append(res["content"])
 
         return ret
 
     def getLatestIndexes(self):
         url = "https://commoncrawl.s3.amazonaws.com/cc-index/collections/index.html"
-        res = self.sf.fetchUrl(url, timeout=60,
-                               useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=60, useragent="SpiderFoot")
 
-        if res['code'] in [ "400", "401", "402", "403", "404" ]:
+        if res["code"] in ["400", "401", "402", "403", "404"]:
             self.sf.error("CommonCrawl index collection doesn't seem to be available.", False)
             self.errorState = True
             return list()
 
-        if not res['content']:
+        if not res["content"]:
             self.sf.error("CommonCrawl index collection doesn't seem to be available.", False)
             self.errorState = True
             return list()
 
-        indexes = re.findall(".*(CC-MAIN-\d+-\d+).*", res['content'])
+        indexes = re.findall(".*(CC-MAIN-\d+-\d+).*", res["content"])
         highest = 0
         indexlist = dict()
         for m in indexes:
             ms = m.replace("CC-MAIN-", "").replace("-", "")
             indexlist[ms] = True
 
-        topindexes = sorted(list(indexlist.keys()), reverse=True)[0:self.opts['indexes']]
+        topindexes = sorted(list(indexlist.keys()), reverse=True)[0 : self.opts["indexes"]]
 
-        if len(topindexes) < self.opts['indexes']:
+        if len(topindexes) < self.opts["indexes"]:
             self.sf.error("Not able to find latest CommonCrawl indexes.", False)
             self.errorState = True
             return list()
@@ -153,17 +153,17 @@ class sfp_commoncrawl(SpiderFootPlugin):
                     if len(line) < 2:
                         continue
                     link = json.loads(line)
-                    if 'url' not in link:
+                    if "url" not in link:
                         continue
-                    if link['url'] in sent:
+                    if link["url"] in sent:
                         continue
-                    sent.append(link['url'])
+                    sent.append(link["url"])
 
-                    evt = SpiderFootEvent("LINKED_URL_INTERNAL", link['url'],
-                                          self.__name__, event)
+                    evt = SpiderFootEvent("LINKED_URL_INTERNAL", link["url"], self.__name__, event)
                     self.notifyListeners(evt)
             except BaseException as e:
                 self.sf.error("Malformed JSON from CommonCrawl.org: " + str(e), False)
                 return None
+
 
 # End of sfp_commoncrawl class

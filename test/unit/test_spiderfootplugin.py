@@ -3,6 +3,7 @@ import sflib
 from sflib import SpiderFootPlugin, SpiderFootEvent
 import unittest
 
+
 class TestSpiderFootPlugin(unittest.TestCase):
     """
     Test SpiderFoot
@@ -22,7 +23,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp._updateSocket(None)
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_clear_listeners(self):
         """
@@ -31,7 +32,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.clearListeners()
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_setup(self):
         """
@@ -40,7 +41,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.setup(None)
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_enrich_target(self):
         """
@@ -49,7 +50,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.enrichTarget(None)
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_set_target(self):
         """
@@ -58,7 +59,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.setTarget(None)
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_set_dbh(self):
         """
@@ -67,7 +68,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.setDbh(None)
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_set_scan_id(self):
         """
@@ -76,7 +77,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.setScanId(None)
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_get_scan_id(self):
         """
@@ -85,7 +86,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.getScanId()
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_get_target(self):
         """
@@ -94,19 +95,19 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.getTarget()
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_register_listener(self):
         """
         Test registerListener(self, listener)
         """
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_set_output_filter(self):
         """
         Test setOutputFilter(self, types)
         """
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_temp_storage_should_return_a_dict(self):
         """
@@ -121,15 +122,15 @@ class TestSpiderFootPlugin(unittest.TestCase):
         """
         Test notifyListeners(self, sfEvent)
         """
-        event_type = 'ROOT'
-        event_data = ''
-        module = ''
-        source_event = ''
+        event_type = "ROOT"
+        event_data = ""
+        module = ""
+        source_event = ""
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         sfp = SpiderFootPlugin()
         sfp.notifyListeners(evt)
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_check_for_stop_should_return_a_boolean(self):
         """
@@ -172,15 +173,15 @@ class TestSpiderFootPlugin(unittest.TestCase):
         """
         Test handleEvent(self, sfEvent)
         """
-        event_type = 'ROOT'
-        event_data = ''
-        module = ''
-        source_event = ''
+        event_type = "ROOT"
+        event_data = ""
+        module = ""
+        source_event = ""
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         sfp = SpiderFootPlugin()
         sfp.handleEvent(evt)
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
     def test_start(self):
         """
@@ -189,8 +190,8 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.start()
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("TBD", "TBD")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
-

@@ -14,19 +14,17 @@
 from netaddr import IPAddress
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_dnsneighbor(SpiderFootPlugin):
     """DNS Look-aside:Footprint,Investigate:DNS::Attempt to reverse-resolve the IP addresses next to your target to see if they are related."""
 
     # Default options
-    opts = {
-        'lookasidecount': 10,
-        'validatereverse': True
-    }
+    opts = {"lookasidecount": 10, "validatereverse": True}
 
     # Option descriptions
     optdescs = {
-        'validatereverse': "Validate that reverse-resolved hostnames still resolve back to that IP before considering them as aliases of your target.",
-        'lookasidecount': "If look-aside is enabled, the number of IPs on each 'side' of the IP to look up"
+        "validatereverse": "Validate that reverse-resolved hostnames still resolve back to that IP before considering them as aliases of your target.",
+        "lookasidecount": "If look-aside is enabled, the number of IPs on each 'side' of the IP to look up",
     }
 
     events = None
@@ -45,7 +43,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS']
+        return ["IP_ADDRESS"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -76,8 +74,8 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             return None
 
         try:
-            minip = IPAddress(int(ip) - self.opts['lookasidecount'])
-            maxip = IPAddress(int(ip) + self.opts['lookasidecount'])
+            minip = IPAddress(int(ip) - self.opts["lookasidecount"])
+            maxip = IPAddress(int(ip) + self.opts["lookasidecount"])
         except BaseException as e:
             self.sf.error("Received an invalid IP address: " + eventData, False)
             return None
@@ -184,5 +182,6 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         return evt
+
 
 # End of sfp_dnsneighbor class

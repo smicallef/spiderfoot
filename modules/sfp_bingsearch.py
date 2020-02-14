@@ -16,15 +16,12 @@ class sfp_bingsearch(SpiderFootPlugin):
     """Bing:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from bing to identify sub-domains and links."""
 
     # Default options
-    opts = {
-        "pages": 20,
-        "api_key": ""
-    }
+    opts = {"pages": 20, "api_key": ""}
 
     # Option descriptions
     optdescs = {
         "pages": "Number of max bing results to request from the API.",
-        "api_key": "Bing API Key for Bing search."
+        "api_key": "Bing API Key for Bing search.",
     }
 
     results = None
@@ -58,7 +55,7 @@ class sfp_bingsearch(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_bingsearch but did not set a Bing API key!", False)
             self.errorState = True
             return None
@@ -91,9 +88,7 @@ class sfp_bingsearch(SpiderFootPlugin):
         for l in new_links:
             self.results[l] = True
 
-        internal_links = [
-            link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)
-        ]
+        internal_links = [link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)]
         for link in internal_links:
             self.sf.debug("Found a link: " + link)
 
@@ -101,11 +96,8 @@ class sfp_bingsearch(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if internal_links:
-            evt = SpiderFootEvent(
-                "RAW_RIR_DATA", str(res), self.__name__, event
-            )
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(res), self.__name__, event)
             self.notifyListeners(evt)
-
 
 
 # End of sfp_bingsearch class

@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_iknowwhatyoudownload
 # Purpose:      Query iknowwhatyoudownload.com for IP addresses using BitTorrent.
 #
@@ -7,25 +7,22 @@
 # Created:     03/09/2018
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_iknowwhatyoudownload(SpiderFootPlugin):
     """Iknowwhatyoudownload.com:Footprint,Investigate,Passive:Secondary Networks:apikey:Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent."""
 
-
     # Default options
-    opts = {
-        "daysback": 30,
-        "api_key": ""
-    }
+    opts = {"daysback": 30, "api_key": ""}
 
     # Option descriptions
     optdescs = {
         "daysback": "How far back (in days) to look for activity.",
-        "api_key": "Iknowwhatyoudownload.com API key."
+        "api_key": "Iknowwhatyoudownload.com API key.",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -62,34 +59,41 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         retdata = None
 
         base = "https://api.antitor.com/history/peer/?ip="
-        url = base + qry + "&days=" + str(self.opts['daysback'])
-        url += "&key=" + self.opts['api_key']
+        url = base + qry + "&days=" + str(self.opts["daysback"])
+        url += "&key=" + self.opts["api_key"]
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-            useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=self.opts["_fetchtimeout"], useragent="SpiderFoot")
 
-        if res['code'] in ["403", "500"]:
+        if res["code"] in ["403", "500"]:
             self.sf.info("Unable to fetch data from iknowwhatyoudownload.com right now.")
             return None
 
         try:
-            ret = json.loads(res['content'])
+            ret = json.loads(res["content"])
         except Exception as e:
-            self.sf.error("Error processing JSON response from iknowwhatyoudownload.com: " + str(e), False)
+            self.sf.error(
+                "Error processing JSON response from iknowwhatyoudownload.com: " + str(e), False
+            )
             return None
 
-        if 'error' in ret:
-            if ret['error'] == "INVALID_DAYS":
+        if "error" in ret:
+            if ret["error"] == "INVALID_DAYS":
                 self.errorState = True
-                self.sf.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.", False)
+                self.sf.error(
+                    "The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.",
+                    False,
+                )
                 return None
 
-        if 'contents' in ret:
-            if len(ret['contents']) > 0:
-                retdata = "<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip=" + qry + "</SFURL>\n"
-                for d in ret['contents']:
-                    retdata += d['torrent']['name'] + \
-                               " (" + d.get("endDate", "Date unknown") + ")\n"
+        if "contents" in ret:
+            if len(ret["contents"]) > 0:
+                retdata = (
+                    "<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip=" + qry + "</SFURL>\n"
+                )
+                for d in ret["contents"]:
+                    retdata += (
+                        d["torrent"]["name"] + " (" + d.get("endDate", "Date unknown") + ")\n"
+                    )
             else:
                 return None
         else:
@@ -108,8 +112,10 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!", False)
+        if self.opts["api_key"] == "":
+            self.sf.error(
+                "You enabled sfp_iknowwhatyoudownload but did not set an API key!", False
+            )
             self.errorState = True
             return None
 
@@ -126,5 +132,6 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         else:
             e = SpiderFootEvent("MALICIOUS_IPADDR", data, self.__name__, event)
             self.notifyListeners(e)
+
 
 # End of sfp_iknowwhatyoudownload class

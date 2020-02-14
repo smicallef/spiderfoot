@@ -13,31 +13,26 @@
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-    'hosts-file.net Malicious Hosts': {
-        'id': '_hphosts',
-        'type': 'list',
-        'checks': ['domain'],
-        'url': 'http://hosts-file.net/download/hosts.txt'
+    "hosts-file.net Malicious Hosts": {
+        "id": "_hphosts",
+        "type": "list",
+        "checks": ["domain"],
+        "url": "http://hosts-file.net/download/hosts.txt",
     }
 }
+
 
 class sfp_hostsfilenet(SpiderFootPlugin):
     """hosts-file.net Malicious Hosts:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to hosts-file.net Malicious Hosts."""
 
-
     # Default options
-    opts = {
-        '_hphosts': True,
-        'checkaffiliates': True,
-        'checkcohosts': True,
-        'cacheperiod': 18
-    }
+    opts = {"_hphosts": True, "checkaffiliates": True, "checkcohosts": True, "cacheperiod": 18}
 
     # Option descriptions
     optdescs = {
-        'checkaffiliates': "Apply checks to affiliates?",
-        'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
-        'cacheperiod': "Hours to cache list data before re-fetching."
+        "checkaffiliates": "Apply checks to affiliates?",
+        "checkcohosts": "Apply checks to sites found to be co-hosted on the target's IP?",
+        "cacheperiod": "Hours to cache list data before re-fetching.",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -64,49 +59,51 @@ class sfp_hostsfilenet(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME", "MALICIOUS_COHOST"]
 
     # Look up 'list' type resources
     def resourceList(self, id, target, targetType):
-        targetDom = ''
+        targetDom = ""
         # Get the base domain if we're supplied a domain
         if targetType == "domain":
-            targetDom = self.sf.hostDomain(target, self.opts['_internettlds'])
+            targetDom = self.sf.hostDomain(target, self.opts["_internettlds"])
 
         for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if id == cid and malchecks[check]['type'] == "list":
+            cid = malchecks[check]["id"]
+            if id == cid and malchecks[check]["type"] == "list":
                 data = dict()
-                url = malchecks[check]['url']
-                data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
-                if data['content'] is None:
-                    data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-                    if data['content'] is None:
+                url = malchecks[check]["url"]
+                data["content"] = self.sf.cacheGet("sfmal_" + cid, self.opts.get("cacheperiod", 0))
+                if data["content"] is None:
+                    data = self.sf.fetchUrl(
+                        url, timeout=self.opts["_fetchtimeout"], useragent=self.opts["_useragent"]
+                    )
+                    if data["content"] is None:
                         self.sf.error("Unable to fetch " + url, False)
                         return None
                     else:
-                        self.sf.cachePut("sfmal_" + cid, data['content'])
+                        self.sf.cachePut("sfmal_" + cid, data["content"])
 
-                if type(data['content']) != str:
-                    data['content'] = str(data['content'])
+                if type(data["content"]) != str:
+                    data["content"] = str(data["content"])
 
                 # Check for the domain and the hostname
-                if targetType == "domain" and "127.0.0.1\t" + targetDom + "\n" in data['content']:
+                if targetType == "domain" and "127.0.0.1\t" + targetDom + "\n" in data["content"]:
                     self.sf.debug(targetDom + " found in " + check + " list.")
                     return url
-                if "127.0.0.1\t" + target + "\n" in data['content']:
+                if "127.0.0.1\t" + target + "\n" in data["content"]:
                     self.sf.debug(target + " found in " + check + " list.")
                     return url
         return None
 
     def lookupItem(self, resourceId, itemType, target):
         for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" +
-                              itemType + ") with: " + cid)
-                if malchecks[check]['type'] == "list":
+            cid = malchecks[check]["id"]
+            if cid == resourceId and itemType in malchecks[check]["checks"]:
+                self.sf.debug(
+                    "Checking maliciousness of " + target + " (" + itemType + ") with: " + cid
+                )
+                if malchecks[check]["type"] == "list":
                     return self.resourceList(cid, target, itemType)
 
         return None
@@ -125,24 +122,23 @@ class sfp_hostsfilenet(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
+        if eventName == "CO_HOSTED_SITE" and not self.opts.get("checkcohosts", False):
             return None
-        if eventName == 'AFFILIATE_INTERNET_NAME' \
-                and not self.opts.get('checkaffiliates', False):
+        if eventName == "AFFILIATE_INTERNET_NAME" and not self.opts.get("checkaffiliates", False):
             return None
 
         for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
+            cid = malchecks[check]["id"]
             # If the module is enabled..
             if self.opts[cid]:
-                if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE', 'AFFILIATE_INTERNET_NAME' ]:
-                    typeId = 'domain'
+                if eventName in ["INTERNET_NAME", "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME"]:
+                    typeId = "domain"
                     if eventName == "INTERNET_NAME":
                         evtType = "MALICIOUS_INTERNET_NAME"
-                    if eventName == 'AFFILIATE_INTERNET_NAME':
-                        evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-                    if eventName == 'CO_HOSTED_SITE':
-                        evtType = 'MALICIOUS_COHOST'
+                    if eventName == "AFFILIATE_INTERNET_NAME":
+                        evtType = "MALICIOUS_AFFILIATE_INTERNET_NAME"
+                    if eventName == "CO_HOSTED_SITE":
+                        evtType = "MALICIOUS_COHOST"
 
                 if self.checkForStop():
                     return None
@@ -155,5 +151,6 @@ class sfp_hostsfilenet(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
         return None
+
 
 # End of sfp_hostsfilenet class

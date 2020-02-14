@@ -77,4 +77,5 @@ class sfp_XXX(SpiderFootPlugin):
     # and within that method call self.checkForStop() to see if you've been
     # politely asked by the controller to stop your activities (user abort.)
 
+
 # End of sfp_XXX class

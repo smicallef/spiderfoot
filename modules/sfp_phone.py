@@ -14,13 +14,13 @@
 
 import phonenumbers
 from phonenumbers import carrier
-#from phonenumbers import geocoder
+
+# from phonenumbers import geocoder
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_phone(SpiderFootPlugin):
     """Phone Numbers:Passive,Footprint,Investigate:Real World::Identify phone numbers in scraped webpages."""
-
-
 
     # Default options
     opts = {}
@@ -36,13 +36,13 @@ class sfp_phone(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['TARGET_WEB_CONTENT', 'DOMAIN_WHOIS', 'NETBLOCK_WHOIS', 'PHONE_NUMBER']
+        return ["TARGET_WEB_CONTENT", "DOMAIN_WHOIS", "NETBLOCK_WHOIS", "PHONE_NUMBER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ['PHONE_NUMBER', 'PROVIDER_TELCO']
+        return ["PHONE_NUMBER", "PROVIDER_TELCO"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -58,13 +58,12 @@ class sfp_phone(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if eventName in ['TARGET_WEB_CONTENT', 'DOMAIN_WHOIS', 'NETBLOCK_WHOIS']:
+        if eventName in ["TARGET_WEB_CONTENT", "DOMAIN_WHOIS", "NETBLOCK_WHOIS"]:
             # Make potential phone numbers more friendly to parse
-            content = eventData.replace('.', '-')
+            content = eventData.replace(".", "-")
 
             for match in phonenumbers.PhoneNumberMatcher(content, region=None):
-                n = phonenumbers.format_number(match.number,
-                                           phonenumbers.PhoneNumberFormat.E164)
+                n = phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.E164)
                 evt = SpiderFootEvent("PHONE_NUMBER", n, self.__name__, event)
                 if event.moduleDataSource:
                     evt.moduleDataSource = event.moduleDataSource
@@ -72,17 +71,17 @@ class sfp_phone(SpiderFootPlugin):
                     evt.moduleDataSource = "Unknown"
                 self.notifyListeners(evt)
 
-        if eventName == 'PHONE_NUMBER':
+        if eventName == "PHONE_NUMBER":
             try:
                 number = phonenumbers.parse(eventData)
             except BaseException as e:
-                self.sf.debug('Error parsing phone number: ' + str(e))
+                self.sf.debug("Error parsing phone number: " + str(e))
                 return None
 
             try:
-                number_carrier = carrier.name_for_number(number, 'en')
+                number_carrier = carrier.name_for_number(number, "en")
             except BaseException as e:
-                self.sf.debug('Error retrieving phone number carrier: ' + str(e))
+                self.sf.debug("Error retrieving phone number carrier: " + str(e))
                 return None
 
             if number_carrier:
@@ -91,18 +90,19 @@ class sfp_phone(SpiderFootPlugin):
             else:
                 self.sf.debug("No carrier information found for " + eventData)
 
-            #try:
+            # try:
             #    location = geocoder.description_for_number(number, 'en')
-            #except BaseException as e:
+            # except BaseException as e:
             #    self.sf.debug('Error retrieving phone number location: ' + str(e))
             #    return None
 
-            #if location:
+            # if location:
             #    evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             #    self.notifyListeners(evt)
-            #else:
+            # else:
             #    self.sf.debug("No location information found for " + eventData)
 
         return None
+
 
 # End of sfp_phone class

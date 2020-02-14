@@ -19,24 +19,24 @@ sites = {
     # Search string to use, domain name the profile will sit on within
     # those search results.
     "Facebook": [
-        "\"{name}\"+site:facebook.com",
+        '"{name}"+site:facebook.com',
         [
-            '[ \'"](https?://[a-z\.]*facebook.[a-z\.]+/[^/"\'<> ]+/?)[\'" ]',
-            '(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/"\'<> ]+/?)',
+            "[ '\"](https?://[a-z\.]*facebook.[a-z\.]+/[^/\"'<> ]+/?)['\" ]",
+            "(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/\"'<> ]+/?)",
         ],
     ],
     "Google+": [
-        "\"{name}\"+site:plus.google.com",
+        '"{name}"+site:plus.google.com',
         [
-            '[ \'"](https?://plus.google.[a-z\.]+/\d+[^"\'<>\/ ]+)[\'" ]',
-            '(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/"\'<> ]+)',
+            "[ '\"](https?://plus.google.[a-z\.]+/\d+[^\"'<>\/ ]+)['\" ]",
+            "(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/\"'<> ]+)",
         ],
     ],
     "LinkedIn": [
-        "\"{name}\"+site:linkedin.com",
+        '"{name}"+site:linkedin.com',
         [
-            '["\' ](https?://[a-z\.]*linkedin.[a-z\.]+/[^\?"\'<> ]+)[\'" ]',
-            '(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\?"\'<> ]+)',
+            "[\"' ](https?://[a-z\.]*linkedin.[a-z\.]+/[^\?\"'<> ]+)['\" ]",
+            "(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\?\"'<> ]+)",
         ],
     ],
 }
@@ -100,8 +100,10 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['google_api_key'] == "" and self.opts['bing_api_key'] == "":
-            self.sf.error("You enabled sfp_socialprofiles but did not set a Google or Bing API key!", False)
+        if self.opts["google_api_key"] == "" and self.opts["bing_api_key"] == "":
+            self.sf.error(
+                "You enabled sfp_socialprofiles but did not set a Google or Bing API key!", False
+            )
             self.errorState = True
             return None
 
@@ -126,8 +128,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
             if self.opts["method"].lower() == "yahoo":
                 self.sf.error(
-                    "Yahoo is no longer supported. Please try 'bing' or 'google'.",
-                    False,
+                    "Yahoo is no longer supported. Please try 'bing' or 'google'.", False,
                 )
                 return None
 
@@ -163,9 +164,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 return None
 
             # Submit the results for analysis
-            evt = SpiderFootEvent(
-                "RAW_RIR_DATA", str(res), self.__name__, event
-            )
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(res), self.__name__, event)
             self.notifyListeners(evt)
 
             instances = list()
@@ -173,9 +172,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 # Search both the urls & the search engine web content
                 search_string = " ".join(res["urls"] + [str(res)])
 
-                matches = re.findall(
-                    searchDom, search_string, re.IGNORECASE | re.MULTILINE
-                )
+                matches = re.findall(searchDom, search_string, re.IGNORECASE | re.MULTILINE)
 
                 if not matches:
                     continue
@@ -195,9 +192,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     # Keywords might be empty if the target was an IP, subnet or name.
                     if self.opts["tighten"] and self.keywords:
                         match = urllib.parse.unquote(match)
-                        self.sf.debug(
-                            "Tightening results to look for " + str(self.keywords)
-                        )
+                        self.sf.debug("Tightening results to look for " + str(self.keywords))
                         pres = self.sf.fetchUrl(
                             match,
                             timeout=self.opts["_fetchtimeout"],
@@ -221,7 +216,10 @@ class sfp_socialprofiles(SpiderFootPlugin):
                     self.sf.info("Social Media Profile found at " + site + ": " + match)
                     match = urllib.parse.unquote(match)
                     evt = SpiderFootEvent(
-                        "SOCIAL_MEDIA", site + ": <SFURL>" + match + "</SFURL>", self.__name__, event
+                        "SOCIAL_MEDIA",
+                        site + ": <SFURL>" + match + "</SFURL>",
+                        self.__name__,
+                        event,
                     )
                     self.notifyListeners(evt)
 

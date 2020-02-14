@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_fullcontact
 # Purpose:      Query fullcontact.com using their API.
 #
@@ -7,27 +7,24 @@
 # Created:     06/02/2018
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 import time
 from datetime import datetime
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_fullcontact(SpiderFootPlugin):
     """FullContact:Footprint,Investigate,Passive:Search Engines:apikey:Gather domain and e-mail information from fullcontact.com."""
 
-
     # Default options
-    opts = {
-        "api_key": "",
-        "max_age_days": "365"
-    }
+    opts = {"api_key": "", "max_age_days": "365"}
 
     # Option descriptions
     optdescs = {
         "api_key": "Fullcontact.com API key.",
-        "max_age_days": "Maximum number of age in days for a record before it's considered invalid and not reported."
+        "max_age_days": "Maximum number of age in days for a record before it's considered invalid and not reported.",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -49,27 +46,30 @@ class sfp_fullcontact(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME", "EMAILADDR" ]
+        return ["DOMAIN_NAME", "EMAILADDR"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "EMAILADDR", "RAW_RIR_DATA", "PHONE_NUMBER",
-                 "GEOINFO", "PHYSICAL_ADDRESS" ]
+        return ["EMAILADDR", "RAW_RIR_DATA", "PHONE_NUMBER", "GEOINFO", "PHYSICAL_ADDRESS"]
 
     def query(self, url, data, failcount=0):
-        header = "Bearer " + self.opts['api_key']
+        header = "Bearer " + self.opts["api_key"]
         ret = None
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot", postData=json.dumps(data),
-                               headers={"Authorization": header})
+        res = self.sf.fetchUrl(
+            url,
+            timeout=self.opts["_fetchtimeout"],
+            useragent="SpiderFoot",
+            postData=json.dumps(data),
+            headers={"Authorization": header},
+        )
 
-        if res['code'] in [ "401", "400" ]:
+        if res["code"] in ["401", "400"]:
             self.sf.error("API key rejected by fullcontact.com", False)
             self.errorState = True
             return None
 
-        if res['code'] == "403":
+        if res["code"] == "403":
             if failcount == 3:
                 self.sf.error("Throttled or other blocking by fullcontact.com", False)
                 return None
@@ -77,16 +77,16 @@ class sfp_fullcontact(SpiderFootPlugin):
             failcount += 1
             return self.query(url, data, failcount)
 
-        if not res['content']:
+        if not res["content"]:
             self.sf.error("No content returned from fullcontact.com", False)
             return None
 
         try:
-            ret = json.loads(res['content'])
-            if "updated" in ret and int(self.opts['max_age_days']) > 0:
-                last_dt = datetime.strptime(ret['updated'], '%Y-%m-%d')
+            ret = json.loads(res["content"])
+            if "updated" in ret and int(self.opts["max_age_days"]) > 0:
+                last_dt = datetime.strptime(ret["updated"], "%Y-%m-%d")
                 last_ts = int(time.mktime(last_dt.timetuple()))
-                age_limit_ts = int(time.time()) - (86400 * int(self.opts['max_age_days']))
+                age_limit_ts = int(time.time()) - (86400 * int(self.opts["max_age_days"]))
                 if last_ts < age_limit_ts:
                     self.sf.debug("Fullcontact.co record found but too old.")
                     return None
@@ -107,9 +107,9 @@ class sfp_fullcontact(SpiderFootPlugin):
             return None
 
         if name:
-            q['fullName'] = name
+            q["fullName"] = name
         if email:
-            q['email'] = email
+            q["email"] = email
 
         return self.query(url, q)
 
@@ -122,7 +122,7 @@ class sfp_fullcontact(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_fullcontact but did not set an API key!", False)
             self.errorState = True
             return None
@@ -140,10 +140,11 @@ class sfp_fullcontact(SpiderFootPlugin):
             data = self.queryPerson(email=eventData)
             if not data:
                 return None
-            if not data.get('fullName'):
+            if not data.get("fullName"):
                 return None
-            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
-                                data['fullName'], self.__name__, event)
+            e = SpiderFootEvent(
+                "RAW_RIR_DATA", "Possible full name: " + data["fullName"], self.__name__, event
+            )
             self.notifyListeners(e)
             return
 
@@ -152,35 +153,41 @@ class sfp_fullcontact(SpiderFootPlugin):
             if not data:
                 return None
             if data.get("details"):
-                data = data['details']
+                data = data["details"]
             if data.get("emails"):
-                for r in data['emails']:
-                    e = SpiderFootEvent("EMAILADDR", r['value'], self.__name__, event)
+                for r in data["emails"]:
+                    e = SpiderFootEvent("EMAILADDR", r["value"], self.__name__, event)
                     self.notifyListeners(e)
 
             if data.get("phones"):
-                for r in data['phones']:
-                    e = SpiderFootEvent("PHONE_NUMBER", r['value'], self.__name__, event)
+                for r in data["phones"]:
+                    e = SpiderFootEvent("PHONE_NUMBER", r["value"], self.__name__, event)
                     self.notifyListeners(e)
 
             if data.get("locations"):
-                for r in data['locations']:
+                for r in data["locations"]:
                     if r.get("city") and r.get("country"):
-                        e = SpiderFootEvent("GEOINFO", r['city'] + ", " + r['country'],
-                                            self.__name__, event)
+                        e = SpiderFootEvent(
+                            "GEOINFO", r["city"] + ", " + r["country"], self.__name__, event
+                        )
                         self.notifyListeners(e)
                     if r.get("formatted"):
                         # Seems to contain some junk sometimes
-                        if len(r['formatted']) > 10:
-                            e = SpiderFootEvent("PHYSICAL_ADDRESS", r['formatted'],
-                                                self.__name__, event)
+                        if len(r["formatted"]) > 10:
+                            e = SpiderFootEvent(
+                                "PHYSICAL_ADDRESS", r["formatted"], self.__name__, event
+                            )
                             self.notifyListeners(e)
 
             if data.get("keyPeople"):
-                for r in data['keyPeople']:
-                    if r.get('fullName'):
-                        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
-                                            r['fullName'], self.__name__, event)
+                for r in data["keyPeople"]:
+                    if r.get("fullName"):
+                        e = SpiderFootEvent(
+                            "RAW_RIR_DATA",
+                            "Possible full name: " + r["fullName"],
+                            self.__name__,
+                            event,
+                        )
                         self.notifyListeners(e)
 
 

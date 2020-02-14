@@ -19,12 +19,10 @@ class sfp_opendns(SpiderFootPlugin):
     """OpenDNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by OpenDNS DNS"""
 
     # Default options
-    opts = {
-    }
+    opts = {}
 
     # Option descriptions
-    optdescs = {
-    }
+    optdescs = {}
 
     results = None
 
@@ -43,12 +41,11 @@ class sfp_opendns(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_COHOST"]
+        return ["MALICIOUS_INTERNET_NAME", "MALICIOUS_AFFILIATE_INTERNET_NAME", "MALICIOUS_COHOST"]
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
-        res.nameservers = [ "208.67.222.222", "208.67.220.220" ]
+        res.nameservers = ["208.67.222.222", "208.67.220.220"]
 
         try:
             addrs = res.query(qaddr)
@@ -89,8 +86,10 @@ class sfp_opendns(SpiderFootPlugin):
             if eventName == "CO_HOSTED_SITE":
                 typ = "MALICIOUS_COHOST"
             if not found:
-                evt = SpiderFootEvent(typ, "Blocked by OpenDNS [" + eventData + "]",
-                                      self.__name__, parentEvent)
+                evt = SpiderFootEvent(
+                    typ, "Blocked by OpenDNS [" + eventData + "]", self.__name__, parentEvent
+                )
                 self.notifyListeners(evt)
+
 
 # End of sfp_opendns class

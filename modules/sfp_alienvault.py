@@ -16,6 +16,7 @@ import time
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
+
 class sfp_alienvault(SpiderFootPlugin):
     """AlienVault OTX:Investigate,Passive:Reputation Systems:apikey:Obtain information from AlienVault Open Threat Exchange (OTX)"""
 
@@ -24,11 +25,11 @@ class sfp_alienvault(SpiderFootPlugin):
         "api_key": "",
         "age_limit_days": 30,
         "threat_score_min": 2,
-        'netblocklookup': True,
-        'maxnetblock': 24,
-        'subnetlookup': True,
-        'maxsubnet': 24,
-        'checkaffiliates': True
+        "netblocklookup": True,
+        "maxnetblock": 24,
+        "subnetlookup": True,
+        "maxsubnet": 24,
+        "checkaffiliates": True,
     }
 
     # Option descriptions
@@ -36,11 +37,11 @@ class sfp_alienvault(SpiderFootPlugin):
         "api_key": "AlienVault OTX API Key.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         "threat_score_min": "Minimum AlienVault threat score.",
-        'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
-        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'checkaffiliates': "Apply checks to affiliates?"
+        "netblocklookup": "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
+        "maxnetblock": "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        "subnetlookup": "Look up all IPs on subnets which your target is a part of for blacklisting?",
+        "maxsubnet": "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        "checkaffiliates": "Apply checks to affiliates?",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -61,12 +62,11 @@ class sfp_alienvault(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", 
-                "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK" ]
+        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK"]
 
     def query(self, qry, querytype):
         ret = None
@@ -81,32 +81,38 @@ class sfp_alienvault(SpiderFootPlugin):
         if querytype not in ["passive_dns", "reputation"]:
             querytype = "reputation"
 
-        url = "https://otx.alienvault.com:443/api/v1/indicators/" + targettype + \
-              "/" + qry + "/" + querytype
-        headers = {
-            'Accept': 'application/json',
-            'X-OTX-API-KEY': self.opts['api_key']
-        }
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
-                               useragent="SpiderFoot", headers=headers)
+        url = (
+            "https://otx.alienvault.com:443/api/v1/indicators/"
+            + targettype
+            + "/"
+            + qry
+            + "/"
+            + querytype
+        )
+        headers = {"Accept": "application/json", "X-OTX-API-KEY": self.opts["api_key"]}
+        res = self.sf.fetchUrl(
+            url, timeout=self.opts["_fetchtimeout"], useragent="SpiderFoot", headers=headers
+        )
 
-        if res['code'] == "403":
-            self.sf.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+        if res["code"] == "403":
+            self.sf.error(
+                "AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.",
+                False,
+            )
             self.errorState = True
             return None
 
-        if res['content'] is None or res['code'] == "404":
+        if res["content"] is None or res["code"] == "404":
             self.sf.info("No AlienVault OTX info found for " + qry)
             return None
 
         try:
-            info = json.loads(res['content'])
+            info = json.loads(res["content"])
         except Exception as e:
             self.sf.error("Error processing JSON response from AlienVault OTX.", False)
             return None
 
         return info
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -119,7 +125,7 @@ class sfp_alienvault(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.opts['api_key'] == "":
+        if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_alienvault but did not set an API key/password!", False)
             self.errorState = True
             return None
@@ -131,27 +137,33 @@ class sfp_alienvault(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName == 'NETBLOCK_OWNER':
-            if not self.opts['netblocklookup']:
+        if eventName == "NETBLOCK_OWNER":
+            if not self.opts["netblocklookup"]:
                 return None
             else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                if IPNetwork(eventData).prefixlen < self.opts["maxnetblock"]:
+                    self.sf.debug(
+                        "Network size bigger than permitted: "
+                        + str(IPNetwork(eventData).prefixlen)
+                        + " > "
+                        + str(self.opts["maxnetblock"])
+                    )
                     return None
 
-        if eventName == 'AFFILIATE_IPADDR' and not self.opts.get('checkaffiliates', False):
+        if eventName == "AFFILIATE_IPADDR" and not self.opts.get("checkaffiliates", False):
             return None
 
-        if eventName == 'NETBLOCK_MEMBER':
-            if not self.opts['subnetlookup']:
+        if eventName == "NETBLOCK_MEMBER":
+            if not self.opts["subnetlookup"]:
                 return None
             else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
+                if IPNetwork(eventData).prefixlen < self.opts["maxsubnet"]:
+                    self.sf.debug(
+                        "Network size bigger than permitted: "
+                        + str(IPNetwork(eventData).prefixlen)
+                        + " > "
+                        + str(self.opts["maxsubnet"])
+                    )
                     return None
 
         qrylist = list()
@@ -173,17 +185,19 @@ class sfp_alienvault(SpiderFootPlugin):
                 res = ret["passive_dns"]
                 for rec in res:
                     if "hostname" in rec:
-                        host = rec['hostname']
+                        host = rec["hostname"]
                         try:
                             last = rec.get("last", "")
-                            last_dt = datetime.strptime(last, '%Y-%m-%d %H:%M:%S')
+                            last_dt = datetime.strptime(last, "%Y-%m-%d %H:%M:%S")
                             last_ts = int(time.mktime(last_dt.timetuple()))
-                            age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
-                            if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
+                            age_limit_ts = int(time.time()) - (86400 * self.opts["age_limit_days"])
+                            if self.opts["age_limit_days"] > 0 and last_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
                         except BaseException as e:
-                            self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
+                            self.sf.debug(
+                                "Couldn't parse date from AlienVault so assuming it's OK."
+                            )
                         e = SpiderFootEvent(evtType, host, self.__name__, event)
                         self.notifyListeners(e)
 
@@ -191,19 +205,21 @@ class sfp_alienvault(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
-                evtType = 'MALICIOUS_IPADDR'
+            if eventName == "IP_ADDRESS" or eventName.startswith("NETBLOCK_"):
+                evtType = "MALICIOUS_IPADDR"
             if eventName == "AFFILIATE_IPADDR":
-                evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+                evtType = "MALICIOUS_AFFILIATE_IPADDR"
 
             rec = self.query(addr, "reputation")
             if rec is not None:
                 if rec.get("reputation", None):
                     self.sf.debug("Found reputation info in AlienVault OTX")
-                    rec_history = rec['reputation'].get("activities", list())
-                    if rec['reputation']['threat_score'] < self.opts['threat_score_min']:
+                    rec_history = rec["reputation"].get("activities", list())
+                    if rec["reputation"]["threat_score"] < self.opts["threat_score_min"]:
                         continue
-                    descr = "AlienVault Threat Score: " + str(rec['reputation']['threat_score']) + ":"
+                    descr = (
+                        "AlienVault Threat Score: " + str(rec["reputation"]["threat_score"]) + ":"
+                    )
 
                     for result in rec_history:
                         nm = result.get("name", None)
@@ -213,23 +229,26 @@ class sfp_alienvault(SpiderFootPlugin):
                         created = result.get("last_date", "")
                         # 2014-11-06T10:45:00.000
                         try:
-                            created_dt = datetime.strptime(created, '%Y-%m-%dT%H:%M:%S')
+                            created_dt = datetime.strptime(created, "%Y-%m-%dT%H:%M:%S")
                             created_ts = int(time.mktime(created_dt.timetuple()))
-                            age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
-                            if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
+                            age_limit_ts = int(time.time()) - (86400 * self.opts["age_limit_days"])
+                            if self.opts["age_limit_days"] > 0 and created_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
                         except BaseException as e:
-                            self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
+                            self.sf.debug(
+                                "Couldn't parse date from AlienVault so assuming it's OK."
+                            )
 
                     # For netblocks, we need to create the IP address event so that
                     # the threat intel event is more meaningful.
-                    if eventName.startswith('NETBLOCK_'):
+                    if eventName.startswith("NETBLOCK_"):
                         pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
                         self.notifyListeners(pevent)
                     else:
                         pevent = event
                     e = SpiderFootEvent(evtType, descr, self.__name__, pevent)
                     self.notifyListeners(e)
+
 
 # End of sfp_alienvault class
