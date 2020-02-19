@@ -54,8 +54,8 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(dict())
 
-        sf.updateSocket(None)
-        self.assertEqual('TBD', 'TBD')
+        sf.updateSocket('new socket')
+        self.assertEqual('new socket', sf.socksProxy)
 
     def test_revert_socket(self):
         """
@@ -64,16 +64,16 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(dict())
 
         sf.revertSocket()
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual(None, sf.socksProxy)
 
-    def test_refresh_tor_ident(self):
+    def test_refresh_tor_ident_should_return_none(self):
         """
         Test refreshTorIdent(self)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
-        sf.refreshTorIdent()
-        self.assertEqual('TBD', 'TBD')
+        res = sf.refreshTorIdent()
+        self.assertEqual(None, res)
 
     def test_opt_value_to_data(self):
         """
@@ -124,13 +124,19 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test setDbh(self, handle)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(dict())
+
+        sf.setDbh('new handle')
+        self.assertEqual('new handle', sf.dbh)
 
     def test_set_guid(self):
         """
         Test setGUID(self, uid)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(dict())
+
+        sf.setGUID('new guid')
+        self.assertEqual('new guid', sf.GUID)
 
     def test_gen_scan_instance_guid_should_return_a_string(self):
         """
@@ -156,14 +162,16 @@ class TestSpiderFoot(unittest.TestCase):
         sf.error(None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_fatal(self):
+    def test_fatal_should_exit(self):
         """
         Test fatal(self, error)
         """
         sf = SpiderFoot(self.default_options)
 
-        sf.fatal(None)
-        self.assertEqual('TBD', 'TBD')
+        with self.assertRaises(SystemExit) as cm:
+            sf.fatal(None)
+
+        self.assertEqual(cm.exception.code, -1)
 
     def test_status(self):
         """
@@ -192,7 +200,7 @@ class TestSpiderFoot(unittest.TestCase):
         sf.debug(None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_my_path_should_return_a_str(self):
+    def test_my_path_should_return_a_string(self):
         """
         Test myPath(self)
         """
@@ -225,29 +233,32 @@ class TestSpiderFoot(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    def test_cache_get(self):
-        """
-        Test cacheGet(self, label, timeoutHrs)
-        """
-        self.assertEqual('TBD', 'TBD')
-
-    def test_cache_get_invalid_label(self):
+    def test_cache_get_should_return_a_string(self):
         """
         Test cacheGet(self, label, timeoutHrs)
         """
         sf = SpiderFoot(dict())
 
-        cache_get = sf.cacheGet(None, None)
-        self.assertEqual('TBD', 'TBD')
+        cache_get = sf.cacheGet('', sf.opts.get('cacheperiod', 0))
+        self.assertEqual(str, type(cache_get))
 
-    def test_cache_get_invalid_timeout(self):
+    def test_cache_get_invalid_label_should_return_none(self):
+        """
+        Test cacheGet(self, label, timeoutHrs)
+        """
+        sf = SpiderFoot(dict())
+
+        cache_get = sf.cacheGet(None, sf.opts.get('cacheperiod', 0))
+        self.assertEqual(None, cache_get)
+
+    def test_cache_get_invalid_timeout_should_return_none(self):
         """
         Test cacheGet(self, label, timeoutHrs)
         """
         sf = SpiderFoot(dict())
 
         cache_get = sf.cacheGet('', None)
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual(None, cache_get)
 
     def test_config_serialize(self):
         """
@@ -339,35 +350,50 @@ class TestSpiderFoot(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    def test_host_domain(self):
+    def test_host_domain_should_return_a_boolean(self):
         """
         Test hostDomain(self, hostname, tldList)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(dict())
 
-    def test_is_domain(self):
+        host_doman = sf.hostDomain('local', None)
+        self.assertEqual(bool, type(host_domain))
+
+    def test_is_domain_should_return_a_boolean(self):
         """
         Test isDomain(self, hostname, tldList)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(dict())
 
-    def test_valid_ip(self):
+        is_domain = sf.isDomain('local', None)
+        self.assertEqual(bool, type(is_domain))
+
+    def test_valid_ip_should_return_a_boolean(self):
         """
         Test validIP(self, address)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(dict())
 
-    def test_valid_ip6(self):
+        valid_ip = sf.validIP('0.0.0.0')
+        self.assertEqual(bool, type(valid_ip))
+
+    def test_valid_ip6_should_return_a_boolean(self):
         """
         Test validIP6(self, address)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(dict())
 
-    def test_valid_ip_network(self):
+        valid_ip6 = sf.validIP6('::1')
+        self.assertEqual(bool, type(valid_ip6))
+
+    def test_valid_ip_network_should_return_a_boolean(self):
         """
         Test validIpNetwork(self, cidr)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(dict())
+
+        valid_ip_network = sf.validIpNetwork('0.0.0.0/0')
+        self.assertEqual(bool, type(valid_ip_network))
 
     def tes_normalize_dns(self):
         """
@@ -471,17 +497,50 @@ class TestSpiderFoot(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    def test_parse_links(self):
+    def test_parse_links_should_return_a_dict(self):
         """
-        Test parseLinks(self, url, data, domains, parseText=True)
+        Test parseLinks(self, url, data, domains)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(self.default_options)
 
-    def test_url_encode_unicode(self):
+        parse_links = sf.parseLinks('url', 'data', 'domains')
+        self.assertEqual(dict, type(parse_links))
+
+    def test_parse_links_invalid_url_should_return_a_dict(self):
+        """
+        Test parseLinks(self, url, data, domains)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        parse_links = sf.parseLinks(None, 'data', 'domains')
+        self.assertEqual(dict, type(parse_links))
+
+    def test_parse_links_invalid_data_should_return_a_dict(self):
+        """
+        Test parseLinks(self, url, data, domains)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        parse_links = sf.parseLinks('url', None, 'domains')
+        self.assertEqual(dict, type(parse_links))
+
+    def test_parse_links_invalid_domains_should_return_a_dict(self):
+        """
+        Test parseLinks(self, url, data, domains)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        parse_links = sf.parseLinks('url', 'data', None)
+        self.assertEqual(dict, type(parse_links))
+
+    def test_url_encode_unicode_should_return_a_string(self):
         """
         Test urlEncodeUnicode(self, url)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(self.default_options)
+
+        url_encode_unicode = sf.urlEncodeUnicode('url')
+        self.assertEqual(str, type(url_encode_unicode))
 
     def test_fetch_url(self):
         """
