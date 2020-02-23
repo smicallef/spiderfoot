@@ -147,6 +147,10 @@ class sfp_crt(SpiderFootPlugin):
                                    timeout=30,
                                    useragent=self.opts['_useragent'])
 
+            if res['content'] is None:
+                self.sf.info("Error retrieving certificate with ID " + str(cert_id))
+                continue
+
             try:
                 cert = self.sf.parseCert(str(res['content']))
             except BaseException as e:
