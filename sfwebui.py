@@ -759,16 +759,16 @@ class SpiderFootWebUi:
         [scanname, scantarget] = self.cleanUserInput([scanname, scantarget])
 
         if scanname == "" or scantarget == "":
-            if not cli:
-                return self.error("Form incomplete.")
+            if cli:
+                return json.dumps(["ERROR", "Incorrect usage: scan name or target was not specified."])
             else:
-                return json.dumps(["ERROR", "Incorrect usage."])
+                return self.error("Invalid request: scan name or target was not specified.")
 
         if typelist == "" and modulelist == "" and usecase == "":
-            if not cli:
-                return self.error("Form incomplete.")
+            if cli:
+                return json.dumps(["ERROR", "Incorrect usage: no modules specified for scan."])
             else:
-                return json.dumps(["ERROR", "Incorrect usage."])
+                return self.error("Invalid request: no modules specified for scan.")
 
 
         # User selected modules
