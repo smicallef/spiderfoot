@@ -16,6 +16,8 @@ import json
 
 class sfp__stor_stdout(SpiderFootPlugin):
     """Command-line output::::Dumps output to standard out. Used for when a SpiderFoot scan is run via the command-line."""
+    _priority = 0
+    firstEvent = True
 
     # Default options
     opts = {
@@ -36,7 +38,7 @@ class sfp__stor_stdout(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -48,24 +50,29 @@ class sfp__stor_stdout(SpiderFootPlugin):
     def output(self, event):
         d = self.opts['_csvdelim']
         if type(event.data) in [list, dict]:
-            data = unicode(str(event.data), 'utf-8', errors='replace')
+            data = str(event.data)
         else:
             data = event.data
 
-        if type(data) != unicode:
-            data = unicode(event.data, 'utf-8', errors='replace')
+        if type(data) != str:
+            data = str(event.data)
 
         if type(event.sourceEvent.data) in [list, dict]:
-            srcdata = unicode(str(event.sourceEvent.data), 'utf-8', errors='replace')
+            srcdata = str(event.sourceEvent.data)
         else:
             srcdata = event.sourceEvent.data
 
-        if type(srcdata) != unicode:
-            srcdata = unicode(event.sourceEvent.data, 'utf-8', errors='replace')
+        if type(srcdata) != str:
+            srcdata = str(event.sourceEvent.data)
 
         if self.opts['_stripnewline']:
-            data = data.replace("\n", "").replace("\r", "")
-            srcdata = srcdata.replace("\n", "").replace("\r", "")
+            data = data.replace("\n", " ").replace("\r", "")
+            srcdata = srcdata.replace("\n", " ").replace("\r", "")
+
+        if "<SFURL>" in data:
+            data = data.replace("<SFURL>", "").replace("</SFURL>", "")
+        if "<SFURL>" in srcdata:
+            srcdata = srcdata.replace("<SFURL>", "").replace("</SFURL>", "")
 
         if self.opts['_maxlength'] > 0:
             data = data[0:self.opts['_maxlength']]
@@ -73,18 +80,22 @@ class sfp__stor_stdout(SpiderFootPlugin):
 
         if self.opts['_format'] == "tab":
             if self.opts['_showsource']:
-                print '{0:30}\t{1:45}\t{2}\t{3}'.format(event.module, self.opts['_eventtypes'][event.eventType], srcdata, data)
+                print(('{0:30}\t{1:45}\t{2}\t{3}'.format(event.module, self.opts['_eventtypes'][event.eventType], srcdata, data)))
             else:
-                print '{0:30}\t{1:45}\t{2}'.format(event.module, self.opts['_eventtypes'][event.eventType], data)
+                # ToDo: Is it ok to not find the keys here?
+                print(('{0:30}\t{1:45}\t{2}'.format(event.module, self.opts['_eventtypes'].get(event.eventType, ""), data)))
 
         if self.opts['_format'] == "csv":
-            print event.module + d + self.opts['_eventtypes'][event.eventType] + d + srcdata + d + data
+            print((event.module + d + self.opts['_eventtypes'][event.eventType] + d + srcdata + d + data))
 
         if self.opts['_format'] == "json":
             d = event.asDict()
             d['type'] = self.opts['_eventtypes'][event.eventType]
-            print json.dumps(d)
-
+            if self.firstEvent:
+                self.firstEvent = False
+            else:
+                print(",")
+            print(json.dumps(d), end='')
 
     # Handle events sent to this module
     def handleEvent(self, sfEvent):

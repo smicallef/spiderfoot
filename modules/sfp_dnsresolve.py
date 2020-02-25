@@ -11,11 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 import re
-import dns
-import urllib2
-from netaddr import IPAddress, IPNetwork
+
+import urllib
+from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsresolve(SpiderFootPlugin):
@@ -37,60 +36,40 @@ class sfp_dnsresolve(SpiderFootPlugin):
         'maxnetblock': "Maximum owned netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    events = dict()
-    domresults = dict()
-    hostresults = dict()
-    resolveCache = dict()
-    resolveCache6 = dict()
+    events = None
+    domresults = None
+    hostresults = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.events = dict()
-        self.domresults = dict()
-        self.hostresults = dict()
-        self.resolveCache = dict()
-        self.resolveCache6 = dict()
+        self.events = self.tempStorage()
+        self.domresults = self.tempStorage()
+        self.hostresults = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def enrichTarget(self, target):
         ret = list()
         # If it's an IP, get the hostname it reverse resolves to
-        if target.getType() == "IP_ADDRESS":
-            ret = self.resolveIP(target.getValue())
-        if target.getType() == "INTERNET_NAME":
-            ret = self.resolveHost(target.getValue())
-        if target.getType() == "NETBLOCK_OWNER":
-            ret = list()
-            for addr in IPNetwork(target.getValue()):
-                ipaddr = str(addr)
-                if ipaddr.split(".")[3] in ['255', '0']:
-                    continue
-                if '255' in ipaddr.split("."):
-                    continue
-                ret.append(ipaddr)
-
-                # Add the reverse-resolved hostnames as aliases too..
-                names = self.resolveIP(ipaddr)
-
-                if self.opts['validatereverse']:
-                    for host in names:
-                        chk = self.resolveHost(host)
-                        if ipaddr in chk:
-                            ret.append(host)
-                else:
-                    ret.extend(names)
+        self.sf.info("Identifying aliases for specified target(s)")
+        ret = self.sf.resolveTargets(target, self.opts['validatereverse'])
+        if not ret:
+            return target
 
         for host in ret:
+            self.sf.debug("Found an alias: " + host)
             if self.sf.validIP(host):
                 target.setAlias(host, "IP_ADDRESS")
+            elif self.sf.validIP6(host):
+                target.setAlias(host, "IPV6_ADDRESS")
             else:
                 target.setAlias(host, "INTERNET_NAME")
                 idnahost = host.encode("idna")
                 if idnahost != host:
                     target.setAlias(idnahost, "INTERNET_NAME")
+
                 # If the target was a hostname/sub-domain, we can
                 # add the domain as an alias for the target. But
                 # not if the target was an IP or subnet.
@@ -98,7 +77,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 #    dom = self.sf.hostDomain(host, self.opts['_internettlds'])
                 #    target.setAlias(dom, "INTERNET_NAME")
 
-        self.sf.debug("Aliases identified: " + str(target.getAliases()))
+        self.sf.info("Aliases identified: " + str(target.getAliases()))
 
         return target
 
@@ -107,12 +86,12 @@ class sfp_dnsresolve(SpiderFootPlugin):
         return [
                 # Events that need some kind of DNS treatment
                 "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", "NETBLOCK_OWNER",
-                "IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_IPADDR", 
+                "IP_ADDRESS", "IPV6_ADDRESS", "INTERNET_NAME", "AFFILIATE_IPADDR",
                 # Events that may contain hostnames in their content
                 "TARGET_WEB_CONTENT", "BASE64_DATA", "AFFILIATE_DOMAIN_WHOIS",
                 "CO_HOSTED_SITE_DOMAIN_WHOIS", "DOMAN_WHOIS", "NETBLOCK_WHOIS",
                 "LEAKSITE_CONTENT", "RAW_DNS_RECORDS", "RAW_FILE_META_DATA",
-                "SEARCH_ENGINE_WEB_CONTENT", "SIMILARDOMAIN_WHOIS",
+                "RAW_RIR_DATA", "SEARCH_ENGINE_WEB_CONTENT", "SIMILARDOMAIN_WHOIS",
                 "SSL_CERTIFICATE_RAW", "SSL_CERTIFICATE_ISSUED", "TCP_PORT_OPEN_BANNER",
                 "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS"
                 ]
@@ -122,9 +101,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
-                "AFFILIATE_IPADDR", "DOMAIN_NAME", "IPV6_ADDRESS", 
-                "DOMAIN_NAME_PARENT", "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN",
+                "AFFILIATE_IPADDR", "DOMAIN_NAME", "IPV6_ADDRESS",
+                "DOMAIN_NAME_PARENT", "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN_NAME",
                 "INTERNET_NAME_UNRESOLVED"]
+
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -135,8 +115,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         addrs = None
         parentEvent = event
 
-        # Don't be recursive, and trust that sfp_dnsbrute knows what it's doing
-        if srcModuleName in [ "sfp_dnsresolve", "sfp_dnsbrute" ]:
+        # Don't be recursive for names
+        if srcModuleName in [ "sfp_dnsresolve" ] and "_NAME" in eventName:
             return None
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
@@ -148,43 +128,82 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         # Simply translates these to their domains
         if eventName in ["CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME"]:
-            dom = self.sf.hostDomain(eventData, self.opts['_internettlds'])
+            # If the co-host or affiliate is a domain name, generate
+            # a domain event.
             if "AFFILIATE_" in eventName:
-                ev = "AFFILIATE_DOMAIN"
+                ev = "AFFILIATE_DOMAIN_NAME"
             else:
                 ev = "CO_HOSTED_SITE_DOMAIN"
+
+            # What we've been provided might be a domain, so report it
+            if self.sf.isDomain(eventData, self.opts['_internettlds']):
+                evt = SpiderFootEvent(ev, eventData, self.__name__, parentEvent)
+                self.notifyListeners(evt)
+
+            # In case the domain of the provided host is different, report that too
+            dom = self.sf.hostDomain(eventData, self.opts['_internettlds'])
+            if dom == eventData:
+                return None
             evt = SpiderFootEvent(ev, dom, self.__name__, parentEvent)
             self.notifyListeners(evt)
             return None
 
-        # Search for IPs/hosts in raw data, but obviously nothing this module
-        # already produces, as those things are already entities, not raw data.
-        if eventName not in self.producedEvents():
-            if type(eventData) in [dict, list]:
-                eventDataStr = str(eventData)
-            else:
-                eventDataStr = eventData
-            data = urllib2.unquote(eventDataStr)
+        # Search for IPs/hosts in raw data
+        if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME",
+                              "NETBLOCK_OWNER", "IP_ADDRESS", "IPV6_ADDRESS",
+                              "INTERNET_NAME", "AFFILIATE_IPADDR"]:
+            data = urllib.parse.unquote(eventData).lower()
             for name in self.getTarget().getNames():
                 if self.checkForStop():
                     return None
-                pat = re.compile("(%..)?([a-zA-Z0-9\-\.]+\." + name + ")", re.IGNORECASE)
-                matches = re.findall(pat, data)
-                if matches is not None:
-                    for match in matches:
-                        self.processHost(match[1], parentEvent, False)
+
+                offset = data.find(name)
+                if offset < 0:
+                    continue
+
+                if offset == 0:
+                    offset += len(name)
+
+                pat = re.compile("[^a-z0-9\-\.\%]([a-z0-9\-\.\%]*\." + name + ")", re.DOTALL|re.MULTILINE)
+                while offset >= 0:
+                    offset = data.find(name, offset)
+                    #print "found at offset: " + str(offset)
+                    if offset < 0:
+                        break
+
+                    # Get 200 bytes before the name to try and get hostnames
+                    chunkhost = data[(offset-200):(offset+len(name)+1)]
+
+                    try:
+                        matches = re.findall(pat, chunkhost)
+                        if matches:
+                            for match in matches:
+                                # Wildcard certs will come in as .blah.blah
+                                if match.startswith("."):
+                                    m = match[1:]
+                                else:
+                                    m = match
+                                # Remove URL-encoded stuff
+                                if '%' in m:
+                                    m = urllib.parse.unquote(m)
+                                self.processHost(m, parentEvent, False)
+                    except Exception as e:
+                        self.sf.error("Error applying regex to data (" + str(e) + ")", False)
+
+                    offset += len(name)
+
             # Nothing left to do with internal links and raw data
             return None
 
-            if eventName == 'NETBLOCK_OWNER':
-                if not self.opts['netblocklookup']:
+        if eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
+                return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxnetblock']))
                     return None
-                else:
-                    if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                        self.sf.debug("Network size bigger than permitted: " +
-                                      str(IPNetwork(eventData).prefixlen) + " > " +
-                                      str(self.opts['maxnetblock']))
-                        return None
 
             # Not handling IPv6 (yet)
             if "::" in eventData:
@@ -202,9 +221,9 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
                 if self.checkForStop():
                     return None
-                addrs = self.resolveIP(ipaddr)
 
-                if len(addrs) > 0:
+                addrs = self.sf.resolveIP(ipaddr)
+                if addrs:
                     self.sf.debug("Found a reversed hostname from " + ipaddr +
                                   " (" + str(addrs) + ")")
                     for addr in addrs:
@@ -217,13 +236,16 @@ class sfp_dnsresolve(SpiderFootPlugin):
                         self.processHost(ipaddr, parentEvent, False)
             return None
 
-        if eventName in ["IP_ADDRESS", "INTERNET_NAME", 
+        if eventName in ["IP_ADDRESS", "INTERNET_NAME", "IPV6_ADDRESS",
                          "AFFILIATE_IPADDR", "AFFILIATE_INTERNET_NAME"]:
 
             if "_NAME" in eventName:
-                addrs = self.resolveHost(eventData)
+                addrs = self.sf.resolveHost(eventData)
             else:
-                addrs = self.resolveIP(eventData)
+                addrs = self.sf.resolveIP(eventData)
+
+            if not addrs:
+                return None
 
             # We now have a set of hosts/IPs to do something with.
             for addr in addrs:
@@ -241,83 +263,17 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     else:
                         self.processHost(addr, parentEvent, True)
 
-    # Resolve an IP
-    def resolveIP(self, ipaddr):
-        ret = list()
-        self.sf.debug("Performing reverse-resolve of " + ipaddr)
-
-        if ipaddr in self.resolveCache:
-            self.sf.debug("Returning cached result for " + ipaddr + " (" +
-                          str(self.resolveCache[ipaddr]) + ")")
-            return self.resolveCache[ipaddr]
-
-        try:
-            addrs = self.sf.normalizeDNS(socket.gethostbyaddr(ipaddr))
-            self.resolveCache[ipaddr] = addrs
-            self.sf.debug("Resolved " + ipaddr + " to: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
-            self.resolveCache[ipaddr] = list()
-            return ret
-
-    # Resolve a host
-    def resolveHost(self, hostname):
-        if not hostname:
-            return list()
-
-        if hostname in self.resolveCache:
-            self.sf.debug("Returning cached result for " + hostname + " (" +
-                          str(self.resolveCache[hostname]) + ")")
-            return self.resolveCache[hostname]
-
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(hostname) != unicode:
-                hostname = unicode(hostname, "utf-8", errors='replace').encode("idna")
-            else:
-                hostname = hostname.encode("idna")
-            addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
-            self.resolveCache[hostname] = addrs
-            self.sf.debug("Resolved " + hostname + " to: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + hostname + " (" + str(e) + ")")
-            return list()
-
-    # Resolve a host to IPv6
-    def resolveHost6(self, hostname):
-        if hostname in self.resolveCache6:
-            self.sf.debug("Returning IPv6 cached result for " + hostname + " (" +
-                          str(self.resolveCache6[hostname]) + ")")
-            return self.resolveCache6[hostname]
-
-        try:
-            addrs = list()
-            res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
-            for addr in res:
-                if addr[4][0] not in addrs:
-                    addrs.append(addr[4][0])
-            if len(addrs) < 1:
-                return None
-            self.resolveCache6[hostname] = addrs
-            self.sf.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
-            return list()
-
     # Process a host/IP, parentEvent is the event that represents this entity
     def processHost(self, host, parentEvent, affiliate=None):
         parentHash = self.sf.hashstring(parentEvent.data)
         if host not in self.hostresults:
-            self.hostresults[host] = list(parentHash)
+            self.hostresults[host] = [parentHash]
         else:
             if parentHash in self.hostresults[host] or parentEvent.data == host:
                 self.sf.debug("Skipping host, " + host + ", already processed.")
                 return None
             else:
-                self.hostresults[host].append(parentHash)
+                self.hostresults[host] = self.hostresults[host] + [parentHash]
 
         self.sf.debug("Found host: " + host)
         # If the returned hostname is aliaseed to our
@@ -327,11 +283,13 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if self.getTarget().matches(host):
                 affil = False
             # If the IP the host resolves to is in our
-            # list of aliases, 
+            # list of aliases,
             if not self.sf.validIP(host):
-                for hostip in self.resolveHost(host):
-                    if self.getTarget().matches(hostip):
-                        affil = False
+                hostips = self.sf.resolveHost(host)
+                if hostips:
+                    for hostip in hostips:
+                        if self.getTarget().matches(hostip):
+                            affil = False
         else:
             affil = affiliate
 
@@ -343,11 +301,13 @@ class sfp_dnsresolve(SpiderFootPlugin):
         else:
             if self.sf.validIP(host):
                 htype = "IP_ADDRESS"
+            elif self.sf.validIP6(host):
+                htype = "IPV6_ADDRESS"
             else:
                 htype = "INTERNET_NAME"
 
         if htype.endswith("INTERNET_NAME"):
-            resolved = len(self.resolveHost(host)) > 0
+            resolved = self.sf.resolveHost(host)
             if htype == "INTERNET_NAME" and not resolved:
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host,
                                       self.__name__, parentEvent)
@@ -357,6 +317,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if not resolved:
                 return None
 
+        # Report the host
         if host != parentEvent.data and htype != parentEvent.eventType:
             evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
             self.notifyListeners(evt)
@@ -369,12 +330,16 @@ class sfp_dnsresolve(SpiderFootPlugin):
             self.processDomain(dom, evt)
 
             # Try obtain the IPv6 address
-            for ip6 in self.resolveHost6(host):
-                evt6 = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
-                self.notifyListeners(evt6)
+            ip6s = self.sf.resolveHost6(host)
+            if ip6s:
+                for ip6 in ip6s:
+                    evt6 = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
+                    self.notifyListeners(evt6)
 
         if htype == "AFFILIATE_INTERNET_NAME":
             dom = self.sf.hostDomain(host, self.opts['_internettlds'])
+            if dom == host and not self.sf.isDomain(dom, self.opts['_internettlds']):
+                return evt
             self.processDomain(dom, evt, True)
 
         return evt
@@ -387,7 +352,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             return None
 
         if affil:
-            domevt = SpiderFootEvent("AFFILIATE_DOMAIN", domainName,
+            domevt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", domainName,
                                      self.__name__, parentEvent)
             self.notifyListeners(domevt)
             return None

@@ -18,11 +18,10 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_spider(SpiderFootPlugin):
     """Spider:Footprint,Investigate:Crawling and Scanning:slow:Spidering of web-pages to extract content for searching."""
 
-
     # Default options
     opts = {
         'robotsonly': False,  # only follow links specified by robots.txt
-        'pause': 1,  # number of seconds to pause between fetches
+        'pausesec': 0,  # number of seconds to pause between fetches
         'maxpages': 100,  # max number of pages to fetch
         'maxlevels': 3,  # max number of levels to traverse within a site
         'usecookies': True,  # Use cookies?
@@ -35,15 +34,14 @@ class sfp_spider(SpiderFootPlugin):
         'filtermime': ['image/'],
         'filterusers': True,  # Don't follow /~user directories
         'nosubs': False,  # Should links to subdomains be ignored?
-        'reportduplicates': False,
-        'parsetext': True
+        'reportduplicates': False
     }
 
     # Option descriptions
     optdescs = {
         'robotsonly': "Only follow links specified by robots.txt?",
-        'pause': "Number of seconds to pause between fetches.",
         'usecookies': "Accept and use cookies?",
+        'pausesec': "Number of seconds to pause between page fetches.",
         'start': "Prepend targets with these until you get a hit, to start spidering.",
         'maxpages': "Maximum number of pages to fetch per starting point identified.",
         'maxlevels': "Maximum levels to traverse per starting point (e.g. hostname or link identified by another module) identified.",
@@ -51,30 +49,29 @@ class sfp_spider(SpiderFootPlugin):
         'filtermime': "MIME types to ignore.",
         'filterusers': "Skip spidering of /~user directories?",
         'nosubs': "Skip spidering of subdomains of the target?",
-        'reportduplicates': "Report links every time one is found, even if found before?",
-        'parsetext': "Parse content for possible hostnames/links, not just in valid HTML tags?"
+        'reportduplicates': "Report links every time one is found, even if found before?"
     }
 
     # If using robots.txt, this will get populated with filter rules
     robotsRules = dict()
 
     # Pages already fetched
-    fetchedPages = dict()
+    fetchedPages = None
 
     # Events for links identified
-    urlEvents = dict()
+    urlEvents = None
 
     # Tracked cookies per site
-    siteCookies = dict()
+    siteCookies = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.fetchedPages = dict()
-        self.urlEvents = dict()
-        self.siteCookies = dict()
+        self.fetchedPages = self.tempStorage()
+        self.urlEvents = self.tempStorage()
+        self.siteCookies = self.tempStorage()
         self.__dataSource__ = "Target Website"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # Fetch data from a URL and obtain all links that should be followed
@@ -84,7 +81,7 @@ class sfp_spider(SpiderFootPlugin):
 
         # Filter out certain file types (if user chooses to)
         checkExts = lambda ext: url.lower().split('?')[0].endswith('.' + ext.lower())
-        if filter(checkExts, self.opts['filterfiles']):
+        if list(filter(checkExts, self.opts['filterfiles'])):
             #self.sf.debug('Ignoring filtered extension: ' + link)
             return None
 
@@ -93,7 +90,8 @@ class sfp_spider(SpiderFootPlugin):
             cookies = self.siteCookies[site]
         # Fetch the contents of the supplied URL (object returned)
         fetched = self.sf.fetchUrl(url, False, cookies,
-                                   self.opts['_fetchtimeout'], self.opts['_useragent'])
+                                   self.opts['_fetchtimeout'], self.opts['_useragent'],
+                                   sizeLimit=10000000)
         self.fetchedPages[url] = True
 
         # Track cookies a site has sent, then send the back in subsquent requests
@@ -110,7 +108,7 @@ class sfp_spider(SpiderFootPlugin):
         self.contentNotify(url, fetched, self.urlEvents[url])
 
         if fetched['realurl'] is not None and fetched['realurl'] != url:
-            self.sf.debug("Redirect of " + url + " to " + fetched['realurl'])
+            #self.sf.debug("Redirect of " + url + " to " + fetched['realurl'])
             # Store the content for the redirect so that it isn't fetched again
             self.fetchedPages[fetched['realurl']] = True
             # Notify modules about the new link
@@ -119,9 +117,8 @@ class sfp_spider(SpiderFootPlugin):
             url = fetched['realurl']  # override the URL if we had a redirect
 
         # Extract links from the content
-        links = self.sf.parseLinks(url, fetched['content'], 
-                                   self.getTarget().getNames(), 
-                                   self.opts['parsetext'])
+        links = self.sf.parseLinks(url, fetched['content'],
+                                   self.getTarget().getNames())
 
         if links is None or len(links) == 0:
             self.sf.info("No links found at " + url)
@@ -144,7 +141,7 @@ class sfp_spider(SpiderFootPlugin):
     def cleanLinks(self, links):
         returnLinks = dict()
 
-        for link in links.keys():
+        for link in links:
             linkBase = self.sf.urlBaseUrl(link)
             linkFQDN = self.sf.urlFQDN(link)
 
@@ -172,7 +169,7 @@ class sfp_spider(SpiderFootPlugin):
             # If we are respecting robots.txt, filter those out too
             if linkBase in self.robotsRules and self.opts['robotsonly']:
                 checkRobots = lambda blocked: type(blocked).lower(blocked) in link.lower() or blocked == '*'
-                if filter(checkRobots, self.robotsRules[linkBase]):
+                if list(filter(checkRobots, self.robotsRules[linkBase])):
                     #self.sf.debug("Ignoring page found in robots.txt: " + link)
                     continue
 
@@ -189,8 +186,8 @@ class sfp_spider(SpiderFootPlugin):
         else:
             utype = "LINKED_URL_EXTERNAL"
 
-        if type(url) != unicode:
-            url = unicode(url, "utf-8", errors='replace')
+        if type(url) != str:
+            url = str(url, "utf-8", errors='replace')
         event = SpiderFootEvent(utype, url, self.__name__, parentEvent)
         self.notifyListeners(event)
         return event
@@ -208,18 +205,22 @@ class sfp_spider(SpiderFootPlugin):
                         sendcontent = False
 
         if sendcontent:
-            event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
-                                    self.__name__, parentEvent)
-            self.notifyListeners(event)
+            if httpresult['content'] != None:
+                event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
+                                        self.__name__, parentEvent)
+                event.actualSource = url
+                self.notifyListeners(event)
 
-        if httpresult.get('headers') != None:
-            event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", 
-                                    json.dumps(httpresult['headers'], ensure_ascii=False),
+        hdr = httpresult['headers']
+        if hdr != None:
+            event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", json.dumps(hdr, ensure_ascii=False),
                                     self.__name__, parentEvent)
+            event.actualSource = url
             self.notifyListeners(event)
 
         event = SpiderFootEvent("HTTP_CODE", str(httpresult['code']),
                                 self.__name__, parentEvent)
+        event.actualSource = url
         self.notifyListeners(event)
 
         if not httpresult.get('headers'):
@@ -229,8 +230,8 @@ class sfp_spider(SpiderFootPlugin):
         if ctype:
             event = SpiderFootEvent("TARGET_WEB_CONTENT_TYPE", ctype,
                                     self.__name__, parentEvent)
+            event.actualSource = url
             self.notifyListeners(event)
-
 
     # Trigger spidering off the following events..
     # Spidering and search engines provide LINKED_URL_INTERNAL, and DNS lookups
@@ -238,13 +239,16 @@ class sfp_spider(SpiderFootPlugin):
     def watchedEvents(self):
         return ["LINKED_URL_INTERNAL", "INTERNET_NAME"]
 
+    # Don't notify me about events from myself
+    def watchOpts(self):
+        return [ 'noself' ]
+
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
         return ["WEBSERVER_HTTPHEADERS", "HTTP_CODE", "LINKED_URL_INTERNAL",
-                "LINKED_URL_EXTERNAL", "TARGET_WEB_CONTENT",
-                "TARGET_WEB_CONTENT_TYPE"]
+                "LINKED_URL_EXTERNAL", "TARGET_WEB_CONTENT", "TARGET_WEB_CONTENT_TYPE"]
 
     # Some other modules may request we spider things
     def handleEvent(self, event):
@@ -268,8 +272,7 @@ class sfp_spider(SpiderFootPlugin):
         # Determine where to start spidering from if it's a INTERNET_NAME event
         if eventName == "INTERNET_NAME":
             for prefix in self.opts['start']:
-                url = prefix + eventData
-                res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
+                res = self.sf.fetchUrl(prefix + eventData, timeout=self.opts['_fetchtimeout'],
                                        useragent=self.opts['_useragent'])
                 if res['content'] is not None:
                     spiderTarget = prefix + eventData
@@ -313,9 +316,8 @@ class sfp_spider(SpiderFootPlugin):
         # and so on..
         links = self.processUrl(startingPoint)  # fetch first page
 
-        # No links from the first fetch means we've got a problem
         if links is None:
-            self.sf.error("No links found on the first fetch!", False)
+            self.sf.debug("No links found on the first fetch!")
             return None
 
         while keepSpidering:
@@ -325,7 +327,7 @@ class sfp_spider(SpiderFootPlugin):
                 links = dict()
 
                 # Fetch content from the new links
-                for link in nextLinks.keys():
+                for link in nextLinks:
                     # Always skip links we've already fetched
                     if (link in self.fetchedPages):
                         self.sf.debug("Already fetched " + link + ", skipping.")
@@ -336,7 +338,7 @@ class sfp_spider(SpiderFootPlugin):
                         return None
 
                     self.sf.debug("Fetching fresh content from: " + link)
-                    time.sleep(self.opts['pause'])
+                    time.sleep(self.opts['pausesec'])
                     freshLinks = self.processUrl(link)
                     if freshLinks is not None:
                         links.update(freshLinks)

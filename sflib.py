@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#  -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sflib
 # Purpose:      Common functions used by SpiderFoot modules.
@@ -15,9 +15,7 @@ from stem import Signal
 from stem.control import Controller
 import inspect
 import hashlib
-import binascii
-import gzip
-import gexf
+import urllib.request, urllib.parse, urllib.error
 import json
 import re
 import os
@@ -28,21 +26,29 @@ import ssl
 import sys
 import time
 import netaddr
-import urllib2
-import StringIO
+import urllib.request, urllib.error, urllib.parse
 import threading
+import traceback
+import OpenSSL
+import uuid
+import cryptography
+import dns.resolver
+from networkx import nx
+from networkx.readwrite.gexf import GEXFWriter
+from datetime import datetime
 from bs4 import BeautifulSoup, SoupStrainer
-from copy import deepcopy, copy
+from copy import deepcopy
 
 # For hiding the SSL warnings coming from the requests lib
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
 class SpiderFoot:
     dbh = None
     GUID = None
     savedsock = socket
-    urllib2.savedsock = urllib2.socket
+    socksProxy = None
 
     # 'options' is a dictionary of options which changes the behaviour
     # of how certain things are done in this module
@@ -56,16 +62,19 @@ class SpiderFoot:
         if sys.version_info >= (2, 7, 9):
             ssl._create_default_https_context = ssl._create_unverified_context
 
+        if self.opts.get('_dnsserver', "") != "":
+            res = dns.resolver.Resolver()
+            res.nameservers = [self.opts['_dnsserver']]
+            dns.resolver.override_system_resolver(res)
+
     # Bit of a hack to support SOCKS because of the loading order of
     # modules. sfscan will call this to update the socket reference
     # to the SOCKS one.
-    def updateSocket(self, sock):
-        socket = sock
-        urllib2.socket = sock
+    def updateSocket(self, socksProxy):
+        self.socksProxy = socksProxy
 
     def revertSocket(self):
-        socket = self.savedsock
-        urllib2.socket = urllib2.savedsock
+        self.socksProxy = None
 
     # Tell TOR to re-circuit
     def refreshTorIdent(self):
@@ -74,7 +83,7 @@ class SpiderFoot:
 
         try:
             self.info("Re-circuiting TOR...")
-            with Controller.from_port(address=self.opts['_socks2addr'], 
+            with Controller.from_port(address=self.opts['_socks2addr'],
                                       port=self.opts['_torctlport']) as controller:
                 controller.authenticate()
                 controller.signal(Signal.NEWNYM)
@@ -87,11 +96,16 @@ class SpiderFoot:
     # if val is a file path it will be loaded and get back the contents,
     # and if a string it will simply be returned back.
     def optValueToData(self, val, fatal=True, splitLines=True):
+        if val is None:
+            #self.debug("fetchUrl: No val")
+            return None
+
         if val.startswith('@'):
             fname = val.split('@')[1]
             try:
                 self.info("Loading configuration data from: " + fname)
                 f = open(fname, "r")
+
                 if splitLines:
                     arr = f.readlines()
                     ret = list()
@@ -99,6 +113,8 @@ class SpiderFoot:
                         ret.append(x.rstrip('\n'))
                 else:
                     ret = f.read()
+
+                f.close()
                 return ret
             except BaseException as b:
                 if fatal:
@@ -109,12 +125,12 @@ class SpiderFoot:
         if val.lower().startswith('http://') or val.lower().startswith('https://'):
             try:
                 self.info("Downloading configuration data from: " + val)
-                res = urllib2.urlopen(val)
-                data = res.read()
+                session = self.getSession()
+                res = session.get(val)
                 if splitLines:
-                    return data.splitlines()
+                    return res.content.splitlines()
                 else:
-                    return data
+                    return res.content
             except BaseException as e:
                 if fatal:
                     self.error("Unable to open option URL, " + val + ": " + str(e))
@@ -161,30 +177,28 @@ class SpiderFoot:
             for [parent, id] in parents[entity]:
                 if parent in entities:
                     if entity != parent:
-                        #print "Adding entity parent: " + parent
+                        #print("Adding entity parent: " + parent)
                         mapping.add((entity, parent))
                 else:
                     ppids = list()
-                    #print "Checking " + parent + " for entityship."
+                    #print("Checking " + parent + " for entityship.")
                     next_parents = get_next_parent_entities(parent, ppids)
                     for next_parent in next_parents:
                         if entity != next_parent:
-                            #print "Adding next entity parent: " + next_parent
+                            #print("Adding next entity parent: " + next_parent)
                             mapping.add((entity, next_parent))
         return mapping
 
     # Convert supplied raw data into GEXF format (e.g. for Gephi)
     # GEXF produced by PyGEXF doesn't work with SigmaJS because
-    # SJS needs coordinates for each node. 
+    # SJS needs coordinates for each node.
     # flt is a list of event types to include, if not set everything is
     # included.
     def buildGraphGexf(self, root, title, data, flt=[]):
         mapping = self.buildGraphData(data, flt)
-        g = gexf.Gexf(title, title)
-        graph = g.addGraph("undirected", "static", "SpiderFoot Export")
+        graph = nx.Graph()
 
         nodelist = dict()
-        ecounter = 0
         ncounter = 0
         for pair in mapping:
             (dst, src) = pair
@@ -193,28 +207,27 @@ class SpiderFoot:
             # Leave out this special case
             if dst == "ROOT" or src == "ROOT":
                 continue
+
             if dst not in nodelist:
                 ncounter = ncounter + 1
                 if dst in root:
                     col = ["255", "0", "0"]
-                graph.addNode(str(ncounter), unicode(dst, errors="replace"),
-                              r=col[0], g=col[1], b=col[2])    
+                node = graph.add_node(dst)
+                graph.node[dst]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
                 ncounter = ncounter + 1
                 if src in root:
                     col = ["255", "0", "0"]
-                graph.addNode(str(ncounter), unicode(src, errors="replace"),
-                              r=col[0], g=col[1], b=col[2])
+                graph.add_node(src)
+                graph.node[src]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
                 nodelist[src] = ncounter
 
-            ecounter = ecounter + 1
-            graph.addEdge(str(ecounter), str(nodelist[src]), str(nodelist[dst]))
+            graph.add_edge(src, dst)
 
-        output = StringIO.StringIO()
-        g.write(output)
-        return output.getvalue()
+        gexf = GEXFWriter(graph=graph)
+        return str(gexf).encode('utf-8')
 
     # Convert supplied raw data into JSON format for SigmaJS
     def buildGraphJson(self, root, data, flt=list()):
@@ -237,10 +250,10 @@ class SpiderFoot:
                 ncounter = ncounter + 1
                 if dst in root:
                     col = "#f00"
-                ret['nodes'].append({'id': str(ncounter), 
-                                    'label': unicode(dst, errors="replace"),
-                                    'x': random.randint(1,1000),
-                                    'y': random.randint(1,1000),
+                ret['nodes'].append({'id': str(ncounter),
+                                    'label': str(dst),
+                                    'x': random.SystemRandom().randint(1, 1000),
+                                    'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
                                     'color': col
                 })
@@ -250,18 +263,18 @@ class SpiderFoot:
                 if src in root:
                     col = "#f00"
                 ncounter = ncounter + 1
-                ret['nodes'].append({'id': str(ncounter), 
-                                    'label': unicode(src, errors="replace"),
-                                    'x': random.randint(1,1000),
-                                    'y': random.randint(1,1000),
+                ret['nodes'].append({'id': str(ncounter),
+                                    'label': str(src),
+                                    'x': random.SystemRandom().randint(1, 1000),
+                                    'y': random.SystemRandom().randint(1, 1000),
                                     'size': "1",
                                     'color': col
                 })
                 nodelist[src] = ncounter
 
             ecounter = ecounter + 1
-            ret['edges'].append({'id': str(ecounter), 
-                                'source': str(nodelist[src]), 
+            ret['edges'].append({'id': str(ecounter),
+                                'source': str(nodelist[src]),
                                 'target': str(nodelist[dst])
             })
 
@@ -280,38 +293,36 @@ class SpiderFoot:
 
     # Generate an globally unique ID for this scan
     def genScanInstanceGUID(self, scanName):
- #       hashStr = hashlib.sha256(
- #           scanName +
- #           str(time.time() * 1000) +
- #           str(random.randint(100000, 999999))
- #       ).hexdigest()
-        rstr = str(time.time()) + str(random.randint(100000, 999999))
-        hashStr = "%08X" % int(binascii.crc32(rstr) & 0xffffffff)
-        return hashStr
+        # hashStr = hashlib.sha256(
+        #     scanName +
+        #     str(time.time() * 1000) +
+        #     str(random.SystemRandom().randint(100000, 999999))
+        # ).hexdigest()
+        return str(uuid.uuid4()).split("-")[0].upper()
 
     def _dblog(self, level, message, component=None):
-        #print str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component)
+        #print(str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component))
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
-    def error(self, error, exception=True):
+    def error(self, message, exception=True):
         if not self.opts['__logging']:
             return None
 
         if self.dbh is None:
-            print '[Error] ' + error
+            print('[Error] %s' % message)
         else:
-            self._dblog("ERROR", error)
+            self._dblog("ERROR", message)
         if self.opts.get('__logstdout'):
-            print "[Error] " + error
+            print("[Error] %s" % message)
         if exception:
-            raise BaseException("Internal Error Encountered: " + error)
+            raise BaseException("Internal Error Encountered: " + message)
 
     def fatal(self, error):
         if self.dbh is None:
-            print '[Fatal] ' + error
+            print('[Fatal] %s' % error)
         else:
             self._dblog("FATAL", error)
-        print str(inspect.stack())
+        print(str(inspect.stack()))
         sys.exit(-1)
 
     def status(self, message):
@@ -319,11 +330,11 @@ class SpiderFoot:
             return None
 
         if self.dbh is None:
-            print "[Status] " + message
+            print("[Status] %s" % message)
         else:
             self._dblog("STATUS", message)
         if self.opts.get('__logstdout'):
-            print "[*] " + message
+            print("[*] %s" % message)
 
     def info(self, message):
         if not self.opts['__logging']:
@@ -346,11 +357,11 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print '[' + modName + '] ' + message
+            print('[%s] %s' % (modName, message))
         else:
             self._dblog("INFO", message, modName)
         if self.opts.get('__logstdout'):
-            print "[*] " + message
+            print("[*] %s" % message)
         return
 
     def debug(self, message):
@@ -375,11 +386,11 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print '[' + modName + '] ' + message
+            print('[%s] %s' % (modName, message))
         else:
             self._dblog("DEBUG", message, modName)
         if self.opts.get('__logstdout'):
-            print "[d:" + modName +"] " + message
+            print("[d:%s] %s" % (modName, message))
         return
 
     def myPath(self):
@@ -387,16 +398,14 @@ class SpiderFoot:
 
         # Determine whether we've been compiled by py2exe
         if hasattr(sys, "frozen"):
-            return os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding()))
+            return os.path.dirname(sys.executable)
 
-        return os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
+        return os.path.dirname(__file__)
 
     def hashstring(self, string):
         s = string
         if type(string) in [list, dict]:
             s = str(string)
-        if type(s) == str:
-            s = unicode(s, 'utf-8', errors='replace')
         return hashlib.sha256(s.encode('raw_unicode_escape')).hexdigest()
 
     #
@@ -412,20 +421,25 @@ class SpiderFoot:
 
     # Store data to the cache
     def cachePut(self, label, data):
-        pathLabel = hashlib.sha224(label).hexdigest()
+        pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
-        fp = file(cacheFile, "w")
+        fp = open(cacheFile, "w")
         if type(data) is list:
             for line in data:
-                fp.write(line + '\n')
+                if type(line) is str:
+                    fp.write(line)
+                    fp.write("\n")
+                else:
+                    fp.write(line.decode('utf-8') + '\n')
+        elif type(data) is bytes:
+            fp.write(data.decode('utf-8'))
         else:
-            data = data.encode('utf-8')
             fp.write(data)
         fp.close()
 
     # Retreive data from the cache
     def cacheGet(self, label, timeoutHrs):
-        pathLabel = hashlib.sha224(label).hexdigest()
+        pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
         try:
             (m, i, d, n, u, g, sz, atime, mtime, ctime) = os.stat(cacheFile)
@@ -434,10 +448,8 @@ class SpiderFoot:
                 return None
 
             if mtime > time.time() - timeoutHrs * 3600 or timeoutHrs == 0:
-                fp = file(cacheFile, "r")
-                fileContents = fp.read()
-                fp.close()
-                fileContents = fileContents.decode('utf-8')
+                with open(cacheFile, "r") as fp:
+                    fileContents = fp.read()
                 return fileContents
             else:
                 return None
@@ -453,7 +465,7 @@ class SpiderFoot:
     def configSerialize(self, opts, filterSystem=True):
         storeopts = dict()
 
-        for opt in opts.keys():
+        for opt in list(opts.keys()):
             # Filter out system temporary variables like GUID and others
             if opt.startswith('__') and filterSystem:
                 continue
@@ -500,7 +512,7 @@ class SpiderFoot:
         returnOpts = referencePoint
 
         # Global options
-        for opt in referencePoint.keys():
+        for opt in list(referencePoint.keys()):
             if opt.startswith('__') and filterSystem:
                 # Leave out system variables
                 continue
@@ -568,16 +580,19 @@ class SpiderFoot:
             {"^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS"},
             {"^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER"},
             {"^.*@.*$": "EMAILADDR"},
-            {"^\".*\"$": "HUMAN_NAME"},
-            {"\d+": "BGP_AS_OWNER"},
-            {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
+            {"^\+\d+$": "PHONE_NUMBER"},
+            {"^\".*\s+.*\"$": "HUMAN_NAME"},
+            {"^\".*\"$": "USERNAME"},
+            {"^\d+$": "BGP_AS_OWNER"},
+            {"^[0-9a-f:]+$": "IPV6_ADDRESS"},
+            {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
         ]
 
         # Parse the target and set the targetType
         for rxpair in regexToType:
-            rx = rxpair.keys()[0]
+            rx = list(rxpair.keys())[0]
             if re.match(rx, target, re.IGNORECASE|re.UNICODE):
-                targetType = rxpair.values()[0]
+                targetType = list(rxpair.values())[0]
                 break
         return targetType
 
@@ -585,7 +600,7 @@ class SpiderFoot:
     # types specified.
     def modulesProducing(self, events):
         modlist = list()
-        for mod in self.opts['__modules__'].keys():
+        for mod in list(self.opts['__modules__'].keys()):
             if self.opts['__modules__'][mod]['provides'] is None:
                 continue
 
@@ -601,10 +616,10 @@ class SpiderFoot:
     # specified.
     def modulesConsuming(self, events):
         modlist = list()
-        for mod in self.opts['__modules__'].keys():
+        for mod in list(self.opts['__modules__'].keys()):
             if self.opts['__modules__'][mod]['consumes'] is None:
                 continue
-            
+
             if "*" in self.opts['__modules__'][mod]['consumes'] and mod not in modlist:
                 modlist.append(mod)
 
@@ -619,7 +634,7 @@ class SpiderFoot:
     def eventsFromModules(self, modules):
         evtlist = list()
         for mod in modules:
-            if mod in self.opts['__modules__'].keys():
+            if mod in list(self.opts['__modules__'].keys()):
                 if self.opts['__modules__'][mod]['provides'] is not None:
                     for evt in self.opts['__modules__'][mod]['provides']:
                         evtlist.append(evt)
@@ -631,7 +646,7 @@ class SpiderFoot:
     def eventsToModules(self, modules):
         evtlist = list()
         for mod in modules:
-            if mod in self.opts['__modules__'].keys():
+            if mod in list(self.opts['__modules__'].keys()):
                 if self.opts['__modules__'][mod]['consumes'] is not None:
                     for evt in self.opts['__modules__'][mod]['consumes']:
                         evtlist.append(evt)
@@ -751,9 +766,50 @@ class SpiderFoot:
         ps = PublicSuffixList(tldList)
         return ps.get_public_suffix(hostname)
 
-    # Simple way to verify IPs.
+    # Is the host a valid host (some filenames look like hosts)
+    def validHost(self, hostname, tldList):
+        # First basic content checks
+        if "." not in hostname:
+            return False
+
+        if not re.match("^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
+            return False
+
+        # Finally check if it's on a valid TLD
+        ps = PublicSuffixList(tldList)
+        sfx = ps.get_public_suffix(hostname, strict=True)
+        return sfx != None
+
+    # Given a possible hostname, check if it's a domain name
+    # By checking whether it rests atop a TLD.
+    # e.g. www.example.com = False because tld of hostname is com,
+    # and www.example has a . in it.
+    def isDomain(self, hostname, tldList):
+        ps = PublicSuffixList(tldList)
+        suffix = ps.get_public_suffix(hostname)
+        return hostname == suffix
+
+    # Simple way to verify IPv4 addresses.
     def validIP(self, address):
+        if not address:
+            return False
         return netaddr.valid_ipv4(address)
+
+    # Simple way to verify IPv6 addresses.
+    def validIP6(self, address):
+        if not address:
+            return False
+        return netaddr.valid_ipv6(address)
+
+    # Simple way to verify netblock.
+    def validIpNetwork(self, cidr):
+        try:
+            if '/' in str(cidr) and netaddr.IPNetwork(str(cidr)).size > 0:
+                return True
+            else:
+                return False
+        except:
+            return False
 
     # Clean DNS results to be a simple list
     def normalizeDNS(self, res):
@@ -761,16 +817,18 @@ class SpiderFoot:
         for addr in res:
             if type(addr) == list:
                 for host in addr:
-                    ret.append(unicode(host, 'utf-8', errors='replace'))
+                    host = str(host).rstrip(".")
+                    ret.append(host)
             else:
-                ret.append(unicode(addr, 'utf-8', errors='replace'))
+                addr = str(addr).rstrip(".")
+                ret.append(addr)
         return ret
 
     # Verify input is OK to execute
     def sanitiseInput(self, cmd):
-        chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m',
-         'n','o','p','q','r','s','t','u','v','w','x','y','z',
-         '0','1','2','3','4','5','6','7','8','9','-','.'] 
+        chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
         for c in cmd:
             if c.lower() not in chars:
                 return False
@@ -793,14 +851,19 @@ class SpiderFoot:
         dicts = [ "english", "german", "french", "spanish" ]
 
         for d in dicts:
-            wdct = open(self.myPath() + "/ext/ispell/" + d + ".dict", 'r')
-            dlines = wdct.readlines()
+            try:
+                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
+                dlines = wdct.readlines()
+                wdct.close()
+            except BaseException as e:
+                self.debug("Could not read dictionary: " + str(e))
+                continue
 
             for w in dlines:
                 w = w.strip().lower()
                 wd[w.split('/')[0]] = True
 
-        return wd.keys()
+        return list(wd.keys())
 
     # Return dictionary names
     def dictnames(self):
@@ -809,42 +872,47 @@ class SpiderFoot:
         dicts = [ "names" ]
 
         for d in dicts:
-            wdct = open(self.myPath() + "/ext/ispell/" + d + ".dict", 'r')
-            dlines = wdct.readlines()
+            try:
+                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
+                dlines = wdct.readlines()
+                wdct.close()
+            except BaseException as e:
+                self.debug("Could not read dictionary: " + str(e))
+                continue
 
             for w in dlines:
                 w = w.strip().lower()
                 wd[w.split('/')[0]] = True
 
-        return wd.keys()
+        return list(wd.keys())
 
 
     # Converts a dictionary of k -> array to a nested
     # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):
         def get_children(needle, haystack):
-            #print "called"
+            #print("called")
             ret = list()
 
-            if needle not in haystack.keys():
+            if needle not in list(haystack.keys()):
                 return None
 
             if haystack[needle] is None:
                 return None
 
             for c in haystack[needle]:
-                #print "found child of " + needle + ": " + c
+                #print("found child of " + needle + ": " + c)
                 ret.append({"name": c, "children": get_children(c, haystack)})
             return ret
 
         # Find the element with no parents, that's our root.
         root = None
-        for k in data.keys():
+        for k in list(data.keys()):
             if data[k] is None:
                 continue
 
             contender = True
-            for ck in data.keys():
+            for ck in list(data.keys()):
                 if data[ck] is None:
                     continue
 
@@ -856,7 +924,7 @@ class SpiderFoot:
                 break
 
         if root is None:
-            #print "*BUG*: Invalid structure - needs to go back to one root."
+            #print("*BUG*: Invalid structure - needs to go back to one root.")
             final = {}
         else:
             final = {"name": root, "children": get_children(root, data)}
@@ -866,6 +934,112 @@ class SpiderFoot:
     #
     # General helper functions to automate many common tasks between modules
     #
+
+    # Return a normalised resolution or None if not resolved.
+    def resolveHost(self, host):
+        try:
+            addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
+            if len(addrs) > 0:
+                return list(set(addrs))
+            return None
+        except BaseException as e:
+            self.debug("Unable to resolve " + str(host) + ": " + str(e))
+            return None
+
+    # Return a normalised resolution of an IPv4 address or None if not resolved.
+    def resolveIP(self, ipaddr):
+        self.debug("Performing reverse-resolve of " + ipaddr)
+
+        try:
+            addrs = self.normalizeDNS(socket.gethostbyaddr(ipaddr))
+            if len(addrs) > 0:
+                return list(set(addrs))
+            return None
+        except BaseException as e:
+            self.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
+            return None
+
+    # Return a normalised resolution of an IPv6 address or None if not resolved.
+    def resolveHost6(self, hostname):
+        try:
+            addrs = list()
+            res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
+            for addr in res:
+                if addr[4][0] not in addrs:
+                    addrs.append(addr[4][0])
+            if len(addrs) < 1:
+                return None
+            self.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
+            return list(set(addrs))
+        except BaseException as e:
+            self.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
+            return None
+
+    # Verify a host resolves to a given IP
+    def validateIP(self, host, ip):
+        addrs = self.resolveHost(host)
+
+        if addrs is None:
+            return False
+
+        for addr in addrs:
+            if str(addr) == ip:
+                return True
+
+        return False
+
+    # Resolve alternative names for a given target
+    def resolveTargets(self, target, validateReverse):
+        ret = list()
+        t = target.getType()
+        v = target.getValue()
+
+        if t in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
+            r = self.resolveIP(v)
+            if r:
+                ret.extend(r)
+        if t == "INTERNET_NAME":
+            r = self.resolveHost(v)
+            if r:
+                ret.extend(r)
+        if t == "NETBLOCK_OWNER":
+            for addr in netaddr.IPNetwork(v):
+                ipaddr = str(addr)
+                if ipaddr.split(".")[3] in ['255', '0']:
+                    continue
+                if '255' in ipaddr.split("."):
+                    continue
+                ret.append(ipaddr)
+
+                # Add the reverse-resolved hostnames as aliases too..
+                names = self.resolveIP(ipaddr)
+                if names:
+                    if validateReverse:
+                        for host in names:
+                            chk = self.resolveHost(host)
+                            if chk:
+                                if ipaddr in chk:
+                                    ret.append(host)
+                    else:
+                        ret.extend(names)
+        if len(ret) > 0:
+            return list(set(ret))
+        return None
+
+    # Create a safe socket that's using SOCKS/TOR if it was enabled
+    def safeSocket(self, host, port, timeout):
+        sock = socket.create_connection((host, int(port)), int(timeout))
+        sock.settimeout(int(timeout))
+        return sock
+
+    # Create a safe SSL connection that's using SOCKs/TOR if it was enabled
+    def safeSSLSocket(self, host, port, timeout):
+        s = socket.socket()
+        s.settimeout(int(timeout))
+        s.connect((host, int(port)))
+        sock = ssl.wrap_socket(s)
+        sock.do_handshake()
+        return sock
 
     # Parse the contents of robots.txt, returns a list of patterns
     # which should not be followed
@@ -883,6 +1057,134 @@ class SpiderFoot:
 
         return returnArr
 
+    # Find all emails within the supplied content
+    # Returns an Array
+    def parseEmails(self, data):
+        emails = set()
+        matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
+
+        for match in matches:
+            self.debug("Found possible email: " + match)
+
+            # Handle false positive matches
+            if len(match) < 5:
+                self.debug("Skipped likely invalid email address.")
+                continue
+
+            # Handle messed up encodings
+            if "%" in match:
+                self.debug("Skipped invalid email address: " + match)
+                continue
+
+            # Handle truncated emails
+            if "..." in match:
+                self.debug("Skipped incomplete e-mail address: " + match)
+                continue
+
+            emails.add(match)
+
+        return list(emails)
+
+    # Return a PEM for a DER
+    def sslDerToPem(self, der):
+        return ssl.DER_cert_to_PEM_cert(der)
+
+    # Parse a PEM-format SSL certificate
+    def parseCert(self, rawcert, fqdn=None, expiringdays=30):
+        ret = dict()
+        if '\r' in rawcert:
+            rawcert = rawcert.replace('\r', '')
+        if type(rawcert) == str:
+            rawcert = rawcert.encode('utf-8')
+
+        from cryptography.hazmat.backends.openssl import backend
+        cert = cryptography.x509.load_pem_x509_certificate(rawcert, backend)
+        sslcert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, rawcert)
+        sslcert_dump = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_TEXT, sslcert)
+
+        ret['text'] = sslcert_dump.decode('utf-8', errors='replace')
+        ret['issuer'] = str(cert.issuer)
+        ret['altnames'] = list()
+        ret['expired'] = False
+        ret['expiring'] = False
+        ret['mismatch'] = False
+        ret['certerror'] = False
+        ret['issued'] = str(cert.subject)
+
+        # Expiry info
+        try:
+            notafter = datetime.strptime(sslcert.get_notAfter().decode('utf-8'), "%Y%m%d%H%M%SZ")
+            ret['expiry'] = int(notafter.strftime("%s"))
+            ret['expirystr'] = notafter.strftime("%Y-%m-%d %H:%M:%S")
+            now = int(time.time())
+            warnexp = now + (expiringdays * 86400)
+            if ret['expiry'] <= warnexp:
+                ret['expiring'] = True
+            if ret['expiry'] <= now:
+                ret['expired'] = True
+        except BaseException as e:
+            self.error("Error processing date in certificate: " + str(e) , False)
+            ret['certerror'] = True
+            return ret
+
+        # SANs
+        try:
+            ext = cert.extensions.get_extension_for_class(cryptography.x509.SubjectAlternativeName)
+            for x in ext.value:
+                if isinstance(x, cryptography.x509.DNSName):
+                    ret['altnames'].append(x.value.lower().encode('raw_unicode_escape').decode("ascii", errors='replace'))
+        except BaseException as e:
+            self.debug("Problem processing certificate: " + str(e))
+            pass
+
+        certhosts = list()
+        try:
+            attrs = cert.subject.get_attributes_for_oid(cryptography.x509.oid.NameOID.COMMON_NAME)
+
+            if len(attrs) == 1:
+                name = attrs[0].value.lower()
+                # CN often duplicates one of the SANs, don't add it then
+                if name not in ret['altnames']:
+                    certhosts.append(name)
+        except BaseException as e:
+            self.debug("Problem processing certificate: " + str(e))
+            pass
+
+        # Check for mismatch
+        if fqdn and ret['issued']:
+            fqdn = fqdn.lower()
+
+            try:
+                # Extract the CN from the issued section
+                if "cn=" + fqdn in ret['issued'].lower():
+                    certhosts.append(fqdn)
+
+                # Extract subject alternative names
+                for host in ret['altnames']:
+                    certhosts.append(host.replace("dns:", ""))
+
+                ret['hosts'] = certhosts
+
+                self.debug("Checking for " + fqdn + " in certificate subject")
+                fqdn_tld = ".".join(fqdn.split(".")[1:]).lower()
+
+                found = False
+                for chost in certhosts:
+                    if chost == fqdn:
+                        found = True
+                    if chost == "*." + fqdn_tld:
+                        found = True
+                    if chost == fqdn_tld:
+                        found = True
+
+                if not found:
+                    ret['mismatch'] = True
+            except BaseException as e:
+                self.error("Error processing certificate: " + str(e), False)
+                ret['certerror'] = True
+
+        return ret
+
     # Find all URLs within the supplied content. This does not fetch any URLs!
     # A dictionary will be returned, where each link will have the keys
     # 'source': The URL where the link was obtained from
@@ -890,7 +1192,7 @@ class SpiderFoot:
     # The key will be the *absolute* URL of the link obtained, so for example if
     # the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
     # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
-    def parseLinks(self, url, data, domains, parseText=True):
+    def parseLinks(self, url, data, domains):
         returnLinks = dict()
         urlsRel = []
 
@@ -919,102 +1221,105 @@ class SpiderFoot:
             return None
 
         try:
-            for t in tags.keys():
+            for t in list(tags.keys()):
                 for lnk in BeautifulSoup(data, "lxml",
                     parse_only=SoupStrainer(t)).find_all(t):
                     if lnk.has_attr(tags[t]):
-                        urlsRel.append([None, lnk[tags[t]]])
+                        urlsRel.append(lnk[tags[t]])
         except BaseException as e:
             self.error("Error parsing with BeautifulSoup: " + str(e), False)
             return None
 
-        # Find potential links that aren't links (text possibly in comments, etc.)
-        data = urllib2.unquote(data)
-        for domain in domains:
-            if parseText:
-                try:
-                    # Because we're working with a big blob of text now, don't worry
-                    # about clobbering proper links by url decoding them.
-                    regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.' + domain + ')',
-                                        re.IGNORECASE)
-                    urlsRel = urlsRel + regRel.findall(data)
-                except Exception as e:
-                    self.error("Error applying regex2 to: " + data + "(" + str(e) + ")", False)
-                try:
-                    # Some links are sitting inside a tag, e.g. Google's use of <cite>
-                    regRel = re.compile('([>\"])([a-zA-Z0-9\-\.\:\/]+\.' + domain + '/.[^<\"]+)', re.IGNORECASE)
-                    urlsRel = urlsRel + regRel.findall(data)
-                except Exception as e:
-                    self.error("Error applying regex3 to: " + data + "(" + str(e) + ")", False)
+        # Loop through all the URLs/links found
+        for link in urlsRel:
+            if type(link) != str:
+                link = str(link)
+            linkl = link.lower()
+            absLink = None
 
-            # Loop through all the URLs/links found
-            for linkTuple in urlsRel:
-                # Remember the regex will return two vars (two groups captured)
-                junk = linkTuple[0]
-                link = linkTuple[1]
-                if type(link) != unicode:
-                    link = unicode(link, 'utf-8', errors='replace')
-                linkl = link.lower()
-                absLink = None
+            if len(link) < 1:
+                continue
 
-                if len(link) < 1:
-                    continue
+            # Don't include stuff likely part of some dynamically built incomplete
+            # URL found in Javascript code (character is part of some logic)
+            if link[len(link) - 1] == '.' or link[0] == '+' or \
+                            'javascript:' in linkl or '()' in link:
+                self.debug('unlikely link: ' + link)
+                continue
+            # Filter in-page links
+            if re.match('.*#.[^/]+', link):
+                self.debug('in-page link: ' + link)
+                continue
 
-                # Don't include stuff likely part of some dynamically built incomplete
-                # URL found in Javascript code (character is part of some logic)
-                if link[len(link) - 1] == '.' or link[0] == '+' or \
-                                'javascript:' in linkl or '()' in link:
-                    self.debug('unlikely link: ' + link)
-                    continue
-                # Filter in-page links
-                if re.match('.*#.[^/]+', link):
-                    self.debug('in-page link: ' + link)
-                    continue
+            # Ignore mail links
+            if 'mailto:' in linkl:
+                self.debug("Ignoring mail link: " + link)
+                continue
 
-                # Ignore mail links
-                if 'mailto:' in linkl:
-                    self.debug("Ignoring mail link: " + link)
-                    continue
+            # URL decode links
+            if '%2f' in linkl:
+                link = urllib.parse.unquote(link)
 
-                # URL decode links
-                if '%2f' in linkl:
-                    link = urllib2.unquote(link)
+            # Capture the absolute link:
+            # If the link contains ://, it is already an absolute link
+            if '://' in link:
+                absLink = link
 
-                # Capture the absolute link:
-                # If the link contains ://, it is already an absolute link
-                if '://' in link:
-                    absLink = link
+            # If the link starts with a /, the absolute link is off the base URL
+            if link.startswith('/'):
+                absLink = self.urlBaseUrl(url) + link
 
-                # If the link starts with a /, the absolute link is off the base URL
-                if link.startswith('/'):
-                    absLink = self.urlBaseUrl(url) + link
+            # Protocol relative URLs
+            if link.startswith('//'):
+                absLink = proto + ':' + link
 
-                # Protocol relative URLs
-                if link.startswith('//'):
-                    absLink = proto + ':' + link
-
-                # Maybe the domain was just mentioned and not a link, so we make it one
+            # Maybe the domain was just mentioned and not a link, so we make it one
+            for domain in domains:
                 if absLink is None and domain.lower() in link.lower():
                     absLink = proto + '://' + link
 
-                # Otherwise, it's a flat link within the current directory
-                if absLink is None:
-                    absLink = self.urlBaseDir(url) + link
+            # Otherwise, it's a flat link within the current directory
+            if absLink is None:
+                absLink = self.urlBaseDir(url) + link
 
-                # Translate any relative pathing (../)
-                absLink = self.urlRelativeToAbsolute(absLink)
-                returnLinks[absLink] = {'source': url, 'original': link}
+            # Translate any relative pathing (../)
+            absLink = self.urlRelativeToAbsolute(absLink)
+            returnLinks[absLink] = {'source': url, 'original': link}
 
         return returnLinks
 
     def urlEncodeUnicode(self, url):
         return re.sub('[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), url)
 
+    def getSession(self):
+        session = requests.session()
+        if self.socksProxy:
+            session.proxies = {
+                'http': self.socksProxy,
+                'https': self.socksProxy,
+            }
+        return session
+
+    # Remove key= and others from URLs to avoid credentials in logs
+    def removeUrlCreds(self, url):
+        pats = {
+            "key=\S+": "key=XXX",
+            "pass=\S+": "pass=XXX",
+            "user=\S+": "user=XXX",
+            "password=\S+": "password=XXX"
+        }
+
+        ret = url
+        for pat in pats:
+            ret = re.sub(pat, pats[pat], ret, re.IGNORECASE)
+
+        return ret
+
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
-                 useragent="SpiderFoot", headers=None, noLog=False, 
+                 useragent="SpiderFoot", headers=None, noLog=False,
                  postData=None, dontMangle=False, sizeLimit=None,
-                 headOnly=False):
+                 headOnly=False, verify=False):
         result = {
             'code': None,
             'status': None,
@@ -1024,34 +1329,67 @@ class SpiderFoot:
         }
 
         if url is None:
+            #self.debug("fetchUrl: No url")
             return None
 
-        # Clean the URL
-        if type(url) != unicode:
-            url = unicode(url, 'utf-8', errors='replace')
+        proxies = dict()
+        if self.opts['_socks1type']:
+            neverProxyNames = [ self.opts['_socks2addr'] ]
+            neverProxySubnets = [ "192.168.", "127.", "10." ]
+            host = self.urlFQDN(url)
 
-        # Convert any unicode chars in the URL
-        url = str(self.urlEncodeUnicode(url))
+            # Completely on or off?
+            if self.opts['_socks1type']:
+                proxy = True
+            else:
+                proxy = False
+
+            # Never proxy these system/internal locations
+            # This logic also exists in ext/socks.py and may not be
+            # needed anymore.
+            if host in neverProxyNames:
+                proxy = False
+            for s in neverProxyNames:
+                if host.endswith(s):
+                    proxy = False
+            for sub in neverProxySubnets:
+                if host.startswith(sub):
+                    proxy = False
+
+            if proxy:
+                self.debug("Using proxy for " + host)
+                self.debug("Proxy set to " + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']))
+                proxies = {
+                    'http': 'socks5h://' + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']),
+                    'https': 'socks5h://' + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port'])
+                }
+            else:
+                self.debug("Not using proxy for " + host)
 
         try:
             header = dict()
+            btime = time.time()
             if type(useragent) is list:
-                header['User-Agent'] = random.choice(useragent)
+                header['User-Agent'] = random.SystemRandom().choice(useragent)
             else:
                 header['User-Agent'] = useragent
 
             # Add custom headers
             if headers is not None:
-                for k in headers.keys():
-                    header[k] = headers[k]
+                for k in list(headers.keys()):
+                    if type(headers[k]) != str:
+                        header[k] = str(headers[k])
+                    else:
+                        header[k] = headers[k]
 
             if sizeLimit or headOnly:
                 if not noLog:
-                    self.info("Fetching (HEAD only): " + url + \
-                          " [timeout: " + \
+                    self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
+                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
 
-                hdr = requests.head(url, headers=header, verify=False, timeout=timeout)
+                hdr = self.getSession().head(url, headers=header, proxies=proxies,
+                                    verify=verify, timeout=timeout)
                 size = int(hdr.headers.get('content-length', 0))
                 result['realurl'] = hdr.headers.get('location', url)
                 result['code'] = str(hdr.status_code)
@@ -1064,391 +1402,227 @@ class SpiderFoot:
 
                 if result['realurl'] != url:
                     if not noLog:
-                       self.info("Fetching (HEAD only): " + url + \
-                              " [timeout: " + \
-                              str(timeout) + "]")
+                        self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
+                            " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
+                            str(timeout) + "]")
 
-                    hdr = requests.head(result['realurl'], headers=header, verify=False)
+                    hdr = self.getSession().head(result['realurl'], headers=header, proxies=proxies,
+                                        verify=verify, timeout=timeout)
                     size = int(hdr.headers.get('content-length', 0))
                     result['realurl'] = hdr.headers.get('location', result['realurl'])
                     result['code'] = str(hdr.status_code)
 
                     if size > sizeLimit:
                         return result
-
-            req = urllib2.Request(url, postData, header)
             if cookies is not None:
-                req.add_header('cookie', cookies)
+                #req.add_header('cookie', cookies)
                 if not noLog:
-                    self.info("Fetching (incl. cookies): " + url + \
-                          " [timeout: " + \
+                    self.info("Fetching (incl. cookies): " + self.removeUrlCreds(url) + \
+                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
             else:
                 if not noLog:
-                    self.info("Fetching: " + url + " [timeout: " + str(timeout) + "]")
+                    self.info("Fetching: " + self.removeUrlCreds(url) + " [user-agent: " + \
+                          header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
+            #
+            # MAKE THE REQUEST
+            #
+            try:
+                if postData:
+                    res = self.getSession().post(url, data=postData, headers=header, proxies=proxies,
+                                        allow_redirects=True, cookies=cookies,
+                                        timeout=timeout, verify=verify)
+                else:
+                    res = self.getSession().get(url, headers=header, proxies=proxies, allow_redirects=True,
+                                       cookies=cookies, timeout=timeout, verify=verify)
+            except requests.exceptions.RequestException:
+                raise Exception('Failed to connect to %s' % url) from None
 
             result['headers'] = dict()
-            opener = urllib2.build_opener(SmartRedirectHandler())
-            fullPage = opener.open(req, timeout=timeout)
-            content = fullPage.read()
+            for header, value in res.headers.items():
+                if type(header) != str:
+                    header = str(header)
 
-            for k, v in fullPage.info().items():
-                result['headers'][k.lower()] = v
+                if type(value) != str:
+                    value = str(value)
 
-            # Content is compressed
-            if 'gzip' in result['headers'].get('content-encoding', ''):
-                content = gzip.GzipFile(fileobj=StringIO.StringIO(content)).read()
+                result['headers'][header.lower()] = value
 
+            # Sometimes content exceeds the size limit after decompression
+            if sizeLimit and len(res.content) > sizeLimit:
+                self.debug("Content exceeded size limit, so returning no data just headers")
+                result['realurl'] = res.url
+                result['code'] = str(res.status_code)
+                return result
+
+            if 'refresh' in result['headers']:
+                try:
+                    newurl = result['headers']['refresh'].split(";url=")[1]
+                except BaseException as e:
+                    self.debug("Refresh header found but was not parsable: " + result['headers']['refresh'])
+                    return result
+                self.debug("Refresh header found, re-directing to " + self.removeUrlCreds(newurl))
+                return self.fetchUrl(newurl, fatal, cookies, timeout,
+                                     useragent, headers, noLog, postData,
+                                     dontMangle, sizeLimit, headOnly)
+
+            result['realurl'] = res.url
+            result['code'] = str(res.status_code)
             if dontMangle:
-                result['content'] = content
+                result['content'] = res.content
             else:
-                result['content'] = unicode(content, 'utf-8', errors='replace')
+                try:
+                    result['content'] = res.content.decode("utf-8")
+                except UnicodeDecodeError as e:
+                    result['content'] = res.content.decode("ascii")
+            if fatal:
+                try:
+                    res.raise_for_status()
+                except requests.exceptions.HTTPError as h:
+                    self.fatal('URL could not be fetched (' + str(res.status_code) + ' / ' + res.content + ')')
 
-            #print "FOR: " + url
-            #print "HEADERS: " + str(result['headers'])
-            result['realurl'] = fullPage.geturl()
-            result['code'] = str(fullPage.getcode())
-            result['status'] = 'OK'
-        except urllib2.HTTPError as h:
+        except BaseException as x:
             if not noLog:
-                self.info("HTTP code " + str(h.code) + " encountered for " + url)
-            # Capture the HTTP error code
-            result['code'] = str(h.code)
-            for k, v in h.info().items():
-                result['headers'][k.lower()] = v
-            if fatal:
-                self.fatal('URL could not be fetched (' + str(h.code) + ')')
-        except urllib2.URLError as e:
-            if not noLog:
-                self.info("Error fetching " + url + "(" + str(e) + ")")
-            result['status'] = str(e)
-            if fatal:
-                self.fatal('URL could not be fetched (' + str(e) + ')')
-        except Exception as x:
-            if not noLog:
-                self.info("Unexpected exception occurred fetching: " + url + " (" + str(x) + ")")
+                try:
+                    self.error("Unexpected exception (" + str(x) + ") occurred fetching: " + url, False)
+                    self.error(traceback.format_exc(), False)
+                except BaseException as f:
+                    return result
             result['content'] = None
             result['status'] = str(x)
             if fatal:
                 self.fatal('URL could not be fetched (' + str(x) + ')')
 
+        frm = inspect.stack()[1]
+        mod = inspect.getmodule(frm[0])
+        m = mod.__name__
+        atime = time.time()
+        t = str(atime - btime)
+        self.info("Fetched data: " + str(len(result['content'] or '')) + \
+                  " (" + self.removeUrlCreds(url) + "), took " + t + "s")
         return result
 
-    # Check if wildcard DNS is enabled by looking up two random hostnames
+    # Check if wildcard DNS is enabled by looking up a random hostname
     def checkDnsWildcard(self, target):
-        randpool = 'bcdfghjklmnpqrstvwxyz3456789'
-        randhost = ''.join([random.choice(randpool) for x in range(10)])
-
-        # An exception will be raised if the resolution fails
-        try:
-            addrs = socket.gethostbyname_ex(randhost + "." + target)
-            return True
-        except BaseException as e:
+        if not target:
+            #self.debug("checkDnsWildcard: No target")
             return False
 
-    # Scrape Google for content, starting at startUrl and iterating through
-    # results based on options supplied. Will return a dictionary of all pages
-    # fetched and their contents {page => content}.
+        randpool = 'bcdfghjklmnpqrstvwxyz3456789'
+        randhost = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
+
+        if self.resolveHost(randhost + "." + target) is None:
+            return False
+
+        return True
+
+    # Request search results from the Google API. Will return a dict:
+    # {
+    #   "urls": a list of urls that match the query string,
+    #   "webSearchUrl": url for Google results page,
+    # }
     # Options accepted:
-    # limit: number of search result pages before returning, default is 10
-    # nopause: don't randomly pause between fetches
     # useragent: User-Agent string to use
-    # timeout: Fetch timeout
+    # timeout: API call timeout
     def googleIterate(self, searchString, opts=dict()):
-        limit = 10
-        fetches = 0
-        returnResults = dict()
+        endpoint = "https://www.googleapis.com/customsearch/v1?q={search_string}&".format(
+            search_string=searchString.replace(" ", "%20")
+        )
+        params = {
+            "cx": opts["cse_id"],
+            "key": opts["api_key"],
+        }
 
-        if 'limit' in opts:
-            limit = opts['limit']
+        response = self.fetchUrl(
+            endpoint + urllib.parse.urlencode(params),
+            timeout=opts["timeout"],
+        )
 
-        # We attempt to make the URL look as authentically human as possible
-        seedUrl = u"https://www.google.com/search?q={0}".format(searchString) + \
-                  u"&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a"
-
-        attempts = 0
-        failed = False
-        while attempts < 3:
-            firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-                                      useragent=opts['useragent'])
-            if firstPage['code'] == "403" or firstPage['code'] == "503":
-                self.error("Google doesn't like us right now..", False)
-                failed = True
-
-            if firstPage['content'] is None:
-                self.error("Failed to fetch content from Google.", False)
-                failed = True
-            else:
-                if "name=\"captcha\"" in firstPage['content']:
-                    self.error("Google returned a CAPTCHA.", False)
-                    failed = True
-
-            if failed:
-                self.refreshTorIdent()
-                attempts += 1
-                failed = False
-            else:
-                break
-
-        if attempts == 3:
+        if response['code'] != '200':
+            self.error("Failed to get a valid response from the Google API", exception=False)
             return None
-                                
-        returnResults[seedUrl] = firstPage['content']
-        pat = re.compile("(\/search\S+start=\d+.[^\'\"]*sa=N)", re.IGNORECASE)
-        matches = re.findall(pat, firstPage['content'])
 
-        while matches > 0 and fetches < limit:
-            nextUrl = None
-            fetches += 1
-            for match in matches:
-                # Google moves in increments of 10
-                if "start=" + str(fetches * 10) in match:
-                    nextUrl = match.replace("&amp;", "&")
+        try:
+            response_json = json.loads(response['content'])
+        except ValueError:
+            self.error("the key 'content' in the Google API response doesn't contain valid json.", exception=False)
+            return None
 
-            if nextUrl is None:
-                self.debug("Nothing left to scan for in Google results.")
-                return returnResults
-            self.info("Next Google URL: " + nextUrl)
+        if "items" in response_json:
+            # We attempt to make the URL look as authentically human as possible
+            params = {
+                "ie": "utf-8",
+                "oe": "utf-8",
+                "aq": "t",
+                "rls": "org.mozilla:en-US:official",
+                "client": "firefox-a",
+            }
+            search_url = "https://www.google.com/search?q={search_string}&{params}".format(
+                search_string=searchString.replace(" ", "%20"),
+                params=urllib.parse.urlencode(params)
+            )
+            results = {
+                "urls": [str(k['link']) for k in response_json['items']],
+                "webSearchUrl": search_url,
+            }
+        else:
+            return None
 
-            # Wait for a random number of seconds between fetches
-            if 'nopause' not in opts:
-                pauseSecs = random.randint(4, 15)
-                self.info("Pausing for " + str(pauseSecs))
-                time.sleep(pauseSecs)
+        return results
 
-            attempts = 0
-            failed = False
-            while attempts < 3:
-                nextPage = self.fetchUrl(u'https://www.google.com' + nextUrl,
-                                         timeout=opts['timeout'], useragent=opts['useragent'])
-                if nextPage['code'] == "403" or nextPage['code'] == "503":
-                    self.error("Google doesn't like us right now..", False)
-                    failed = True
 
-                if nextPage['content'] is None:
-                    self.error("Failed to fetch subsequent content from Google.", False)
-                    failed = True
-                else:
-                    if "name=\"captcha\"" in nextPage['content']:
-                        self.error("Google returned a CAPTCHA.", False)
-                        failed = True
-
-                if failed:
-                    self.refreshTorIdent()
-                    attempts += 1
-                    failed = False
-                else:
-                    break
-
-            if attempts == 3:
-                return returnResults
-
-            returnResults[nextUrl] = nextPage['content']
-            pat = re.compile("(\/search\S+start=\d+.[^\'\"]*)", re.IGNORECASE)
-            matches = re.findall(pat, nextPage['content'])
-
-        return returnResults
-
-    # Scrape Bing for content, starting at startUrl and iterating through
-    # results based on options supplied. Will return a dictionary of all pages
-    # fetched and their contents {page => content}.
+    # Request search results from the Bing API. Will return a dict:
+    # {
+    #   "urls": a list of urls that match the query string,
+    #   "webSearchUrl": url for bing results page,
+    # }
     # Options accepted:
-    # limit: number of search result pages before returning, default is 10
-    # nopause: don't randomly pause between fetches
+    # count: number of search results to request from the API
     # useragent: User-Agent string to use
-    # timeout: Fetch timeout
+    # timeout: API call timeout
     def bingIterate(self, searchString, opts=dict()):
-        limit = 10
-        fetches = 0
-        returnResults = dict()
+        endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&".format(
+            search_string=searchString.replace(" ", "%20")
+        )
 
-        if 'limit' in opts:
-            limit = opts['limit']
+        params = {
+            "responseFilter": "Webpages",
+            "count": opts["count"],
+        }
 
-        # We attempt to make the URL look as authentically human as possible
-        seedUrl = u"http://www.bing.com/search?q={0}".format(searchString) + \
-                  u"&pc=MOZI"
+        response = self.fetchUrl(
+            endpoint + urllib.parse.urlencode(params),
+            timeout=opts["timeout"],
+            useragent=opts["useragent"],
+            headers={"Ocp-Apim-Subscription-Key": opts["api_key"]},
+        )
 
-        attempts = 0
-        failed = False
-        while attempts < 3:
-            firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-                                      useragent=opts['useragent'])
-            if firstPage['code'] == "400":
-                self.error("Bing doesn't like us right now..", False)
-                failed = True
-
-            if firstPage['content'] is None:
-                self.error("Failed to fetch content from Bing.", False)
-                failed = True
-            else:
-                if "/challengepic?" in firstPage['content']:
-                    self.error("Bing returned a CAPTCHA.", False)
-                    failed = True
-
-            if failed:
-                self.refreshTorIdent()
-                attempts += 1
-                failed = False
-            else:
-                break
-
-        if attempts == 3:
+        if response['code'] != '200':
+            self.error("Failed to get a valid response from the bing API", exception=False)
             return None
 
-        returnResults[seedUrl] = firstPage['content']
-        pat = re.compile("(\/search\S+first=\d+.[^\'\"]*FORM=\S+)", re.IGNORECASE)
-        matches = re.findall(pat, firstPage['content'])
-        while matches > 0 and fetches < limit:
-            nextUrl = None
-            fetches += 1
-            for match in matches:
-                # Bing moves in increments of 10
-                if "first=" + str((fetches * 10) + 1) in match:
-                    nextUrl = match.replace("&amp;", "&").replace("%3a", ":")
-
-            if nextUrl is None:
-                self.debug("Nothing left to scan for in Bing results.")
-                return returnResults
-            self.info("Next Bing URL: " + nextUrl)
-
-            # Wait for a random number of seconds between fetches
-            if 'nopause' not in opts:
-                pauseSecs = random.randint(4, 15)
-                self.info("Pausing for " + str(pauseSecs))
-                time.sleep(pauseSecs)
-
-            attempts = 0
-            while attempts < 3:
-                nextPage = self.fetchUrl(u'https://www.bing.com' + nextUrl,
-                                         timeout=opts['timeout'], useragent=opts['useragent'])
-                if nextPage['code'] == "400":
-                    self.error("Bing doesn't like us any more..", False)
-                    failed = True
-
-                if nextPage['content'] is None:
-                    self.error("Failed to fetch subsequent content from Bing.", False)
-                    failed = True
-                else:
-                    if "/challengepic?" in firstPage['content']:
-                        self.error("Bing returned a CAPTCHA.", False)
-                        failed = True
-
-                if failed:
-                    self.refreshTorIdent()
-                    attempts += 1
-                    failed = False
-                else:
-                    break
-
-            if attempts == 3:
-                return returnResults
-
-            returnResults[nextUrl] = nextPage['content']
-            pat = re.compile("(\/search\S+first=\d+.[^\'\"]*)", re.IGNORECASE)
-            matches = re.findall(pat, nextPage['content'])
-
-        return returnResults
-
-    # Scrape Yahoo for content, starting at startUrl and iterating through
-    # results based on options supplied. Will return a dictionary of all pages
-    # fetched and their contents {page => content}.
-    # Options accepted:
-    # limit: number of search result pages before returning, default is 10
-    # nopause: don't randomly pause between fetches
-    # useragent: User-Agent string to use
-    # timeout: Fetch timeout
-    def yahooIterate(self, searchString, opts=dict()):
-        limit = 10
-        fetches = 0
-        returnResults = dict()
-
-        if 'limit' in opts:
-            limit = opts['limit']
-
-        # We attempt to make the URL look as authentically human as possible
-        seedUrl = u"https://search.yahoo.com/search?p={0}".format(searchString) + \
-                  u"&toggle=1&cop=mss&ei=UTF-8"
-
-        attempts = 0
-        failed = False
-        while attempts < 3:
-            firstPage = self.fetchUrl(seedUrl, timeout=opts['timeout'],
-                                      useragent=opts['useragent'])
-            if firstPage['code'] == "403":
-                self.error("Yahoo doesn't like us right now..", False)
-                failed = True
-
-            if firstPage['content'] is None:
-                self.error("Failed to fetch content from Yahoo.", False)
-                failed = True
-
-            if failed:
-                self.refreshTorIdent()
-                attempts += 1
-                failed = False
-            else:
-                break
-
-        if attempts == 3:
+        try:
+            response_json = json.loads(response['content'])
+        except ValueError:
+            self.error("the key 'content' in the bing API response doesn't contain valid json.", exception=False)
             return None
-        
-        returnResults[seedUrl] = firstPage['content']
-        pat = re.compile("(\/search;\S+b=\d+.[^\'\"]*)", re.IGNORECASE)
-        matches = re.findall(pat, firstPage['content'])
 
-        while matches > 0 and fetches < limit:
-            nextUrl = None
-            fetches += 1
-            for match in matches:
-                # Yahoo moves in increments of 10
-                if "b=" + str((fetches * 10) + 1) in match:
-                    nextUrl = u"https://search.yahoo.com" + match
+        if (
+            "webPages" in response_json
+            and "value" in response_json["webPages"]
+            and "webSearchUrl" in response_json["webPages"]
+        ):
+            results = {
+                "urls": [result["url"] for result in response_json["webPages"]["value"]],
+                "webSearchUrl": response_json["webPages"]["webSearchUrl"],
+            }
+        else:
+            return None
 
-            if nextUrl is None:
-                self.debug("Nothing left to scan for in Yahoo results.")
-                return returnResults
-            self.info("Next Yahoo URL: " + nextUrl)
-
-            # Wait for a random number of seconds between fetches
-            if 'nopause' not in opts:
-                pauseSecs = random.randint(4, 15)
-                self.info("Pausing for " + str(pauseSecs))
-                time.sleep(pauseSecs)
-
-            attempts = 0
-            failed = False
-            while attempts < 3:
-                nextPage = self.fetchUrl(nextUrl, timeout=opts['timeout'], 
-                                         useragent=opts['useragent'])
-                if nextPage['code'] == "403":
-                    self.error("Yahoo doesn't like us any more..", False)
-                    failed = True
-
-                if nextPage['content'] is None:
-                    self.error("Failed to fetch subsequent content from Yahoo.", 
-                               False)
-                    failed = True
-
-                if failed:
-                    self.refreshTorIdent()
-                    attempts += 1
-                    failed = False
-                else:
-                    break
-
-            if attempts == 3:
-                return returnResults
-
-            returnResults[nextUrl] = nextPage['content']
-            pat = re.compile("(\/search;\S+b=\d+.[^\'\"]*)", re.IGNORECASE)
-            matches = re.findall(pat, nextPage['content'])
-
-        return returnResults
+        return results
 
 
-#
 # SpiderFoot plug-in module base class
 #
 class SpiderFootPlugin(object):
@@ -1471,6 +1645,10 @@ class SpiderFootPlugin(object):
     __dataSource__ = None
     # If set, events not matching this list are dropped
     __outputFilter__ = None
+    # Priority, smaller numbers should run first
+    _priority = 1
+    # Error state of the module
+    errorState = False
 
     # Not really needed in most cases.
     def __init__(self):
@@ -1478,9 +1656,8 @@ class SpiderFootPlugin(object):
 
     # Hack to override module's use of socket, replacing it with
     # one that uses the supplied SOCKS server
-    def _updateSocket(self, sock):
-        socket = sock
-        urllib2.socket = sock
+    def _updateSocket(self, socksProxy):
+        self.socksProxy = socksProxy
 
     # Used to clear any listener relationships, etc. This is needed because
     # Python seems to cache local variables even between threads.
@@ -1517,7 +1694,7 @@ class SpiderFootPlugin(object):
     # Gets the current target this module is acting against
     def getTarget(self):
         if self._currentTarget is None:
-            print "Internal Error: Module called getTarget() but no target set."
+            print("Internal Error: Module called getTarget() but no target set.")
             sys.exit(-1)
         return self._currentTarget
 
@@ -1528,6 +1705,10 @@ class SpiderFootPlugin(object):
 
     def setOutputFilter(self, types):
         self.__outputFilter__ = types
+
+    # For SpiderFoot HX compatability of modules
+    def tempStorage(self):
+        return dict()
 
     # Call the handleEvent() method of every other plug-in listening for
     # events from this plug-in. Remember that those plug-ins will be called
@@ -1542,14 +1723,10 @@ class SpiderFootPlugin(object):
                 and eventName not in self.__outputFilter__:
                 return None
 
-        # Convert strings to unicode
-        if type(sfEvent.data) == str:
-            sfEvent.data = unicode(sfEvent.data, 'utf-8', errors='replace')
-
         storeOnly = False  # Under some conditions, only store and don't notify
 
-        if sfEvent.data is None or (type(sfEvent.data) is unicode and len(sfEvent.data) == 0):
-            #print "No data to send for " + eventName + " to " + listener.__module__
+        if sfEvent.data is None or (type(sfEvent.data) is str and len(sfEvent.data) == 0):
+            #print("No data to send for " + eventName + " to " + listener.__module__)
             return None
 
         if self.checkForStop():
@@ -1574,23 +1751,24 @@ class SpiderFootPlugin(object):
             if prevEvent.sourceEvent is not None:
                 if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
                                 prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
-                    #print "Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data
+                    #print("Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data)
                     storeOnly = True
                     break
             prevEvent = prevEvent.sourceEvent
 
-        self._listenerModules.sort()
+        self._listenerModules.sort(key=lambda m: m._priority)
+
         for listener in self._listenerModules:
-            #print listener.__module__ + ": " + listener.watchedEvents().__str__()
+            #print(listener.__module__ + ": " + listener.watchedEvents().__str__())
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
-                #print listener.__module__ + " not listening for " + eventName
+                #print(listener.__module__ + " not listening for " + eventName)
                 continue
 
             if storeOnly and "__stor" not in listener.__module__:
-                #print "Storing only for " + sfEvent.eventType + " / " + sfEvent.data
+                #print("Storing only for " + sfEvent.eventType + " / " + sfEvent.data)
                 continue
 
-            #print "Notifying " + eventName + " to " + listener.__module__
+            #print("Notifying " + eventName + " to " + listener.__module__)
             listener._currentEvent = sfEvent
 
             # Check if we've been asked to stop in the meantime, so that
@@ -1598,12 +1776,18 @@ class SpiderFootPlugin(object):
             if self.checkForStop():
                 return None
 
-            #print "EVENT: " + str(sfEvent)
+            #print("EVENT: " + str(sfEvent))
             try:
+                if type(sfEvent.data) == bytes:
+                    sfEvent.data = sfEvent.data.decode('utf-8', 'ignore')
+
                 listener.handleEvent(sfEvent)
             except BaseException as e:
                 f = open("sferror.log", "a")
                 f.write("Module (" + listener.__module__ + ") encountered an error: " + str(e) + "\n")
+
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
                 f.close()
 
     # For modules to use to check for when they should give back control
@@ -1647,8 +1831,8 @@ class SpiderFootPlugin(object):
 
 # Class for targets
 class SpiderFootTarget(object):
-    _validTypes = ["IP_ADDRESS", "NETBLOCK_OWNER", "INTERNET_NAME",
-                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER" ]
+    _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
+                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME"]
     targetType = None
     targetValue = None
     targetAliases = list()
@@ -1656,13 +1840,13 @@ class SpiderFootTarget(object):
     def __init__(self, targetValue, typeName):
         if typeName in self._validTypes:
             self.targetType = typeName
-            if type(targetValue) != unicode:
-                self.targetValue = unicode(targetValue, 'utf-8', errors='replace').lower()
+            if type(targetValue) != str:
+                self.targetValue = str(targetValue).lower()
             else:
                 self.targetValue = targetValue
             self.targetAliases = list()
         else:
-            print "Internal Error: Invalid target type."
+            print("Internal Error: Invalid target type.")
             sys.exit(-1)
 
     def getType(self):
@@ -1698,14 +1882,21 @@ class SpiderFootTarget(object):
     # Get all domains associated with the target
     def getNames(self):
         e = self._getEquivalents("INTERNET_NAME")
-        if self.targetType == "INTERNET_NAME" and self.targetValue.lower() not in e:
+        if self.targetType in ["INTERNET_NAME", "EMAILADDR"] and self.targetValue.lower() not in e:
             e.append(self.targetValue.lower())
-        return e
+
+        names = list()
+        for name in e:
+            names.append(name.decode("utf-8") if type(name) == bytes else name)
+        return names
 
     # Get all IP Subnets or IP Addresses associated with the target
     def getAddresses(self):
         e = self._getEquivalents("IP_ADDRESS")
         if self.targetType == "IP_ADDRESS":
+            e.append(self.targetValue)
+        e = self._getEquivalents("IPV6_ADDRESS")
+        if self.targetType == "IPV6_ADDRESS":
             e.append(self.targetValue)
         return e
 
@@ -1729,11 +1920,14 @@ class SpiderFootTarget(object):
     def matches(self, value, includeParents=False, includeChildren=True):
         value = value.lower()
 
+        value = value.decode("utf-8") if type(value) == bytes else value
+
         if value is None or value == "":
             return False
 
-        # We can't really say anything about names, so everything matches
-        if self.targetType == "HUMAN_NAME":
+        # We can't really say anything about names, username or phone numbers,
+        # so everything matches
+        if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME" ]:
             return True
 
         if netaddr.valid_ipv4(value):
@@ -1744,7 +1938,7 @@ class SpiderFootTarget(object):
             if self.targetType == "NETBLOCK_OWNER":
                 if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
                     return True
-            if self.targetType == "IP_ADDRESS":
+            if self.targetType in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
                 if netaddr.IPAddress(value) in \
                         netaddr.IPNetwork(netaddr.IPAddress(self.targetValue)):
                     return True
@@ -1753,7 +1947,7 @@ class SpiderFootTarget(object):
                 # 2.1
                 if value == name:
                     return True
-                # 2.2            
+                # 2.2
                 if includeParents and name.endswith("." + value):
                     return True
                 # 2.3
@@ -1775,6 +1969,7 @@ class SpiderFootEvent(object):
     sourceEvent = None
     sourceEventHash = None
     moduleDataSource = None
+    actualSource = None
     __id = None
 
     def __init__(self, eventType, data, module, sourceEvent,
@@ -1787,14 +1982,14 @@ class SpiderFootEvent(object):
         self.module = module
         self.sourceEvent = sourceEvent
 
-        if type(data) in [ list, dict ]:
-            print "FATAL: Only string events are accepted, not lists or dicts."
-            print "FATAL: Offending module: " + module
-            print "FATAL: Offending type: " + eventType
+        if type(data) != str and type(data) != str:
+            print("FATAL: Only string events are accepted, not '%s'." % type(data))
+            print("FATAL: Offending module: %s" % module)
+            print("FATAL: Offending type: %s" % eventType)
             sys.exit(-1)
 
-        if type(data) != unicode and data != None:
-            self.data = unicode(data, 'utf-8', errors='replace')
+        if type(data) != str and data != None:
+            self.data = str(data)
         else:
             self.data = data
 
@@ -1804,18 +1999,30 @@ class SpiderFootEvent(object):
             self.sourceEventHash = "ROOT"
             return
 
+        if type(sourceEvent) != SpiderFootEvent:
+            print("FATAL: Invalid source event: %s" % sourceEvent)
+            print("FATAL: Offending module: %s" % module)
+            print("FATAL: Offending type: %s" % eventType)
+            sys.exit(-1)
+
         self.sourceEventHash = sourceEvent.getHash()
         self.__id = self.eventType + str(self.generated) + self.module + \
-                    str(random.randint(0, 99999999))
+                    str(random.SystemRandom().randint(0, 99999999))
 
     def asDict(self):
-        return {
+        evt_dict = {
             'generated': int(self.generated),
             'type': self.eventType,
             'data': self.data,
-            'module': self.module,
-            'source': self.sourceEvent.data
+            'module': self.module
         }
+
+        if self.eventType == 'ROOT':
+            evt_dict['source'] = ''
+        else:
+            evt_dict['source'] = self.sourceEvent.data
+
+        return evt_dict
 
     # Unique hash of this event
     def getHash(self):
@@ -1838,23 +2045,6 @@ class SpiderFootEvent(object):
         self.sourceEventHash = srcHash
 
 
-# Override the default redirectors to re-use cookies
-class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
-    def http_error_301(self, req, fp, code, msg, headers):
-        if "Set-Cookie" in headers:
-            req.add_header('cookie', headers['Set-Cookie'])
-        result = urllib2.HTTPRedirectHandler.http_error_301(
-            self, req, fp, code, msg, headers)
-        return result
-
-    def http_error_302(self, req, fp, code, msg, headers):
-        if "Set-Cookie" in headers:
-            req.add_header('cookie', headers['Set-Cookie'])
-        result = urllib2.HTTPRedirectHandler.http_error_302(
-            self, req, fp, code, msg, headers)
-        return result
-
-
 """
 Public Suffix List module for Python.
 See LICENSE.tp for applicable license.
@@ -1875,7 +2065,7 @@ class PublicSuffixList(object):
 
         #if input_file is None:
         #input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
-        #input_file = codecs.open(input_path, "r", "utf8")
+        #input_file = codecs.open(input_path, "r", "utf-8")
 
         root = self._build_structure(input_data)
         self.root = self._simplify(root)
@@ -1913,13 +2103,13 @@ class PublicSuffixList(object):
         if len(node) == 1:
             return node[0]
 
-        return (node[0], dict((k, self._simplify(v)) for (k, v) in node[1].items()))
+        return (node[0], dict((k, self._simplify(v)) for (k, v) in list(node[1].items())))
 
     def _build_structure(self, fp):
         root = [0]
 
         for line in fp:
-            line = line.strip()
+            line = str(line).strip()
             if line.startswith('//') or not line:
                 continue
 
@@ -1942,7 +2132,7 @@ class PublicSuffixList(object):
                 if child is not None:
                     self._lookup_node(matches, depth + 1, child, parts)
 
-    def get_public_suffix(self, domain):
+    def get_public_suffix(self, domain, strict=False):
         """get_public_suffix("www.example.com") -> "example.com"
 
         Calling this function with a DNS name will return the
@@ -1955,6 +2145,9 @@ class PublicSuffixList(object):
 
         parts = domain.lower().lstrip('.').split('.')
         hits = [None] * len(parts)
+
+        if strict and parts[-1] not in self.root[1]:
+            return None
 
         self._lookup_node(hits, 1, self.root, parts)
 

@@ -12,6 +12,7 @@
 
 from netaddr import IPAddress, IPNetwork
 import re
+
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
@@ -32,7 +33,7 @@ class sfp_threatexpert(SpiderFootPlugin):
     # Default options
     opts = {
         '_threatexpert': True,
-        'checkaffiliates': True, 
+        'checkaffiliates': True,
         'checkcohosts': True
     }
 
@@ -45,22 +46,22 @@ class sfp_threatexpert(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "IP_ADDRESS", "AFFILIATE_INTERNET_NAME", 
+        return ["INTERNET_NAME", "IP_ADDRESS", "AFFILIATE_INTERNET_NAME",
                 "AFFILIATE_IPADDR", "CO_HOSTED_SITE"]
 
     # What events this module produces
@@ -94,10 +95,10 @@ class sfp_threatexpert(SpiderFootPlugin):
     # Look up 'query' type sources
     def resourceQuery(self, id, target, targetType):
         self.sf.debug("Querying " + id + " for maliciousness of " + target)
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "query":
-                url = unicode(malchecks[check]['url'])
+                url = str(malchecks[check]['url'])
                 res = self.sf.fetchUrl(url.format(target), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                 if res['content'] is None:
                     self.sf.error("Unable to fetch " + url.format(target), False)
@@ -116,7 +117,7 @@ class sfp_threatexpert(SpiderFootPlugin):
         if targetType == "domain":
             targetDom = self.sf.hostDomain(target, self.opts['_internettlds'])
 
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "list":
                 data = dict()
@@ -133,7 +134,7 @@ class sfp_threatexpert(SpiderFootPlugin):
                 # If we're looking at netblocks
                 if targetType == "netblock":
                     iplist = list()
-                    # Get the regex, replace {0} with an IP address matcher to 
+                    # Get the regex, replace {0} with an IP address matcher to
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:
@@ -174,8 +175,8 @@ class sfp_threatexpert(SpiderFootPlugin):
                 else:
                     # Check for the domain and the hostname
                     try:
-                        rxDom = unicode(malchecks[check]['regex']).format(targetDom)
-                        rxTgt = unicode(malchecks[check]['regex']).format(target)
+                        rxDom = str(malchecks[check]['regex']).format(targetDom)
+                        rxTgt = str(malchecks[check]['regex']).format(target)
                         for line in data['content'].split('\n'):
                             if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                                     re.match(rxTgt, line, re.IGNORECASE):
@@ -188,7 +189,7 @@ class sfp_threatexpert(SpiderFootPlugin):
         return None
 
     def lookupItem(self, resourceId, itemType, target):
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
                 self.sf.debug("Checking maliciousness of " + target + " (" +
@@ -224,7 +225,7 @@ class sfp_threatexpert(SpiderFootPlugin):
         if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
             return None
 
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             # If the module is enabled..
             if self.opts[cid]:

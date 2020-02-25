@@ -10,12 +10,9 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import json
 import datetime
-import urllib2
 import re
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_wikipediaedits(SpiderFootPlugin):
@@ -23,7 +20,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "days_limit": "365"
     }
 
@@ -35,17 +32,17 @@ class sfp_wikipediaedits(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.__dataSource__ = "Wikipedia"
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -63,7 +60,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
             y = dt.strftime("%Y")
             m = dt.strftime("%m")
             url += "&year=" + y + "&month=" + m
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
         if res['code'] in [ "404", "403", "500" ]:
             return None
@@ -71,6 +68,9 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         links = list()
         try:
             parser = HTMLParser()
+            if not res['content']:
+                return None
+
             for line in res['content'].split("\n"):
                 matches = re.findall("<link>(.*?)</link>", line, re.IGNORECASE)
                 for m in matches:
@@ -91,7 +91,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None

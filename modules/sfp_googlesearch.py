@@ -14,27 +14,31 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlesearch(SpiderFootPlugin):
-    """Google:Footprint,Investigate,Passive:Search Engines:errorprone:Some light Google scraping to identify sub-domains and links."""
+    """Google:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from the Google Custom Search API to identify sub-domains and links."""
 
 
     # Default options
     opts = {
-        'pages': 20  # Number of google results pages to iterate
+        "api_key": "",
+        "cse_id": "013611106330597893267:tfgl3wxdtbp"
     }
 
     # Option descriptions
     optdescs = {
-        'pages': "Number of Google results pages to iterate through."
+        "api_key": "Google API Key for Google search.",
+        "cse_id": "Google Custom Search Engine ID."
     }
 
     # Target
-    results = list()
+    results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
+        self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -45,58 +49,63 @@ class sfp_googlesearch(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["LINKED_URL_INTERNAL", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["LINKED_URL_INTERNAL", "RAW_RIR_DATA"]
 
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return None
+
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_googlesearch but did not set a Google API key!", False)
+            self.errorState = True
+            return None
+
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         # Sites hosted on the domain
-        pages = self.sf.googleIterate("site:" + eventData,
-                                      dict(limit=self.opts['pages'], useragent=self.opts['_useragent'],
-                                           timeout=self.opts['_fetchtimeout']))
-        if pages is None:
-            self.sf.info("No results returned from Google.")
+        res = self.sf.googleIterate(
+            searchString="site:" + eventData,
+            opts={
+                "timeout": self.opts["_fetchtimeout"],
+                "useragent": self.opts["_useragent"],
+                "api_key": self.opts["api_key"],
+                "cse_id": self.opts["cse_id"],
+            },
+        )
+        if res is None:
+            # Failed to talk to the Google API or no results returned
             return None
 
-        for page in pages.keys():
-            found = False
-            if page in self.results:
-                continue
-            else:
-                self.results.append(page)
+        urls = res["urls"]
+        new_links = list(set(urls) - set(self.results.keys()))
 
-            links = self.sf.parseLinks(page, pages[page], eventData)
-            if len(links) == 0:
-                continue
+        # Add new links to results
+        for l in new_links:
+            self.results[l] = True
 
-            for link in links:
-                if self.checkForStop():
-                    return None
+        internal_links = [
+            link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)
+        ]
+        for link in internal_links:
+            self.sf.debug("Found a link: " + link)
 
-                if link in self.results:
-                    continue
-                else:
-                    self.results.append(link)
-                self.sf.debug("Found a link: " + link)
-                if self.sf.urlFQDN(link).endswith(eventData):
-                    found = True
-                    evt = SpiderFootEvent("LINKED_URL_INTERNAL", link,
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
+            evt = SpiderFootEvent("LINKED_URL_INTERNAL", link, self.__name__, event)
+            self.notifyListeners(evt)
 
-            if found:
-                # Submit the google results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", pages[page],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
-
+        if internal_links:
+            evt = SpiderFootEvent(
+                "RAW_RIR_DATA", str(res), self.__name__, event
+            )
+            self.notifyListeners(evt)
 
 # End of sfp_googlesearch class

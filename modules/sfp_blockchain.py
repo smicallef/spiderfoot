@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_blockchain
-# Purpose:      SpiderFoot plug-in to look up a bitcoin wallet's balance by 
+# Purpose:      SpiderFoot plug-in to look up a bitcoin wallet's balance by
 #               querying blockchain.info.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -21,13 +21,13 @@ class sfp_blockchain(SpiderFootPlugin):
 
     # Default options
     opts = {}
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input

@@ -11,11 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
-import re
-import dns
-import urllib2
-from netaddr import IPAddress, IPNetwork
+from netaddr import IPAddress
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsneighbor(SpiderFootPlugin):
@@ -33,22 +29,18 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         'lookasidecount': "If look-aside is enabled, the number of IPs on each 'side' of the IP to look up"
     }
 
-    events = dict()
-    domresults = dict()
-    hostresults = dict()
-    resolveCache = dict()
-    resolveCache6 = dict()
+    events = None
+    domresults = None
+    hostresults = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.events = dict()
-        self.domresults = dict()
-        self.hostresults = dict()
-        self.resolveCache = dict()
-        self.resolveCache6 = dict()
+        self.events = self.tempStorage()
+        self.domresults = self.tempStorage()
+        self.hostresults = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -59,7 +51,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
+        return ["AFFILIATE_IPADDR", "IP_ADDRESS"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -83,8 +75,13 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             self.sf.error("Invalid IP address received: " + eventData, False)
             return None
 
-        minip = IPAddress(int(ip) - self.opts['lookasidecount'])
-        maxip = IPAddress(int(ip) + self.opts['lookasidecount'])
+        try:
+            minip = IPAddress(int(ip) - self.opts['lookasidecount'])
+            maxip = IPAddress(int(ip) + self.opts['lookasidecount'])
+        except BaseException as e:
+            self.sf.error("Received an invalid IP address: " + eventData, False)
+            return None
+
         self.sf.debug("Lookaside max: " + str(maxip) + ", min: " + str(minip))
         s = int(minip)
         c = int(maxip)
@@ -99,8 +96,8 @@ class sfp_dnsneighbor(SpiderFootPlugin):
                 s += 1
                 continue
 
-            addrs = self.resolveIP(sip)
-            if len(addrs) == 0:
+            addrs = self.sf.resolveIP(sip)
+            if not addrs:
                 self.sf.debug("Look-aside resolve for " + sip + " failed.")
                 s += 1
                 continue
@@ -141,59 +138,16 @@ class sfp_dnsneighbor(SpiderFootPlugin):
                     self.processHost(addr, parent, True)
             s += 1
 
-    # Resolve an IP
-    def resolveIP(self, ipaddr):
-        ret = list()
-        self.sf.debug("Performing reverse-resolve of " + ipaddr)
-
-        if ipaddr in self.resolveCache:
-            self.sf.debug("Returning cached result for " + ipaddr + " (" +
-                          str(self.resolveCache[ipaddr]) + ")")
-            return self.resolveCache[ipaddr]
-
-        try:
-            addrs = self.sf.normalizeDNS(socket.gethostbyaddr(ipaddr))
-            self.resolveCache[ipaddr] = addrs
-            self.sf.debug("Resolved " + ipaddr + " to: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
-            self.resolveCache[ipaddr] = list()
-            return ret
-
-    # Resolve a host
-    def resolveHost(self, hostname):
-        if hostname in self.resolveCache:
-            self.sf.debug("Returning cached result for " + hostname + " (" +
-                          str(self.resolveCache[hostname]) + ")")
-            return self.resolveCache[hostname]
-
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(hostname) != unicode:
-                hostname = unicode(hostname, "utf-8", errors='replace').encode("idna")
-            else:
-                hostname = hostname.encode("idna")
-
-            addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(hostname))
-            self.resolveCache[hostname] = addrs
-            self.sf.debug("Resolved " + hostname + " to: " + str(addrs))
-            return addrs
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + hostname + " (" + str(e) + ")")
-            return list()
-
-    # Process a host/IP, parentEvent is the event that represents this entity
     def processHost(self, host, parentEvent, affiliate=None):
         parentHash = self.sf.hashstring(parentEvent.data)
         if host not in self.hostresults:
-            self.hostresults[host] = list(parentHash)
+            self.hostresults[host] = [parentHash]
         else:
             if parentHash in self.hostresults[host] or parentEvent.data == host:
                 self.sf.debug("Skipping host, " + host + ", already processed.")
                 return None
             else:
-                self.hostresults[host].append(parentHash)
+                self.hostresults[host] = self.hostresults[host] + [parentHash]
 
         self.sf.debug("Found host: " + host)
         # If the returned hostname is aliaseed to our
@@ -203,11 +157,13 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             if self.getTarget().matches(host):
                 affil = False
             # If the IP the host resolves to is in our
-            # list of aliases, 
+            # list of aliases,
             if not self.sf.validIP(host):
-                for hostip in self.resolveHost(host):
-                    if self.getTarget().matches(hostip):
-                        affil = False
+                hostips = self.sf.resolveHost(host)
+                if hostips:
+                    for hostip in hostips:
+                        if self.getTarget().matches(hostip):
+                            affil = False
         else:
             affil = affiliate
 
@@ -219,6 +175,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             if self.sf.validIP(host):
                 htype = "IP_ADDRESS"
 
+        # If names were found, leave them to sfp_dnsresolve to resolve
         if not htype:
             return None
 

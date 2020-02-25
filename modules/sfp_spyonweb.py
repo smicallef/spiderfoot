@@ -4,17 +4,15 @@
 # Purpose:      SpiderFoot plug-in to search SpyOnWeb for hosts sharing the
 #               same IP address, Google Analytics code, or Google Adsense code.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-25
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
 import datetime
 import json
-import re
-import socket
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -50,29 +48,11 @@ class sfp_spyonweb(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "SpyOnWeb"
-        self.results = dict()
-        self.cohostcount = 0                                                                                                                                                                                       
+        self.results = self.tempStorage()
+        self.cohostcount = 0
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-
-    # Verify a host resolves to an IP
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -80,7 +60,8 @@ class sfp_spyonweb(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['CO_HOSTED_SITE', 'INTERNET_NAME', 'AFFILIATE_DOMAIN', 'WEB_ANALYTICS_ID']
+        return ['CO_HOSTED_SITE', 'INTERNET_NAME', 'AFFILIATE_INTERNET_NAME',
+                'WEB_ANALYTICS_ID', 'DOMAIN_NAME', 'AFFILIATE_DOMAIN_NAME']
 
     # Query the REST API
     # https://api.spyonweb.com/v1/docs
@@ -215,21 +196,26 @@ class sfp_spyonweb(SpiderFootPlugin):
             google_adsense = data.get('adsense')
 
             if google_adsense:
-                for r in google_adsense.keys():
+                for r in list(google_adsense.keys()):
                     evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google AdSense: " + r, self.__name__, event)
                     self.notifyListeners(evt)
 
             google_analytics = data.get('analytics')
 
             if google_analytics:
-                for r in google_analytics.keys():
+                for r in list(google_analytics.keys()):
                     evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google Analytics: " + r, self.__name__, event)
                     self.notifyListeners(evt)
 
         # Find affiliate domains for the specified Google AdSense ID or Google Analytics ID
         if eventName in [ 'WEB_ANALYTICS_ID' ]:
-            network = eventData.split(": ")[0]
-            analytics_id = eventData.split(": ")[1]
+            try:
+                network = eventData.split(": ")[0]
+                analytics_id = eventData.split(": ")[1]
+            except BaseException as e:
+                self.sf.error("Unable to parse WEB_ANALYTICS_ID: " +
+                              eventData + " (" + str(e) + ")", False)
+                return None
 
             data = dict()
             if network == 'Google AdSense':
@@ -243,15 +229,19 @@ class sfp_spyonweb(SpiderFootPlugin):
                 self.sf.info("No data found for " + eventData)
                 return None
 
-            for r in data.keys():
+            for r in list(data.keys()):
                 last_seen = int(datetime.datetime.strptime(data[r], '%Y-%m-%d').strftime('%s')) * 1000
 
-                if last_seen < agelimit:                                                                                                                                                                           
+                if last_seen < agelimit:
                     self.sf.debug("Record found too old, skipping.")
                     continue
 
-                evt = SpiderFootEvent("AFFILIATE_DOMAIN", r, self.__name__, event)
+                evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", r, self.__name__, event)
                 self.notifyListeners(evt)
+
+                if self.sf.isDomain(r, self.opts['_internettlds']):
+                    evt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", r, self.__name__, event)
+                    self.notifyListeners(evt)
 
         # Find co-hosts on the same IP address
         if eventName in [ 'IP_ADDRESS' ]:
@@ -263,14 +253,14 @@ class sfp_spyonweb(SpiderFootPlugin):
 
             cohostcount = 0
 
-            for co in data.keys():
+            for co in list(data.keys()):
                 last_seen = int(datetime.datetime.strptime(data[co], '%Y-%m-%d').strftime('%s')) * 1000
 
                 if last_seen < agelimit:
                     self.sf.debug("Record found too old, skipping.")
                     continue
 
-                if self.opts['verify'] and not self.validateIP(co, eventData):
+                if self.opts['verify'] and not self.sf.validateIP(co, eventData):
                     self.sf.debug("Host " + co + " no longer resolves to " + eventData)
                     continue
 
@@ -278,6 +268,9 @@ class sfp_spyonweb(SpiderFootPlugin):
                     if self.getTarget().matches(co, includeParents=True):
                         evt = SpiderFootEvent("INTERNET_NAME", co, self.__name__, event)
                         self.notifyListeners(evt)
+                        if self.sf.isDomain(co, self.opts['_internettlds']):
+                            evt = SpiderFootEvent("DOMAIN_NAME", co, self.__name__, event)
+                            self.notifyListeners(evt)
                         continue
 
                 if self.cohostcount < self.opts['maxcohost']:

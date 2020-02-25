@@ -9,7 +9,6 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import json
 import time
 from datetime import datetime
@@ -20,7 +19,7 @@ class sfp_fullcontact(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "api_key": "",
         "max_age_days": "365"
     }
@@ -34,27 +33,27 @@ class sfp_fullcontact(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME", "EMAILADDR", "HUMAN_NAME" ]
+        return [ "DOMAIN_NAME", "EMAILADDR" ]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "EMAILADDR", "RAW_RIR_DATA", "PHONE_NUMBER", 
+        return [ "EMAILADDR", "RAW_RIR_DATA", "PHONE_NUMBER",
                  "GEOINFO", "PHYSICAL_ADDRESS" ]
 
     def query(self, url, data, failcount=0):
@@ -62,7 +61,7 @@ class sfp_fullcontact(SpiderFootPlugin):
         ret = None
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot", postData=json.dumps(data), 
+                               useragent="SpiderFoot", postData=json.dumps(data),
                                headers={"Authorization": header})
 
         if res['code'] in [ "401", "400" ]:
@@ -130,22 +129,12 @@ class sfp_fullcontact(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
-        if self.results.has_key(eventData):
+        # Don't look up stuff twice
+        if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:
             self.results[eventData] = True
-
-        if eventName == "HUMAN_NAME":
-            data = self.queryPerson(name=eventData)
-            if not data:
-                return None
-            if not data.get('email'):
-                return None
-            e = SpiderFootEvent("EMAILADDR", data['email'], self.__name__, event)
-            self.notifyListeners(e)
-            return
 
         if eventName == "EMAILADDR":
             data = self.queryPerson(email=eventData)
@@ -177,13 +166,13 @@ class sfp_fullcontact(SpiderFootPlugin):
             if data.get("locations"):
                 for r in data['locations']:
                     if r.get("city") and r.get("country"):
-                        e = SpiderFootEvent("GEOINFO", r['city'] + ", " + r['country'], 
+                        e = SpiderFootEvent("GEOINFO", r['city'] + ", " + r['country'],
                                             self.__name__, event)
                         self.notifyListeners(e)
                     if r.get("formatted"):
                         # Seems to contain some junk sometimes
                         if len(r['formatted']) > 10:
-                            e = SpiderFootEvent("PHYSICAL_ADDRESS", r['formatted'], 
+                            e = SpiderFootEvent("PHYSICAL_ADDRESS", r['formatted'],
                                                 self.__name__, event)
                             self.notifyListeners(e)
 

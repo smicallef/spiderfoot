@@ -10,14 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_intfiles(SpiderFootPlugin):
-    """Interesting Files:Footprint:Crawling and Scanning:errorprone:Identifies potential files of interest, e.g. office documents, zip files."""
-
+    """Interesting Files:Footprint,Passive:Crawling and Scanning::Identifies potential files of interest, e.g. office documents, zip files."""
 
     # Default options
     opts = {
@@ -29,13 +26,13 @@ class sfp_intfiles(SpiderFootPlugin):
         'fileexts': "File extensions of files you consider interesting."
     }
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input

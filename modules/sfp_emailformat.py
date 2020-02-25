@@ -4,14 +4,15 @@
 # Purpose:      SpiderFoot plug-in for retrieving e-mail addresses
 #               belonging to your target from email-format.com.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     29/09/2018
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
 import re
+
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -31,15 +32,14 @@ class sfp_emailformat(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "Email-Format.com"
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME"]
+        return ['INTERNET_NAME', "DOMAIN_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -61,40 +61,28 @@ class sfp_emailformat(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Get e-mail addresses on this domain
-        if eventName == "DOMAIN_NAME":
-            res = self.sf.fetchUrl("https://www.email-format.com/d/" + eventData + "/", timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl("https://www.email-format.com/d/" + eventData + "/", timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
         if res['content'] is None:
             return None
 
-        pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
-        matches = re.findall(pat, res['content'])
-        for match in matches:
+        emails = self.sf.parseEmails(res['content'])
+        for email in emails:
             evttype = "EMAILADDR"
-            self.sf.debug("Found possible email: " + match)
-
-            # Handle false positive matches
-            if len(match) < 5:
-                self.sf.debug("Likely invalid address.")
-                continue
-
-            if "..." in match:
-                self.sf.debug("Incomplete e-mail address, skipping.")
-                continue
-
-            # Handle messed up encodings
-            if "%" in match:
-                self.sf.debug("Skipped address: " + match)
-                continue
 
             # Skip unrelated emails
-            mailDom = match.lower().split('@')[1]
-            if not self.getTarget().matches(mailDom):
-                self.sf.debug("Skipped address: " + match)
+            mailDom = email.lower().split('@')[1]
+            if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
+                self.sf.debug("Skipped address: " + email)
                 continue
 
-            self.sf.info("Found e-mail address: " + match)
-            evt = SpiderFootEvent(evttype, match, self.__name__, event)
+            # Skip masked emails
+            if re.match("^[0-9a-f]{8}\.[0-9]{7}@", email):
+                self.sf.debug("Skipped address: " + email)
+                continue
+
+            self.sf.info("Found e-mail address: " + email)
+            evt = SpiderFootEvent(evttype, email, self.__name__, event)
             self.notifyListeners(evt)
 
         return None

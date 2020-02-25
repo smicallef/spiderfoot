@@ -4,16 +4,14 @@
 # Purpose:      SpiderFoot plug-in for retrieving company information from
 #               OpenCorporates.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-21
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
 import json
-import re
-import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_opencorporates(SpiderFootPlugin):
@@ -31,14 +29,14 @@ class sfp_opencorporates(SpiderFootPlugin):
         'api_key': 'OpenCorporates.com API key.'
     }
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "OpenCorporates"
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -52,20 +50,14 @@ class sfp_opencorporates(SpiderFootPlugin):
     # Search for company name
     # https://api.opencorporates.com/documentation/API-Reference
     def searchCompany(self, qry):
-        if type(qry) != unicode:
-            qry = qry.encode("utf-8", errors="replace")
-        params = {
-            'q': qry,
-            'format': 'json',
-            'order': 'score',
-            'confidence': str(self.opts['confidence'])
-        }
-
+        apiparam = ""
         if not self.opts['api_key'] == "":
-            params['api_token'] = self.opts['api_key']
+            apiparam = "&api_token=" + self.opts['api_key']
 
         # High timeouts as they can sometimes take a while
-        res = self.sf.fetchUrl("https://api.opencorporates.com/v0.4/companies/search?" + urllib.urlencode(params),
+        res = self.sf.fetchUrl("https://api.opencorporates.com/v0.4/companies/search?q=" + \
+                               qry + "&format=json&order=score&confidence=" + \
+                               str(self.opts['confidence']) + apiparam,
                                timeout=60, useragent=self.opts['_useragent'])
 
         if res['code'] == "401":

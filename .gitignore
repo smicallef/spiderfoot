@@ -2,6 +2,9 @@
 #######################
 /cache/
 /spiderfoot.db*
+passwd
+spiderfoot.crt
+spiderfoot.key
 
 # Compiled source #
 ###################
@@ -43,3 +46,14 @@
 Icon?
 ehthumbs.db
 Thumbs.db
+
+# Virtual environments #
+########################
+venv/
+venv3/
+
+# Test Report & Coverage #
+##########################
+.coverage
+coverage/
+report/

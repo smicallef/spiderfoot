@@ -11,26 +11,23 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-try:
-    import re2 as re
-except ImportError:
-    import re
-from hashlib import sha256
+import re
+
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_ethereum(SpiderFootPlugin):
-    """Ethereum Finder:Footprint,Investigate:Content Analysis::Identify ethereum addresses in scraped webpages."""
+    """Ethereum Finder:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
 
     # Default options
     opts = {}
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input

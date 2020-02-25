@@ -12,14 +12,12 @@
 # -------------------------------------------------------------------------------
 
 from subprocess import Popen, PIPE
-import time
-import re
 import json
+import os.path
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_dnstwist(SpiderFootPlugin):
     """Tool - DNSTwist:Footprint,Investigate:DNS:tool:Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation."""
-
 
     # Default options
     opts = {
@@ -38,11 +36,11 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.errorState = False
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -78,13 +76,19 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        # If tool is not found, abort
+        # Normalize path
         if self.opts['dnstwistpath'].endswith('dnstwist.py'):
             exe = self.opts['dnstwistpath']
         elif self.opts['dnstwistpath'].endswith('/'):
             exe = self.opts['dnstwistpath'] + "dnstwist.py"
         else:
             exe = self.opts['dnstwistpath'] + "/dnstwist.py"
+
+        # If tool is not found, abort
+        if not os.path.isfile(exe):
+            self.sf.error("File does not exist: " + exe, False)
+            self.errorState = True
+            return None
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):

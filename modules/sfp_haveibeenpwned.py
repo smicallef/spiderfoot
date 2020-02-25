@@ -9,36 +9,39 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import json
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_haveibeenpwned(SpiderFootPlugin):
-    """HaveIBeenPwned:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check Have I Been Pwned? for hacked e-mail addresses identified."""
+    """HaveIBeenPwned:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches."""
 
 
     # Default options
-    opts = { 
+    opts = {
+        "api_key": ""
     }
 
     # Option descriptions
     optdescs = {
+        "api_key": "HaveIBeenPwned.com API key."
     }
 
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -51,14 +54,22 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
     def query(self, qry):
         ret = None
-        url = "https://haveibeenpwned.com/api/v2/breachedaccount/" + qry
-        hdrs = { "Accept": "application/vnd.haveibeenpwned.v2+json" }
+        if self.opts['api_key']:
+            v = "3"
+        else:
+            v = "2"
+
+        url = "https://haveibeenpwned.com/api/v" + v + "/breachedaccount/" + qry
+        hdrs = { "Accept": "application/vnd.haveibeenpwned.v" + v + "+json" }
         retry = 0
+
+        if self.opts['api_key']:
+            hdrs['hibp-api-key'] = self.opts['api_key']
 
         while retry < 2:
             # https://haveibeenpwned.com/API/v2#RateLimiting
             time.sleep(1.5)
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent="SpiderFoot", headers=hdrs)
 
             if res['code'] == "200":
@@ -71,6 +82,11 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 # Back off a little further
                 time.sleep(2)
             retry += 1
+
+            if res['code'] == "401":
+                self.sf.error("Failed to authenticate key with HaveIBeenPwned.com.", False)
+                self.errorState = True
+                return None
 
         try:
             ret = json.loads(res['content'])
@@ -86,9 +102,12 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
@@ -100,7 +119,10 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             return None
 
         for n in data:
-            site = n["Title"]
+            if not self.opts['api_key']:
+                site = n["Title"]
+            else:
+                site = n["Name"]
             evt = eventName + "_COMPROMISED"
             # Notify other modules of what you've found
             e = SpiderFootEvent(evt, eventData + " [" + site + "]",

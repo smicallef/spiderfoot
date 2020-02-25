@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_socialprofiles
-# Purpose:      Obtains social media profiles of any identified human names.
+# Purpose:      Tries to discover social media profiles of any identified human names.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -10,54 +10,72 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import random
 import re
-import time
-import urllib2
+
+import urllib.request, urllib.error, urllib.parse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 sites = {
-    # Search string to use, domain name the profile will sit on within 
+    # Search string to use, domain name the profile will sit on within
     # those search results.
-    "Facebook": ['+title:%22{0}%22%20+site:facebook.com',
-                 ['"(https?://[a-z\.]*facebook.[a-z\.]+/[^/\"<> ]+)"',
-                 '(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/\"<> ]+)']],
-    "Google+": ['+title:%22{0}%22%20+site:plus.google.com',
-                ['"(https?://plus.google.[a-z\.]+/\d+[^\"<>\/ ]+)"',
-                '(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/\"<> ]+)']],
-    "LinkedIn": ['+title:%22{0}%22%20+site:linkedin.com',
-                 ['"(https?://[a-z\.]*linkedin.[a-z\.]+/[^/\"<> ]+)"',
-                 '(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\/\"<> ]+)']]
+    "Facebook": [
+        "\"{name}\"+site:facebook.com",
+        [
+            '[ \'"](https?://[a-z\.]*facebook.[a-z\.]+/[^/"\'<> ]+/?)[\'" ]',
+            '(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/"\'<> ]+/?)',
+        ],
+    ],
+    "Google+": [
+        "\"{name}\"+site:plus.google.com",
+        [
+            '[ \'"](https?://plus.google.[a-z\.]+/\d+[^"\'<>\/ ]+)[\'" ]',
+            '(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/"\'<> ]+)',
+        ],
+    ],
+    "LinkedIn": [
+        "\"{name}\"+site:linkedin.com",
+        [
+            '["\' ](https?://[a-z\.]*linkedin.[a-z\.]+/[^\?"\'<> ]+)[\'" ]',
+            '(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\?"\'<> ]+)',
+        ],
+    ],
 }
 
 
 class sfp_socialprofiles(SpiderFootPlugin):
-    """Social Media Profiles:Footprint,Passive:Social Media:slow,errorprone:Identify the social media profiles for human names identified."""
-
+    """Social Media Profiles:Footprint,Passive:Social Media:slow,apikey:Tries to discover the social media profiles for human names identified."""
 
     # Default options
     opts = {
-        'pages': 1,
-        'method': "yahoo",
-        'tighten': True
+        "count": 20,
+        "method": "bing",
+        "tighten": True,
+        "bing_api_key": "",
+        "google_api_key": "",
+        "google_cse_id": "013611106330597893267:tfgl3wxdtbp",
     }
 
     # Option descriptions
     optdescs = {
-        'pages': "Number of search engine pages of identified profiles to iterate through.",
-        'tighten': "Tighten results by expecting to find the keyword of the target domain mentioned in the social media profile page results?",
-        'method': "Search engine to use: google, yahoo or bing."
+        "count": "Number of bing search engine results of identified profiles to iterate through.",
+        "method": "Search engine to use: 'google' or 'bing'.",
+        "tighten": "Tighten results by expecting to find the keyword of the target domain mentioned in the social media profile page results?",
+        "bing_api_key": "Bing API Key for social media profile search.",
+        "google_api_key": "Google API Key for social media profile search.",
+        "google_cse_id": "Google Custom Search Engine ID.",
     }
 
     keywords = None
-    results = dict()
+    results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.keywords = None
+        self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -68,7 +86,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SOCIAL_MEDIA", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["SOCIAL_MEDIA", "RAW_RIR_DATA"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -77,7 +95,15 @@ class sfp_socialprofiles(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if self.opts['google_api_key'] == "" and self.opts['bing_api_key'] == "":
+            self.sf.error("You enabled sfp_socialprofiles but did not set a Google or Bing API key!", False)
+            self.errorState = True
+            return None
 
         # Don't look up stuff twice
         if eventData in self.results:
@@ -87,97 +113,117 @@ class sfp_socialprofiles(SpiderFootPlugin):
             self.results[eventData] = True
 
         if self.keywords is None:
-            self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
-                self.opts['_internettlds'])
+            self.keywords = self.sf.domainKeywords(
+                self.getTarget().getNames(), self.opts["_internettlds"]
+            )
             if len(self.keywords) == 0:
                 self.keywords = None
 
         for site in sites:
-            s = unicode(sites[site][0]).format(eventData)
+            s = str(sites[site][0]).format(name=eventData)
             searchStr = s.replace(" ", "%20")
-            results = None
+            res = None
 
-            if self.opts['method'].lower() == "google":
-                results = self.sf.googleIterate(searchStr, dict(limit=self.opts['pages'],
-                                                                useragent=self.opts['_useragent'],
-                                                                timeout=self.opts['_fetchtimeout']))
+            if self.opts["method"].lower() == "yahoo":
+                self.sf.error(
+                    "Yahoo is no longer supported. Please try 'bing' or 'google'.",
+                    False,
+                )
+                return None
+
+            if self.opts["method"].lower() == "google":
+                res = self.sf.googleIterate(
+                    searchString=searchStr,
+                    opts={
+                        "timeout": self.opts["_fetchtimeout"],
+                        "useragent": self.opts["_useragent"],
+                        "api_key": self.opts["google_api_key"],
+                        "cse_id": self.opts["google_cse_id"],
+                    },
+                )
                 self.__dataSource__ = "Google"
 
-            if self.opts['method'].lower() == "yahoo":
-                results = self.sf.yahooIterate(searchStr, dict(limit=self.opts['pages'],
-                                                               useragent=self.opts['_useragent'],
-                                                               timeout=self.opts['_fetchtimeout']))
-                self.__dataSource__ = "Yahoo"
-
-            if self.opts['method'].lower() == "bing":
-                results = self.sf.bingIterate(searchStr, dict(limit=self.opts['pages'],
-                                                              useragent=self.opts['_useragent'],
-                                                              timeout=self.opts['_fetchtimeout']))
+            if self.opts["method"].lower() == "bing":
+                res = self.sf.bingIterate(
+                    searchString=searchStr,
+                    opts={
+                        "timeout": self.opts["_fetchtimeout"],
+                        "useragent": self.opts["_useragent"],
+                        "count": self.opts["count"],
+                        "api_key": self.opts["bing_api_key"],
+                    },
+                )
                 self.__dataSource__ = "Bing"
 
-            if results is None:
-                self.sf.info("No data returned from " + self.opts['method'] + ".")
-                return None
+            if res is None:
+                self.sf.info("No data returned from " + self.opts["method"] + ".")
+                continue
 
             if self.checkForStop():
                 return None
 
-            pauseSecs = random.randint(4, 15)
-            self.sf.debug("Pausing for " + str(pauseSecs))
-            time.sleep(pauseSecs)
+            # Submit the results for analysis
+            evt = SpiderFootEvent(
+                "RAW_RIR_DATA", str(res), self.__name__, event
+            )
+            self.notifyListeners(evt)
 
-            for key in results:
-                instances = list()
+            instances = list()
+            for searchDom in sites[site][1]:
+                # Search both the urls & the search engine web content
+                search_string = " ".join(res["urls"] + [str(res)])
 
-                for searchDom in sites[site][1]:
-                    matches = re.findall(searchDom, results[key], re.IGNORECASE|re.MULTILINE)
+                matches = re.findall(
+                    searchDom, search_string, re.IGNORECASE | re.MULTILINE
+                )
 
-                    if not matches:
+                if not matches:
+                    continue
+
+                for match in matches:
+                    self.sf.debug("Match found: " + match)
+                    if match in instances:
                         continue
+                    else:
+                        instances.append(match)
 
-                    for match in matches:
-                        self.sf.debug("Match found: " + match)
-                        if match in instances:
+                    if self.checkForStop():
+                        return None
+
+                    # Fetch the profile page if we are checking
+                    # for a firm relationship.
+                    # Keywords might be empty if the target was an IP, subnet or name.
+                    if self.opts["tighten"] and self.keywords:
+                        match = urllib.parse.unquote(match)
+                        self.sf.debug(
+                            "Tightening results to look for " + str(self.keywords)
+                        )
+                        pres = self.sf.fetchUrl(
+                            match,
+                            timeout=self.opts["_fetchtimeout"],
+                            useragent=self.opts["_useragent"],
+                        )
+
+                        if pres["content"] is None:
                             continue
                         else:
-                            instances.append(match)
-
-                        if self.opts['method'] == "yahoo":
-                            match = re.sub(r'.*RU=(.*?)/RK=.*', r'\1', match)
-                            self.sf.debug("Yahoo match: " + match)
-
-                        if self.checkForStop():
-                            return None
-
-                        # Fetch the profile page if we are checking
-                        # for a firm relationship.
-                        # Keywords might be empty if the target was an IP, subnet or name.
-                        if self.opts['tighten'] and self.keywords:
-                            match = urllib2.unquote(match)
-                            self.sf.debug("Tightening results to look for " + str(self.keywords))
-                            pres = self.sf.fetchUrl(match, timeout=self.opts['_fetchtimeout'],
-                                                    useragent=self.opts['_useragent'])
-
-                            if pres['content'] is None:
+                            found = False
+                            for kw in self.keywords:
+                                if re.search(
+                                    "[^a-zA-Z\-\_]" + kw + "[^a-zA-Z\-\_]",
+                                    pres["content"],
+                                    re.IGNORECASE,
+                                ):
+                                    found = True
+                            if not found:
                                 continue
-                            else:
-                                found = False
-                                for kw in self.keywords:
-                                    if re.search("[^a-zA-Z\-\_]" + kw + "[^a-zA-Z\-\_]", 
-                                                 pres['content'], re.IGNORECASE):
-                                        found = True
-                                if not found:
-                                    continue
 
-                        self.sf.info("Social Media Profile found at " + site + ": " + match)
-                        match = urllib2.unquote(match)
-                        evt = SpiderFootEvent("SOCIAL_MEDIA", site + ": " + match,
-                                              self.__name__, event)
-                        self.notifyListeners(evt)
+                    self.sf.info("Social Media Profile found at " + site + ": " + match)
+                    match = urllib.parse.unquote(match)
+                    evt = SpiderFootEvent(
+                        "SOCIAL_MEDIA", site + ": <SFURL>" + match + "</SFURL>", self.__name__, event
+                    )
+                    self.notifyListeners(evt)
 
-                # Submit the results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", results[key],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
 
 # End of sfp_socialprofiles class

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_arin
-# Purpose:      Queries the ARIN internet registry to get netblocks and other 
+# Purpose:      Queries the ARIN internet registry to get netblocks and other
 #               bits of info.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -23,18 +22,18 @@ class sfp_arin(SpiderFootPlugin):
     # Default options
     opts = {}
 
-    results = dict()
+    results = None
     currentEventSrc = None
     memCache = dict()
     keywords = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.memCache = dict()
         self.currentEventSrc = None
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -94,7 +93,7 @@ class sfp_arin(SpiderFootPlugin):
             j = json.loads(res['content'])
             return j
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug("Error processing JSON response: " + str(e))
             return None
 
     # Handle events sent to this module
@@ -135,7 +134,7 @@ class sfp_arin(SpiderFootPlugin):
                         # the names are separated in the content and sfp_names
                         # won't recognise it. So we submit this and see if it
                         # really is considered a name.
-                        evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name, 
+                        evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name,
                                               self.__name__, self.currentEventSrc)
                         self.notifyListeners(evt)
 
@@ -159,5 +158,5 @@ class sfp_arin(SpiderFootPlugin):
                         # We just want the raw data so we can get potential
                         # e-mail addresses.
                         self.query("contact", p['$'])
-                        
+
 # End of sfp_arin class

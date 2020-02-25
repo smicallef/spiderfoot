@@ -18,14 +18,14 @@
 FROM alpine:latest
 WORKDIR /home/spiderfoot
 COPY . .
-ENV SPIDERFOOT_VERSION
 
 # Run everything as one command so that only one layer is created
-RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py2-pip swig \
-        tinyxml-dev python2-dev musl-dev openssl-dev libxslt-dev \
-    && apk --update --no-cache add python2 musl openssl libxslt tinyxml \
-    && pip --no-cache-dir install wheel \
-    && pip --no-cache-dir install -r requirements.txt \
+RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py3-pip swig \
+        tinyxml-dev python3-dev musl-dev openssl-dev libffi-dev libxslt-dev \
+    && apk --update --no-cache add python3 musl openssl libxslt tinyxml jpeg-dev openjpeg-dev zlib-dev \
+    && pip3 install --upgrade pip \
+    && pip3 --no-cache-dir install wheel \
+    && pip3 --no-cache-dir install -r requirements.txt \
     && addgroup spiderfoot \
     && adduser -G spiderfoot -h /home/spiderfoot -s /sbin/nologin \
                -g "SpiderFoot User" -D spiderfoot \
@@ -37,7 +37,9 @@ RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py2-pi
 
 USER spiderfoot
 
+
 EXPOSE 5001
 
 # Run the application.
-CMD ["/usr/bin/python", "./sf.py", "0.0.0.0:5001"]
+ENTRYPOINT ["/usr/bin/python3"]
+CMD ["./sf.py", "-l", "0.0.0.0:5001"]

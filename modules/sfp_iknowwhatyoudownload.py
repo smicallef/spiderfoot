@@ -9,9 +9,7 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
 import json
-import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_iknowwhatyoudownload(SpiderFootPlugin):
@@ -19,7 +17,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
 
 
     # Default options
-    opts = { 
+    opts = {
         "daysback": 30,
         "api_key": ""
     }
@@ -33,17 +31,18 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -66,7 +65,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         url = base + qry + "&days=" + str(self.opts['daysback'])
         url += "&key=" + self.opts['api_key']
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
             useragent="SpiderFoot")
 
         if res['code'] in ["403", "500"]:
@@ -84,7 +83,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
                 self.errorState = True
                 self.sf.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.", False)
                 return None
-        
+
         if 'contents' in ret:
             if len(ret['contents']) > 0:
                 retdata = "<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip=" + qry + "</SFURL>\n"
@@ -94,7 +93,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
             else:
                 return None
         else:
-            return None    
+            return None
 
         return retdata
 
@@ -106,12 +105,15 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.errorState:
+            return None
+
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!", False)
             self.errorState = True
             return None
 
-       # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None

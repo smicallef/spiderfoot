@@ -10,8 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
-import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
@@ -22,7 +20,6 @@ malchecks = {
         'url': 'http://hosts-file.net/download/hosts.txt'
     }
 }
-
 
 class sfp_hostsfilenet(SpiderFootPlugin):
     """hosts-file.net Malicious Hosts:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to hosts-file.net Malicious Hosts."""
@@ -46,16 +43,16 @@ class sfp_hostsfilenet(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -77,7 +74,7 @@ class sfp_hostsfilenet(SpiderFootPlugin):
         if targetType == "domain":
             targetDom = self.sf.hostDomain(target, self.opts['_internettlds'])
 
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "list":
                 data = dict()
@@ -91,6 +88,9 @@ class sfp_hostsfilenet(SpiderFootPlugin):
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
 
+                if type(data['content']) != str:
+                    data['content'] = str(data['content'])
+
                 # Check for the domain and the hostname
                 if targetType == "domain" and "127.0.0.1\t" + targetDom + "\n" in data['content']:
                     self.sf.debug(targetDom + " found in " + check + " list.")
@@ -101,7 +101,7 @@ class sfp_hostsfilenet(SpiderFootPlugin):
         return None
 
     def lookupItem(self, resourceId, itemType, target):
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
                 self.sf.debug("Checking maliciousness of " + target + " (" +
@@ -123,7 +123,7 @@ class sfp_hostsfilenet(SpiderFootPlugin):
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None
@@ -131,7 +131,7 @@ class sfp_hostsfilenet(SpiderFootPlugin):
                 and not self.opts.get('checkaffiliates', False):
             return None
 
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             # If the module is enabled..
             if self.opts[cid]:

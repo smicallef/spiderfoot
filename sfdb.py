@@ -93,13 +93,13 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ROOT', 'Internal SpiderFoot Root event', 1, 'INTERNAL')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ACCOUNT_EXTERNAL_OWNED', 'Account on External Site', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ACCOUNT_EXTERNAL_OWNED_COMPROMISED', 'Hacked Account on External Site', 0, 'DESCRIPTOR')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ACCOUNT_EXTERNAL_USER_SHARED', 'User Account on External Site', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ACCOUNT_EXTERNAL_USER_SHARED_COMPROMISED', 'Hacked User Account on External Site', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_EMAILADDR', 'Affiliate - Email Address', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_INTERNET_NAME', 'Affiliate - Internet Name', 0, 'ENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_INTERNET_NAME_UNRESOLVED', 'Affiliate - Internet Name - Unresolved', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_IPADDR', 'Affiliate - IP Address', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1, 'DATA')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_DOMAIN', 'Affiliate - Domain Name', 0, 'ENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_DOMAIN_NAME', 'Affiliate - Domain Name', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_COMPANY_NAME', 'Affiliate - Company Name', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_DOMAIN_WHOIS', 'Affiliate - Domain Whois', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('AFFILIATE_DESCRIPTION_CATEGORY', 'Affiliate Description - Category', 0, 'DESCRIPTOR')",
@@ -123,6 +123,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('CO_HOSTED_SITE_DOMAIN_WHOIS', 'Co-Hosted Site - Domain Whois', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DARKNET_MENTION_URL', 'Darknet Mention URL', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DARKNET_MENTION_CONTENT', 'Darknet Mention Web Content', 1, 'DATA')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DATE_HUMAN_DOB', 'Date of Birth', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DEFACED_INTERNET_NAME', 'Defaced', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DEFACED_IPADDR', 'Defaced IP Address', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('DEFACED_AFFILIATE_INTERNET_NAME', 'Defaced Affiliate', 0, 'DESCRIPTOR')",
@@ -143,6 +144,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ERROR_MESSAGE', 'Error Message', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ETHEREUM_ADDRESS', 'Ethereum Address', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('GEOINFO', 'Physical Location', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HASH_COMPROMISED', 'Compromised Password Hash', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HTTP_CODE', 'HTTP Status Code', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HUMAN_NAME', 'Human Name', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('INTERESTING_FILE', 'Interesting File', 0, 'DESCRIPTOR')",
@@ -162,6 +164,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_AFFILIATE_INTERNET_NAME', 'Malicious Affiliate', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_AFFILIATE_IPADDR', 'Malicious Affiliate IP Address', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_NETBLOCK', 'Malicious IP on Owned Netblock', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_PHONE_NUMBER', 'Malicious Phone Number', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_SUBNET', 'Malicious IP on Same Subnet', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('NETBLOCK_OWNER', 'Netblock Ownership', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('NETBLOCK_MEMBER', 'Netblock Membership', 0, 'ENTITY')",
@@ -169,6 +172,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('OPERATING_SYSTEM', 'Operating System', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('LEAKSITE_URL', 'Leak Site URL', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('LEAKSITE_CONTENT', 'Leak Site Content', 1, 'DATA')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PASSWORD_COMPROMISED', 'Compromised Password', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PHONE_NUMBER', 'Phone Number', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PHYSICAL_ADDRESS', 'Physical Address', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PHYSICAL_COORDINATES', 'Physical Coordinates', 0, 'ENTITY')",
@@ -177,6 +181,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_JAVASCRIPT', 'Externally Hosted Javascript', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_MAIL', 'Email Gateway (DNS ''MX'' Records)', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_HOSTING', 'Hosting Provider', 0, 'ENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PROVIDER_TELCO', 'Telecommunications Provider', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('PUBLIC_CODE_REPO', 'Public Code Repository', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('RAW_RIR_DATA', 'Raw Data from RIRs/APIs', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('RAW_DNS_RECORDS', 'Raw DNS Records', 1, 'DATA')",
@@ -257,7 +262,6 @@ class SpiderFootDb:
             return
 
         if init:
-            print "Attempting to verify database and update if necessary..."
             for qry in self.createTypeQueries:
                 try:
                     self.dbh.execute(qry)
@@ -295,7 +299,7 @@ class SpiderFootDb:
     #  - regex (search values for a regular expression)
     # ** at least two criteria must be set **
     def search(self, criteria, filterFp=False):
-        if criteria.values().count(None) == 3:
+        if list(criteria.values()).count(None) == 3:
             return False
 
         qvars = list()
@@ -332,8 +336,8 @@ class SpiderFootDb:
         qry += " ORDER BY c.data"
 
         try:
-            #print qry
-            #print str(qvars)
+            #print(qry)
+            #print(str(qvars))
             self.dbh.execute(qry, qvars)
             return self.dbh.fetchall()
         except sqlite3.Error as e:
@@ -362,11 +366,14 @@ class SpiderFootDb:
             ))
             self.conn.commit()
         except sqlite3.Error as e:
-            if "locked" in e.args[0]:
+            if "locked" in e.args[0] or "thread" in e.args[0]:
                 # TODO: Do something smarter here to handle locked databases
-                self.sf.fatal("Unable to log event in DB due to lock: " + e.args[0])
+                #print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
+                #self.sf.fatal("Unable to log event in DB due to lock: " + e.args[0])
+                pass
             else:
-                self.sf.fatal("Unable to log event in DB: " + e.args[0])
+                print("[warning] Couldn't log due to: " + str(e.args[0]))
+                #self.sf.fatal("Unable to log event in DB: " + e.args[0])
 
         return True
 
@@ -510,7 +517,7 @@ class SpiderFootDb:
             type, message, rowid FROM tbl_scan_log WHERE scan_instance_id = ?"
         if fromRowId:
             qry += " and rowid > ?"
-        
+
         qry += " ORDER BY generated "
         if reverse:
             qry += "ASC"
@@ -582,7 +589,7 @@ class SpiderFootDb:
     # Store the default configuration
     def configSet(self, optMap=dict()):
         qry = "REPLACE INTO tbl_config (scope, opt, val) VALUES (?, ?, ?)"
-        for opt in optMap.keys():
+        for opt in list(optMap.keys()):
             # Module option
             if ":" in opt:
                 parts = opt.split(':')
@@ -629,7 +636,7 @@ class SpiderFootDb:
         qry = "REPLACE INTO tbl_scan_config \
                 (scan_instance_id, component, opt, val) VALUES (?, ?, ?, ?)"
 
-        for opt in optMap.keys():
+        for opt in list(optMap.keys()):
             # Module option
             if ":" in opt:
                 parts = opt.split(':')
@@ -676,14 +683,14 @@ class SpiderFootDb:
     def scanEventStore(self, instanceId, sfEvent, truncateSize=0):
         storeData = ''
 
-        if type(sfEvent.data) is not unicode:
+        if type(sfEvent.data) is not str:
             # If sfEvent.data is a dict or list, convert it to a string first, as
             # those types do not have a unicode converter.
             if type(sfEvent.data) is str:
-                storeData = unicode(sfEvent.data, 'utf-8', errors='replace')
+                storeData = str(sfEvent.data)
             else:
                 try:
-                    storeData = unicode(str(sfEvent.data), 'utf-8', errors='replace')
+                    storeData = str(sfEvent.data)
                 except BaseException as e:
                     self.sf.fatal("Unhandled type detected: " + str(type(sfEvent.data)))
         else:
@@ -703,7 +710,7 @@ class SpiderFootDb:
                  sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
                  sfEvent.module, storeData, sfEvent.sourceEventHash]
 
-        #print "STORING: " + str(qvals)
+        #print("STORING: " + str(qvals))
 
         try:
             self.dbh.execute(qry, qvals)
@@ -715,7 +722,7 @@ class SpiderFootDb:
     # List of all previously run scans
     def scanInstanceList(self):
         # SQLite doesn't support OUTER JOINs, so we need a work-around that
-        # does a UNION of scans with results and scans without results to 
+        # does a UNION of scans with results and scans without results to
         # get a complete listing.
         qry = "SELECT i.guid, i.name, i.seed_target, ROUND(i.created/1000), \
             ROUND(i.started)/1000 as started, ROUND(i.ended)/1000, i.status, COUNT(r.type) \
@@ -796,7 +803,7 @@ class SpiderFootDb:
         except sqlite3.Error as e:
             self.sf.error("SQL error encountered when getting child element IDs: " + e.args[0])
 
-    # Get the full set of upstream IDs which are parents to the 
+    # Get the full set of upstream IDs which are parents to the
     # supplied set of IDs.
     # Data has to be in the format of output from scanElementSourcesDirect
     # and produce output in the same format.
@@ -832,7 +839,7 @@ class SpiderFootDb:
                 parentId = row[9]
                 childId = row[8]
                 datamap[childId] = row
-                #print childId + " = " + str(row)
+                #print(childId + " = " + str(row))
 
                 if parentId in pc:
                     if childId not in pc[parentId]:
@@ -849,7 +856,7 @@ class SpiderFootDb:
         datamap[parentId] = row
         return [datamap, pc]
 
-    # Get the full set of downstream IDs which are children of the 
+    # Get the full set of downstream IDs which are children of the
     # supplied set of IDs
     # NOTE FOR NOW THE BEHAVIOR IS NOT THE SAME AS THE scanElementParent*
     # FUNCTIONS - THIS ONLY RETURNS IDS!!

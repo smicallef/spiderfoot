@@ -30,16 +30,16 @@ class sfp_XXX(SpiderFootPlugin):
     # or you run the risk of data persisting between scan runs.
 
     # Target
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -58,7 +58,7 @@ class sfp_XXX(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        # If you are processing TARGET_WEB_CONTENT from sfp_spider, this is how you 
+        # If you are processing TARGET_WEB_CONTENT from sfp_spider, this is how you
         # would get the source of that raw data (e.g. a URL.)
         eventSource = event.sourceEvent.data
 

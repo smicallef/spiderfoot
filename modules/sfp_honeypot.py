@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -44,7 +43,7 @@ class sfp_honeypot(SpiderFootPlugin):
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    results = dict()
+    results = None
     errorState = False
 
     # Status codes according to:
@@ -65,9 +64,9 @@ class sfp_honeypot(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -111,7 +110,9 @@ class sfp_honeypot(SpiderFootPlugin):
                      self.reverseAddr(qaddr) + ".dnsbl.httpbl.org"
 
             self.sf.debug("Checking Honeypot: " + lookup)
-            addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(lookup))
+            addrs = self.sf.resolveHost(lookup)
+            if not addrs:
+                return None
             self.sf.debug("Addresses returned: " + str(addrs))
 
             text = None

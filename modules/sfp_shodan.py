@@ -11,6 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
+import urllib.request, urllib.parse, urllib.error
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -21,7 +22,7 @@ class sfp_shodan(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "api_key": "",
+        'api_key': "",
         'netblocklookup': True,
         'maxnetblock': 24
     }
@@ -33,28 +34,29 @@ class sfp_shodan(SpiderFootPlugin):
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_OWNER", "DOMAIN_NAME"]
+        return ["IP_ADDRESS", "NETBLOCK_OWNER", "DOMAIN_NAME", "WEB_ANALYTICS_ID"]
 
     # What events this module produces
     def producedEvents(self):
         return ["OPERATING_SYSTEM", "DEVICE_TYPE",
                 "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
-                "SEARCH_ENGINE_WEB_CONTENT" ]
+                "SEARCH_ENGINE_WEB_CONTENT", 'RAW_RIR_DATA',
+                'GEOINFO', 'VULNERABILITY']
 
     def query(self, qry):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
@@ -74,7 +76,7 @@ class sfp_shodan(SpiderFootPlugin):
 
     def searchHosts(self, qry):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?query=hostname:" + qry +
-                               "?key=" + self.opts['api_key'],
+                               "&key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
@@ -88,6 +90,25 @@ class sfp_shodan(SpiderFootPlugin):
 
         return info
 
+    def searchHtml(self, qry):
+        params = {
+            'query': 'http.html:"' + qry.encode('raw_unicode_escape').decode("ascii", errors='replace') + '"',
+            'key': self.opts['api_key']
+        }
+
+        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?" + urllib.parse.urlencode(params),
+                               timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        if res['content'] is None:
+            self.sf.info("No SHODAN info found for " + qry)
+            return None
+
+        try:
+            info = json.loads(res['content'])
+        except Exception as e:
+            self.sf.error("Error processing JSON response from SHODAN.", False)
+            return None
+
+        return info
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -105,7 +126,7 @@ class sfp_shodan(SpiderFootPlugin):
             self.errorState = True
             return None
 
-            # Don't look up stuff twice
+        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
@@ -116,9 +137,31 @@ class sfp_shodan(SpiderFootPlugin):
             hosts = self.searchHosts(eventData)
             if hosts is None:
                 return None
-            
+
             evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(hosts), self.__name__, event)
             self.notifyListeners(evt)
+
+        if eventName == 'WEB_ANALYTICS_ID':
+            try:
+                network = eventData.split(": ")[0]
+                analytics_id = eventData.split(": ")[1]
+            except BaseException as e:
+                self.sf.error("Unable to parse WEB_ANALYTICS_ID: " +
+                              eventData + " (" + str(e) + ")", False)
+                return None
+
+            if network not in ['Google AdSense', 'Google Analytics', 'Google Site Verification']:
+                self.sf.debug("Skipping " + eventData + ", as not supported.")
+                return None
+
+            rec = self.searchHtml(analytics_id)
+
+            if rec is None:
+                return None
+
+            evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(rec), self.__name__, event)
+            self.notifyListeners(evt)
+            return None
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
@@ -161,6 +204,11 @@ class sfp_shodan(SpiderFootPlugin):
                                       " (" + addr + ")", self.__name__, event)
                 self.notifyListeners(evt)
 
+            if rec.get('country_name') is not None:
+                location = ', '.join([_f for _f in [rec.get('city'), rec.get('country_name')] if _f])
+                evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
+                self.notifyListeners(evt)
+
             if 'data' in rec:
                 self.sf.info("Found SHODAN data for " + eventData)
                 for r in rec['data']:
@@ -168,6 +216,7 @@ class sfp_shodan(SpiderFootPlugin):
                     banner = r.get('banner')
                     asn = r.get('asn')
                     product = r.get('product')
+                    vulns = r.get('vulns')
 
                     if port is not None:
                         # Notify other modules of what you've found
@@ -191,6 +240,12 @@ class sfp_shodan(SpiderFootPlugin):
                         evt = SpiderFootEvent("BGP_AS_MEMBER", asn.replace("AS", ""),
                                               self.__name__, event)
                         self.notifyListeners(evt)
+
+                    if vulns is not None:
+                        for vuln in list(vulns.keys()):
+                            evt = SpiderFootEvent('VULNERABILITY', vuln,
+                                                  self.__name__, event)
+                            self.notifyListeners(evt)
 
         return None
 

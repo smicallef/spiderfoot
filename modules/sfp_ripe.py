@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_ripe
-# Purpose:      Queries Internet registryes like RIPE (incl. ARIN) to get 
+# Purpose:      Queries Internet registryes like RIPE (incl. ARIN) to get
 #               netblocks and other bits of info.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -12,6 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import re
+
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -23,22 +24,22 @@ class sfp_ripe(SpiderFootPlugin):
     # Default options
     opts = {}
 
-    results = dict()
+    results = None
     currentEventSrc = None
-    memCache = dict()
-    nbreported = dict()
+    memCache = None
+    nbreported = None
     keywords = None
     lastContent = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
-        self.memCache = dict()
+        self.results = self.tempStorage()
+        self.memCache = self.tempStorage()
         self.currentEventSrc = None
-        self.nbreported = dict()
+        self.nbreported = self.tempStorage()
         self.lastContent = None
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -190,12 +191,13 @@ class sfp_ripe(SpiderFootPlugin):
 
         return neighbours
 
-    # Determine whether there is a textual link between the target 
+    # Determine whether there is a textual link between the target
     # and the string supplied.
     def findName(self, string):
         # Simplest check to perform..
-        if self.getTarget().getValue() in string:
-            return True
+        for n in self.getTarget().getNames():
+            if n in string:
+                return True
 
         if self.keywords is None:
             self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
@@ -231,7 +233,7 @@ class sfp_ripe(SpiderFootPlugin):
         owned = False
 
         if ownerinfo is not None:
-            for k in ownerinfo.keys():
+            for k in list(ownerinfo.keys()):
                 items = ownerinfo[k]
                 for item in items:
                     if self.findName(item.lower()):
@@ -268,7 +270,7 @@ class sfp_ripe(SpiderFootPlugin):
                 ownerinfo = self.asOwnerInfo(nasn)
                 ownertext = ''
                 if ownerinfo is not None:
-                    for k, v in ownerinfo.iteritems():
+                    for k, v in ownerinfo.items():
                         ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
 
                     if len(ownerinfo) > 0:
@@ -337,9 +339,10 @@ class sfp_ripe(SpiderFootPlugin):
                 self.sf.debug("Could not identify BGP AS for " + prefix)
                 return None
 
-            self.sf.info("Netblock found: " + prefix + "(" + asn + ")")
-            evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
-            self.notifyListeners(evt)
+            if self.sf.validIpNetwork(prefix):
+                self.sf.info("Netblock found: " + prefix + "(" + asn + ")")
+                evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
+                self.notifyListeners(evt)
 
         return None
 

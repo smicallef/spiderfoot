@@ -14,11 +14,11 @@
 from subprocess import Popen, PIPE
 import io
 import json
+import os.path
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_cmseek(SpiderFootPlugin):
     """Tool - CMSeeK:Footprint,Investigate:Content Analysis:tool:Identify what Content Management System (CMS) might be used."""
-
 
     # Default options
     opts = {
@@ -37,11 +37,11 @@ class sfp_tool_cmseek(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.errorState = False
         self.__dataSource__ = "Target Website"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -77,7 +77,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        # If tool is not found, abort
+        # Normalize path
         if self.opts['cmseekpath'].endswith('cmseek.py'):
             exe = self.opts['cmseekpath']
             resultpath = self.opts['cmseekpath'].split("cmseek.py")[0] + "/Result"
@@ -87,6 +87,12 @@ class sfp_tool_cmseek(SpiderFootPlugin):
         else:
             exe = self.opts['cmseekpath'] + "/cmseek.py"
             resultpath = self.opts['cmseekpath'] + "/Result"
+
+        # If tool is not found, abort
+        if not os.path.isfile(exe):
+            self.sf.error("File does not exist: " + exe, False)
+            self.errorState = True
+            return None
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):

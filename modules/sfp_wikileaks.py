@@ -10,8 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-import socket
 import datetime
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -31,13 +29,13 @@ class sfp_wikileaks(SpiderFootPlugin):
         'external': "Include external leak sources such as Associated Twitter accounts, Snowden + Hammond Documents, Cryptome Documents, ICWatch, This Day in WikiLeaks Blog and WikiLeaks Press, WL Central."
     }
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -117,7 +115,7 @@ class sfp_wikileaks(SpiderFootPlugin):
                     self.sf.debug("Found a link: " + link)
                     if self.checkForStop():
                         return None
-    
+
                     # Wikileaks leak links will have a nested folder structure link
                     if link.count('/') >= 4:
                         if not link.endswith(".js") and not link.endswith(".css"):
@@ -126,7 +124,7 @@ class sfp_wikileaks(SpiderFootPlugin):
                             valid = True
 
             if valid:
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'], 
+                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
                                       self.__name__, event)
                 self.notifyListeners(evt)
 

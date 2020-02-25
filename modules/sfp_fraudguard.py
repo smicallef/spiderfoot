@@ -42,17 +42,17 @@ class sfp_fraudguard(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -65,11 +65,18 @@ class sfp_fraudguard(SpiderFootPlugin):
 
     def query(self, qry):
         fraudguard_url = "https://api.fraudguard.io/ip/" + qry
+        api_key_account = self.opts['fraudguard_api_key_account']
+        if type(api_key_account) == str:
+            api_key_account = api_key_account.encode('utf-8')
+        api_key_password = self.opts['fraudguard_api_key_password']
+        if type(api_key_password) == str:
+            api_key_password = api_key_password.encode('utf-8')
+        token = base64.b64encode(api_key_account + ':'.encode('utf-8') + api_key_password)
         headers = {
-            'Authorization': "Basic " + base64.b64encode(self.opts['fraudguard_api_key_account'] + ":" + self.opts['fraudguard_api_key_password'])
+            'Authorization': "Basic " + token.decode('utf-8')
         }
 
-        res = self.sf.fetchUrl(fraudguard_url , timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(fraudguard_url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] in [ "400", "429", "500", "403" ]:
@@ -155,8 +162,8 @@ class sfp_fraudguard(SpiderFootPlugin):
                     self.notifyListeners(e)
 
                 if rec.get('threat') != "unknown":
-                    dat = rec['threat'] + " (risk level: " + rec['risk_level'] + ")"
+                    dat = rec['threat'] + " (risk level: " + rec['risk_level'] + ") [" + eventData + "]"
                     e = SpiderFootEvent("MALICIOUS_" + rtype, dat, self.__name__, event)
                     self.notifyListeners(e)
-    
+
 # End of sfp_fraudguard class

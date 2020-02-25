@@ -11,17 +11,13 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-import urllib
 import datetime
-import time
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_archiveorg(SpiderFootPlugin):
-    """Archive.org:Footprint:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
-
+    """Archive.org:Footprint,Passive:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
 
     # Default options
     opts = {
@@ -51,15 +47,15 @@ class sfp_archiveorg(SpiderFootPlugin):
         "javascriptpages": "Query the Wayback Machine for historic versions of URLs using Javascript."
     }
 
-    results = list()
+    results = None
     foundDates = list()
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
         self.foundDates = list()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -72,9 +68,9 @@ class sfp_archiveorg(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["INTERESTING_FILE_HISTORIC", "URL_PASSWORD_HISTORIC", 
+        return ["INTERESTING_FILE_HISTORIC", "URL_PASSWORD_HISTORIC",
                 "URL_FORM_HISTORIC", "URL_FLASH_HISTORIC",
-                "URL_STATIC_HISTORIC", "URL_JAVA_APPLET_HISTORIC", 
+                "URL_STATIC_HISTORIC", "URL_JAVA_APPLET_HISTORIC",
                 "URL_UPLOAD_HISTORIC", "URL_WEB_FRAMEWORK_HISTORIC",
                 "URL_JAVASCRIPT_HISTORIC"]
 
@@ -108,15 +104,15 @@ class sfp_archiveorg(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         for daysback in self.opts['farback'].split(","):
             newDate = datetime.datetime.now() - datetime.timedelta(days=int(daysback))
             maxDate = newDate.strftime("%Y%m%d")
 
-            url = "http://archive.org/wayback/available?url=" + eventData + \
+            url = "https://archive.org/wayback/available?url=" + eventData + \
                   "&timestamp=" + maxDate
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
             if res['content'] == None:

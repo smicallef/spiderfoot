@@ -2,21 +2,22 @@
 # Name:         sfp_twitter
 # Purpose:      Query Twitter for name and location information.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-17
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
 import re
+
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_twitter(SpiderFootPlugin):
     """Twitter:Footprint,Investigate,Passive:Social Media::Gather name and location from Twitter profiles."""
 
     # Default options
-    opts = { 
+    opts = {
     }
 
     # Option descriptions
@@ -26,9 +27,9 @@ class sfp_twitter(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "Twitter"
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -53,28 +54,35 @@ class sfp_twitter(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Retrieve profile
-        network = eventData.split(": ")[0]
-        name = eventData.split(": ")[1]
-
-        if not network == "Twitter":
-            self.sf.debug("Skipping social network profile, " + name + ", as not a Twitter profile")
+        try:
+            network = eventData.split(": ")[0]
+            url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
+        except BaseException as e:
+            self.sf.error("Unable to parse SOCIAL_MEDIA: " +
+                          eventData + " (" + str(e) + ")", False)
             return None
 
-        res = self.sf.fetchUrl("https://mobile.twitter.com/" + name, timeout=self.opts['_fetchtimeout'], 
+        if not network == "Twitter":
+            self.sf.debug("Skipping social network profile, " + url + ", as not a Twitter profile")
+            return None
+
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
         if res['content'] is None:
             return None
 
         if not res['code'] == "200":
-            self.sf.debug(name + " is not a valid Twitter profile")
+            self.sf.debug(url + " is not a valid Twitter profile")
             return None
 
         # Retrieve name
-        human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>', res['content'], re.MULTILINE)
+        human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>',
+                                res['content'], re.MULTILINE)
 
         if human_name:
-            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0], self.__name__, event)
+            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0],
+                                self.__name__, event)
             self.notifyListeners(e)
 
         # Retrieve location

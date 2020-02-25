@@ -11,11 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-import base64
-from datetime import datetime
 import time
-import socket
-from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_securitytrails(SpiderFootPlugin):
@@ -40,48 +36,32 @@ class sfp_securitytrails(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.cohostcount = 0
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "IPV6_ADDRESS", "DOMAIN_NAME", 
+        return ["IP_ADDRESS", "IPV6_ADDRESS", "DOMAIN_NAME",
                 "EMAILADDR", "NETBLOCK_OWNER"]
 
     # What events this module produces
     def producedEvents(self):
-        return ["CO_HOSTED_SITE", "AFFILIATE_DOMAIN", "INTERNET_NAME",
+        return ["CO_HOSTED_SITE",
+                "DOMAIN_NAME", "AFFILIATE_DOMAIN_NAME",
+                "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
                 "PROVIDER_HOSTING"]
-
-    # Verify a host resolves to an IP
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
 
     # Search SecurityTrails
     def query(self, qry, querytype, page=1, accum=None):
@@ -99,7 +79,7 @@ class sfp_securitytrails(SpiderFootPlugin):
             request = '{"filter": { "' + querytype + '": "' + qry + '" } }'
             headers['Content-Type'] = 'application/json'
 
-        res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers,
                                postData=request)
 
@@ -169,7 +149,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                         for dat in r['host_provider']:
                             if dat in hosters:
                                 continue
-                            e = SpiderFootEvent("PROVIDER_HOSTING", dat, 
+                            e = SpiderFootEvent("PROVIDER_HOSTING", dat,
                                                 self.__name__, event)
                             self.notifyListeners(e)
                             hosters.append(dat)
@@ -184,7 +164,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                                 continue
 
                         if h not in myres and h != ip:
-                            if self.opts['verify'] and not self.validateIP(h, ip):
+                            if self.opts['verify'] and not self.sf.validateIP(h, ip):
                                 self.sf.debug("Host " + h + " no longer resolves to our IP.")
                                 continue
                         myres.append(h.lower())
@@ -206,10 +186,14 @@ class sfp_securitytrails(SpiderFootPlugin):
                             myres.append(h.lower())
                         else:
                             continue
-                        e = SpiderFootEvent("AFFILIATE_DOMAIN", h, self.__name__, event)
+                        e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
                         self.notifyListeners(e)
 
-        if eventName in [ "DOMAIN_NAME"]:
+                        if self.sf.isDomain(h, self.opts['_internettlds']):
+                            evt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", h, self.__name__, event)
+                            self.notifyListeners(evt)
+
+        if eventName in ["DOMAIN_NAME"]:
             domain = eventData
             rec = self.query(domain, "domain")
             myres = list()
@@ -219,9 +203,8 @@ class sfp_securitytrails(SpiderFootPlugin):
                         myres.append(h.lower())
                     else:
                         continue
-                    e = SpiderFootEvent("INTERNET_NAME", h + "." + domain, 
+                    e = SpiderFootEvent("INTERNET_NAME", h + "." + domain,
                                         self.__name__, event)
                     self.notifyListeners(e)
-
 
 # End of sfp_securitytrails class

@@ -56,10 +56,10 @@
 <ul class="nav nav-tabs">
 <li id='tab_global' class="active"><a href='#' onClick='switchTab("global");'>Global</a></li>
 % for mod in sorted(opts['__modules__'].keys()):
-    <% keylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].iteritems() if not k.startswith('_')) %>
+    <% keylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].items() if not k.startswith('_')) %>
     % if len(keylist) > 0:
         <% keyicon = "" %>
-        <% apikeylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].iteritems() if k.find("api_key") >= 0) %>
+        <% apikeylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].items() if k.find("api_key") >= 0) %>
         <% 
         if len(apikeylist) > 0: 
             keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\"></i>"
@@ -120,7 +120,7 @@
     % for opt in sorted(opts['__modules__'][mod]['opts'].keys()):
         % if not opt.startswith("_"):
             <%
-            if not opts['__modules__'][mod].has_key('optdescs'):
+            if not opts['__modules__'][mod].get('optdescs'):
                 optdesc = "No description available."
             else:
                 optdesc = opts['__modules__'][mod]['optdescs'][opt]

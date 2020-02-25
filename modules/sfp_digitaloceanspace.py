@@ -22,7 +22,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
     # Default options
     opts = {
         "endpoints": "nyc3.digitaloceanspaces.com,sgp1.digitaloceanspaces.com,ams3.digitaloceanspaces.com",
-        "suffixes": "test,dev,web,beta,bucket,space,files,content,data,-test,-dev,-web,-beta,-bucket,-space,-files,-content,-data",
+        "suffixes": "test,dev,web,beta,bucket,space,files,content,data,prod,staging,production,stage,app,media,development,-test,-dev,-web,-beta,-bucket,-space,-files,-content,-data,-prod,-staging,-production,-stage,-app,-media,-development",
         "_maxthreads": 20
     }
 
@@ -33,14 +33,16 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
     }
 
     results = None
-    s3results = None
+    s3results = dict()
+    lock = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.s3results = dict()
-        self.results = dict()
+        self.results = self.tempStorage()
+        self.lock = threading.Lock()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -54,16 +56,18 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         return ["CLOUD_STORAGE_BUCKET", "CLOUD_STORAGE_BUCKET_OPEN"]
 
     def checkSite(self, url):
-        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
         if res['code'] not in [ "301", "302", "200" ] and \
             (res['content'] is None or "NoSuchBucket" in res['content']):
             self.sf.debug("Not a valid bucket: " + url)
         else:
             if "ListBucketResult" in res['content']:
-                self.s3results[url] = res['content'].count("<Key>")
+                with self.lock:
+                    self.s3results[url] = res['content'].count("<Key>")
             else:
-                self.s3results[url] = 0
+                with self.lock:
+                    self.s3results[url] = 0
 
     def threadSites(self, siteList):
         ret = list()
@@ -77,7 +81,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
                 return None
 
             self.sf.info("Spawning thread to check bucket: " + site)
-            t.append(threading.Thread(name='sfp_digitaloceanspaces_' + site,
+            t.append(threading.Thread(name='thread_sfp_digitaloceanspaces_' + site,
                                       target=self.checkSite, args=(site,)))
             t[i].start()
             i += 1
@@ -86,7 +90,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         while running:
             found = False
             for rt in threading.enumerate():
-                if rt.name.startswith("sfp_digitaloceanspaces_"):
+                if rt.name.startswith("thread_sfp_digitaloceanspaces_"):
                     found = True
 
             if not found:
@@ -108,7 +112,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
                 if data == None:
                     return res
 
-                for ret in data.keys():
+                for ret in list(data.keys()):
                     if data[ret]:
                         # bucket:filecount
                         res.append(ret + ":" + str(data[ret]))
@@ -160,7 +164,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
             evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", bucket[0] + ":" + bucket[1], self.__name__, event)
             self.notifyListeners(evt)
             if bucket[2] != "0":
-                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET_OPEN", bucket[0] + ":" + bucket[1] + ": " + bucket[2] + " files found.", 
+                evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET_OPEN", bucket[0] + ":" + bucket[1] + ": " + bucket[2] + " files found.",
                                       self.__name__, evt)
                 self.notifyListeners(evt)
 

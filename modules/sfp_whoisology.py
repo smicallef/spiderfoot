@@ -11,11 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import base64
-from datetime import datetime
-import time
-import socket
-from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_whoisology(SpiderFootPlugin):
@@ -34,26 +29,26 @@ class sfp_whoisology(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["EMAILADDR", "HUMAN_NAME"]
+        return ["EMAILADDR"]
 
     # What events this module produces
     def producedEvents(self):
-        return ["AFFILIATE_DOMAIN"]
+        return ['AFFILIATE_INTERNET_NAME', 'AFFILIATE_DOMAIN_NAME']
 
     # Search Whoisology
     def query(self, qry, querytype):
@@ -62,7 +57,7 @@ class sfp_whoisology(SpiderFootPlugin):
         url = "https://whoisology.com/api?auth=" + self.opts['api_key'] + "&request=flat"
         url += "&field=" + querytype + "&value=" + qry + "&level=Registrant|Admin|Tec|Billing|Other"
 
-        res = self.sf.fetchUrl(url , timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
         if res['code'] in [ "400", "429", "500", "403" ]:
@@ -112,12 +107,7 @@ class sfp_whoisology(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName == "HUMAN_NAME":
-            ident = "name"
-        if eventName == "EMAILADDR":
-            ident = "email"
-
-        rec = self.query(eventData, ident)
+        rec = self.query(eventData, "email")
         myres = list()
         if rec is not None:
             for r in rec:
@@ -127,7 +117,12 @@ class sfp_whoisology(SpiderFootPlugin):
                         myres.append(h.lower())
                     else:
                         continue
-                    e = SpiderFootEvent("AFFILIATE_DOMAIN", h, self.__name__, event)
+
+                    e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)
                     self.notifyListeners(e)
+
+                    if self.sf.isDomain(h, self.opts['_internettlds']):
+                        evt = SpiderFootEvent('AFFILIATE_DOMAIN_NAME', h, self.__name__, event)
+                        self.notifyListeners(evt)
 
 # End of sfp_whoisology class

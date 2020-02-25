@@ -11,8 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-import socket
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 nearchars = {
@@ -25,8 +23,8 @@ nearchars = {
  'g': [ 'f', 'h' ],
  'h': [ 'g', 'j', 'n' ],
  'i': [ 'o', 'u', '1' ],
- 'j': [ 'k', 'h' ,'i' ],
- 'k': [ 'l' ,'j' ],
+ 'j': [ 'k', 'h' , 'i' ],
+ 'k': [ 'l' , 'j' ],
  'l': [ 'i', '1', 'k' ],
  'm': [ 'n' ],
  'n': [ 'm' ],
@@ -63,7 +61,6 @@ pairs = {
 class sfp_similar(SpiderFootPlugin):
     """Similar Domains:Footprint,Investigate:DNS::Search various sources to identify similar looking domain names, for instance squatted domains."""
 
-
     # Default options
     opts = {
     }
@@ -73,14 +70,14 @@ class sfp_similar(SpiderFootPlugin):
     }
 
     # Internal results tracking
-    results = list()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -107,7 +104,7 @@ class sfp_similar(SpiderFootPlugin):
         if dom in self.results:
             return None
         else:
-            self.results.append(dom)
+            self.results[dom] = True
 
         # Search for typos
         pos = 0
@@ -143,9 +140,9 @@ class sfp_similar(SpiderFootPlugin):
         for d in domlist:
             resolved = False
             try:
-                if len(self.sf.normalizeDNS(socket.gethostbyname_ex(d + tld))) > 0:
+                if self.sf.resolveHost(d + tld):
                     resolved = True
-                if len(self.sf.normalizeDNS(socket.gethostbyname_ex("www." + d + tld))) > 0:
+                if self.sf.resolveHost("www." + d + tld):
                     resolved = True
 
                 if resolved:
@@ -153,7 +150,7 @@ class sfp_similar(SpiderFootPlugin):
                     evt = SpiderFootEvent("SIMILARDOMAIN", d + tld, self.__name__, event)
                     self.notifyListeners(evt)
             except BaseException as e:
-                continue                   
+                continue
 
         return None
 

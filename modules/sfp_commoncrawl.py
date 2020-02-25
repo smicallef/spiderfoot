@@ -12,13 +12,13 @@
 # -------------------------------------------------------------------------------
 
 import re
+
 import json
-import urllib
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_commoncrawl(SpiderFootPlugin):
-    """CommonCrawl:Footprint:Crawling and Scanning::Searches for URLs found through CommonCrawl.org."""
+    """CommonCrawl:Footprint,Passive:Crawling and Scanning::Searches for URLs found through CommonCrawl.org."""
 
 
     # Default options
@@ -31,17 +31,17 @@ class sfp_commoncrawl(SpiderFootPlugin):
         "indexes": "Number of most recent indexes to attempt, because results tend to be occasionally patchy."
     }
 
-    results = dict()
+    results = None
     indexBase = list()
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.indexBase = list()
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def search(self, target):
@@ -49,7 +49,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
         for index in self.indexBase:
             url = "https://index.commoncrawl.org/" + index + \
                   "-index?url=" + target + "/*&output=json"
-            res = self.sf.fetchUrl(url , timeout=60,
+            res = self.sf.fetchUrl(url, timeout=60,
                                    useragent="SpiderFoot")
 
             if res['code'] in [ "400", "401", "402", "403", "404" ]:
@@ -65,10 +65,10 @@ class sfp_commoncrawl(SpiderFootPlugin):
             ret.append(res['content'])
 
         return ret
-        
+
     def getLatestIndexes(self):
         url = "https://commoncrawl.s3.amazonaws.com/cc-index/collections/index.html"
-        res = self.sf.fetchUrl(url , timeout=60, 
+        res = self.sf.fetchUrl(url, timeout=60,
                                useragent="SpiderFoot")
 
         if res['code'] in [ "400", "401", "402", "403", "404" ]:
@@ -88,7 +88,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
             ms = m.replace("CC-MAIN-", "").replace("-", "")
             indexlist[ms] = True
 
-        topindexes = sorted(indexlist.keys(), reverse=True)[0:self.opts['indexes']]
+        topindexes = sorted(list(indexlist.keys()), reverse=True)[0:self.opts['indexes']]
 
         if len(topindexes) < self.opts['indexes']:
             self.sf.error("Not able to find latest CommonCrawl indexes.", False)
@@ -119,6 +119,9 @@ class sfp_commoncrawl(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.errorState:
+            return None
+
         if eventData in self.results:
             return None
         else:
@@ -140,6 +143,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
             self.sf.error("Unable to obtain content from CommonCrawl.", False)
             return None
 
+        sent = list()
         for content in data:
             try:
                 for line in content.split("\n"):
@@ -151,6 +155,10 @@ class sfp_commoncrawl(SpiderFootPlugin):
                     link = json.loads(line)
                     if 'url' not in link:
                         continue
+                    if link['url'] in sent:
+                        continue
+                    sent.append(link['url'])
+
                     evt = SpiderFootEvent("LINKED_URL_INTERNAL", link['url'],
                                           self.__name__, event)
                     self.notifyListeners(evt)

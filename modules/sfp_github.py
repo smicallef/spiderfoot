@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_github
-# Purpose:      Identifies public code repositories in Github associated with 
+# Purpose:      Identifies public code repositories in Github associated with
 #               your target.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
@@ -17,7 +17,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_github(SpiderFootPlugin):
     """Github:Footprint,Passive:Social Media::Identify associated public code repositories on Github."""
 
-
     # Default options
     opts = {
         'namesonly':    True
@@ -28,13 +27,11 @@ class sfp_github(SpiderFootPlugin):
         'namesonly':    "Match repositories by name only, not by their descriptions. Helps reduce false positives."
     }
 
-    results = dict()
-
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -67,7 +64,6 @@ class sfp_github(SpiderFootPlugin):
 
         return repo_info
 
-
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -81,11 +77,23 @@ class sfp_github(SpiderFootPlugin):
 
         # Extract name and location from profile
         if eventName == "SOCIAL_MEDIA":
-            network = eventData.split(": ")[0]
-            name = eventData.split(": ")[1]
+            try:
+                network = eventData.split(": ")[0]
+                url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
+            except BaseException as e:
+                self.sf.error("Unable to parse SOCIAL_MEDIA: " +
+                              eventData + " (" + str(e) + ")", False)
+                return None
 
             if not network == "Github":
-                self.sf.debug("Skipping social network profile, " + name + ", as not a Github profile")
+                self.sf.debug("Skipping social network profile, " + url + ", as not a Github profile")
+                return None
+
+            try:
+                bits = url.split("/")
+                name = bits[len(bits)-1]
+            except BaseException as e:
+                self.sf.debug("Couldn't get a username out of " + url)
                 return None
 
             res = self.sf.fetchUrl("https://api.github.com/users/" + name, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
@@ -131,7 +139,7 @@ class sfp_github(SpiderFootPlugin):
 
         self.sf.debug("Looking at " + name)
         failed = False
-        # Get all the repositories based on direct matches with the 
+        # Get all the repositories based on direct matches with the
         # name identified
         url = "https://api.github.com/search/repositories?q=" + name
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
@@ -160,10 +168,10 @@ class sfp_github(SpiderFootPlugin):
             for item in ret['items']:
                 repo_info = self.buildRepoInfo(item)
                 if repo_info != None:
-                    if self.opts['namesonly'] and name not in item['name']:
+                    if self.opts['namesonly'] and name != item['name']:
                         continue
 
-                    evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info, 
+                    evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info,
                                           self.__name__, event)
                     self.notifyListeners(evt)
 
@@ -178,9 +186,14 @@ class sfp_github(SpiderFootPlugin):
             failed = True
 
         if not failed:
-            ret = json.loads(res['content'])
-            if ret == None:
-                self.sf.error("Unable to process empty response from Github for: " + \
+            try:
+                ret = json.loads(res['content'])
+                if ret == None:
+                    self.sf.error("Unable to process empty response from Github for: " + \
+                                  name, False)
+                    failed = True
+            except BaseException as e:
+                self.sf.error("Unable to process invalid response from Github for: " + \
                               name, False)
                 failed = True
 
@@ -198,9 +211,9 @@ class sfp_github(SpiderFootPlugin):
 
                 url = item['repos_url']
                 res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-	                               useragent=self.opts['_useragent'])
-    
-    	        if res['content'] == None:
+                                       useragent=self.opts['_useragent'])
+
+                if res['content'] == None:
                     self.sf.error("Unable to fetch " + url, False)
                     continue
 
@@ -218,14 +231,16 @@ class sfp_github(SpiderFootPlugin):
                 for item in repret:
                     if type(item) != dict:
                         self.sf.debug("Encountered an unexpected or empty response from Github.")
-                        continue 
+                        continue
 
                     repo_info = self.buildRepoInfo(item)
                     if repo_info != None:
-                        if self.opts['namesonly'] and name not in item['name']:
+                        if self.opts['namesonly'] and item['name'] != name:
+                            continue
+                        if eventName == "USERNAME" and "/" + name + "/" not in item.get('html_url', ''):
                             continue
 
-                        evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info, 
+                        evt = SpiderFootEvent("PUBLIC_CODE_REPO", repo_info,
                                               self.__name__, event)
                         self.notifyListeners(evt)
 

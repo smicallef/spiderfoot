@@ -12,7 +12,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -38,7 +37,7 @@ class sfp_dronebl(SpiderFootPlugin):
     }
 
     # Target
-    results = dict()
+    results = None
 
     # Whole bunch here:
     # http://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists
@@ -63,9 +62,9 @@ class sfp_dronebl(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -94,7 +93,9 @@ class sfp_dronebl(SpiderFootPlugin):
             try:
                 lookup = self.reverseAddr(qaddr) + "." + domain
                 self.sf.debug("Checking Blacklist: " + lookup)
-                addrs = self.sf.normalizeDNS(socket.gethostbyname_ex(lookup))
+                addrs = self.sf.resolveHost(lookup)
+                if not addrs:
+                    continue
                 self.sf.debug("Addresses returned: " + str(addrs))
 
                 text = None
@@ -103,7 +104,7 @@ class sfp_dronebl(SpiderFootPlugin):
                         text = self.checks[domain] + " (" + qaddr + ")"
                         break
                     else:
-                        if str(addr) not in self.checks[domain].keys():
+                        if str(addr) not in list(self.checks[domain].keys()):
                             self.sf.debug("Return code not found in list: " + str(addr))
                             continue
 

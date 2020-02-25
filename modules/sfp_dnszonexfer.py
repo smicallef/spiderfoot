@@ -10,12 +10,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
 import re
+
 import dns.query
 import dns.zone
-import urllib2
-from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnszonexfer(SpiderFootPlugin):
@@ -29,15 +27,14 @@ class sfp_dnszonexfer(SpiderFootPlugin):
     optdescs = {
     }
 
-    events = dict()
+    events = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.events = dict()
+        self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -62,6 +59,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         if srcModuleName == "sfp_dnszonexfer":
+            self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
         if eventDataHash in self.events:
@@ -70,12 +68,36 @@ class sfp_dnszonexfer(SpiderFootPlugin):
 
         self.events[eventDataHash] = True
 
+        res = dns.resolver.Resolver()
+        if self.opts.get('_dnsserver', "") != "":
+            res.nameservers = [self.opts['_dnsserver']]
+
+        # Get the name server's IP. This is to avoid DNS leaks
+        # when attempting to resolve the name server during
+        # the zone transfer.
+        if not self.sf.validIP(eventData):
+            nsips = self.sf.resolveHost(eventData)
+            if not nsips:
+                return None
+
+            if len(nsips) > 0:
+                for n in nsips:
+                    if self.sf.validIP(n):
+                        nsip = n
+                        break
+            else:
+                self.sf.error("Couldn't resolve the name server, " + \
+                              "so not attempting zone transfer.", False)
+                return None
+        else:
+            nsip = eventData
+
         for name in self.getTarget().getNames():
             self.sf.debug("Trying for name: " + name)
             try:
                 ret = list()
-                z = dns.zone.from_xfr(dns.query.xfr(eventData, name))
-                names = z.nodes.keys()
+                z = dns.zone.from_xfr(dns.query.xfr(nsip, name))
+                names = list(z.nodes.keys())
                 for n in names:
                     ret.append(z[n].to_text(n))
 

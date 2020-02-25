@@ -15,11 +15,10 @@
 import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-
 class sfp_pgp(SpiderFootPlugin):
     """PGP Key Look-up:Footprint,Investigate,Passive:Public Registries::Look up e-mail addresses in PGP public key servers."""
 
-    results = dict()
+    results = None
 
     # Default options
     opts = {
@@ -41,14 +40,14 @@ class sfp_pgp(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.__dataSource__ = "PGP Key Servers"
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["EMAILADDR", "DOMAIN_NAME"]
+        return ['INTERNET_NAME', "EMAILADDR", "DOMAIN_NAME"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -70,32 +69,27 @@ class sfp_pgp(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Get e-mail addresses on this domain
-        if eventName == "DOMAIN_NAME":
+        if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:
             res = self.sf.fetchUrl(self.opts['keyserver_search1'] + eventData,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
-            if res['content'] is None:
+            if res['content'] is None or res['code'] == "503":
                 res = self.sf.fetchUrl(self.opts['keyserver_search2'] + eventData,
                                        timeout=self.opts['_fetchtimeout'],
                                        useragent=self.opts['_useragent'])
 
-            if res['content'] is not None:
-                pat = re.compile("([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
-                matches = re.findall(pat, res['content'])
-                for match in matches:
+            if res['content'] is not None and res['code'] != "503":
+                emails = self.sf.parseEmails(res['content'])
+                for email in emails:
                     evttype = "EMAILADDR"
-                    self.sf.debug("Found possible email: " + match)
-                    if len(match) < 4:
-                        self.sf.debug("Likely invalid address.")
-                        continue
 
-                    mailDom = match.lower().split('@')[1]
-                    if not self.getTarget().matches(mailDom):
+                    mailDom = email.lower().split('@')[1]
+                    if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
                         evttype = "AFFILIATE_EMAILADDR"
 
-                    self.sf.info("Found e-mail address: " + match)
-                    evt = SpiderFootEvent(evttype, match, self.__name__, event)
+                    self.sf.info("Found e-mail address: " + email)
+                    evt = SpiderFootEvent(evttype, email, self.__name__, event)
                     self.notifyListeners(evt)
 
         if eventName == "EMAILADDR":
@@ -103,12 +97,12 @@ class sfp_pgp(SpiderFootPlugin):
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
-            if res['content'] is None:
-               res = self.sf.fetchUrl(self.opts['keyserver_fetch2'] + eventData,
-                                      timeout=self.opts['_fetchtimeout'],
-                                      useragent=self.opts['_useragent'])
+            if res['content'] is None or res['code'] == "503":
+                res = self.sf.fetchUrl(self.opts['keyserver_fetch2'] + eventData,
+                                       timeout=self.opts['_fetchtimeout'],
+                                       useragent=self.opts['_useragent'])
 
-            if res['content'] is not None:
+            if res['content'] is not None and res['code'] != "503":
                 pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE | re.DOTALL)
                 matches = re.findall(pat, res['content'])
                 for match in matches:

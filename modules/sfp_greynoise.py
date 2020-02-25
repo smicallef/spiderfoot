@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import base64
 from datetime import datetime
 import time
 from netaddr import IPNetwork
@@ -36,9 +35,9 @@ class sfp_greynoise(SpiderFootPlugin):
     optdescs = {
         "api_key": "Greynoise API Key.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
-        'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
+        'netblocklookup': "Look up netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
+        'subnetlookup': "Look up subnets which your target is a part of for blacklisting?",
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
         #'asnlookup': "Look up ASNs that your target is a member of?"
     }
@@ -46,22 +45,22 @@ class sfp_greynoise(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", 
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
                 "NETBLOCK_MEMBER", "NETBLOCK_OWNER"]
 
     # What events this module produces
@@ -75,8 +74,8 @@ class sfp_greynoise(SpiderFootPlugin):
         ret = None
 
         header = { "key": self.opts['api_key'] }
-        url = "https://" + "enterprise.api.greynoise.io/v2/noise/context/" + qry
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        url = "https://" + "enterprise.api.greynoise.io/v2/experimental/gnql?query=" + qry
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=header)
 
         if res['code'] not in [ "200" ]:
@@ -87,12 +86,10 @@ class sfp_greynoise(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            print str(res['content'])
             self.sf.error("Error processing JSON response from Greynoise.", False)
             return None
 
         return info
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -137,25 +134,21 @@ class sfp_greynoise(SpiderFootPlugin):
                                   str(self.opts['maxsubnet']))
                     return None
 
-        qrylist = list()
-        if eventName.startswith("NETBLOCK_"):
-            for ipaddr in IPNetwork(eventData):
-                qrylist.append(str(ipaddr))
-                self.results[str(ipaddr)] = True
-        else:
-            qrylist.append(eventData)
+        if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
+            evtType = 'MALICIOUS_IPADDR'
+        if eventName == "AFFILIATE_IPADDR":
+            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
 
-        for addr in qrylist:
-            if self.checkForStop():
-                return None
+        ret = self.queryIP(eventData)
 
-            if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
-                evtType = 'MALICIOUS_IPADDR'
-            if eventName == "AFFILIATE_IPADDR":
-                evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+        if not ret:
+            return None
 
-            rec = self.queryIP(addr)
-            if rec is not None:
+        if "data" not in ret:
+            return None
+
+        if len(ret["data"]) > 0:
+            for rec in ret["data"]:
                 if rec.get("seen", None):
                     self.sf.debug("Found threat info in Greynoise")
                     lastseen = rec.get("last_seen", "1970-01-01")
@@ -164,7 +157,7 @@ class sfp_greynoise(SpiderFootPlugin):
                     age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                     if self.opts['age_limit_days'] > 0 and lastseen_ts < age_limit_ts:
                         self.sf.debug("Record found but too old, skipping.")
-                        continue
+                        return None
 
                     # Only report meta data about the target, not affiliates
                     if rec.get("metadata") and eventName == "IP_ADDRESS":
@@ -190,12 +183,12 @@ class sfp_greynoise(SpiderFootPlugin):
                         self.notifyListeners(e)
 
                     if rec.get("classification"):
-                        descr = addr + "\n - Classification: " + rec.get("classification")
+                        descr = "Greynoise [" + eventData + "]\n - Classification: " + rec.get("classification")
                         if rec.get("tags"):
                             descr += ", Tags: " + ", ".join(rec.get("tags"))
                         else:
                             descr += "\n - " + "Raw data: " + str(rec.get("raw_data"))
-                        descr += "\n<SFURL>https://viz.greynoise.io/ip/" + addr + "</SFURL>"
+                        descr += "\n<SFURL>https://viz.greynoise.io/ip/" + eventData + "</SFURL>"
                         e = SpiderFootEvent(evtType, descr, self.__name__, event)
                         self.notifyListeners(e)
 

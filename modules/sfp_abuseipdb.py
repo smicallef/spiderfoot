@@ -10,8 +10,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
 import re
+
 import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -54,22 +54,22 @@ class sfp_abuseipdb(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "NETBLOCK_OWNER", "NETBLOCK_MEMBER"] 
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -103,18 +103,20 @@ class sfp_abuseipdb(SpiderFootPlugin):
         apikey = self.opts['api_key']
         daysback = self.opts['daysback']
         self.sf.debug("Querying " + id + " for maliciousness of " + target)
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if id == cid and malchecks[check]['type'] == "query":
-                url = unicode(malchecks[check]['url'])
+                url = str(malchecks[check]['url'])
                 res = self.sf.fetchUrl(url.format(target, apikey, daysback),
-                                       timeout=self.opts['_fetchtimeout'], 
+                                       timeout=self.opts['_fetchtimeout'],
                                        useragent=self.opts['_useragent'])
                 if res['content'] is None:
                     self.sf.error("Unable to fetch " + url.format(target, "masked", daysback), False)
                     return None
 
                 try:
+                    if "rate limit" in res['content']:
+                        return None
                     j = json.loads(res['content'])
                     if len(j) == 0:
                         return None
@@ -127,7 +129,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
         return None
 
     def lookupItem(self, resourceId, itemType, target):
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
                 self.sf.debug("Checking maliciousness of " + target + " (" +
@@ -158,7 +160,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
         if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
             return None
 
-        for check in malchecks.keys():
+        for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if eventName in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
                 typeId = 'ip'

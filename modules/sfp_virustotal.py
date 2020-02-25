@@ -12,7 +12,6 @@
 
 import json
 import time
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -50,17 +49,17 @@ class sfp_virustotal(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -75,23 +74,7 @@ class sfp_virustotal(SpiderFootPlugin):
                 "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
                 "MALICIOUS_SUBNET", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
-                "INTERNET_NAME_UNRESOLVED"]
-
-    # Verify a host resolves
-    def resolveHost(self, host):
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(host) != unicode:
-                host = unicode(host, "utf-8", errors='replace').encode("idna")
-            else:
-                host = host.encode("idna")
-
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        return True
+                "INTERNET_NAME_UNRESOLVED", 'DOMAIN_NAME']
 
     def query(self, qry):
         ret = None
@@ -116,6 +99,7 @@ class sfp_virustotal(SpiderFootPlugin):
             ret = json.loads(res['content'])
         except Exception as e:
             self.sf.error("Error processing JSON response from VirusTotal.", False)
+            self.errorState = True
             return None
 
         return ret
@@ -222,26 +206,34 @@ class sfp_virustotal(SpiderFootPlugin):
                         if self.getTarget().matches(s):
                             if s not in self.results:
                                 if self.opts['verify']:
-                                    if not self.resolveHost(s):
+                                    if not self.sf.resolveHost(s):
                                         e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", s, self.__name__, event)
                                         self.notifyListeners(e)
                                     else:
                                         e = SpiderFootEvent("INTERNET_NAME", s, self.__name__, event)
                                         self.notifyListeners(e)
+
+                                if self.sf.isDomain(s, self.opts['_internettlds']):
+                                    e = SpiderFootEvent("DOMAIN_NAME", s, self.__name__, event)
+                                    self.notifyListeners(e)
                         else:
                             if s not in self.results:
                                 e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", s, self.__name__, event)
                                 self.notifyListeners(e)
-                    
+
             if 'subdomains' in info and eventName == "INTERNET_NAME":
                 for n in info['subdomains']:
                     if n not in self.results:
                         if self.opts['verify']:
-                            if not self.resolveHost(n):
+                            if not self.sf.resolveHost(n):
                                 e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", n, self.__name__, event)
                                 self.notifyListeners(e)
                         else:
                             e = SpiderFootEvent("INTERNET_NAME", n, self.__name__, event)
+                            self.notifyListeners(e)
+
+                        if self.sf.isDomain(n, self.opts['_internettlds']):
+                            e = SpiderFootEvent("DOMAIN_NAME", n, self.__name__, event)
                             self.notifyListeners(e)
 
 # End of sfp_virustotal class

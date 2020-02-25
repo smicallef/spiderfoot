@@ -4,15 +4,16 @@
 # Purpose:      SpiderFoot plug-in for retrieving email addresses belonging
 #               to your target from Flickr.
 #
-# Author:      Brendan Coles <bcoles@gmail.com>
+# Author:      <bcoles@gmail.com>
 #
 # Created:     2018-10-08
-# Copyright:   (c) Brendan Coles 2018
+# Copyright:   (c) bcoles 2018
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
 import json
 import re
+
 import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -29,24 +30,23 @@ class sfp_flickr(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'pause': "Number of seconds to pause between fetches.",                                                                                                                                                    
+        'pause': "Number of seconds to pause between fetches.",
         'per_page': "Maximum number of results per page.",
         'maxpages': "Maximum number of pages of results to fetch."
     }
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "Flickr"
-        self.results = dict()
+        self.results = self.tempStorage()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["DOMAIN_NAME"]
+        return ['INTERNET_NAME', "DOMAIN_NAME"]
 
     # What events this module produces
     def producedEvents(self):
@@ -105,6 +105,9 @@ class sfp_flickr(SpiderFootPlugin):
         pages = self.opts['maxpages']
         per_page = self.opts['per_page']
         while page <= pages:
+            if self.checkForStop():
+                return None
+
             res = self.query("@"+eventData, api_key, page=page, per_page=per_page)
 
             if res is None:
@@ -143,33 +146,21 @@ class sfp_flickr(SpiderFootPlugin):
 
             # Extract emails
             for photo in data['photos']['photo']:
-                matches = re.findall(r'([a-zA-Z\.0-9_\-]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', str(photo).decode('unicode-escape'))
-                for match in matches:
-                    self.sf.debug("Found possible email: " + match)
-
-                    # Handle false positive matches
-                    if len(match) < 5:
-                        self.sf.debug("Likely invalid address.")
-                        continue
-
-                    # Handle messed up encodings
-                    if "%" in match:
-                        self.sf.debug("Skipped address: " + match)
-                        continue
-
+                emails = self.sf.parseEmails(str(bytes(photo).decode('unicode-escape')))
+                for email in emails:
                     # Skip unrelated emails
-                    mailDom = match.lower().split('@')[1]
-                    if not self.getTarget().matches(mailDom):
-                        self.sf.debug("Skipped address: " + match)
+                    mailDom = email.lower().split('@')[1]
+                    if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
+                        self.sf.debug("Skipped address: " + email)
                         continue
 
-                    if match not in self.results:
-                        self.sf.info("Found e-mail address: " + match)
-                        evt = SpiderFootEvent("EMAILADDR", match, self.__name__, event)
+                    if email not in self.results:
+                        self.sf.info("Found e-mail address: " + email)
+                        evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
                         self.notifyListeners(evt)
-                        self.results[match] = True
+                        self.results[email] = True
 
             page += 1
-            time.sleep(self.opts['pause'])                                                                                                                                                                             
+            time.sleep(self.opts['pause'])
 
 # End of sfp_flickr class

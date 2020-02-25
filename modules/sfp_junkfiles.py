@@ -16,11 +16,10 @@ import random
 class sfp_junkfiles(SpiderFootPlugin):
     """Junk Files:Footprint:Crawling and Scanning:slow,errorprone,invasive:Looks for old/temporary and other similar files."""
 
-
     # Default options
     opts = {
         'fileexts': ['tmp', 'bak', 'old'],
-        'urlextstry': ['asp', 'php', 'jsp',],
+        'urlextstry': ['asp', 'php', 'jsp', ],
         'files': ["old", "passwd", ".htaccess", ".htpasswd",
                   "Thumbs.db", "backup"],
         'dirs': ['zip', 'tar.gz', 'tgz', 'tar'],
@@ -36,20 +35,20 @@ class sfp_junkfiles(SpiderFootPlugin):
         'skipfake': "Try to fetch an obviously fake page and if no 404 is returned, stop trying that particular host for junk files. Good for avoiding false positives in cases where servers return content for pages that don't exist."
     }
 
-    results = list()
-    hosts = list()
-    skiphosts = list()
-    bases = list()
+    results = None
+    hosts = None
+    skiphosts = None
+    bases = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
-        self.hosts = list()
-        self.skiphosts = list()
-        self.bases = list()
+        self.results = self.tempStorage()
+        self.hosts = self.tempStorage()
+        self.skiphosts = self.tempStorage()
+        self.bases = self.tempStorage()
         self.__dataSource__ = "Target Website"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -61,6 +60,19 @@ class sfp_junkfiles(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["JUNK_FILE"]
+
+    # Test how trustworthy a result is
+    def checkValidity(self, junkUrl):
+        # Try and fetch an obviously missing version of the junk file
+        fetch = junkUrl + str(random.SystemRandom().randint(0, 99999999))
+        res = self.sf.fetchUrl(fetch, headOnly=True,
+                               timeout=self.opts['_fetchtimeout'],
+                               useragent=self.opts['_useragent'])
+        if res['code'] != "404":
+            host = self.sf.urlBaseUrl(junkUrl)
+            self.skiphosts[host] = True
+            return False
+        return True
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -74,27 +86,18 @@ class sfp_junkfiles(SpiderFootPlugin):
         if eventData in self.results:
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if self.opts['skipfake'] and host in self.skiphosts:
             self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
             return None
 
-        # Try and fetch an obviously missing page
-        if host not in self.hosts and self.opts['skipfake']:
-            fetch = host + "/" + str(random.randint(0, 99999999)) + ".html"
-            res = self.sf.fetchUrl(fetch, headOnly=True,
-                                   timeout=self.opts['_fetchtimeout'],
-                                   useragent=self.opts['_useragent'])
-            if res['code'] != "404":
-                self.skiphosts.append(host)
-                self.hosts.append(host)
-                return None
-
-            self.hosts.append(host)
-
         # http://www/blah/abc.php -> try http://www/blah/abc.php.[fileexts]
         for ext in self.opts['urlextstry']:
+            if self.opts['skipfake'] and host in self.skiphosts:
+                self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
+                return None
+
             if "." + ext + "?" in eventData or "." + ext + "#" in eventData or \
                     eventData.endswith("." + ext):
                 bits = eventData.split("?")
@@ -105,7 +108,7 @@ class sfp_junkfiles(SpiderFootPlugin):
                     self.sf.debug("Trying " + x + " against " + eventData)
                     fetch = bits[0] + "." + x
                     if fetch not in self.results:
-                        self.results.append(fetch)
+                        self.results[fetch] = True
                     else:
                         self.sf.debug("Skipping, already fetched.")
                         continue
@@ -117,15 +120,17 @@ class sfp_junkfiles(SpiderFootPlugin):
                         self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                         continue
                     if res['code'] == "200":
-                        evt = SpiderFootEvent("JUNK_FILE", fetch,
-                                              self.__name__, event)
+                        if not self.checkValidity(fetch):
+                            continue
+
+                        evt = SpiderFootEvent("JUNK_FILE", fetch, self.__name__, event)
                         self.notifyListeners(evt)
 
         base = self.sf.urlBaseDir(eventData)
-        if base in self.bases:
+        if not base or base in self.bases:
             return None
         else:
-            self.bases.append(base)
+            self.bases[base] = True
 
         # don't do anything with the root directory of a site
         self.sf.debug("Base: " + base + ", event: " + eventData)
@@ -137,6 +142,10 @@ class sfp_junkfiles(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
+            if self.opts['skipfake'] and host in self.skiphosts:
+                self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
+                return None
+
             if base.count('/') == 3:
                 self.sf.debug("Skipping base url.")
                 continue
@@ -144,7 +153,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             self.sf.debug("Trying " + dirfile + " against " + eventData)
             fetch = base[0:len(base) - 1] + "." + dirfile
             if fetch not in self.results:
-                self.results.append(fetch)
+                self.results[fetch] = True
             else:
                 self.sf.debug("Skipping, already fetched.")
                 continue
@@ -155,8 +164,10 @@ class sfp_junkfiles(SpiderFootPlugin):
                 self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                 continue
             if res['code'] == "200":
-                evt = SpiderFootEvent("JUNK_FILE", fetch,
-                                      self.__name__, event)
+                if not self.checkValidity(fetch):
+                    continue
+
+                evt = SpiderFootEvent("JUNK_FILE", fetch, self.__name__, event)
                 self.notifyListeners(evt)
 
         # http://www/blah/abc.html -> try http://www/blah/[files]
@@ -164,10 +175,14 @@ class sfp_junkfiles(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
+            if self.opts['skipfake'] and host in self.skiphosts:
+                self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
+                return None
+
             self.sf.debug("Trying " + f + " against " + eventData)
             fetch = base + f
             if fetch not in self.results:
-                self.results.append(fetch)
+                self.results[fetch] = True
             else:
                 self.sf.debug("Skipping, already fetched.")
                 continue
@@ -178,8 +193,10 @@ class sfp_junkfiles(SpiderFootPlugin):
                 self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                 continue
             if res['code'] == "200":
-                evt = SpiderFootEvent("JUNK_FILE", fetch,
-                                      self.__name__, event)
+                if not self.checkValidity(fetch):
+                    continue
+
+                evt = SpiderFootEvent("JUNK_FILE", fetch, self.__name__, event)
                 self.notifyListeners(evt)
 
         return None

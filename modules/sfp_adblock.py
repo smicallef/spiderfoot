@@ -16,10 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_adblock(SpiderFootPlugin):
-    """AdBlock Check:Investigate:Reputation Systems::Check if linked pages would be blocked by AdBlock Plus."""
-
-
-
+    """AdBlock Check:Investigate,Passive:Reputation Systems::Check if linked pages would be blocked by AdBlock Plus."""
 
     # Default options
     opts = {
@@ -30,17 +27,17 @@ class sfp_adblock(SpiderFootPlugin):
         "blocklist": "AdBlockPlus block list."
     }
 
-    results = list()
+    results = None
     rules = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
         self.rules = None
         self.errorState = False
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -84,7 +81,7 @@ class sfp_adblock(SpiderFootPlugin):
             pagetype = "_INTERNAL"
 
         if eventData not in self.results:
-            self.results.append(eventData)
+            self.results[eventData] = True
         else:
             self.sf.debug("Already checked this page for AdBlock matching, skipping.")
             return None

@@ -42,11 +42,11 @@
         </ul>
     </div>
   </div>
-    <script src="/static/js/sigma.min.js"></script>
-    <script src="/static/js/sigma.parsers.json.min.js"></script>
-    <script src="/static/js/sigma.plugins.dragNodes.min.js"></script>
-    <script src="/static/js/sigma.layout.forceAtlas2.min.js"></script>
-    <script src="/static/js/sigma.renderers.snapshot.min.js"></script>
+    <script src="${docroot}/static/js/sigma.min.js"></script>
+    <script src="${docroot}/static/js/sigma.parsers.json.min.js"></script>
+    <script src="${docroot}/static/js/sigma.plugins.dragNodes.min.js"></script>
+    <script src="${docroot}/static/js/sigma.layout.forceAtlas2.min.js"></script>
+    <script src="${docroot}/static/js/sigma.renderers.snapshot.min.js"></script>
     <script type='text/javascript'>
         var currentType = "ALL";
         var currentTypeName = "All";
@@ -162,7 +162,7 @@
                             if (data.length == 0) {
                                 var table = "<div id='scansummary-content'>&nbsp;&nbsp;No results found. Try broadening your search criteria.</div>";
                             } else {
-                                var table = "<table id='scansummary-content' class='table table-bordered table-striped small'><thead><tr>";
+                                var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'><thead><tr>";
                                 if (typeName == null) {
                                     table += "<th>Data Element Type</th>";
                                 }
@@ -186,6 +186,7 @@
                             }
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(crumbs + table);
+                            $("#scansummary-content").tablesorter();
             });
         }
 
@@ -210,7 +211,7 @@
             $("#btn-random").addClass("active");
 
             sigma.renderers.def = sigma.renderers.canvas
-            sigma.parsers.json("/scanviz?id=" + instanceId + "&gexf=0", {
+            sigma.parsers.json("${docroot}/scanviz?id=" + instanceId + "&gexf=0", {
                 container: 'graph-container'
             }, function(s) { 
                 sharedSigma = s;
@@ -482,7 +483,7 @@
                             }
                             crumbs += "</ul>";
 
-                            var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
+                            var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'>";
                             table += "<thead><tr>";
                             table += "<th style='text-align: center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'>";
                             table += "</th>";
@@ -515,6 +516,7 @@
                             table += "</tbody></table>"
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(crumbs + table);
+                            $("#scansummary-content").tablesorter({ headers: { 0: { sorter: false } } });
                             lastChecked = null;
                             var chkboxes = $('input[id*=cb_]');
                             chkboxes.click(function(e) {

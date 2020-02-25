@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import time
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -43,45 +42,45 @@ class sfp_threatcrowd(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
                 "CO_HOSTED_SITE", "NETBLOCK_OWNER", "EMAILADDR",
-                "NETBLOCK_MEMBER"]
+                "NETBLOCK_MEMBER", "AFFILIATE_INTERNET_NAME"]
 
     # What events this module produces
     def producedEvents(self):
         return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
                 "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-                "MALICIOUS_SUBNET", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_EMAILADDR"]
+                "MALICIOUS_SUBNET", "MALICIOUS_EMAILADDR"]
 
     def query(self, qry):
         ret = None
         url = None
 
         if self.sf.validIP(qry):
-            url = "http://www.threatcrowd.org/searchApi/v2/ip/report/?ip=" + qry
-        
+            url = "https://www.threatcrowd.org/searchApi/v2/ip/report/?ip=" + qry
+
         if "@" in qry:
-            url = "http://www.threatcrowd.org/searchApi/v2/email/report/?email=" + qry
-        
+            url = "https://www.threatcrowd.org/searchApi/v2/email/report/?email=" + qry
+
         if not url:
-            url = "http://www.threatcrowd.org/searchApi/v2/domain/report/?domain=" + qry
+            url = "https://www.threatcrowd.org/searchApi/v2/domain/report/?domain=" + qry
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
@@ -93,6 +92,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
             ret = json.loads(res['content'])
         except Exception as e:
             self.sf.error("Error processing JSON response from ThreatCrowd.", False)
+            self.errorState = True
             return None
 
         return ret

@@ -11,8 +11,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import time
 import re
+
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -35,16 +35,18 @@ class sfp_zoneh(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = list()
+    results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = list()
+        self.results = self.tempStorage()
+        self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -79,11 +81,14 @@ class sfp_zoneh(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        if self.errorState:
+            return None
+
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
         else:
-            self.results.append(eventData)
+            self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
             return None
@@ -108,12 +113,13 @@ class sfp_zoneh(SpiderFootPlugin):
         if self.checkForStop():
             return None
 
-        url = "http://www.zone-h.org/rss/specialdefacements"
+        url = "https://www.zone-h.org/rss/specialdefacements"
         content = self.sf.cacheGet("sfzoneh", 48)
         if content is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
                 self.sf.error("Unable to fetch " + url, False)
+                self.errorState = True
                 return None
             else:
                 self.sf.cachePut("sfzoneh", data['content'])

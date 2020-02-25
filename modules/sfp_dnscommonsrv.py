@@ -14,7 +14,6 @@
 import dns.resolver
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
-
 class sfp_dnscommonsrv(SpiderFootPlugin):
     """DNS Common SRV:Footprint,Investigate,Passive:DNS::Attempts to identify hostnames through common SRV."""
 
@@ -24,7 +23,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
     # Option descriptions
     optdescs = {}
 
-    events = dict()
+    events = None
 
     commonsrv = [ # LDAP/Kerberos, used for Active Directory
                   # https://technet.microsoft.com/en-us/library/cc961719.aspx
@@ -67,8 +66,11 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.events = dict()
+        self.events = self.tempStorage()
         self.__dataSource__ = "DNS"
+
+        for opt in list(userOpts.keys()):
+            self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -84,14 +86,15 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
-
-        if srcModuleName == "sfp_dnscommonsrv":
-            return None
+        eventData = event.data
 
         self.sf.debug("Received event, " + eventName +
                       ", from " + srcModuleName)
 
-        eventData = event.data
+        if srcModuleName == "sfp_dnscommonsrv":
+            self.sf.debug("Ignoring " + eventName + ", from self.")
+            return None
+
         eventDataHash = self.sf.hashstring(eventData)
         parentEvent = event
 
@@ -99,6 +102,10 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
             return None
 
         self.events[eventDataHash] = True
+
+        res = dns.resolver.Resolver()
+        if self.opts.get('_dnsserver', "") != "":
+            res.nameservers = [self.opts['_dnsserver']]
 
         self.sf.debug("Iterating through possible SRV records.")
         # Try resolving common names
@@ -113,7 +120,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
                 continue
 
             try:
-                answers = dns.resolver.query(name, 'SRV')
+                answers = res.query(name, 'SRV')
             except BaseException as e:
                 answers = []
 

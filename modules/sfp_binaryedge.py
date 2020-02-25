@@ -11,9 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from datetime import datetime
 import time
-import socket
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -54,52 +52,37 @@ class sfp_binaryedge(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
     errorState = False
     cohostcount = 0
-    reportedhosts = dict()
-    checkedips = dict()
+    reportedhosts = None
+    checkedips = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
-        self.reportedhosts = dict()
-        self.checkedips = dict()
+        self.results = self.tempStorage()
+        self.reportedhosts = self.tempStorage()
+        self.checkedips = self.tempStorage()
         self.cohostcount = 0
         self.errorState = False
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "DOMAIN_NAME", "EMAILADDR", 
+        return ["IP_ADDRESS", "DOMAIN_NAME", "EMAILADDR",
                 "NETBLOCK_OWNER", "NETBLOCK_MEMBER" ]
 
     # What events this module produces
     def producedEvents(self):
         return ["INTERNET_NAME", "VULNERABILITY", "TCP_PORT_OPEN",
-                "TCP_PORT_OPEN_BANNER", "EMAILADDR_COMPROMISED", 
-                "UDP_PORT_OPEN", "UDP_PORT_OPEN_INFO",
+                "TCP_PORT_OPEN_BANNER", "EMAILADDR_COMPROMISED",
+                "UDP_PORT_OPEN", "UDP_PORT_OPEN_INFO", "DOMAIN_NAME",
                 "CO_HOSTED_SITE", "MALICIOUS_IPADDR"]
-
-    # Verify a host resolves
-    def resolveHost(self, host):
-        try:
-            # IDNA-encode the hostname in case it contains unicode
-            if type(host) != unicode:
-                host = unicode(host, "utf-8", errors='replace').encode("idna")
-            else:
-                host = host.encode("idna")
-
-            addrs = socket.gethostbyname_ex(host)
-            return True
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
 
     def query(self, qry, querytype, page=1):
         ret = None
@@ -120,13 +103,13 @@ class sfp_binaryedge(SpiderFootPlugin):
             queryurl = "/v2/query/domains/subdomain/{0}?page={1}"
         if querytype == "passive":
             queryurl = "/v2/query/domains/ip/{0}?page={1}"
-        
+
         binaryedgeurl = "https://api.binaryedge.io"
         headers = {
             'X-Key': self.opts['binaryedge_api_key']
         }
         url = binaryedgeurl + queryurl.format(qry.encode('utf-8', errors='replace'), page)
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] in [ "429", "500" ]:
@@ -154,7 +137,9 @@ class sfp_binaryedge(SpiderFootPlugin):
                 self.sf.error("Maximum number of pages reached.", False)
                 return [info]
             retarr.append(info)
-            retarr.extend(self.query(qry, querytype, page))
+            e = self.query(qry, querytype, page)
+            if e:
+                retarr.extend(e)
         else:
             retarr.append(info)
 
@@ -231,11 +216,15 @@ class sfp_binaryedge(SpiderFootPlugin):
                         continue
                     if self.getTarget().matches(host, includeParents=True):
                         if self.opts['verify']:
-                            if not self.resolveHost(rec):
+                            if not self.sf.resolveHost(host):
                                 continue
-                        evt = SpiderFootEvent("INTERNET_NAME", rec, self.__name__, event)
+                        evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
                         self.notifyListeners(evt)
-                        self.reportedhosts[rec] = True
+                        if self.sf.isDomain(host, self.opts['_internettlds']):
+                            evt = SpiderFootEvent("DOMAIN_NAME", host, self.__name__, event)
+                            self.notifyListeners(evt)
+
+                        self.reportedhosts[host] = True
                         continue
 
                     if self.cohostcount < self.opts['maxcohost']:
@@ -257,7 +246,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                 self.sf.debug("Found compromised account results in BinaryEdge.io")
                 res = rec["events"]
                 for rec in res:
-                    e = SpiderFootEvent(evtType, rec, self.__name__, event)
+                    e = SpiderFootEvent(evtType, eventData + " [" + rec + "]", self.__name__, event)
                     self.notifyListeners(e)
 
         if eventName == "DOMAIN_NAME":
@@ -276,8 +265,10 @@ class sfp_binaryedge(SpiderFootPlugin):
                 for rec in res:
                     if rec in self.reportedhosts:
                         continue
+                    else:
+                        self.reportedhosts[rec] = True
                     if self.opts['verify']:
-                        if not self.resolveHost(rec):
+                        if not self.sf.resolveHost(rec):
                             self.sf.debug("Couldn't resolve " + rec + ", so skipping.")
                             continue
                     e = SpiderFootEvent(evtType, rec, self.__name__, event)

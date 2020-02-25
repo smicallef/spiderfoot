@@ -10,8 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-import socket
 import json
 import time
 from netaddr import IPNetwork
@@ -28,7 +26,9 @@ class sfp_robtex(SpiderFootPlugin):
         'netblocklookup': True,
         'maxnetblock': 24,
         'cohostsamedomain': False,
-        'maxcohost': 100
+        'maxcohost': 100,
+        'subnetlookup': False,
+        'maxsubnet': 24
     }
 
     # Option descriptions
@@ -37,18 +37,20 @@ class sfp_robtex(SpiderFootPlugin):
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible co-hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
-        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
+        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
+        'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    results = dict()
+    results = None
     cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.cohostcount = 0
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -61,22 +63,9 @@ class sfp_robtex(SpiderFootPlugin):
     def producedEvents(self):
         return ["CO_HOSTED_SITE", "IP_ADDRESS"]
 
-    def validateIP(self, host, ip):
-        try:
-            addrs = socket.gethostbyname_ex(host)
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + host + ": " + str(e))
-            return False
-
-        for addr in addrs:
-            if type(addr) == list:
-                for a in addr:
-                    if str(a) == ip:
-                        return True
-            else:
-                if str(addr) == ip:
-                    return True
-        return False
+    # Don't notify me about events from myself
+    def watchOpts(self):
+        return [ 'noself' ]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -91,6 +80,7 @@ class sfp_robtex(SpiderFootPlugin):
             return None
 
         if srcModuleName == "sfp_robtex" and eventName == "IP_ADDRESS":
+            self.sf.debug("Ignoring " + eventName + ", from self.")
             return None
 
         # Don't look up stuff twice
@@ -106,6 +96,16 @@ class sfp_robtex(SpiderFootPlugin):
                     self.sf.debug("Network size bigger than permitted: " +
                                   str(IPNetwork(eventData).prefixlen) + " > " +
                                   str(self.opts['maxnetblock']))
+                    return None
+
+        if eventName == 'NETBLOCK_MEMBER':
+            if not self.opts['subnetlookup']:
+                return None
+            else:
+                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                  str(IPNetwork(eventData).prefixlen) + " > " +
+                                  str(self.opts['maxsubnet']))
                     return None
 
         qrylist = list()
@@ -146,7 +146,7 @@ class sfp_robtex(SpiderFootPlugin):
             except BaseException as e:
                 self.sf.error("Error parsing JSON from robtex API.", False)
                 return None
-            
+
             pas = data.get('pas')
             if not pas:
                 return None
@@ -160,7 +160,7 @@ class sfp_robtex(SpiderFootPlugin):
                             self.sf.debug("Skipping " + r['o'] + " because it is on the same domain.")
                             continue
 
-                    if self.opts['verify'] and not self.validateIP(r['o'], ip):
+                    if self.opts['verify'] and not self.sf.validateIP(r['o'], ip):
                         self.sf.debug("Host " + r['o'] + " no longer resolves to " + ip)
                         continue
                     if eventName == "NETBLOCK_OWNER":

@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Name:         sfp_h1.nobbd.de
-# Purpose:      Query the the unofficial HackerOne disclosure timeline database 
+# Purpose:      Query the the unofficial HackerOne disclosure timeline database
 #               to see if our target appears.
 #
 # Author:      Dhiraj Mishra <dhiraj@notsosecure.com>
@@ -9,11 +9,8 @@
 # Licence:     GPL
 #-------------------------------------------------------------------------------
 
-import sys
-import time
-import datetime
 import re
-import json
+
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_h1nobbdde(SpiderFootPlugin):
@@ -30,18 +27,18 @@ class sfp_h1nobbdde(SpiderFootPlugin):
     # Be sure to completely clear any class variables in setup()
     # or you run the risk of data persisting between scan runs.
 
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-	
+
     def watchedEvents(self):
         return ["DOMAIN_NAME"]
 
@@ -79,7 +76,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        if self.results.has_key(eventData):
+        if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
         else:

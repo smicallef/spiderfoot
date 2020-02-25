@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 import string
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -52,7 +51,7 @@ class sfp_binstring(SpiderFootPlugin):
 
         self.d = set(self.sf.dictwords())
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     def getStrings(self, content):
@@ -63,6 +62,7 @@ class sfp_binstring(SpiderFootPlugin):
             return None
 
         for c in content:
+            c = str(c)
             if len(words) >= self.opts['maxwords']:
                 break
             if c in string.printable and c not in string.whitespace:
@@ -88,7 +88,7 @@ class sfp_binstring(SpiderFootPlugin):
 
                 if accept:
                     words.append(result)
-                    
+
                 result = ""
 
         if len(words) == 0:
@@ -125,11 +125,11 @@ class sfp_binstring(SpiderFootPlugin):
         res = None
         for fileExt in self.opts['fileexts']:
             if eventData.lower().endswith("." + fileExt.lower()) or "." + fileExt + "?" in eventData.lower():
-                res = self.sf.fetchUrl(eventData, 
-                                       useragent=self.opts['_useragent'], 
+                res = self.sf.fetchUrl(eventData,
+                                       useragent=self.opts['_useragent'],
                                        dontMangle=True,
                                        sizeLimit=self.opts['maxfilesize'])
-                
+
         if res:
             self.sf.debug("Searching for strings")
             words = self.getStrings(res['content'])

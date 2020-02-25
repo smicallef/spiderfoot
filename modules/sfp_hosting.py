@@ -11,8 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import socket
-from netaddr import IPAddress, IPNetwork
+from netaddr import IPAddress
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
@@ -29,14 +28,14 @@ class sfp_hosting(SpiderFootPlugin):
     }
 
     # Target
-    results = dict()
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.__dataSource__ = "DNS"
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
@@ -66,7 +65,7 @@ class sfp_hosting(SpiderFootPlugin):
             if "," not in line:
                 continue
             try:
-                [start,end,title,url] = line.split(",")
+                [start, end, title, url] = line.split(",")
             except BaseException as e:
                 continue
 

@@ -11,8 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
-import socket
+from netaddr import IPNetwork
 import random
 import threading
 import time
@@ -21,7 +20,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_portscan_tcp(SpiderFootPlugin):
     """Port Scanner - TCP:Footprint,Investigate:Crawling and Scanning:slow,invasive:Scans for commonly open TCP ports on Internet-facing systems."""
-
 
     # Default options
     opts = {
@@ -49,30 +47,37 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    results = dict()
+    results = None
     portlist = list()
     portResults = dict()
+    lock = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.results = dict()
+        self.results = self.tempStorage()
         self.__dataSource__ = "Target Network"
+        self.lock = threading.Lock()
 
-        for opt in userOpts.keys():
+        for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
         if self.opts['ports'][0].startswith("http://") or \
                 self.opts['ports'][0].startswith("https://") or \
                 self.opts['ports'][0].startswith("@"):
-            self.portlist = self.sf.optValueToData(self.opts['ports'][0])
+            portlist = self.sf.optValueToData(self.opts['ports'][0])
         else:
-            self.portlist = self.opts['ports']
+            portlist = self.opts['ports']
 
         # Convert to integers
-        self.portlist = [int(x) for x in self.portlist]
+        for port in set(portlist):
+            try:
+                self.portlist.append(int(port))
+            except ValueError as e:
+                self.sf.debug('Skipping invalid port specified in port list')
 
         if self.opts['randomize']:
-            random.shuffle(self.portlist)
+            random.SystemRandom().shuffle(self.portlist)
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -86,16 +91,18 @@ class sfp_portscan_tcp(SpiderFootPlugin):
 
     def tryPort(self, ip, port):
         try:
-            sock = socket.create_connection((ip, port), self.opts['timeout'])
-            sock.settimeout(self.opts['timeout'])
-            self.portResults[ip + ":" + str(port)] = True
+            sock = self.sf.safeSocket(ip, port, self.opts['timeout'])
+            with self.lock:
+                self.portResults[ip + ":" + str(port)] = True
         except Exception as e:
-            self.portResults[ip + ":" + str(port)] = False
+            with self.lock:
+                self.portResults[ip + ":" + str(port)] = False
             return
 
         # If the port was open, see what we can read
         try:
-            self.portResults[ip + ":" + str(port)] = sock.recv(4096)
+            with self.lock:
+                self.portResults[ip + ":" + str(port)] = sock.recv(4096)
         except Exception as e:
             sock.close()
             return
@@ -137,7 +144,8 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                 evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
                 self.notifyListeners(evt)
                 if resArray[cp] != "" and resArray[cp] != True:
-                    bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", resArray[cp],
+                    banner = str(resArray[cp], 'utf-8', errors='replace')
+                    bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
                                            self.__name__, evt)
                     self.notifyListeners(bevt)
 
@@ -149,7 +157,15 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         eventData = event.data
         scanIps = list()
 
+        if self.errorState:
+            return None
+
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        if not self.portlist:
+            self.sf.error('No ports specified in port list', False)
+            self.errorState = True
+            return None
 
         try:
             if eventName == "NETBLOCK_OWNER" and self.opts['netblockscan']:
