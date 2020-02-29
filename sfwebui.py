@@ -205,6 +205,7 @@ class SpiderFootWebUi:
     def scanexportjsonmulti(self, ids):
         dbh = SpiderFootDb(self.config)
         scaninfo = list()
+        scan_name = ""
 
         for id in ids.split(','):
             scan = dbh.scanInstanceGet(id)
@@ -236,7 +237,12 @@ class SpiderFootWebUi:
                     "scan_target": scan[1]
                 })
 
-        cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.json"
+        if len(ids.split(',')) > 1 or scan_name == "":
+            fname = "SpiderFoot.json"
+        else:
+            fname = scan_name + "-SpiderFoot.json"
+
+        cherrypy.response.headers['Content-Disposition'] = "attachment; filename=" + fname
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
         cherrypy.response.headers['Pragma'] = "no-cache"
         return json.dumps(scaninfo).encode("utf-8")
@@ -759,16 +765,16 @@ class SpiderFootWebUi:
         [scanname, scantarget] = self.cleanUserInput([scanname, scantarget])
 
         if scanname == "" or scantarget == "":
-            if not cli:
-                return self.error("Form incomplete.")
+            if cli:
+                return json.dumps(["ERROR", "Incorrect usage: scan name or target was not specified."])
             else:
-                return json.dumps(["ERROR", "Incorrect usage."])
+                return self.error("Invalid request: scan name or target was not specified.")
 
         if typelist == "" and modulelist == "" and usecase == "":
-            if not cli:
-                return self.error("Form incomplete.")
+            if cli:
+                return json.dumps(["ERROR", "Incorrect usage: no modules specified for scan."])
             else:
-                return json.dumps(["ERROR", "Incorrect usage."])
+                return self.error("Invalid request: no modules specified for scan.")
 
 
         # User selected modules
