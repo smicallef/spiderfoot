@@ -70,11 +70,12 @@ class sfp_censys(SpiderFootPlugin):
         
         secret = self.opts['censys_api_key_uid'] + ':' + self.opts['censys_api_key_secret']
         b64_val = base64.b64encode(secret.encode('utf-8'))
+
         headers = {
-            'Authorization': 'Basic %s' % b64_val
+            'Authorization': 'Basic %s' % b64_val.decode('utf-8')
         }
 
-        res = self.sf.fetchUrl('https://censys.io/api/v1/view/' + querytype.format(qry.encode('utf-8', errors='replace')),
+        res = self.sf.fetchUrl('https://censys.io/api/v1/view/' + querytype.format(qry),
                                timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot",
                                headers=headers)

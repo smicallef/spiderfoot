@@ -128,9 +128,9 @@ class SpiderFoot:
                 session = self.getSession()
                 res = session.get(val)
                 if splitLines:
-                    return res.content.splitlines()
+                    return res.content.decode('utf-8').splitlines()
                 else:
-                    return res.content
+                    return res.content.decode('utf-8')
             except BaseException as e:
                 if fatal:
                     self.error("Unable to open option URL, " + val + ": " + str(e))

@@ -137,7 +137,12 @@ class sfp_fringeproject(SpiderFootPlugin):
                 continue
 
             for tag in tags:
-                port = re.findall(r'^port:([0-9]+)', tag)
+                try:
+                    port = re.findall(r'^port:([0-9]+)', tag)
+                except BaseException as e:
+                    self.sf.debug("Didn't get sane data from FringeProject.")
+                    continue
+
                 if len(port) > 0:
                     evt = SpiderFootEvent('TCP_PORT_OPEN', value + ':' + str(port[0]), self.__name__, event)
                     self.notifyListeners(evt)
