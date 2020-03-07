@@ -15,7 +15,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_bingsharedip(SpiderFootPlugin):
-    """Bing (Shared IPs):Footprint,Investigate,Passive:Search Engines::Search Bing for hosts sharing the same IP."""
+    """Bing (Shared IPs):Footprint,Investigate,Passive:Search Engines:apikey:Search Bing for hosts sharing the same IP."""
 
     # Default options
     opts = {
