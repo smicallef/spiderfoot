@@ -325,6 +325,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                 http_headers = self.httpHeaders(ip)
                 if http_headers is not None:
                     e = SpiderFootEvent('WEBSERVER_HTTPHEADERS', json.dumps(http_headers), self.__name__, pevent)
+                    e.actualSource = ip
                     self.notifyListeners(e)
 
             if self.opts.get('udp_portscan', True):

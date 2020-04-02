@@ -185,6 +185,7 @@ class sfp_censys(SpiderFootPlugin):
                 if 'headers' in rec:
                     dat = json.dumps(rec['headers'], ensure_ascii=False)
                     e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, pevent)
+                    e.actualSource = addr
                     self.notifyListeners(e)
 
                 if 'autonomous_system' in rec:
