@@ -124,9 +124,13 @@ if __name__ == '__main__':
         sfConfig['__logging'] = False
 
     if args.l:
-        (addr, port) = args.l.split(":")
-        sfConfig['__webaddr'] = addr
-        sfConfig['__webport'] = int(port)
+        try:
+            (addr, port) = args.l.split(":")
+            sfConfig['__webaddr'] = addr
+            sfConfig['__webport'] = int(port)
+        except BaseException as e:
+            print("Invalid ip:port format.")
+            sys.exit(-1)
     else:
         sfConfig['__logstdout'] = True
 

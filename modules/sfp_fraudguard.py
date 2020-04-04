@@ -76,7 +76,7 @@ class sfp_fraudguard(SpiderFootPlugin):
             'Authorization': "Basic " + token.decode('utf-8')
         }
 
-        res = self.sf.fetchUrl(fraudguard_url, timeout=self.opts['_fetchtimeout'],
+        res = self.sf.fetchUrl(fraudguard_url , timeout=self.opts['_fetchtimeout'], 
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] in [ "400", "429", "500", "403" ]:
@@ -156,14 +156,23 @@ class sfp_fraudguard(SpiderFootPlugin):
                 if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
                     self.sf.debug("Record found but too old, skipping.")
                     continue
+
+                # For netblocks, we need to create the IP address event so that
+                # the threat intel event is more meaningful.
+                if eventName.startswith('NETBLOCK_'):
+                    pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                    self.notifyListeners(pevent)
+                else:
+                    pevent = event
+
                 if "unknown" not in [rec['country'], rec['state'], rec['city']]:
                     dat = rec['country'] + ", " + rec['state'] + ", " + rec['city']
-                    e = SpiderFootEvent("GEOINFO", dat, self.__name__, event)
+                    e = SpiderFootEvent("GEOINFO", dat, self.__name__, pevent)
                     self.notifyListeners(e)
 
                 if rec.get('threat') != "unknown":
                     dat = rec['threat'] + " (risk level: " + rec['risk_level'] + ") [" + eventData + "]"
-                    e = SpiderFootEvent("MALICIOUS_" + rtype, dat, self.__name__, event)
+                    e = SpiderFootEvent("MALICIOUS_" + rtype, dat, self.__name__, pevent)
                     self.notifyListeners(e)
-
+    
 # End of sfp_fraudguard class

@@ -119,10 +119,15 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             return None
 
         for n in data:
-            if not self.opts['api_key']:
-                site = n["Title"]
-            else:
-                site = n["Name"]
+            try:
+                if not self.opts['api_key']:
+                    site = n["Title"]
+                else:
+                    site = n["Name"]
+            except BaseException as e:
+                self.sf.debug("Unable to parse result from HaveIBeenPwned?")
+                continue
+
             evt = eventName + "_COMPROMISED"
             # Notify other modules of what you've found
             e = SpiderFootEvent(evt, eventData + " [" + site + "]",

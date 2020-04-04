@@ -49,7 +49,7 @@ class sfp_darksearch(SpiderFootPlugin):
         return ['DOMAIN_NAME', 'HUMAN_NAME', 'EMAILADDR']
 
     def producedEvents(self):
-        return ['DARKNET_MENTION_URL', 'DARKNET_MENTION_CONTENT', 'SEARCH_ENGINE_WEB_CONTENT']
+        return ['DARKNET_MENTION_URL', 'DARKNET_MENTION_CONTENT', 'RAW_RIR_DATA']
 
     # https://darksearch.io/apidoc
     def query(self, qry, page):
@@ -121,7 +121,7 @@ class sfp_darksearch(SpiderFootPlugin):
                 if result is None:
                     continue
 
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", str(result), self.__name__, event)
+                evt = SpiderFootEvent("RAW_RIR_DATA", str(result), self.__name__, event)
                 self.notifyListeners(evt)
 
                 link = result.get('link')

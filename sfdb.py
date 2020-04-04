@@ -144,6 +144,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ERROR_MESSAGE', 'Error Message', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('ETHEREUM_ADDRESS', 'Ethereum Address', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('GEOINFO', 'Physical Location', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HASH', 'Hash', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HASH_COMPROMISED', 'Compromised Password Hash', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HTTP_CODE', 'HTTP Status Code', 0, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('HUMAN_NAME', 'Human Name', 0, 'ENTITY')",

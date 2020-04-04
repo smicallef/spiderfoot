@@ -61,7 +61,7 @@ class sfp_alienvault(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR", 
                 "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
@@ -87,7 +87,7 @@ class sfp_alienvault(SpiderFootPlugin):
             'Accept': 'application/json',
             'X-OTX-API-KEY': self.opts['api_key']
         }
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] == "403":
@@ -221,7 +221,15 @@ class sfp_alienvault(SpiderFootPlugin):
                                 continue
                         except BaseException as e:
                             self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
-                    e = SpiderFootEvent(evtType, descr, self.__name__, event)
+
+                    # For netblocks, we need to create the IP address event so that
+                    # the threat intel event is more meaningful.
+                    if eventName.startswith('NETBLOCK_'):
+                        pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                        self.notifyListeners(pevent)
+                    else:
+                        pevent = event
+                    e = SpiderFootEvent(evtType, descr, self.__name__, pevent)
                     self.notifyListeners(e)
 
 # End of sfp_alienvault class

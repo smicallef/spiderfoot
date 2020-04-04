@@ -83,7 +83,7 @@ class sfp_threatminer(SpiderFootPlugin):
             queryurl = "/v2/" + tgttype + ".php?q={0}&rt=2"
 
         threatminerurl = "https://api.threatminer.org"
-        url = threatminerurl + queryurl.format(qry.encode('utf-8', errors='replace'))
+        url = threatminerurl + queryurl.format(qry)
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot")
 
         if res['content'] is None:

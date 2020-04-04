@@ -128,9 +128,9 @@ class SpiderFoot:
                 session = self.getSession()
                 res = session.get(val)
                 if splitLines:
-                    return res.content.splitlines()
+                    return res.content.decode('utf-8').splitlines()
                 else:
-                    return res.content
+                    return res.content.decode('utf-8')
             except BaseException as e:
                 if fatal:
                     self.error("Unable to open option URL, " + val + ": " + str(e))
@@ -1057,6 +1057,24 @@ class SpiderFoot:
 
         return returnArr
 
+    # Finds all hashes within the supplied content
+    def parseHashes(self, data):
+        ret = list()
+        hashes = {
+            "MD5": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{32})(?:[^a-fA-F\d]|\b)"),
+            "SHA1": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{40})(?:[^a-fA-F\d]|\b)"),
+            "SHA256": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{64})(?:[^a-fA-F\d]|\b)"),
+            "SHA512": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{128})(?:[^a-fA-F\d]|\b)")
+        }
+
+        for h in hashes:
+            matches = re.findall(hashes[h], data)
+            for match in matches:
+                self.debug("Found hash: " + match)
+                ret.append((h, match))
+
+        return ret
+
     # Find all emails within the supplied content
     # Returns an Array
     def parseEmails(self, data):
@@ -1784,7 +1802,7 @@ class SpiderFootPlugin(object):
                 listener.handleEvent(sfEvent)
             except BaseException as e:
                 f = open("sferror.log", "a")
-                f.write("Module (" + listener.__module__ + ") encountered an error: " + str(e) + "\n")
+                f.write("[" + time.ctime() + "]: Module (" + listener.__module__ + ") encountered an error: " + str(e) + "\n")
 
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))

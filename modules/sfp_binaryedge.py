@@ -108,7 +108,7 @@ class sfp_binaryedge(SpiderFootPlugin):
         headers = {
             'X-Key': self.opts['binaryedge_api_key']
         }
-        url = binaryedgeurl + queryurl.format(qry.encode('utf-8', errors='replace'), page)
+        url = binaryedgeurl + queryurl.format(qry, page)
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers)
 

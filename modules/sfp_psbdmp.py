@@ -49,7 +49,7 @@ class sfp_psbdmp(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        ret = ["LEAKSITE_URL"]
+        ret = ["LEAKSITE_URL", "LEAKSITE_CONTENT"]
 
         return ret
 
