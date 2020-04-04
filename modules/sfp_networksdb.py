@@ -171,7 +171,7 @@ class sfp_networksdb(SpiderFootPlugin):
     # Note: currently unused
     def queryAsnNetworks(self, qry):
         params = {
-            'asn': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
+            'asn': qry,
         }
         headers = {
             'Accept': 'application/json',
@@ -208,14 +208,14 @@ class sfp_networksdb(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.error("Error processing JSON response from NetworksDB.", False)
             return None
 
         if data.get('warning'):
             self.sf.debug("Received warning from NetworksDB: " + data.get('warning'))
 
         if data.get('error'):
-            self.sf.debug("Received error from NetworksDB: " + data.get('error'))
+            self.sf.error("Received error from NetworksDB: " + data.get('error'), False)
 
         return data
 

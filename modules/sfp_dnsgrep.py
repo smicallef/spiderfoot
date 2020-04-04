@@ -46,7 +46,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["INTERNET_NAME"]
+        return ["DOMAIN_NAME"]
 
     # What events this module produces
     def producedEvents(self):
@@ -73,7 +73,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.error("Error processing JSON response from DNSGrep.", False)
             return None
 
         return data
@@ -86,19 +86,9 @@ class sfp_dnsgrep(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-
         self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-
-        # Accept only events from UI
-        if srcModuleName != "SpiderFoot UI":
-            return None
-
-        # Ignore messages from myself
-        if srcModuleName == "sfp_dnsgrep":
-            self.sf.debug("Ignoring " + eventName + ", from self.")
-            return None
 
         data = self.query(eventData)
 

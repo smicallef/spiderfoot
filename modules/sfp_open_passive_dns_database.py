@@ -68,13 +68,13 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
             return None
 
         if res['content'] is None:
-            self.sf.info("No results found for " + qry)
+            self.sf.debug("No results found for " + qry)
             return None
 
         rows = re.findall(r'<tr>(.+?)</tr>', res['content'], re.DOTALL)
 
         if not rows:
-            self.sf.info("No passive DNS results for " + qry)
+            self.sf.debug("No passive DNS results for " + qry)
             return None
 
         data = list()
@@ -83,7 +83,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
             columns = re.findall(r'<td.*?>(.*?)</td>', row, re.DOTALL)
 
             if len(columns) != 7:
-                self.sf.debug("Unexpected number of columns for row. Expected 7, Found " + str(len(columns)))
+                self.sf.error("Unexpected number of columns for row. Expected 7, Found " + str(len(columns)), False)
                 continue
 
             data.append(columns)
@@ -123,10 +123,10 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
 
         for record in data:
             if self.checkForStop():
-                break
+                return None
 
             if self.errorState:
-                break
+                return None
 
             #first_seen = record[0]
             #last_seen = record[1]
@@ -200,10 +200,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
 
         for domain in set(domains):
             if self.checkForStop():
-                break
-
-            if self.errorState:
-                break
+                return None
 
             if domain in self.results:
                 continue
