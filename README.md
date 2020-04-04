@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://www.spiderfoot.net"><img src="https://www.spiderfoot.net/wp-content/themes/spiderfoot/img/spiderfoot-wide.png"></a>
+  <a href="https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQv&s=os_gh"><img src="https://www.spiderfoot.net/wp-content/themes/spiderfoot/img/spiderfoot-wide.png"></a>
 </h1>
 
 ### ABOUT
@@ -240,6 +240,6 @@ sfp_zoneh.py|Zone-H Defacement Check|Check if a hostname/domain appears on the z
 
 ### DOCUMENTATION
 
-Read more at the [project website](https://www.spiderfoot.net), including more complete documentation, blog posts with tutorials/guides, plus information about [SpiderFoot HX](https://www.spiderfoot.net/hx).
+Read more at the [project website](https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQv&s=os_gh), including more complete documentation, blog posts with tutorials/guides, plus information about [SpiderFoot HX](https://www.spiderfoot.net/hx).
 
 Latest updates announced on [Twitter](https://twitter.com/spiderfoot).
