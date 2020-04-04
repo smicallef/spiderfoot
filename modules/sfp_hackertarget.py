@@ -240,6 +240,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                     else:
                         hosts.append(strdata)
 
+
                 for host in set(hosts):
                     if self.getTarget().matches(host, includeChildren=True, includeParents=True):
                         evt_type = 'INTERNET_NAME'
