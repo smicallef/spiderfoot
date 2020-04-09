@@ -65,7 +65,7 @@ class sfp_whois(SpiderFootPlugin):
         try:
             data = None
             if eventName != "NETBLOCK_OWNER":
-                whoisdata = whois.whois(eventData)
+                whoisdata = whois.query(eventData)
                 if whoisdata:
                     data = whoisdata.text
             else:
