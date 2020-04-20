@@ -16,7 +16,7 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_company(SpiderFootPlugin):
-    """Company Names:Footprint,Investigate,Passive:Content Analysis::Identify company names in any obtained data."""
+    """Company Name Extractor:Footprint,Investigate,Passive:Content Analysis::Identify company names in any obtained data."""
 
     # Default options
     opts = {

@@ -18,9 +18,7 @@ from phonenumbers import carrier
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_phone(SpiderFootPlugin):
-    """Phone Numbers:Passive,Footprint,Investigate:Real World::Identify phone numbers in scraped webpages."""
-
-
+    """Phone Number Extractor:Passive,Footprint,Investigate:Real World::Identify phone numbers in scraped webpages."""
 
     # Default options
     opts = {}

@@ -17,7 +17,7 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsbrute(SpiderFootPlugin):
-    """DNS Brute-force:Footprint,Investigate:DNS::Attempts to identify hostnames through brute-forcing common names and iterations."""
+    """DNS Brute-forcer:Footprint,Investigate:DNS::Attempts to identify hostnames through brute-forcing common names and iterations."""
 
 
     # Default options

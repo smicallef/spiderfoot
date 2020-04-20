@@ -59,7 +59,7 @@ pairs = {
 
 # These are all string builders, {0} = the domain keyword, {1} = the page number
 class sfp_similar(SpiderFootPlugin):
-    """Similar Domains:Footprint,Investigate:DNS::Search various sources to identify similar looking domain names, for instance squatted domains."""
+    """Similar Domain Finder:Footprint,Investigate:DNS::Search various sources to identify similar looking domain names, for instance squatted domains."""
 
     # Default options
     opts = {

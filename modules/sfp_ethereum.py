@@ -16,7 +16,7 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_ethereum(SpiderFootPlugin):
-    """Ethereum Finder:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
+    """Ethereum Address Finder:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
 
     # Default options
     opts = {}

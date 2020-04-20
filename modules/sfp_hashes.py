@@ -15,7 +15,7 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_hashes(SpiderFootPlugin):
-    """Hashes:Footprint,Investigate,Passive:Content Analysis::Identify MD5 and SHA hashes in web content, files and more."""
+    """Hash Extractor:Footprint,Investigate,Passive:Content Analysis::Identify MD5 and SHA hashes in web content, files and more."""
 
     # Default options
     opts = {
