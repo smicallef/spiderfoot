@@ -139,6 +139,7 @@ class sfp_template(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         # Report when unexpected things happen:
+        # - debug(message) if it's only for debugging (user will see this if debugging is enabled)
         # - info(message) if it's not a bad thing
         # - error(message, False) if it's a bad thing but SpiderFoot can continue
         # - error(message) if it's a bad thing and should cause the scan to abort
