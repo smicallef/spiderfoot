@@ -18,7 +18,7 @@ import random
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_accounts(SpiderFootPlugin):
-    """Accounts:Footprint,Passive:Social Media:slow:Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc."""
+    """Account Finder:Footprint,Passive:Social Media:slow:Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc."""
 
 
     # Default options
@@ -291,15 +291,20 @@ class sfp_accounts(SpiderFootPlugin):
                 self.sf.debug(user + " is found in our word dictionary, skipping.")
                 continue
 
+            if user not in self.reportedUsers and eventData != user:
+                evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
+                self.notifyListeners(evt)
+                self.reportedUsers.append(user)
+
+        # Only look up accounts when we've received a USERNAME event (possibly from
+        # ourselves), since we want them to have gone through some verification by
+        # this module, and we don't want duplicates (one based on EMAILADDR and another
+        # based on USERNAME).
+        if eventName == "USERNAME":
             res = self.batchSites(user)
             for site in res:
                 evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", site,
                                       self.__name__, event)
                 self.notifyListeners(evt)
-
-            if user not in self.reportedUsers and eventData != user:
-                evt = SpiderFootEvent("USERNAME", user, self.__name__, event)
-                self.notifyListeners(evt)
-                self.reportedUsers.append(user)
 
 # End of sfp_accounts class
