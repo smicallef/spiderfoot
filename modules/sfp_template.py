@@ -105,6 +105,10 @@ class sfp_template(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
+        # self.tempStorage() basically returns a dict(), but we use self.tempStorage()
+        # instead since on SpiderFoot HX, different mechanisms are used to persist
+        # data for load distribution, avoiding excess memory consumption and fault 
+        # tolerance. This keeps modules transparently compatible with both versions.
         self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
