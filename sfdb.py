@@ -108,6 +108,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('CLOUD_STORAGE_BUCKET', 'Cloud Storage Bucket', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('CLOUD_STORAGE_BUCKET_OPEN', 'Cloud Storage Bucket Open', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('COMPANY_NAME', 'Company Name', 0, 'ENTITY')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('CREDIT_CARD_NUMBER', 'Credit Card Number', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BASE64_DATA', 'Base64-encoded Data', 1, 'DATA')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BITCOIN_ADDRESS', 'Bitcoin Address', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BITCOIN_BALANCE', 'Bitcoin Balance', 0, 'DESCRIPTOR')",
