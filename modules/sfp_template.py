@@ -81,7 +81,7 @@ class sfp_template(SpiderFootPlugin):
         "cohostsamedomain": False
     }
 
-    # Option descriptions. Delete any optoins not applicable to this module.
+    # Option descriptions. Delete any options not applicable to this module.
     optdescs = {
         "api_key": "SomeDataource API Key.",
         'checkcohosts': "Check co-hosted sites?",
