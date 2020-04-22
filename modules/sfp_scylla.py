@@ -11,6 +11,7 @@
 
 import json
 import time
+import base64
 import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -58,8 +59,12 @@ class sfp_scylla(SpiderFootPlugin):
             'from': str(start)
         }
 
+        b64_auth = base64.b64encode("sammy:BasicPassword!".encode("utf-8"))
         headers = {
             'Accept': 'application/json',
+            # Provided by @_hyp3ri0n on Twitter, owner of the service and granted
+            # permission to hard-code these.
+            'Authorization': "Basic " + b64_auth.decode("utf-8")
         }
         res = self.sf.fetchUrl('https://scylla.sh/search?' + urllib.parse.urlencode(params),
                                headers=headers,
