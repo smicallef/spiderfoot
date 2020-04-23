@@ -79,7 +79,7 @@ class sfp_creditcard(SpiderFootPlugin):
             myres.append(creditCard)
             
             # Krishnasis Note : Need some understanding on this
-            evt = SpiderFootEvent(evttype, mail, self.__name__, event)
+            evt = SpiderFootEvent(evttype, creditCard, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
             else:
