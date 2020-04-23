@@ -44,7 +44,6 @@ class sfp_creditcard(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
-    # For a list of all events, check sfdb.py.
     def watchedEvents(self):
         return ["TARGET_WEB_CONTENT"]
 
@@ -67,6 +66,7 @@ class sfp_creditcard(SpiderFootPlugin):
         # event was received.
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
+        # Extract Credit Card numbers
         creditCards=self.sf.parseCreditCards(eventData)
 
         myres=list()
