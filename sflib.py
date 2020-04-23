@@ -1104,24 +1104,45 @@ class SpiderFoot:
         return list(emails)
     
     # Find all credit card numbers with the supplied content
+    #
+    # Extracts numbers with lengths ranging from 13 - 19 digits
+    #
+    # Checks the numbers using Luhn's algorithm to verify if..
+    # ..the number is a valid credit card number or not
+    #
     # Returns a list
     def parseCreditCards(self,data):
-        credit_cards=set()  
-        credit_card_regex="(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})"
-        
-        # Krishnasis : Note
-        # Potentially more effective alternative to using Regex : 
-        # 1. Extract numbers of length 13 - 16 digits
-        # 2. Apply Luhn's algorithm to verify the credit card
-        # Probable Feature : Identify the Credit Card provider
+        creditCards = set()
+        # Extract all numbers with lengths ranging from 13 - 19 digits
+        possibleCCRegex = "\d{13,19}"
+        matches = re.findall(possibleCCRegex,data)
 
-        matches=re.findall(credit_card_regex,data)
+        # Verify each extracted number using Luhn's algorithm
         for match in matches:
-            self.debug("Found possible credit card : "+match)
-            
-            credit_cards.add(match)
 
-        return list(credit_cards)
+            if int(match) == 0:
+                self.debug("Skipped invalid credit card number: " + match)
+                continue
+
+            ccNumber = match
+
+            ccNumberTotal = 0
+            isSecondDigit = False
+
+            for digit in ccNumber[::-1]:
+                d = int(digit)
+                if isSecondDigit:
+                    d *= 2
+                ccNumberTotal += int(d / 10)
+                ccNumberTotal += d % 10
+
+                isSecondDigit = not isSecondDigit
+            if ccNumberTotal % 10 == 0:
+                self.debug("Found credit card number: " + match)
+                creditCards.add(match)
+            else:
+                self.debug("Skipped invalid credit card number: " + match)
+        return list(creditCards)
         
     # Return a PEM for a DER
     def sslDerToPem(self, der):
