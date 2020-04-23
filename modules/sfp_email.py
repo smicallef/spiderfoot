@@ -53,8 +53,6 @@ class sfp_email(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        event.moduleDataSource="Target Website"
-
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         emails = self.sf.parseEmails(eventData)

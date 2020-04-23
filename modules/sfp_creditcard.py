@@ -57,6 +57,8 @@ class sfp_creditcard(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        
+        event.moduleDataSource="Target Website"
 
         # Once we are in this state, return immediately.
         if self.errorState:
@@ -78,7 +80,6 @@ class sfp_creditcard(SpiderFootPlugin):
                 continue
             myres.append(creditCard)
             
-            # Krishnasis Note : Need some understanding on this
             evt = SpiderFootEvent(evttype, creditCard, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
