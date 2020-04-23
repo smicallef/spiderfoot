@@ -17,7 +17,7 @@ class sfp_creditcard(SpiderFootPlugin):
     """Credit Card Extractor:Footprint,Investigate,Passive:Content Analysis::Identify Credit Card Numbers in any data"""
 
     # Default options.
-     opts = {
+    opts = {
          # Options specific to this module
     }
 
@@ -57,7 +57,7 @@ class sfp_creditcard(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        
+
         event.moduleDataSource="Target Website"
 
         # Once we are in this state, return immediately.
