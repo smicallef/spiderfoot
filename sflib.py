@@ -1117,11 +1117,11 @@ class SpiderFoot:
         # Remove whitespace from data. 
         # Credit cards might contain spaces between them 
         # which will cause regex mismatch
-        data = data.replace(" ","")
+        data = data.replace(" ", "")
         
         # Extract all numbers with lengths ranging from 13 - 19 digits
         possibleCCRegex = "\d{13,19}"
-        matches = re.findall(possibleCCRegex,data)
+        matches = re.findall(possibleCCRegex, data)
 
         # Verify each extracted number using Luhn's algorithm
         for match in matches:
