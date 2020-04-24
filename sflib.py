@@ -1116,7 +1116,7 @@ class SpiderFoot:
         
         # Remove whitespace from data. 
         # Credit cards might contain spaces between them 
-        # which will cause the regex to fail
+        # which will cause regex mismatch
         data = data.replace(" ","")
         
         # Extract all numbers with lengths ranging from 13 - 19 digits

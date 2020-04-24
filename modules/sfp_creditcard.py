@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_creditcard
-# Purpose:      Example module to use for new modules.
+# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+#               modules (such as sfp_spider) and identifying credit card numbers.
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
@@ -34,7 +35,6 @@ class sfp_creditcard(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        # Krishnasis - Note : What does self.tempStorage() return ?
         self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
@@ -45,7 +45,8 @@ class sfp_creditcard(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["TARGET_WEB_CONTENT"]
+        return ["TARGET_WEB_CONTENT", "RAW_RIR_DATA", "DARKNET_MENTION_CONTENT",
+                "LEAKSITE_CONTENT", "AFFILIATE_WEB_CONTENT", "SEARCH_ENGINE_WEB_CONTENT"]
 
     # What events this module produces
     def producedEvents(self):
@@ -57,7 +58,7 @@ class sfp_creditcard(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        event.moduleDataSource="Target Website"
+        event.moduleDataSource = "Target Website"
 
         # Once we are in this state, return immediately.
         if self.errorState:
@@ -67,13 +68,13 @@ class sfp_creditcard(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         # Extract Credit Card numbers
-        creditCards=self.sf.parseCreditCards(eventData)
+        creditCards = self.sf.parseCreditCards(eventData)
 
-        myres=list()
+        myres = list()
         for creditCard in creditCards:
-            evttype="CREDIT_CARD_NUMBER"
+            evttype = "CREDIT_CARD_NUMBER"
             
-            self.sf.info("Found credit card number : "+creditCard)
+            self.sf.info("Found credit card number : " + creditCard)
 
             if creditCard in myres:
                 self.sf.debug("Already found from this source")
