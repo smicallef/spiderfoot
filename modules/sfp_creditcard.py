@@ -39,6 +39,7 @@ class sfp_creditcard(SpiderFootPlugin):
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
+        self.__dataSource__ = "Target Website"
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -57,8 +58,6 @@ class sfp_creditcard(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-
-        event.moduleDataSource = "Target Website"
 
         # Once we are in this state, return immediately.
         if self.errorState:
