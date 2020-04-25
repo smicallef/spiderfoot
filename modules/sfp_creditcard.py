@@ -39,6 +39,8 @@ class sfp_creditcard(SpiderFootPlugin):
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
+
+        # Override datasource for sfp_creditcard module
         self.__dataSource__ = "Target Website"
 
         for opt in list(userOpts.keys()):
