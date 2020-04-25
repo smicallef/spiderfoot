@@ -339,7 +339,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     else:
                         if parentHash in self.hostresults[ip6] or evt.data == ip6:
                             self.sf.debug("Skipping host, " + ip6 + ", already processed.")
-                            return None
+                            continue
                         else:
                             self.hostresults[ip6] = self.hostresults[ip6] + [parentHash]
 
