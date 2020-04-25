@@ -333,6 +333,16 @@ class sfp_dnsresolve(SpiderFootPlugin):
             ip6s = self.sf.resolveHost6(host)
             if ip6s:
                 for ip6 in ip6s:
+                    parentHash = self.sf.hashstring(evt.data)
+                    if ip6 not in self.hostresults:
+                        self.hostresults[ip6] = [parentHash]
+                    else:
+                        if parentHash in self.hostresults[ip6] or evt.data == ip6:
+                            self.sf.debug("Skipping host, " + ip6 + ", already processed.")
+                            return None
+                        else:
+                            self.hostresults[ip6] = self.hostresults[ip6] + [parentHash]
+
                     evt6 = SpiderFootEvent("IPV6_ADDRESS", ip6, self.__name__, evt)
                     self.notifyListeners(evt6)
 
