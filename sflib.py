@@ -1102,7 +1102,54 @@ class SpiderFoot:
             emails.add(match)
 
         return list(emails)
+    
+    # Find all credit card numbers with the supplied content
+    #
+    # Extracts numbers with lengths ranging from 13 - 19 digits
+    #
+    # Checks the numbers using Luhn's algorithm to verify if
+    # the number is a valid credit card number or not
+    #
+    # Returns a list
+    def parseCreditCards(self,data):
+        creditCards = set() 
+        
+        # Remove whitespace from data. 
+        # Credit cards might contain spaces between them 
+        # which will cause regex mismatch
+        data = data.replace(" ", "")
+        
+        # Extract all numbers with lengths ranging from 13 - 19 digits
+        possibleCCRegex = "\d{13,19}"
+        matches = re.findall(possibleCCRegex, data)
 
+        # Verify each extracted number using Luhn's algorithm
+        for match in matches:
+
+            if int(match) == 0:
+                self.debug("Skipped invalid credit card number: " + match)
+                continue
+
+            ccNumber = match
+
+            ccNumberTotal = 0
+            isSecondDigit = False
+
+            for digit in ccNumber[::-1]:
+                d = int(digit)
+                if isSecondDigit:
+                    d *= 2
+                ccNumberTotal += int(d / 10)
+                ccNumberTotal += d % 10
+
+                isSecondDigit = not isSecondDigit
+            if ccNumberTotal % 10 == 0:
+                self.debug("Found credit card number: " + match)
+                creditCards.add(match)
+            else:
+                self.debug("Skipped invalid credit card number: " + match)
+        return list(creditCards)
+        
     # Return a PEM for a DER
     def sslDerToPem(self, der):
         return ssl.DER_cert_to_PEM_cert(der)
