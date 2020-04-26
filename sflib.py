@@ -1150,6 +1150,92 @@ class SpiderFoot:
                 self.debug("Skipped invalid credit card number: " + match)
         return list(creditCards)
         
+    # Find all IBAN numbers with the supplied content
+    #
+    # Extracts possible IBAN Numbers using a generic regex 
+    #
+    # Checks whether the possible IBAN number is valid or not
+    # Country-wise length check and Mod 97 algorithm
+    #
+    # Returns a list
+    def parseIBANNumbers(self, data):
+        ibanNumbers = set()
+
+        # Dictionary of country codes and their respective IBAN lengths
+        ibanCountryLengths = {
+            "AL" : 28, "AD" : 24, "AT" : 20, "AZ" : 28,
+            "ME" : 22, "BH" : 22, "BY" : 28, "BE" : 16,
+            "BA" : 20, "BR" : 29, "BG" : 22, "CR" : 22,
+            "HR" : 21, "CY" : 28, "CZ" : 24, "DK" : 18,
+            "DO" : 28, "EG" : 29, "SV" : 28, "FO" : 18,
+            "FI" : 18, "FR" : 27, "GE" : 22, "DE" : 22,
+            "GI" : 23, "GR" : 27, "GL" : 18, "GT" : 28,
+            "VA" : 22, "HU" : 28, "IS" : 26, "IQ" : 23,
+            "IE" : 22, "IL" : 27, "JO" : 30, "KZ" : 20,
+            "XK" : 20, "KW" : 30, "LV" : 21, "LB" : 28,
+            "LI" : 21, "LT" : 20, "LU" : 20, "MT" : 31,
+            "MR" : 27, "MU" : 30, "MD" : 24, "MC" : 27,
+            "DZ" : 24, "AO" : 25, "BJ" : 28, "VG" : 24,
+			"BF" : 27, "BI" : 16, "CM" : 27, "CV" : 25,
+			"CG" : 27, "EE" : 20, "GA" : 27, "GG" : 22,
+			"IR" : 26, "IM" : 22, "IT" : 27, "CI" : 28,
+			"JE" : 22, "MK" : 19, "MG" : 27, "ML" : 28,
+			"MZ" : 25, "NL" : 18, "NO" : 15, "PK" : 24,
+			"PS" : 29, "PL" : 28, "PT" : 25, "QA" : 29,
+			"RO" : 24, "LC" : 32, "SM" : 27, "ST" : 25,
+			"SA" : 24, "SN" : 28, "RS" : 22, "SC" : 31,
+			"SK" : 24, "SI" : 19, "ES" : 24, "CH" : 21,
+			"TL" : 23, "TN" : 24, "TR" : 26, "UA" : 29,
+			"AE" : 23, "GB" : 22, "SE" : 24
+        }
+
+        # Remove whitespace from data. 
+        # Credit cards might contain spaces between them 
+        # which will cause regex mismatch
+        data = data.replace(" ", "")
+
+        # Extract alphanumeric characters of lengths ranging from 16 to 31
+        possibleIBANRegex = "[A-Za-z0-9]{16,31}"
+        matches = re.findall(possibleIBANRegex, data)
+
+        for match in matches:  
+            match = match.upper()
+            ibanNumber = match
+
+            countryCode = ibanNumber[0:2]
+
+            # Country code not in dictionary 
+            if countryCode not in ibanCountryLengths.keys():
+                self.debug("Skipped invalid IBAN number: " + ibanNumber)
+                continue
+            
+            if len(ibanNumber) == ibanCountryLengths[countryCode]:
+                # Move the first 4 characters to the end of the string 
+                match = match[4:] + match[0:4]  
+                
+                for character in match: 
+                    # Check if character is an alphabet
+                    if character.isalpha():
+                        # Replace alphabet to number  
+                        # where A = 10, B = 11, ...., Z = 35
+                        match = match.replace(character, str((ord(character) - 65) + 10))                     
+
+                if int(match) % 97 == 1:
+                    # IBAN Number is valid 
+                    self.debug("Found IBAN number: " + match)
+                    ibanNumbers.add(ibanNumber)
+                else:
+                    # Invalid IBAN Number due to failed Mod 97 operation
+                    self.debug("Skipped invalid IBAN number: " + ibanNumber)
+                    continue                    
+            else:
+                # Invalid IBAN Number due to length mismatch
+                self.debug("Skipped invalid IBAN number: " + ibanNumber)
+                continue
+
+        return list(ibanNumbers)
+
+
     # Return a PEM for a DER
     def sslDerToPem(self, der):
         return ssl.DER_cert_to_PEM_cert(der)
