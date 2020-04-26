@@ -1155,7 +1155,7 @@ class SpiderFoot:
     # Extracts possible IBAN Numbers using a generic regex 
     #
     # Checks whether the possible IBAN number is valid or not
-    # Country-wise length check and Mod 97 algorithm
+    # Using country-wise length check and Mod 97 algorithm
     #
     # Returns a list
     def parseIBANNumbers(self, data):
