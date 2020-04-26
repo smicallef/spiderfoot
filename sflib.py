@@ -1190,7 +1190,7 @@ class SpiderFoot:
         }
 
         # Remove whitespace from data. 
-        # Credit cards might contain spaces between them 
+        # IBAN Numbers might contain spaces between them 
         # which will cause regex mismatch
         data = data.replace(" ", "")
 
@@ -1204,19 +1204,20 @@ class SpiderFoot:
 
             countryCode = ibanNumber[0:2]
 
-            # Country code not in dictionary 
             if countryCode not in ibanCountryLengths.keys():
+                # Invalid IBAN Number due to country code not existing in dictionary
                 self.debug("Skipped invalid IBAN number: " + ibanNumber)
                 continue
             
+            # Using Mod 97 algorithm to verify if IBAN Number is valid
             if len(ibanNumber) == ibanCountryLengths[countryCode]:
                 # Move the first 4 characters to the end of the string 
                 match = match[4:] + match[0:4]  
                 
                 for character in match: 
-                    # Check if character is an alphabet
+                    # Check if character is a letter
                     if character.isalpha():
-                        # Replace alphabet to number  
+                        # Replace letters to number  
                         # where A = 10, B = 11, ...., Z = 35
                         match = match.replace(character, str((ord(character) - 65) + 10))                     
 
