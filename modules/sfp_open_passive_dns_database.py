@@ -82,6 +82,10 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
         for row in rows:
             columns = re.findall(r'<td.*?>(.*?)</td>', row, re.DOTALL)
 
+            # 0 seems to indicate no genuine issue
+            if len(columns) == 0:
+                continue
+
             if len(columns) != 7:
                 self.sf.error("Unexpected number of columns for row. Expected 7, Found " + str(len(columns)), False)
                 continue
