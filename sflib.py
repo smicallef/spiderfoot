@@ -1204,13 +1204,17 @@ class SpiderFoot:
 
             countryCode = ibanNumber[0:2]
 
-            if countryCode not in ibanCountryLengths.keys():
+            # Handling KeyError exception as a miss in the ibanCountryLengths dictionary 
+            # If the country code does not exist, it's an invalid IBAN Number
+            try: 
+                countryCodeLength = ibanCountryLengths[countryCode]
+            except KeyError:
                 # Invalid IBAN Number due to country code not existing in dictionary
                 self.debug("Skipped invalid IBAN number: " + ibanNumber)
                 continue
             
             # Using Mod 97 algorithm to verify if IBAN Number is valid
-            if len(ibanNumber) == ibanCountryLengths[countryCode]:
+            if len(ibanNumber) == countryCodeLength:
                 # Move the first 4 characters to the end of the string 
                 match = match[4:] + match[0:4]  
                 
