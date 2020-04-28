@@ -12,6 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import re
+import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 import phonenumbers
 from phonenumbers.phonenumberutil import region_code_for_country_code
@@ -133,10 +134,13 @@ class sfp_countryname(SpiderFootPlugin):
             "UM" : "United States Minor Outlying Islands", "UY" : "Uruguay", "UZ" : "Uzbekistan",
             "VU" : "Vanuatu", "VA" : "Vatican", "VE" : "Venezuela",
             "VN" : "Vietnam", "WF" : "Wallis and Futuna", "EH" : "Western Sahara",
-            "YE" : "Yemen", "ZM" : "Zambia", "ZW" : "Zimbabwe", "AC" : "Ascension Island",
-            "EU" : "European Union", "SU" : "Soviet Union", "UK" : "United Kingdom"
+            "YE" : "Yemen", "ZM" : "Zambia", "ZW" : "Zimbabwe", 
+            # Below are not country codes but recognized as TLDs
+            "AC" : "Ascension Island", "EU" : "European Union", "SU" : "Soviet Union", 
+            "UK" : "United Kingdom"
         }
         return abbvCountryCodes
+
     # Detect name of country from phone number 
     def detectCountryFromPhone(self, srcPhoneNumber):
 
@@ -154,6 +158,7 @@ class sfp_countryname(SpiderFootPlugin):
             return None
         return abbvCountryCodes[countryCode]
     
+    # Detect name of country from TLD 
     def detectCountryFromTLD(self, srcDomain):
         
         # Get dictionary of country codes and country names
@@ -171,6 +176,8 @@ class sfp_countryname(SpiderFootPlugin):
 
         # No associated country name is found
         return None
+
+    # Detect name of country from IBAN
     def detectCountryFromIBAN(self, srcIBAN):
 
         # Get dictionary of country codes and country names
@@ -179,6 +186,20 @@ class sfp_countryname(SpiderFootPlugin):
             return tldCountryCodes[srcIBAN[0:2]]
         except:
             return None
+    
+    # Detect name of country from Who Is lookup data
+    def detectCountryFromWhoIs(self, srcWhoIs):
+        
+        # Get dictionary of country codes and  country names
+        abbvCountryCodes = self.getCountryCodeDict
+
+        # Look for particular country code in the whois lookup data
+        for countryCode in abbvCountryCodes.keys():
+            matches = re.findall("[\s,'\"]"+countryCode+"[\s,'\"]",srcWhoIs)
+            if len(matches) > 0:
+                return abbvCountryCodes(re.findall("\w+", matches[0])[0])
+        
+        return None
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -203,15 +224,17 @@ class sfp_countryname(SpiderFootPlugin):
 
         myres = list()
 
-        # Based on the type of incoming event, the functions will be called
-
+        # Based on the type of incoming event, the respective function will be called
         # Extract country based on the different incoming data sources
+
         if eventName == "PHONE_NUMBER":
             countryName = self.detectCountryFromPhone(eventData)
         elif eventName in ["DOMAIN_NAME", "SIMILARDOMAIN"]:
             countryName = self.detectCountryFromTLD(eventData)
         elif eventName == "IBAN_NUMBER":
             countryName = self.detectCountryFromIBAN(eventData)
+        elif eventName == "DOMAIN_WHOIS":
+            countryName = self.detectCountryFromWhoIs(eventData)
         # countryName = ( extract country names from WHOIS )
         # etc ... parse all incoming data sources
     
