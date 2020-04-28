@@ -190,14 +190,25 @@ class sfp_countryname(SpiderFootPlugin):
     # Detect name of country from Who Is lookup data
     def detectCountryFromWhoIs(self, srcWhoIs):
         
+        # Note : Can who is have multiple countries ?
+        # Example : 
+        # Domain Registered in US 
+        # Company Name has IN 
+        # Should we be wasting the data? 
+
         # Get dictionary of country codes and  country names
         abbvCountryCodes = self.getCountryCodeDict
 
         # Look for particular country code in the whois lookup data
         for countryCode in abbvCountryCodes.keys():
             matches = re.findall("[\s,'\"]"+countryCode+"[\s,'\"]",srcWhoIs)
+            # Check whether any country code is found or not
             if len(matches) > 0:
-                return abbvCountryCodes(re.findall("\w+", matches[0])[0])
+                # Get country code first index of list
+                match = matches[0]
+                # Extract only the text part of the country code
+                match = re.findall("\w+", match)[0]
+                return abbvCountryCodes(match)
         
         return None
 
@@ -235,17 +246,20 @@ class sfp_countryname(SpiderFootPlugin):
             countryName = self.detectCountryFromIBAN(eventData)
         elif eventName == "DOMAIN_WHOIS":
             countryName = self.detectCountryFromWhoIs(eventData)
-        # countryName = ( extract country names from WHOIS )
-        # etc ... parse all incoming data sources
+        elif eventName == ["AFFILIATE_DOMAIN_NAME"] and self.opts["affiliate"]:
+            countryName = self.detectCountryFromTLD(eventData)
+        # Note : Account for params in opts in this as well. 
     
         evttype = "COUNTRY_NAME"
 
-        # Check if country name already exists in results
-        # Note : Make modifications to check k-v instead of only v for duplicate
-        # k-v as in incoming event and current generated country name
-        if countryName in myres:
-            self.sf.debug("Already found from this source")
-            return None 
+        # Is checking for duplicated needed in myres? 
+        # since, incoming data is all unique. There is no chance of duplication
+        # Commented for now. 
+
+        # if countryName in myres:
+        #    self.sf.debug("Already found from this source")
+        #    return None 
+        
         
         # Check if there is any country name associated to the phone number
         if countryName is None:
