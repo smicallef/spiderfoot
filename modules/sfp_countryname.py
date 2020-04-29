@@ -240,19 +240,17 @@ class sfp_countryname(SpiderFootPlugin):
 
         if eventName == "PHONE_NUMBER":
             countryName = self.detectCountryFromPhone(eventData)
-        elif eventName in ["DOMAIN_NAME", "SIMILARDOMAIN"]:
+        elif eventName in ["DOMAIN_NAME", "SIMILARDOMAIN"] or (eventName == "AFFILIATE_DOMAIN_NAME" and self.opts["affiliate"]) or(eventName == "CO_HOSTED_SITE_DOMAIN" and self.opts.["coHosted"]):
             countryName = self.detectCountryFromTLD(eventData)
         elif eventName == "IBAN_NUMBER":
             countryName = self.detectCountryFromIBAN(eventData)
-        elif eventName == "DOMAIN_WHOIS":
+        elif eventName == "DOMAIN_WHOIS" or (eventName == "AFFILIATE_DOMAIN_WHOIS" and self.opts["affiliate"]) or (eventName == "CO_HOSTED_SITE_DOMAIN_WHOIS" and self.opts["coHosted"]):
             countryName = self.detectCountryFromWhoIs(eventData)
-        elif eventName == ["AFFILIATE_DOMAIN_NAME"] and self.opts["affiliate"]:
-            countryName = self.detectCountryFromTLD(eventData)
-        # Note : Account for params in opts in this as well. 
-    
+
+        # Set event type of outgoing data    
         evttype = "COUNTRY_NAME"
 
-        # Is checking for duplicated needed in myres? 
+        # Note : Is checking for duplicated needed? 
         # since, incoming data is all unique. There is no chance of duplication
         # Commented for now. 
 
