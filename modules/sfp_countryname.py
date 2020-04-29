@@ -7,7 +7,7 @@
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
 # Created:     28/04/2020
-# Copyright:   (c) Steve Micallef 2012
+# Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
