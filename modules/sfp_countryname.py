@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------------------
 # Name:         sfp_countryname
 # Purpose:      SpiderFoot plug-in for scanning retreived content by other
-#               modules (such as sfp_iban, [placeholder]) and identifying country names
+#               modules (such as sfp_iban, sfp_phone, sfp_whois) and identifying country names
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
@@ -158,7 +158,7 @@ class sfp_countryname(SpiderFootPlugin):
             nonCountryCodesDict[nonCountryCode] = defaultCountryCode
         
         return nonCountryCodesDict
-
+    
     # Detect name of country from phone number 
     def detectCountryFromPhone(self, srcPhoneNumber):
 
@@ -223,19 +223,9 @@ class sfp_countryname(SpiderFootPlugin):
 
         # Look for countrycodes and country in whois data
         for k, v in abbvCountryCodes.items(): 
-            # Look for country codes in whois data
 
-            # Not ignoring case to exclude stop words like in, by. 
-            # Country codes most likely to be in upper case
-            matchCountryCodes = re.findall("[\s,'\"]" + k + "[\s,'\"]", srcWhoIs)
             # Look for country name in whois data
             matchCountries = re.findall("[\s,'\"]" + v + "[\s,'\"]", srcWhoIs, re.IGNORECASE)
-
-            if len(matchCountryCodes) > 0:
-                # Get country code from first index of list
-                # Extract only the text part of the country code
-                matchCountryCode = matchCountryCodes[0].strip(",").strip("'").strip("\"").strip().upper()
-                countries.add(abbvCountryCodes[matchCountryCode])
 
             if len(matchCountries) > 0:
                 # Get country name from first index of list
