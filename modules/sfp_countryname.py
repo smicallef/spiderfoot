@@ -25,14 +25,16 @@ class sfp_countryname(SpiderFootPlugin):
         # options specific to this module
         'coHosted' : True,
         'affiliate' : True,
-        'nonCountryTLD' : True
+        'nonCountryTLD' : True,
+        'nonCountryTLDDefault' : "United States"
     }
 
     # Option descriptions
     optdescs = {
         'coHosted' : "Include searching of country name from CO_HOSTED_* data sources",
         'affiliate' : "Include searching of country name from AFFILIATE_* data sources",
-        'nonCountryTLD' : "Parse TLDs not associated with any country as default values"
+        'nonCountryTLD' : "Parse TLDs not associated with any country as default country domains",
+        'nonCountryTLDDefault' : "Default value for TLDs not associated with any country"
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -140,6 +142,22 @@ class sfp_countryname(SpiderFootPlugin):
             "UK" : "United Kingdom"
         }
         return abbvCountryCodes
+    
+    # Dictionary of TLDs not associated with any country
+    def getNonCountryCodesDict(self):
+        # List of TLD not associated with any country
+        nonCountryCodes = ["COM", "ORG", "NET", "INT", 
+            "EDU", "GOV", "MIL", "ARPA"]
+
+        # Get default country code set in opts
+        defaultCountryCode = self.opts["nonCountryTLDDefault"]
+
+        nonCountryCodesDict = dict()
+        # Set default country code for all keys
+        for nonCountryCode in nonCountryCodes: 
+            nonCountryCodesDict[nonCountryCode] = defaultCountryCode
+        
+        return nonCountryCodesDict
 
     # Detect name of country from phone number 
     def detectCountryFromPhone(self, srcPhoneNumber):
@@ -151,28 +169,35 @@ class sfp_countryname(SpiderFootPlugin):
         phoneNumber = phonenumbers.parse(srcPhoneNumber)
         # Check if country code is present in the phone number
         try:
-            countryCode = countryCode = region_code_for_country_code(phoneNumber.country_code)
+            countryCode = region_code_for_country_code(phoneNumber.country_code)
         except:
             # Region code not present in source phone number
             self.debug("Skipped invalid phone number: " + srcPhoneNumber)
             return None
-        return abbvCountryCodes[countryCode]
+        return abbvCountryCodes[countryCode.upper()]
     
     # Detect name of country from TLD 
     def detectCountryFromTLD(self, srcDomain):
         
-        # Get dictionary of country codes and country names
+        # Get dictionary of TLD country codes and country names
         tldCountryCodes = self.getCountryCodeDict()
         
+        # Get dictionary of non country TLD codes
+        tldNonCountryCodes = self.getNonCountryCodesDict()
+
         # Split domain into parts by '.'
-        # Here we know that country TLDs are reserved 
+        # We can conclude that country TLDs are reserved 
         domainParts = srcDomain.split(".")
 
-        # Search for country TLD in the domain parts
-        # Note : What if it's not associated to any country ? (Example : .com)
-        for part in domainParts:
-            if part in tldCountryCodes.keys():
-                return tldCountryCodes[part]
+        # Search for country TLD in the domain parts - reversed
+        for part in domainParts[::-1]:
+            if part.upper() in tldCountryCodes.keys():
+                return tldCountryCodes[part.upper()]
+
+        # Search for non country TLD in the domain parts
+        for part in domainParts[::-1]:
+            if part.upper() in tldNonCountryCodes.keys():
+                return tldNonCountryCodes[part.upper()]
 
         # No associated country name is found
         return None
@@ -184,7 +209,7 @@ class sfp_countryname(SpiderFootPlugin):
         tldCountryCodes = self.getCountryCodeDict()
         try:
             # Get country code from IBAN 
-            countryCode = srcIBAN[0:2]
+            countryCode = srcIBAN[0:2].upper()
             return tldCountryCodes[countryCode]
         except:
             return None
@@ -192,28 +217,38 @@ class sfp_countryname(SpiderFootPlugin):
     # Detect name of country from Who Is lookup data
     def detectCountryFromWhoIs(self, srcWhoIs):
         
-        # Note : Can who is have multiple countries ?
-        # Example : 
-        # Domain Registered in US 
-        # Company Name has IN 
-        # Should we be wasting the data? 
-
         # Get dictionary of country codes and  country names
-        abbvCountryCodes = self.getCountryCodeDict
+        abbvCountryCodes = self.getCountryCodeDict()
+        countries = set()
 
-        # Look for particular country code in the whois lookup data
-        for countryCode in abbvCountryCodes.keys():
-            matches = re.findall("[\s,'\"]"+countryCode+"[\s,'\"]",srcWhoIs)
-            # Check whether any country code is found or not
-            if len(matches) > 0:
-                # Get country code first index of list
-                match = matches[0]
+        # Look for countrycodes and country in whois data
+        for k, v in abbvCountryCodes.items(): 
+            # Look for country codes in whois data
+
+            # Not ignoring case to exclude stop words like in, by. 
+            # Country codes most likely to be in upper case
+            matchCountryCodes = re.findall("[\s,'\"]" + k + "[\s,'\"]", srcWhoIs)
+            # Look for country name in whois data
+            matchCountries = re.findall("[\s,'\"]" + v + "[\s,'\"]", srcWhoIs, re.IGNORECASE)
+
+            if len(matchCountryCodes) > 0:
+                # Get country code from first index of list
                 # Extract only the text part of the country code
-                match = re.findall("\w+", match)[0]
-                return abbvCountryCodes(match)
-        
-        return None
+                matchCountryCode = matchCountryCodes[0].strip(",").strip("'").strip("\"").strip().upper()
+                countries.add(abbvCountryCodes[matchCountryCode])
 
+            if len(matchCountries) > 0:
+                # Get country name from first index of list
+                # Extract only the text part of the country code
+                matchCountry = matchCountries[0].strip(",").strip("'").strip("\"").strip()
+                countries.add(matchCountry)
+        
+        # If any countries are found
+        if len(countries) > 0:
+            return countries
+
+        return None
+            
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["IBAN_NUMBER", "PHONE_NUMBER", "AFFILIATE_DOMAIN_NAME",
@@ -222,8 +257,6 @@ class sfp_countryname(SpiderFootPlugin):
                 'DOMAIN_WHOIS']
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["COUNTRY_NAME"]
 
@@ -232,14 +265,16 @@ class sfp_countryname(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        
+        evttype = "COUNTRY_NAME"
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         myres = list()
+        countryName = None
 
-        # Based on the type of incoming event, the respective function will be called
+        # Based on the type of incoming event, the respective functions will be called
         # Extract country based on the different incoming data sources
-
         if eventName == "PHONE_NUMBER":
             countryName = self.detectCountryFromPhone(eventData)
         elif eventName in ["DOMAIN_NAME", "SIMILARDOMAIN"] or (eventName == "AFFILIATE_DOMAIN_NAME" and self.opts["affiliate"]) or(eventName == "CO_HOSTED_SITE_DOMAIN" and self.opts["coHosted"]):
@@ -247,21 +282,35 @@ class sfp_countryname(SpiderFootPlugin):
         elif eventName == "IBAN_NUMBER":
             countryName = self.detectCountryFromIBAN(eventData)
         elif eventName == "DOMAIN_WHOIS" or (eventName == "AFFILIATE_DOMAIN_WHOIS" and self.opts["affiliate"]) or (eventName == "CO_HOSTED_SITE_DOMAIN_WHOIS" and self.opts["coHosted"]):
-            countryName = self.detectCountryFromWhoIs(eventData)
+            countryNames = self.detectCountryFromWhoIs(eventData)
 
-        # Set event type of outgoing data    
-        evttype = "COUNTRY_NAME"
 
-        # Note : Is checking for duplicated needed? 
-        # since, incoming data is all unique. There is no chance of duplication
+        # If whois module data source is recevied, multiple country names might be there
+        if 'countryNames' in locals() and "WHOIS" in eventName:
+            if countryNames is None:
+                self.sf.debug("No associated country name found")
+                return None
+
+            for countryName in countryNames:
+                self.sf.debug("Found country name : " + countryName)
+                myres.append(countryName)
+
+                evt = SpiderFootEvent(evttype, countryName, self.__name__, event)
+                if event.moduleDataSource:
+                    evt.moduleDataSource = event.moduleDataSource
+                else:
+                    evt.moduleDataSource = "Unknown"
+                self.notifyListeners(evt)
+            return None
+
+        # Note : Is checking for duplicates needed? 
+        # Since, incoming data is all unique. There is no chance of duplication
         # Commented for now. 
 
         # if countryName in myres:
         #    self.sf.debug("Already found from this source")
         #    return None 
         
-        
-        # Check if there is any country name associated to the phone number
         if countryName is None:
             self.sf.debug("No associated country name found")
             return None
@@ -270,7 +319,7 @@ class sfp_countryname(SpiderFootPlugin):
 
         myres.append(countryName)
 
-        evt = SpiderFootEvent(evttype, mail, self.__name__, event)
+        evt = SpiderFootEvent(evttype, countryName, self.__name__, event)
         if event.moduleDataSource:
             evt.moduleDataSource = event.moduleDataSource
         else:
