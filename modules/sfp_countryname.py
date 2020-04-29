@@ -183,7 +183,9 @@ class sfp_countryname(SpiderFootPlugin):
         # Get dictionary of country codes and country names
         tldCountryCodes = self.getCountryCodeDict()
         try:
-            return tldCountryCodes[srcIBAN[0:2]]
+            # Get country code from IBAN 
+            countryCode = srcIBAN[0:2]
+            return tldCountryCodes[countryCode]
         except:
             return None
     
@@ -240,7 +242,7 @@ class sfp_countryname(SpiderFootPlugin):
 
         if eventName == "PHONE_NUMBER":
             countryName = self.detectCountryFromPhone(eventData)
-        elif eventName in ["DOMAIN_NAME", "SIMILARDOMAIN"] or (eventName == "AFFILIATE_DOMAIN_NAME" and self.opts["affiliate"]) or(eventName == "CO_HOSTED_SITE_DOMAIN" and self.opts.["coHosted"]):
+        elif eventName in ["DOMAIN_NAME", "SIMILARDOMAIN"] or (eventName == "AFFILIATE_DOMAIN_NAME" and self.opts["affiliate"]) or(eventName == "CO_HOSTED_SITE_DOMAIN" and self.opts["coHosted"]):
             countryName = self.detectCountryFromTLD(eventData)
         elif eventName == "IBAN_NUMBER":
             countryName = self.detectCountryFromIBAN(eventData)
