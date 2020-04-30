@@ -35,12 +35,14 @@ class sfp_countryname(SpiderFootPlugin):
         'cohosted' : "Obtain country name from co-hosted sites",
         'affiliate' : "Obtain country name from affiliate sites",
         'noncountrytld' : "Parse TLDs not associated with any country as default country domains",
-        'noncountrytlddefault' : "Default country name for TLDs not associated with any country(.com, .net)",
+        'noncountrytlddefault' : "Default country name for TLDs not associated with any country(.com, .net, .org, .gov, .mil)",
         'similardomain' : "Obtain country name from similar domains"
     }
 
+    results = None
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
+        self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
@@ -147,7 +149,7 @@ class sfp_countryname(SpiderFootPlugin):
     def getNonCountryCodesDict(self):
         
         # List of TLD not associated with any country
-        nonCountryCodes = ["COM", "NET"]
+        nonCountryCodes = ["COM", "NET", "ORG", "GOV", "MIL"]
 
         # Get default country code set from opts dictionary
         defaultCountryCode = self.opts["noncountrytlddefault"]
@@ -262,16 +264,14 @@ class sfp_countryname(SpiderFootPlugin):
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        myres = list()
-
         # Generate event data hash
         eventDataHash = self.sf.hashstring(eventData)
         # Don't parse duplicate data
-        if eventDataHash in myres:
+        if eventDataHash in self.results:
             self.sf.debug("Already found from this source")
             return None 
         
-        myres.append(eventDataHash)
+        self.results[eventDataHash] = True
 
         countryNames = list()
 
@@ -295,7 +295,6 @@ class sfp_countryname(SpiderFootPlugin):
 
         for countryName in countryNames:
             self.sf.debug("Found country name : " + countryName)
-            myres.append(countryName)
 
             evt = SpiderFootEvent(evttype, countryName, self.__name__, event)
             if event.moduleDataSource:
