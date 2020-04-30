@@ -186,8 +186,8 @@ class sfp_countryname(SpiderFootPlugin):
         # Get dictionary of non country TLD codes
         tldNonCountryCodes = self.getNonCountryCodesDict()
 
-        # Split domain into parts by '.'
-        # We can conclude that country TLDs are reserved 
+        # Split domain into parts by '.' 
+        # Country TLDs are reserved 
         domainParts = srcDomain.split(".")
 
         # Search for country TLD in the domain parts - reversed
@@ -305,21 +305,4 @@ class sfp_countryname(SpiderFootPlugin):
             self.notifyListeners(evt)
         return None
         
-        if countryName is None:
-            self.sf.debug("No associated country name found")
-            return None
-
-        self.sf.debug("Found country name : " + countryName)
-
-        myres.append(countryName)
-
-        evt = SpiderFootEvent(evttype, countryName, self.__name__, event)
-        if event.moduleDataSource:
-            evt.moduleDataSource = event.moduleDataSource
-        else:
-            evt.moduleDataSource = "Unknown"
-        self.notifyListeners(evt)
-
-        return None
-
 # End of sfp_countryname class
