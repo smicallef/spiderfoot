@@ -233,7 +233,7 @@ class sfp_countryname(SpiderFootPlugin):
                 # Get country name from first index of list
                 # Extract only the text part of the country code
                 matchCountry = matchCountries[0].strip(",").strip("'").strip("\"").strip()
-                countries.add(matchCountry)
+                countries.append(matchCountry)
         
         # If any countries are found
         if len(countries) > 0:
