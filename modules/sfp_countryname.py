@@ -265,7 +265,6 @@ class sfp_countryname(SpiderFootPlugin):
         myres = list()
 
         # Don't parse duplicate data
-        # Note (TEMP) : Is this the requirement ? 
         if eventData in myres:
             self.sf.debug("Already found from this source")
             return None 
@@ -281,7 +280,7 @@ class sfp_countryname(SpiderFootPlugin):
             countryNames.append(self.detectCountryFromTLD(eventData))
         elif eventName == "IBAN_NUMBER":
             countryNames.append(self.detectCountryFromIBAN(eventData))
-        elif eventName == "DOMAIN_WHOIS" or eventName == "GEOINFO" or eventName == "PHYSICAL_ADDRESS" or (eventName == "AFFILIATE_DOMAIN_WHOIS" and self.opts["affiliate"]) or (eventName == "CO_HOSTED_SITE_DOMAIN_WHOIS" and self.opts["cohosted"]):
+        elif eventName in ["DOMAIN_WHOIS", "GEOINFO", "PHYSICAL_ADDRESS"] or (eventName == "AFFILIATE_DOMAIN_WHOIS" and self.opts["affiliate"]) or (eventName == "CO_HOSTED_SITE_DOMAIN_WHOIS" and self.opts["cohosted"]):
             countryNames.extend(self.detectCountryFromData(eventData))
         
         if None in countryNames:
