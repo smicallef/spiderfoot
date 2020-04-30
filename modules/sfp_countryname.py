@@ -264,12 +264,14 @@ class sfp_countryname(SpiderFootPlugin):
 
         myres = list()
 
+        # Generate event data hash
+        eventDataHash = self.sf.hashstring(eventData)
         # Don't parse duplicate data
-        if eventData in myres:
+        if eventDataHash in myres:
             self.sf.debug("Already found from this source")
             return None 
         
-        myres.append(eventData)
+        myres.append(eventDataHash)
 
         countryNames = list()
 
