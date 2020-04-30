@@ -23,18 +23,20 @@ class sfp_countryname(SpiderFootPlugin):
     # Default options
     opts = {
         # options specific to this module
-        'coHosted' : True,
+        'cohosted' : True,
         'affiliate' : True,
-        'nonCountryTLD' : True,
-        'nonCountryTLDDefault' : "United States"
+        'noncountrytld' : True,
+        'noncountrytlddefault' : "United States",
+        'similardomain' : False,
     }
 
     # Option descriptions
     optdescs = {
-        'coHosted' : "Include searching of country name from CO_HOSTED_* data sources",
-        'affiliate' : "Include searching of country name from AFFILIATE_* data sources",
-        'nonCountryTLD' : "Parse TLDs not associated with any country as default country domains",
-        'nonCountryTLDDefault' : "Default value for TLDs not associated with any country"
+        'cohosted' : "Obtain country name from co-hosted sites",
+        'affiliate' : "Obtain country name from affiliate sites",
+        'noncountrytld' : "Parse TLDs not associated with any country as default country domains",
+        'noncountrytlddefault' : "Default country name for TLDs not associated with any country(.com, .net)",
+        'similardomain' : "Obtain country name from similar domains"
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -42,9 +44,6 @@ class sfp_countryname(SpiderFootPlugin):
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
-
-        # Override datasource for sfp_countryname module
-        self.__dataSource__ = "Target Website"
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -148,11 +147,10 @@ class sfp_countryname(SpiderFootPlugin):
     def getNonCountryCodesDict(self):
         
         # List of TLD not associated with any country
-        nonCountryCodes = ["COM", "ORG", "NET", "INT", 
-            "EDU", "GOV", "MIL", "ARPA"]
+        nonCountryCodes = ["COM", "NET"]
 
         # Get default country code set from opts dictionary
-        defaultCountryCode = self.opts["nonCountryTLDDefault"]
+        defaultCountryCode = self.opts["noncountrytlddefault"]
 
         nonCountryCodesDict = dict()
 
@@ -218,12 +216,12 @@ class sfp_countryname(SpiderFootPlugin):
             # No country name is found in the IBAN
             return None
     
-    # Detect name of country from Who Is lookup data
-    def detectCountryFromWhoIs(self, srcWhoIs):
+    # Detect name of country from Who Is, Geo Info, Physical Address lookup data
+    def detectCountryFromData(self, srcWhoIs):
         
         # Get dictionary of country codes and  country names
         abbvCountryCodes = self.getCountryCodeDict()
-        countries = set()
+        countries = list()
 
         # Look for countrycodes and country in whois data
         for countryName in abbvCountryCodes.values(): 
@@ -248,7 +246,7 @@ class sfp_countryname(SpiderFootPlugin):
         return ["IBAN_NUMBER", "PHONE_NUMBER", "AFFILIATE_DOMAIN_NAME",
                 "CO_HOSTED_SITE_DOMAIN", "DOMAIN_NAME", "SIMILARDOMAIN",
                 "AFFILIATE_DOMAIN_WHOIS", "CO_HOSTED_SITE_DOMAIN_WHOIS",
-                'DOMAIN_WHOIS']
+                "DOMAIN_WHOIS", "GEOINFO", "PHYSICAL_ADDRESS"]
 
     # What events this module produces
     def producedEvents(self):
@@ -265,43 +263,46 @@ class sfp_countryname(SpiderFootPlugin):
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
         myres = list()
-        countryName = None
+
+        # Don't parse duplicate data
+        # Note (TEMP) : Is this the requirement ? 
+        if eventData in myres:
+            self.sf.debug("Already found from this source")
+            return None 
+        
+        myres.append(eventData)
+
+        countryNames = list()
 
         # Process the event data based on incoming event type
         if eventName == "PHONE_NUMBER":
-            countryName = self.detectCountryFromPhone(eventData)
-        elif eventName in ["DOMAIN_NAME", "SIMILARDOMAIN"] or (eventName == "AFFILIATE_DOMAIN_NAME" and self.opts["affiliate"]) or(eventName == "CO_HOSTED_SITE_DOMAIN" and self.opts["coHosted"]):
-            countryName = self.detectCountryFromTLD(eventData)
+            countryNames.append(self.detectCountryFromPhone(eventData))
+        elif eventName == "DOMAIN_NAME" or (eventName == "AFFILIATE_DOMAIN_NAME" and self.opts["affiliate"]) or(eventName == "CO_HOSTED_SITE_DOMAIN" and self.opts["cohosted"]) or  (eventName == "SIMILARDOMAIN" and self.opts["similardomain"]):
+            countryNames.append(self.detectCountryFromTLD(eventData))
         elif eventName == "IBAN_NUMBER":
-            countryName = self.detectCountryFromIBAN(eventData)
-        elif eventName == "DOMAIN_WHOIS" or (eventName == "AFFILIATE_DOMAIN_WHOIS" and self.opts["affiliate"]) or (eventName == "CO_HOSTED_SITE_DOMAIN_WHOIS" and self.opts["coHosted"]):
-            countryNames = self.detectCountryFromWhoIs(eventData)
-
-        # If whois module data source is recevied, multiple country names might be there
-        if 'countryNames' in locals() and "WHOIS" in eventName:
-            if countryNames is None:
-                self.sf.debug("No associated country name found")
-                return None
-
-            for countryName in countryNames:
-                self.sf.debug("Found country name : " + countryName)
-                myres.append(countryName)
-
-                evt = SpiderFootEvent(evttype, countryName, self.__name__, event)
-                if event.moduleDataSource:
-                    evt.moduleDataSource = event.moduleDataSource
-                else:
-                    evt.moduleDataSource = "Unknown"
-                self.notifyListeners(evt)
+            countryNames.append(self.detectCountryFromIBAN(eventData))
+        elif eventName == "DOMAIN_WHOIS" or eventName == "GEOINFO" or eventName == "PHYSICAL_ADDRESS" or (eventName == "AFFILIATE_DOMAIN_WHOIS" and self.opts["affiliate"]) or (eventName == "CO_HOSTED_SITE_DOMAIN_WHOIS" and self.opts["cohosted"]):
+            countryNames.extend(self.detectCountryFromData(eventData))
+        
+        if None in countryNames:
+            countryNames.remove(None)
+        if len(countryNames) == 0 :
             return None
 
-        # Note : Is checking for duplicates needed? 
-        # Since, incoming data is all unique. There is no chance of duplication
-        # Commented for now. 
+        # Remove duplicates if there are any
+        countryNames = set(countryNames)
 
-        # if countryName in myres:
-        #    self.sf.debug("Already found from this source")
-        #    return None 
+        for countryName in countryNames:
+            self.sf.debug("Found country name : " + countryName)
+            myres.append(countryName)
+
+            evt = SpiderFootEvent(evttype, countryName, self.__name__, event)
+            if event.moduleDataSource:
+                evt.moduleDataSource = event.moduleDataSource
+            else:
+                evt.moduleDataSource = "Unknown"
+            self.notifyListeners(evt)
+        return None
         
         if countryName is None:
             self.sf.debug("No associated country name found")
