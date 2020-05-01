@@ -77,7 +77,12 @@ class sfp_accounts(SpiderFootPlugin):
                 self.sf.cachePut("sfaccounts", data['content'])
                 content = data['content']
 
-        self.sites = json.loads(content)['sites']
+        try:
+            self.sites = json.loads(content)['sites']
+        except BaseException as e:
+            self.sf.error("Unable to parse social media accounts list.", False)
+            self.errorState = True
+            return None
 
     # What events is this module interested in for input
     # * = be notified about all events.
