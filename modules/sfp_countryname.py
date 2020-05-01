@@ -168,10 +168,11 @@ class sfp_countryname(SpiderFootPlugin):
         # Get dictionary of country codes and country names
         abbvCountryCodes = self.getCountryCodeDict()
 
-        # Parse source phone nummber
-        phoneNumber = phonenumbers.parse(srcPhoneNumber)
         # Check if country code is present in the phone number
         try:
+            # Parse source phone nummber
+            phoneNumber = phonenumbers.parse(srcPhoneNumber)
+            # Get country code of phone number
             countryCode = region_code_for_country_code(phoneNumber.country_code)
             # try block handles key not found exception
             return abbvCountryCodes[countryCode.upper()]
