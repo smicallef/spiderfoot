@@ -173,11 +173,13 @@ class sfp_countryname(SpiderFootPlugin):
         # Check if country code is present in the phone number
         try:
             countryCode = region_code_for_country_code(phoneNumber.country_code)
+            # try block handles key not found exception
+            return abbvCountryCodes[countryCode.upper()]
         except:
             # Region code not present in source phone number
             self.debug("Skipped invalid phone number: " + srcPhoneNumber)
             return None
-        return abbvCountryCodes[countryCode.upper()]
+
     
     # Detect name of country from TLD of domain name
     def detectCountryFromTLD(self, srcDomain):
@@ -219,17 +221,17 @@ class sfp_countryname(SpiderFootPlugin):
             return None
     
     # Detect name of country from whois lookup, Geo Info, Physical Address data
-    def detectCountryFromData(self, srcWhoIs):
+    def detectCountryFromData(self, srcData):
         
         # Get dictionary of country codes and  country names
         abbvCountryCodes = self.getCountryCodeDict()
         countries = list()
 
-        # Look for countrycodes and country in whois data
+        # Look for countrycodes and country in source data
         for countryName in abbvCountryCodes.values(): 
 
-            # Look for country name in whois data
-            matchCountries = re.findall("[\s,'\"]" + countryName + "[\s,'\"]", srcWhoIs, re.IGNORECASE)
+            # Look for country name in source data
+            matchCountries = re.findall("[\s,'\"]" + countryName + "[\s,'\"]", srcData, re.IGNORECASE)
 
             if len(matchCountries) > 0:
                 # Get country name from first index of list
@@ -283,7 +285,11 @@ class sfp_countryname(SpiderFootPlugin):
         elif eventName == "IBAN_NUMBER":
             countryNames.append(self.detectCountryFromIBAN(eventData))
         elif eventName in ["DOMAIN_WHOIS", "GEOINFO", "PHYSICAL_ADDRESS"] or (eventName == "AFFILIATE_DOMAIN_WHOIS" and self.opts["affiliate"]) or (eventName == "CO_HOSTED_SITE_DOMAIN_WHOIS" and self.opts["cohosted"]):
-            countryNames.extend(self.detectCountryFromData(eventData))
+            tempDataList =  self.detectCountryFromData(eventData)
+            if tempDataList is None:
+                countryNames.append(None)
+            else:
+                countryNames.extend(tempDataList)
         
         # Check if countryNames is empty
         if None in countryNames:
