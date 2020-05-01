@@ -1236,7 +1236,7 @@ class SpiderFoot:
 
         return list(ibanNumbers)
 
-
+    
     # Return a PEM for a DER
     def sslDerToPem(self, der):
         return ssl.DER_cert_to_PEM_cert(der)
