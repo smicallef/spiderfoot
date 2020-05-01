@@ -218,7 +218,7 @@ class sfp_countryname(SpiderFootPlugin):
             # No country name is found in the IBAN
             return None
     
-    # Detect name of country from Who Is, Geo Info, Physical Address lookup data
+    # Detect name of country from whois lookup, Geo Info, Physical Address data
     def detectCountryFromData(self, srcWhoIs):
         
         # Get dictionary of country codes and  country names
@@ -266,7 +266,7 @@ class sfp_countryname(SpiderFootPlugin):
 
         # Generate event data hash
         eventDataHash = self.sf.hashstring(eventData)
-        # Don't parse duplicate data
+        # Do not parse duplicate incoming data
         if eventDataHash in self.results:
             self.sf.debug("Already found from this source")
             return None 
@@ -285,12 +285,13 @@ class sfp_countryname(SpiderFootPlugin):
         elif eventName in ["DOMAIN_WHOIS", "GEOINFO", "PHYSICAL_ADDRESS"] or (eventName == "AFFILIATE_DOMAIN_WHOIS" and self.opts["affiliate"]) or (eventName == "CO_HOSTED_SITE_DOMAIN_WHOIS" and self.opts["cohosted"]):
             countryNames.extend(self.detectCountryFromData(eventData))
         
+        # Check if countryNames is empty
         if None in countryNames:
             countryNames.remove(None)
         if len(countryNames) == 0 :
             return None
 
-        # Remove duplicates if there are any
+        # Convert list to set to remove duplicates
         countryNames = set(countryNames)
 
         for countryName in countryNames:
