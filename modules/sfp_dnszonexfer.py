@@ -121,7 +121,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                             self.notifyListeners(evt)
 
             except BaseException as e:
-                self.sf.error("Failed to obtain DNS response for " + eventData +
-                              "(" + name + "): " + str(e), False)
+                self.sf.info("Unable to perform DNS zone transfer for " + eventData +
+                              "(" + name + "): " + str(e))
 
 # End of sfp_dnszonexfer class

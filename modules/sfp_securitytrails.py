@@ -199,6 +199,8 @@ class sfp_securitytrails(SpiderFootPlugin):
             myres = list()
             if rec is not None:
                 for h in rec:
+                    if h == "":
+                        continue
                     if h.lower() not in myres:
                         myres.append(h.lower())
                     else:

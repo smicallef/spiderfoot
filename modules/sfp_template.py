@@ -105,10 +105,21 @@ class sfp_template(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
+        # self.tempStorage() basically returns a dict(), but we use self.tempStorage()
+        # instead since on SpiderFoot HX, different mechanisms are used to persist
+        # data for load distribution, avoiding excess memory consumption and fault 
+        # tolerance. This keeps modules transparently compatible with both versions.
         self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
+
+        # The data souce for a module is, by defualt, set to the module name.
+        # If you want to override that, for instance in cases where the module
+        # is purely processing data from other modules instead of producing
+        # data itself, you can do so with the following. Note that this is only
+        # utilised in SpiderFoot HX and not the open source version.
+        self.__dataSource__ = "Some Data Source"
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -258,6 +269,22 @@ class sfp_template(SpiderFootPlugin):
             # requested the scan to be aborted.
             if self.checkForStop():
                 return None
+
+            # In some cases, you want to override the data source for the event
+            # you're producing to be the data source of the event that you've 
+            # received. This is needed, for example, when the module is purely
+            # extracting data from a received event, so the data source is not
+            # actually this module, but the data source of the received event
+            # itself! sfp_email is a good example, since it is purely looking
+            # for e-mail addresses in received content, so an EMAILADDR event
+            # should have a data source of whatever place the EMAILADDR was
+            # actually found in. This is how you'd achieve that:
+            if event.moduleDataSource:
+                evt.moduleDataSource = event.moduleDataSource
+            else:
+                # This should never happen, but just to be safe since other
+                # code might depend on this field existing and not being None.
+                evt.moduleDataSource = "Unknown"
 
             # Note that we are using rec.get('os') instead of rec['os'] - this
             # means we won't get an exception if the 'os' key doesn't exist. In

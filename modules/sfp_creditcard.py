@@ -14,7 +14,6 @@
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_creditcard(SpiderFootPlugin):
-
     """Credit Card Extractor:Footprint,Investigate,Passive:Content Analysis::Identify Credit Card Numbers in any data"""
 
     # Default options.
@@ -48,8 +47,8 @@ class sfp_creditcard(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["TARGET_WEB_CONTENT", "RAW_RIR_DATA", "DARKNET_MENTION_CONTENT",
-                "LEAKSITE_CONTENT", "AFFILIATE_WEB_CONTENT", "SEARCH_ENGINE_WEB_CONTENT"]
+        return ["TARGET_WEB_CONTENT", "DARKNET_MENTION_CONTENT",
+                "LEAKSITE_CONTENT" ]
 
     # What events this module produces
     def producedEvents(self):
