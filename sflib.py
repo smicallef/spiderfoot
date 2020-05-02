@@ -15,6 +15,7 @@ from stem import Signal
 from stem.control import Controller
 import inspect
 import hashlib
+import html
 import urllib.request, urllib.parse, urllib.error
 import json
 import re
@@ -1336,6 +1337,11 @@ class SpiderFoot:
                 ret['certerror'] = True
 
         return ret
+
+    # Extract all URLs from a string
+    # https://tools.ietf.org/html/rfc3986#section-3.3
+    def extractUrls(self, content):
+        return re.findall("(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
 
     # Find all URLs within the supplied content. This does not fetch any URLs!
     # A dictionary will be returned, where each link will have the keys
