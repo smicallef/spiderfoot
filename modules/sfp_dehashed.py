@@ -72,7 +72,7 @@ class sfp_dehashed(SpiderFootPlugin):
             'Accept' : 'application/json',
             'Authorization': "Basic " + base64.b64encode(self.opts['email'] + ":" + self.opts['api_key'])
         }
-        res = self.sf.fetchUrl("https://api.dehashed.com/search?query=" + qry,
+        res = self.sf.fetchUrl("https://api.dehashed.com/search?query=\"" + qry + "\"",
                                 headers=headers,
                                 timeout=15,
                                 useragent=self.opts['_useragent'])
@@ -124,19 +124,41 @@ class sfp_dehashed(SpiderFootPlugin):
 
         self.results[eventData] = True
 
+        entries = list()
         # Fetch Dehashed data for incoming data (email)
-        data = self.query(eventData)
+        jsonData = self.query(eventData)
 
-        if self.checkForStop():
+        if jsonData is None:
             return None
+
+        entries = jsonData['entries']
 
         if event.moduleDataSource:
             evt.moduleDataSource = event.moduleDataSource
         else:
-            # This should never happen, but just to be safe since other
-            # code might depend on this field existing and not being None.
             evt.moduleDataSource = "Unknown"
+
+        for entry in entries:
+            # If email does not exist or is null
+            if entry['email'] is None or str(entry['email']).strip() == '':
+                continue
+            
+            evt = SpiderFootEvent("EMAILADDR_COMPROMISED", entry['email'], self.__name__, event)
             self.notifyListeners(evt)
+
+            # Check if password exists 
+            if not entry['password'] is None or str(entry['password']).strip() == '':
+                evt = SpiderFootEvent("PASSWORD_COMPROMISED", entry['password'], self.__name__, event)
+                self.notifyListeners(evt)
+
+            # Check if hashed_password exists
+            if not entry['hashed_password'] is None or str(entry['hashed_password']).strip() == ''
+                evt = SpiderFootEvent("HASH_COMPROMISED", entry['hashed_password', self.__name__, event])
+                self.notifyListeners(evt)
+
+        if self.checkForStop():
+            return None
+            
     return None
 
 # End of sfp_dehashed class
