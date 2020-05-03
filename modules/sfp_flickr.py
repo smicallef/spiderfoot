@@ -158,20 +158,20 @@ class sfp_flickr(SpiderFootPlugin):
                 return None
 
             # Calculate number of pages to retrieve
-            result_pages = int(photos.get('pages'))
+            result_pages = int(photos.get('pages', 0))
 
             if result_pages < pages:
                 pages = result_pages
 
             if 'max_allowed_pages' in photos:
-                allowed_pages = int(photos.get('max_allowed_pages'))
+                allowed_pages = int(photos.get('max_allowed_pages', 0))
                 if pages > allowed_pages:
                     pages = allowed_pages
 
             self.sf.info("Parsing page " + str(page) + " of " + str(pages))
 
             # Extract data
-            for photo in photos.get('photo'):
+            for photo in photos.get('photo', list()):
                 emails = self.sf.parseEmails(str(photo))
                 for email in emails:
                     if email in self.results:
