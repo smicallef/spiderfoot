@@ -2314,7 +2314,9 @@ class PublicSuffixList(object):
         if len(parent) == 1:
             parent.append({})
 
-        assert len(parent) == 2
+        if len(parent) != 2
+            return None
+
         negate, children = parent
 
         child = parts.pop()
