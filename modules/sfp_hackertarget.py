@@ -20,7 +20,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_hackertarget(SpiderFootPlugin):
-    """HackerTarget.com:Footprint,Investigate,Passive:Passive DNS::Search HackerTarget.com for hosts sharing the same IP."""
+    """HackerTarget:Footprint,Investigate,Passive:Passive DNS::Search HackerTarget.com for hosts sharing the same IP."""
 
 
     # Default options

@@ -25,7 +25,7 @@ headers = ["access-control-allow-origin", "accept-ranges", "age", "allow", "cach
            "x-webkit-csp", "x-content-type-options", "x-powered-by", "x-ua-compatible"]
 
 class sfp_strangeheaders(SpiderFootPlugin):
-    """Strange Headers:Footprint,Passive:Content Analysis::Obtain non-standard HTTP headers returned by web servers."""
+    """Strange Header Identifier:Footprint,Passive:Content Analysis::Obtain non-standard HTTP headers returned by web servers."""
 
     # Default options
     opts = {}
