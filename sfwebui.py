@@ -43,7 +43,7 @@ class SpiderFootWebUi:
         sf = SpiderFoot(self.defaultConfig)
         self.config = sf.configUnserialize(dbh.configGet(), self.defaultConfig)
 
-        if self.config['__webaddr'] == "0.0.0.0":
+        if self.config['__webaddr'] == "0.0.0.0": # nosec
             addr = "<IP of this host>"
         else:
             addr = self.config['__webaddr']
