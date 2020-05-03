@@ -9,7 +9,7 @@ class TestSpiderFootTarget(unittest.TestCase):
 
     valid_target_types = [
         'IP_ADDRESS', 'IPV6_ADDRESS', 'NETBLOCK_OWNER', 'INTERNET_NAME',
-        'EMAILADDR', 'HUMAN_NAME', 'BGP_AS_OWNER', 'PHONE_NUMBER'
+        'EMAILADDR', 'HUMAN_NAME', 'BGP_AS_OWNER', 'PHONE_NUMBER', "USERNAME"
     ]
 
     def test_init_unsupported_target_type_should_exit(self):
@@ -31,8 +31,7 @@ class TestSpiderFootTarget(unittest.TestCase):
         target_value = 'example target value'
 
         for target_type in self.valid_target_types:
-            # subTest not supported in Python2
-            #with self.subTest(target_type=target_type):
+            with self.subTest(target_type=target_type):
                 target = SpiderFootTarget(target_value, target_type)
                 self.assertEqual(SpiderFootTarget, type(target))
                 self.assertEqual(target.getType(), target_type)
@@ -82,7 +81,7 @@ class TestSpiderFootTarget(unittest.TestCase):
         names = target.getNames()
         self.assertEqual(list, type(names))
 
-    def test_get_addresses(self):
+    def test_get_addresses_should_return_a_list(self):
         """
         Test getAddresses(self)
         """
@@ -90,10 +89,10 @@ class TestSpiderFootTarget(unittest.TestCase):
         target_type = 'IP_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
-        target.getAddresses()
-        self.assertEqual('TBD', 'TBD')
+        addresses = target.getAddresses()
+        self.assertEqual(list, type(addresses))
 
-    def test_matches(self):
+    def test_matches_should_return_a_boolean(self):
         """
         Test matches(self, value, includeParents=False, includeChildren=True)
         """
@@ -101,8 +100,8 @@ class TestSpiderFootTarget(unittest.TestCase):
         target_type = 'IP_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
-        target.matches(None)
-        self.assertEqual('TBD', 'TBD')
+        matches = target.matches(None)
+        self.assertEqual(bool, type(matches))
 
 if __name__ == '__main__':
     unittest.main()
