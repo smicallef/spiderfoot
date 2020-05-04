@@ -154,7 +154,7 @@ class sfp_dehashed(SpiderFootPlugin):
                 passwords.append(email + " : " + password + " [" + breachSource + "]")
 
             # Check if hashed_password exists
-            if not entry['hashed_password'] is None or str(entry['hashed_password']).strip() == ''
+            if not entry['hashed_password'] is None or str(entry['hashed_password']).strip() == '':
                 hashed_password = entry['hashed_password']
 
                 if not len(password) == 0:
@@ -164,7 +164,7 @@ class sfp_dehashed(SpiderFootPlugin):
 
             # Pass the JSON object as RAW_RIR_DATA 
             evt = SpiderFootEvent("RAW_RIR_DATA", str(entry), self.__name__, event)
-            
+
         # Send the events to the listener
         for email in emails:
             evt = SpiderFootEvent("EMAILADDR_COMPROMISED", email, self.__name__, event)
@@ -175,13 +175,13 @@ class sfp_dehashed(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         for hashed_password in hashed_passwords:
-            evt = SpiderFootEvent("HASH_COMPROMISED", hashed_password, self.__name__, event])
+            evt = SpiderFootEvent("HASH_COMPROMISED", hashed_password, self.__name__, event)
             self.notifyListeners(evt)
         
             
         if self.checkForStop():
             return None
             
-    return None
+        return None
 
 # End of sfp_dehashed class
