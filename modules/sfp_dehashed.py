@@ -18,13 +18,15 @@ class sfp_dehashed(SpiderFootPlugin):
     """Dehashed:Footprint,Investigate,Passive:Leaks and Breaches:apikey:Gather compromised emails, passwords, hashes and other data"""
     opts = {
         'email': '',
-        'api_key': ''
+        'api_key': '',
+        'max_pages' : ''
     }
 
     # Option descriptions. Delete any options not applicable to this module.
     optdescs = {
         'email': "Email for accessing Dehashed API",
-        'api_key': "Dehashed API Key."
+        'api_key': "Dehashed API Key.",
+        'max_pages': "Maximum number of pages to query"
     }
 
     # Tracking results can be helpful to avoid reporting/processing duplicates
@@ -93,10 +95,6 @@ class sfp_dehashed(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, event):
-        # The three most used fields in SpiderFootEvent are:
-        # event.eventType - the event type, e.g. INTERNET_NAME, IP_ADDRESS, etc.
-        # event.module - the name of the module that generated the event, e.g. sfp_dnsresolve
-        # event.data - the actual data, e.g. 127.0.0.1. This can sometimes be megabytes in size (e.g. a PDF)
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
@@ -138,24 +136,52 @@ class sfp_dehashed(SpiderFootPlugin):
         else:
             evt.moduleDataSource = "Unknown"
 
+        breachSource = ""
+        email = ""
+        password = ""
+        hashed_password = ""
+        emails = list()
+        passwords = list()
+        hashed_passwords = list()
+
         for entry in entries:
             # If email does not exist or is null
             if entry['email'] is None or str(entry['email']).strip() == '':
                 continue
+
+            if not entry['obtained_from'] is None or str(entry['obtained_from']).strip() == '':
+                breachSource = entry['obtained_from']
             
-            evt = SpiderFootEvent("EMAILADDR_COMPROMISED", entry['email'], self.__name__, event)
-            self.notifyListeners(evt)
+            email = entry['email']
+            emails.append(email + " : " + "[" + breachSource + "]")
 
             # Check if password exists 
             if not entry['password'] is None or str(entry['password']).strip() == '':
-                evt = SpiderFootEvent("PASSWORD_COMPROMISED", entry['password'], self.__name__, event)
-                self.notifyListeners(evt)
+                password =  entry['password'] 
+                passwords.append(email + " : " + password + " ["+ breachSource + "]")
 
             # Check if hashed_password exists
             if not entry['hashed_password'] is None or str(entry['hashed_password']).strip() == ''
-                evt = SpiderFootEvent("HASH_COMPROMISED", entry['hashed_password', self.__name__, event])
-                self.notifyListeners(evt)
+                hashed_password = entry['hashed_password']
 
+                if not len(password) == 0:
+                    hashed_passwords.append(email + " : " + hashed_password + "(Password : " + entry['password'] + ") [" + breachSource + "] ")
+                else:
+                    hashed_passwords.append(email + " : " + hashed_password + " [ " + breachSource + "]")
+
+        # Send the events to the listener
+        for email in emails:
+            evt = SpiderFootEvent("EMAILADDR_COMPROMISED", email, self.__name__, event)
+            self.notifyListeners(evt)
+
+        for password in passwords:
+            evt = SpiderFootEvent("PASSWORD_COMPROMISED", password, self.__name__, event)
+            self.notifyListeners(evt)
+
+        for hashed_password in hashed_passwords:
+            evt = SpiderFootEvent("HASH_COMPROMISED", hashed_password, self.__name__, event])
+            self.notifyListeners(evt)
+            
         if self.checkForStop():
             return None
             
