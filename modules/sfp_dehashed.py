@@ -38,20 +38,12 @@ class sfp_dehashed(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        # self.tempStorage() basically returns a dict(), but we use self.tempStorage()
-        # instead since on SpiderFoot HX, different mechanisms are used to persist
-        # data for load distribution, avoiding excess memory consumption and fault 
-        # tolerance. This keeps modules transparently compatible with both versions.
+
         self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        # The data souce for a module is, by defualt, set to the module name.
-        # If you want to override that, for instance in cases where the module
-        # is purely processing data from other modules instead of producing
-        # data itself, you can do so with the following. Note that this is only
-        # utilised in SpiderFoot HX and not the open source version.
         self.__dataSource__ = "Dehashed"
 
         for opt in list(userOpts.keys()):
@@ -123,6 +115,7 @@ class sfp_dehashed(SpiderFootPlugin):
         self.results[eventData] = True
 
         entries = list()
+        # To implement  : Number of pages 
         # Fetch Dehashed data for incoming data (email)
         jsonData = self.query(eventData)
 
@@ -158,7 +151,7 @@ class sfp_dehashed(SpiderFootPlugin):
             # Check if password exists 
             if not entry['password'] is None or str(entry['password']).strip() == '':
                 password =  entry['password'] 
-                passwords.append(email + " : " + password + " ["+ breachSource + "]")
+                passwords.append(email + " : " + password + " [" + breachSource + "]")
 
             # Check if hashed_password exists
             if not entry['hashed_password'] is None or str(entry['hashed_password']).strip() == ''
