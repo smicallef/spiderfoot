@@ -358,9 +358,11 @@ class SpiderFootWebUi:
 
         # Start running a new scan
         newId = sf.genScanInstanceGUID(scanname)
-        t = SpiderFootScanner(scanname, scantarget, targetType, newId,
+        p = mp.Process(target=SpiderFootScanner, args=(scanname, scantarget, targetType, newId
             modlist, cfg, modopts)
-        t.start()
+            )
+        p.start()
+
 
         # Wait until the scan has initialized
         while globalScanStatus.getStatus(newId) == None:
@@ -403,8 +405,9 @@ class SpiderFootWebUi:
 
             # Start running a new scan
             newId = sf.genScanInstanceGUID(scanname)
-            t = SpiderFootScanner(scanname, scantarget.lower(), targetType, newId, modlist, cfg, modopts)
-            t.start()
+            p = mp.Process(target=SpiderFootScanner, args=(scanname, scantarget.lower(), 
+                            targetType, newId, modlist, cfg, modopts))
+            p.start()
 
             # Wait until the scan has initialized
             while globalScanStatus.getStatus(newId) == None:
@@ -816,7 +819,8 @@ class SpiderFootWebUi:
         if targetType is None:
             if not cli:
                 return self.error("Invalid target type. Could not recognize it as " + \
-                                  "a human name, IP address, IP subnet, ASN, domain name or host name.")
+                                  "a human name, IP address, IP subnet, ASN, domain " + \
+                                   "name or host name.")
             else:
                 return json.dumps(["ERROR", "Unrecognised target type."])
 
