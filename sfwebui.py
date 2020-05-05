@@ -15,6 +15,7 @@ import html
 import csv
 import time
 import random
+import multiprocessing as mp
 from secure import SecureHeaders
 from cherrypy import _cperror
 from operator import itemgetter
@@ -25,6 +26,7 @@ from sfdb import SpiderFootDb
 from sflib import SpiderFoot, globalScanStatus
 from sfscan import SpiderFootScanner
 from io import StringIO
+mp.set_start_method("spawn", force=True)
 
 
 class SpiderFootWebUi:
@@ -828,14 +830,14 @@ class SpiderFootWebUi:
             scantarget = scantarget.replace("\"", "")
         else:
             scantarget = scantarget.lower()
-        t = SpiderFootScanner(scanname, scantarget, targetType, scanId,
-                              modlist, cfg, modopts)
-        t.start()
+        p = mp.Process(target=SpiderFootScanner, args=(scanname, scantarget, targetType, scanId,
+                              modlist, cfg, modopts))
+        p.start()
 
         # Wait until the scan has initialized
-        while globalScanStatus.getStatus(scanId) is None:
-            print("[info] Waiting for the scan to initialize...")
-            time.sleep(1)
+        # while globalScanStatus.getStatus(scanId) is None:
+        #    print("[info] Waiting for the scan to initialize...")
+        #    time.sleep(1)
 
         if not cli:
             templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)

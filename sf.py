@@ -328,7 +328,7 @@ if __name__ == '__main__':
         t = SpiderFootScanner(target, target, targetType, scanId,
             modlist, cfg, dict())
         t.daemon = True
-        t.start()
+        t.run()
 
         # If field headers weren't disabled, print them
         if not args.H and args.o != "json":
