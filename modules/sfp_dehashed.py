@@ -44,8 +44,6 @@ class sfp_dehashed(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        self.__dataSource__ = "Dehashed"
-
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
@@ -121,13 +119,13 @@ class sfp_dehashed(SpiderFootPlugin):
 
         if jsonData is None:
             return None
+        
+        entries = jsonData.get('entries')
+        if entries is None:
+            return None
 
-        entries = jsonData['entries']
-
-        if event.moduleDataSource:
-            evt.moduleDataSource = event.moduleDataSource
-        else:
-            evt.moduleDataSource = "Unknown"
+        
+        evt.moduleDataSource = event.moduleDataSource
 
         breachSource = ""
         email = ""
@@ -139,31 +137,32 @@ class sfp_dehashed(SpiderFootPlugin):
 
         for entry in entries:
             # If email does not exist or is null
-            if entry['email'] is None or str(entry['email']).strip() == '':
+            if entry.get('email') is None or str(entry.get('email')).strip() == '':
                 continue
 
-            if not entry['obtained_from'] is None or str(entry['obtained_from']).strip() == '':
-                breachSource = entry['obtained_from']
+            if not (entry.get('obtained_from') is None or str(entry.get('obtained_from')).strip() == ''):
+                breachSource = entry.get('obtained_from')
             
-            email = entry['email']
+            email = entry.get('email')
             emails.append(email + " : " + "[" + breachSource + "]")
 
             # Check if password exists 
-            if not entry['password'] is None or str(entry['password']).strip() == '':
-                password =  entry['password'] 
+            if not (entry.get('password') is None or str(entry.get('password')).strip() == ''):
+                password =  entry.get('password')
                 passwords.append(email + " : " + password + " [" + breachSource + "]")
 
             # Check if hashed_password exists
-            if not entry['hashed_password'] is None or str(entry['hashed_password']).strip() == '':
-                hashed_password = entry['hashed_password']
+            if not entry.get('hashed_password') is None or str(entry.get('hashed_password')).strip() == '':
+                hashed_password = entry.get('hashed_password')
 
-                if not len(password) == 0:
-                    hashed_passwords.append(email + " : " + hashed_password + "(Password : " + entry['password'] + ") [" + breachSource + "] ")
+                if not (len(password) == 0 or password is None):
+                    hashed_passwords.append(email + " : " + hashed_password + "(Password : " + password + ") [" + breachSource + "] ")
                 else:
                     hashed_passwords.append(email + " : " + hashed_password + " [ " + breachSource + "]")
 
             # Pass the JSON object as RAW_RIR_DATA 
             evt = SpiderFootEvent("RAW_RIR_DATA", str(entry), self.__name__, event)
+            self.notifyListeners(evt)
 
         # Send the events to the listener
         for email in emails:
