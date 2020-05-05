@@ -12,6 +12,8 @@
 # -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+import base64
+import json
 
 class sfp_dehashed(SpiderFootPlugin):
     
@@ -50,7 +52,7 @@ class sfp_dehashed(SpiderFootPlugin):
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):
-        return ["EMAILADDR"]
+        return ['EMAILADDR']
 
     # What events this module produces
     def producedEvents(self):
@@ -59,24 +61,30 @@ class sfp_dehashed(SpiderFootPlugin):
 
     # When querying third parties, it's best to have a dedicated function
     # to do so and avoid putting it in handleEvent()
-    def query(self, qry):
+    def query(self, qry, currentPage):
+        b64_auth = base64.b64encode((self.opts['email'] + ":" + self.opts['api_key']).encode("utf-8"))
         headers = {
             'Accept' : 'application/json',
-            'Authorization': "Basic " + base64.b64encode(self.opts['email'] + ":" + self.opts['api_key'])
+            'Authorization': "Basic " + b64_auth.decode("utf-8")
         }
-        res = self.sf.fetchUrl("https://api.dehashed.com/search?query=\"" + qry + "\"",
+        self.sf.debug(str(headers))        
+        res = self.sf.fetchUrl("https://api.dehashed.com/search?query=\"" + qry + "\"" + "&page=" + str(currentPage),
                                 headers=headers,
                                 timeout=15,
                                 useragent=self.opts['_useragent'])
-
-        if res['content'] is None:
-            self.sf.info("No Dehashed info found for " + qry)
+        
+        self.sf.debug(str(res))
+        self.sf.debug("CONTENT : ::::::::" + str(res.get('content')))
+        if res.get('code') == '401':
+            return None
+        if res.get('content') is None:
+            self.sf.debug("No Dehashed info found for " + qry)
             return None
 
         # Always always always process external data with try/except since we cannot
         # trust the data is as intended.
         try:
-            info = json.loads(res['content'])
+            info = json.loads(res.get('content'))
         except Exception as e:
             self.sf.error("Error processing JSON response from Dehashed.", False)
             return None
@@ -85,6 +93,7 @@ class sfp_dehashed(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, event):
+        self.sf.debug("Testing Dehashed . ")
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
@@ -112,15 +121,28 @@ class sfp_dehashed(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        entries = list()
         # To implement  : Number of pages 
         # Fetch Dehashed data for incoming data (email)
-        jsonData = self.query(eventData)
-
-        if jsonData is None:
-            return None
+        self.sf.debug("Starting querying from DeHashed")
+        currentPage = 1
+        entries = list()
+        self.sf.debug("Current Page : " + str(currentPage))
+        self.sf.debug("Max Pages : " + self.opts['max_pages'])
+        while currentPage <= int(self.opts['max_pages']):
+            self.sf.debug("Looking for page : " + str(currentPage))
+            jsonData_temp = self.query(eventData, currentPage)
+            if jsonData_temp is None: 
+                self.sf.error("No Data receieved")
+                break
+            else:  
+                self.sf.debug("Received : " + str(entries))
+                entries.append(jsonData_temp.get('entries'))
+            # Dehashed returns 5000 results for each query
+            if len(entries) >= 5000 * currentPage:
+                currentPage += 1
+            else:
+                break
         
-        entries = jsonData.get('entries')
         if entries is None:
             return None
 
