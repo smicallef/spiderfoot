@@ -113,11 +113,11 @@ class sfp_socialprofiles(SpiderFootPlugin):
             self.results[eventData] = True
 
         if self.keywords is None:
-            self.keywords = self.sf.domainKeywords(
-                self.getTarget().getNames(), self.opts["_internettlds"]
-            )
-            if len(self.keywords) == 0:
-                self.keywords = None
+            keywords = list()
+            for name in self.getTarget().getNames():
+                keywords.append(self.sf.domainKeyword(name, self.opts['_internettlds']))
+            if len(keywords):
+                self.keywords = set([k for k in keywords if k])
 
         for site in sites:
             s = str(sites[site][0]).format(name=eventData)

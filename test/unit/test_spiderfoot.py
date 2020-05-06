@@ -347,16 +347,6 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertEqual(str, type(keyword))
         self.assertEqual('wwwspiderfootnet', keyword)
 
-    def test_domain_keywords_should_return_a_list(self):
-        """
-        Test domainKeywords(self, domainList, tldList)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        domain_list = ['www.example.com', 'localhost.local']
-        keywords = sf.domainKeywords(domain_list, sf.opts.get('_internettlds'))
-        self.assertEqual(list, type(keywords))
-
     def test_host_domain_invalid_host_should_return_none(self):
         """
         Test hostDomain(self, hostname, tldList)

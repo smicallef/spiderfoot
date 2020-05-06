@@ -199,9 +199,22 @@ class sfp_ripe(SpiderFootPlugin):
             if n in string:
                 return True
 
+        # Mess with the keyword as a last resort..
+        keywordList = set()
+
         if self.keywords is None:
-            self.keywords = self.sf.domainKeywords(self.getTarget().getNames(),
-                self.opts['_internettlds'])
+            keywords = list()
+            for name in self.getTarget().getNames():
+                keywords.append(self.sf.domainKeyword(name, self.opts['_internettlds']))
+            if len(keywords):
+                self.keywords = set([k for k in keywords if k])
+
+        for kw in self.keywords:
+            # Create versions of the keyword, esp. if hyphens are involved.
+            keywordList.add(kw)
+            keywordList.add(kw.replace('-', ' '))
+            keywordList.add(kw.replace('-', '_'))
+            keywordList.add(kw.replace('-', ''))
 
         # Slightly more complex..
         rx = [
@@ -209,15 +222,6 @@ class sfp_ripe(SpiderFootPlugin):
             '[-_/\'\"\\\.,\?\!\s]{0}$',
             '[-_/\'\"\\\.,\?\!\s]{0}[-_/\'\"\\\.,\?\!\s\d]'
         ]
-
-        # Mess with the keyword as a last resort..
-        keywordList = set()
-        for kw in self.keywords:
-            # Create versions of the keyword, esp. if hyphens are involved.
-            keywordList.add(kw)
-            keywordList.add(kw.replace('-', ' '))
-            keywordList.add(kw.replace('-', '_'))
-            keywordList.add(kw.replace('-', ''))
 
         for kw in keywordList:
             for r in rx:
