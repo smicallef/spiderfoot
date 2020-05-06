@@ -146,9 +146,6 @@ class sfp_dehashed(SpiderFootPlugin):
         if entries is None:
             return None
 
-        
-        evt.moduleDataSource = event.moduleDataSource
-
         breachSource = ""
         email = ""
         password = ""
