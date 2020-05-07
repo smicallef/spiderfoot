@@ -86,12 +86,12 @@ class sfp_spyse(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseApiResponse(res)
+        return self.parseAPIResponse(res)
 
     # Query IP port lookup
     # https://spyse.com/tools/api#/ip/port_by_ip
     # Note: currently unused
-    def queryIpPort(self, qry, currentOffset):
+    def queryIPPort(self, qry, currentOffset):
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'limit': self.opts['limit'], 
@@ -110,11 +110,11 @@ class sfp_spyse(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseApiResponse(res)
+        return self.parseAPIResponse(res)
 
     # Query domains on IP
     # https://spyse.com/tools/api#/ip/domain_by_ip
-    def queryDomainsOnIp(self, qry, currentOffset):
+    def queryDomainsOnIP(self, qry, currentOffset):
 
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
@@ -134,7 +134,7 @@ class sfp_spyse(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseApiResponse(res)
+        return self.parseAPIResponse(res)
 
     # Query domains using domain as MX server
     # https://spyse.com/apidocs#/Domain%20related%20information/get_domains_using_as_mx
@@ -160,13 +160,13 @@ class sfp_spyse(SpiderFootPlugin):
 
         time.sleep(self.opts['delay'])
 
-        return self.parseApiResponse(res)
+        return self.parseAPIResponse(res)
 
 
     # Query SSL Certificates
     # https://spyse.com/tools/api#/certificate/certificate
     # Note: currently unused
-    def querySslCertificates(self, qry, currentOffset):
+    def querySSLCertificates(self, qry, currentOffset):
         params = {
             'hash': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'limit': self.opts['limit'], 
@@ -186,11 +186,11 @@ class sfp_spyse(SpiderFootPlugin):
         )
         time.sleep(self.opts['delay'])
 
-        return self.parseApiResponse(res)
+        return self.parseAPIResponse(res)
 
     # Parse API response
     # https://spyse.com/apidocs
-    def parseApiResponse(self, res):
+    def parseAPIResponse(self, res):
         if res['code'] == '400':
             self.sf.error("Malformed request", False)
             return None
@@ -263,7 +263,7 @@ class sfp_spyse(SpiderFootPlugin):
             nextPageHasData = True
 
             while nextPageHasData:
-                data = self.queryDomainsOnIp(eventData, currentOffset)
+                data = self.queryDomainsOnIP(eventData, currentOffset)
                 data = data.get("data")
                 if data is None:
                     self.sf.debug("No domains found on IP address " + eventData)
