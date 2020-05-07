@@ -26,8 +26,7 @@ class sfp_spyse(SpiderFootPlugin):
         'delay': 1,
         'verify': True,
         'cohostsamedomain': False,
-        'maxcohost': 100,
-        'limit': 100
+        'maxcohost': 100
     }
 
     # Option descriptions
@@ -37,19 +36,19 @@ class sfp_spyse(SpiderFootPlugin):
         'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
         'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
-        'limit': "Limit for number of rows returned by the API",
     }
 
     cohostcount = 0
     results = None
     errorState = False
-
+    limit = 0
     # Initialize module and module options
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0
         self.errorState = False
+        self.limit = 100
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -69,7 +68,7 @@ class sfp_spyse(SpiderFootPlugin):
     def querySubdomains(self, qry, currentOffset):
         params = {
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.opts['limit'], 
+            'limit': self.limit, 
             'offset': currentOffset
         }
         headers = {
@@ -94,7 +93,7 @@ class sfp_spyse(SpiderFootPlugin):
     def queryIPPort(self, qry, currentOffset):
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.opts['limit'], 
+            'limit': self.limit, 
             'offset': currentOffset
         }
         headers = {
@@ -115,10 +114,9 @@ class sfp_spyse(SpiderFootPlugin):
     # Query domains on IP
     # https://spyse.com/tools/api#/ip/domain_by_ip
     def queryDomainsOnIP(self, qry, currentOffset):
-
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.opts['limit'], 
+            'limit': self.limit, 
             'offset': currentOffset
         }
         headers = {
@@ -142,7 +140,7 @@ class sfp_spyse(SpiderFootPlugin):
     def queryDomainsAsMX(self, qry, page=1):
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.opts['limit'], 
+            'limit': self.limit, 
             'offset': currentOffset
         }
 
@@ -169,7 +167,7 @@ class sfp_spyse(SpiderFootPlugin):
     def querySSLCertificates(self, qry, currentOffset):
         params = {
             'hash': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.opts['limit'], 
+            'limit': self.limit, 
             'offset': currentOffset
         }
 
@@ -222,7 +220,6 @@ class sfp_spyse(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-            self.sf.debug(str(data.keys()))
         except Exception as e:
             self.sf.debug("Error processing JSON response.")
             return None
@@ -238,7 +235,6 @@ class sfp_spyse(SpiderFootPlugin):
         if self.checkForStop():
             return None
             
-        self.sf.debug("Starting Spyse..")
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
@@ -246,18 +242,18 @@ class sfp_spyse(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        if eventData in self.results:
-            return None
+        #if eventData in self.results:
+        #    return None
 
         if self.opts['api_key'] == '':
             self.sf.error("Warning: You enabled sfp_spyse but did not set an API key! Only the first page of results will be returned.", False)
 
-        self.results[eventData] = True
+        #self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
         
+        # Query cohosts
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
-            self.sf.debug("Querying IP Address")
             cohosts = list()
             currentOffset = 1
             nextPageHasData = True
@@ -280,13 +276,13 @@ class sfp_spyse(SpiderFootPlugin):
                             if domain:
                                 cohosts.append(domain)
                 # Calculate if there are any records in the next offset (page)
-                if currentOffset * len(records) < currentOffset * self.opts['limit']:
+                if currentOffset * len(records) < currentOffset * self.limit:
                     nextPageHasData = False
                 currentOffset += 1
+                if nextPageHasData:
+                    self.sf.debug("NOTE :::::: Looking in next page")
 
             for co in set(cohosts):
-                if self.checkForStop():
-                    return None
 
                 if self.errorState:
                     return None
@@ -314,7 +310,6 @@ class sfp_spyse(SpiderFootPlugin):
 
         # Query IP Port
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
-            self.sf.debug("Querying IP Ports")
             ports = list()
             currentOffset = 1
             nextPageHasData = True
@@ -337,14 +332,14 @@ class sfp_spyse(SpiderFootPlugin):
                             port = record.get('port')
                             if port:
                                 self.sf.debug("Found port :  " + str(port))
-                                ports.append(port)
-                    if currentOffset * len(records) < currentOffset * self.opts['limit']:
+                                ports.append(str(eventData) + ":" + str(port))
+                    if currentOffset * len(records) < currentOffset * self.limit:
                         nextPageHasData = False
                     currentOffset += 1
+                    if nextPageHasData:
+                        self.sf.debug("NOTE :::::: Looking in next page")
                 
                 for port in ports:
-                    if self.checkForStop():
-                        break
                     if self.errorState:
                         break
                     if port in self.results:
@@ -354,7 +349,8 @@ class sfp_spyse(SpiderFootPlugin):
                     # For now adding to just TCP_PORT_OPEN -- note --
                     evt = SpiderFootEvent('TCP_PORT_OPEN', str(port), self.__name__, event)
                     self.notifyListeners(evt)
-                    
+
+        # Query subdomains  
         if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:
             self.sf.debug("Querying Subdomains")
             currentOffset = 1
@@ -379,14 +375,13 @@ class sfp_spyse(SpiderFootPlugin):
                             if domain:
                                 domains.append(domain)
 
-                    if currentOffset * len(records) < currentOffset * self.opts['limit']:
+                    if currentOffset * len(records) < currentOffset * self.limit:
                         nextPageHasData = False
                     currentOffset += 1
+                    if nextPageHasData:
+                        self.sf.debug("NOTE :::::: Looking in next page")
 
             for domain in set(domains):
-                if self.checkForStop():
-                    break
-
                 if self.errorState:
                     break
 
