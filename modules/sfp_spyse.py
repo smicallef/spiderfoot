@@ -255,7 +255,7 @@ class sfp_spyse(SpiderFootPlugin):
         self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-
+        
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             self.sf.debug("Querying IP Address")
             cohosts = list()
@@ -312,6 +312,49 @@ class sfp_spyse(SpiderFootPlugin):
                     self.notifyListeners(evt)
                     self.cohostcount += 1
 
+        # Query IP Port
+        if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
+            self.sf.debug("Querying IP Ports")
+            ports = list()
+            currentOffset = 1
+            nextPageHasData = True
+
+            while nextPageHasData:
+                data = self.queryIPPort(eventData, currentOffset)
+                data = data.get("data")
+
+                if data is None:
+                    self.sf.debug("No open ports found for IP " + eventData)
+                    nextPageHasData = False
+                    break
+                else:
+                    records = data.get('items')
+                    if records:
+                        for record in records:
+                            evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
+                            self.notifyListeners(evt)
+
+                            port = record.get('port')
+                            if port:
+                                self.sf.debug("Found port :  " + str(port))
+                                ports.append(port)
+                    if currentOffset * len(records) < currentOffset * self.opts['limit']:
+                        nextPageHasData = False
+                    currentOffset += 1
+                
+                for port in ports:
+                    if self.checkForStop():
+                        break
+                    if self.errorState:
+                        break
+                    if port in self.results:
+                        continue
+                
+                    # Check type of port open -- to implement 
+                    # For now adding to just TCP_PORT_OPEN -- note --
+                    evt = SpiderFootEvent('TCP_PORT_OPEN', str(port), self.__name__, event)
+                    self.notifyListeners(evt)
+                    
         if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:
             self.sf.debug("Querying Subdomains")
             currentOffset = 1
