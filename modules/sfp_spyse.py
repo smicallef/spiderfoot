@@ -244,7 +244,7 @@ class sfp_spyse(SpiderFootPlugin):
         
         if self.errorState:
             return None
-
+        
         if eventData in self.results:
             return None
         self.results[eventData] = True
