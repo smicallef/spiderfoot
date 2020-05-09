@@ -41,15 +41,15 @@ class sfp_spyse(SpiderFootPlugin):
     cohostcount = 0
     results = None
     errorState = False
-    limit = 0
+    # The maximum number of records returned per offset from Sypse API
+    limit = 100
+
     # Initialize module and module options
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
         self.cohostcount = 0
         self.errorState = False
-        # The maximum number of records returned per offset from Sypse API
-        self.limit = 100
 
         for opt in userOpts.keys():
             self.opts[opt] = userOpts[opt]
@@ -233,21 +233,21 @@ class sfp_spyse(SpiderFootPlugin):
     # Handle events sent to this module
     def handleEvent(self, event):
         
+        if self.errorState:
+            return None
+
         if self.opts['api_key'] == '':
             self.sf.error("Warning: You enabled sfp_spyse but did not set an API key! Only the first page of results will be returned.", False)
+            self.errorState = True
+            return None
 
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
-        if self.checkForStop():
-            return None
-        
-        if self.errorState:
-            return None
-        
         if eventData in self.results:
             return None
+
         self.results[eventData] = True
 
         self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
@@ -259,6 +259,9 @@ class sfp_spyse(SpiderFootPlugin):
             nextPageHasData = True
 
             while nextPageHasData:
+                if self.checkForStop():
+                    return None
+
                 data = self.queryDomainsOnIP(eventData, currentOffset)
                 data = data.get("data")
                 if data is None:
@@ -269,11 +272,11 @@ class sfp_spyse(SpiderFootPlugin):
                     records = data.get('items')
                     if records:
                         for record in records:
-                            evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
-                            self.notifyListeners(evt)
-
                             domain = record.get('name')
                             if domain:
+                                evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
+                                self.notifyListeners(evt)
+
                                 cohosts.append(domain)
                 # Calculate if there are any records in the next offset (page)
                 if currentOffset * len(records) < currentOffset * self.limit:
@@ -310,6 +313,8 @@ class sfp_spyse(SpiderFootPlugin):
             nextPageHasData = True
 
             while nextPageHasData:
+                if self.checkForStop():
+                    return None
                 data = self.queryIPPort(eventData, currentOffset)
                 data = data.get("data")
 
@@ -321,12 +326,11 @@ class sfp_spyse(SpiderFootPlugin):
                     records = data.get('items')
                     if records:
                         for record in records:
-                            evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
-                            self.notifyListeners(evt)
-
                             port = record.get('port')
                             if port:
-                                self.sf.debug("Found port :  " + str(port))
+                                evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
+                                self.notifyListeners(evt)
+                                
                                 ports.append(str(eventData) + ":" + str(port))
                     if currentOffset * len(records) < currentOffset * self.limit:
                         nextPageHasData = False
@@ -347,6 +351,9 @@ class sfp_spyse(SpiderFootPlugin):
             domains = list()
 
             while nextPageHasData:
+                if self.checkForStop():
+                    return None
+
                 data = self.querySubdomains(eventData, currentOffset)
                 data = data.get("data")
                 if data is None:
@@ -357,11 +364,11 @@ class sfp_spyse(SpiderFootPlugin):
                     records = data.get('items')
                     if records:
                         for record in records:
-                            evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
-                            self.notifyListeners(evt)
-
                             domain = record.get('name')
                             if domain:
+                                evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
+                                self.notifyListeners(evt)
+
                                 domains.append(domain)
 
                     if currentOffset * len(records) < currentOffset * self.limit:
