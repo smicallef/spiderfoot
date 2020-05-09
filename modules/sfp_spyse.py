@@ -61,8 +61,8 @@ class sfp_spyse(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED", "DOMAIN_NAME",
-                "IP_ADDRESS", "IPV6_ADDRESS",
-                "CO_HOSTED_SITE", "RAW_RIR_DATA"]
+                "IP_ADDRESS", "IPV6_ADDRESS", "CO_HOSTED_SITE", 
+                "RAW_RIR_DATA", "TCP_PORT_OPEN"]
 
     # Query Subdomains
     # https://spyse.com/tools/api#/domain/subdomain
@@ -90,7 +90,6 @@ class sfp_spyse(SpiderFootPlugin):
 
     # Query IP port lookup
     # https://spyse.com/tools/api#/ip/port_by_ip
-    # Note: currently unused
     def queryIPPort(self, qry, currentOffset):
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
@@ -306,7 +305,7 @@ class sfp_spyse(SpiderFootPlugin):
                     self.notifyListeners(evt)
                     self.cohostcount += 1
 
-        # Query open IP Ports
+        # Query open ports for source IP Address
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             ports = list()
             currentOffset = 1
