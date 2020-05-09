@@ -48,6 +48,7 @@ class sfp_spyse(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.cohostcount = 0
         self.errorState = False
+        # The maximum number of records returned per offset from Sypse API
         self.limit = 100
 
         for opt in userOpts.keys():
@@ -336,8 +337,6 @@ class sfp_spyse(SpiderFootPlugin):
                         continue
                     self.results[port] = True
                 
-                    # Check type of port open -- to implement 
-                    # For now adding to just TCP_PORT_OPEN -- note --
                     evt = SpiderFootEvent('TCP_PORT_OPEN', str(port), self.__name__, event)
                     self.notifyListeners(evt)
 
