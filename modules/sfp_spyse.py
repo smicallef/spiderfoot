@@ -229,9 +229,40 @@ class sfp_spyse(SpiderFootPlugin):
 
         return data
 
+    # Report extra data in the record
+    def reportExtraData(self, record, event):
+        
+        operatingSystem = record.get('operation_system')
+        if operatingSystem is not None:
+            evt = SpiderFootEvent('OPERATING_SYSTEM', str(operatingSystem), self.__name__, event)
+            self.notifyListeners(evt)
+        
+        webServer = record.get('product')
+        if webServer is not None:
+            evt = SpiderFootEvent('WEBSERVER_BANNER', str(webServer), self.__name__, event)
+            self.notifyListeners(evt)
+
+        httpHeaders = record.get('http_headers')
+        if httpHeaders is not None:
+            evt = SpiderFootEvent('WEBSERVER_HTTPHEADERS', str(httpHeaders), self.__name__, event)
+            self.notifyListeners(evt)
+
+    # Report internal linked URLs in RAW_RIR_DATA records
+    def reportInternalLinkedURLs(self, data, event):
+        urls = self.sf.extractUrls(str(data))   
+        if urls is None:
+            return False
+
+        for url in urls:
+            if self.getTarget().matches(self.sf.urlFQDN(url), includeParents=True):
+                evt = SpiderFootEvent('LINKED_URL_INTERNAL', url, self.__name__, event)
+                self.notifyListeners(evt)
+
+        return True
+
     # Handle events sent to this module
     def handleEvent(self, event):
-        
+           
         if self.errorState:
             return None
 
@@ -275,8 +306,14 @@ class sfp_spyse(SpiderFootPlugin):
                             if domain:
                                 evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
+                                
+                                urlStatus = self.reportInternalLinkedURLs(record, event)
+                                if not urlStatus:
+                                    self.sf.debug("No internal linked URLs found")
 
                                 cohosts.append(domain)
+                                self.reportExtraData(record, event)
+
                 # Calculate if there are any records in the next offset (page)
                 if currentOffset * len(records) < currentOffset * self.limit:
                     nextPageHasData = False
@@ -330,7 +367,13 @@ class sfp_spyse(SpiderFootPlugin):
                                 evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
                                 
+                                urlStatus = self.reportInternalLinkedURLs(record, event)
+                                if not urlStatus:
+                                    self.sf.debug("No internal linked URLs found")
+                                
                                 ports.append(str(eventData) + ":" + str(port))
+                                self.reportExtraData(record, event)
+
                     if currentOffset * len(records) < currentOffset * self.limit:
                         nextPageHasData = False
                     currentOffset += 1
@@ -368,7 +411,13 @@ class sfp_spyse(SpiderFootPlugin):
                                 evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
 
+                                urlStatus = self.reportInternalLinkedURLs(record, event)
+                                if not urlStatus:
+                                    self.sf.debug("No internal linked URLs found")
+                                
                                 domains.append(domain)
+                                self.reportExtraData(record, event)
+
 
                     if currentOffset * len(records) < currentOffset * self.limit:
                         nextPageHasData = False
@@ -389,6 +438,7 @@ class sfp_spyse(SpiderFootPlugin):
                 else:
                     evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
                     self.notifyListeners(evt)
-
+            
         return None
+
 # End of sfp_spyse class
