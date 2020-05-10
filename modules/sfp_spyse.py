@@ -251,12 +251,14 @@ class sfp_spyse(SpiderFootPlugin):
     def reportInternalLinkedURLs(self, data, event):
         urls = self.sf.extractUrls(str(data))   
         if urls is None:
-            return None
+            return False
 
         for url in urls:
             if self.getTarget().matches(self.sf.urlFQDN(url), includeParents=True):
                 evt = SpiderFootEvent('LINKED_URL_INTERNAL', url, self.__name__, event)
                 self.notifyListeners(evt)
+
+        return True
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -305,7 +307,9 @@ class sfp_spyse(SpiderFootPlugin):
                                 evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
                                 
-                                self.reportInternalLinkedURLs(record, event)
+                                urlStatus = self.reportInternalLinkedURLs(record, event)
+                                if not urlStatus:
+                                    self.sf.debug("No internal linked URLs found")
 
                                 cohosts.append(domain)
                                 self.reportExtraData(record, event)
@@ -363,7 +367,9 @@ class sfp_spyse(SpiderFootPlugin):
                                 evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
                                 
-                                self.reportInternalLinkedURLs(record, event)
+                                urlStatus = self.reportInternalLinkedURLs(record, event)
+                                if not urlStatus:
+                                    self.sf.debug("No internal linked URLs found")
                                 
                                 ports.append(str(eventData) + ":" + str(port))
                                 self.reportExtraData(record, event)
@@ -405,8 +411,10 @@ class sfp_spyse(SpiderFootPlugin):
                                 evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
 
-                                self.reportInternalLinkedURLs(record, event)
-
+                                urlStatus = self.reportInternalLinkedURLs(record, event)
+                                if not urlStatus:
+                                    self.sf.debug("No internal linked URLs found")
+                                
                                 domains.append(domain)
                                 self.reportExtraData(record, event)
 
