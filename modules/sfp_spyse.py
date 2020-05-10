@@ -286,7 +286,7 @@ class sfp_spyse(SpiderFootPlugin):
         # Query cohosts
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             cohosts = list()
-            currentOffset = 1
+            currentOffset = 0
             nextPageHasData = True
 
             while nextPageHasData:
@@ -316,9 +316,10 @@ class sfp_spyse(SpiderFootPlugin):
                                 self.reportExtraData(record, event)
 
                 # Calculate if there are any records in the next offset (page)
-                if currentOffset * len(records) < currentOffset * self.limit:
+                if len(records) < self.limit:
                     nextPageHasData = False
-                currentOffset += 1
+                currentOffset += self.limit
+
 
             for co in set(cohosts):
 
@@ -346,7 +347,7 @@ class sfp_spyse(SpiderFootPlugin):
         # Query open ports for source IP Address
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             ports = list()
-            currentOffset = 1
+            currentOffset = 0
             nextPageHasData = True
 
             while nextPageHasData:
@@ -375,10 +376,11 @@ class sfp_spyse(SpiderFootPlugin):
                                 ports.append(str(eventData) + ":" + str(port))
                                 self.reportExtraData(record, event)
 
-                    if currentOffset * len(records) < currentOffset * self.limit:
-                        nextPageHasData = False
-                    currentOffset += 1
-                
+                # Calculate if there are any records in the next offset (page)
+                if len(records) < self.limit:
+                    nextPageHasData = False
+                currentOffset += self.limit
+
                 for port in ports:
                     if port in self.results:
                         continue
@@ -389,7 +391,7 @@ class sfp_spyse(SpiderFootPlugin):
 
         # Query subdomains  
         if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:
-            currentOffset = 1
+            currentOffset = 0
             nextPageHasData = True
             domains = list()
 
@@ -419,10 +421,10 @@ class sfp_spyse(SpiderFootPlugin):
                                 domains.append(domain)
                                 self.reportExtraData(record, event)
 
-
-                    if currentOffset * len(records) < currentOffset * self.limit:
-                        nextPageHasData = False
-                    currentOffset += 1
+                # Calculate if there are any records in the next offset (page)
+                if len(records) < self.limit:
+                    nextPageHasData = False
+                currentOffset += self.limit
 
             for domain in set(domains):
 
