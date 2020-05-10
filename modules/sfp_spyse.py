@@ -62,7 +62,8 @@ class sfp_spyse(SpiderFootPlugin):
     def producedEvents(self):
         return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED", "DOMAIN_NAME",
                 "IP_ADDRESS", "IPV6_ADDRESS", "CO_HOSTED_SITE", 
-                "RAW_RIR_DATA", "TCP_PORT_OPEN"]
+                "RAW_RIR_DATA", "TCP_PORT_OPEN", "OPERATING_SYSTEM",
+                "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS"]
 
     # Query Subdomains
     # https://spyse.com/tools/api#/domain/subdomain
