@@ -18,7 +18,7 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spyse(SpiderFootPlugin):
-    """Spyse:Footprint,Investigate,Passive:Passive DNS::SpiderFoot plug-in to search Spyse API for IP address and domain information."""
+    """Spyse:Footprint,Investigate,Passive:Passive DNS:apikey:SpiderFoot plug-in to search Spyse API for IP address and domain information."""
 
     # Default options
     opts = {
