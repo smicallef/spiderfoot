@@ -161,7 +161,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             for plugin in plugin_matches:
                 if plugin in blacklist:
                     continue
-                evt = SpiderFootEvent('SOFTWARE_USED', plugin, self.__name__, event)
+                evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', plugin, self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_tool_whatweb class
