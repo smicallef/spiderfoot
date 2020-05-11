@@ -14,17 +14,14 @@ import time
 import sys
 import socket
 import dns.resolver
-import threading
 import random
 from copy import deepcopy
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, \
-    SpiderFootPlugin, globalScanStatus
+    SpiderFootPlugin
 
 # Eventually change this to be able to control multiple scan instances
-class SpiderFootScanner():        #threading.Thread):
-    # Thread-safe storage
-    ts = None
+class SpiderFootScanner():
     # Temporary storage
     temp = None
 
@@ -32,11 +29,7 @@ class SpiderFootScanner():        #threading.Thread):
     def __init__(self, scanName, scanTarget, targetType, scanId, moduleList,
                  globalOpts, moduleOpts):
 
-        # Initialize the thread
-        #threading.Thread.__init__(self, name="SF_" + scanId + \
-        #                                     str(random.SystemRandom().randint(100000, 999999)))
-
-        # Temporary data to be used in startScan
+        
         self.temp = dict()
         self.temp['config'] = deepcopy(globalOpts)
         self.temp['targetValue'] = scanTarget
@@ -55,7 +48,6 @@ class SpiderFootScanner():        #threading.Thread):
 
         self.status = status
         self.dbh.scanInstanceSet(self.scanId, started, ended, status)
-        #globalScanStatus.setStatus(self.scanId, status)
         return None
 
     def run(self):
@@ -68,9 +60,7 @@ class SpiderFootScanner():        #threading.Thread):
 
     # Start running a scan
     def startScan(self):
-        #global globalScanStatus
-
-        #self = threading.local()
+        
         self.moduleInstances = dict()
         self.sf = SpiderFoot(self.temp['config'])
         self.config = deepcopy(self.temp['config'])
@@ -222,6 +212,7 @@ class SpiderFootScanner():        #threading.Thread):
             psMod = SpiderFootPlugin()
             psMod.__name__ = "SpiderFoot UI"
             psMod.setTarget(target)
+            psMod.setDbh(self.dbh)
             psMod.clearListeners()
             for mod in list(self.moduleInstances.values()):
                 if mod.watchedEvents() is not None:

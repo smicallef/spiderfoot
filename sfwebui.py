@@ -23,7 +23,7 @@ from copy import deepcopy
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from sfdb import SpiderFootDb
-from sflib import SpiderFoot, globalScanStatus
+from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
 from io import StringIO
 mp.set_start_method("spawn", force=True)
@@ -358,20 +358,19 @@ class SpiderFootWebUi:
 
         # Start running a new scan
         newId = sf.genScanInstanceGUID(scanname)
-        p = mp.Process(target=SpiderFootScanner, args=(scanname, scantarget, targetType, newId
-            modlist, cfg, modopts)
-            )
+        p = mp.Process(target=SpiderFootScanner, args=(scanname, scantarget, targetType, newId,
+                modlist, cfg, modopts))
         p.start()
 
 
         # Wait until the scan has initialized
-        while globalScanStatus.getStatus(newId) == None:
+        while dbh.scanInstanceGet(newId) == None:
             print("[info] Waiting for the scan to initialize...")
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
         return templ.render(id=newId, name=str(scanname), docroot=self.docroot,
-            status=globalScanStatus.getStatus(newId), pageid="SCANLIST")
+            status=dbh.scanInstanceGet(newId), pageid="SCANLIST")
 
     rerunscan.exposed = True
 
@@ -410,7 +409,7 @@ class SpiderFootWebUi:
             p.start()
 
             # Wait until the scan has initialized
-            while globalScanStatus.getStatus(newId) == None:
+            while dbh.scanInstanceGet(newId) == None:
                 print("[info] Waiting for the scan to initialize...")
                 time.sleep(1)
 
@@ -759,7 +758,8 @@ class SpiderFootWebUi:
 
     # Initiate a scan
     def startscan(self, scanname, scantarget, modulelist, typelist, usecase, cli=None):
-        global globalScanStatus
+        #Swap the globalscantable for the database handler
+        dbh = SpiderFootDb(self.config)
 
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
@@ -836,17 +836,19 @@ class SpiderFootWebUi:
             scantarget = scantarget.lower()
         p = mp.Process(target=SpiderFootScanner, args=(scanname, scantarget, targetType, scanId,
                               modlist, cfg, modopts))
+        p.daemon = True
         p.start()
 
         # Wait until the scan has initialized
-        # while globalScanStatus.getStatus(scanId) is None:
-        #    print("[info] Waiting for the scan to initialize...")
-        #    time.sleep(1)
+        # Check the database for the scan status results
+        while dbh.scanInstanceGet(scanId) is None:
+            print("[info] Waiting for the scan to initialize...")
+            time.sleep(1)
 
         if not cli:
             templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
             return templ.render(id=scanId, name=scanname, docroot=self.docroot,
-                                status=globalScanStatus.getStatus(scanId), pageid="SCANLIST")
+                                status=dbh.scanInstanceGet(scanId), pageid="SCANLIST")
         else:
             return json.dumps(["SUCCESS", scanId])
 
@@ -856,7 +858,7 @@ class SpiderFootWebUi:
     # Stop a scan (id variable is unnecessary for now given that only one simultaneous
     # scan is permitted.)
     def stopscanmulti(self, ids):
-        global globalScanStatus # running scans
+        #Removing All globalScanStatus Refs
         dbh = SpiderFootDb(self.config)
         error = list()
 
@@ -868,24 +870,19 @@ class SpiderFootWebUi:
                 return self.error("Invalid scan ID specified.")
 
             scanname = str(scaninfo[0])
-
-            if globalScanStatus.getStatus(id) == "FINISHED" or scaninfo[5] == "FINISHED":
+            scanstatus = scaninfo[5]
+            if scanstatus == "FINISHED":
                 error.append("Scan '" + scanname + "' is in a finished state. <a href='/scandelete?id=" + \
                              id + "&confirm=1'>Maybe you want to delete it instead?</a>")
                 errState = True
 
-            if not errState and (globalScanStatus.getStatus(id) == "ABORTED" or scaninfo[5] == "ABORTED"):
+            if not errState and scanstatus == "ABORTED":
                 error.append("Scan '" + scanname + "' is already aborted.")
                 errState = True
 
-            if not errState and globalScanStatus.getStatus(id) is None:
-                error.append("Scan '" + scanname + "' is not actually running. A data consistency " + \
-                             "error for this scan probably exists. <a href='/scandelete?id=" + \
-                             id + "&confirm=1'>Click here to delete it.</a>")
-                errState = True
-
             if not errState:
-                globalScanStatus.setStatus(id, "ABORT-REQUESTED")
+                #set the scanstatus in the db to "ABORT-REQUESTED"
+                dbh.scanInstanceSet(id, status="ABORT-REQUESTED")
 
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
         return templ.render(pageid='SCANLIST', stoppedscan=True,
@@ -896,40 +893,32 @@ class SpiderFootWebUi:
 
     # Stop a scan.
     def stopscan(self, id, cli=None):
-        global globalScanStatus
-
         dbh = SpiderFootDb(self.config)
         scaninfo = dbh.scanInstanceGet(id)
+        scanstatus = scaninfo[5]
+        print(scanstatus)
         if scaninfo is None:
             if not cli:
                 return self.error("Invalid scan ID.")
             else:
                 return json.dumps(["ERROR", "Invalid scan ID."])
 
-        if globalScanStatus.getStatus(id) is None:
-            if not cli:
-                return self.error("That scan is not actually running. A data consistency " + \
-                                  "error for this scan probably exists. <a href='/scandelete?id=" + \
-                                  id + "&confirm=1'>Click here to delete it.</a>")
-            else:
-                return json.dumps(["ERROR", "Scan doesn't appear to be running."])
-
-        if globalScanStatus.getStatus(id) == "ABORTED":
+        if scanstatus == "ABORTED":
             if not cli:
                 return self.error("The scan is already aborted.")
             else:
                 return json.dumps(["ERROR", "Scan already aborted."])
 
 
-        if not globalScanStatus.getStatus(id) == "RUNNING":
+        if not scanstatus == "RUNNING":
             if not cli:
                 return self.error("The running scan is currently in the state '" + \
-                                  globalScanStatus.getStatus(id) + "', please try again later or restart " + \
+                                  scanstatus + "', please try again later or restart " + \
                                   " SpiderFoot.")
             else:
                 return json.dumps(["ERROR", "Scan in an invalid state for stopping."])
 
-        globalScanStatus.setStatus(id, "ABORT-REQUESTED")
+        dbh.scanInstanceSet(id, status="ABORT-REQUESTED")
         if not cli:
             templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
             return templ.render(pageid='SCANLIST', stoppedscan=True, docroot=self.docroot, errors=list())
