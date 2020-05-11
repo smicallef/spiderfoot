@@ -18,7 +18,7 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spyse(SpiderFootPlugin):
-    """Spyse:Footprint,Investigate,Passive:Passive DNS::SpiderFoot plug-in to search Spyse API for IP address and domain information."""
+    """Spyse:Footprint,Investigate,Passive:Passive DNS:apikey:SpiderFoot plug-in to search Spyse API for IP address and domain information."""
 
     # Default options
     opts = {
@@ -62,7 +62,8 @@ class sfp_spyse(SpiderFootPlugin):
     def producedEvents(self):
         return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED", "DOMAIN_NAME",
                 "IP_ADDRESS", "IPV6_ADDRESS", "CO_HOSTED_SITE", 
-                "RAW_RIR_DATA", "TCP_PORT_OPEN"]
+                "RAW_RIR_DATA", "TCP_PORT_OPEN", "OPERATING_SYSTEM",
+                "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS"]
 
     # Query Subdomains
     # https://spyse.com/tools/api#/domain/subdomain
@@ -247,19 +248,6 @@ class sfp_spyse(SpiderFootPlugin):
             evt = SpiderFootEvent('WEBSERVER_HTTPHEADERS', str(httpHeaders), self.__name__, event)
             self.notifyListeners(evt)
 
-    # Report internal linked URLs in RAW_RIR_DATA records
-    def reportInternalLinkedURLs(self, data, event):
-        urls = self.sf.extractUrls(str(data))   
-        if urls is None:
-            return False
-
-        for url in urls:
-            if self.getTarget().matches(self.sf.urlFQDN(url), includeParents=True):
-                evt = SpiderFootEvent('LINKED_URL_INTERNAL', url, self.__name__, event)
-                self.notifyListeners(evt)
-
-        return True
-
     # Handle events sent to this module
     def handleEvent(self, event):
            
@@ -285,7 +273,7 @@ class sfp_spyse(SpiderFootPlugin):
         # Query cohosts
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             cohosts = list()
-            currentOffset = 1
+            currentOffset = 0
             nextPageHasData = True
 
             while nextPageHasData:
@@ -307,17 +295,14 @@ class sfp_spyse(SpiderFootPlugin):
                                 evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
                                 
-                                urlStatus = self.reportInternalLinkedURLs(record, event)
-                                if not urlStatus:
-                                    self.sf.debug("No internal linked URLs found")
-
                                 cohosts.append(domain)
                                 self.reportExtraData(record, event)
 
                 # Calculate if there are any records in the next offset (page)
-                if currentOffset * len(records) < currentOffset * self.limit:
+                if len(records) < self.limit:
                     nextPageHasData = False
-                currentOffset += 1
+                currentOffset += self.limit
+
 
             for co in set(cohosts):
 
@@ -345,7 +330,7 @@ class sfp_spyse(SpiderFootPlugin):
         # Query open ports for source IP Address
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             ports = list()
-            currentOffset = 1
+            currentOffset = 0
             nextPageHasData = True
 
             while nextPageHasData:
@@ -367,17 +352,14 @@ class sfp_spyse(SpiderFootPlugin):
                                 evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
                                 
-                                urlStatus = self.reportInternalLinkedURLs(record, event)
-                                if not urlStatus:
-                                    self.sf.debug("No internal linked URLs found")
-                                
                                 ports.append(str(eventData) + ":" + str(port))
                                 self.reportExtraData(record, event)
 
-                    if currentOffset * len(records) < currentOffset * self.limit:
-                        nextPageHasData = False
-                    currentOffset += 1
-                
+                # Calculate if there are any records in the next offset (page)
+                if len(records) < self.limit:
+                    nextPageHasData = False
+                currentOffset += self.limit
+
                 for port in ports:
                     if port in self.results:
                         continue
@@ -388,7 +370,7 @@ class sfp_spyse(SpiderFootPlugin):
 
         # Query subdomains  
         if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:
-            currentOffset = 1
+            currentOffset = 0
             nextPageHasData = True
             domains = list()
 
@@ -411,17 +393,13 @@ class sfp_spyse(SpiderFootPlugin):
                                 evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
 
-                                urlStatus = self.reportInternalLinkedURLs(record, event)
-                                if not urlStatus:
-                                    self.sf.debug("No internal linked URLs found")
-                                
                                 domains.append(domain)
                                 self.reportExtraData(record, event)
 
-
-                    if currentOffset * len(records) < currentOffset * self.limit:
-                        nextPageHasData = False
-                    currentOffset += 1
+                # Calculate if there are any records in the next offset (page)
+                if len(records) < self.limit:
+                    nextPageHasData = False
+                currentOffset += self.limit
 
             for domain in set(domains):
 
