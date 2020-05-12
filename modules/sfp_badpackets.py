@@ -25,11 +25,8 @@ class sfp_badpackets(SpiderFootPlugin):
         'checkaffiliates': True,
         'subnetlookup': False,
         'netblocklookup': True,
-        'maxsubnet': 24,
         'maxnetblock': 24,
-        'maxcohost': 100,
-        'verify': True,
-        "cohostsamedomain": False
+        'maxsubnet': 24
     }
 
     # Option descriptions. Delete any options not applicable to this module.
@@ -37,14 +34,10 @@ class sfp_badpackets(SpiderFootPlugin):
         "api_key": "Bad packets API Key",
         'checkcohosts': "Check co-hosted sites?",
         'checkaffiliates': "Check affiliates?",
+        'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
-        'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
-        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
-        'verify': 'Verify that any hostnames found on the target domain still resolve?'
-
+        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
     results = None
@@ -68,7 +61,8 @@ class sfp_badpackets(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
-            "COUNTRY_NAME", "DESCRIPTION_CATEGORY", "DESCRIPTION_ABSTRACT"]
+            "COUNTRY_NAME", "DESCRIPTION_CATEGORY", "DESCRIPTION_ABSTRACT",
+            "AFFILIATE_IPADDR"]
 
     # Check whether the IP Address is malicious using Bad Packets API
     def queryIPAddress(self, qry, currentOffset):
@@ -197,8 +191,11 @@ class sfp_badpackets(SpiderFootPlugin):
                     qrylist.append(str(ipaddr))
                     self.results[str(ipaddr)] = True
             else:
+                # If user has enabled affiliate checking
+                if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
+                    return None
+                
                 qrylist.append(eventData)
-
             
             for addr in qrylist:
 
