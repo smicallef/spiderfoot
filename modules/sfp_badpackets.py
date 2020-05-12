@@ -199,6 +199,9 @@ class sfp_badpackets(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
                 results = data.get('results')
+                if results is None:
+                    nextPageHasData = False
+                    break
 
                 if results:
                     evt = SpiderFootEvent("RAW_RIR_DATA", str(results), self.__name__, event)
