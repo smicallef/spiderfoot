@@ -59,8 +59,7 @@ class sfp_badpackets(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
-            "COUNTRY_NAME", "DESCRIPTION_CATEGORY", "DESCRIPTION_ABSTRACT"]
+        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA"]
 
     # Check whether the IP Address is malicious using Bad Packets API
     # https://docs.badpackets.net/#operation/query
@@ -94,23 +93,19 @@ class sfp_badpackets(SpiderFootPlugin):
         # Error codes as mentioned in Bad Packets Documentation
         if res['code'] == '400':
             self.sf.error("Invalid IP Address", False)
-            self.errorState = True
             return None
 
         if res['code'] == '401':
             self.sf.error("Unauthorized API Key", False)
-            self.errorState = True
             return None
 
         if res['code'] == '403':
             self.sf.error("Forbidden Request", False)
-            self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
             self.sf.error("Failed to retrieve content from Spyse", False)
-            self.errorState = True
             return None
 
         # Always always always process external data with try/except since we cannot
@@ -123,26 +118,6 @@ class sfp_badpackets(SpiderFootPlugin):
 
         return data
     
-    def reportExtraData(self, event, result):
-
-        # Report category of target
-        try:
-            category = result.get('tags')[0].get('category')
-            if category:
-                evt = SpiderFootEvent("DESCRIPTION_CATEGORY", str(category), self.__name__, event)
-                self.notifyListeners(evt)
-        except:
-            self.sf.debug("No category found for target")
-        
-        # Report description of target
-        try:
-            description = result.get('tags')[0].get('description')
-            if description:
-                evt = SpiderFootEvent("DESCRIPTION_ABSTRACT", str(description), self.__name__, event)
-                self.notifyListeners(evt)
-        except:
-            self.sf.debug("No description found for target")
-
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -219,26 +194,46 @@ class sfp_badpackets(SpiderFootPlugin):
                     break
 
                 # Data is returned about the IP Address
-                evt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
-                self.notifyListeners(evt)
+                if eventName.startswith("NETBLOCK_"):
+                    evt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                    self.notifyListeners(evt)
 
                 results = data.get('results')
-                maliciousIPs = set()
-                for result in results:
-                    evt = SpiderFootEvent("RAW_RIR_DATA", str(result), self.__name__, event)
+
+                if results:
+                    evt = SpiderFootEvent("RAW_RIR_DATA", str(results), self.__name__, event)
                     self.notifyListeners(evt)
-                    self.reportExtraData(event, result)
+                    
+                    for result in results:
+                        maliciousIP = result.get('source_ip_address')
+                        
+                        if maliciousIP:
+                            maliciousIPDesc = "Bad Packets [ " + str(maliciousIP) + " ]\n"
 
-                    maliciousIP = result.get('source_ip_address')
+                            try:
+                                category = result.get('tags')[0].get('category')
+                                if category:
+                                    maliciousIPDesc += " - CATEGORY : " + str(category) + "\n"
+                            except:
+                                self.sf.debug("No category found for target")
+                            
+                            try:
+                                description = result.get('tags')[0].get('description')
+                                if description:
+                                    maliciousIPDesc += " - DESCRIPTION : " + str(description) + "\n"
+                            except:
+                                self.sf.debug("No description found for target")
+                            
+                            
+                            tempEvent = event
+                            # If target is a netblock_ report current IP address as target
+                            if eventName.startswith("NETBLOCK_"):
+                                tempEvent.data = str(addr)
 
-                    if maliciousIP:
-                        maliciousIPs.add(maliciousIP)
+                            evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, tempEvent)
+                            self.notifyListeners(evt)
 
-                for maliciousIP in maliciousIPs:
-                    evt = SpiderFootEvent("MALICIOUS_IPADDR", str(maliciousIP), self.__name__, event)
-                    self.notifyListeners(evt)
-
-                if data.get('count') < self.limit or len(results) < self.limit:
+                if results is None or data.get('count') < self.limit or len(results) < self.limit:
                     nextPageHasData = False
                 currentOffset += self.limit
         
