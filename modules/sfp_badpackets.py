@@ -193,10 +193,10 @@ class sfp_badpackets(SpiderFootPlugin):
                     nextPageHasData = False
                     break
 
-                # Data is returned about the IP Address
+                # Data is reported about the IP Address
                 if eventName.startswith("NETBLOCK_"):
-                    evt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
-                    self.notifyListeners(evt)
+                    ipEvt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                    self.notifyListeners(ipEvt)
 
                 results = data.get('results')
                 if results is None:
@@ -219,7 +219,6 @@ class sfp_badpackets(SpiderFootPlugin):
                                     maliciousIPDesc += " - CATEGORY : " + str(category) + "\n"
                             except:
                                 self.sf.debug("No category found for target")
-                            
                             try:
                                 description = result.get('tags')[0].get('description')
                                 if description:
@@ -227,13 +226,12 @@ class sfp_badpackets(SpiderFootPlugin):
                             except:
                                 self.sf.debug("No description found for target")
                             
-                            
-                            tempEvent = event
                             # If target is a netblock_ report current IP address as target
                             if eventName.startswith("NETBLOCK_"):
-                                tempEvent.data = str(addr)
-
-                            evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, tempEvent)
+                                evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
+                            else:
+                                evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
+                            
                             self.notifyListeners(evt)
 
                 if results is None or data.get('count') < self.limit or len(results) < self.limit:
