@@ -56,13 +56,13 @@ class sfp_badpackets(SpiderFootPlugin):
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
+        return ["IP_ADDRESS", "NETBLOCK_OWNER", "NETBLOCK_MEMBER",
+            "AFFILIATE_IPADDR"]
 
     # What events this module produces
     def producedEvents(self):
         return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
-            "COUNTRY_NAME", "DESCRIPTION_CATEGORY", "DESCRIPTION_ABSTRACT",
-            "AFFILIATE_IPADDR"]
+            "COUNTRY_NAME", "DESCRIPTION_CATEGORY", "DESCRIPTION_ABSTRACT"]
 
     # Check whether the IP Address is malicious using Bad Packets API
     def queryIPAddress(self, qry, currentOffset):
