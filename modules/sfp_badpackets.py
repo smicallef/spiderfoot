@@ -21,7 +21,6 @@ class sfp_badpackets(SpiderFootPlugin):
 
     opts = {
         'api_key': '',
-        'checkcohosts': True,
         'checkaffiliates': True,
         'subnetlookup': False,
         'netblocklookup': True,
@@ -32,7 +31,6 @@ class sfp_badpackets(SpiderFootPlugin):
     # Option descriptions. Delete any options not applicable to this module.
     optdescs = {
         "api_key": "Bad packets API Key",
-        'checkcohosts': "Check co-hosted sites?",
         'checkaffiliates': "Check affiliates?",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
@@ -65,6 +63,7 @@ class sfp_badpackets(SpiderFootPlugin):
             "COUNTRY_NAME", "DESCRIPTION_CATEGORY", "DESCRIPTION_ABSTRACT"]
 
     # Check whether the IP Address is malicious using Bad Packets API
+    # https://docs.badpackets.net/#operation/query
     def queryIPAddress(self, qry, currentOffset):
         params = {
             'source_ip_address': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
@@ -92,6 +91,7 @@ class sfp_badpackets(SpiderFootPlugin):
             self.sf.info("No Bad Packets information found")
             return None
 
+        # Error codes as mentioned in Bad Packets Documentation
         if res['code'] == '400':
             self.sf.error("Invalid IP Address", False)
             self.errorState = True
@@ -126,118 +126,121 @@ class sfp_badpackets(SpiderFootPlugin):
     def reportExtraData(self, event, result):
 
         # Report category of target
-        category = result.get('tags')[0].get('category')
-        if category:
-            evt = SpiderFootEvent("DESCRIPTION_CATEGORY", str(category), self.__name__, event)
-            self.notifyListeners(evt)
+        try:
+            category = result.get('tags')[0].get('category')
+            if category:
+                evt = SpiderFootEvent("DESCRIPTION_CATEGORY", str(category), self.__name__, event)
+                self.notifyListeners(evt)
+        except:
+            self.sf.debug("No category found for target")
         
         # Report description of target
-        description = result.get('tags')[0].get('description')
-        if description:
-            evt = SpiderFootEvent("DESCRIPTION_ABSTRACT", str(description), self.__name__, event)
-            self.notifyListeners(evt)
-
-
+        try:
+            description = result.get('tags')[0].get('description')
+            if description:
+                evt = SpiderFootEvent("DESCRIPTION_ABSTRACT", str(description), self.__name__, event)
+                self.notifyListeners(evt)
+        except:
+            self.sf.debug("No description found for target")
 
     # Handle events sent to this module
     def handleEvent(self, event):
-        try:
-            eventName = event.eventType
-            srcModuleName = event.module
-            eventData = event.data
-            
-            if self.errorState:
-                return None
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+        
+        if self.errorState:
+            return None
 
-            self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-            # Always check if the API key is set and complain if it isn't, then set
-            # self.errorState to avoid this being a continual complaint during the scan.
-            if self.opts['api_key'] == "":
-                self.sf.error("You enabled sfp_badpackets but did not set an API key!", False)
-                self.errorState = True
-                return None
+        # Always check if the API key is set and complain if it isn't, then set
+        # self.errorState to avoid this being a continual complaint during the scan.
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_badpackets but did not set an API key!", False)
+            self.errorState = True
+            return None
 
-            # Don't look up stuff twice
-            if eventData in self.results:
-                self.sf.debug("Skipping " + eventData + " as already mapped.")
+        # Don't look up stuff twice
+        if eventData in self.results:
+            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            return None
+        else:
+            self.results[eventData] = True
+
+        if eventName == 'NETBLOCK_OWNER':
+            if not self.opts['netblocklookup']:
                 return None
             else:
-                self.results[eventData] = True
-
-            if eventName == 'NETBLOCK_OWNER':
-                if not self.opts['netblocklookup']:
+                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                str(IPNetwork(eventData).prefixlen) + " > " +
+                                str(self.opts['maxnetblock']))
                     return None
-                else:
-                    if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                        self.sf.debug("Network size bigger than permitted: " +
-                                    str(IPNetwork(eventData).prefixlen) + " > " +
-                                    str(self.opts['maxnetblock']))
-                        return None
-            
-            if eventName == 'NETBLOCK_MEMBER':
-                if not self.opts['subnetlookup']:
-                    return None
-                else:
-                    if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                        self.sf.debug("Network size bigger than permitted: " +
-                                    str(IPNetwork(eventData).prefixlen) + " > " +
-                                    str(self.opts['maxsubnet']))
-                        return None
-                        
-            qrylist = list()
-            if eventName.startswith("NETBLOCK_"):
-                for ipaddr in IPNetwork(eventData):
-                    qrylist.append(str(ipaddr))
-                    self.results[str(ipaddr)] = True
+        
+        if eventName == 'NETBLOCK_MEMBER':
+            if not self.opts['subnetlookup']:
+                return None
             else:
-                # If user has enabled affiliate checking
-                if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
+                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                    self.sf.debug("Network size bigger than permitted: " +
+                                str(IPNetwork(eventData).prefixlen) + " > " +
+                                str(self.opts['maxsubnet']))
                     return None
-                
-                qrylist.append(eventData)
+                    
+        qrylist = list()
+        if eventName.startswith("NETBLOCK_"):
+            for ipaddr in IPNetwork(eventData):
+                qrylist.append(str(ipaddr))
+                self.results[str(ipaddr)] = True
+        else:
+            # If user has enabled affiliate checking
+            if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
+                return None
+            qrylist.append(eventData)
+        
+        for addr in qrylist:
+
+            nextPageHasData = True    
+            if self.checkForStop():
+                return None
             
-            for addr in qrylist:
+            currentOffset = 0
+            while nextPageHasData:
+                data = self.queryIPAddress(addr, currentOffset)
 
-                nextPageHasData = True    
-                if self.checkForStop():
-                    return None
-                
-                currentOffset = 0
-                while nextPageHasData:
-                    data = self.queryIPAddress(addr, currentOffset)
+                if data is None:
+                    nextPageHasData = False
+                    break
 
-                    if data is None:
-                        nextPageHasData = False
-                        break
+                count = data.get('count')
+                if count is None or int(count) == 0:
+                    nextPageHasData = False
+                    break
 
-                    # Note ::::: count might not be there. Add failsafe 
-                    if data.get('count') == 0:
-                        nextPageHasData = False
-                        break
+                # Data is returned about the IP Address
+                evt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                self.notifyListeners(evt)
 
-                    # Data is returned about the IP Address
-                    evt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                results = data.get('results')
+                maliciousIPs = set()
+                for result in results:
+                    evt = SpiderFootEvent("RAW_RIR_DATA", str(result), self.__name__, event)
+                    self.notifyListeners(evt)
+                    self.reportExtraData(event, result)
+
+                    maliciousIP = result.get('source_ip_address')
+
+                    if maliciousIP:
+                        maliciousIPs.add(maliciousIP)
+
+                for maliciousIP in maliciousIPs:
+                    evt = SpiderFootEvent("MALICIOUS_IPADDR", str(maliciousIP), self.__name__, event)
                     self.notifyListeners(evt)
 
-                    results = data.get('results')
-                    for result in results:
-                        evt = SpiderFootEvent("RAW_RIR_DATA", str(result), self.__name__, event)
-                        self.notifyListeners(evt)
-                        self.reportExtraData(event, result)
-
-                        maliciousIP = result.get('source_ip_address')
-                        # Note :::::::::::::::::::::
-                        # Possible chance of duplication - Check this with a larger sample
-                        if maliciousIP:
-                            evt = SpiderFootEvent("MALICIOUS_IPADDR", str(maliciousIP), self.__name__, event)
-                            self.notifyListeners(evt)
-
-                    if data.get('count') < self.limit or len(results) < self.limit:
-                        nextPageHasData = False
-                    currentOffset += self.limit
-            
-            return None
-        except Exception as e:
-            self.sf.error("An exception occured :: " + str(e))
+                if data.get('count') < self.limit or len(results) < self.limit:
+                    nextPageHasData = False
+                currentOffset += self.limit
+        
+        return None
 # End of sfp_badpackets class
