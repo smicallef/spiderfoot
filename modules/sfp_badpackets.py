@@ -15,9 +15,9 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 from netaddr import IPNetwork
 import urllib.request, urllib.parse, urllib.error
 import json
+
 class sfp_badpackets(SpiderFootPlugin):
-    
-    """Bad Packets:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information for any malicious activities by target"""
+    """Bad Packets:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information for any malicious activities by a target"""
 
     opts = {
         'api_key': '',
@@ -209,6 +209,10 @@ class sfp_badpackets(SpiderFootPlugin):
                     
                     for result in results:
                         maliciousIP = result.get('source_ip_address')
+
+                        if maliciousIP != addr:
+                            self.sf.error("Reported address doesn't match requested, skipping.", False)
+                            continue
                         
                         if maliciousIP:
                             maliciousIPDesc = "Bad Packets [ " + str(maliciousIP) + " ]\n"
