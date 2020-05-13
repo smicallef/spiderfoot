@@ -48,7 +48,8 @@ class sfp_grep_app(SpiderFootPlugin):
         return ["DOMAIN_NAME"]
 
     def producedEvents(self):
-        return ["EMAILADDR", "DOMAIN_NAME", "INTERNET_NAME", "INTERNET_NAME_UNRESOLVED", "LINKED_URL_INTERNAL"]
+        return ["EMAILADDR", "DOMAIN_NAME", "INTERNET_NAME", "RAW_RIR_DATA",
+                "INTERNET_NAME_UNRESOLVED", "LINKED_URL_INTERNAL"]
 
     def query(self, qry, page):
         params = {
