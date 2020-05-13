@@ -210,6 +210,10 @@ class sfp_badpackets(SpiderFootPlugin):
                     for record in records:
                         maliciousIP = record.get('source_ip_address')
                         
+                        if maliciousIP != addr:
+                            self.sf.error("Reported address doesn't match requested, skipping.", False)
+                            continue
+
                         if maliciousIP:
                             maliciousIPDesc = "Bad Packets [ " + str(maliciousIP) + " ]\n"
 
