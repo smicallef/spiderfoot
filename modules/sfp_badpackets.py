@@ -15,9 +15,9 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 from netaddr import IPNetwork
 import urllib.request, urllib.parse, urllib.error
 import json
+
 class sfp_badpackets(SpiderFootPlugin):
-    
-    """Bad Packets:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information for any malicious activities by target"""
+    """Bad Packets:Investigate,Passive:Reputation Systems:apikey:Obtain information about any malicious activities involving IP addresses found"""
 
     opts = {
         'api_key': '',
@@ -39,7 +39,6 @@ class sfp_badpackets(SpiderFootPlugin):
     }
 
     results = None
-
     errorState = False  
     limit = 100
 
