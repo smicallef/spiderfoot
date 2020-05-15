@@ -38,7 +38,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test __init__(self, options, handle=None):
         """
-        sf = SpiderFoot(None)
+        sf = SpiderFoot(dict())
         self.assertEqual('TBD', 'TBD')
 
     def test_init(self):
@@ -93,32 +93,32 @@ class TestSpiderFoot(unittest.TestCase):
         res = sf.optValueToData(None)
         self.assertEqual(None, res)
 
-    def test_build_graph_data(self):
+    def test_build_graph_data_should_return_a_set(self):
         """
         Test buildGraphData(self, data, flt=list())
         """
         sf = SpiderFoot(dict())
 
-        sf.buildGraphData(None)
-        self.assertEqual('TBD', 'TBD')
+        graph_data = sf.buildGraphData('')
+        self.assertEqual(set, type(graph_data))
 
-    def test_build_graph_gexf(self):
+    def test_build_graph_gexf_should_return_bytes(self):
         """
         Test buildGraphGexf(self, root, title, data, flt=[])
         """
         sf = SpiderFoot(dict())
 
-        sf.buildGraphGexf(None, None, None)
-        self.assertEqual('TBD', 'TBD')
+        gexf = sf.buildGraphGexf('', '', '')
+        self.assertEqual(bytes, type(gexf))
 
-    def test_build_graph_json(self):
+    def test_build_graph_json_should_return_a_string(self):
         """
         Test buildGraphJson(self, root, data, flt=list())
         """
         sf = SpiderFoot(dict())
 
-        sf.buildGraphJson(None, None)
-        self.assertEqual('TBD', 'TBD')
+        json = sf.buildGraphJson('', '')
+        self.assertEqual(str, type(json))
 
     def test_set_dbh(self):
         """
@@ -159,7 +159,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        sf.error(None)
+        sf.error('', exception=False)
         self.assertEqual('TBD', 'TBD')
 
     def test_fatal_should_exit(self):
@@ -227,20 +227,19 @@ class TestSpiderFoot(unittest.TestCase):
         cache_path = sf.cachePath()
         self.assertEqual(str, type(cache_path))
 
-    def test_cache_put(self):
-        """
-        Test cachePut(self, label, data)
-        """
-        self.assertEqual('TBD', 'TBD')
-
     def test_cache_get_should_return_a_string(self):
         """
+        Test cachePut(self, label, data)
         Test cacheGet(self, label, timeoutHrs)
         """
         sf = SpiderFoot(dict())
 
-        cache_get = sf.cacheGet('', sf.opts.get('cacheperiod', 0))
+        label = 'test-cache-label'
+        data = 'test-cache-data'
+        cache_put = sf.cachePut(label, data)
+        cache_get = sf.cacheGet(label, sf.opts.get('cacheperiod', 0))
         self.assertEqual(str, type(cache_get))
+        self.assertEqual(data, cache_get)
 
     def test_cache_get_invalid_label_should_return_none(self):
         """
@@ -248,7 +247,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(dict())
 
-        cache_get = sf.cacheGet(None, sf.opts.get('cacheperiod', 0))
+        cache_get = sf.cacheGet('', sf.opts.get('cacheperiod', 0))
         self.assertEqual(None, cache_get)
 
     def test_cache_get_invalid_timeout_should_return_none(self):
@@ -338,32 +337,67 @@ class TestSpiderFoot(unittest.TestCase):
         fqdn = sf.urlFQDN('http://localhost.local')
         self.assertEqual(str, type(fqdn))
 
-    def test_domain_keyword(self):
+    def test_domain_keyword_should_return_a_string(self):
         """
         Test domainKeyword(self, domain, tldList)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(self.default_options)
 
-    def test_domain_keywords(self):
+        keyword = sf.domainKeyword('www.spiderfoot.net', sf.opts.get('_internettlds'))
+        self.assertEqual(str, type(keyword))
+        self.assertEqual('wwwspiderfootnet', keyword)
+
+    def test_domain_keywords_should_return_a_list(self):
         """
         Test domainKeywords(self, domainList, tldList)
         """
-        self.assertEqual('TBD', 'TBD')
+        sf = SpiderFoot(self.default_options)
 
-    def test_host_domain_should_return_a_boolean(self):
+        domain_list = ['www.example.com', 'localhost.local']
+        keywords = sf.domainKeywords(domain_list, sf.opts.get('_internettlds'))
+        self.assertEqual(list, type(keywords))
+
+    def test_host_domain_invalid_host_should_return_none(self):
+        """
+        Test hostDomain(self, hostname, tldList)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        host_domain = sf.hostDomain(None, sf.opts.get('_internettlds'))
+        self.assertEqual(None, host_domain)
+
+    def test_host_domain_should_return_a_string(self):
+        """
+        Test hostDomain(self, hostname, tldList)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        host_domain = sf.hostDomain('local', sf.opts.get('_internettlds'))
+        self.assertEqual(str, type(host_domain))
+        self.assertEqual('local', host_domain)
+
+        host_domain = sf.hostDomain('spiderfoot.net', sf.opts.get('_internettlds'))
+        self.assertEqual(str, type(host_domain))
+        self.assertEqual('net', host_domain)
+
+        host_domain = sf.hostDomain('www.spiderfoot.net', sf.opts.get('_internettlds'))
+        self.assertEqual(str, type(host_domain))
+        self.assertEqual('net', host_domain)
+
+    def test_host_domain_invalid_tldlist_should_return_none(self):
         """
         Test hostDomain(self, hostname, tldList)
         """
         sf = SpiderFoot(dict())
 
-        host_doman = sf.hostDomain('local', None)
-        self.assertEqual(bool, type(host_domain))
+        host_domain = sf.hostDomain('spiderfoot.net', None)
+        self.assertEqual(None, host_domain)
 
     def test_is_domain_should_return_a_boolean(self):
         """
         Test isDomain(self, hostname, tldList)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
         is_domain = sf.isDomain('local', None)
         self.assertEqual(bool, type(is_domain))

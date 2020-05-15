@@ -87,7 +87,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.getScanId()
         self.assertEqual('TBD', 'TBD')
 
-    def test_get_target(self):
+    def test_get_target_should_return_a_string(self):
         """
         Test getTarget(self)
         """
@@ -95,6 +95,17 @@ class TestSpiderFootPlugin(unittest.TestCase):
 
         sfp.getTarget()
         self.assertEqual('TBD', 'TBD')
+
+    def test_get_target_invalid_target_should_exit(self):
+        """
+        Test getTarget(self)
+        """
+        sfp = SpiderFootPlugin()
+
+        with self.assertRaises(SystemExit) as cm:
+            sfp.getTarget()
+
+        self.assertEqual(cm.exception.code, -1)
 
     def test_register_listener(self):
         """

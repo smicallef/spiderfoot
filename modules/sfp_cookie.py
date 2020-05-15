@@ -14,7 +14,7 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_cookie(SpiderFootPlugin):
-    """Cookie Extractor:Footprint,Investigate,Passive:Crawling and Scanning::Extract Cookies from HTTP headers."""
+    """Cookie Extractor:Footprint,Investigate,Passive:Content Analysis::Extract Cookies from HTTP headers."""
 
     # Default options
     opts = {}

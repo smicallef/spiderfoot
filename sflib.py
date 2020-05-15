@@ -15,6 +15,7 @@ from stem import Signal
 from stem.control import Controller
 import inspect
 import hashlib
+import html
 import urllib.request, urllib.parse, urllib.error
 import json
 import re
@@ -729,9 +730,17 @@ class SpiderFoot:
         # http://abc.com will split to ['http:', '', 'abc.com']
         return baseurl.split('/')[count].lower()
 
-    # Extract the keyword (the domain without the TLD or any subdomains)
-    # from a domain.
     def domainKeyword(self, domain, tldList):
+        """Extract the keyword (the domain without the TLD or any subdomains) from a domain.
+
+        Args:
+            domain (str): The domain to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            str: The keyword
+        """
+
         # Strip off the TLD
         tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
         ret = domain.lower().replace('.' + tld, '')
@@ -742,67 +751,137 @@ class SpiderFoot:
         else:
             return ret
 
-    # Extract the keywords (the domains without the TLD or any subdomains)
-    # from a list of domains.
+    # TODO: remove this function
     def domainKeywords(self, domainList, tldList):
+        """Extract the keywords (the domains without the TLD or any subdomains) from a list of domains.
+
+        Wraps the domainKeyword function for people who are too lazy to write a loop.
+        Does not validate input. Does not check for duplicates.
+
+        Args:
+            domainList (list): The list of domains to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            list: List of keywords
+        """
+
         arr = list()
         for domain in domainList:
-            # Strip off the TLD
-            tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
-            ret = domain.lower().replace('.' + tld, '')
-
-            # If the user supplied a domain with a sub-domain, return the second part
-            if '.' in ret:
-                arr.append(ret.split('.')[-1])
-            else:
-                arr.append(ret)
+            arr.append(self.domainKeyword(domain, tldList))
 
         self.debug("Keywords: " + str(arr))
         return arr
 
-    # Obtain the domain name for a supplied hostname
-    # tldList needs to be an array based on the Mozilla public list
     def hostDomain(self, hostname, tldList):
+        """Obtain the domain name for a supplied hostname.
+
+        Args:
+            hostname (str): The hostname to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            str: The domain name.
+        """
+
+        if not tldList:
+            return None
+        if not hostname:
+            return None
+
         ps = PublicSuffixList(tldList)
         return ps.get_public_suffix(hostname)
 
-    # Is the host a valid host (some filenames look like hosts)
     def validHost(self, hostname, tldList):
-        # First basic content checks
+        """Check if the provided string is a valid hostname with a valid public suffix TLD.
+
+        Args:
+            hostname (str): The hostname to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            bool
+        """
+
+        if not tldList:
+            return False
+        if not hostname:
+            return False
+
         if "." not in hostname:
             return False
 
         if not re.match("^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
             return False
 
-        # Finally check if it's on a valid TLD
         ps = PublicSuffixList(tldList)
         sfx = ps.get_public_suffix(hostname, strict=True)
         return sfx != None
 
-    # Given a possible hostname, check if it's a domain name
-    # By checking whether it rests atop a TLD.
-    # e.g. www.example.com = False because tld of hostname is com,
-    # and www.example has a . in it.
     def isDomain(self, hostname, tldList):
+        """Check if the provided hostname string is a valid domain name.
+
+        Given a possible hostname, check if it's a domain name
+        By checking whether it rests atop a TLD.
+        e.g. www.example.com = False because tld of hostname is com,
+        and www.example has a . in it.
+
+        Args:
+            hostname (str): The hostname to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            bool
+        """
+
+        if not tldList:
+            return False
+        if not hostname:
+            return False
+
         ps = PublicSuffixList(tldList)
         suffix = ps.get_public_suffix(hostname)
         return hostname == suffix
 
-    # Simple way to verify IPv4 addresses.
     def validIP(self, address):
+        """Check if the provided string is a valid IPv4 address.
+
+        Args:
+            address (str): The IPv4 address to check.
+
+        Returns:
+            bool
+        """
+
         if not address:
             return False
         return netaddr.valid_ipv4(address)
 
-    # Simple way to verify IPv6 addresses.
     def validIP6(self, address):
+        """Check if the provided string is a valid IPv6 address.
+
+        Args:
+            address (str): The IPv6 address to check.
+
+        Returns:
+            bool
+        """
+
         if not address:
             return False
         return netaddr.valid_ipv6(address)
 
     # Simple way to verify netblock.
     def validIpNetwork(self, cidr):
+        """Check if the provided string is a valid CIDR netblock.
+
+        Args:
+            cidr (str): The netblock to check.
+
+        Returns:
+            bool
+        """
+
         try:
             if '/' in str(cidr) and netaddr.IPNetwork(str(cidr)).size > 0:
                 return True
@@ -1337,6 +1416,11 @@ class SpiderFoot:
 
         return ret
 
+    # Extract all URLs from a string
+    # https://tools.ietf.org/html/rfc3986#section-3.3
+    def extractUrls(self, content):
+        return re.findall("(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
+
     # Find all URLs within the supplied content. This does not fetch any URLs!
     # A dictionary will be returned, where each link will have the keys
     # 'source': The URL where the link was obtained from
@@ -1346,7 +1430,10 @@ class SpiderFoot:
     # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
     def parseLinks(self, url, data, domains):
         returnLinks = dict()
-        urlsRel = []
+
+        if data is None or len(data) == 0:
+            self.debug("parseLinks() called with no data to parse.")
+            return returnLinks
 
         if type(domains) is str:
             domains = [domains]
@@ -1368,9 +1455,7 @@ class SpiderFoot:
         if proto == None:
             proto = "http"
 
-        if data is None or len(data) == 0:
-            self.debug("parseLinks() called with no data to parse.")
-            return None
+        urlsRel = []
 
         try:
             for t in list(tags.keys()):
@@ -1380,7 +1465,7 @@ class SpiderFoot:
                         urlsRel.append(lnk[tags[t]])
         except BaseException as e:
             self.error("Error parsing with BeautifulSoup: " + str(e), False)
-            return None
+            return returnLinks
 
         # Loop through all the URLs/links found
         for link in urlsRel:
@@ -2229,7 +2314,9 @@ class PublicSuffixList(object):
         if len(parent) == 1:
             parent.append({})
 
-        assert len(parent) == 2
+        if len(parent) != 2:
+            return None
+
         negate, children = parent
 
         child = parts.pop()
