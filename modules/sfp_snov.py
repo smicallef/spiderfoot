@@ -77,7 +77,12 @@ class sfp_snov(SpiderFootPlugin):
             return None
         try:
             # Extract access token from response
-            accessToken = json.loads(res.get('content')).get('access_token')
+            content = res.get('content')
+            if isinstance(content, str):
+                accessToken = json.loads(content).get('access_token')
+            else:
+                accessToken = res.get('access_token')
+
             return str(accessToken)
         except Exception: 
             self.sf.debug("Could not fetch access token")
@@ -110,11 +115,8 @@ class sfp_snov(SpiderFootPlugin):
             self.sf.debug("Could not fetch email addresses")
             return None
 
-        try:
-            return res['content']
-        except:
-            self.sf.debug("Could not fetch email addresses")
-            return None
+        return res.get('content')
+
 
 
     # Handle events sent to this module
