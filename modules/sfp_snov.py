@@ -33,6 +33,7 @@ class sfp_snov(SpiderFootPlugin):
     results = None
     errorState = False  
 
+    # More than 100 per response is not supported by Snov API
     limit = 100
 
     def setup(self, sfc, userOpts=dict()):
