@@ -12,12 +12,11 @@
 # -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
-from netaddr import IPNetwork
 import urllib.request, urllib.parse, urllib.error
 import json
 
 class sfp_snov(SpiderFootPlugin):
-    """Snov:Investigate,Passive:Reputation Systems:apikey:Gather available email ids from target domain"""
+    """Snov:Footprint,Investigate,Passive:Search Engines:apikey:Gather available email IDs from identified domains"""
 
     opts = {
         'api_key_client_id': '',
@@ -79,10 +78,11 @@ class sfp_snov(SpiderFootPlugin):
         try:
             # Extract access token from response
             content = res.get('content')
-            if isinstance(content, str):
-                accessToken = json.loads(content).get('access_token')
-            else:
-                accessToken = res.get('access_token')
+            accessToken = json.loads(content).get('access_token')
+            
+            if accessToken is None:
+                self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
+                return None
 
             return str(accessToken)
         except Exception: 
