@@ -46,7 +46,6 @@ class sfp_phishstats(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
         
-
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):
@@ -83,6 +82,7 @@ class sfp_phishstats(SpiderFootPlugin):
         try:
             return json.loads(res['content'])
         except:
+            self.sf.error("Ill formatted data received as JSON response", False)
             return None
          
     # Handle events sent to this module
@@ -155,7 +155,7 @@ class sfp_phishstats(SpiderFootPlugin):
                 continue
 
             if addr != maliciousIP:
-                self.sf.error("Reported address doesn't match requested, skipping")
+                self.sf.error("Reported address doesn't match requested, skipping", False)
                 continue
 
             # Data is reported about the IP Address
@@ -165,12 +165,10 @@ class sfp_phishstats(SpiderFootPlugin):
 
             evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
-
             
             maliciousIPDesc = "Phishstats [ " + str(maliciousIP) + "]\n"
 
             maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)
-
             if maliciousIPDescHash in self.results:
                 continue
             self.results[maliciousIPDescHash] = True
