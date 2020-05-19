@@ -144,6 +144,7 @@ class sfp_phishstats(SpiderFootPlugin):
 
             if data is None:
                 break
+            
             try:
                 maliciousIP = data[0].get('ip')
             except:
@@ -180,6 +181,6 @@ class sfp_phishstats(SpiderFootPlugin):
                 evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
             
             self.notifyListeners(evt)
-            
+
         return None
 # End of sfp_phishstats class
