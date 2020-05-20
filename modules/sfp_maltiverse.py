@@ -166,7 +166,7 @@ class sfp_maltiverse(SpiderFootPlugin):
             blacklistedRecords = data.get('blacklist')
 
             if blacklistedRecords is None or len(blacklistedRecords) == 0:
-                self.sf.error("No blacklist information found for IP", False)
+                self.sf.debug("No blacklist information found for IP")
                 continue
             
             # Data is reported about the IP Address
