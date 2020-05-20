@@ -83,7 +83,7 @@ class sfp_maltiverse(SpiderFootPlugin):
             return None
 
         if not res['code'] == "200":
-            self.sf.error("No information found from Phishstats for IP Address", false)
+            self.sf.error("No information found from Maltiverse for IP Address", false)
             return None
 
         try:
@@ -181,9 +181,17 @@ class sfp_maltiverse(SpiderFootPlugin):
 
             for blacklistedRecord in blacklistedRecords:
                 lastSeen = blacklistedRecord.get('last_seen')
-                lastSeenDate = datetime.strptime(str(lastSeen), "%Y-%m-%d %H:%M:%S")
+                if lastSeen is None:
+                    continue
+
+                try:
+                    lastSeenDate = datetime.strptime(str(lastSeen), "%Y-%m-%d %H:%M:%S")
+                except:
+                    self.sf.error("Invalid date in JSON response, skipping", False)
+                    continue
                                 
                 today = datetime.now()
+                
                 difference = (today - lastSeenDate).days
                 
                 if difference > int(self.opts["age_limit_days"]):
