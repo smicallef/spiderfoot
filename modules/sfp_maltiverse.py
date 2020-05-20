@@ -79,11 +79,11 @@ class sfp_maltiverse(SpiderFootPlugin):
             return None
 
         if res['code'] == "404":
-            self.sf.error("Not found", false)
+            self.sf.error("API endpoint not found", False)
             return None
 
         if not res['code'] == "200":
-            self.sf.error("No information found from Maltiverse for IP Address", false)
+            self.sf.error("No information found from Maltiverse for IP Address", False)
             return None
 
         try:
