@@ -59,7 +59,7 @@ class sfp_maltiverse(SpiderFootPlugin):
     def producedEvents(self):
         return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA"]
 
-    # Check whether the IP Address is malicious using Phishstats API
+    # Check whether the IP Address is malicious using Maltiverse API
     # https://app.swaggerhub.com/apis-docs/maltiverse/api/1.0.0-oas3#/IPv4/getIP
     def queryIPAddress(self, qry):
 
