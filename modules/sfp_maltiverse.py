@@ -18,7 +18,7 @@ import json
 from datetime import datetime
 
 class sfp_maltiverse(SpiderFootPlugin):
-    """Maltiverse:Investigate,Passive:Reputation Systems::Obtain information about any malicious activities involving IP addresses found"""
+    """Maltiverse:Investigate,Passive:Reputation Systems::Obtain information about any malicious activities involving IP addresses"""
 
     opts = {
         'checkaffiliates': True,
@@ -185,7 +185,7 @@ class sfp_maltiverse(SpiderFootPlugin):
                                 
                 today = datetime.now()
                 difference = (today - lastSeenDate).days
-
+                
                 if difference > int(self.opts["age_limit_days"]):
                     self.sf.debug("Record found is older than age limit, skipping")
                     continue
