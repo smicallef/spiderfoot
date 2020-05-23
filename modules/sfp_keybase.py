@@ -54,7 +54,8 @@ class sfp_keybase(SpiderFootPlugin):
           useragent=self.opts['_useragent']
         )
 
-        # Return more codes 
+        # In this case, it will always be 200 if keybase is queried
+        # The actual response codes are stored in status tag of the response
         if not res['code'] == '200':
             return None
         
@@ -96,7 +97,7 @@ class sfp_keybase(SpiderFootPlugin):
                 self.sf.debug("Not a keybase link")
                 return None
 
-            userName = link.split("/")[1]
+            userName = link.split("/")[1] 
 
         res = self.queryUsername(userName)
 
@@ -107,7 +108,48 @@ class sfp_keybase(SpiderFootPlugin):
         evt = SpiderFootEvent("RAW_RIR_DATA", str(res), self.__name__, event)
         self.notifyListeners(evt) 
 
+        if eventName == "LINKED_URL_EXTERNAL":
+            evt = SpiderFootEvent("USERNAME", str(userName), self.__name__, event)
+            self.notifyListeners(evt)    
+    
+        data = json.loads(str(res))
+
+        them = json.loads(str(data.get('them')))
+
+        basics = json.loads(str(them.get('basics')))
+
+        profile = json.loads(str(them.get('profile')))
+
+        # Will never occur, failsafe
+        if not username == basics.get('username'):
+            self.sf.error("Username does not match, skipping", False)
+            return None
         
+        # Get and report full name of user
+        fullName = profile.get('full_name')
+        if fullName is not None:
+            evt = SpiderFootEvent("HUMAN_NAME", str(fullName), self.__name__, event)
+            self.notifyListeners(evt)
         
+        # Get and report location of user
+        location = profile.get('location')
+        if location is not None:
+            evt = SpiderFootEvent("GEOINFO", str(location), self.__name__, event)
+            self.notifyListeners(evt)
+        
+        # Extract social media information from JSON response
+        socialMediaLinksRegex = ["github.com\/[A-Za-z0-9]", "twitter.com\/[A-Za-z0-9]", 
+            "facebook.com\/[A-Za-z0-9]"]
+        
+        for socialMediaLinkRegex in socialMediaLinksRegex:
+            link = re.findall(socialMediaLinkRegex, str(data))
+
+            if len(link) == 0:
+                continue
+
+            evt = SpiderFootEvent("SOCIAL_MEDIA", str(link[0]), self.__name__, event)
+            self.notifyListeners(evt)
+        
+
        return None
 # End of sfp_keybase class
