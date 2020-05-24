@@ -19,11 +19,9 @@ class sfp_keybase(SpiderFootPlugin):
     """Keybase:Footprint,Investigate,Passive:Public Registries::Obtain additional information about target username"""
 
     opts = {
-
     }
 
     optdescs = {
-
     }
 
     # Tracking results can be helpful to avoid reporting/processing duplicates
@@ -41,12 +39,11 @@ class sfp_keybase(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        # HUMAN_NAME just for testing. Remove this after test.
-        return ["HUMAN_NAME", "USERNAME", "LINKED_URL_EXTERNAL"]
+        return ["USERNAME", "LINKED_URL_EXTERNAL"]
 
     def producedEvents(self):
         return ["RAW_RIR_DATA", "SOCIAL_MEDIA", "USERNAME",
-            "HUMAN_NAME", "GEOINFO"]
+            "HUMAN_NAME", "GEOINFO", "BITCOIN_ADDRESS"]
 
     def queryUsername(self, qry):
 
@@ -65,7 +62,7 @@ class sfp_keybase(SpiderFootPlugin):
           useragent=self.opts['_useragent']
         )
 
-        # In this case, it will always be 200 if keybase is queried
+        # In this case, it will always be 200 if keybase is queried 
         # The actual response codes are stored in status tag of the response
         if not res['code'] == '200':
             return None
@@ -84,69 +81,74 @@ class sfp_keybase(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, event):
-        try:
-            eventName = event.eventType
-            srcModuleName = event.module
-            eventData = event.data
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
 
-            if self.errorState:
+        if self.errorState:
+            return None
+
+        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+
+        # Don't look up stuff twice
+        if eventData in self.results:
+            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            return None
+
+        self.results[eventData] = True
+
+        userName = eventData
+
+        # Extract username if a Keybase link is received 
+        if eventName == "LINKED_URL_EXTERNAL":
+            linkRegex = "keybase.io\/[A-Za-z0-9]+"  
+            link = re.findall(linkRegex, eventData)
+
+            if len(link) == 0:
+                self.sf.debug("Not a keybase link")
                 return None
 
-            self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+            userName = link.split("/")[1] 
 
-            # Don't look up stuff twice
-            if eventData in self.results:
-                self.sf.debug("Skipping " + eventData + " as already mapped.")
-                return None
+        content = self.queryUsername(userName)
 
-            self.results[eventData] = True
-
-            userName = eventData
-
-            # Extract username if a Keybase link is received 
-            if eventName == "LINKED_URL_EXTERNAL":
-                linkRegex = "keybase.io\/[A-Za-z0-9]+"  
-                link = re.findall(linkRegex, eventData)
-
-                if len(link) == 0:
-                    self.sf.debug("Not a keybase link")
-                    return None
-
-                userName = link.split("/")[1] 
-
-            content = self.queryUsername(userName)
-
-            if content is None:
-                self.sf.debug("No data found for username")
-                return None
-            
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(content), self.__name__, event)
-            self.notifyListeners(evt) 
-
-            if eventName == "LINKED_URL_EXTERNAL":
-                evt = SpiderFootEvent("USERNAME", str(userName), self.__name__, event)
-                self.notifyListeners(evt)    
+        if content is None:
+            self.sf.debug("No data found for username")
+            return None
         
-            
-            # Replacing string values that are not enclosed within double quotes
-            # Also replacing values like True and False to their corresponding numeric values
-            # If the above steps aren't performed, json.loads() fails
+        evt = SpiderFootEvent("RAW_RIR_DATA", str(content), self.__name__, event)
+        self.notifyListeners(evt) 
 
-            # Contains all data about username
-            them = json.loads(str(content.get('them')[0]).replace("'", "\"").replace("True", "1").replace("False", "0"))
+        if eventName == "LINKED_URL_EXTERNAL":
+            evt = SpiderFootEvent("USERNAME", str(userName), self.__name__, event)
+            self.notifyListeners(evt)    
+    
+        
+        # Replacing string values that are not enclosed within double quotes
+        # Also replacing values like True and False to their corresponding numeric values
+        # If the above steps aren't performed, json.loads() fails
 
-            # Basic information about the username
-            basics = json.loads(str(them.get('basics')).replace("'", "\""))
+        # Contains all data about username
+        them = json.loads(str(content.get('them')[0]).replace("'", "\"").replace("True", "1").replace("False", "0"))
+        
+        if them is None or them == "None":
+            self.sf.debug("No data found for username")
+            return None
 
-            # Profile information about the username
-            profile = json.loads(str(them.get('profile')).replace("'", "\""))
+        # Basic information about the username
+        basics = json.loads(str(them.get('basics')).replace("'", "\""))
 
-            # Failsafe to prevent reporting any wrongly received data
+        # Profile information about the username
+        profile = json.loads(str(them.get('profile')).replace("'", "\""))
+
+        # Failsafe to prevent reporting any wrongly received data
+        if basics:
             responseUserName = basics.get('username')
             if not userName == responseUserName:
                 self.sf.error("Username does not match received response, skipping", False)
                 return None
-            
+        
+        if profile:
             # Get and report full name of user
             fullName = profile.get('full_name')
             if not fullName == "None":
@@ -172,10 +174,20 @@ class sfp_keybase(SpiderFootPlugin):
                 evt = SpiderFootEvent("SOCIAL_MEDIA", str(link[0]), self.__name__, event)
                 self.notifyListeners(evt)
 
-            return None
+        # Get cryptocurrency addresses 
+        cryptoAddresses = json.loads(str(them.get('cryptocurrency_addresses')).replace("'", "\""))
+        
+        # Extract and report bitcoin addresses if any
+        if cryptoAddresses:
+            bitcoinAddresses = json.loads(str(cryptoAddresses.get('bitcoin')).replace("'", "\""))
+            if bitcoinAddresses:
+                for bitcoinAddress in bitcoinAddresses:
+                    btcAddress = bitcoinAddress.get('address')
+                    if btcAddress is None:
+                        continue
+                    evt = SpiderFootEvent("BITCOIN_ADDRESS", str(btcAddress), self.__name__, event)
+                    self.notifyListeners(evt)
 
-        except Exception as e:
-            import traceback
-            self.sf.error(str(traceback.format_exc()))
-            self.sf.error("Exception : " + str(e))
+        return None
+
 # End of sfp_keybase class
