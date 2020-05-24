@@ -162,17 +162,23 @@ class sfp_keybase(SpiderFootPlugin):
                 self.notifyListeners(evt)
             
             # Extract social media information from JSON response
-            socialMediaLinksRegex = ["github.com\/[A-Za-z0-9-_.]+", "twitter.com\/[A-Za-z0-9-_.]+", 
-                "facebook.com\/[A-Za-z0-9-_.]+"]
+            socialMediaLinksRegex = ["https:\/\/github.com\/[A-Za-z0-9-_.]+", "https:\/\/twitter.com\/[A-Za-z0-9-_.]+", 
+                "https:\/\/facebook.com\/[A-Za-z0-9-_.]+"]
             
             for socialMediaLinkRegex in socialMediaLinksRegex:
-                link = re.findall(socialMediaLinkRegex, str(content))
+                links = re.findall(socialMediaLinkRegex, str(content))
                 
-                if len(link) == 0:
+                if len(links) == 0:
                     continue
+                
+                for link in links:
 
-                evt = SpiderFootEvent("SOCIAL_MEDIA", str(link[0]), self.__name__, event)
-                self.notifyListeners(evt)
+                    if link in self.results:
+                        continue
+                    self.results[link] = True
+
+                    evt = SpiderFootEvent("SOCIAL_MEDIA", str(link), self.__name__, event)
+                    self.notifyListeners(evt)
 
         # Get cryptocurrency addresses 
         cryptoAddresses = json.loads(str(them.get('cryptocurrency_addresses')).replace("'", "\""))
