@@ -12,10 +12,19 @@
 # -------------------------------------------------------------------------------
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+import urllib.request, urllib.parse, urllib.error
 import json
 import re
 class sfp_keybase(SpiderFootPlugin):
     """Keybase:Footprint,Investigate,Passive:Public Registries::Obtain additional information about target username"""
+
+    opts = {
+
+    }
+
+    optdescs = {
+
+    }
 
     # Tracking results can be helpful to avoid reporting/processing duplicates
     results = None
@@ -32,10 +41,12 @@ class sfp_keybase(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ["USERNAME", "LINKED_URL_EXTERNAL"]
+        # HUMAN_NAME just for testing. Remove this after test.
+        return ["HUMAN_NAME", "USERNAME", "LINKED_URL_EXTERNAL"]
 
     def producedEvents(self):
-        return ["RAW_RIR_DATA"]
+        return ["RAW_RIR_DATA", "SOCIAL_MEDIA", "USERNAME",
+            "HUMAN_NAME", "GEOINFO"]
 
     def queryUsername(self, qry):
 
@@ -48,7 +59,7 @@ class sfp_keybase(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://keybase.io/_/api/1.0/user/lookup.json' + urllib.parse.urlencode(params),
+          'https://keybase.io/_/api/1.0/user/lookup.json?' + urllib.parse.urlencode(params),
           headers=headers,
           timeout=15,
           useragent=self.opts['_useragent']
@@ -59,97 +70,112 @@ class sfp_keybase(SpiderFootPlugin):
         if not res['code'] == '200':
             return None
         
-        status = json.loads(res.get('status'))
+        # Replacing null with "None"
+        content = json.loads(str(res['content']).replace("null", "\"None\""))
+
+        status = content.get('status')
 
         code = status.get('code')
-        if not code == '0':
+
+        if not int(code) == 0:
             return None
 
-        return res
+        return content
 
     # Handle events sent to this module
     def handleEvent(self, event):
+        try:
+            eventName = event.eventType
+            srcModuleName = event.module
+            eventData = event.data
 
-        eventName = event.eventType
-        srcModuleName = event.module
-        eventData = event.data
-
-        if self.errorState:
-            return None
-
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
-
-        # Don't look up stuff twice
-        if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
-            return None
-
-        self.results[eventData] = True
-
-        userName = eventData
-
-        # Extract username if a Keybase link is received 
-        if eventName == "LINKED_URL_EXTERNAL":
-            linkRegex = "keybase.io\/[A-Za-z0-9]"  
-            link = re.findall(linkRegex, eventData)
-
-            if len(link) == 0:
-                self.sf.debug("Not a keybase link")
+            if self.errorState:
                 return None
 
-            userName = link.split("/")[1] 
+            self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
 
-        res = self.queryUsername(userName)
+            # Don't look up stuff twice
+            if eventData in self.results:
+                self.sf.debug("Skipping " + eventData + " as already mapped.")
+                return None
 
-        if res is None:
-            self.sf.debug("No data found for username")
+            self.results[eventData] = True
+
+            userName = eventData
+
+            # Extract username if a Keybase link is received 
+            if eventName == "LINKED_URL_EXTERNAL":
+                linkRegex = "keybase.io\/[A-Za-z0-9]+"  
+                link = re.findall(linkRegex, eventData)
+
+                if len(link) == 0:
+                    self.sf.debug("Not a keybase link")
+                    return None
+
+                userName = link.split("/")[1] 
+
+            content = self.queryUsername(userName)
+
+            if content is None:
+                self.sf.debug("No data found for username")
+                return None
+            
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(content), self.__name__, event)
+            self.notifyListeners(evt) 
+
+            if eventName == "LINKED_URL_EXTERNAL":
+                evt = SpiderFootEvent("USERNAME", str(userName), self.__name__, event)
+                self.notifyListeners(evt)    
+        
+            
+            # Replacing string values that are not enclosed within double quotes
+            # Also replacing values like True and False to their corresponding numeric values
+            # If the above steps aren't performed, json.loads() fails
+
+            # Contains all data about username
+            them = json.loads(str(content.get('them')[0]).replace("'", "\"").replace("True", "1").replace("False", "0"))
+
+            # Basic information about the username
+            basics = json.loads(str(them.get('basics')).replace("'", "\""))
+
+            # Profile information about the username
+            profile = json.loads(str(them.get('profile')).replace("'", "\""))
+
+            # Failsafe to prevent reporting any wrongly received data
+            responseUserName = basics.get('username')
+            if not userName == responseUserName:
+                self.sf.error("Username does not match received response, skipping", False)
+                return None
+            
+            # Get and report full name of user
+            fullName = profile.get('full_name')
+            if not fullName == "None":
+                evt = SpiderFootEvent("HUMAN_NAME", str(fullName), self.__name__, event)
+                self.notifyListeners(evt)
+            
+            # Get and report location of user
+            location = profile.get('location')
+            if not location == "None":
+                evt = SpiderFootEvent("GEOINFO", str(location), self.__name__, event)
+                self.notifyListeners(evt)
+            
+            # Extract social media information from JSON response
+            socialMediaLinksRegex = ["github.com\/[A-Za-z0-9-_.]+", "twitter.com\/[A-Za-z0-9-_.]+", 
+                "facebook.com\/[A-Za-z0-9-_.]+"]
+            
+            for socialMediaLinkRegex in socialMediaLinksRegex:
+                link = re.findall(socialMediaLinkRegex, str(content))
+                
+                if len(link) == 0:
+                    continue
+
+                evt = SpiderFootEvent("SOCIAL_MEDIA", str(link[0]), self.__name__, event)
+                self.notifyListeners(evt)
+
             return None
-        
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(res), self.__name__, event)
-        self.notifyListeners(evt) 
 
-        if eventName == "LINKED_URL_EXTERNAL":
-            evt = SpiderFootEvent("USERNAME", str(userName), self.__name__, event)
-            self.notifyListeners(evt)    
-    
-        data = json.loads(str(res))
-
-        them = json.loads(str(data.get('them')))
-
-        basics = json.loads(str(them.get('basics')))
-
-        profile = json.loads(str(them.get('profile')))
-
-        # Will never occur, failsafe
-        if not username == basics.get('username'):
-            self.sf.error("Username does not match, skipping", False)
-            return None
-        
-        # Get and report full name of user
-        fullName = profile.get('full_name')
-        if fullName is not None:
-            evt = SpiderFootEvent("HUMAN_NAME", str(fullName), self.__name__, event)
-            self.notifyListeners(evt)
-        
-        # Get and report location of user
-        location = profile.get('location')
-        if location is not None:
-            evt = SpiderFootEvent("GEOINFO", str(location), self.__name__, event)
-            self.notifyListeners(evt)
-        
-        # Extract social media information from JSON response
-        socialMediaLinksRegex = ["github.com\/[A-Za-z0-9]", "twitter.com\/[A-Za-z0-9]", 
-            "facebook.com\/[A-Za-z0-9]"]
-        
-        for socialMediaLinkRegex in socialMediaLinksRegex:
-            link = re.findall(socialMediaLinkRegex, str(data))
-
-            if len(link) == 0:
-                continue
-
-            evt = SpiderFootEvent("SOCIAL_MEDIA", str(link[0]), self.__name__, event)
-            self.notifyListeners(evt)
-        
-
-       return None
+        except Exception as e:
+            import traceback
+            self.sf.error(str(traceback.format_exc()))
+            self.sf.error("Exception : " + str(e))
 # End of sfp_keybase class
