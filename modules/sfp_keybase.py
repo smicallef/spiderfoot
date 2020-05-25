@@ -142,7 +142,7 @@ class sfp_keybase(SpiderFootPlugin):
         
         # Checking with == "None" in addition to is None, because null values are replaced with "None"
 
-        # Contains all data about username
+        # Contains all data about the target username
         try:
             them = json.loads(str(content.get('them')[0]).replace("'", "\"").replace("True", "1").replace("False", "0"))
         except:
