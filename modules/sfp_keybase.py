@@ -108,7 +108,11 @@ class sfp_keybase(SpiderFootPlugin):
                 self.sf.debug("Not a keybase link")
                 return None
 
-            userName = link.split("/")[1] 
+            userName = link.split("/")[1]
+
+            if userName in self.results:
+                return None
+            self.results[userName] = True
 
         content = self.queryUsername(userName)
 
