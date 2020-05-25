@@ -68,13 +68,21 @@ class sfp_keybase(SpiderFootPlugin):
             return None
         
         # Replacing null with "None"
-        content = json.loads(str(res['content']).replace("null", "\"None\""))
+        content = json.loads(str(res['content']).replace(":null", ":\"None\""))
 
         status = content.get('status')
+        if status is None:
+            return None
 
         code = status.get('code')
-
-        if not int(code) == 0:
+        if code is None:
+            return None
+        
+        try:
+            if not int(code) == 0:
+                return None
+        except:
+            self.sf.error("Invalid code returned as response", False)
             return None
 
         return content
@@ -101,7 +109,7 @@ class sfp_keybase(SpiderFootPlugin):
 
         # Extract username if a Keybase link is received 
         if eventName == "LINKED_URL_EXTERNAL":
-            linkRegex = "keybase.io\/[A-Za-z0-9]+"  
+            linkRegex = "keybase.io\/[A-Za-z0-9-_.]+"  
             link = re.findall(linkRegex, eventData)
 
             if len(link) == 0:
@@ -131,19 +139,30 @@ class sfp_keybase(SpiderFootPlugin):
         # Replacing string values that are not enclosed within double quotes
         # Also replacing values like True and False to their corresponding numeric values
         # If the above steps aren't performed, json.loads() fails
+        
+        # Checking with == "None" in addition to is None, because null values are replaced with "None"
 
         # Contains all data about username
-        them = json.loads(str(content.get('them')[0]).replace("'", "\"").replace("True", "1").replace("False", "0"))
-        
+        try:
+            them = json.loads(str(content.get('them')[0]).replace("'", "\"").replace("True", "1").replace("False", "0"))
+        except:
+            them = None
+
         if them is None or them == "None":
             self.sf.debug("No data found for username")
             return None
 
         # Basic information about the username
-        basics = json.loads(str(them.get('basics')).replace("'", "\""))
+        try:
+            basics = json.loads(str(them.get('basics')).replace("'", "\""))
+        except:
+            basics = None
 
         # Profile information about the username
-        profile = json.loads(str(them.get('profile')).replace("'", "\""))
+        try:
+            profile = json.loads(str(them.get('profile')).replace("'", "\""))
+        except:
+            profile = None
 
         # Failsafe to prevent reporting any wrongly received data
         if basics:
@@ -155,21 +174,24 @@ class sfp_keybase(SpiderFootPlugin):
         if profile:
             # Get and report full name of user
             fullName = profile.get('full_name')
-            if not fullName == "None":
+            if not (fullName is None or fullName == "None"):
                 evt = SpiderFootEvent("HUMAN_NAME", str(fullName), self.__name__, event)
                 self.notifyListeners(evt)
             
             # Get and report location of user
             location = profile.get('location')
-            if not location == "None":
+            if not (location is None or location == "None"):
                 evt = SpiderFootEvent("GEOINFO", str(location), self.__name__, event)
                 self.notifyListeners(evt)
             
-            # Extract social media information from JSON response
-            socialMediaLinksRegex = ["https:\/\/github.com\/[A-Za-z0-9-_.]+", "https:\/\/twitter.com\/[A-Za-z0-9-_.]+", 
-                "https:\/\/facebook.com\/[A-Za-z0-9-_.]+"]
-            
-            for socialMediaLinkRegex in socialMediaLinksRegex:
+            # Extract social media information from JSON response           
+            socialMediaRegexDict = {
+                "Github": "https:\/\/github.com\/[A-Za-z0-9-_.]+",
+                "Twitter": "https:\/\/twitter.com\/[A-Za-z0-9-_.]+",
+                "Facebook": "https:\/\/facebook.com\/[A-Za-z0-9-_.]+"
+            }
+
+            for socialMediaName, socialMediaLinkRegex in socialMediaRegexDict.items():
                 links = re.findall(socialMediaLinkRegex, str(content))
                 
                 if len(links) == 0:
@@ -180,8 +202,10 @@ class sfp_keybase(SpiderFootPlugin):
                     if link in self.results:
                         continue
                     self.results[link] = True
+                    
+                    socialMedia = socialMediaName + ": " + "<SFURL>" + link + "</SFURL>"
 
-                    evt = SpiderFootEvent("SOCIAL_MEDIA", str(link), self.__name__, event)
+                    evt = SpiderFootEvent("SOCIAL_MEDIA", str(socialMedia), self.__name__, event)
                     self.notifyListeners(evt)
 
         # Get cryptocurrency addresses 
