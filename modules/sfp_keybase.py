@@ -43,7 +43,8 @@ class sfp_keybase(SpiderFootPlugin):
 
     def producedEvents(self):
         return ["RAW_RIR_DATA", "SOCIAL_MEDIA", "USERNAME",
-            "HUMAN_NAME", "GEOINFO", "BITCOIN_ADDRESS"]
+            "HUMAN_NAME", "GEOINFO", "BITCOIN_ADDRESS", 
+            "PGP_KEY"]
 
     def queryUsername(self, qry):
 
@@ -221,6 +222,22 @@ class sfp_keybase(SpiderFootPlugin):
                         continue
                     evt = SpiderFootEvent("BITCOIN_ADDRESS", str(btcAddress), self.__name__, event)
                     self.notifyListeners(evt)
+        
+        # Extract PGP Keys
+        pgpRegex = "-----BEGIN PGP PUBLIC KEY BLOCK-----(.*?)-----END PGP PUBLIC KEY BLOCK-----"
+
+        pgpKeys = re.findall(pgpRegex, str(content))
+        
+        for pgpKey in pgpKeys:
+
+            if len(pgpKey) < 300:
+                self.sf.debug("Likely invalid public key.")
+                continue
+            
+            pgpKey = pgpKey.replace("\\n", "")
+
+            evt = SpiderFootEvent("PGP_KEY", pgpKey, self.__name__, event)
+            self.notifyListeners(evt)
 
         return None
 
