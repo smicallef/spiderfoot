@@ -224,7 +224,7 @@ class sfp_keybase(SpiderFootPlugin):
                     self.notifyListeners(evt)
         
         # Extract PGP Keys
-        pgpRegex = "-----BEGIN PGP PUBLIC KEY BLOCK-----(.*?)-----END PGP PUBLIC KEY BLOCK-----"
+        pgpRegex = "-----BEGIN\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----(.*?)-----END\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----"
 
         pgpKeys = re.findall(pgpRegex, str(content))
         
