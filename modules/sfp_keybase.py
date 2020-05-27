@@ -69,7 +69,7 @@ class sfp_keybase(SpiderFootPlugin):
             return None
         
         # Replacing null with "None"
-        content = json.loads(str(res['content']).replace(":null", ":\"None\""))
+        content = json.loads(res['content'])
 
         status = content.get('status')
         if status is None:
@@ -145,25 +145,20 @@ class sfp_keybase(SpiderFootPlugin):
 
         # Contains all data about the target username
         try:
-            them = json.loads(str(content.get('them')[0]).replace("'", "\"").replace("True", "1").replace("False", "0"))
+            them = content.get('them')[0]
         except:
+            self.sf.error("Invalid data recevied", False)
             them = None
 
-        if them is None or them == "None":
+        if them is None:
             self.sf.debug("No data found for username")
             return None
 
         # Basic information about the username
-        try:
-            basics = json.loads(str(them.get('basics')).replace("'", "\""))
-        except:
-            basics = None
+        basics = them.get('basics')
 
         # Profile information about the username
-        try:
-            profile = json.loads(str(them.get('profile')).replace("'", "\""))
-        except:
-            profile = None
+        profile = them.get('profile')
 
         # Failsafe to prevent reporting any wrongly received data
         if basics:
@@ -176,13 +171,13 @@ class sfp_keybase(SpiderFootPlugin):
             # Get and report full name of user
             fullName = profile.get('full_name')
             if not (fullName is None or fullName == "None"):
-                evt = SpiderFootEvent("HUMAN_NAME", str(fullName), self.__name__, event)
+                evt = SpiderFootEvent("HUMAN_NAME", fullName, self.__name__, event)
                 self.notifyListeners(evt)
             
             # Get and report location of user
             location = profile.get('location')
             if not (location is None or location == "None"):
-                evt = SpiderFootEvent("GEOINFO", str(location), self.__name__, event)
+                evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                 self.notifyListeners(evt)
             
             # Extract social media information from JSON response           
@@ -206,21 +201,21 @@ class sfp_keybase(SpiderFootPlugin):
                     
                     socialMedia = socialMediaName + ": " + "<SFURL>" + link + "</SFURL>"
 
-                    evt = SpiderFootEvent("SOCIAL_MEDIA", str(socialMedia), self.__name__, event)
+                    evt = SpiderFootEvent("SOCIAL_MEDIA", socialMedia, self.__name__, event)
                     self.notifyListeners(evt)
 
         # Get cryptocurrency addresses 
-        cryptoAddresses = json.loads(str(them.get('cryptocurrency_addresses')).replace("'", "\""))
-        
+        cryptoAddresses = them.get('cryptocurrency_addresses')
+
         # Extract and report bitcoin addresses if any
         if cryptoAddresses:
-            bitcoinAddresses = json.loads(str(cryptoAddresses.get('bitcoin')).replace("'", "\""))
+            bitcoinAddresses = json.loads(cryptoAddresses.get('bitcoin'))
             if bitcoinAddresses:
                 for bitcoinAddress in bitcoinAddresses:
                     btcAddress = bitcoinAddress.get('address')
                     if btcAddress is None:
                         continue
-                    evt = SpiderFootEvent("BITCOIN_ADDRESS", str(btcAddress), self.__name__, event)
+                    evt = SpiderFootEvent("BITCOIN_ADDRESS", btcAddress, self.__name__, event)
                     self.notifyListeners(evt)
         
         # Extract PGP Keys
