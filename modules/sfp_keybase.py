@@ -135,14 +135,7 @@ class sfp_keybase(SpiderFootPlugin):
         if eventName == "LINKED_URL_EXTERNAL":
             evt = SpiderFootEvent("USERNAME", str(userName), self.__name__, event)
             self.notifyListeners(evt)    
-    
         
-        # Replacing string values that are not enclosed within double quotes
-        # Also replacing values like True and False to their corresponding numeric values
-        # If the above steps aren't performed, json.loads() fails
-        
-        # Checking with == "None" in addition to is None, because null values are replaced with "None"
-
         # Contains all data about the target username
         try:
             them = content.get('them')[0]
@@ -170,13 +163,13 @@ class sfp_keybase(SpiderFootPlugin):
         if profile:
             # Get and report full name of user
             fullName = profile.get('full_name')
-            if not (fullName is None or fullName == "None"):
+            if fullName:
                 evt = SpiderFootEvent("HUMAN_NAME", fullName, self.__name__, event)
                 self.notifyListeners(evt)
             
             # Get and report location of user
             location = profile.get('location')
-            if not (location is None or location == "None"):
+            if location:
                 evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                 self.notifyListeners(evt)
             
@@ -184,7 +177,14 @@ class sfp_keybase(SpiderFootPlugin):
             socialMediaRegexDict = {
                 "Github": "https:\/\/github.com\/[A-Za-z0-9-_.]+",
                 "Twitter": "https:\/\/twitter.com\/[A-Za-z0-9-_.]+",
-                "Facebook": "https:\/\/facebook.com\/[A-Za-z0-9-_.]+"
+                "Facebook": "https:\/\/facebook.com\/[A-Za-z0-9-_.]+",
+                "Youtube": "https:\/\/youtube.com\/[A-Za-z0-9-_.]+",
+                "LinkedIn (Individual)": "https:\/\/linkedin.com\/in\/[A-Za-z0-9-_.]+",
+                "LinkedIn (Company)": "https:\/\/linkedin.com\/company\/[A-Za-z0-9-_.]+",
+                "Google+": "https:\/\/plus.google.com\/[A-Za-z0-9-_.]+",
+                "Slideshare": "https:\/\/slideshare.net\/[A-Za-z0-9-_.]+",
+                "Instagram": "https:\/\/instagram.com\/[A-Za-z0-9-_.]+",
+                "MySpace": "https:\/\/myspace.com\/[A-Za-z0-9-_.]+"
             }
 
             for socialMediaName, socialMediaLinkRegex in socialMediaRegexDict.items():
