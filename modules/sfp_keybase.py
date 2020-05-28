@@ -121,7 +121,9 @@ class sfp_keybase(SpiderFootPlugin):
             userName = links[0].split("/")[1]
 
             if userName in self.results:
+                self.sf.debug("Skipping " + userName + " as already mapped.")
                 return None
+                
             self.results[userName] = True
 
         content = self.queryUsername(userName)
