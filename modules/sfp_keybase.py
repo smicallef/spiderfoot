@@ -15,7 +15,9 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 import urllib.request, urllib.parse, urllib.error
 import json
 import re
+
 class sfp_keybase(SpiderFootPlugin):
+
     """Keybase:Footprint,Investigate,Passive:Public Registries::Obtain additional information about target username"""
 
     opts = {
@@ -68,7 +70,6 @@ class sfp_keybase(SpiderFootPlugin):
         if not res['code'] == '200':
             return None
         
-        # Replacing null with "None"
         content = json.loads(res['content'])
 
         status = content.get('status')
@@ -110,14 +111,14 @@ class sfp_keybase(SpiderFootPlugin):
 
         # Extract username if a Keybase link is received 
         if eventName == "LINKED_URL_EXTERNAL":
-            linkRegex = "keybase.io\/[A-Za-z0-9-_.]+"  
-            link = re.findall(linkRegex, eventData)
+            linkRegex = "keybase.io\/[A-Za-z0-9\-_\.]+"  
+            links = re.findall(linkRegex, eventData)
 
-            if len(link) == 0:
+            if len(links) == 0:
                 self.sf.debug("Not a keybase link")
                 return None
 
-            userName = link.split("/")[1]
+            userName = links[0].split("/")[1]
 
             if userName in self.results:
                 return None
@@ -133,7 +134,7 @@ class sfp_keybase(SpiderFootPlugin):
         self.notifyListeners(evt) 
 
         if eventName == "LINKED_URL_EXTERNAL":
-            evt = SpiderFootEvent("USERNAME", str(userName), self.__name__, event)
+            evt = SpiderFootEvent("USERNAME", userName, self.__name__, event)
             self.notifyListeners(evt)    
         
         # Contains all data about the target username
@@ -173,50 +174,41 @@ class sfp_keybase(SpiderFootPlugin):
                 evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                 self.notifyListeners(evt)
             
-            # Extract social media information from JSON response           
-            socialMediaRegexDict = {
-                "Github": "https:\/\/github.com\/[A-Za-z0-9-_.]+",
-                "Twitter": "https:\/\/twitter.com\/[A-Za-z0-9-_.]+",
-                "Facebook": "https:\/\/facebook.com\/[A-Za-z0-9-_.]+",
-                "Youtube": "https:\/\/youtube.com\/[A-Za-z0-9-_.]+",
-                "LinkedIn (Individual)": "https:\/\/linkedin.com\/in\/[A-Za-z0-9-_.]+",
-                "LinkedIn (Company)": "https:\/\/linkedin.com\/company\/[A-Za-z0-9-_.]+",
-                "Google+": "https:\/\/plus.google.com\/[A-Za-z0-9-_.]+",
-                "Slideshare": "https:\/\/slideshare.net\/[A-Za-z0-9-_.]+",
-                "Instagram": "https:\/\/instagram.com\/[A-Za-z0-9-_.]+",
-                "MySpace": "https:\/\/myspace.com\/[A-Za-z0-9-_.]+"
-            }
+        # Extract social media information
+        proofsSummary = them.get('proofs_summary')
 
-            for socialMediaName, socialMediaLinkRegex in socialMediaRegexDict.items():
-                links = re.findall(socialMediaLinkRegex, str(content))
-                
-                if len(links) == 0:
-                    continue
-                
-                for link in links:
+        if proofsSummary:
+            socialMediaData = proofsSummary.get('all')
 
-                    if link in self.results:
-                        continue
-                    self.results[link] = True
-                    
-                    socialMedia = socialMediaName + ": " + "<SFURL>" + link + "</SFURL>"
+            if socialMediaData:
+                for socialMedia in socialMediaData:
+                    socialMediaSite = socialMedia.get('proof_type')
+                    socialMediaURL = socialMedia.get('service_url')
 
-                    evt = SpiderFootEvent("SOCIAL_MEDIA", socialMedia, self.__name__, event)
-                    self.notifyListeners(evt)
+                    if socialMediaSite and socialMediaURL:
+                        socialMedia = socialMediaSite + ": " + "<SFURL>" + socialMediaURL + "</SFURL>"
 
+                        evt = SpiderFootEvent("SOCIAL_MEDIA", socialMedia, self.__name__, event)
+                        self.notifyListeners(evt)
+        
         # Get cryptocurrency addresses 
         cryptoAddresses = them.get('cryptocurrency_addresses')
 
         # Extract and report bitcoin addresses if any
         if cryptoAddresses:
-            bitcoinAddresses = json.loads(cryptoAddresses.get('bitcoin'))
+            bitcoinAddresses = cryptoAddresses.get('bitcoin')
+
             if bitcoinAddresses:
+
                 for bitcoinAddress in bitcoinAddresses:
                     btcAddress = bitcoinAddress.get('address')
+
                     if btcAddress is None:
                         continue
+
                     evt = SpiderFootEvent("BITCOIN_ADDRESS", btcAddress, self.__name__, event)
                     self.notifyListeners(evt)
+
         
         # Extract PGP Keys
         pgpRegex = "-----BEGIN\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----(.*?)-----END\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----"
@@ -228,8 +220,14 @@ class sfp_keybase(SpiderFootPlugin):
             if len(pgpKey) < 300:
                 self.sf.debug("Likely invalid public key.")
                 continue
-            
-            pgpKey = pgpKey.replace("\\n", "")
+                        
+            # Avoid reporting of duplicate keys
+            pgpKeyHash = self.sf.hashstring(pgpKey)
+
+            if pgpKeyHash in self.results:
+                continue
+
+            self.results[pgpKeyHash] = True
 
             evt = SpiderFootEvent("PGP_KEY", pgpKey, self.__name__, event)
             self.notifyListeners(evt)
