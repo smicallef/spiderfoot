@@ -223,7 +223,7 @@ class sfp_keybase(SpiderFootPlugin):
                 continue
 
             # Remove unescaped \n literals
-            pgpKey = pgpKey.replace("\\\n", "")
+            pgpKey = pgpKey.replace("\\n", "")
 
             # Avoid reporting of duplicate keys
             pgpKeyHash = self.sf.hashstring(pgpKey)
