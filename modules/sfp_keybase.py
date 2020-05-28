@@ -17,7 +17,6 @@ import json
 import re
 
 class sfp_keybase(SpiderFootPlugin):
-
     """Keybase:Footprint,Investigate,Passive:Public Registries::Obtain additional information about target username"""
 
     opts = {
@@ -222,7 +221,10 @@ class sfp_keybase(SpiderFootPlugin):
             if len(pgpKey) < 300:
                 self.sf.debug("Likely invalid public key.")
                 continue
-                        
+
+            # Remove unescaped \n literals
+            pgpKey = pgpKey.replace("\\\n", "")
+
             # Avoid reporting of duplicate keys
             pgpKeyHash = self.sf.hashstring(pgpKey)
 
