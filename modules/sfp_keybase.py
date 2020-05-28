@@ -51,11 +51,11 @@ class sfp_keybase(SpiderFootPlugin):
     def queryUsername(self, qry):
 
         params = {
-            'usernames': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
+            'usernames': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
 
         headers = {
-            'Accept' : "application/json",
+            'Accept' : "application/json"
         }
 
         res = self.sf.fetchUrl(
@@ -141,7 +141,7 @@ class sfp_keybase(SpiderFootPlugin):
         try:
             them = content.get('them')[0]
         except:
-            self.sf.error("Invalid data recevied", False)
+            self.sf.error("Invalid data received", False)
             them = None
 
         if them is None:
