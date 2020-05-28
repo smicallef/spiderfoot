@@ -110,14 +110,14 @@ class sfp_keybase(SpiderFootPlugin):
 
         # Extract username if a Keybase link is received 
         if eventName == "LINKED_URL_EXTERNAL":
-            linkRegex = "keybase.io\/[A-Za-z0-9\-_\.]+"  
+            linkRegex = "^https?://keybase.io\/[A-Za-z0-9\-_\.]+"  
             links = re.findall(linkRegex, eventData)
 
             if len(links) == 0:
                 self.sf.debug("Not a keybase link")
                 return None
 
-            userName = links[0].split("/")[1]
+            userName = links[0].split("/")[3]
 
             if userName in self.results:
                 self.sf.debug("Skipping " + userName + " as already mapped.")
