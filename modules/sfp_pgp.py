@@ -85,7 +85,7 @@ class sfp_pgp(SpiderFootPlugin):
                     evttype = "EMAILADDR"
 
                     mailDom = email.lower().split('@')[1]
-                    if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
+                    if not self.getTarget().matches(mailDom):
                         evttype = "AFFILIATE_EMAILADDR"
 
                     self.sf.info("Found e-mail address: " + email)

@@ -72,7 +72,7 @@ class sfp_emailformat(SpiderFootPlugin):
 
             # Skip unrelated emails
             mailDom = email.lower().split('@')[1]
-            if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
+            if not self.getTarget().matches(mailDom):
                 self.sf.debug("Skipped address: " + email)
                 continue
 

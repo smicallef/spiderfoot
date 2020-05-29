@@ -151,7 +151,7 @@ class sfp_scylla(SpiderFootPlugin):
 
                 # Skip unrelated emails
                 # Scylla sometimes returns broader results than the searched data
-                if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
+                if not self.getTarget().matches(mailDom):
                     self.sf.debug("Skipped address: " + email)
                     continue
 
