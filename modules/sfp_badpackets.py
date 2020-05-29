@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_badpackets
-# Purpose:      Spiderfoot plugin to search BadPackets API for any 
-#               malicious activity by the target
+# Name:        sfp_badpackets
+# Purpose:     Spiderfoot plugin to search Bad Packets API for any
+#              malicious activity by the target
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
@@ -30,7 +30,7 @@ class sfp_badpackets(SpiderFootPlugin):
 
     # Option descriptions. Delete any options not applicable to this module.
     optdescs = {
-        "api_key": "Bad packets API Key",
+        "api_key": "Bad Packets API Key",
         'checkaffiliates': "Check affiliates?",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
@@ -39,7 +39,7 @@ class sfp_badpackets(SpiderFootPlugin):
     }
 
     results = None
-    errorState = False  
+    errorState = False
     limit = 100
 
     def setup(self, sfc, userOpts=dict()):
@@ -48,13 +48,12 @@ class sfp_badpackets(SpiderFootPlugin):
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-        
 
-    # What events is this module interested in for input
+    # What events does this module accept for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):
         return ["IP_ADDRESS", "NETBLOCK_OWNER", "NETBLOCK_MEMBER",
-            "AFFILIATE_IPADDR"]
+                "AFFILIATE_IPADDR"]
 
     # What events this module produces
     def producedEvents(self):
@@ -65,13 +64,13 @@ class sfp_badpackets(SpiderFootPlugin):
     def queryIPAddress(self, qry, currentOffset):
         params = {
             'source_ip_address': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.limit, 
+            'limit': self.limit,
             'offset': currentOffset
         }
 
         headers = {
-            'Accept' : "application/json",
-            'Authorization' : "Token " + self.opts['api_key']
+            'Accept': "application/json",
+            'Authorization': "Token " + self.opts['api_key']
         }
 
         res = self.sf.fetchUrl(
@@ -82,8 +81,8 @@ class sfp_badpackets(SpiderFootPlugin):
         )
 
         return self.parseAPIResponse(res)
-        
-    # Parse API Response from Badpackets
+
+    # Parse API Response from Bad Packets
     def parseAPIResponse(self, res):
         if res['content'] is None:
             self.sf.info("No Bad Packets information found")
@@ -104,7 +103,7 @@ class sfp_badpackets(SpiderFootPlugin):
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Spyse", False)
+            self.sf.error("Failed to retrieve content from Bad Packets", False)
             return None
 
         # Always always always process external data with try/except since we cannot
@@ -112,17 +111,17 @@ class sfp_badpackets(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from BadPackets.", False)
+            self.sf.error("Error processing JSON response from Bad Packets.", False)
             return None
 
         return data
-    
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        
+
         if self.errorState:
             return None
 
@@ -151,7 +150,7 @@ class sfp_badpackets(SpiderFootPlugin):
                                 str(IPNetwork(eventData).prefixlen) + " > " +
                                 str(self.opts['maxnetblock']))
                     return None
-        
+
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
@@ -161,7 +160,7 @@ class sfp_badpackets(SpiderFootPlugin):
                                 str(IPNetwork(eventData).prefixlen) + " > " +
                                 str(self.opts['maxsubnet']))
                     return None
-                    
+
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
@@ -172,13 +171,13 @@ class sfp_badpackets(SpiderFootPlugin):
             if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
                 return None
             qrylist.append(eventData)
-        
+
         for addr in qrylist:
 
-            nextPageHasData = True    
+            nextPageHasData = True
             if self.checkForStop():
                 return None
-            
+
             currentOffset = 0
             while nextPageHasData:
                 data = self.queryIPAddress(addr, currentOffset)
@@ -205,10 +204,10 @@ class sfp_badpackets(SpiderFootPlugin):
                 if records:
                     evt = SpiderFootEvent("RAW_RIR_DATA", str(records), self.__name__, event)
                     self.notifyListeners(evt)
-                    
+
                     for record in records:
                         maliciousIP = record.get('source_ip_address')
-                        
+
                         if maliciousIP != addr:
                             self.sf.error("Reported address doesn't match requested, skipping.", False)
                             continue
@@ -228,7 +227,7 @@ class sfp_badpackets(SpiderFootPlugin):
                                     maliciousIPDesc += " - DESCRIPTION : " + str(description) + "\n"
                             except:
                                 self.sf.debug("No description found for target")
-                            
+
                             maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)
                             if maliciousIPDescHash in self.results:
                                 continue
@@ -239,12 +238,12 @@ class sfp_badpackets(SpiderFootPlugin):
                                 evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
                             else:
                                 evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
-                            
+
                             self.notifyListeners(evt)
 
                 if records is None or data.get('count') < self.limit or len(records) < self.limit:
                     nextPageHasData = False
                 currentOffset += self.limit
-        
+
         return None
 # End of sfp_badpackets class
