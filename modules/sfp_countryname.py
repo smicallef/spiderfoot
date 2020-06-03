@@ -232,14 +232,32 @@ class sfp_countryname(SpiderFootPlugin):
         for countryName in abbvCountryCodes.values(): 
 
             # Look for country name in source data
-            matchCountries = re.findall("[\s,'\"]" + countryName + "[\s,'\"]", srcData, re.IGNORECASE)
+            # Spaces are not included since New Jersey and others
+            # will get interpreted as Jersey, etc.
+            matchCountries = re.findall("[,'\"\:\=\[\(\[\n\t\r\.] ?" + countryName + "[,'\"\:\=\[\(\[\n\t\r\.]", srcData, re.IGNORECASE)
 
             if len(matchCountries) > 0:
                 # Get country name from first index of list
                 # Extract only the text part of the country code
                 matchCountry = matchCountries[0].strip(",").strip("'").strip("\"").strip()
                 countries.append(matchCountry)
-        
+
+            if len(matchCountries) > 0:
+                # Get country name from first index of list
+                # Extract only the text part of the country code
+                matchCountry = matchCountries[0].strip(",").strip("'").strip("\"").strip()
+                countries.append(matchCountry)
+
+        # Look for "Country: ", usually found in Whois records
+        matchCountries = re.findall("country: (.*)", srcData, re.IGNORECASE)
+        if matchCountries:
+            for m in matchCountries:
+                m = m.strip()
+                if m in abbvCountryCodes:
+                    countries.append(abbvCountryCodes[m])
+                if m in abbvCountryCodes.values():
+                    countries.append(m)
+
         # If any countries are found
         if len(countries) > 0:
             return countries
@@ -293,16 +311,16 @@ class sfp_countryname(SpiderFootPlugin):
                 countryNames.extend(tempDataList)
         
         # Check if countryNames is empty
-        if None in countryNames:
-            countryNames.remove(None)
-        if len(countryNames) == 0 :
+        if len(countryNames) == 0:
             return None
 
         # Convert list to set to remove duplicates
         countryNames = set(countryNames)
 
         for countryName in countryNames:
-            self.sf.debug("Found country name : " + countryName)
+            if countryName == '' or countryName == None:
+                continue
+            self.sf.debug("Found country name: " + countryName)
 
             evt = SpiderFootEvent(evttype, countryName, self.__name__, event)
             if event.moduleDataSource:

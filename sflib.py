@@ -1471,6 +1471,7 @@ class SpiderFoot:
         for link in urlsRel:
             if type(link) != str:
                 link = str(link)
+            link = link.strip()
             linkl = link.lower()
             absLink = None
 
@@ -1569,6 +1570,8 @@ class SpiderFoot:
             #self.debug("fetchUrl: No url")
             return None
 
+        url = url.strip()
+
         proxies = dict()
         if self.opts['_socks1type']:
             neverProxyNames = [ self.opts['_socks2addr'] ]
@@ -1628,7 +1631,11 @@ class SpiderFoot:
                 hdr = self.getSession().head(url, headers=header, proxies=proxies,
                                     verify=verify, timeout=timeout)
                 size = int(hdr.headers.get('content-length', 0))
-                result['realurl'] = hdr.headers.get('location', url)
+                newloc = hdr.headers.get('location', url).strip()
+                # Relative re-direct
+                if newloc.startswith("/") or newloc.startswith("../"):
+                    newloc = self.urlBaseUrl(url) + newloc
+                result['realurl'] = newloc
                 result['code'] = str(hdr.status_code)
 
                 if headOnly:
