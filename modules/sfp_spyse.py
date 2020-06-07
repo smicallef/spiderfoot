@@ -281,6 +281,10 @@ class sfp_spyse(SpiderFootPlugin):
                     return None
 
                 data = self.queryDomainsOnIP(eventData, currentOffset)
+                if not data:
+                    nextPageHasData = False
+                    break
+
                 data = data.get("data")
                 if data is None:
                     self.sf.debug("No domains found on IP address " + eventData)
@@ -302,7 +306,6 @@ class sfp_spyse(SpiderFootPlugin):
                 if len(records) < self.limit:
                     nextPageHasData = False
                 currentOffset += self.limit
-
 
             for co in set(cohosts):
 
@@ -337,6 +340,10 @@ class sfp_spyse(SpiderFootPlugin):
                 if self.checkForStop():
                     return None
                 data = self.queryIPPort(eventData, currentOffset)
+                if not data:
+                    nextPageHasData = False
+                    break
+
                 data = data.get("data")
 
                 if data is None:
@@ -355,11 +362,11 @@ class sfp_spyse(SpiderFootPlugin):
                                 ports.append(str(eventData) + ":" + str(port))
                                 self.reportExtraData(record, event)
 
-                # Calculate if there are any records in the next offset (page)
-                if len(records) < self.limit:
-                    nextPageHasData = False
-                currentOffset += self.limit
-
+                    # Calculate if there are any records in the next offset (page)
+                    if len(records) < self.limit:
+                        nextPageHasData = False
+                    currentOffset += self.limit
+                
                 for port in ports:
                     if port in self.results:
                         continue
@@ -379,6 +386,10 @@ class sfp_spyse(SpiderFootPlugin):
                     return None
 
                 data = self.querySubdomains(eventData, currentOffset)
+                if not data:
+                    nextPageHasData = False
+                    break
+
                 data = data.get("data")
                 if data is None:
                     self.sf.debug("No subdomains found for domain " + eventData)
