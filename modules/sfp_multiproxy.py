@@ -68,7 +68,7 @@ class sfp_multiproxy(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR" "MALICIOUS_AFFILIATE_IPADDR"]
+        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
