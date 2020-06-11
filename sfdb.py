@@ -33,7 +33,7 @@ class SpiderFootDb:
     conn = None
 
     # Prevent multithread access to sqlite database
-    dbhLock = threading.Lock()
+    dbhLock = threading.RLock()
 
     # Queries for creating the SpiderFoot database
     createSchemaQueries = [
@@ -600,40 +600,40 @@ class SpiderFootDb:
 
     # Set the false positive flag for a result
     def scanResultsUpdateFP(self, instanceId, resultHashes, fpFlag):
-        for resultHash in resultHashes:
-            qry = "UPDATE tbl_scan_results SET false_positive = ? WHERE \
-                scan_instance_id = ? AND hash = ?"
-            qvars = [fpFlag, instanceId, resultHash]
-            with self.dbhLock:
+        with self.dbhLock:
+            for resultHash in resultHashes:
+                qry = "UPDATE tbl_scan_results SET false_positive = ? WHERE \
+                    scan_instance_id = ? AND hash = ?"
+                qvars = [fpFlag, instanceId, resultHash]
                 try:
                     self.dbh.execute(qry, qvars)
-                    self.conn.commit()
                 except sqlite3.Error as e:
                     self.sf.error("SQL error encountered when updating F/P: " + e.args[0], False)
                     return False
 
+            self.conn.commit()
         return True
 
     # Store the default configuration
     def configSet(self, optMap=dict()):
         qry = "REPLACE INTO tbl_config (scope, opt, val) VALUES (?, ?, ?)"
 
-        for opt in list(optMap.keys()):
-            # Module option
-            if ":" in opt:
-                parts = opt.split(':')
-                qvals = [parts[0], parts[1], optMap[opt]]
-            else:
-                # Global option
-                qvals = ["GLOBAL", opt, optMap[opt]]
+        with self.dbhLock:
+            for opt in list(optMap.keys()):
+                # Module option
+                if ":" in opt:
+                    parts = opt.split(':')
+                    qvals = [parts[0], parts[1], optMap[opt]]
+                else:
+                    # Global option
+                    qvals = ["GLOBAL", opt, optMap[opt]]
 
-            with self.dbhLock:
                 try:
                     self.dbh.execute(qry, qvals)
-                    self.conn.commit()
                 except sqlite3.Error as e:
                     self.sf.error("SQL error encountered when storing config, aborting: " + e.args[0])
 
+            self.conn.commit()
 
     # Retreive the config from the database
     def configGet(self):
@@ -669,21 +669,22 @@ class SpiderFootDb:
         qry = "REPLACE INTO tbl_scan_config \
                 (scan_instance_id, component, opt, val) VALUES (?, ?, ?, ?)"
 
-        for opt in list(optMap.keys()):
-            # Module option
-            if ":" in opt:
-                parts = opt.split(':')
-                qvals = [id, parts[0], parts[1], optMap[opt]]
-            else:
-                # Global option
-                qvals = [id, "GLOBAL", opt, optMap[opt]]
+        with self.dbhLock:
+            for opt in list(optMap.keys()):
+                # Module option
+                if ":" in opt:
+                    parts = opt.split(':')
+                    qvals = [id, parts[0], parts[1], optMap[opt]]
+                else:
+                    # Global option
+                    qvals = [id, "GLOBAL", opt, optMap[opt]]
 
-            with self.dbhLock:
                 try:
                     self.dbh.execute(qry, qvals)
-                    self.conn.commit()
                 except sqlite3.Error as e:
                     self.sf.error("SQL error encountered when storing config, aborting: " + e.args[0])
+
+            self.conn.commit()
 
 
     # Retreive configuration data for a scan component
