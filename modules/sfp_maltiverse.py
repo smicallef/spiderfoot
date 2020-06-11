@@ -13,7 +13,6 @@
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 from netaddr import IPNetwork
-import urllib.request, urllib.parse, urllib.error
 import json
 from datetime import datetime
 
@@ -83,7 +82,7 @@ class sfp_maltiverse(SpiderFootPlugin):
             return None
 
         if not res['code'] == "200":
-            self.sf.error("No information found from Maltiverse for IP Address", False)
+            self.sf.debug("No information found from Maltiverse for IP Address")
             return None
 
         try:
