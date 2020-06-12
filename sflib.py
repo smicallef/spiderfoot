@@ -41,6 +41,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy
 import io
 
+
 # For hiding the SSL warnings coming from the requests lib
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -1896,6 +1897,7 @@ class SpiderFootPlugin(object):
     _priority = 1
     # Error state of the module
     errorState = False
+    
 
     # Not really needed in most cases.
     def __init__(self):
@@ -2039,10 +2041,12 @@ class SpiderFootPlugin(object):
 
     # For modules to use to check for when they should give back control
     def checkForStop(self):
-        global globalScanStatus
+        scanstatus = self.__sfdb__.scanInstanceGet(self.__scanId__)
+        #Ensure that scanStatus is not None
+        if scanstatus != None:              
+            if scanstatus[5] == "ABORT-REQUESTED":
 
-        if globalScanStatus.getStatus(self.__scanId__) == "ABORT-REQUESTED":
-            return True
+                return True
         return False
 
     # Return a list of the default configuration options for the module.
