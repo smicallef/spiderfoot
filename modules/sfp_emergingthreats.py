@@ -1,46 +1,49 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_multiproxy
-# Purpose:      Checks if an ASN, IP or domain is malicious.
+# Name:         sfp_emergingthreats
+# Purpose:      Checks if an IP or netblock is malicious.
 #
 # Author:       steve@binarypool.com
 #
-# Created:     14/12/2013
-# Copyright:   (c) Steve Micallef, 2013
+# Created:     16/05/2020
+# Copyright:   (c) Steve Micallef, 2020
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 from netaddr import IPAddress, IPNetwork
+import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-    'multiproxy.org Open Proxies': {
-        'id': '_multiproxy',
+    'emergingthreats.net List': {
+        'id': '_emergingthreats',
         'type': 'list',
-        'checks': ['ip'],
-        'url': 'http://multiproxy.org/txt_all/proxy.txt',
-        'regex': '{0}:.*'
+        'checks': ['ip', 'netblock'],
+        'url': 'https://rules.emergingthreats.net/blockrules/compromised-ips.txt'
     }
 }
 
 
-class sfp_multiproxy(SpiderFootPlugin):
-    """multiproxy.org Open Proxies:Investigate,Passive:Secondary Networks::Check if an IP is an open proxy according to multiproxy.org' open proxy list."""
+class sfp_emergingthreats(SpiderFootPlugin):
+    """Emerging Threats:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to emergingthreats.net."""
 
 
     # Default options
     opts = {
-        '_multiproxy': True,
+        '_emergingthreats': True,
         'checkaffiliates': True,
-        'cacheperiod': 18
+        'cacheperiod': 18,
+        'checknetblocks': True,
+        'checksubnets': True
     }
 
     # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliates?",
-        'cacheperiod': "Hours to cache list data before re-fetching."
+        'cacheperiod': "Hours to cache list data before re-fetching.",
+        'checknetblocks': "Report if any malicious IPs are found within owned netblocks?",
+        'checksubnets': "Check if any malicious IPs are found within the same subnet of the target?"
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -61,14 +64,15 @@ class sfp_multiproxy(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
-
+        return ["IP_ADDRESS", "NETBLOCK_MEMBER", "AFFILIATE_IPADDR",
+                "NETBLOCK_OWNER"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
+        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR",
+                "MALICIOUS_SUBNET", "MALICIOUS_NETBLOCK"]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
@@ -218,6 +222,10 @@ class sfp_multiproxy(SpiderFootPlugin):
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):
             return None
+        if eventName == 'NETBLOCK_OWNER' and not self.opts.get('checknetblocks', False):
+            return None
+        if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
+            return None
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
@@ -244,6 +252,13 @@ class sfp_multiproxy(SpiderFootPlugin):
                     if eventName == 'CO_HOSTED_SITE':
                         evtType = 'MALICIOUS_COHOST'
 
+                if eventName == 'NETBLOCK_OWNER':
+                    typeId = 'netblock'
+                    evtType = 'MALICIOUS_NETBLOCK'
+                if eventName == 'NETBLOCK_MEMBER':
+                    typeId = 'netblock'
+                    evtType = 'MALICIOUS_SUBNET'
+
                 url = self.lookupItem(cid, typeId, eventData)
                 if self.checkForStop():
                     return None
@@ -256,4 +271,4 @@ class sfp_multiproxy(SpiderFootPlugin):
 
         return None
 
-# End of sfp_multiproxy class
+# End of sfp_emergingthreats class

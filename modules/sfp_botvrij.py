@@ -1,45 +1,46 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_multiproxy
-# Purpose:      Checks if an ASN, IP or domain is malicious.
+# Name:         sfp_botvrij
+# Purpose:      Checks if a domain is malicious.
 #
 # Author:       steve@binarypool.com
 #
-# Created:     14/12/2013
-# Copyright:   (c) Steve Micallef, 2013
+# Created:     16/05/2020
+# Copyright:   (c) Steve Micallef, 2020
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 from netaddr import IPAddress, IPNetwork
+import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-    'multiproxy.org Open Proxies': {
-        'id': '_multiproxy',
+   'botvrij.eu Domain Blocklist': {
+        'id': '_botvrij',
         'type': 'list',
-        'checks': ['ip'],
-        'url': 'http://multiproxy.org/txt_all/proxy.txt',
-        'regex': '{0}:.*'
+        'checks': ['domain'],
+        'url': 'https://www.botvrij.eu/data/blocklist/blocklist_full.csv',
+        'regex': '{0},.*'
     }
 }
 
 
-class sfp_multiproxy(SpiderFootPlugin):
-    """multiproxy.org Open Proxies:Investigate,Passive:Secondary Networks::Check if an IP is an open proxy according to multiproxy.org' open proxy list."""
-
+class sfp_botvrij(SpiderFootPlugin):
+    """botvrij.eu:Investigate,Passive:Reputation Systems::Check if a domain is malicious according to botvrij.eu."""
 
     # Default options
     opts = {
-        '_multiproxy': True,
+        '_botvrij': True,
         'checkaffiliates': True,
+        'checkcohosts': True,
         'cacheperiod': 18
     }
 
     # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliates?",
+        'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'cacheperiod': "Hours to cache list data before re-fetching."
     }
 
@@ -61,14 +62,17 @@ class sfp_multiproxy(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
-
+        return ["INTERNET_NAME", "IP_ADDRESS",
+                "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
+                "CO_HOSTED_SITE"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
+        return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
+                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME",
+                "MALICIOUS_COHOST"]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):
@@ -256,4 +260,4 @@ class sfp_multiproxy(SpiderFootPlugin):
 
         return None
 
-# End of sfp_multiproxy class
+# End of sfp_botvrij class

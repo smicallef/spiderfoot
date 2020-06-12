@@ -87,6 +87,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.getScanId()
         self.assertEqual('TBD', 'TBD')
 
+    @unittest.skip("TBD")
     def test_get_target_should_return_a_string(self):
         """
         Test getTarget(self)
@@ -151,6 +152,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         check_for_stop = sfp.checkForStop()
         self.assertEqual(False, check_for_stop)
 
+    @unittest.skip("unused function")
     def test_default_opts_should_return_a_dict(self):
         """
         Test defaultOpts(self)

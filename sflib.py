@@ -39,6 +39,7 @@ from networkx.readwrite.gexf import GEXFWriter
 from datetime import datetime
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy
+import io
 
 # For hiding the SSL warnings coming from the requests lib
 import urllib3
@@ -440,6 +441,9 @@ class SpiderFoot:
 
     # Retreive data from the cache
     def cacheGet(self, label, timeoutHrs):
+        if label is None:
+            return None
+
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
         try:
@@ -931,9 +935,8 @@ class SpiderFoot:
 
         for d in dicts:
             try:
-                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
-                dlines = wdct.readlines()
-                wdct.close()
+                with io.open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r', encoding='utf8', errors='ignore') as wdct:
+                    dlines = wdct.readlines()
             except BaseException as e:
                 self.debug("Could not read dictionary: " + str(e))
                 continue
@@ -1471,6 +1474,7 @@ class SpiderFoot:
         for link in urlsRel:
             if type(link) != str:
                 link = str(link)
+            link = link.strip()
             linkl = link.lower()
             absLink = None
 
@@ -1569,6 +1573,8 @@ class SpiderFoot:
             #self.debug("fetchUrl: No url")
             return None
 
+        url = url.strip()
+
         proxies = dict()
         if self.opts['_socks1type']:
             neverProxyNames = [ self.opts['_socks2addr'] ]
@@ -1628,7 +1634,11 @@ class SpiderFoot:
                 hdr = self.getSession().head(url, headers=header, proxies=proxies,
                                     verify=verify, timeout=timeout)
                 size = int(hdr.headers.get('content-length', 0))
-                result['realurl'] = hdr.headers.get('location', url)
+                newloc = hdr.headers.get('location', url).strip()
+                # Relative re-direct
+                if newloc.startswith("/") or newloc.startswith("../"):
+                    newloc = self.urlBaseUrl(url) + newloc
+                result['realurl'] = newloc
                 result['code'] = str(hdr.status_code)
 
                 if headOnly:
@@ -2099,6 +2109,9 @@ class SpiderFootTarget(object):
     # Or, if a user searched for an IP address, a module
     # might supply the hostname as an alias.
     def setAlias(self, value, typeName):
+        if value is None:
+            return
+            
         if {'type': typeName, 'value': value} in self.targetAliases:
             return None
 
@@ -2155,6 +2168,9 @@ class SpiderFootTarget(object):
     # * includeChildren = False means you don't consider a value
     # that is a child of the target to be a tight relation.
     def matches(self, value, includeParents=False, includeChildren=True):
+        if value is None:
+            return False
+
         value = value.lower()
 
         value = value.decode("utf-8") if type(value) == bytes else value

@@ -67,7 +67,7 @@ class sfp_snov(SpiderFootPlugin):
         res = self.sf.fetchUrl(
             'https://api.snov.io/v1/oauth/access_token?' + urllib.parse.urlencode(params),
             headers=headers,
-            timeout=15,
+            timeout=30,
             useragent=self.opts['_useragent']
         )
 
@@ -108,7 +108,7 @@ class sfp_snov(SpiderFootPlugin):
             'https://api.snov.io/v1/get-domain-emails-with-info',
             postData=params,
             headers=headers,
-            timeout=15,
+            timeout=30,
             useragent=self.opts['_useragent']
         )
         if not res['code'] == '200':
