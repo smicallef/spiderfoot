@@ -79,7 +79,7 @@ class sfp_accounts(SpiderFootPlugin):
                 content = data['content']
 
         try:
-            self.sites = json.loads(content)['sites']
+            self.sites = [site for site in json.loads(content)['sites'] if site['valid']]
         except BaseException as e:
             self.sf.error("Unable to parse social media accounts list.", False)
             self.errorState = True
@@ -210,24 +210,28 @@ class sfp_accounts(SpiderFootPlugin):
             # Check if a state cache exists first, to not have to do this all the time
             content = self.sf.cacheGet("sfaccounts_state", 72)
             if content:
-                delsites = list()
-                for line in content.split("\n"):
-                    if line == '':
-                        continue
-                    delsites.append(line)
-                self.sites = [d for d in self.sites if d['name'] not in delsites]
+                if content != "None":  # "None" is written to the cached file when no sites are distrusted
+                    delsites = list()
+                    for line in content.split("\n"):
+                        if line == '':
+                            continue
+                        delsites.append(line)
+                    self.sites = [d for d in self.sites if d['name'] not in delsites]
             else:
                 randpool = 'abcdefghijklmnopqrstuvwxyz1234567890'
                 randuser = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
                 res = self.checkSites(randuser)
-                if len(res) > 0:
+                if res:
                     delsites = list()
                     for site in res:
                         sitename = site.split(" (Category:")[0]
                         self.sf.debug("Distrusting " + sitename)
                         delsites.append(sitename)
                     self.sites = [d for d in self.sites if d['name'] not in delsites]
-                    self.sf.cachePut("sfaccounts_state", delsites)
+                else:
+                    # The caching code needs *some* content
+                    delsites = "None"
+                self.sf.cachePut("sfaccounts_state", delsites)
 
             self.distrustedChecked = True
 
