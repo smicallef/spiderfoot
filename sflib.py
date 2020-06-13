@@ -426,19 +426,18 @@ class SpiderFoot:
     def cachePut(self, label, data):
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
-        fp = open(cacheFile, "w")
-        if type(data) is list:
-            for line in data:
-                if type(line) is str:
-                    fp.write(line)
-                    fp.write("\n")
-                else:
-                    fp.write(line.decode('utf-8') + '\n')
-        elif type(data) is bytes:
-            fp.write(data.decode('utf-8'))
-        else:
-            fp.write(data)
-        fp.close()
+        with io.open(cacheFile, "w", encoding="utf-8", errors="ignore") as fp:
+            if type(data) is list:
+                for line in data:
+                    if type(line) is str:
+                        fp.write(line)
+                        fp.write("\n")
+                    else:
+                        fp.write(line.decode('utf-8') + '\n')
+            elif type(data) is bytes:
+                fp.write(data.decode('utf-8'))
+            else:
+                fp.write(data)
 
     # Retreive data from the cache
     def cacheGet(self, label, timeoutHrs):
