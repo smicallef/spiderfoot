@@ -392,7 +392,7 @@ if __name__ == '__main__':
         'tools.staticdir.dir': os.path.join(currentDir, 'static')
     }}
 
-    passwd_file = sf.myPath() + '/passwd'
+    passwd_file = sf.dataPath() + '/passwd'
     if os.path.isfile(passwd_file):
         if not os.access(passwd_file, os.R_OK):
             print("Could not read passwd file. Permission denied.")
@@ -427,8 +427,8 @@ if __name__ == '__main__':
         else:
             print("Warning: passwd file contains no passwords. Authentication disabled.")
 
-    key_path = sf.myPath() + '/spiderfoot.key'
-    crt_path = sf.myPath() + '/spiderfoot.crt'
+    key_path = sf.dataPath() + '/spiderfoot.key'
+    crt_path = sf.dataPath() + '/spiderfoot.crt'
     if os.path.isfile(key_path) and os.path.isfile(crt_path):
         if not os.access(crt_path, os.R_OK):
             print("Could not read spiderfoot.crt file. Permission denied.")
