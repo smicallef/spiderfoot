@@ -626,10 +626,8 @@ class SpiderFootWebUi:
         except Exception as e:
             return self.error("Processing one or more of your inputs failed: " + str(e))
 
-        templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
-        self.token = random.SystemRandom().randint(0, 99999999)
-        return templ.render(opts=self.config, pageid='SETTINGS', updated=True,
-                            docroot=self.docroot, token=self.token)
+
+        raise cherrypy.HTTPRedirect("/opts")
 
     savesettings.exposed = True
 
@@ -749,6 +747,8 @@ class SpiderFootWebUi:
         try:
             ret = dbh.dbh.execute(query)
             data = ret.fetchall()
+            columnNames = [c[0] for c in dbh.dbh.description]
+            data = [dict(zip(columnNames, row)) for row in data]
         except BaseException as e:
             return json.dumps(["ERROR", str(e)])
 
@@ -846,9 +846,7 @@ class SpiderFootWebUi:
             time.sleep(1)
 
         if not cli:
-            templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-            return templ.render(id=scanId, name=scanname, docroot=self.docroot,
-                                status=dbh.scanInstanceGet(scanId), pageid="SCANLIST")
+            raise cherrypy.HTTPRedirect(f"/scaninfo?id={scanId}")
         else:
             return json.dumps(["SUCCESS", scanId])
 
@@ -884,9 +882,7 @@ class SpiderFootWebUi:
                 #set the scanstatus in the db to "ABORT-REQUESTED"
                 dbh.scanInstanceSet(id, status="ABORT-REQUESTED")
 
-        templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST', stoppedscan=True,
-                            errors=error, docroot=self.docroot)
+        raise cherrypy.HTTPRedirect("/")
 
     stopscanmulti.exposed = True
 
@@ -920,8 +916,7 @@ class SpiderFootWebUi:
 
         dbh.scanInstanceSet(id, status="ABORT-REQUESTED")
         if not cli:
-            templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-            return templ.render(pageid='SCANLIST', stoppedscan=True, docroot=self.docroot, errors=list())
+            raise cherrypy.HTTPRedirect("/")
         else:
             return json.dumps(["SUCCESS", ""])
 
