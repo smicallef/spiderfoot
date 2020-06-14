@@ -208,7 +208,7 @@ class sfp_accounts(SpiderFootPlugin):
         # sites are by attempting to fetch a garbage user.
         if not self.distrustedChecked:
             # Check if a state cache exists first, to not have to do this all the time
-            content = self.sf.cacheGet("sfaccounts_state", 72)
+            content = self.sf.cacheGet("sfaccounts_state_v2", 72)
             if content:
                 if content != "None":  # "None" is written to the cached file when no sites are distrusted
                     delsites = list()
@@ -231,7 +231,7 @@ class sfp_accounts(SpiderFootPlugin):
                 else:
                     # The caching code needs *some* content
                     delsites = "None"
-                self.sf.cachePut("sfaccounts_state", delsites)
+                self.sf.cachePut("sfaccounts_state_v2", delsites)
 
             self.distrustedChecked = True
 
