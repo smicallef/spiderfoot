@@ -69,7 +69,7 @@ class sfp_leakix(SpiderFootPlugin):
     # Parse API response
     def parseAPIResponse(self, res):
         if res['code'] == '404':
-            self.sf.debug("Host not found", False)
+            self.sf.debug("Host not found")
             return None
 
         # Future proofing - LeakIX does not implement rate limiting
