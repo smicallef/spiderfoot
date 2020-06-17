@@ -396,7 +396,8 @@ class SpiderFoot:
             print("[d:%s] %s" % (modName, message))
         return
 
-    def myPath(self):
+    @staticmethod
+    def myPath():
         # This will get us the program's directory, even if we are frozen using py2exe.
 
         # Determine whether we've been compiled by py2exe
@@ -404,6 +405,12 @@ class SpiderFoot:
             return os.path.dirname(sys.executable)
 
         return os.path.dirname(__file__)
+
+    @classmethod
+    def dataPath(cls):
+        """Returns the location of spiderfoot data and configuration files."""
+        path = os.environ['SPIDERFOOT_DATA']
+        return path if path is not None else cls.myPath()
 
     def hashstring(self, string):
         s = string
@@ -2035,12 +2042,11 @@ class SpiderFootPlugin(object):
 
                 listener.handleEvent(sfEvent)
             except BaseException as e:
-                f = open("sferror.log", "a")
-                f.write("[" + time.ctime() + "]: Module (" + listener.__module__ + ") encountered an error: " + str(e) + "\n")
-
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
-                f.close()
+                with open(os.path.join(SpiderFoot.dataPath(), "sferror.log"), "a") as f:
+                    f.write("[" + time.ctime() + "]: Module (" + listener.__module__ +
+                            ") encountered an error: " + str(e) + "\n")
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
 
     # For modules to use to check for when they should give back control
     def checkForStop(self):

@@ -247,7 +247,7 @@ class SpiderFootDb:
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
         # read and write to such a file.
-        dbh = sqlite3.connect(self.sf.myPath() + "/" + opts['__database'], timeout=10)
+        dbh = sqlite3.connect(self.sf.dataPath() + "/" + opts['__database'], timeout=10)
         if dbh is None:
             self.sf.fatal("Could not connect to internal database, and couldn't create " + opts['__database'])
         dbh.text_factory = str
