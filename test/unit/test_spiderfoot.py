@@ -347,7 +347,20 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertEqual(str, type(keyword))
         self.assertEqual('wwwspiderfootnet', keyword)
 
-    def test_domain_keywords_should_return_a_list(self):
+    def test_domain_keyword_invalid_domain_should_return_none(self):
+        """
+        Test domainKeyword(self, domain, tldList)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        keyword = sf.domainKeyword("", sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
+        keyword = sf.domainKeyword([], sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
+        keyword = sf.domainKeyword(None, sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
+
+    def test_domain_keywords_should_return_a_set(self):
         """
         Test domainKeywords(self, domainList, tldList)
         """
@@ -355,7 +368,20 @@ class TestSpiderFoot(unittest.TestCase):
 
         domain_list = ['www.example.com', 'localhost.local']
         keywords = sf.domainKeywords(domain_list, sf.opts.get('_internettlds'))
-        self.assertEqual(list, type(keywords))
+        self.assertEqual(set, type(keywords))
+
+    def test_domain_keywords_invalid_domainlist_should_return_a_set(self):
+        """
+        Test domainKeyword(self, domain, tldList)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        keywords = sf.domainKeywords("", sf.opts.get('_internettlds'))
+        self.assertEqual(set, type(keywords))
+        keywords = sf.domainKeywords([], sf.opts.get('_internettlds'))
+        self.assertEqual(set, type(keywords))
+        keywords = sf.domainKeywords(None, sf.opts.get('_internettlds'))
+        self.assertEqual(set, type(keywords))
 
     def test_host_domain_invalid_host_should_return_none(self):
         """
