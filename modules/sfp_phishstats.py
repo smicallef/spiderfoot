@@ -54,7 +54,8 @@ class sfp_phishstats(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA"]
+        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
+            "MALICIOUS_AFFILIATE_IPADDR"]
 
     # Check whether the IP Address is malicious using Phishstats API
     # https://phishstats.info/
@@ -163,9 +164,13 @@ class sfp_phishstats(SpiderFootPlugin):
                 ipEvt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
                 self.notifyListeners(ipEvt)
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
-            self.notifyListeners(evt)
-            
+            if eventName.startswith("NETBLOCK_"):
+                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, ipEvt)
+                self.notifyListeners(evt)
+            else:
+                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                self.notifyListeners(evt)
+
             maliciousIPDesc = "Phishstats [ " + str(maliciousIP) + "]\n"
 
             maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)
@@ -175,6 +180,8 @@ class sfp_phishstats(SpiderFootPlugin):
 
             if eventName.startswith("NETBLOCK_"):
                 evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
+            elif eventName.startswith("AFFILIATE_"):
+                evt = SpiderFootEvent("MALICIOUS_AFFILIATE_IPADDR", maliciousIPDesc, self.__name__, event)
             else:
                 evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
             
