@@ -745,6 +745,10 @@ class SpiderFoot:
             str: The keyword
         """
 
+        if not domain:
+            self.error("Invalid domain: %s" % domain, False)
+            return None
+
         # Strip off the TLD
         tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
         ret = domain.lower().replace('.' + tld, '')
@@ -755,27 +759,27 @@ class SpiderFoot:
         else:
             return ret
 
-    # TODO: remove this function
     def domainKeywords(self, domainList, tldList):
         """Extract the keywords (the domains without the TLD or any subdomains) from a list of domains.
-
-        Wraps the domainKeyword function for people who are too lazy to write a loop.
-        Does not validate input. Does not check for duplicates.
 
         Args:
             domainList (list): The list of domains to check.
             tldList (str): The list of TLDs based on the Mozilla public list.
 
         Returns:
-            list: List of keywords
+            set: List of keywords
         """
 
-        arr = list()
-        for domain in domainList:
-            arr.append(self.domainKeyword(domain, tldList))
+        if not domainList:
+            self.error("Invalid domain list: %s" % domainList, False)
+            return set()
 
-        self.debug("Keywords: " + str(arr))
-        return arr
+        keywords = list()
+        for domain in domainList:
+            keywords.append(self.domainKeyword(domain, tldList))
+
+        self.debug("Keywords: %s" % keywords)
+        return set([k for k in keywords if k])
 
     def hostDomain(self, hostname, tldList):
         """Obtain the domain name for a supplied hostname.
