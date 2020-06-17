@@ -33,6 +33,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.clearListeners()
         self.assertEqual('TBD', 'TBD')
 
+    @unittest.skip("overridden function")
     def test_setup(self):
         """
         Test setup(self, sf, userOpts=dict())
@@ -40,8 +41,8 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.setup(None)
-        self.assertEqual('TBD', 'TBD')
 
+    @unittest.skip("overridden function")
     def test_enrich_target(self):
         """
         Test enrichTarget(self, target)
@@ -49,7 +50,6 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.enrichTarget(None)
-        self.assertEqual('TBD', 'TBD')
 
     def test_set_target(self):
         """
@@ -78,24 +78,31 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.setScanId(None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_get_scan_id(self):
+    def test_get_scan_id_should_return_a_string(self):
         """
         Test getScanId(self)
         """
         sfp = SpiderFootPlugin()
 
-        sfp.getScanId()
-        self.assertEqual('TBD', 'TBD')
+        scan_id = 'example scan id'
+        sfp.setScanId(scan_id)
 
-    @unittest.skip("TBD")
+        get_scan_id = sfp.getScanId()
+        self.assertEqual(str, type(get_scan_id))
+        self.assertEqual(scan_id, get_scan_id)
+
     def test_get_target_should_return_a_string(self):
         """
         Test getTarget(self)
         """
         sfp = SpiderFootPlugin()
 
-        sfp.getTarget()
-        self.assertEqual('TBD', 'TBD')
+        target = 'spiderfoot.net'
+        sfp.setTarget(target)
+
+        get_target = sfp.getTarget()
+        self.assertEqual(str, type(get_target))
+        self.assertEqual(target, get_target)
 
     def test_get_target_invalid_target_should_exit(self):
         """
@@ -156,13 +163,13 @@ class TestSpiderFootPlugin(unittest.TestCase):
     def test_default_opts_should_return_a_dict(self):
         """
         Test defaultOpts(self)
-        Note: this function is not currently used
         """
         sfp = SpiderFootPlugin()
 
         default_opts = sfp.defaultOpts()
         self.assertEqual(dict, type(default_opts))
 
+    @unittest.skip("overridden function")
     def test_watched_events_should_return_a_list(self):
         """
         Test watchedEvents(self)
@@ -172,15 +179,17 @@ class TestSpiderFootPlugin(unittest.TestCase):
         watched_events = sfp.watchedEvents()
         self.assertEqual(list, type(watched_events))
 
+    @unittest.skip("overridden function")
     def test_produced_events_should_return_a_list(self):
         """
         Test producedEvents(self)
         """
         sfp = SpiderFootPlugin()
 
-        produced_events = sfp.watchedEvents()
+        produced_events = sfp.producedEvents()
         self.assertEqual(list, type(produced_events))
 
+    @unittest.skip("overridden function")
     def test_handle_event(self):
         """
         Test handleEvent(self, sfEvent)
@@ -193,8 +202,8 @@ class TestSpiderFootPlugin(unittest.TestCase):
 
         sfp = SpiderFootPlugin()
         sfp.handleEvent(evt)
-        self.assertEqual('TBD', 'TBD')
 
+    @unittest.skip("overridden function")
     def test_start(self):
         """
         Test start(self)
@@ -202,7 +211,6 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.start()
-        self.assertEqual('TBD', 'TBD')
 
 if __name__ == '__main__':
     unittest.main()
