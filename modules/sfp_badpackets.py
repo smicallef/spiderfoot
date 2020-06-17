@@ -57,7 +57,8 @@ class sfp_badpackets(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA"]
+        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
+                "MALICIOUS_AFFILIATE_IPADDR"]
 
     # Check whether the IP Address is malicious using Bad Packets API
     # https://docs.badpackets.net/#operation/query
@@ -202,8 +203,12 @@ class sfp_badpackets(SpiderFootPlugin):
                     break
 
                 if records:
-                    evt = SpiderFootEvent("RAW_RIR_DATA", str(records), self.__name__, event)
-                    self.notifyListeners(evt)
+                    if eventName.startswith("NETBLOCK_"):
+                        evt = SpiderFootEvent("RAW_RIR_DATA", str(records), self.__name__, ipEvt)
+                        self.notifyListeners(evt)
+                    else:
+                        evt = SpiderFootEvent("RAW_RIR_DATA", str(records), self.__name__, event)
+                        self.notifyListeners(evt)
 
                     for record in records:
                         maliciousIP = record.get('source_ip_address')
@@ -236,6 +241,8 @@ class sfp_badpackets(SpiderFootPlugin):
                             # If target is a netblock_ report current IP address as target
                             if eventName.startswith("NETBLOCK_"):
                                 evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
+                            elif eventName.startswith("AFFILIATE_"):
+                                evt = SpiderFootEvent("MALICIOUS_AFFILIATE_IPADDR", maliciousIPDesc, self.__name__, event)
                             else:
                                 evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
 
