@@ -226,7 +226,7 @@ class sfp_spur(SpiderFootPlugin):
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
                     self.notifyListeners(evt)
                 elif eventName.startswith("AFFILIATE_"):
-                    evt = SpiderFootEvent("AFFILIATE_MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
+                    evt = SpiderFootEvent("AFFILIATE_MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
                     self.notifyListeners(evt)
                 else:
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
