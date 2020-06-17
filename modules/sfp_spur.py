@@ -56,7 +56,7 @@ class sfp_spur(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
-            "GEO_INFO"]
+            "GEO_INFO", "COMPANY_NAME", "AFFILIATE_MALICIOUS_IPADDR"]
     
     # Check whether the IP Address is malicious using spur.us API
     # https://spur.us/app/docs
@@ -224,6 +224,9 @@ class sfp_spur(SpiderFootPlugin):
 
                 if eventName.startswith("NETBLOCK_"):
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
+                    self.notifyListeners(evt)
+                elif eventName.startswith("AFFILIATE_"):
+                    evt = SpiderFootEvent("AFFILIATE_MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
                     self.notifyListeners(evt)
                 else:
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)

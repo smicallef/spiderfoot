@@ -15,16 +15,16 @@ import base64
 import json
 
 class sfp_twilio(SpiderFootPlugin):
-    """Twilio:Footprint,Investigate,Passive:Search Engines:apikey:Obtain data from Twilio from target phone number."""
+    """Twilio:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from Twilio about phone numbers."""
     
     opts = {
-        'account_sid': '',
-        'auth_token': ''
+        'api_key_account_sid': '',
+        'api_key_auth_token': ''
     }
 
     optdescs = {
-        'account_sid': 'Twilio Account SID',
-        'auth_token': 'Twilio Auth Token'
+        'api_key_account_sid': 'Twilio Account SID',
+        'api_key_auth_token': 'Twilio Auth Token'
     }
 
     results = None
@@ -42,13 +42,13 @@ class sfp_twilio(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["HUMAN_NAME", "COMPANY_NAME", "RAW_RIR_DATA"]
+        return ["HUMAN_NAME", "RAW_RIR_DATA"]
 
     # When querying third parties, it's best to have a dedicated function
     # to do so and avoid putting it in handleEvent()
     def queryPhoneNumber(self, phoneNumber):   
         
-        token = (base64.b64encode(self.opts['account_sid'].encode('utf8') + ":".encode('utf-8') + self.opts['auth_token'].encode('utf-8'))).decode('utf-8')
+        token = (base64.b64encode(self.opts['api_key_account_sid'].encode('utf8') + ":".encode('utf-8') + self.opts['api_key_auth_token'].encode('utf-8'))).decode('utf-8')
 
         headers = {
             'Accept': "application/json",
@@ -93,7 +93,7 @@ class sfp_twilio(SpiderFootPlugin):
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
-        if self.opts['account_sid'] == "" or self.opts['auth_token'] == "":
+        if self.opts['api_key_account_sid'] == "" or self.opts['api_key_auth_token'] == "":
             self.sf.error("You enabled sfp_twilio but did not set account sid/auth token", False)
             self.errorState = True
             return None
