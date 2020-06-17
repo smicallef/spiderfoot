@@ -409,7 +409,7 @@ class SpiderFoot:
     @classmethod
     def dataPath(cls):
         """Returns the location of spiderfoot data and configuration files."""
-        path = os.environ['SPIDERFOOT_DATA']
+        path = os.environ.get('SPIDERFOOT_DATA')
         return path if path is not None else cls.myPath()
 
     def hashstring(self, string):
