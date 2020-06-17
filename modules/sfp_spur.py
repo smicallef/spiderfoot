@@ -160,8 +160,12 @@ class sfp_spur(SpiderFootPlugin):
                 ipEvt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
                 self.notifyListeners(evt)
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
-            self.notifyListeners(evt)
+            if eventName.startswith("NETBLOCK_"):
+                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, ipEvt)
+                self.notifyListeners(evt)
+            else:
+                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                self.notifyListeners(evt)
 
             geoTag = data.get('geoLite')
 
@@ -180,8 +184,12 @@ class sfp_spur(SpiderFootPlugin):
                 if country:
                     geoInfo += country
                 
-                evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, event)
-                self.notifyListeners(evt)
+                if eventName.startswith("NETBLOCK_"):
+                    evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, ipEvt)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, event)
+                    self.notifyListeners(evt)
             
             asData = data.get('as')
 
@@ -189,8 +197,12 @@ class sfp_spur(SpiderFootPlugin):
                 orgName = asData.get('organization')  
 
                 if orgName:
-                    evt = SpiderFootEvent("COMPANY_NAME", orgName, self.__name__, event)
-                    self.notifyListeners(evt)
+                    if eventName.startswith("NETBLOCK_"):
+                        evt = SpiderFootEvent("COMPANY_NAME", orgName, self.__name__, ipEvt)
+                        self.notifyListeners(evt)
+                    else:
+                        evt = SpiderFootEvent("COMPANY_NAME", orgName, self.__name__, event)
+                        self.notifyListeners(evt)
             
             vpnOperators = data.get('vpnOperators')
             
