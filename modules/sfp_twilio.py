@@ -66,6 +66,10 @@ class sfp_twilio(SpiderFootPlugin):
             self.sf.error("Bad request.", False)
             return None
         
+        if res['code'] == '404':
+            self.sf.error("Invalid phone number.", False)
+            return None
+        
         if res['code'] == '429':
             self.sf.error("API usage limit reached.", False)
             return None
