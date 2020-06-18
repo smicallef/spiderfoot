@@ -56,7 +56,7 @@ class sfp_spur(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
-            "GEO_INFO", "COMPANY_NAME", "AFFILIATE_MALICIOUS_IPADDR"]
+            "GEO_INFO", "COMPANY_NAME", "MALICIOUS_AFFILIATE_IPADDR"]
     
     # Check whether the IP Address is malicious using spur.us API
     # https://spur.us/app/docs
@@ -187,6 +187,9 @@ class sfp_spur(SpiderFootPlugin):
                 if eventName.startswith("NETBLOCK_"):
                     evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, ipEvt)
                     self.notifyListeners(evt)
+                elif eventName.startswith("AFFILIATE_"):
+                    # Don't report GEOINFO for Affiliates
+                    pass
                 else:
                     evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, event)
                     self.notifyListeners(evt)
@@ -200,6 +203,9 @@ class sfp_spur(SpiderFootPlugin):
                     if eventName.startswith("NETBLOCK_"):
                         evt = SpiderFootEvent("COMPANY_NAME", orgName, self.__name__, ipEvt)
                         self.notifyListeners(evt)
+                    elif eventName.startswith("AFFILIATE_"):
+                        # Don't report COMPANY_NAME for Affiliates
+                        pass
                     else:
                         evt = SpiderFootEvent("COMPANY_NAME", orgName, self.__name__, event)
                         self.notifyListeners(evt)
@@ -226,7 +232,7 @@ class sfp_spur(SpiderFootPlugin):
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, ipEvt)
                     self.notifyListeners(evt)
                 elif eventName.startswith("AFFILIATE_"):
-                    evt = SpiderFootEvent("AFFILIATE_MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
+                    evt = SpiderFootEvent("MALICIOUS_AFFILIATE_IPADDR", maliciousIPDesc, self.__name__, event)
                     self.notifyListeners(evt)
                 else:
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)

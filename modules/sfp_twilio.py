@@ -67,7 +67,7 @@ class sfp_twilio(SpiderFootPlugin):
             return None
         
         if res['code'] == '404':
-            self.sf.error("Invalid phone number.", False)
+            self.sf.debug("Phone number not found.")
             return None
         
         if res['code'] == '429':
