@@ -348,10 +348,11 @@ class SpiderFootWebUi:
             modlist.remove("sfp__stor_stdout")
 
         targetType = sf.targetType(scantarget)
-        if targetType == None:
+        if targetType is None:
             # It must then be a name, as a re-run scan should always have a clean
-            # target.
-            targetType = "HUMAN_NAME"
+            # target. Put quotes around the target value and try to determine the
+            # target type again.
+            targetType = sf.targetType(f'"{scantarget}"')
 
         if targetType != "HUMAN_NAME":
             scantarget = scantarget.lower()
