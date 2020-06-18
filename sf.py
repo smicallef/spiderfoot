@@ -12,6 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import sys
+
+if sys.version_info < (3, 6):
+    print("SpiderFoot 3.1+ requires Python 3.6 or higher.")
+    sys.exit(-1)
+
 import os
 import os.path
 import signal
@@ -84,10 +89,6 @@ def handle_abort(signal, frame):
     sys.exit(-1)
 
 if __name__ == '__main__':
-    if sys.version_info < (3, 6):
-        print("SpiderFoot 3.1+ requires Python 3.6 or higher.")
-        sys.exit(-1)
-
     if len(sys.argv) == 0:
         print("SpiderFoot 3.x now requires -l <ip>:<port> to start the web server.")
         sys.exit(-1)
