@@ -178,7 +178,7 @@ class sfp_countryname(SpiderFootPlugin):
             return abbvCountryCodes[countryCode.upper()]
         except:
             # Region code not present in source phone number
-            self.debug("Skipped invalid phone number: " + srcPhoneNumber)
+            self.sf.debug("Skipped invalid phone number: " + srcPhoneNumber)
             return None
 
     
