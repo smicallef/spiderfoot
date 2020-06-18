@@ -150,14 +150,23 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.notifyListeners(evt)
         self.assertEqual('TBD', 'TBD')
 
-    def test_check_for_stop_should_return_a_boolean(self):
+    def test_check_for_stop(self):
         """
         Test checkForStop(self)
         """
         sfp = SpiderFootPlugin()
 
-        check_for_stop = sfp.checkForStop()
-        self.assertEqual(False, check_for_stop)
+        class DatabaseStub:
+            def scanInstanceGet(self, scanId):
+                return [None, None, None, None, None, status]
+
+        sfp.__sfdb__ = DatabaseStub()
+
+        # pseudo-parameterized test
+        # TODO could include other statuses for completeness
+        for status, expectedReturnValue in [("RUNNING", False), ("ABORT-REQUESTED", True)]:
+            returnValue = sfp.checkForStop()
+            self.assertEqual(returnValue, expectedReturnValue, status)
 
     @unittest.skip("unused function")
     def test_default_opts_should_return_a_dict(self):
