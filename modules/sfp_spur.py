@@ -80,6 +80,10 @@ class sfp_spur(SpiderFootPlugin):
             self.sf.error("Invalid credentials. Please check API Token", False)
             self.errorState = True
             return None
+        
+        if code == '404':
+            self.sf.debug("IP Address not found.")
+            return None
 
         if not code == '200':
             self.sf.error("Unable to fetch data from spur.us", False)
@@ -151,10 +155,12 @@ class sfp_spur(SpiderFootPlugin):
             if self.checkForStop():
                 return None
             
-            data = json.loads(self.queryIPAddress(addr))
+            content = self.queryIPAddress(addr)
 
-            if data is None:
+            if content is None:
                 continue
+                
+            data = json.loads(content)
             
             if eventName.startswith("NETBLOCK_"):
                 ipEvt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
@@ -237,7 +243,7 @@ class sfp_spur(SpiderFootPlugin):
                 else:
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
                     self.notifyListeners(evt)
-
-            return None
+        
+        return None
 
 # End of sfp_spur class
