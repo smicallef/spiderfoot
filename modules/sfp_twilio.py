@@ -15,7 +15,7 @@ import base64
 import json
 
 class sfp_twilio(SpiderFootPlugin):
-    """Twilio:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from Twilio about phone numbers."""
+    """Twilio:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio."""
     
     opts = {
         'api_key_account_sid': '',
@@ -56,7 +56,7 @@ class sfp_twilio(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://lookups.twilio.com/v1/PhoneNumbers/' + phoneNumber,
+          'https://lookups.twilio.com/v1/PhoneNumbers/' + phoneNumber + "?type=caller-name",
           headers=headers,
           timeout=15,
           useragent=self.opts['_useragent']
