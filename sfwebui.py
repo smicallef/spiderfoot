@@ -352,7 +352,7 @@ class SpiderFootWebUi:
             # It must then be a name, as a re-run scan should always have a clean
             # target. Put quotes around the target value and try to determine the
             # target type again.
-            targetType = sf.targetType(f'"{scantarget}"')
+            targetType = sf.targetType('"' + scantarget + '"')
 
         if targetType != "HUMAN_NAME":
             scantarget = scantarget.lower()
@@ -847,7 +847,7 @@ class SpiderFootWebUi:
             time.sleep(1)
 
         if not cli:
-            raise cherrypy.HTTPRedirect(f"/scaninfo?id={scanId}")
+            raise cherrypy.HTTPRedirect("/scaninfo?id=" + scanId)
         else:
             return json.dumps(["SUCCESS", scanId])
 
