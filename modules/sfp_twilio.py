@@ -42,7 +42,7 @@ class sfp_twilio(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["HUMAN_NAME", "RAW_RIR_DATA"]
+        return ["COMPANY_NAME", "RAW_RIR_DATA"]
 
     # When querying third parties, it's best to have a dedicated function
     # to do so and avoid putting it in handleEvent()
@@ -56,7 +56,7 @@ class sfp_twilio(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://lookups.twilio.com/v1/PhoneNumbers/' + phoneNumber + "?type=caller-name",
+          'https://lookups.twilio.com/v1/PhoneNumbers/' + phoneNumber + "?Type=caller-name",
           headers=headers,
           timeout=15,
           useragent=self.opts['_useragent']
@@ -120,9 +120,11 @@ class sfp_twilio(SpiderFootPlugin):
         self.notifyListeners(evt)
         
         callerName = data.get('caller_name')
+        if callerName:
+            callerName = callerName.get('caller_name')
         
         if callerName:
-            evt = SpiderFootEvent("HUMAN_NAME", callerName, self.__name__, event)
+            evt = SpiderFootEvent("COMPANY_NAME", callerName, self.__name__, event)
             self.notifyListeners(evt)   
 
         return None
