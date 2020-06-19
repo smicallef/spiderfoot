@@ -1,0 +1,4 @@
+venv/
+cache/
+spiderfoot.db*
+
