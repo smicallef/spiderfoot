@@ -74,7 +74,7 @@ class sfp_robtex(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.cohostcount > self.opts['maxcohost']:
             return None

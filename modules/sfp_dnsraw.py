@@ -64,7 +64,7 @@ class sfp_dnsraw(SpiderFootPlugin):
         addrs = None
         parentEvent = event
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventDataHash in self.events:
             self.sf.debug("Skipping duplicate event for " + eventData)

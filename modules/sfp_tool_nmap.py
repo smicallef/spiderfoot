@@ -66,7 +66,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
             self.sf.debug("Skipping event from myself.")
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.errorState:
             return None

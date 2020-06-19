@@ -176,7 +176,7 @@ class sfp_spyonweb(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_spyonweb but did not set an API key!", False)

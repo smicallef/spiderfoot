@@ -52,7 +52,7 @@ class sfp_ethereum(SpiderFootPlugin):
         else:
             self.results[sourceData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # thanks to https://stackoverflow.com/questions/21683680/regex-to-match-ethereum-addresses
         matches = re.findall("[\s:=\>](0x[a-fA-F0-9]{40})", eventData)

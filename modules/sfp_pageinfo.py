@@ -69,7 +69,7 @@ class sfp_pageinfo(SpiderFootPlugin):
         eventData = event.data
         eventSource = event.actualSource
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # We aren't interested in describing pages that are not hosted on
         # our base domain.

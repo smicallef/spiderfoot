@@ -185,7 +185,7 @@ class sfp_template(SpiderFootPlugin):
 
         # Log this before complaining about a missing API key so we know the
         # event was received.
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.

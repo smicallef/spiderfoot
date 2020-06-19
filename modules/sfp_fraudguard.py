@@ -107,7 +107,7 @@ class sfp_fraudguard(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.opts['fraudguard_api_key_account'] == "" or self.opts['fraudguard_api_key_password'] == "":
             self.sf.error("You enabled sfp_fraudguard but did not set an API username/password!", False)

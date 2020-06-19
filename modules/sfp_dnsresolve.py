@@ -119,7 +119,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if srcModuleName in [ "sfp_dnsresolve" ] and "_NAME" in eventName:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventDataHash in self.events:
             self.sf.debug("Skipping duplicate event.")
