@@ -167,7 +167,7 @@ class sfp_apility(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventName == 'IP_ADDRESS':
             data = self.queryBadIp(eventData)

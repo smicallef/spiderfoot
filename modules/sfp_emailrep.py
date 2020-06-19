@@ -85,7 +85,7 @@ class sfp_emailrep(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         res = self.query(eventData)
 

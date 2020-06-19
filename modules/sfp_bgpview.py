@@ -160,7 +160,7 @@ class sfp_bgpview(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")

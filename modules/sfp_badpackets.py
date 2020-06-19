@@ -126,7 +126,7 @@ class sfp_badpackets(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.

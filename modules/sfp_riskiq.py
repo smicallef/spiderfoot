@@ -128,7 +128,7 @@ class sfp_riskiq(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Ignore messages from myself
         if srcModuleName == "sfp_riskiq":

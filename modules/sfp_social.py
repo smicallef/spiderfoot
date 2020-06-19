@@ -70,7 +70,7 @@ class sfp_social(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventData not in list(self.results.keys()):
             self.results[eventData] = True

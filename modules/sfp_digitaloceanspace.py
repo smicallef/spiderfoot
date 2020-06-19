@@ -135,7 +135,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventName == "LINKED_URL_EXTERNAL":
             if ".digitaloceanspaces.com" in eventData:

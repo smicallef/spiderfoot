@@ -127,7 +127,7 @@ class sfp_fullcontact(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Don't look up stuff twice
         if eventData in self.results:

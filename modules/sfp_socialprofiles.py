@@ -98,7 +98,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.opts['google_api_key'] == "" and self.opts['bing_api_key'] == "":
             self.sf.error("You enabled sfp_socialprofiles but did not set a Google or Bing API key!", False)

@@ -100,7 +100,7 @@ class sfp_greynoise(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_greynoise but did not set an API key!", False)

@@ -56,7 +56,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         addrs = None
         parentEvent = event
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if srcModuleName == "sfp_dnszonexfer":
             self.sf.debug("Ignoring " + eventName + ", from self.")

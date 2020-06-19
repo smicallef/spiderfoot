@@ -51,7 +51,7 @@ class sfp_webanalytics(SpiderFootPlugin):
 
         self.results[sourceData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventName == 'TARGET_WEB_CONTENT':
             # Google Analytics

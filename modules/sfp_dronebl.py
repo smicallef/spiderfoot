@@ -138,7 +138,7 @@ class sfp_dronebl(SpiderFootPlugin):
         parentEvent = event
         addrlist = list()
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventData in self.results:
             return None

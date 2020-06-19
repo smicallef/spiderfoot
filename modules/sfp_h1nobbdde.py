@@ -74,7 +74,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         eventData = event.data
         data = list()
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")

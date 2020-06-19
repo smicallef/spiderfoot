@@ -60,7 +60,7 @@ class sfp_whois(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         try:
             data = None

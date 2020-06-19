@@ -84,7 +84,7 @@ class sfp_grep_app(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if srcModuleName == 'sfp_grep_app':
             self.sf.debug("Ignoring " + eventData + ", from self.")
