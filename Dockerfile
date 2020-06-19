@@ -18,13 +18,17 @@
 #
 #   sudo docker run -p 5001:5001 -v /mydir/spiderfoot:/var/lib/spiderfoot spiderfoot
 #
+# Using SpiderFoot remote command line with web server
+#
+#   docker run --rm -it spiderfoot sfcli.py -s http://my.spiderfoot.host:5001/
+#
 # Running spiderfoot commands without web server (can optionally specify volume)
 #
-#   sudo docker run --rm spiderfoot -h
+#   sudo docker run --rm spiderfoot sf.py -h
 #
 # Running spiderfoot unit tests in container
 #   
-#   sudo docker run --rm --entrypoint='/usr/bin/python3' spiderfoot -m unittest discover -s test/unit
+#   sudo docker run --rm spiderfoot -m unittest discover -s test/unit
 
 # Pull the base image.
 FROM alpine:3.9.6
@@ -57,7 +61,7 @@ USER spiderfoot
 EXPOSE 5001
 
 # Run the application.
-ENTRYPOINT ["/usr/bin/python3", "sf.py"] 
-CMD ["-l", "0.0.0.0:5001"]
+ENTRYPOINT ["/usr/bin/python3"] 
+CMD ["sf.py", "-l", "0.0.0.0:5001"]
 
 COPY . .
