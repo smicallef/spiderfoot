@@ -124,14 +124,27 @@ class SpiderFoot:
         except BaseException as e:
             self.fatal("Unable to re-circuit TOR: " + str(e))
 
-    # Supplied an option value, return the data based on what the
-    # value is. If val is a URL, you'll get back the fetched content,
-    # if val is a file path it will be loaded and get back the contents,
-    # and if a string it will simply be returned back.
     def optValueToData(self, val, fatal=True, splitLines=True):
-        if val is None:
-            #self.debug("fetchUrl: No val")
-            return None
+        """Supplied an option value, return the data based on what the
+        value is. If val is a URL, you'll get back the fetched content,
+        if val is a file path it will be loaded and get back the contents,
+        and if a string it will simply be returned back.
+
+        Args:
+            val (str): TBD
+            fatal (bool): TBD
+            splitLines (bool): TBD
+
+        Returns:
+            str: TBD
+        """
+
+        if not isinstance(val, str):
+            if fatal:
+                self.error("Invalid option value %s" % val)
+            else:
+                self.error("Invalid option value %s" % val, False)
+                return None
 
         if val.startswith('@'):
             fname = val.split('@')[1]
