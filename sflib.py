@@ -1637,7 +1637,20 @@ class SpiderFoot:
 
     # Parse a PEM-format SSL certificate
     def parseCert(self, rawcert, fqdn=None, expiringdays=30):
-        """Parse a PEM-format SSL certificate."""
+        """Parse a PEM-format SSL certificate.
+
+        Args:
+            rawcert (str): TBD
+            fqdn (str): TBD
+            expiringdays (int): TBD
+
+        Returns:
+            dict: certificate details
+        """
+
+        if not rawcert:
+            self.error("Invalid certificate: %s" % rawcert, False)
+            return None
 
         ret = dict()
         if '\r' in rawcert:
