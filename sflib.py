@@ -1350,9 +1350,21 @@ class SpiderFoot:
         return False
 
     def resolveTargets(self, target, validateReverse):
-        """Resolve alternative names for a given target."""
+        """Resolve alternative names for a given target.
+
+        Args:
+            target (SpiderFootTarget): target object
+            validateReverse (bool): validate domain names resolve
+
+        Returns:
+            list: list of domain names and IP addresses
+        """
 
         ret = list()
+
+        if not target:
+            return ret
+
         t = target.getType()
         v = target.getValue()
 
@@ -1384,9 +1396,7 @@ class SpiderFoot:
                                     ret.append(host)
                     else:
                         ret.extend(names)
-        if len(ret) > 0:
-            return list(set(ret))
-        return None
+        return list(set(ret))
 
     def safeSocket(self, host, port, timeout):
         """Create a safe socket that's using SOCKS/TOR if it was enabled."""
