@@ -1295,6 +1295,10 @@ class SpiderFoot:
     def resolveHost(self, host):
         """Return a normalised resolution or None if not resolved."""
 
+        if not host:
+            self.error("Invalid host", False)
+            return None
+
         try:
             addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
             if len(addrs) > 0:
@@ -1307,7 +1311,11 @@ class SpiderFoot:
     def resolveIP(self, ipaddr):
         """Return a normalised resolution of an IPv4 address or None if not resolved."""
 
-        self.debug("Performing reverse-resolve of " + ipaddr)
+        if not ipaddr:
+            self.error("Invalid IP address", False)
+            return None
+
+        self.debug("Performing reverse-resolve of %s" % ipaddr)
 
         try:
             addrs = self.normalizeDNS(socket.gethostbyaddr(ipaddr))
@@ -1320,6 +1328,10 @@ class SpiderFoot:
 
     def resolveHost6(self, hostname):
         """Return a normalised resolution of an IPv6 address or None if not resolved."""
+
+        if not hostname:
+            self.error("Invalid hostname", False)
+            return None
 
         try:
             addrs = list()
