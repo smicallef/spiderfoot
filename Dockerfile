@@ -14,7 +14,7 @@
 #   sudo docker run -it -p 5001:5001 spiderfoot
 
 # Pull the base image.
-FROM alpine:latest
+FROM alpine:3.9.6
 COPY requirements.txt .
 
 # Run everything as one command so that only one layer is created
