@@ -750,6 +750,8 @@ class SpiderFoot:
         Returns:
             str: scan target seed data type
         """
+        if not target:
+            return None
 
         targetType = None
 
@@ -758,8 +760,8 @@ class SpiderFoot:
             {"^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER"},
             {"^.*@.*$": "EMAILADDR"},
             {"^\+\d+$": "PHONE_NUMBER"},
-            {"^\".*\s+.*\"$": "HUMAN_NAME"},
-            {"^\".*\"$": "USERNAME"},
+            {"^\".+\s+.+\"$": "HUMAN_NAME"},
+            {"^\".+\"$": "USERNAME"},
             {"^\d+$": "BGP_AS_OWNER"},
             {"^[0-9a-f:]+$": "IPV6_ADDRESS"},
             {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
