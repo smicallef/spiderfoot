@@ -1464,14 +1464,18 @@ class SpiderFoot:
 
         returnArr = list()
 
+        if not isinstance(robotsTxtData, str):
+            return returnArr
+
         # We don't check the User-Agent rule yet.. probably should at some stage
 
         for line in robotsTxtData.splitlines():
             if line.lower().startswith('disallow:'):
+                # todo: fix whitespace parsing; ie, " " is not a valid disallowed path
                 m = re.match('disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
-                self.debug('robots.txt parsing found disallow: ' + m.group(1))
-                returnArr.append(m.group(1))
-                continue
+                if m:
+                    self.debug('robots.txt parsing found disallow: ' + m.group(1))
+                    returnArr.append(m.group(1))
 
         return returnArr
 
