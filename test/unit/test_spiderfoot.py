@@ -82,7 +82,7 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(self.default_options)
 
         test_string = "example string"
-        opt_data = sf.optValueToData(test_string, fatal=True, splitLines=True)
+        opt_data = sf.optValueToData(test_string, fatal=False, splitLines=True)
         self.assertIsInstance(opt_data, str)
         self.assertEqual(test_string, opt_data)
 
@@ -92,10 +92,10 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        opt_data = sf.optValueToData(None, fatal=True, splitLines=True)
+        opt_data = sf.optValueToData(None, fatal=False, splitLines=True)
         self.assertEqual(None, opt_data)
 
-        opt_data = sf.optValueToData([], fatal=True, splitLines=True)
+        opt_data = sf.optValueToData([], fatal=False, splitLines=True)
         self.assertEqual(None, opt_data)
 
     def test_build_graph_data_should_return_a_set(self):
@@ -336,7 +336,6 @@ class TestSpiderFoot(unittest.TestCase):
 
         target_type = sf.targetType('""')
         self.assertEqual(None, target_type)
-
 
     def test_modules_producing(self):
         """
@@ -725,6 +724,20 @@ class TestSpiderFoot(unittest.TestCase):
 
         robots_txt = sf.parseRobotsTxt(None)
         self.assertIsInstance(robots_txt, list)
+
+        robots_txt = sf.parseRobotsTxt("")
+        self.assertIsInstance(robots_txt, list)
+
+        robots_txt = sf.parseRobotsTxt([])
+        self.assertIsInstance(robots_txt, list)
+
+        robots_txt = sf.parseRobotsTxt("disallow:")
+        self.assertIsInstance(robots_txt, list)
+        self.assertFalse(robots_txt)
+
+        robots_txt = sf.parseRobotsTxt("disallow: /disallowed/path\n")
+        self.assertIsInstance(robots_txt, list)
+        self.assertIn("/disallowed/path", robots_txt)
 
     def test_parse_emails_should_return_list(self):
         """
