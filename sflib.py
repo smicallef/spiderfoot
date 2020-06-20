@@ -1169,6 +1169,10 @@ class SpiderFoot:
         """
 
         ret = list()
+
+        if not res:
+            return ret
+
         for addr in res:
             if type(addr) == list:
                 for host in addr:
