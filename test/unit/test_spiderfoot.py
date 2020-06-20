@@ -152,19 +152,14 @@ class TestSpiderFoot(unittest.TestCase):
         scan_instance_id = sf.genScanInstanceGUID(None)
         self.assertIsInstance(scan_instance_id, str)
 
-    def test_dblog(self):
+    def test_dblog_invalid_dbh_should_raise(self):
         """
         Test _dblog(self, level, message, component=None)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
-        self.assertEqual('TBD', 'TBD')
-
-        dblog = sf._dblog("", "", "")
-        self.assertTrue(dblog)
-
-        dblog = sf._dblog(None, None, None)
-        self.assertTrue(dblog)
+        with self.assertRaises(BaseException) as cm:
+            dblog = sf._dblog(None, None, None)
 
     def test_error(self):
         """
