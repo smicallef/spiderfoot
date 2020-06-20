@@ -618,7 +618,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test dataParentChildToTree(self, data)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
         tree = sf.dataParentChildToTree(None)
         self.assertIsInstance(tree, dict)
@@ -627,6 +627,9 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(tree, dict)
 
         tree = sf.dataParentChildToTree("")
+        self.assertIsInstance(tree, dict)
+
+        tree = sf.dataParentChildToTree(dict())
         self.assertIsInstance(tree, dict)
 
     def test_resolve_host(self):

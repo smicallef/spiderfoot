@@ -1244,9 +1244,21 @@ class SpiderFoot:
         return list(wd.keys())
 
 
-    # Converts a dictionary of k -> array to a nested
-    # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):
+        """Converts a dictionary of k -> array to a nested
+        tree that can be digested by d3 for visualizations.
+
+        Args:
+            data (dict): dictionary of k -> array
+
+        Returns:
+            dict: nested tree
+        """
+
+        if not isinstance(data, dict):
+            self.error("Data is not a dict", False)
+            return {}
+
         def get_children(needle, haystack):
             #print("called")
             ret = list()
