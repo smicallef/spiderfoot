@@ -626,51 +626,64 @@ class TestSpiderFoot(unittest.TestCase):
         tree = sf.dataParentChildToTree(dict())
         self.assertIsInstance(tree, dict)
 
-    def test_resolve_host(self):
+    def test_resolve_host_should_return_list(self):
         """
         Test resolveHost(self, host)
         """
         sf = SpiderFoot(self.default_options)
 
-        addrs = sf.resolveHost('spiderfoot.net')
+        addrs = sf.resolveHost('one.one.one.one')
         self.assertIsInstance(addrs, list)
         self.assertTrue(addrs)
-
-    def test_resolve_host_invalid_host_should_return_none(self):
-        """
-        Test resolveHost(self, host)
-        """
-        sf = SpiderFoot(self.default_options)
+        self.assertIn('1.1.1.1', addrs)
 
         addrs = sf.resolveHost(None)
-        self.assertEqual(None, addrs)
+        self.assertFalse(addrs)
+        self.assertIsInstance(addrs, list)
 
-    def test_resolve_ip(self):
+    def test_resolve_ip_should_return_list(self):
         """
         Test resolveIP(self, ipaddr)
         """
         sf = SpiderFoot(self.default_options)
 
-        addrs = sf.resolveIP('spiderfoot.net')
+        addrs = sf.resolveIP('1.1.1.1')
         self.assertIsInstance(addrs, list)
         self.assertTrue(addrs)
+        self.assertIn('one.one.one.one', addrs)
 
-    def test_resolve_ip_invalid_ip_should_return_none(self):
-        """
-        Test resolveIP(self, ipaddr)
-        """
-        sf = SpiderFoot(self.default_options)
+        addrs = sf.resolveIP('2606:4700:4700::1001')
+        self.assertIsInstance(addrs, list)
+        self.assertTrue(addrs)
+        self.assertIn('one.one.one.one', addrs)
 
         addrs = sf.resolveIP(None)
-        self.assertEqual(None, addrs)
+        self.assertFalse(addrs)
+        self.assertIsInstance(addrs, list)
 
-    def test_resolve_host6(self):
+        addrs = sf.resolveIP([])
+        self.assertFalse(addrs)
+        self.assertIsInstance(addrs, list)
+
+        addrs = sf.resolveIP("")
+        self.assertFalse(addrs)
+        self.assertIsInstance(addrs, list)
+
+    def test_resolve_host6_should_return_a_list(self):
         """
         Test resolveHost6(self, hostname)
         """
         sf = SpiderFoot(self.default_options)
 
-        self.assertEqual('TBD', 'TBD')
+        addrs = sf.resolveHost6('one.one.one.one')
+        self.assertIsInstance(addrs, list)
+        self.assertTrue(addrs)
+        self.assertIn('2606:4700:4700::1001', addrs)
+        self.assertIn('2606:4700:4700::1111', addrs)
+
+        addrs = sf.resolveHost6(None)
+        self.assertFalse(addrs)
+        self.assertIsInstance(addrs, list)
 
     def test_validate_ip_should_return_bool(self):
         """
