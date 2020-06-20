@@ -756,15 +756,15 @@ class SpiderFoot:
         targetType = None
 
         regexToType = [
-            {"^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS"},
-            {"^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER"},
-            {"^.*@.*$": "EMAILADDR"},
-            {"^\+\d+$": "PHONE_NUMBER"},
-            {"^\".+\s+.+\"$": "HUMAN_NAME"},
-            {"^\".+\"$": "USERNAME"},
-            {"^\d+$": "BGP_AS_OWNER"},
-            {"^[0-9a-f:]+$": "IPV6_ADDRESS"},
-            {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
+            {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$": "IP_ADDRESS"},
+            {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/\d+$": "NETBLOCK_OWNER"},
+            {r"^.*@.*$": "EMAILADDR"},
+            {r"^\+[0-9]+$": "PHONE_NUMBER"},
+            {r"^\".+\s+.+\"$": "HUMAN_NAME"},
+            {r"^\".+\"$": "USERNAME"},
+            {r"^[0-9]+$": "BGP_AS_OWNER"},
+            {r"^[0-9a-f:]+$": "IPV6_ADDRESS"},
+            {r"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
         ]
 
         # Parse the target and set the targetType
@@ -962,9 +962,9 @@ class SpiderFoot:
             return None
 
         if '://' in url:
-            bits = re.match('(\w+://.[^/:\?]*)[:/\?].*', url)
+            bits = re.match(r'(\w+://.[^/:\?]*)[:/\?].*', url)
         else:
-            bits = re.match('(.[^/:\?]*)[:/\?]', url)
+            bits = re.match(r'(.[^/:\?]*)[:/\?]', url)
 
         if bits is None:
             return url.lower()
@@ -1080,7 +1080,7 @@ class SpiderFoot:
         if "." not in hostname:
             return False
 
-        if not re.match("^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
+        if not re.match(r"^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
             return False
 
         ps = PublicSuffixList(tldList)
@@ -1476,7 +1476,7 @@ class SpiderFoot:
         for line in robotsTxtData.splitlines():
             if line.lower().startswith('disallow:'):
                 # todo: fix whitespace parsing; ie, " " is not a valid disallowed path
-                m = re.match('disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
+                m = re.match(r'disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
                 if m:
                     self.debug('robots.txt parsing found disallow: ' + m.group(1))
                     returnArr.append(m.group(1))
@@ -1564,8 +1564,7 @@ class SpiderFoot:
         data = data.replace(" ", "")
         
         # Extract all numbers with lengths ranging from 13 - 19 digits
-        possibleCCRegex = "\d{13,19}"
-        matches = re.findall(possibleCCRegex, data)
+        matches = re.findall(r"[0-9]{13,19}", data)
 
         # Verify each extracted number using Luhn's algorithm
         for match in matches:
@@ -1807,7 +1806,7 @@ class SpiderFoot:
         """
 
         # https://tools.ietf.org/html/rfc3986#section-3.3
-        return re.findall("(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
+        return re.findall(r"(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
 
     # Find all URLs within the supplied content. This does not fetch any URLs!
     # A dictionary will be returned, where each link will have the keys
