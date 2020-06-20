@@ -1515,6 +1515,9 @@ class SpiderFoot:
             list: list of email addresses
         """
 
+        if not isinstance(data, str):
+            return list()
+
         emails = set()
         matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
 
