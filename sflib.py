@@ -357,10 +357,11 @@ class SpiderFoot:
 
         return json.dumps(ret)
 
-    # Called usually some time after instantiation
-    # to set up a database handle and scan GUID, used
-    # for logging events to the database about a scan.
     def setDbh(self, handle):
+        """Called usually some time after instantiation
+        to set up a database handle and scan GUID, used
+        for logging events to the database about a scan.
+        """
         self.dbh = handle
 
     def setGUID(self, uid):
@@ -393,10 +394,15 @@ class SpiderFoot:
             component (str): TBD
 
         Returns:
-            bool: True
+            bool: scan event logged successfully
         """
 
         #print(str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component))
+
+        if not self.dbh:
+            self.error("No database handle. Could not log event to database: %s" % message, True)
+            return False
+
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, message, exception=True):
