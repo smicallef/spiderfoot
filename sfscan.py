@@ -25,10 +25,34 @@ class SpiderFootScanner():
     # Temporary storage
     temp = None
 
-    # moduleOpts not yet used
     def __init__(self, scanName, scanTarget, targetType, scanId, moduleList,
                  globalOpts, moduleOpts):
+        """Initialize SpiderFootScanner object and immediately start a scan
+        of the specified target.
 
+        Args:
+            scanName (str): name of the scan
+            scanTarget (str): scan target
+            targetType (str): scan target type
+            scanId (str): scan identifier
+            moduleList (list): list of modules to run
+            globalOpts (dict): scan options
+            moduleOpts (dict): unused
+
+        Returns:
+            None
+        """
+
+        if not isinstance(scanName, str):
+            raise TypeError("scanName is %s; expected str()" % type(scanName))
+        if not isinstance(scanTarget, str):
+            raise TypeError("scanTarget is %s; expected str()" % type(scanTarget))
+        if not isinstance(scanId, str):
+            raise TypeError("scanId is %s; expected str()" % type(scanId))
+        if not isinstance(moduleList, list):
+            raise TypeError("moduleList is %s; expected list()" % type(moduleList))
+        if not isinstance(globalOpts, dict):
+            raise TypeError("globalOpts is %s; expected dict()" % type(globalOpts))
         
         self.temp = dict()
         self.temp['config'] = deepcopy(globalOpts)
@@ -39,8 +63,18 @@ class SpiderFootScanner():
         self.temp['scanId'] = scanId
         self.startScan()
 
-    # Set the status of the currently running scan (if any)
     def setStatus(self, status, started=None, ended=None):
+        """Set the status of the currently running scan (if any).
+
+        Args:
+            status (str): scan status ("RUNNING", "STARTING", "STARTED", "ABORT-REQUESTED", "ABORTED", "FINISHED", "ERROR-FAILED")
+            started (str): TBD
+            ended (str): TBD
+
+        Returns:
+            None
+        """
+
         #if self is None:
         #   print(("Internal Error: Status set attempted before " + \
         #          "SpiderFootScanner was ready."))
@@ -51,6 +85,7 @@ class SpiderFootScanner():
         return None
 
     def run(self):
+        """Start running a scan."""
         self.startScan()
 
     def getId(self):
@@ -58,9 +93,8 @@ class SpiderFootScanner():
             return self.scanId
         return None
 
-    # Start running a scan
     def startScan(self):
-        
+        """Start running a scan."""
         self.moduleInstances = dict()
         self.sf = SpiderFoot(self.temp['config'])
         self.config = deepcopy(self.temp['config'])
