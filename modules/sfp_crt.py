@@ -90,6 +90,7 @@ class sfp_crt(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         domains = list()
+        fetch_certs = list()
 
         for cert_info in data:
             cert_id = cert_info.get('id')
@@ -99,6 +100,8 @@ class sfp_crt(SpiderFootPlugin):
                 if cert_id in self.cert_ids:
                     continue
                 self.cert_ids[cert_id] = True
+
+            fetch_certs.append(cert_id)
 
             domain = cert_info.get('name_value')
             if '\n' in domain:
@@ -139,7 +142,7 @@ class sfp_crt(SpiderFootPlugin):
                     evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
                     self.notifyListeners(evt)
 
-        for cert_id in self.cert_ids:
+        for cert_id in fetch_certs:
             if self.checkForStop():
                 return None
 
