@@ -832,7 +832,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        parse_links = sf.parseLinks('url', 'data', 'domains')
+        parse_links = sf.parseLinks('url', 'example html content', 'domains')
         self.assertIsInstance(parse_links, dict)
 
     def test_parse_links_invalid_url_should_return_a_dict(self):
@@ -841,7 +841,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        parse_links = sf.parseLinks(None, 'data', 'domains')
+        parse_links = sf.parseLinks(None, 'example html content', 'domains')
         self.assertIsInstance(parse_links, dict)
 
     def test_parse_links_invalid_data_should_return_a_dict(self):
@@ -859,7 +859,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        parse_links = sf.parseLinks('url', 'data', None)
+        parse_links = sf.parseLinks('url', 'example html content', None)
         self.assertEqual(dict, type(parse_links))
 
     def test_url_encode_unicode_should_return_a_string(self):
