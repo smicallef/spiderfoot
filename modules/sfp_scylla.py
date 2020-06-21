@@ -45,7 +45,7 @@ class sfp_scylla(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'INTERNET_NAME' ]
+        return [ 'DOMAIN_NAME' ]
 
     # What events this module produces
     def producedEvents(self):
