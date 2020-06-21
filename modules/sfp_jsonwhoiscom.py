@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:        sfp_jsonwhois
-# Purpose:     Search JsonWHOIS for WHOIS records associated with a domain.
+# Name:        sfp_jsonwhoiscom
+# Purpose:     Search JsonWHOIS.com for WHOIS records associated with a domain.
 #
 # Authors:     <bcoles@gmail.com>
 #
@@ -15,8 +15,8 @@ import time
 import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
-class sfp_jsonwhois(SpiderFootPlugin):
-    """JsonWHOIS:Footprint,Investigate,Passive:Search Engines:apikey:Search JsonWHOIS for WHOIS records associated with a domain."""
+class sfp_jsonwhoiscom(SpiderFootPlugin):
+    """JsonWHOIS.com:Footprint,Investigate,Passive:Search Engines:apikey:Search JsonWHOIS.com for WHOIS records associated with a domain."""
 
     # Default options
     opts = {
@@ -26,7 +26,7 @@ class sfp_jsonwhois(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "JsonWHOIS API key.",
+        "api_key": "JsonWHOIS.com API key.",
         "delay": "Delay between requests, in seconds.",
     }
 
@@ -48,7 +48,7 @@ class sfp_jsonwhois(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["DOMAIN_REGISTRAR", "DOMAIN_WHOIS", "PROVIDER_DNS",
+        return ["RAW_RIR_DATA", "DOMAIN_REGISTRAR", "DOMAIN_WHOIS", "PROVIDER_DNS",
                 "EMAILADDR", "PHONE_NUMBER", "PHYSICAL_ADDRESS", "HUMAN_NAME",
                 "AFFILIATE_DOMAIN_UNREGISTERED"]
 
@@ -80,29 +80,29 @@ class sfp_jsonwhois(SpiderFootPlugin):
             self.sf.debug("No results for query")
             return None
 
-        # Sometimes JsonWHOIS returns HTTP 500 errors rather than 404
+        # Sometimes JsonWHOIS.com returns HTTP 500 errors rather than 404
         if res['code'] == '500' and res['content'] == '{"error":"Call failed"}':
             self.sf.debug("No results for query")
             return None
 
         if res['code'] == "401":
-            self.sf.error("Invalid JsonWHOIS API key.", False)
+            self.sf.error("Invalid JsonWHOIS.com API key.", False)
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by JsonWHOIS", False)
+            self.sf.error("You are being rate-limited by JsonWHOIS.com", False)
             self.errorState = True
             return None
 
         if res['code'] == '503':
-            self.sf.error("JsonWHOIS service unavailable", False)
+            self.sf.error("JsonWHOIS.com service unavailable", False)
             self.errorState = True
             return None
 
         # Catch all other non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from JsonWHOIS", False)
+            self.sf.error("Failed to retrieve content from JsonWHOIS.com", False)
             self.errorState = True
             return None
 
@@ -130,7 +130,7 @@ class sfp_jsonwhois(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_jsonwhois but did not set an API key!", False)
+            self.sf.error("You enabled sfp_jsonwhoiscom but did not set an API key!", False)
             self.errorState = True
             return None
 
@@ -144,8 +144,8 @@ class sfp_jsonwhois(SpiderFootPlugin):
             self.sf.debug("No information found for domain %s" % eventData)
             return None
 
-        #evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
-        #self.notifyListeners(evt)
+        evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
+        self.notifyListeners(evt)
 
         dns_providers = list()
 
@@ -245,4 +245,4 @@ class sfp_jsonwhois(SpiderFootPlugin):
                 evt = SpiderFootEvent("AFFILIATE_DOMAIN_UNREGISTERED", eventData, self.__name__, event)
                 self.notifyListeners(evt)
 
-# End of sfp_jsonwhois class
+# End of sfp_jsonwhoiscom class
