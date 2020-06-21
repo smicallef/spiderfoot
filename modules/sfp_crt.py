@@ -28,10 +28,12 @@ class sfp_crt(SpiderFootPlugin):
     }
 
     results = None
+    cert_ids = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.cert_ids = self.tempStorage()
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -87,14 +89,16 @@ class sfp_crt(SpiderFootPlugin):
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
-        cert_ids = list()
         domains = list()
 
         for cert_info in data:
             cert_id = cert_info.get('id')
 
             if cert_id:
-                cert_ids.append(cert_id)
+                # Don't process the same cert twice
+                if cert_id in self.cert_ids:
+                    continue
+                self.cert_ids[cert_id] = True
 
             domain = cert_info.get('name_value')
             if '\n' in domain:
@@ -135,7 +139,7 @@ class sfp_crt(SpiderFootPlugin):
                     evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
                     self.notifyListeners(evt)
 
-        for cert_id in set(cert_ids):
+        for cert_id in self.cert_ids:
             if self.checkForStop():
                 return None
 
