@@ -1330,66 +1330,94 @@ class SpiderFoot:
     #
 
     def resolveHost(self, host):
-        """Return a normalised resolution or None if not resolved."""
+        """Return a normalised resolution of a hostname.
+
+        Args:
+            host (str): host to resolve
+
+        Returns:
+            list
+        """
+
+        addrs = list()
 
         if not host:
-            self.error("Invalid host", False)
-            return None
+            self.error("Unable to resolve %s (Invalid host)" % host, False)
+            return addrs
 
         try:
             addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
-            if len(addrs) > 0:
-                return list(set(addrs))
-            return None
         except BaseException as e:
-            self.debug("Unable to resolve " + str(host) + ": " + str(e))
-            return None
+            self.debug("Unable to resolve %s (%s)" % (host, e))
+
+        if len(addrs):
+            self.debug("Resolved %s to: %s" % (host, addrs))
+
+        return list(set(addrs))
 
     def resolveIP(self, ipaddr):
-        """Return a normalised resolution of an IPv4 address or None if not resolved."""
+        """Return a normalised resolution of an IPv4 address.
 
-        if not ipaddr:
-            self.error("Invalid IP address", False)
-            return None
+        Args:
+            ipaddr (str): IP address to reverse resolve
+
+        Returns:
+            list: list of domain names
+        """
+
+        addrs = list()
+
+        if not self.validIP(ipaddr) and not self.validIP6(ipaddr):
+            self.error("Unable to resolve %s (Invalid IP address)" % ipaddr, False)
+            return addrs
 
         self.debug("Performing reverse-resolve of %s" % ipaddr)
 
         try:
             addrs = self.normalizeDNS(socket.gethostbyaddr(ipaddr))
-            if len(addrs) > 0:
-                return list(set(addrs))
-            return None
         except BaseException as e:
-            self.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
-            return None
+            self.debug("Unable to resolve %s (%s)" % (ipaddr, e))
+
+        if len(addrs):
+            self.debug("Resolved %s to: %s" % (ipaddr, addrs))
+
+        return list(set(addrs))
 
     def resolveHost6(self, hostname):
-        """Return a normalised resolution of an IPv6 address or None if not resolved."""
+        """Return a normalised resolution of an IPv6 address.
+
+        Args:
+            hostname (str): hostname to reverse resolve
+
+        Returns:
+            list
+        """
+
+        addrs = list()
 
         if not hostname:
-            self.error("Invalid hostname", False)
-            return None
+            self.error("Unable to resolve %s (Invalid hostname)" % hostname, False)
+            return addrs
 
         try:
-            addrs = list()
             res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
             for addr in res:
                 if addr[4][0] not in addrs:
                     addrs.append(addr[4][0])
-            if len(addrs) < 1:
-                return None
-            self.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
-            return list(set(addrs))
         except BaseException as e:
-            self.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
-            return None
+            self.debug("Unable to IPv6 resolve %s (%s)" % (hostname, e))
+
+        if len(addrs):
+            self.debug("Resolved %s to IPv6: %s" % (hostname, addrs))
+
+        return list(set(addrs))
 
     def validateIP(self, host, ip):
         """Verify a host resolves to a given IP."""
 
         addrs = self.resolveHost(host)
 
-        if addrs is None:
+        if not addrs:
             return False
 
         for addr in addrs:
@@ -2151,7 +2179,7 @@ class SpiderFoot:
         randpool = 'bcdfghjklmnpqrstvwxyz3456789'
         randhost = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
 
-        if self.resolveHost(randhost + "." + target) is None:
+        if not self.resolveHost(randhost + "." + target):
             return False
 
         return True
