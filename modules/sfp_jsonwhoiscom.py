@@ -190,6 +190,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
 
             phone = contact.get('phone')
             if phone:
+                phone = phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "").replace(".", "")
                 phones.append(phone)
 
             location = ', '.join([_f for _f in [contact.get('address'), contact.get('city'), contact.get('state'), contact.get('zip'), contact.get('country_code')] if _f])
