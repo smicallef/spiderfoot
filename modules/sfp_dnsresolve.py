@@ -153,6 +153,11 @@ class sfp_dnsresolve(SpiderFootPlugin):
                               "NETBLOCK_OWNER", "IP_ADDRESS", "IPV6_ADDRESS",
                               "INTERNET_NAME", "AFFILIATE_IPADDR"]:
             data = urllib.parse.unquote(eventData).lower()
+            # We get literal \n from RAW_RIR_DATA in cases where JSON responses
+            # have been str()'d, breaking interpretation of hostnames.
+            if eventName == 'RAW_RIR_DATA':
+                data = eventData.replace('\\n', '\n')
+
             for name in self.getTarget().getNames():
                 if self.checkForStop():
                     return None
