@@ -781,11 +781,14 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        pem = sf.sslDerToPem(None)
-        self.assertEqual(None, pem)
+        with self.assertRaises(TypeError) as cm:
+            pem = sf.sslDerToPem(None)
 
-        pem = sf.sslDerToPem("")
-        self.assertEqual(None, pem)
+        with self.assertRaises(TypeError) as cm:
+            pem = sf.sslDerToPem([])
+
+        with self.assertRaises(TypeError) as cm:
+            pem = sf.sslDerToPem("")
 
     def test_parse_cert_should_return_a_dict(self):
         """

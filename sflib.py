@@ -1713,12 +1713,21 @@ class SpiderFoot:
 
         return list(ibanNumbers)
 
-    
-    def sslDerToPem(self, der):
-        """Return a PEM for a DER."""
-        return ssl.DER_cert_to_PEM_cert(der)
+    def sslDerToPem(self, der_cert):
+        """Given a certificate as a DER-encoded blob of bytes, returns a PEM-encoded string version of the same certificate.
 
-    # Parse a PEM-format SSL certificate
+        Args:
+            der_cert (bytes): certificate in DER format
+
+        Returns:
+            str: PEM-encoded certificate as a byte string
+        """
+
+        if not isinstance(der_cert, bytes):
+            raise TypeError("der_cert is %s; expected bytes()" % type(der_cert))
+
+        return ssl.DER_cert_to_PEM_cert(der_cert)
+
     def parseCert(self, rawcert, fqdn=None, expiringdays=30):
         """Parse a PEM-format SSL certificate.
 
