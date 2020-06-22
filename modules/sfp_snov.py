@@ -179,6 +179,8 @@ class sfp_snov(SpiderFootPlugin):
                         if email:
                             if email in self.results:
                                 continue
+                            if not self.sf.validEmail(email):
+                                continue
                             self.results[email] = True
 
                             evt = SpiderFootEvent("EMAILADDR", str(email), self.__name__, event)
