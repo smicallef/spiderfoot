@@ -33,6 +33,8 @@ class TestSpiderFoot(unittest.TestCase):
       '_torctlport': 9051,
       '__logstdout': False
     }
+   
+    test_tlds = "// ===BEGIN ICANN DOMAINS===\n\ncom\nnet\norg\n\n// // ===END ICANN DOMAINS===\n"
 
     def test_init_no_options(self):
         """
@@ -413,16 +415,18 @@ class TestSpiderFoot(unittest.TestCase):
         Test domainKeyword(self, domain, tldList)
         """
         sf = SpiderFoot(self.default_options)
+        sf.opts['_internettlds'] = self.test_tlds
 
         keyword = sf.domainKeyword('www.spiderfoot.net', sf.opts.get('_internettlds'))
         self.assertIsInstance(keyword, str)
-        self.assertEqual('wwwspiderfootnet', keyword)
+        self.assertEqual('spiderfoot', keyword)
 
     def test_domain_keyword_invalid_domain_should_return_none(self):
         """
         Test domainKeyword(self, domain, tldList)
         """
         sf = SpiderFoot(self.default_options)
+        sf.opts['_internettlds'] = self.test_tlds
 
         keyword = sf.domainKeyword("", sf.opts.get('_internettlds'))
         self.assertEqual(None, keyword)
@@ -436,18 +440,20 @@ class TestSpiderFoot(unittest.TestCase):
         Test domainKeywords(self, domainList, tldList)
         """
         sf = SpiderFoot(self.default_options)
+        sf.opts['_internettlds'] = self.test_tlds
 
         domain_list = ['www.example.com', 'localhost.local']
         keywords = sf.domainKeywords(domain_list, sf.opts.get('_internettlds'))
         self.assertIsInstance(keywords, set)
-        self.assertIn('localhostlocal', keywords)
-        self.assertIn('wwwexamplecom', keywords)
+        self.assertIn('localhost', keywords)
+        self.assertIn('example', keywords)
 
     def test_domain_keywords_invalid_domainlist_should_return_a_set(self):
         """
         Test domainKeyword(self, domain, tldList)
         """
         sf = SpiderFoot(self.default_options)
+        sf.opts['_internettlds'] = self.test_tlds
 
         keywords = sf.domainKeywords("", sf.opts.get('_internettlds'))
         self.assertIsInstance(keywords, set)
@@ -461,6 +467,7 @@ class TestSpiderFoot(unittest.TestCase):
         Test hostDomain(self, hostname, tldList)
         """
         sf = SpiderFoot(self.default_options)
+        sf.opts['_internettlds'] = self.test_tlds
 
         host_domain = sf.hostDomain(None, sf.opts.get('_internettlds'))
         self.assertEqual(None, host_domain)
@@ -470,18 +477,19 @@ class TestSpiderFoot(unittest.TestCase):
         Test hostDomain(self, hostname, tldList)
         """
         sf = SpiderFoot(self.default_options)
-
-        host_domain = sf.hostDomain('local', sf.opts.get('_internettlds'))
-        self.assertIsInstance(host_domain, str)
-        self.assertEqual('local', host_domain)
-
-        host_domain = sf.hostDomain('spiderfoot.net', sf.opts.get('_internettlds'))
-        self.assertIsInstance(host_domain, str)
-        self.assertEqual('net', host_domain)
+        sf.opts['_internettlds'] = self.test_tlds
 
         host_domain = sf.hostDomain('www.spiderfoot.net', sf.opts.get('_internettlds'))
         self.assertIsInstance(host_domain, str)
-        self.assertEqual('net', host_domain)
+        self.assertEqual('spiderfoot.net', host_domain)
+
+        host_domain = sf.hostDomain('spiderfoot.net', sf.opts.get('_internettlds'))
+        self.assertIsInstance(host_domain, str)
+        self.assertEqual('spiderfoot.net', host_domain)
+
+        host_domain = sf.hostDomain('abc.www.spiderfoot.net', sf.opts.get('_internettlds'))
+        self.assertIsInstance(host_domain, str)
+        self.assertEqual('spiderfoot.net', host_domain)
 
     def test_host_domain_invalid_tldlist_should_return_none(self):
         """
@@ -497,8 +505,9 @@ class TestSpiderFoot(unittest.TestCase):
         Test isDomain(self, hostname, tldList)
         """
         sf = SpiderFoot(self.default_options)
+        sf.opts['_internettlds'] = self.test_tlds
 
-        is_domain = sf.isDomain('local', sf.opts.get('_internettlds'))
+        is_domain = sf.isDomain('spiderfoot.net', sf.opts.get('_internettlds'))
         self.assertIsInstance(is_domain, bool)
         self.assertTrue(is_domain)
 
@@ -511,6 +520,49 @@ class TestSpiderFoot(unittest.TestCase):
         is_domain = sf.isDomain('spiderfoot.net', None)
         self.assertIsInstance(is_domain, bool)
         self.assertFalse(is_domain)
+
+    def test_is_domain_invalid_tld_should_return_false(self):
+        """
+        Test isDomain(self, hostname, tldList)
+        """
+        sf = SpiderFoot(self.default_options)
+        sf.opts['_internettlds'] = self.test_tlds
+
+        is_domain = sf.isDomain('spiderfoot.not_a_tld', sf.opts.get('_internettlds'))
+        self.assertIsInstance(is_domain, bool)
+        self.assertFalse(is_domain)
+
+    def test_valid_host_invalid_tldlist_should_return_false(self):
+        """
+        Test validHost(self, hostname, tldList)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        is_host = sf.validHost('spiderfoot.net', None)
+        self.assertIsInstance(is_host, bool)
+        self.assertFalse(is_host)
+
+    def test_valid_host_valid_host_should_return_true(self):
+        """
+        Test validHost(self, hostname, tldList)
+        """
+        sf = SpiderFoot(self.default_options)
+        sf.opts['_internettlds'] = self.test_tlds
+
+        is_host = sf.validHost('spiderfoot.net', sf.opts.get('_internettlds'))
+        self.assertIsInstance(is_host, bool)
+        self.assertTrue(is_host)
+
+    def test_valid_host_invalid_host_should_return_false(self):
+        """
+        Test validHost(self, hostname, tldList)
+        """
+        sf = SpiderFoot(self.default_options)
+        sf.opts['_internettlds'] = self.test_tlds
+
+        is_valid = sf.validHost('something.gif', sf.opts.get('_internettlds'))
+        self.assertIsInstance(is_valid, bool)
+        self.assertFalse(is_valid)
 
     def test_valid_ip_should_return_a_boolean(self):
         """

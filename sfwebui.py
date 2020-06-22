@@ -857,7 +857,6 @@ class SpiderFootWebUi:
     # Stop a scan (id variable is unnecessary for now given that only one simultaneous
     # scan is permitted.)
     def stopscanmulti(self, ids):
-        #Removing All globalScanStatus Refs
         dbh = SpiderFootDb(self.config)
         error = list()
 

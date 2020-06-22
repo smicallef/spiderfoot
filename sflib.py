@@ -34,6 +34,7 @@ import OpenSSL
 import uuid
 import cryptography
 import dns.resolver
+from publicsuffixlist import PublicSuffixList
 from networkx import nx
 from networkx.readwrite.gexf import GEXFWriter
 from datetime import datetime
@@ -1064,8 +1065,8 @@ class SpiderFoot:
         if not hostname:
             return None
 
-        ps = PublicSuffixList(tldList)
-        return ps.get_public_suffix(hostname)
+        ps = PublicSuffixList(tldList, only_icann=True)
+        return ps.privatesuffix(hostname)
 
     def validHost(self, hostname, tldList):
         """Check if the provided string is a valid hostname with a valid public suffix TLD.
@@ -1089,15 +1090,15 @@ class SpiderFoot:
         if not re.match(r"^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
             return False
 
-        ps = PublicSuffixList(tldList)
-        sfx = ps.get_public_suffix(hostname, strict=True)
+        ps = PublicSuffixList(tldList, only_icann=True, accept_unknown=False)
+        sfx = ps.privatesuffix(hostname)
         return sfx != None
 
     def isDomain(self, hostname, tldList):
         """Check if the provided hostname string is a valid domain name.
 
         Given a possible hostname, check if it's a domain name
-        By checking whether it rests atop a TLD.
+        By checking whether it rests atop a valid TLD.
         e.g. www.example.com = False because tld of hostname is com,
         and www.example has a . in it.
 
@@ -1114,10 +1115,10 @@ class SpiderFoot:
         if not hostname:
             return False
 
-        ps = PublicSuffixList(tldList)
-        suffix = ps.get_public_suffix(hostname)
-        return hostname == suffix
-
+        ps = PublicSuffixList(tldList, only_icann=True, accept_unknown=False)
+        sfx = ps.privatesuffix(hostname)
+        return sfx == hostname
+    
     def validIP(self, address):
         """Check if the provided string is a valid IPv4 address.
 
@@ -1972,10 +1973,10 @@ class SpiderFoot:
         """Remove key= and others from URLs to avoid credentials in logs."""
 
         pats = {
-            "key=\S+": "key=XXX",
-            "pass=\S+": "pass=XXX",
-            "user=\S+": "user=XXX",
-            "password=\S+": "password=XXX"
+            r'key=\S+': "key=XXX",
+            r'pass=\S+': "pass=XXX",
+            r'user=\S+': "user=XXX",
+            r'password=\S+': "password=XXX"
         }
 
         ret = url
@@ -2727,147 +2728,4 @@ class SpiderFootEvent(object):
 
     def setSourceEventHash(self, srcHash):
         self.sourceEventHash = srcHash
-
-
-"""
-Public Suffix List module for Python.
-See LICENSE.tp for applicable license.
-"""
-
-
-class PublicSuffixList(object):
-    def __init__(self, input_data):
-        """Reads and parses public suffix list.
-
-        input_file is a file object or another iterable that returns
-        lines of a public suffix list file. If input_file is None, an
-        UTF-8 encoded file named "publicsuffix.txt" in the same
-        directory as this Python module is used.
-
-        The file format is described at http://publicsuffix.org/list/
-        """
-
-        #if input_file is None:
-        #input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
-        #input_file = codecs.open(input_path, "r", "utf-8")
-
-        root = self._build_structure(input_data)
-        self.root = self._simplify(root)
-
-    def _find_node(self, parent, parts):
-        if not parts:
-            return parent
-
-        if len(parent) == 1:
-            parent.append({})
-
-        if len(parent) != 2:
-            return None
-
-        negate, children = parent
-
-        child = parts.pop()
-
-        child_node = children.get(child, None)
-
-        if not child_node:
-            children[child] = child_node = [0]
-
-        return self._find_node(child_node, parts)
-
-    def _add_rule(self, root, rule):
-        if rule.startswith('!'):
-            negate = 1
-            rule = rule[1:]
-        else:
-            negate = 0
-
-        parts = rule.split('.')
-        self._find_node(root, parts)[0] = negate
-
-    def _simplify(self, node):
-        if len(node) == 1:
-            return node[0]
-
-        return (node[0], dict((k, self._simplify(v)) for (k, v) in list(node[1].items())))
-
-    def _build_structure(self, fp):
-        root = [0]
-
-        for line in fp:
-            line = str(line).strip()
-            if line.startswith('//') or not line:
-                continue
-
-            self._add_rule(root, line.split()[0].lstrip('.'))
-
-        return root
-
-    def _lookup_node(self, matches, depth, parent, parts):
-        if parent in (0, 1):
-            negate = parent
-            children = None
-        else:
-            negate, children = parent
-
-        matches[-depth] = negate
-
-        if depth < len(parts) and children:
-            for name in ('*', parts[-depth]):
-                child = children.get(name, None)
-                if child is not None:
-                    self._lookup_node(matches, depth + 1, child, parts)
-
-    def get_public_suffix(self, domain, strict=False):
-        """get_public_suffix("www.example.com") -> "example.com"
-
-        Calling this function with a DNS name will return the
-        public suffix for that name.
-
-        Note that for internationalized domains the list at
-        http://publicsuffix.org uses decoded names, so it is
-        up to the caller to decode any Punycode-encoded names.
-        """
-
-        parts = domain.lower().lstrip('.').split('.')
-        hits = [None] * len(parts)
-
-        if strict and parts[-1] not in self.root[1]:
-            return None
-
-        self._lookup_node(hits, 1, self.root, parts)
-
-        for i, what in enumerate(hits):
-            if what is not None and what == 0:
-                return '.'.join(parts[i:])
-
-
-# Class for tracking the status of all running scans. Thread safe.
-class SpiderFootScanStatus:
-    statusTable = dict()
-    lock = threading.Lock()
-
-    def setStatus(self, scanId, status):
-        """Set scan status."""
-
-        with self.lock:
-            self.statusTable[scanId] = status
-
-    def getStatus(self, scanId):
-        """Get scan status."""
-
-        with self.lock:
-            if scanId in self.statusTable:
-                return self.statusTable[scanId]
-            return None
-
-    def getStatusAll(self):
-        """Set scan status for all scans."""
-
-        with self.lock:
-            return self.statusTable
-
-# Global variable accessed by various places to get the status of
-# running scans.
-globalScanStatus = SpiderFootScanStatus()
 

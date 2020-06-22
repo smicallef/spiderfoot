@@ -22,3 +22,4 @@ python-docx>=0.8.10
 python-pptx>=0.6.18
 networkx==2.3
 cryptography>=2.5
+publicsuffixlist>=0.7.3
