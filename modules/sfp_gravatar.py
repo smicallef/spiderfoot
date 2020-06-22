@@ -137,7 +137,7 @@ class sfp_gravatar(SpiderFootPlugin):
 
         if data.get('emails') is not None:
             for email in data.get('emails'):
-                if email.get('value') is not None and email.get('value') != eventData:
+                if self.sf.validEmail(email.get('value')) and email.get('value') != eventData:
                     evt = SpiderFootEvent("EMAILADDR", email.get('value'), self.__name__, event)
                     self.notifyListeners(evt)
 

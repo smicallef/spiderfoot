@@ -143,11 +143,11 @@ class sfp_scylla(SpiderFootPlugin):
                 if not email:
                     continue
 
-                try:
-                    mailDom = email.lower().split('@')[1]
-                except BaseException as e:
-                    self.sf.debug("Encountered strange result: " + email)
+                if not self.sf.validEmail(email):
+                    self.sf.debug("Skipping invalid email address: " + email)
                     continue
+
+                mailDom = email.lower().split('@')[1]
 
                 # Skip unrelated emails
                 # Scylla sometimes returns broader results than the searched data

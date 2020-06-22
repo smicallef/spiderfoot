@@ -593,6 +593,28 @@ class TestSpiderFoot(unittest.TestCase):
         valid_ip_network = sf.validIpNetwork('0.0.0.0/0')
         self.assertIsInstance(valid_ip_network, bool)
 
+    def test_valid_email_should_return_a_boolean(self):
+        """
+        Test validEmail(self, email)
+        """
+        sf = SpiderFoot(dict())
+
+        valid_email = sf.validEmail(None)
+        self.assertIsInstance(valid_email, bool)
+        self.assertFalse(valid_email)
+
+        valid_email = sf.validEmail([])
+        self.assertIsInstance(valid_email, bool)
+        self.assertFalse(valid_email)
+
+        valid_email = sf.validEmail('root@localhost')
+        self.assertIsInstance(valid_email, bool)
+        self.assertFalse(valid_email)
+
+        valid_email = sf.validEmail('root@localhost.local')
+        self.assertIsInstance(valid_email, bool)
+        self.assertTrue(valid_email)
+
     def test_normalize_dns(self):
         """
         Test normalizeDNS(self, res)

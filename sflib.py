@@ -1190,6 +1190,40 @@ class SpiderFoot:
                 ret.append(addr)
         return ret
 
+    def validEmail(self, email):
+        """Check if the provided string is a valid email address.
+
+        Args:
+            email (str): The email address to check.
+
+        Returns:
+            bool
+        """
+
+        if not isinstance(email, str):
+            return False
+
+        if "@" not in email:
+            return False
+
+        # Basic regex check
+        if not re.match(r'^([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)$', email):
+            return False
+
+        # Handle false positive matches
+        if len(email) < 5:
+            return False
+
+        # Handle messed up encodings
+        if "%" in email:
+            return False
+
+        # Handle truncated emails
+        if "..." in email:
+            return False
+
+        return True
+
     def sanitiseInput(self, cmd):
         """Verify input command is safe to execute
 
@@ -1561,24 +1595,8 @@ class SpiderFoot:
         matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
 
         for match in matches:
-            self.debug("Found possible email: " + match)
-
-            # Handle false positive matches
-            if len(match) < 5:
-                self.debug("Skipped likely invalid email address.")
-                continue
-
-            # Handle messed up encodings
-            if "%" in match:
-                self.debug("Skipped invalid email address: " + match)
-                continue
-
-            # Handle truncated emails
-            if "..." in match:
-                self.debug("Skipped incomplete e-mail address: " + match)
-                continue
-
-            emails.add(match)
+            if self.validEmail(match):
+                emails.add(match)
 
         return list(emails)
     

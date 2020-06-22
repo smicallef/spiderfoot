@@ -107,22 +107,20 @@ class sfp_builtwith(SpiderFootPlugin):
             return None
 
         if "Meta" in data:
-            # Verify any email addresses as we sometimes get junk from BuiltWith
-            pat = re.compile("([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)")
             if data['Meta'].get("Names", []):
                 for nb in data['Meta']['Names']:
                     e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + nb['Name'],
                                         self.__name__, event)
                     self.notifyListeners(e)
                     if nb.get('Email', None):
-                        if (re.match(pat, nb['Email'])):
+                        if self.sf.validEmail(nb['Email']):
                             e = SpiderFootEvent("EMAILADDR", nb['Email'],
                                                 self.__name__, event)
                             self.notifyListeners(e)
 
             if data['Meta'].get("Emails", []):
                 for email in data['Meta']['Emails']:
-                    if (re.match(pat, email)):
+                    if self.sf.validEmail(email):
                         e = SpiderFootEvent("EMAILADDR", email,
                                             self.__name__, event)
                         self.notifyListeners(e)

@@ -182,7 +182,8 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
         for contact in contacts:
             email = contact.get('email')
             if email:
-                emails.append(email)
+                if self.sf.validEmail(email):
+                    emails.append(email)
 
             name = contact.get("name")
             if name:
