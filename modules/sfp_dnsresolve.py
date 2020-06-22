@@ -252,6 +252,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if not addrs:
                 return None
 
+            addrs.append(eventData)
+
             # We now have a set of hosts/IPs to do something with.
             for addr in addrs:
                 if self.checkForStop():
@@ -332,7 +334,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         # Report the domain for that host
         if htype == "INTERNET_NAME":
             dom = self.sf.hostDomain(host, self.opts['_internettlds'])
-            self.processDomain(dom, evt)
+            self.processDomain(dom, evt, False, host)
 
             # Try obtain the IPv6 address
             ip6s = self.sf.resolveHost6(host)
@@ -355,11 +357,11 @@ class sfp_dnsresolve(SpiderFootPlugin):
             dom = self.sf.hostDomain(host, self.opts['_internettlds'])
             if dom == host and not self.sf.isDomain(dom, self.opts['_internettlds']):
                 return evt
-            self.processDomain(dom, evt, True)
+            self.processDomain(dom, evt, True, host)
 
         return evt
 
-    def processDomain(self, domainName, parentEvent, affil=False):
+    def processDomain(self, domainName, parentEvent, affil=False, host=None):
         if domainName not in self.domresults:
             self.domresults[domainName] = True
         else:
@@ -377,9 +379,14 @@ class sfp_dnsresolve(SpiderFootPlugin):
                                      self.__name__, parentEvent)
             self.notifyListeners(domevt)
         else:
-            domevt = SpiderFootEvent("DOMAIN_NAME_PARENT", domainName,
-                                     self.__name__, parentEvent)
-            self.notifyListeners(domevt)
+            # Only makes sense to link this event with a source event
+            # that sits on the parent domain.
+            if not host:
+                return None
+            if host.endswith("." + domainName):
+                domevt = SpiderFootEvent("DOMAIN_NAME_PARENT", domainName,
+                                         self.__name__, parentEvent)
+                self.notifyListeners(domevt)
             return None
 
 # End of sfp_dnsresolve class
