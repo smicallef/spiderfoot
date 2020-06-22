@@ -113,8 +113,14 @@ class SpiderFootScanner():
         self.dbh.scanInstanceCreate(self.scanId,
                                        self.scanName, self.targetValue)
         self.setStatus("STARTING", time.time() * 1000, None)
+
         # Create our target
-        target = SpiderFootTarget(self.targetValue, self.targetType)
+        try:
+            target = SpiderFootTarget(self.targetValue, self.targetType)
+        except BaseException as e:
+            self.sf.status("Scan [%s] failed: %s" % (self.scanId, e))
+            self.setStatus("ERROR-FAILED", None, time.time() * 1000)
+            return None
 
         # Save the config current set for this scan
         self.config['_modulesenabled'] = self.moduleList

@@ -2535,16 +2535,15 @@ class SpiderFootTarget(object):
     targetAliases = list()
 
     def __init__(self, targetValue, typeName):
-        if typeName in self._validTypes:
-            self.targetType = typeName
-            if type(targetValue) != str:
-                self.targetValue = str(targetValue).lower()
-            else:
-                self.targetValue = targetValue
-            self.targetAliases = list()
+        if typeName not in self._validTypes:
+            raise ValueError("Invalid target type %s; expected %s" % (typeName, self._validTypes))
+
+        self.targetType = typeName
+        if type(targetValue) != str:
+            self.targetValue = str(targetValue).lower()
         else:
-            print("Internal Error: Invalid target type.")
-            sys.exit(-1)
+            self.targetValue = targetValue
+        self.targetAliases = list()
 
     def getType(self):
         return self.targetType
