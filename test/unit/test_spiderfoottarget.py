@@ -12,17 +12,15 @@ class TestSpiderFootTarget(unittest.TestCase):
         'EMAILADDR', 'HUMAN_NAME', 'BGP_AS_OWNER', 'PHONE_NUMBER', "USERNAME"
     ]
 
-    def test_init_unsupported_target_type_should_exit(self):
+    def test_init_unsupported_target_type_should_raise(self):
         """
         Test __init__(self, targetValue, typeName)
         """
         target_value = 'example target value'
 
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(ValueError) as cm:
             target_type = 'example target type'
             target = SpiderFootTarget(target_value, target_type)
-
-        self.assertEqual(cm.exception.code, -1)
 
     def test_init_supported_target_types(self):
         """
