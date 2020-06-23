@@ -328,7 +328,7 @@ class SpiderFootDb:
         """
 
         if list(criteria.values()).count(None) == 3:
-            return False
+            return []
 
         qvars = list()
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
