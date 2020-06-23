@@ -37,6 +37,11 @@ class SpiderFootWebUi:
     docroot = ''
 
     def __init__(self, config):
+        if not isinstance(config, dict):
+            raise TypeError("config is %s; expected dict()" % type(config))
+        if not config:
+            raise ValueError("config is empty")
+
         self.defaultConfig = deepcopy(config)
         dbh = SpiderFootDb(self.defaultConfig)
         # 'config' supplied will be the defaults, let's supplement them
