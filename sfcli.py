@@ -19,10 +19,14 @@ import requests
 import shlex
 import codecs
 import time
-import readline
 import cmd
 import argparse
 from os.path import expanduser
+
+try:
+    import readline
+except:
+    import pyreadline as readline
 
 # Colors to make things purty
 class bcolors:
