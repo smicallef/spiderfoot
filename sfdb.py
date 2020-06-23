@@ -244,6 +244,13 @@ class SpiderFootDb:
     ]
 
     def __init__(self, opts, init=False):
+        if not isinstance(opts, dict):
+            raise TypeError("opts is %s; expected dict()" % type(opts))
+        if not opts:
+            raise ValueError("opts is empty")
+        if not opts['__database']:
+            raise ValueError("opts['__database'] is empty")
+
         self.sf = SpiderFoot(opts)
 
         # connect() will create the database file if it doesn't exist, but
@@ -304,14 +311,22 @@ class SpiderFootDb:
         with self.dbhLock:
             self.dbh.close()
 
-    # Search results
-    # criteria is search criteria such as:
-    #  - scan_id (search within a scan, if omitted search all)
-    #  - type (search a specific type, if omitted search all)
-    #  - value (search values for a specific string, if omitted search all)
-    #  - regex (search values for a regular expression)
-    # ** at least two criteria must be set **
     def search(self, criteria, filterFp=False):
+        """Search database
+
+        Args:
+            criteria (dict): search criteria such as:
+                - scan_id (search within a scan, if omitted search all)
+                - type (search a specific type, if omitted search all)
+                - value (search values for a specific string, if omitted search all)
+                - regex (search values for a regular expression)
+                ** at least two criteria must be set **
+            filterFp (bool): filter out false positives
+
+        Returns:
+            list: search results
+        """
+
         if list(criteria.values()).count(None) == 3:
             return False
 
@@ -439,9 +454,16 @@ class SpiderFootDb:
             except sqlite3.Error:
                 self.sf.fatal("Unable to set information for the scan instance.")
 
-    # Return info about a scan instance (name, target, created, started,
-    # ended, status) - don't need this yet - untested
     def scanInstanceGet(self, instanceId):
+        """Return info about a scan instance (name, target, created, started, ended, status)
+
+        Args:
+            instanceId (str): scan instance ID
+
+        Returns:
+            list: scan instance info
+        """
+
         qry = "SELECT name, seed_target, ROUND(created/1000) AS created, \
             ROUND(started/1000) AS started, ROUND(ended/1000) AS ended, status \
             FROM tbl_scan_instance WHERE guid = ?"
@@ -451,7 +473,7 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchone()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when retreiving scan instance:" + e.args[0])
+                self.sf.error("SQL error encountered when retrieving scan instance:" + e.args[0])
 
     # Obtain a summary of the results per event type
     def scanResultSummary(self, instanceId, by="type"):
