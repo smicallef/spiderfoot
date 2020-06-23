@@ -129,17 +129,17 @@ class sfp_dnsraw(SpiderFootPlugin):
                         strdata = str(m)
 
                         if rx == "CNAME":
-                            domains.append(strdata)
+                            domains.append(strdata.lower())
 
                         if rx == "MX":
-                            evt = SpiderFootEvent("PROVIDER_MAIL", strdata, self.__name__, parentEvent)
+                            evt = SpiderFootEvent("PROVIDER_MAIL", strdata.lower(), self.__name__, parentEvent)
                             self.notifyListeners(evt)
-                            domains.append(strdata)
+                            domains.append(strdata.lower())
 
                         if rx == "NS":
-                            evt = SpiderFootEvent("PROVIDER_DNS", strdata, self.__name__, parentEvent)
+                            evt = SpiderFootEvent("PROVIDER_DNS", strdata.lower(), self.__name__, parentEvent)
                             self.notifyListeners(evt)
-                            domains.append(strdata)
+                            domains.append(strdata.lower())
 
                         if rx == "TXT":
                             evt = SpiderFootEvent("DNS_TEXT", strdata, self.__name__, parentEvent)
@@ -154,7 +154,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                                     for domain in matches:
                                         if '_' in domain:
                                             continue
-                                        domains.append(domain)
+                                        domains.append(domain.lower())
 
         for domain in set(domains):
             if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
