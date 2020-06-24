@@ -327,8 +327,11 @@ class SpiderFootDb:
             list: search results
         """
 
+        if not isinstance(criteria, dict):
+            return list()
+
         if list(criteria.values()).count(None) == 3:
-            return []
+            return list()
 
         qvars = list()
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
