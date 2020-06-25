@@ -104,8 +104,6 @@ class sfp_dnsraw(SpiderFootPlugin):
                 self.sf.error("Failed to obtain DNS response for %s (%s)" % (eventData, e), False)
                 continue
 
-            domains = list()
-
             # Iterate through DNS answers
             for x in res.answer:
                 if str(x) in self.checked:

@@ -68,7 +68,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 target.setAlias(host, "INTERNET_NAME")
                 idnahost = host.encode("idna")
                 if idnahost != host:
-                    target.setAlias(idnahost, "INTERNET_NAME")
+                    self.sf.debug("Found an IDNA alias: " + host)
+                    target.setAlias(idnahost.decode('ascii', errors='replace'), "INTERNET_NAME")
 
                 # If the target was a hostname/sub-domain, we can
                 # add the domain as an alias for the target. But
@@ -325,7 +326,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 return None
 
         # Report the host
-        if host != parentEvent.data and htype != parentEvent.eventType:
+        if host != parentEvent.data:
             evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
             self.notifyListeners(evt)
         else:
@@ -383,7 +384,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             # that sits on the parent domain.
             if not host:
                 return None
-            if host.endswith("." + domainName):
+            if parentEvent.data.endswith("." + domainName):
                 domevt = SpiderFootEvent("DOMAIN_NAME_PARENT", domainName,
                                          self.__name__, parentEvent)
                 self.notifyListeners(domevt)
