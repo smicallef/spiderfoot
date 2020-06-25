@@ -78,6 +78,11 @@ class TestSpiderFootDb(unittest.TestCase):
         Test search(self, criteria, filterFp=False)
         """
         sfdb = SpiderFootDb(self.default_options, False)
+
+        search_results = sfdb.search(None, None)
+        self.assertIsInstance(search_results, list)
+        self.assertFalse(search_results)
+
         search_results = sfdb.search(dict(), False)
         self.assertIsInstance(search_results, list)
 
@@ -90,6 +95,7 @@ class TestSpiderFootDb(unittest.TestCase):
 
         search_results = sfdb.search(criteria, False)
         self.assertIsInstance(search_results, list)
+        self.assertFalse(search_results)
 
     def test_event_types_should_return_a_list(self):
         """
@@ -104,13 +110,19 @@ class TestSpiderFootDb(unittest.TestCase):
         """
         Test scanLogEvent(self, instanceId, classification, message, component=None)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+        sfdb.scanLogEvent(None, None, None, None)
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
-    def test_scan_instance(self):
+    def test_scan_instance_create(self):
         """
         Test scanInstanceCreate(self, instanceId, scanName, scanTarget)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+        sfdb.scanInstanceCreate(None, None, None)
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -118,6 +130,9 @@ class TestSpiderFootDb(unittest.TestCase):
         """
         Test scanInstanceSet(self, instanceId, started=None, ended=None, status=None)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+
+        sfdb.scanInstanceSet(None, None, None, None)
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -126,8 +141,13 @@ class TestSpiderFootDb(unittest.TestCase):
         Test scanInstanceGet(self, instanceId)
         """
         sfdb = SpiderFootDb(self.default_options, False)
-        scan_instance = sfdb.scanInstanceGet(None)
-        self.assertIsInstance(scan_instance, list)
+
+        scan_instance = 'example scan instance'
+        scan_instance_get = sfdb.scanInstanceGet(scan_instance)
+        self.assertIsInstance(scan_instance_get, list)
+        self.assertIsIn(scan_instance, scan_instance_get)
+
+        self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
     def test_scan_result_summary(self):
@@ -150,11 +170,14 @@ class TestSpiderFootDb(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
-    def test_scan_logs(self):
+    def test_scan_logs_should_return_a_list(self):
         """
         Test scanLogs(self, instanceId, limit=None, fromRowId=None, reverse=False)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+        scan_logs = sfdb.scanLogs(None, None, None, None)
+        self.assertIsInstance(scan_logs, list)
+
         self.assertEqual('TBD', 'TBD')
 
     def test_scan_errors(self):
@@ -170,6 +193,9 @@ class TestSpiderFootDb(unittest.TestCase):
         """
         Test scanInstanceDelete(self, instanceId)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+        sfdb.scanConfigDelete(None)
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -199,6 +225,8 @@ class TestSpiderFootDb(unittest.TestCase):
         """
         Test configClear(self)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+        config = sfdb.configClear()
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -223,46 +251,70 @@ class TestSpiderFootDb(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
-    def test_scan_instance_list(self):
+    def test_scan_instance_list_should_return_a_list(self):
         """
         Test scanInstanceList(self)
         """
-        self.assertEqual('TBD', 'TBD')
+        sfdb = SpiderFootDb(self.default_options, False)
 
-    @unittest.skip("todo")
-    def test_scan_result_history(self):
+        scan_instances = sfdb.scanInstanceList()
+        self.assertIsInstance(scan_instances, list)
+
+    def test_scan_result_history_should_return_a_list(self):
         """
         Test scanResultHistory(self, instanceId)
         """
-        self.assertEqual('TBD', 'TBD')
+        sfdb = SpiderFootDb(self.default_options, False)
+
+        scan_result_history = sfdb.scanResultHistory(None)
+        self.assertIsInstance(scan_result_history, list)
 
     @unittest.skip("todo")
-    def test_scan_element_sources_direct(self):
+    def test_scan_element_sources_direct_should_return_a_list(self):
         """
         Test scanElementSourcesDirect(self, instanceId, elementIdList)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+
+        scan_element_sources_direct = sfdb.scanElementSourcesDirect(None, None)
+        self.assertIsInstance(scan_element_sources_direct, list)
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
-    def test_scan_element_children_direct(self):
+    def test_scan_element_children_direct_should_return_a_list(self):
         """
         Test scanElementChildrenDirect(self, instanceId, elementIdList)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+
+        scan_element_children_direct = sfdb.scanElementChildrenDirect(None, None)
+        self.assertIsInstance(scan_element_children_direct, list)
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
-    def test_scan_element_sources_all(self):
+    def test_scan_element_sources_all_should_return_a_list(self):
         """
         Test scanElementSourcesAll(self, instanceId, childData)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+
+        scan_element_sources_all = sfdb.scanElementSourcesAll(None, None)
+        self.assertIsInstance(scan_element_sources_all, list)
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
-    def test_scan_element_children_all(self):
+    def test_scan_element_children_all_should_return_a_list(self):
         """
         Test scanElementChildrenAll(self, instanceId, parentIds)
         """
+        sfdb = SpiderFootDb(self.default_options, False)
+
+        scan_element_children_all = sfdb.scanElementChildrenAll(None, None)
+        self.assertIsInstance(scan_element_children_all, list)
+
         self.assertEqual('TBD', 'TBD')
 
 if __name__ == '__main__':
