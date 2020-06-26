@@ -1,10 +1,51 @@
+[![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE)
+[![Stable Release](https://img.shields.io/badge/version-3.0-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v3.0)
+[![Repositories](https://repology.org/badge/tiny-repos/spiderfoot.svg)](https://repology.org/project/spiderfoot/versions)
+
 <h1 align="center">
   <a href="https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQv&s=os_gh"><img src="https://www.spiderfoot.net/wp-content/themes/spiderfoot/img/spiderfoot-wide.png"></a>
 </h1>
 
 ### ABOUT
 
-SpiderFoot is an open source intelligence (OSINT) automation tool. It integrates with just about every data source available and utilises a range of methods for data analysis, making that data easy to navigate. 
+<table>
+  <tr>
+    <th>Version</th>
+    <td>
+      <a href="https://github.com/smicallef/spiderfoot/releases" target="_blank">
+        <img alt="Version 3.0" src="https://img.shields.io/badge/version-3.0-brightgreen.svg"/>
+      </a>
+    </td>
+  </tr>
+    <tr>
+    <th>Homepage</th>
+    <td>
+      <a href="https://www.spiderfoot.net/" target="_blank">https://www.spiderfoot.net/</a>
+    </td>
+  </tr>
+  <tr>
+    <th>Github</th>
+    <td>
+      <a href="https://github.com/smicallef/spiderfoot">https://github.com/smicallef/spiderfoot</a>
+    </td>
+  </tr>
+  <tr>
+    <th>Twitter</th>
+    <td>
+      <a href="https://twitter.com/spiderfoot" target="_blank">https://twitter.com/spiderfoot</a>
+    </td>
+  </tr>
+  <tr>
+    <th>License</th>
+    <td>
+      <a href="https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE" target="_blank">
+        <img alt="GPLv2 License" src="https://img.shields.io/badge/license-GPLv2-brightgreen.svg"/>
+      </a>
+    </td>
+  </tr>
+</table>
+
+**SpiderFoot** is an open source intelligence (OSINT) automation tool. It integrates with just about every data source available and utilises a range of methods for data analysis, making that data easy to navigate. 
 
 SpiderFoot has an embedded web-server for providing a clean and intuitive web-based interface but can also be used completely via the command-line.  It's written in **Python 3** and **GPL-licensed**.
 
