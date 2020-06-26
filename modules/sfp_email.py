@@ -74,8 +74,9 @@ class sfp_email(SpiderFootPlugin):
             if eventName.startswith("AFFILIATE_"):
                 evttype = "AFFILIATE_EMAILADDR"
             else:
-                if email.split("@")[0] in self.opts['_genericusers'].split(","):
-                    evttype = "EMAILADDR_GENERIC"
+
+            if not evttype.startswith("AFFILIATE_") and email.split("@")[0] in self.opts['_genericusers'].split(","):
+                evttype = "EMAILADDR_GENERIC"
 
             self.sf.info("Found e-mail address: " + email)
             mail = email.strip('.')
