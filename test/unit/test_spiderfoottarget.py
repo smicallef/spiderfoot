@@ -12,15 +12,19 @@ class TestSpiderFootTarget(unittest.TestCase):
         'EMAILADDR', 'HUMAN_NAME', 'BGP_AS_OWNER', 'PHONE_NUMBER', "USERNAME"
     ]
 
+    def test_init_invalid_target_value_should_raise(self):
+        """
+        Test __init__(self, targetValue, typeName)
+        """
+        with self.assertRaises(TypeError) as cm:
+            target = SpiderFootTarget(None, 'IP_ADDRESS')
+
     def test_init_unsupported_target_type_should_raise(self):
         """
         Test __init__(self, targetValue, typeName)
         """
-        target_value = 'example target value'
-
         with self.assertRaises(ValueError) as cm:
-            target_type = 'example target type'
-            target = SpiderFootTarget(target_value, target_type)
+            target = SpiderFootTarget('example target value', 'example target type')
 
     def test_init_supported_target_types(self):
         """

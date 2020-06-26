@@ -320,7 +320,6 @@ if __name__ == '__main__':
         if sfConfig['__logging']:
             print(("[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist)))
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
-        scanId = sf.genScanInstanceGUID(target)
 
         # Debug mode is a variable that gets stored to the DB, so re-apply it
         if args.debug:
@@ -332,10 +331,20 @@ if __name__ == '__main__':
         if args.x and args.t:
             cfg['__outputfilter'] = args.t.split(",")
 
-        t = SpiderFootScanner(target, target, targetType, scanId,
-            modlist, cfg, dict())
-        t.daemon = True
-        t.run()
+        try:
+            s = SpiderFootScanner(target, target, targetType, scanId, modlist, cfg)
+            scanId = s.getId()
+        except BaseException as e:
+            print("[-] Failed to initialize scan: %s" % e)
+            sys.exit(-1)
+
+        try:
+            p = mp.Process(target=s.startScan())
+            p.daemon = True
+            p.start()
+        except BaseException as e:
+            print("[-] Scan [%s] failed: %s" % (scanId, e))
+            sys.exit(-1)
 
         # If field headers weren't disabled, print them
         if not args.H and args.o != "json":

@@ -335,7 +335,6 @@ class SpiderFootWebUi:
     def rerunscan(self, id):
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
-        modopts = dict() # Not used yet as module options are set globally
         modlist = list()
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
@@ -363,27 +362,35 @@ class SpiderFootWebUi:
             scantarget = scantarget.lower()
 
         # Start running a new scan
-        newId = sf.genScanInstanceGUID(scanname)
-        p = mp.Process(target=SpiderFootScanner, args=(scanname, scantarget, targetType, newId,
-                modlist, cfg, modopts))
-        p.start()
+        try:
+            s = SpiderFootScanner(scanname, scantarget, targetType, modlist, cfg)
+            scanId = s.getId()
+        except BaseException as e:
+            print("[-] Failed to initialize scan: %s" % e)
+            return self.error("Failed to initialize scan: %s" % e)
 
+        try:
+            p = mp.Process(target=s.startScan())
+            p.daemon = True
+            p.start()
+        except BaseException as e:
+            print("[-] Scan [%s] failed: %s" % (scanId, e))
+            return self.error("Scan [%s] failed: %s" % (scanId, e))
 
         # Wait until the scan has initialized
-        while dbh.scanInstanceGet(newId) == None:
+        while dbh.scanInstanceGet(scanId) == None:
             print("[info] Waiting for the scan to initialize...")
             time.sleep(1)
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=newId, name=str(scanname), docroot=self.docroot,
-            status=dbh.scanInstanceGet(newId), pageid="SCANLIST")
+        return templ.render(id=scanId, name=str(scanname), docroot=self.docroot,
+            status=dbh.scanInstanceGet(scanId), pageid="SCANLIST")
 
     rerunscan.exposed = True
 
     def rerunscanmulti(self, ids):
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
-        modopts = dict() # Not used yet as module options are set globally
         modlist = list()
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
@@ -409,13 +416,23 @@ class SpiderFootWebUi:
                                   "a human name, IP address, IP subnet, ASN, domain name or host name.")
 
             # Start running a new scan
-            newId = sf.genScanInstanceGUID(scanname)
-            p = mp.Process(target=SpiderFootScanner, args=(scanname, scantarget.lower(), 
-                            targetType, newId, modlist, cfg, modopts))
-            p.start()
+            try:
+                s = SpiderFootScanner(scanname, scantarget, targetType, modlist, cfg)
+                s.getId()
+            except BaseException as e:
+                print("[-] Failed to initialize scan: %s" % e)
+                return self.error("Failed to initialize scan: %s" % e)
+
+            try:
+                p = mp.Process(target=s.startScan())
+                p.daemon = True
+                p.start()
+            except BaseException as e:
+                print("[-] Scan [%s] failed: %s" % (scanId, e))
+                return self.error("Scan [%s] failed: %s" % (scanId, e))
 
             # Wait until the scan has initialized
-            while dbh.scanInstanceGet(newId) == None:
+            while dbh.scanInstanceGet(scanId) == None:
                 print("[info] Waiting for the scan to initialize...")
                 time.sleep(1)
 
@@ -769,7 +786,6 @@ class SpiderFootWebUi:
 
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
-        modopts = dict()  # Not used yet as module options are set globally
         modlist = list()
         sf = SpiderFoot(cfg)
         targetType = None
@@ -835,15 +851,25 @@ class SpiderFootWebUi:
             modlist.remove("sfp__stor_stdout")
 
         # Start running a new scan
-        scanId = sf.genScanInstanceGUID(scanname)
         if targetType in [ "HUMAN_NAME", "USERNAME" ]:
             scantarget = scantarget.replace("\"", "")
         else:
             scantarget = scantarget.lower()
-        p = mp.Process(target=SpiderFootScanner, args=(scanname, scantarget, targetType, scanId,
-                              modlist, cfg, modopts))
-        p.daemon = True
-        p.start()
+
+        try:
+            s = SpiderFootScanner(scanname, scantarget, targetType, modlist, cfg)
+            scanId = s.getId()
+        except BaseException as e:
+            print("[-] Failed to initialize scan: %s" % e)
+            return self.error("Failed to initialize scan: %s" % e)
+
+        try:
+            p = mp.Process(target=s.startScan())
+            p.daemon = True
+            p.start()
+        except BaseException as e:
+            print("[-] Scan [%s] failed: %s" % (scanId, e))
+            return self.error("Scan [%s] failed: %s" % (scanId, e))
 
         # Wait until the scan has initialized
         # Check the database for the scan status results

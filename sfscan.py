@@ -22,22 +22,15 @@ from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, \
 
 # Eventually change this to be able to control multiple scan instances
 class SpiderFootScanner():
-    # Temporary storage
-    temp = None
-
-    def __init__(self, scanName, scanTarget, targetType, scanId, moduleList,
-                 globalOpts, moduleOpts):
-        """Initialize SpiderFootScanner object and immediately start a scan
-        of the specified target.
+    def __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts):
+        """Initialize SpiderFootScanner object.
 
         Args:
             scanName (str): name of the scan
             scanTarget (str): scan target
             targetType (str): scan target type
-            scanId (str): scan identifier
             moduleList (list): list of modules to run
             globalOpts (dict): scan options
-            moduleOpts (dict): unused
 
         Returns:
             None
@@ -47,27 +40,64 @@ class SpiderFootScanner():
             raise TypeError("scanName is %s; expected str()" % type(scanName))
         if not isinstance(scanTarget, str):
             raise TypeError("scanTarget is %s; expected str()" % type(scanTarget))
-        if not isinstance(scanId, str):
-            raise TypeError("scanId is %s; expected str()" % type(scanId))
+        if not isinstance(targetType, str):
+            raise TypeError("targetType is %s; expected str()" % type(targetType))
         if not isinstance(moduleList, list):
             raise TypeError("moduleList is %s; expected list()" % type(moduleList))
         if not isinstance(globalOpts, dict):
             raise TypeError("globalOpts is %s; expected dict()" % type(globalOpts))
-        
-        self.temp = dict()
-        self.temp['config'] = deepcopy(globalOpts)
-        self.temp['targetValue'] = scanTarget
-        self.temp['targetType'] = targetType
-        self.temp['moduleList'] = moduleList
-        self.temp['scanName'] = scanName
-        self.temp['scanId'] = scanId
-        self.startScan()
+        if not globalOpts:
+            raise ValueError("globalOpts is empty")
+
+        self.moduleInstances = dict()
+        self.config = deepcopy(globalOpts)
+        self.sf = SpiderFoot(self.config)
+        self.dbh = SpiderFootDb(self.config)
+        self.targetValue = scanTarget
+        self.targetType = targetType
+        self.moduleList = moduleList
+        self.modconfig = dict()
+        self.scanName = scanName
+        self.sf.setDbh(self.dbh)
+
+        # Create a unique ID for this scan and create it in the back-end DB.
+        self.scanId = self.sf.genScanInstanceGUID()
+        self.sf.setGUID(self.scanId)
+        self.dbh.scanInstanceCreate(self.scanId, self.scanName, self.targetValue)
+
+        # Create our target
+        try:
+            self.target = SpiderFootTarget(self.targetValue, self.targetType)
+        except ValueError as e:
+            self.sf.status("Scan [%s] failed: %s" % (self.scanId, e))
+            self.setStatus("ERROR-FAILED", None, time.time() * 1000)
+            raise ValueError("Invalid target: %s" % e)
+        except TypeError as e:
+            self.sf.status("Scan [%s] failed: %s" % (self.scanId, e))
+            self.setStatus("ERROR-FAILED", None, time.time() * 1000)
+            raise TypeError("Invalid target: %s" % e)
+
+        # Save the config current set for this scan
+        self.config['_modulesenabled'] = self.moduleList
+        self.dbh.scanConfigSet(self.scanId, self.sf.configSerialize(deepcopy(self.config)))
+
+        self.setStatus("INITIALIZING", time.time() * 1000, None)
+
+    def getId(self):
+        """Retrieve the unique scan identifier.
+
+        Returns:
+            str: scan id
+        """
+        if hasattr(self, 'scanId'):
+            return self.scanId
+        return None
 
     def setStatus(self, status, started=None, ended=None):
         """Set the status of the currently running scan (if any).
 
         Args:
-            status (str): scan status ("RUNNING", "STARTING", "STARTED", "ABORT-REQUESTED", "ABORTED", "FINISHED", "ERROR-FAILED")
+            status (str): scan status
             started (str): TBD
             ended (str): TBD
 
@@ -75,60 +105,21 @@ class SpiderFootScanner():
             None
         """
 
-        #if self is None:
-        #   print(("Internal Error: Status set attempted before " + \
-        #          "SpiderFootScanner was ready."))
-        #    exit(-1)
+        if status not in ["INITIALIZING", "STARTING", "STARTED", "RUNNING", "ABORT-REQUESTED", "ABORTED", "FINISHED", "ERROR-FAILED"]:
+            raise ValueError("Invalid scan status '%s'" % status)
 
         self.status = status
         self.dbh.scanInstanceSet(self.scanId, started, ended, status)
         return None
 
-    def run(self):
-        """Start running a scan."""
-        self.startScan()
-
-    def getId(self):
-        if hasattr(self, 'scanId'):
-            return self.scanId
-        return None
-
     def startScan(self):
         """Start running a scan."""
-        self.moduleInstances = dict()
-        self.sf = SpiderFoot(self.temp['config'])
-        self.config = deepcopy(self.temp['config'])
-        self.dbh = SpiderFootDb(self.temp['config'])
-        self.targetValue = self.temp['targetValue']
-        self.targetType = self.temp['targetType']
-        self.moduleList = self.temp['moduleList']
-        self.modconfig = dict()
-        self.scanName = self.temp['scanName']
-        self.scanId = self.temp['scanId']
+
         aborted = False
-        self.sf.setDbh(self.dbh)
 
-        # Create a unique ID for this scan and create it in the back-end DB.
-        self.sf.setGUID(self.scanId)
-        self.dbh.scanInstanceCreate(self.scanId,
-                                       self.scanName, self.targetValue)
         self.setStatus("STARTING", time.time() * 1000, None)
-
-        # Create our target
-        try:
-            target = SpiderFootTarget(self.targetValue, self.targetType)
-        except BaseException as e:
-            self.sf.status("Scan [%s] failed: %s" % (self.scanId, e))
-            self.setStatus("ERROR-FAILED", None, time.time() * 1000)
-            return None
-
-        # Save the config current set for this scan
-        self.config['_modulesenabled'] = self.moduleList
-        self.dbh.scanConfigSet(self.scanId,
-                                  self.sf.configSerialize(deepcopy(self.config)))
-
         self.sf.status("Scan [" + self.scanId + "] initiated.")
-        # moduleList = list of modules the user wants to run
+
         try:
             # Process global options that point to other places for data
 
@@ -183,6 +174,7 @@ class SpiderFootScanner():
             else:
                 self.config["_internettlds"] = tlddata.splitlines()
 
+            # moduleList = list of modules the user wants to run
             for modName in self.moduleList:
                 if modName == '':
                     continue
@@ -214,9 +206,9 @@ class SpiderFootScanner():
 
                 # Give modules a chance to 'enrich' the original target with
                 # aliases of that target.
-                newTarget = mod.enrichTarget(target)
+                newTarget = mod.enrichTarget(self.target)
                 if newTarget is not None:
-                    target = newTarget
+                    self.target = newTarget
                 self.moduleInstances[modName] = mod
 
                 # Override the module's local socket module
@@ -233,7 +225,7 @@ class SpiderFootScanner():
             # Register listener modules and then start all modules sequentially
             for module in list(self.moduleInstances.values()):
                 # Register the target with the module
-                module.setTarget(target)
+                module.setTarget(self.target)
 
                 for listenerModule in list(self.moduleInstances.values()):
                     # Careful not to register twice or you will get duplicate events
@@ -251,7 +243,7 @@ class SpiderFootScanner():
             # Create a pseudo module for the root event to originate from
             psMod = SpiderFootPlugin()
             psMod.__name__ = "SpiderFoot UI"
-            psMod.setTarget(target)
+            psMod.setTarget(self.target)
             psMod.setDbh(self.dbh)
             psMod.clearListeners()
             for mod in list(self.moduleInstances.values()):
