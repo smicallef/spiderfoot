@@ -46,7 +46,7 @@ class sfp_gravatar(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ['RAW_RIR_DATA', 'HUMAN_NAME', 'USERNAME',
-                'EMAILADDR', 'PHONE_NUMBER', 'GEOINFO',
+                'EMAILADDR', 'EMAILADDR_GENERIC', 'PHONE_NUMBER', 'GEOINFO',
                 'ACCOUNT_EXTERNAL_OWNED', 'SOCIAL_MEDIA']
 
     # Query Gravatar API for the specified email address
@@ -137,8 +137,16 @@ class sfp_gravatar(SpiderFootPlugin):
 
         if data.get('emails') is not None:
             for email in data.get('emails'):
-                if self.sf.validEmail(email.get('value')) and email.get('value') != eventData:
-                    evt = SpiderFootEvent("EMAILADDR", email.get('value'), self.__name__, event)
+                em = email.get('value')
+                if not em:
+                    continue
+                if self.sf.validEmail(em) and em != eventData:
+                    if em.split("@")[0] in self.opts['_genericusers'].split(","):
+                        evttype = "EMAILADDR_GENERIC"
+                    else:
+                        evttype = "EMAILADDR"
+
+                    evt = SpiderFootEvent(evttype, em, self.__name__, event)
                     self.notifyListeners(evt)
 
         if data.get('ims') is not None:

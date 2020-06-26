@@ -50,7 +50,7 @@ class sfp_clearbit(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return [ "RAW_RIR_DATA", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
-                 "AFFILIATE_INTERNET_NAME", "EMAILADDR" ]
+                 "AFFILIATE_INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC" ]
 
     def query(self, t):
         ret = None
@@ -159,7 +159,11 @@ class sfp_clearbit(SpiderFootPlugin):
                             self.notifyListeners(evt)
                     if 'emailAddresses' in data['company']['site']:
                         for e in data['company']['site']['emailAddresses']:
-                            evt = SpiderFootEvent("EMAILADDR", e, self.__name__, event)
+                            if e.split("@")[0] in self.opts['_genericusers'].split(","):
+                                evttype = "EMAILADDR_GENERIC"
+                            else:
+                                evttype = "EMAILADDR"
+                            evt = SpiderFootEvent(evttype, e, self.__name__, event)
                             self.notifyListeners(evt)
 
                 # Get the location of the person, also indicating

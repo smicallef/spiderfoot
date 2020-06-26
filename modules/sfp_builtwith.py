@@ -54,7 +54,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "INTERNET_NAME", "EMAILADDR", "RAW_RIR_DATA",
+        return [ "INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
                  "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME" ]
 
     def query(self, t):
@@ -114,14 +114,23 @@ class sfp_builtwith(SpiderFootPlugin):
                     self.notifyListeners(e)
                     if nb.get('Email', None):
                         if self.sf.validEmail(nb['Email']):
-                            e = SpiderFootEvent("EMAILADDR", nb['Email'],
+                            if nb['Email'].split("@")[0] in self.opts['_genericusers'].split(","):
+                                evttype = "EMAILADDR_GENERIC"
+                            else:
+                                evttype = "EMAILADDR"
+                            e = SpiderFootEvent(evttype, nb['Email'],
                                                 self.__name__, event)
                             self.notifyListeners(e)
 
             if data['Meta'].get("Emails", []):
                 for email in data['Meta']['Emails']:
                     if self.sf.validEmail(email):
-                        e = SpiderFootEvent("EMAILADDR", email,
+                        if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                            evttype = "EMAILADDR_GENERIC"
+                        else:
+                            evttype = "EMAILADDR"
+
+                        e = SpiderFootEvent(evttype, email,
                                             self.__name__, event)
                         self.notifyListeners(e)
 

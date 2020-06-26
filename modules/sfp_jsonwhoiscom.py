@@ -49,8 +49,8 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["RAW_RIR_DATA", "DOMAIN_REGISTRAR", "DOMAIN_WHOIS", "PROVIDER_DNS",
-                "EMAILADDR", "PHONE_NUMBER", "PHYSICAL_ADDRESS", "HUMAN_NAME",
-                "AFFILIATE_DOMAIN_UNREGISTERED"]
+                "EMAILADDR", "EMAILADDR_GENERIC", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
+                "HUMAN_NAME", "AFFILIATE_DOMAIN_UNREGISTERED"]
 
     # Query domain
     # https://jsonwhois.com/docs
@@ -201,7 +201,11 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
         for email in set(emails):
             mail_domain = email.lower().split('@')[1]
             if self.getTarget().matches(mail_domain, includeChildren=True):
-                evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
+                if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                    evttype = "EMAILADDR_GENERIC"
+                else:
+                    evttype = "EMAILADR"
+                evt = SpiderFootEvent(evttype, email, self.__name__, event)
                 self.notifyListeners(evt)
             else:
                 evt = SpiderFootEvent("AFFILIATE_EMAILADDR", email, self.__name__, event)

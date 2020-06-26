@@ -45,6 +45,7 @@ sfConfig = {
     '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
     '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
     '_internettlds_cache': 72,
+    '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,noc,no-reply,noreply,null,phish,phishing,postmaster,privacy,registrar,root,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
     '__version__': '3.0',
     '__database': 'spiderfoot.db',
     '__webaddr': '127.0.0.1',
@@ -64,6 +65,7 @@ sfConfig = {
 sfOptdescs = {
     '_debug': "Enable debugging?",
     '_internettlds': "List of Internet TLDs.",
+    '_genericusers': "List of usernames that if found as usernames or as part of e-mail addresses, should be treated differently to non-generics.",
     '_internettlds_cache': "Hours to cache the Internet TLD list. This can safely be quite a long time given that the list doesn't change too often.",
     '_useragent': "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
     '_dnsserver': "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",

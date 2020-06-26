@@ -53,8 +53,8 @@ class sfp_fullcontact(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "EMAILADDR", "RAW_RIR_DATA", "PHONE_NUMBER",
-                 "GEOINFO", "PHYSICAL_ADDRESS" ]
+        return [ "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
+                 "PHONE_NUMBER", "GEOINFO", "PHYSICAL_ADDRESS" ]
 
     def query(self, url, data, failcount=0):
         header = "Bearer " + self.opts['api_key']
@@ -155,7 +155,12 @@ class sfp_fullcontact(SpiderFootPlugin):
                 data = data['details']
             if data.get("emails"):
                 for r in data['emails']:
-                    e = SpiderFootEvent("EMAILADDR", r['value'], self.__name__, event)
+                    if r['value'].split("@")[0] in self.opts['_genericusers'].split(","):
+                        evttype = "EMAILADDR_GENERIC"
+                    else:
+                        evttype = "EMAILADDR"
+
+                    e = SpiderFootEvent(evttype, r['value'], self.__name__, event)
                     self.notifyListeners(e)
 
             if data.get("phones"):

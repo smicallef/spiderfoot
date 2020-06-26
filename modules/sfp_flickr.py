@@ -52,7 +52,8 @@ class sfp_flickr(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["EMAILADDR", "INTERNET_NAME", "DOMAIN_NAME", "LINKED_URL_INTERNAL"]
+        return ["EMAILADDR", "EMAILADDR_GENERIC", "INTERNET_NAME", 
+                "DOMAIN_NAME", "LINKED_URL_INTERNAL"]
 
     # Retrieve API key
     def retrieveApiKey(self):
@@ -184,7 +185,12 @@ class sfp_flickr(SpiderFootPlugin):
                         continue
 
                     self.sf.info("Found e-mail address: " + email)
-                    evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
+                    if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                        evttype = "EMAILADDR_GENERIC"
+                    else:
+                        evttype = "EMAILADDR"
+
+                    evt = SpiderFootEvent(evttype, email, self.__name__, event)
                     self.notifyListeners(evt)
                     self.results[email] = True
 

@@ -49,7 +49,7 @@ class sfp_hunter(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "EMAILADDR", "RAW_RIR_DATA" ]
+        return [ "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA" ]
 
     def query(self, t, offset=0, limit=10):
         ret = None
@@ -115,7 +115,15 @@ class sfp_hunter(SpiderFootPlugin):
         while rescount <= maxgoal:
             for email in data['data'].get('emails', list()):
                 # Notify other modules of what you've found
-                e = SpiderFootEvent("EMAILADDR", email['value'], self.__name__, event)
+                em = email.get('value')
+                if not em:
+                    continue
+                if em.split("@")[0] in self.opts['_genericusers'].split(","):
+                    evttype = "EMAILADDR_GENERIC"
+                else:
+                    evttype = "EMAILADDR"
+
+                e = SpiderFootEvent(evttype, em, self.__name__, event)
                 self.notifyListeners(e)
 
                 if 'first_name' in email and 'last_name' in email:
