@@ -120,7 +120,6 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BITCOIN_BALANCE', 'Bitcoin Balance', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BGP_AS_OWNER', 'BGP AS Ownership', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BGP_AS_MEMBER', 'BGP AS Membership', 0, 'ENTITY')",
-        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BGP_AS_PEER', 'BGP AS Peer', 0, 'ENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BLACKLISTED_IPADDR', 'Blacklisted IP Address', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BLACKLISTED_AFFILIATE_IPADDR', 'Blacklisted Affiliate IP Address', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('BLACKLISTED_SUBNET', 'Blacklisted IP on Same Subnet', 0, 'DESCRIPTOR')",
