@@ -24,8 +24,6 @@ class sfp_accounts(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "generic": ["root", "abuse", "sysadm", "sysadmin", "noc", "support", "admin",
-                    "contact", "help", "flame", "test", "info", "sales", "hostmaster"],
         "ignorenamedict": True,
         "ignoreworddict": True,
         "musthavename": True,
@@ -35,7 +33,6 @@ class sfp_accounts(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "generic": "Generic internal accounts to not bother looking up externally.",
         "ignorenamedict": "Don't bother looking up names that are just stand-alone first names (too many false positives).",
         "ignoreworddict": "Don't bother looking up names that appear in the dictionary.",
         "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
@@ -253,7 +250,7 @@ class sfp_accounts(SpiderFootPlugin):
 
         for user in users:
             adduser = True
-            if self.opts['generic'] is list() and user in self.opts['generic']:
+            if user in self.opts['_genericusers'].split(","):
                 self.sf.debug(user + " is a generic account name, skipping.")
                 continue
 
