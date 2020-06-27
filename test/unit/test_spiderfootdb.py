@@ -189,6 +189,7 @@ class TestSpiderFootDb(unittest.TestCase):
         sfdb.scanInstanceSet(scan_instance, None, None, None)
         self.assertEqual('TBD', 'TBD')
 
+    @unittest.skip("todo")
     def test_scan_instance_get_should_return_a_list(self):
         """
         Test scanInstanceGet(self, instanceId)
