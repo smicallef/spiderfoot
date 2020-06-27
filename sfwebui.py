@@ -418,7 +418,7 @@ class SpiderFootWebUi:
             # Start running a new scan
             try:
                 s = SpiderFootScanner(scanname, scantarget, targetType, modlist, cfg)
-                s.getId()
+                scanId = s.getId()
             except BaseException as e:
                 print("[-] Failed to initialize scan: %s" % e)
                 return self.error("Failed to initialize scan: %s" % e)
