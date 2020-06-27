@@ -16,18 +16,16 @@ import time
 import threading
 from sflib import SpiderFoot
 
-# SQLite doesn't support regex queries, so we create
-# a custom function to do so..
-def __dbregex__(qry, data):
-    try:
-        rx = re.compile(qry, re.IGNORECASE|re.DOTALL)
-        ret = rx.match(data)
-    except BaseException as e:
-        return False
-    return ret is not None
-
-
 class SpiderFootDb:
+    """SpiderFoot database
+
+    Attributes:
+        sf (SpiderFoot): SpiderFoot object
+        conn: SQLite connect() connection
+        dbh: SQLite cursor() database handle
+        dbhLock (_thread.RLock): thread lock on database handle
+    """
+
     sf = None
     dbh = None
     conn = None
@@ -244,6 +242,23 @@ class SpiderFootDb:
     ]
 
     def __init__(self, opts, init=False):
+        """Initialize database and create handle to the SQLite database file.
+        Creates the database file if it does not exist.
+        Creates database schema if it does not exist.
+
+        Args:
+            opts (dict): TBD
+            init (bool): TBD
+
+        Returns:
+            None: success
+
+        Raises:
+            TypeError: arg type was invalid
+            ValueError: arg value was invalid
+            IOError: database I/O failed
+        """
+
         if not isinstance(opts, dict):
             raise TypeError("opts is %s; expected dict()" % type(opts))
         if not opts:
@@ -253,16 +268,33 @@ class SpiderFootDb:
 
         self.sf = SpiderFoot(opts)
 
+        database_path = self.sf.dataPath() + "/" + opts['__database']
+
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
         # read and write to such a file.
-        dbh = sqlite3.connect(self.sf.dataPath() + "/" + opts['__database'], timeout=10)
+        try:
+            dbh = sqlite3.connect(database_path)
+        except BaseException as e:
+            raise IOError("Error connecting to internal database %s: %s" % (database_path, e))
+
         if dbh is None:
-            self.sf.fatal("Could not connect to internal database, and couldn't create " + opts['__database'])
+            raise IOError("Could not connect to internal database, and could not create %s" % database_path)
+
         dbh.text_factory = str
 
         self.conn = dbh
         self.dbh = dbh.cursor()
+
+        # SQLite doesn't support regex queries, so we create
+        # a custom function to do so..
+        def __dbregex__(qry, data):
+            try:
+                rx = re.compile(qry, re.IGNORECASE|re.DOTALL)
+                ret = rx.match(data)
+            except BaseException as e:
+                return False
+            return ret is not None
 
         # Now we actually check to ensure the database file has the schema set
         # up correctly.
@@ -276,8 +308,7 @@ class SpiderFootDb:
                     self.create()
                     init = True
                 except BaseException as e:
-                    self.sf.error("Tried to set up the SpiderFoot database schema, but failed: " + e.args[0])
-                return
+                    raise IOError("Tried to set up the SpiderFoot database schema, but failed: " + e.args[0])
 
             if init:
                 for qry in self.createTypeQueries:
@@ -293,8 +324,16 @@ class SpiderFootDb:
     # Back-end database operations
     #
 
-    # Create the back-end schema
     def create(self):
+        """Create the database schema.
+
+        Returns:
+            None: success
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         with self.dbhLock:
             try:
                 for qry in self.createSchemaQueries:
@@ -304,10 +343,15 @@ class SpiderFootDb:
                     self.dbh.execute(qry)
                 self.conn.commit()
             except sqlite3.Error as e:
-                raise BaseException("SQL error encountered when setting up database: " + e.args[0])
+                raise IOError("SQL error encountered when setting up database: %s" % e.args[0])
 
-    # Close the database handle
     def close(self):
+        """Close the database handle
+
+        Returns:
+            None: success
+        """
+
         with self.dbhLock:
             self.dbh.close()
 
@@ -325,6 +369,12 @@ class SpiderFootDb:
 
         Returns:
             list: search results
+
+        Raises:
+            IOError: database I/O failed
+
+        Todo:
+            Raise errors upon invalid ars
         """
 
         if not isinstance(criteria, dict):
@@ -373,21 +423,46 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching search results: " + e.args[0])
+                raise IOError("SQL error encountered when fetching search results: " + e.args[0])
 
-    # Get event types
     def eventTypes(self):
+        """Get event types.
+
+        Returns:
+            list: event types
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qry = "SELECT event_descr, event, event_raw, event_type FROM tbl_event_types"
         with self.dbhLock:
             try:
                 self.dbh.execute(qry)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when retreiving event types:" + e.args[0])
+                raise IOError("SQL error encountered when retrieving event types:" + e.args[0])
 
-    # Log an event to the database
     def scanLogEvent(self, instanceId, classification, message, component=None):
-        if component is None:
+        """Log an event to the database.
+
+        Args:
+            instanceId (str): scan instance ID
+            classification (str): TBD
+            message (str): TBD
+            component (str): TBD
+
+        Returns:
+            None: success
+
+        Raises:
+            IOError: database I/O failed
+ 
+        Todo:
+            Do something smarter to handle database locks
+        """
+
+        if not component:
             component = "SpiderFoot"
 
         qry = "INSERT INTO tbl_scan_log \
@@ -402,18 +477,27 @@ class SpiderFootDb:
                 self.conn.commit()
             except sqlite3.Error as e:
                 if "locked" in e.args[0] or "thread" in e.args[0]:
-                    # TODO: Do something smarter here to handle locked databases
                     #print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
                     #self.sf.fatal("Unable to log event in DB due to lock: " + e.args[0])
                     pass
                 else:
-                    print("[warning] Couldn't log due to: " + str(e.args[0]))
-                    #self.sf.fatal("Unable to log event in DB: " + e.args[0])
+                    raise IOError("Unable to log scan event in DB: %s" % e.args[0])
 
-        return True
-
-    # Store a scan instance
     def scanInstanceCreate(self, instanceId, scanName, scanTarget):
+        """Store a scan instance in the database.
+
+        Args:
+            instanceId (str): scan instance ID
+            scanName(str): scan name
+            scanTarget (str): scan target
+
+        Returns:
+            None: success
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qry = "INSERT INTO tbl_scan_instance \
             (guid, name, seed_target, created, status) \
             VALUES (?, ?, ?, ?, ?)"
@@ -425,12 +509,24 @@ class SpiderFootDb:
                 ))
                 self.conn.commit()
             except sqlite3.Error as e:
-                self.sf.fatal("Unable to create instance in DB: " + e.args[0])
+                raise IOError("Unable to create scan instance in DB: %s" % e.args[0])
 
-        return True
-
-    # Update the start time, end time or status (or all 3) of a scan instance
     def scanInstanceSet(self, instanceId, started=None, ended=None, status=None):
+        """Update the start time, end time or status (or all 3) of a scan instance.
+
+        Args:
+            instanceId (str): scan instance ID
+            started (str): scan start time
+            ended (str): scan end time
+            status (str): scan status
+
+        Returns:
+            None: success
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qvars = list()
         qry = "UPDATE tbl_scan_instance SET "
 
@@ -455,7 +551,7 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 self.conn.commit()
             except sqlite3.Error:
-                self.sf.fatal("Unable to set information for the scan instance.")
+                raise IOError("Unable to set information for the scan instance.")
 
     def scanInstanceGet(self, instanceId):
         """Return info about a scan instance (name, target, created, started, ended, status)
@@ -465,21 +561,38 @@ class SpiderFootDb:
 
         Returns:
             list: scan instance info
+
+        Raises:
+            IOError: database I/O failed
         """
 
         qry = "SELECT name, seed_target, ROUND(created/1000) AS created, \
             ROUND(started/1000) AS started, ROUND(ended/1000) AS ended, status \
             FROM tbl_scan_instance WHERE guid = ?"
         qvars = [instanceId]
+
         with self.dbhLock:
             try:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchone()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when retrieving scan instance:" + e.args[0])
+                raise IOError("SQL error encountered when retrieving scan instance:" + e.args[0])
 
     # Obtain a summary of the results per event type
     def scanResultSummary(self, instanceId, by="type"):
+        """Obtain a summary of the results, filtered by event type, module or entity.
+
+        Args:
+            instanceId (str): scan instance ID
+            by (str): filter
+
+        Returns:
+            list: scan instance info
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         if by == "type":
             qry = "SELECT r.type, e.event_descr, MAX(ROUND(generated)) AS last_in, \
                 count(*) AS total, count(DISTINCT r.data) as utotal FROM \
@@ -507,10 +620,27 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching result summary: " + e.args[0])
+                raise IOError("SQL error encountered when fetching result summary: " + e.args[0])
 
-    # Obtain the data for a scan and event type
     def scanResultEvent(self, instanceId, eventType='ALL', filterFp=False):
+        """Obtain the data for a scan and event type.
+
+        Args:
+            instanceId (str): scan instance ID
+            eventType (str): filter by event type
+            filterFp (bool): filter false positives
+
+        Returns:
+            list: scan results
+
+        Raises:
+            TypeError: arg type was invalid
+            IOError: database I/O failed
+        """
+
+        if not isinstance(eventType, str):
+            raise TypeError("eventType is %s; expected str()" % type(eventType))
+ 
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
@@ -537,10 +667,27 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching result events: " + e.args[0])
+                raise IOError("SQL error encountered when fetching result events: " + e.args[0])
 
-    # Obtain a unique list of elements
     def scanResultEventUnique(self, instanceId, eventType='ALL', filterFp=False):
+        """Obtain a unique list of elements.
+
+        Args:
+            instanceId (str): scan instance ID
+            eventType (str): filter by event type
+            filterFp (bool): filter false positives
+
+        Returns:
+            list: unique scan results
+
+        Raises:
+            TypeError: arg type was invalid
+            IOError: database I/O failed
+        """
+
+        if not isinstance(eventType, str):
+            raise TypeError("eventType is %s; expected str()" % type(eventType))
+ 
         qry = "SELECT DISTINCT data, type, COUNT(*) FROM tbl_scan_results \
             WHERE scan_instance_id = ?"
         qvars = [instanceId]
@@ -559,10 +706,24 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching unique result events: " + e.args[0])
+                raise IOError("SQL error encountered when fetching unique result events: " + e.args[0])
 
-    # Get scan logs
     def scanLogs(self, instanceId, limit=None, fromRowId=None, reverse=False):
+        """Get scan logs.
+
+        Args:
+            instanceId (str): scan instance ID
+            limit (int): limit number of results
+            fromRowId (int): retrieve logs starting from row ID
+            reverse (bool): search result order
+
+        Returns:
+            list: scan logs
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qry = "SELECT generated AS generated, component, \
             type, message, rowid FROM tbl_scan_log WHERE scan_instance_id = ?"
         if fromRowId:
@@ -587,10 +748,22 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching scan logs: " + e.args[0])
+                raise IOError("SQL error encountered when fetching scan logs: " + e.args[0])
 
-    # Get scan errors
     def scanErrors(self, instanceId, limit=None):
+        """Get scan errors.
+
+        Args:
+            instanceId (str): scan instance ID
+            limit (int): limit number of results
+
+        Returns:
+            list: scan errors
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qry = "SELECT generated AS generated, component, \
             message FROM tbl_scan_log WHERE scan_instance_id = ? \
             AND type = 'ERROR' ORDER BY generated DESC"
@@ -605,10 +778,22 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching scan errors: " + e.args[0])
+                raise IOError("SQL error encountered when fetching scan errors: " + e.args[0])
 
     # Delete a scan instance
     def scanInstanceDelete(self, instanceId):
+        """Delete a scan instance.
+
+        Args:
+            instanceId (str): scan instance ID
+
+        Returns:
+            None: success
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qry1 = "DELETE FROM tbl_scan_instance WHERE guid = ?"
         qry2 = "DELETE FROM tbl_scan_config WHERE scan_instance_id = ?"
         qry3 = "DELETE FROM tbl_scan_results WHERE scan_instance_id = ?"
@@ -623,10 +808,23 @@ class SpiderFootDb:
                 self.dbh.execute(qry4, qvars)
                 self.conn.commit()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when deleting scan: " + e.args[0])
+                raise IOError("SQL error encountered when deleting scan: " + e.args[0])
 
-    # Set the false positive flag for a result
     def scanResultsUpdateFP(self, instanceId, resultHashes, fpFlag):
+        """Set the false positive flag for a result.
+
+        Args:
+            instanceId (str): scan instance ID
+            resultHashes (str): TBD
+            fpFlag (int): false positive
+
+        Returns:
+            bool: success
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         with self.dbhLock:
             for resultHash in resultHashes:
                 qry = "UPDATE tbl_scan_results SET false_positive = ? WHERE \
@@ -635,14 +833,35 @@ class SpiderFootDb:
                 try:
                     self.dbh.execute(qry, qvars)
                 except sqlite3.Error as e:
-                    self.sf.error("SQL error encountered when updating F/P: " + e.args[0], False)
-                    return False
+                    raise IOError("SQL error encountered when updating F/P: " + e.args[0])
 
-            self.conn.commit()
+            try:
+                self.conn.commit()
+            except sqlite3.Error as e:
+                raise IOError("SQL error encountered when updating F/P: " + e.args[0])
+
         return True
 
-    # Store the default configuration
     def configSet(self, optMap=dict()):
+        """Store the default configuration in the database.
+
+        Args:
+            optMap (dict): config options
+
+        Returns:
+            None: success
+
+        Raises:
+            TypeError: arg type was invalid
+            ValueError: arg value was invalid
+            IOError: database I/O failed
+        """
+
+        if not isinstance(optMap, dict):
+            raise TypeError("optMap is %s; expected dict()" % type(optMap))
+        if not optMap:
+            raise ValueError("optMap is empty")
+ 
         qry = "REPLACE INTO tbl_config (scope, opt, val) VALUES (?, ?, ?)"
 
         with self.dbhLock:
@@ -658,17 +877,29 @@ class SpiderFootDb:
                 try:
                     self.dbh.execute(qry, qvals)
                 except sqlite3.Error as e:
-                    self.sf.error("SQL error encountered when storing config, aborting: " + e.args[0])
+                    raise IOError("SQL error encountered when storing config, aborting: " + e.args[0])
 
-            self.conn.commit()
+            try:
+                self.conn.commit()
+            except sqlite3.Error as e:
+                raise IOError("SQL error encountered when storing config, aborting: " + e.args[0])
 
-    # Retreive the config from the database
     def configGet(self):
+        """Retreive the config from the database
+
+        Returns:
+            dict: config
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qry = "SELECT scope, opt, val FROM tbl_config"
         
+        retval = dict()
+
         with self.dbhLock:
             try:
-                retval = dict()
                 self.dbh.execute(qry)
                 for [scope, opt, val] in self.dbh.fetchall():
                     if scope == "GLOBAL":
@@ -678,21 +909,48 @@ class SpiderFootDb:
 
                 return retval
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching configuration: " + e.args[0])
+                raise IOError("SQL error encountered when fetching configuration: " + e.args[0])
 
-    # Reset the config to default (clear it from the DB and let the hard-coded
-    # settings in the code take effect.)
     def configClear(self):
+        """Reset the config to default.
+        Clears the config from the database and lets the hard-coded settings in the code take effect.
+
+        Returns:
+            None: success
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qry = "DELETE from tbl_config"
         with self.dbhLock:
             try:
                 self.dbh.execute(qry)
                 self.conn.commit()
             except sqlite3.Error as e:
-                self.sf.error("Unable to clear configuration from the database: " + e.args[0])
+                raise IOError("Unable to clear configuration from the database: " + e.args[0])
 
-    # Store a configuration value for a scan
     def scanConfigSet(self, id, optMap=dict()):
+        """Store a configuration value for a scan.
+
+        Args:
+            id (int): scan instance ID
+            optMap (dict): config options
+
+        Returns:
+            None: success
+
+        Raises:
+            TypeError: arg type was invalid
+            ValueError: arg value was invalid
+            IOError: database I/O failed
+        """
+
+        if not isinstance(optMap, dict):
+            raise TypeError("optMap is %s; expected dict()" % type(optMap))
+        if not optMap:
+            raise ValueError("optMap is empty")
+ 
         qry = "REPLACE INTO tbl_scan_config \
                 (scan_instance_id, component, opt, val) VALUES (?, ?, ?, ?)"
 
@@ -709,19 +967,34 @@ class SpiderFootDb:
                 try:
                     self.dbh.execute(qry, qvals)
                 except sqlite3.Error as e:
-                    self.sf.error("SQL error encountered when storing config, aborting: " + e.args[0])
+                    raise IOError("SQL error encountered when storing config, aborting: " + e.args[0])
 
-            self.conn.commit()
+            try:
+                self.conn.commit()
+            except sqlite3.Error as e:
+                raise IOError("SQL error encountered when storing config, aborting: " + e.args[0])
 
-
-    # Retreive configuration data for a scan component
     def scanConfigGet(self, instanceId):
+        """Retrieve configuration data for a scan component.
+
+        Args:
+            instanceId (int): scan instance ID
+
+        Returns:
+            dict: configuration data
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qry = "SELECT component, opt, val FROM tbl_scan_config \
                 WHERE scan_instance_id = ? ORDER BY component, opt"
         qvars = [instanceId]
+
+        retval = dict()
+
         with self.dbhLock:
             try:
-                retval = dict()
                 self.dbh.execute(qry, qvars)
                 for [component, opt, val] in self.dbh.fetchall():
                     if component == "GLOBAL":
@@ -730,20 +1003,38 @@ class SpiderFootDb:
                         retval[component + ":" + opt] = val
                 return retval
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching configuration: " + e.args[0])
+                raise IOError("SQL error encountered when fetching configuration: " + e.args[0])
 
-    # Store an event
-    # eventData is a SpiderFootEvent object with the following variables:
-    # - eventType: the event, e.g. URL_FORM, RAW_DATA, etc.
-    # - generated: time the event occurred
-    # - confidence: how sure are we of this data's validity, 0-100
-    # - visibility: how 'visible' was this data, 0-100
-    # - risk: how much risk does this data represent, 0-100
-    # - module: module that generated the event
-    # - data: the actual data, i.e. a URL, port number, webpage content, etc.
-    # - sourceEventHash: hash of the event that triggered this event
-    # And getHash() will return the event hash.
     def scanEventStore(self, instanceId, sfEvent, truncateSize=0):
+        """Store an event in the database.
+
+        Args:
+            instanceId (int): scan instance ID
+            sfEvent (SpiderFootEvent): A SpiderFootEvent object with the following variables:
+                - eventType: the event, e.g. URL_FORM, RAW_DATA, etc.
+                - generated: time the event occurred
+                - confidence: how sure are we of this data's validity, 0-100
+                - visibility: how 'visible' was this data, 0-100
+                - risk: how much risk does this data represent, 0-100
+                - module: module that generated the event
+                - data: the actual data, i.e. a URL, port number, webpage content, etc.
+                - sourceEventHash: hash of the event that triggered this event
+            truncateSize (int): truncate size for event data
+
+        Returns:
+            None: success
+
+        Raises:
+            TypeError: arg type was invalid
+            IOError: database I/O failed
+
+        Todo:
+            Validate args and modify error handling to raise instead of calling fatal()
+        """
+
+        #if not isinstance(sfEvent, SpiderFootEvent):
+        #    raise TypeError("sfEvent is %s; expected SpiderFootEvent()" % type(sfEvent))
+
         storeData = ''
 
         if type(sfEvent.data) is not str:
@@ -765,10 +1056,13 @@ class SpiderFootDb:
         if sfEvent.sourceEventHash in ["", None]:
             self.sf.fatal("UNABLE TO CREATE RECORD WITH EMPTY SOURCE EVENT HASH!")
 
+        # retrieve scan results
+        # sfEvent.getHash() will return the event hash for the input sfEvent event
         qry = "INSERT INTO tbl_scan_results \
             (scan_instance_id, hash, type, generated, confidence, \
             visibility, risk, module, data, source_event_hash) \
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
         qvals = [instanceId, sfEvent.getHash(), sfEvent.eventType, sfEvent.generated,
                  sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
                  sfEvent.module, storeData, sfEvent.sourceEventHash]
@@ -779,12 +1073,19 @@ class SpiderFootDb:
             try:
                 self.dbh.execute(qry, qvals)
                 self.conn.commit()
-                return None
             except sqlite3.Error as e:
-                self.sf.fatal("SQL error encountered when storing event data (" + str(self.dbh) + ": " + e.args[0])
+                raise IOError("SQL error encountered when storing event data (%s): %s" % (self.dbh, e.args[0]))
 
-    # List of all previously run scans
     def scanInstanceList(self):
+        """List all previously run scans.
+
+        Returns:
+            list: previously run scans
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         # SQLite doesn't support OUTER JOINs, so we need a work-around that
         # does a UNION of scans with results and scans without results to
         # get a complete listing.
@@ -804,10 +1105,18 @@ class SpiderFootDb:
                 self.dbh.execute(qry)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching scan list: " + e.args[0])
+                raise IOError("SQL error encountered when fetching scan list: " + e.args[0])
 
-    # History of data from the scan
     def scanResultHistory(self, instanceId):
+        """History of data from the scan.
+
+        Returns:
+            list: scan data history
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         qry = "SELECT STRFTIME('%H:%M %w', generated, 'unixepoch') AS hourmin, \
                 type, COUNT(*) FROM tbl_scan_results \
                 WHERE scan_instance_id = ? GROUP BY hourmin, type"
@@ -818,11 +1127,22 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when fetching scan history: " + e.args[0])
+                raise IOError("SQL error encountered when fetching scan history: " + e.args[0])
 
-
-    # Get the source IDs, types and data for a set of IDs
     def scanElementSourcesDirect(self, instanceId, elementIdList):
+        """Get the source IDs, types and data for a set of IDs.
+
+        Args:
+            instanceId (str): scan instance ID
+            elementIdList (list): TBD
+
+        Returns:
+            list: TBD
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         # the output of this needs to be aligned with scanResultEvent,
         # as other functions call both expecting the same output.
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
@@ -845,10 +1165,22 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when getting source element IDs: " + e.args[0])
+                raise IOError("SQL error encountered when getting source element IDs: " + e.args[0])
 
-    # Get the child IDs, types and data for a set of IDs
     def scanElementChildrenDirect(self, instanceId, elementIdList):
+        """Get the child IDs, types and data for a set of IDs.
+
+        Args:
+            instanceId (str): scan instance ID
+            elementIdList (list): TBD
+
+        Returns:
+            list: TBD
+
+        Raises:
+            IOError: database I/O failed
+        """
+
         # the output of this needs to be aligned with scanResultEvent,
         # as other functions call both expecting the same output.
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
@@ -871,13 +1203,22 @@ class SpiderFootDb:
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
-                self.sf.error("SQL error encountered when getting child element IDs: " + e.args[0])
+                raise IOError("SQL error encountered when getting child element IDs: " + e.args[0])
 
-    # Get the full set of upstream IDs which are parents to the
-    # supplied set of IDs.
-    # Data has to be in the format of output from scanElementSourcesDirect
-    # and produce output in the same format.
     def scanElementSourcesAll(self, instanceId, childData):
+        """Get the full set of upstream IDs which are parents to the supplied set of IDs.
+
+        Data has to be in the format of output from scanElementSourcesDirect
+        and produce output in the same format.
+
+        Args:
+            instanceId (str): scan instance ID
+            childData (list): TBD
+
+        Returns:
+            list: TBD
+        """
+
         # Get the first round of source IDs for the leafs
         keepGoing = True
         nextIds = list()
@@ -926,11 +1267,20 @@ class SpiderFootDb:
         datamap[parentId] = row
         return [datamap, pc]
 
-    # Get the full set of downstream IDs which are children of the
-    # supplied set of IDs
-    # NOTE FOR NOW THE BEHAVIOR IS NOT THE SAME AS THE scanElementParent*
-    # FUNCTIONS - THIS ONLY RETURNS IDS!!
     def scanElementChildrenAll(self, instanceId, parentIds):
+        """Get the full set of downstream IDs which are children of the supplied set of IDs.
+
+        Args:
+            instanceId (str): scan instance ID
+            parentIds (list): TBD
+
+        Returns:
+            list: TBD
+
+        Note: FOR NOW THE BEHAVIOR IS NOT THE SAME AS THE scanElementParent*
+              FUNCTIONS - THIS ONLY RETURNS IDS!!
+        """
+
         datamap = list()
         keepGoing = True
         nextIds = list()
@@ -955,3 +1305,4 @@ class SpiderFootDb:
                 nextIds.append(row[8])
 
         return datamap
+
