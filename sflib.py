@@ -369,11 +369,8 @@ class SpiderFoot:
         """Set the GUID this instance of SpiderFoot is being used in."""
         self.GUID = uid
 
-    def genScanInstanceGUID(self, scanName):
+    def genScanInstanceGUID(self):
         """Generate an globally unique ID for this scan.
-
-        Args:
-            scanName (str): scan name
 
         Returns:
             str: scan instance unique GUID
@@ -636,10 +633,24 @@ class SpiderFoot:
     # Configuration process
     #
 
-    # Convert a Python dictionary to something storable
-    # in the database.
     def configSerialize(self, opts, filterSystem=True):
+        """Convert a Python dictionary to something storable in the database.
+
+        Args:
+            opts (dict): TBD
+            filterSystem (bool): TBD
+
+        Returns:
+            dict: config options
+        """
+
+        if not isinstance(opts, dict):
+            raise TypeError("opts is %s; expected dict()" % type(opts))
+
         storeopts = dict()
+
+        if not opts:
+            return storeopts
 
         for opt in list(opts.keys()):
             # Filter out system temporary variables like GUID and others
@@ -657,6 +668,7 @@ class SpiderFoot:
             if type(opts[opt]) is list:
                 storeopts[opt] = ','.join(opts[opt])
 
+        # todo: ensure the __modules__ key value is in the expected format
         if '__modules__' not in opts:
             return storeopts
 
@@ -680,11 +692,26 @@ class SpiderFoot:
 
         return storeopts
 
-    # Take strings, etc. from the database or UI and convert them
-    # to a dictionary for Python to process.
-    # referencePoint is needed to know the actual types the options
-    # are supposed to be.
     def configUnserialize(self, opts, referencePoint, filterSystem=True):
+        """Take strings, etc. from the database or UI and convert them
+        to a dictionary for Python to process.
+        referencePoint is needed to know the actual types the options
+        are supposed to be.
+
+        Args:
+            opts (dict): TBD
+            referencePoint (dict): TBD
+            filterSystem (bool): TBD
+
+        Returns:
+            dict: TBD
+        """
+
+        if not isinstance(opts, dict):
+            raise TypeError("opts is %s; expected dict()" % type(opts))
+        if not isinstance(referencePoint, dict):
+            raise TypeError("referencePoint is %s; expected dict()" % type(referencePoint))
+
         returnOpts = referencePoint
 
         # Global options
@@ -2535,14 +2562,16 @@ class SpiderFootTarget(object):
     targetAliases = list()
 
     def __init__(self, targetValue, typeName):
+        if not isinstance(targetValue, str):
+            raise TypeError("Invalid target value %s; expected %s" % type(targetValue))
         if typeName not in self._validTypes:
             raise ValueError("Invalid target type %s; expected %s" % (typeName, self._validTypes))
 
         self.targetType = typeName
-        if type(targetValue) != str:
-            self.targetValue = str(targetValue).lower()
-        else:
+        if isinstance(targetValue, str):
             self.targetValue = targetValue
+        else:
+            self.targetValue = str(targetValue).lower()
         self.targetAliases = list()
 
     def getType(self):
@@ -2745,4 +2774,3 @@ class SpiderFootEvent(object):
 
     def setSourceEventHash(self, srcHash):
         self.sourceEventHash = srcHash
-
