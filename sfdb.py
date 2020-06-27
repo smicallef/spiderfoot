@@ -585,9 +585,7 @@ class SpiderFootDb:
         with self.dbhLock:
             try:
                 self.dbh.execute(qry, qvars)
-                ret = self.dbh.fetchone()
-                if not ret:
-                    return list()
+                return self.dbh.fetchone()
             except sqlite3.Error as e:
                 raise IOError("SQL error encountered when retrieving scan instance:" + e.args[0])
 
@@ -1340,4 +1338,3 @@ class SpiderFootDb:
                 nextIds.append(row[8])
 
         return datamap
-
