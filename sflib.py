@@ -1595,6 +1595,10 @@ class SpiderFoot:
         """
 
         ret = list()
+
+        if not isinstance(data, str):
+            return ret
+
         hashes = {
             "MD5": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{32})(?:[^a-fA-F\d]|\b)"),
             "SHA1": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{40})(?:[^a-fA-F\d]|\b)"),
@@ -1632,17 +1636,26 @@ class SpiderFoot:
 
         return list(emails)
     
-    # Find all credit card numbers with the supplied content
-    #
-    # Extracts numbers with lengths ranging from 13 - 19 digits
-    #
-    # Checks the numbers using Luhn's algorithm to verify if
-    # the number is a valid credit card number or not
-    #
-    # Returns a list
-    def parseCreditCards(self,data):
+    def parseCreditCards(self, data):
+        """Find all credit card numbers with the supplied content.
+
+        Extracts numbers with lengths ranging from 13 - 19 digits
+
+        Checks the numbers using Luhn's algorithm to verify
+        if the number is a valid credit card number or not
+
+        Args:
+            data (str): text to search for credit card numbers
+
+        Returns:
+            list: list of credit card numbers
+        """
+
+        if not isinstance(data, str):
+            return list()
+
         creditCards = set() 
-        
+
         # Remove whitespace from data. 
         # Credit cards might contain spaces between them 
         # which will cause regex mismatch
@@ -1678,15 +1691,24 @@ class SpiderFoot:
                 self.debug("Skipped invalid credit card number: " + match)
         return list(creditCards)
         
-    # Find all IBAN numbers with the supplied content
-    #
-    # Extracts possible IBAN Numbers using a generic regex 
-    #
-    # Checks whether the possible IBAN number is valid or not
-    # Using country-wise length check and Mod 97 algorithm
-    #
-    # Returns a list
     def parseIBANNumbers(self, data):
+        """Find all IBAN numbers with the supplied content.
+
+        Extracts possible IBAN Numbers using a generic regex.
+
+        Checks whether the possible IBAN number is valid or not
+        Using country-wise length check and Mod 97 algorithm.
+
+        Args:
+            data (str): text to search for credit card numbers
+
+        Returns:
+            list: list of credit card numbers
+        """
+
+        if not isinstance(data, str):
+            return list()
+
         ibanNumbers = set()
 
         # Dictionary of country codes and their respective IBAN lengths
