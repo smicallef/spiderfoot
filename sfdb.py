@@ -14,7 +14,7 @@ import sqlite3
 import re
 import time
 import threading
-from sflib import SpiderFoot
+from sflib import SpiderFoot, SpiderFootEvent
 
 class SpiderFootDb:
     """SpiderFoot database
@@ -248,7 +248,8 @@ class SpiderFootDb:
 
         Args:
             opts (dict): TBD
-            init (bool): TBD
+            init (bool): initialise the database schema.
+                         if the database file does not exist this option will be ignored.
 
         Returns:
             None: success
@@ -263,7 +264,7 @@ class SpiderFootDb:
             raise TypeError("opts is %s; expected dict()" % type(opts))
         if not opts:
             raise ValueError("opts is empty")
-        if not opts['__database']:
+        if not opts.get('__database'):
             raise ValueError("opts['__database'] is empty")
 
         self.sf = SpiderFoot(opts)
@@ -356,7 +357,7 @@ class SpiderFootDb:
             self.dbh.close()
 
     def search(self, criteria, filterFp=False):
-        """Search database
+        """Search database.
 
         Args:
             criteria (dict): search criteria such as:
@@ -371,17 +372,19 @@ class SpiderFootDb:
             list: search results
 
         Raises:
+            TypeError: arg type was invalid
+            ValueError: arg value was invalid
             IOError: database I/O failed
 
         Todo:
-            Raise errors upon invalid ars
+            Raise errors upon invalid args
         """
 
         if not isinstance(criteria, dict):
-            return list()
+            raise TypeError("criteria is %s; expected dict()" % type(criteria))
 
-        if list(criteria.values()).count(None) == 3:
-            return list()
+        if list(criteria.values()).count(None) >= 3:
+            raise ValueError("Invalid number of search criteria provided; expected at least 2")
 
         qvars = list()
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
@@ -461,6 +464,14 @@ class SpiderFootDb:
         Todo:
             Do something smarter to handle database locks
         """
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
+
+        if not isinstance(classification, str):
+            raise TypeError("classification is %s; expected str()" % type(classification))
+
+        if not isinstance(message, str):
+            raise TypeError("message is %s; expected str()" % type(message))
 
         if not component:
             component = "SpiderFoot"
@@ -590,8 +601,12 @@ class SpiderFootDb:
             list: scan instance info
 
         Raises:
+            ValueError: arg value was invalid
             IOError: database I/O failed
         """
+
+        if by not in ["type", "module", "entity"]:
+            raise ValueError("Invalid filter by value: %s" % by)
 
         if by == "type":
             qry = "SELECT r.type, e.event_descr, MAX(ROUND(generated)) AS last_in, \
@@ -1032,8 +1047,8 @@ class SpiderFootDb:
             Validate args and modify error handling to raise instead of calling fatal()
         """
 
-        #if not isinstance(sfEvent, SpiderFootEvent):
-        #    raise TypeError("sfEvent is %s; expected SpiderFootEvent()" % type(sfEvent))
+        if not isinstance(sfEvent, SpiderFootEvent):
+            raise TypeError("sfEvent is %s; expected SpiderFootEvent()" % type(sfEvent))
 
         storeData = ''
 
@@ -1140,8 +1155,12 @@ class SpiderFootDb:
             list: TBD
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(elementIdList, list):
+            raise TypeError("elementIdList is %s; expected list()" % type(elementIdList))
 
         # the output of this needs to be aligned with scanResultEvent,
         # as other functions call both expecting the same output.
@@ -1178,8 +1197,12 @@ class SpiderFootDb:
             list: TBD
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(elementIdList, list):
+            raise TypeError("elementIdList is %s; expected list()" % type(elementIdList))
 
         # the output of this needs to be aligned with scanResultEvent,
         # as other functions call both expecting the same output.
@@ -1217,7 +1240,17 @@ class SpiderFootDb:
 
         Returns:
             list: TBD
+
+        Raises:
+            TypeError: arg type was invalid
+            ValueError: arg value was invalid
+            IOError: database I/O failed
         """
+
+        if not isinstance(childData, list):
+            raise TypeError("childData is %s; expected list()" % type(childData))
+        if not childData:
+            raise ValueError("childData is empty")
 
         # Get the first round of source IDs for the leafs
         keepGoing = True
@@ -1305,4 +1338,3 @@ class SpiderFootDb:
                 nextIds.append(row[8])
 
         return datamap
-

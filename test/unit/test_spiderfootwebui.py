@@ -68,40 +68,73 @@ class TestSpiderFootWebUi(unittest.TestCase):
         sfwebui = SpiderFootWebUi(self.default_options)
         sfwebui.error_page_404(None, None, None, None, None)
 
-    @unittest.skip("todo")
-    def test_cleanUserInput(self):
+    def test_clean_user_input_should_return_a_list(self):
         """
         Test cleanUserInput(self, inputList)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        clean_user_input = sfwebui.cleanUserInput(list())
+        self.assertIsInstance(clean_user_input, list)
 
-    @unittest.skip("todo")
-    def test_search_base(self):
+    def test_clean_user_input_invalid_input_should_raise(self):
+        """
+        Test cleanUserInput(self, inputList)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+
+        invalid_types = [None, "", dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                with self.assertRaises(TypeError) as cm:
+                    clean_user_input = sfwebui.cleanUserInput(invalid_type)
+
+    def test_search_base_should_return_a_list(self):
         """
         Test searchBase(self, id=None, eventType=None, value=None)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        search_results = sfwebui.searchBase(None, None, None)
+        self.assertIsInstance(search_results, list)
 
-    @unittest.skip("todo")
-    def test_scan_event_result_export(self):
+        search_results = sfwebui.searchBase(None, None, "//")
+        self.assertIsInstance(search_results, list)
+
+    def test_scan_event_result_export_should_return_bytes(self):
         """
         Test scaneventresultexport(self, id, type, dialect="excel")
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        search_results = sfwebui.scaneventresultexport("", "", "excel")
+        self.assertIsInstance(search_results, bytes)
 
-    @unittest.skip("todo")
     def test_scan_event_result_export_multi(self):
         """
         Test scaneventresultexportmulti(self, ids, dialect="excel")
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        search_results = sfwebui.scaneventresultexport("", "", "excel")
+        self.assertIsInstance(search_results, bytes)
 
     @unittest.skip("todo")
     def test_scan_search_result_export(self):
         """
         Test scansearchresultexport(self, id, eventType=None, value=None, dialect="excel")
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        search_results = sfwebui.scansearchresultexport("", "", "excel")
+        self.assertIsInstance(search_results, bytes)
 
     @unittest.skip("todo")
     def test_scan_export_json_multi(self):
@@ -111,18 +144,26 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
-    def test_scan_viz(self):
+    def test_scan_viz_should_return_a_string(self):
         """
         Test scanviz(self, id, gexf="0")
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_viz = sfwebui.scanviz(None, None)
+        self.assertIsInstance(scan_viz, str)
 
     @unittest.skip("todo")
-    def test_scan_viz_multi(self):
+    def test_scan_viz_multi_should_return_a_string(self):
         """
         Test scanvizmulti(self, ids, gexf="1")
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_viz_multi = sfwebui.scanvizmulti(None, None)
+        self.assertIsInstance(scan_viz_multi, str)
 
     @unittest.skip("todo")
     def test_scanopts(self):
@@ -180,19 +221,25 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
-    def test_optsexport(self):
+    def test_optsexport_should_return_a_string(self):
         """
         Test optsexport(self, pattern)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        opts_export = sfwebui.optsexport(None)
+        self.assertIsInstance(opts_export, str)
 
-    @unittest.skip("todo")
-    def test_optsraw(self):
+    def test_optsraw_should_return_a_string(self):
         """
         Test optsraw(self)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        opts_raw = sfwebui.optsraw()
+        self.assertIsInstance(opts_raw, str)
 
     @unittest.skip("todo")
     def test_error(self):
@@ -236,33 +283,46 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
-    def test_eventtypes(self):
+    def test_eventtypes_should_return_a_string(self):
         """
         Test eventtypes(self)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        event_types = sfwebui.eventtypes()
+        self.assertIsInstance(event_types, str)
 
-    @unittest.skip("todo")
-    def test_modules(self):
+    def test_modules_should_return_a_string(self):
         """
         Test modules(self)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        modules = sfwebui.eventtypes()
+        self.assertIsInstance(modules, str)
 
-    @unittest.skip("todo")
-    def test_ping(self):
+    def test_ping_should_return_a_string(self):
         """
         Test ping(self)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        ping = sfwebui.ping()
+        self.assertIsInstance(ping, str)
 
-    @unittest.skip("todo")
-    def test_query(self):
+    def test_query_should_perform_a_sql_query(self):
         """
         Test query(self, query)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        query = sfwebui.query("SELECT 12345")
+        self.assertIsInstance(query, str)
+        self.assertIn("12345", query)
 
     @unittest.skip("todo")
     def test_start_scan(self):
@@ -285,75 +345,108 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
-    def test_scanlog(self):
+    def test_scanlog_should_return_a_string(self):
         """
         Test scanlog(self, id, limit=None, rowId=None, reverse=None)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_log = sfwebui.scanlog(None, None, None, None)
+        self.assertIsInstance(scan_log, str)
 
-    @unittest.skip("todo")
-    def test_scanerrors(self):
+    def test_scanerrors_should_return_a_string(self):
         """
         Test scanerrors(self, id, limit=None)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_errors = sfwebui.scanerrors(None, None)
+        self.assertIsInstance(scan_errors, str)
 
-    @unittest.skip("todo")
-    def test_scanlist(self):
+    def test_scanlist_should_return_a_string(self):
         """
         Test scanlist(self)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_list = sfwebui.scanlist()
+        self.assertIsInstance(scan_list, str)
 
     @unittest.skip("todo")
-    def test_scanstatus(self):
+    def test_scanstatus_should_return_a_string(self):
         """
         Test scanstatus(self, id)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_status = sfwebui.scanstatus(None)
+        self.assertIsInstance(scan_status, str)
 
-    @unittest.skip("todo")
-    def test_scansummary(self):
+    def test_scansummary_should_return_a_string(self):
         """
         Test scansummary(self, id, by)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_summary = sfwebui.scansummary(None, None)
+        self.assertIsInstance(scan_summary, str)
 
-    @unittest.skip("todo")
-    def test_scaneventresults(self):
+    def test_scaneventresults_should_return_a_string(self):
         """
         Test scaneventresults(self, id, eventType, filterfp=False)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_results = sfwebui.scaneventresults(None, None, None)
+        self.assertIsInstance(scan_results, str)
 
     @unittest.skip("todo")
-    def test_scaneventresultsunique(self):
+    def test_scaneventresultsunique_should_return_a_string(self):
         """
         Test scaneventresultsunique(self, id, eventType, filterfp=False)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_results = sfwebui.scaneventresultsunique(None, None, None)
+        self.assertIsInstance(scan_results, str)
 
-    @unittest.skip("todo")
-    def test_search(self):
+    def test_search_should_return_a_string(self):
         """
         Test search(self, id=None, eventType=None, value=None)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        search_results = sfwebui.search(None, None, None)
+        self.assertIsInstance(search_results, str)
 
-    @unittest.skip("todo")
-    def test_scan_history(self):
+    def test_scan_history_should_return_a_string(self):
         """
         Test scanhistory(self, id)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_history = sfwebui.scanhistory(None)
+        self.assertIsInstance(scan_history, str)
 
     @unittest.skip("todo")
-    def test_scan_element_type_discovery(self):
+    def test_scan_element_type_discovery_should_return_a_string(self):
         """
         Test scanelementtypediscovery(self, id, eventType)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_element_type_discovery = sfwebui.scanelementtypediscovery(None, None)
+        self.assertIsInstance(scan_element_type_discovery, str)
 
 if __name__ == '__main__':
     unittest.main()
