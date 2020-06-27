@@ -38,7 +38,9 @@ class TestSpiderFootScanner(unittest.TestCase):
         """
         Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts)
         """
-        sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), self.default_options)
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), opts)
         self.assertIsInstance(sfscan, SpiderFootScanner)
 
     def test_init_invalid_scan_name_should_raise(self):
@@ -83,7 +85,9 @@ class TestSpiderFootScanner(unittest.TestCase):
         """
         Test def setStatus(self, status, started=None, ended=None)
         """
-        sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), self.default_options)
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), opts)
         self.assertIsInstance(sfscan, SpiderFootScanner)
 
         with self.assertRaises(ValueError) as cm:
@@ -93,7 +97,9 @@ class TestSpiderFootScanner(unittest.TestCase):
         """
         Test def getId(self)
         """
-        sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), self.default_options)
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), opts)
         self.assertIsInstance(sfscan, SpiderFootScanner)
 
         scan_id = sfscan.getId()

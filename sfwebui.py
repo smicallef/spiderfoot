@@ -90,8 +90,19 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
         return templ.render(message='Not Found', docroot=self.docroot, status=status)
 
-    # Sanitize user input
     def cleanUserInput(self, inputList):
+        """Sanitize user input, poorly.
+
+        Args:
+            inputList (list): TBD
+
+        Returns:
+            list: sanitized input
+        """
+
+        if not isinstance(inputList, list):
+            raise TypeError("inputList is %s; expected list()" % type(inputList))
+
         ret = list()
 
         for item in inputList:
@@ -104,10 +115,23 @@ class SpiderFootWebUi:
         return ret
 
     def searchBase(self, id=None, eventType=None, value=None):
+        """Search
+
+        Args:
+            id: TBD
+            eventType: TBD
+            value: TBD
+
+        Returns:
+            list: search results
+        """
+
+        retdata = []
+
         regex = ""
         if [id, eventType, value].count('') == 3 or \
                         [id, eventType, value].count(None) == 3:
-            return None
+            return retdata
 
         if value.startswith("/") and value.endswith("/"):
             regex = value[1:len(value) - 1]
@@ -126,8 +150,11 @@ class SpiderFootWebUi:
             'regex': None if regex == '' else regex
         }
 
-        data = dbh.search(criteria)
-        retdata = []
+        try:
+            data = dbh.search(criteria)
+        except:
+            return retdata
+
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             escapeddata = html.escape(row[1])
@@ -142,8 +169,18 @@ class SpiderFootWebUi:
     # USER INTERFACE PAGES
     #
 
-    # Get result data in CSV format
     def scaneventresultexport(self, id, type, dialect="excel"):
+        """Get scan event result data in CSV format
+
+        Args:
+            id (str): scan ID
+            type (str): TBD
+            dialect (str): TBD
+
+        Returns:
+            string: results in CSV format
+        """
+
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
         fileobj = StringIO()
@@ -162,8 +199,17 @@ class SpiderFootWebUi:
 
     scaneventresultexport.exposed = True
 
-    # Get result data in CSV format for multiple scans
     def scaneventresultexportmulti(self, ids, dialect="excel"):
+        """Get scan event result data in CSV format for multiple scans
+
+        Args:
+            ids (str): comma separated list of scan IDs
+            dialect (str): TBD
+
+        Returns:
+            string: results in CSV format
+        """
+
         dbh = SpiderFootDb(self.config)
         scaninfo = dict()
         data = list()
@@ -764,6 +810,9 @@ class SpiderFootWebUi:
 
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
 
+        if not query:
+            return json.dumps(["ERROR", "Invalid query."])
+
         if not query.lower().startswith("select"):
             return json.dumps(["ERROR", "Non-SELECTs are unpredictable and not recommended."])
 
@@ -1018,9 +1067,15 @@ class SpiderFootWebUi:
 
     # Summary of scan results
     def scansummary(self, id, by):
-        dbh = SpiderFootDb(self.config)
-        data = dbh.scanResultSummary(id, by)
         retdata = []
+
+        dbh = SpiderFootDb(self.config)
+
+        try:
+            data = dbh.scanResultSummary(id, by)
+        except:
+            return json.dumps(retdata)
+
         for row in data:
             if row[0] == "ROOT":
                 continue
@@ -1032,9 +1087,15 @@ class SpiderFootWebUi:
 
     # Event results for a scan
     def scaneventresults(self, id, eventType, filterfp=False):
-        dbh = SpiderFootDb(self.config)
-        data = dbh.scanResultEvent(id, eventType, filterfp)
         retdata = []
+
+        dbh = SpiderFootDb(self.config)
+
+        try:
+            data = dbh.scanResultEvent(id, eventType, filterfp)
+        except:
+            return json.dumps(retdata)
+
         for row in data:
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
             escapeddata = html.escape(row[1])

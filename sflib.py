@@ -668,9 +668,11 @@ class SpiderFoot:
             if type(opts[opt]) is list:
                 storeopts[opt] = ','.join(opts[opt])
 
-        # todo: ensure the __modules__ key value is in the expected format
         if '__modules__' not in opts:
             return storeopts
+
+        if not isinstance(opts['__modules__'], dict):
+            raise TypeError("opts['__modules__'] is %s; expected dict()" % type(opts['__modules__']))
 
         for mod in opts['__modules__']:
             for opt in opts['__modules__'][mod]['opts']:
@@ -742,6 +744,9 @@ class SpiderFoot:
 
         if '__modules__' not in referencePoint:
             return returnOpts
+
+        if not isinstance(referencePoint['__modules__'], dict):
+            raise TypeError("referencePoint['__modules__'] is %s; expected dict()" % type(referencePoint['__modules__']))
 
         # Module options
         # A lot of mess to handle typing..
