@@ -668,7 +668,8 @@ class SpiderFoot:
             if type(opts[opt]) is list:
                 storeopts[opt] = ','.join(opts[opt])
 
-        if opts['__modules__'] is None:
+        # todo: ensure the __modules__ key value is in the expected format
+        if '__modules__' not in opts:
             return storeopts
 
         for mod in opts['__modules__']:
@@ -2773,4 +2774,3 @@ class SpiderFootEvent(object):
 
     def setSourceEventHash(self, srcHash):
         self.sourceEventHash = srcHash
-
