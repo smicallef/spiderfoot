@@ -25,6 +25,7 @@ import argparse
 from copy import deepcopy
 import cherrypy
 import random
+import multiprocessing as mp
 from cherrypy.lib import auth_digest
 from sflib import SpiderFoot
 from sfdb import SpiderFootDb
@@ -332,7 +333,7 @@ if __name__ == '__main__':
             cfg['__outputfilter'] = args.t.split(",")
 
         try:
-            s = SpiderFootScanner(target, target, targetType, scanId, modlist, cfg)
+            s = SpiderFootScanner(target, target, targetType, modlist, cfg)
             scanId = s.getId()
         except BaseException as e:
             print("[-] Failed to initialize scan: %s" % e)
