@@ -47,7 +47,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "USERNAME", "NETBLOCK_OWNER"]
+        return ["IP_ADDRESS", "USERNAME"]
 
     # What events this module produces
     def producedEvents(self):
