@@ -28,7 +28,6 @@ from sfscan import SpiderFootScanner
 from io import StringIO
 mp.set_start_method("spawn", force=True)
 
-
 class SpiderFootWebUi:
     lookup = TemplateLookup(directories=[''])
     defaultConfig = dict()
@@ -408,15 +407,9 @@ class SpiderFootWebUi:
             scantarget = scantarget.lower()
 
         # Start running a new scan
+        scanId = sf.genScanInstanceGUID()
         try:
-            s = SpiderFootScanner(scanname, scantarget, targetType, modlist, cfg)
-            scanId = s.getId()
-        except BaseException as e:
-            print("[-] Failed to initialize scan: %s" % e)
-            return self.error("Failed to initialize scan: %s" % e)
-
-        try:
-            p = mp.Process(target=s.startScan())
+            p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True
             p.start()
         except BaseException as e:
@@ -462,15 +455,9 @@ class SpiderFootWebUi:
                                   "a human name, IP address, IP subnet, ASN, domain name or host name.")
 
             # Start running a new scan
+            scanId = sf.genScanInstanceGUID()
             try:
-                s = SpiderFootScanner(scanname, scantarget, targetType, modlist, cfg)
-                scanId = s.getId()
-            except BaseException as e:
-                print("[-] Failed to initialize scan: %s" % e)
-                return self.error("Failed to initialize scan: %s" % e)
-
-            try:
-                p = mp.Process(target=s.startScan())
+                p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
                 p.daemon = True
                 p.start()
             except BaseException as e:
@@ -905,15 +892,10 @@ class SpiderFootWebUi:
         else:
             scantarget = scantarget.lower()
 
+        # Start running a new scan
+        scanId = sf.genScanInstanceGUID()
         try:
-            s = SpiderFootScanner(scanname, scantarget, targetType, modlist, cfg)
-            scanId = s.getId()
-        except BaseException as e:
-            print("[-] Failed to initialize scan: %s" % e)
-            return self.error("Failed to initialize scan: %s" % e)
-
-        try:
-            p = mp.Process(target=s.startScan())
+            p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True
             p.start()
         except BaseException as e:

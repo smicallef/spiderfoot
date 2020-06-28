@@ -22,15 +22,17 @@ from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, \
 
 # Eventually change this to be able to control multiple scan instances
 class SpiderFootScanner():
-    def __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts):
+    def __init__(self, scanName, scanId, scanTarget, targetType, moduleList, globalOpts, start=True):
         """Initialize SpiderFootScanner object.
 
         Args:
             scanName (str): name of the scan
+            scanId (str): unique ID of the scan
             scanTarget (str): scan target
             targetType (str): scan target type
             moduleList (list): list of modules to run
             globalOpts (dict): scan options
+            start (bool): start the scan immediately
 
         Returns:
             None
@@ -38,6 +40,8 @@ class SpiderFootScanner():
 
         if not isinstance(scanName, str):
             raise TypeError("scanName is %s; expected str()" % type(scanName))
+        if not isinstance(scanId, str):
+            raise TypeError("scanId is %s; expected str()" % type(scanId))
         if not isinstance(scanTarget, str):
             raise TypeError("scanTarget is %s; expected str()" % type(scanTarget))
         if not isinstance(targetType, str):
@@ -61,7 +65,7 @@ class SpiderFootScanner():
         self.sf.setDbh(self.dbh)
 
         # Create a unique ID for this scan and create it in the back-end DB.
-        self.scanId = self.sf.genScanInstanceGUID()
+        self.scanId = scanId
         self.sf.setGUID(self.scanId)
         self.dbh.scanInstanceCreate(self.scanId, self.scanName, self.targetValue)
 
@@ -82,6 +86,9 @@ class SpiderFootScanner():
         self.dbh.scanConfigSet(self.scanId, self.sf.configSerialize(deepcopy(self.config)))
 
         self.setStatus("INITIALIZING", time.time() * 1000, None)
+
+        if start:
+            self.startScan()
 
     def getId(self):
         """Retrieve the unique scan identifier.

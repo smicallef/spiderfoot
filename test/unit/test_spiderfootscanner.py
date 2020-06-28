@@ -1,6 +1,7 @@
 # test_spiderfootscanner.py
 from sfscan import SpiderFootScanner
 import unittest
+import uuid
 
 class TestSpiderFootScanner(unittest.TestCase):
     """
@@ -36,50 +37,65 @@ class TestSpiderFootScanner(unittest.TestCase):
 
     def test_init(self):
         """
-        Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts)
+        Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts, start=True)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), opts)
+        scan_id = str(uuid.uuid4())
+        sfscan = SpiderFootScanner("", scan_id, "", "IP_ADDRESS", list(), opts, start=False)
         self.assertIsInstance(sfscan, SpiderFootScanner)
 
     def test_init_invalid_scan_name_should_raise(self):
         """
-        Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts)
+        Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts, start=True)
         """
+        scan_id = str(uuid.uuid4())
         with self.assertRaises(TypeError) as cm:
-            sfscan = SpiderFootScanner(None, "", "IP_ADDRESS", list(), self.default_options)
+            sfscan = SpiderFootScanner(None, scan_id, "", "IP_ADDRESS", list(), self.default_options, start=False)
+
+    def test_init_invalid_scan_id_should_raise(self):
+        """
+        Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts, start=True)
+        """
+        scan_id = None
+        with self.assertRaises(TypeError) as cm:
+            sfscan = SpiderFootScanner(None, scan_id, "", "IP_ADDRESS", list(), self.default_options, start=False)
 
     def test_init_invalid_scan_target_should_raise(self):
         """
-        Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts)
+        Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts, start=True)
         """
+        scan_id = str(uuid.uuid4())
         with self.assertRaises(TypeError) as cm:
-            sfscan = SpiderFootScanner("", None, "IP_ADDRESS", list(), self.default_options)
+            sfscan = SpiderFootScanner("", scan_id, None, "IP_ADDRESS", list(), self.default_options, start=False)
 
     def test_init_invalid_scan_target_type_should_raise(self):
         """
         Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts)
         """
+        scan_id = str(uuid.uuid4())
         with self.assertRaises(TypeError) as cm:
-            sfscan = SpiderFootScanner("", "", None, list(), self.default_options)
+            sfscan = SpiderFootScanner("", scan_id, "", None, list(), self.default_options, start=False)
 
     def test_init_invalid_module_list_should_raise(self):
         """
         Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts)
         """
+        scan_id = str(uuid.uuid4())
         with self.assertRaises(TypeError) as cm:
-            sfscan = SpiderFootScanner("", "", "IP_ADDRESS", None, self.default_options)
+            sfscan = SpiderFootScanner("", scan_id, "", "IP_ADDRESS", None, self.default_options, start=False)
 
     def test_init_invalid_options_should_raise(self):
         """
         Test __init__(self, scanName, scanTarget, targetType, moduleList, globalOpts)
         """
+        scan_id = str(uuid.uuid4())
         with self.assertRaises(TypeError) as cm:
-            sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), None)
+            sfscan = SpiderFootScanner("", scan_id, "", "IP_ADDRESS", list(), None, start=False)
 
+        scan_id = str(uuid.uuid4())
         with self.assertRaises(ValueError) as cm:
-            sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), dict())
+            sfscan = SpiderFootScanner("", scan_id, "", "IP_ADDRESS", list(), dict(), start=False)
 
     def test_set_status_invalid_status_should_raise(self):
         """
@@ -87,7 +103,8 @@ class TestSpiderFootScanner(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), opts)
+        scan_id = str(uuid.uuid4())
+        sfscan = SpiderFootScanner("", scan_id, "", "IP_ADDRESS", list(), opts, start=False)
         self.assertIsInstance(sfscan, SpiderFootScanner)
 
         with self.assertRaises(ValueError) as cm:
@@ -99,11 +116,13 @@ class TestSpiderFootScanner(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfscan = SpiderFootScanner("", "", "IP_ADDRESS", list(), opts)
+        scan_id = str(uuid.uuid4())
+        sfscan = SpiderFootScanner("", scan_id, "", "IP_ADDRESS", list(), opts, start=False)
         self.assertIsInstance(sfscan, SpiderFootScanner)
 
-        scan_id = sfscan.getId()
-        self.assertIsInstance(scan_id, str)
+        get_id = sfscan.getId()
+        self.assertIsInstance(get_id, str)
+        self.assertEqual(scan_id, get_id)
 
     @unittest.skip("todo")
     def test_start_scan_should_start_a_scan(self):
