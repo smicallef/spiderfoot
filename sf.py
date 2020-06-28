@@ -332,15 +332,11 @@ if __name__ == '__main__':
         if args.x and args.t:
             cfg['__outputfilter'] = args.t.split(",")
 
+        # Start running a new scan
+        scanName = target
+        scanId = sf.genScanInstanceGUID()
         try:
-            s = SpiderFootScanner(target, target, targetType, modlist, cfg)
-            scanId = s.getId()
-        except BaseException as e:
-            print("[-] Failed to initialize scan: %s" % e)
-            sys.exit(-1)
-
-        try:
-            p = mp.Process(target=s.startScan())
+            p = mp.Process(target=SpiderFootScanner, args=(scanName, scanId, target, targetType, modlist, cfg))
             p.daemon = True
             p.start()
         except BaseException as e:
