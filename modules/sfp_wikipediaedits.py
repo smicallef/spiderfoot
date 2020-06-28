@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Name:        sfp_wikipediaedits
 # Purpose:     Identify edits to Wikipedia articles made from a given IP address
-#              owned netblock or username.
+#             or username.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
