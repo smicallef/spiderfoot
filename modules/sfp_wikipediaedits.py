@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
-# Name:         sfp_wikipediaedits
-# Purpose:      Identify edits to Wikipedia articles made from a given IP address
-#               or username.
+# Name:        sfp_wikipediaedits
+# Purpose:     Identify edits to Wikipedia articles made from a given IP address
+#              owned netblock or username.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -12,12 +12,12 @@
 
 import datetime
 import re
+import urllib.request, urllib.parse, urllib.error
 from html.parser import HTMLParser
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_wikipediaedits(SpiderFootPlugin):
     """Wikipedia Edits:Footprint,Investigate,Passive:Secondary Networks::Identify edits to Wikipedia articles made from a given IP address or username."""
-
 
     # Default options
     opts = {
@@ -47,29 +47,39 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "USERNAME"]
+        return ["IP_ADDRESS", "USERNAME", "NETBLOCK_OWNER"]
 
     # What events this module produces
     def producedEvents(self):
         return ["WIKIPEDIA_PAGE_EDIT"]
 
     def query(self, qry):
-        url = "https://en.wikipedia.org/w/api.php?action=feedcontributions&user=" + qry
+        params = {
+            "action": "feedcontributions",
+            "user": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
+        }
+
         if self.opts['days_limit'] != "0":
             dt = datetime.datetime.now() - datetime.timedelta(days=int(self.opts['days_limit']))
-            y = dt.strftime("%Y")
-            m = dt.strftime("%m")
-            url += "&year=" + y + "&month=" + m
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot")
-        if res['code'] in [ "404", "403", "500" ]:
+            params["year"] = dt.strftime("%Y")
+            params["month"] = dt.strftime("%m")
+
+        res = self.sf.fetchUrl(
+                "https://en.wikipedia.org/w/api.php?%s" % urllib.parse.urlencode(params),
+                timeout=self.opts['_fetchtimeout'],
+                useragent="SpiderFoot"
+                )
+
+        if res['code'] in ["404", "403", "500"]:
+            return None
+
+        if not res['content']:
             return None
 
         links = list()
+
         try:
             parser = HTMLParser()
-            if not res['content']:
-                return None
 
             for line in res['content'].split("\n"):
                 matches = re.findall("<link>(.*?)</link>", line, re.IGNORECASE)
@@ -78,9 +88,9 @@ class sfp_wikipediaedits(SpiderFootPlugin):
                         continue
                     d = parser.unescape(m)
                     links.append(d)
-            return links
-        except Exception as e:
-            self.sf.error("Error processing response from Wikipedia: " + str(e), False)
+            return set(links)
+        except BaseException as e:
+            self.sf.error("Error processing response from Wikipedia: %s" % e, False)
             return None
 
     # Handle events sent to this module
@@ -95,16 +105,16 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         data = self.query(eventData)
-        if data == None:
+
+        if data is None:
             return None
 
-        for l in data:
-            e = SpiderFootEvent("WIKIPEDIA_PAGE_EDIT", l,
-                                self.__name__, event)
-            self.notifyListeners(e)
+        for link in data:
+            evt = SpiderFootEvent("WIKIPEDIA_PAGE_EDIT", link, self.__name__, event)
+            self.notifyListeners(evt)
 
 # End of sfp_wikipediaedits class

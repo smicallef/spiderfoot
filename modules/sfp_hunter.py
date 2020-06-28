@@ -10,6 +10,7 @@
 #-------------------------------------------------------------------------------
 
 import json
+import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_hunter(SpiderFootPlugin):
@@ -51,11 +52,17 @@ class sfp_hunter(SpiderFootPlugin):
     def producedEvents(self):
         return [ "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA" ]
 
-    def query(self, t, offset=0, limit=10):
+    def query(self, qry, offset=0, limit=10):
+        params = {
+            "domain": qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
+            "api_key": self.opts['api_key'],
+            "offset": str(offset),
+            "limit": str(limit)
+        }
+
         ret = None
 
-        url = "https://api.hunter.io/v2/domain-search?domain=" + t + "&api_key=" + self.opts['api_key'] + \
-              "&offset=" + str(offset) + "&limit=" + str(limit)
+        url = "https://api.hunter.io/v2/domain-search?%s" % urllib.parse.urlencode(params)
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
             useragent="SpiderFoot")
@@ -69,7 +76,7 @@ class sfp_hunter(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from hunter.io: " + str(e), False)
+            self.sf.error("Error processing JSON response from hunter.io: %s" % e, False)
             return None
 
         return ret
