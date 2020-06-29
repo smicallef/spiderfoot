@@ -75,7 +75,7 @@ class sfp_intelx(SpiderFootPlugin):
                 "EMAILADDR", "EMAILADDR_GENERIC"]
 
     def query(self, qry, qtype):
-        ret = None
+        retdata = list()
 
         headers = {
             "User-Agent": "SpiderFoot",
@@ -134,16 +134,15 @@ class sfp_intelx(SpiderFootPlugin):
                 status = ret['status']
                 count += 1
 
+                retdata.append(ret)
                 # No more results left
                 if status == 1:
                     #print data in json format to manipulate as desired
-                    self.sf.debug("Results found, returning")
-                    return ret
+                    break
 
                 time.sleep(1)
                 
-        self.sf.debug("No results found.")
-        return None
+        return retdata
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -174,77 +173,79 @@ class sfp_intelx(SpiderFootPlugin):
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
             return None
 
-        info = self.query(eventData, "intelligent")
-        if info is None:
+        data = self.query(eventData, "intelligent")
+        if data is None:
             return None
 
         self.sf.info("Found IntelligenceX leak data for " + eventData)
         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
-        for rec in info.get("records", dict()):
-            try:
-                last_seen = int(datetime.datetime.strptime(rec['added'].split(".")[0], '%Y-%m-%dT%H:%M:%S').strftime('%s')) * 1000
-                if last_seen < agelimit:
-                    self.sf.debug("Record found but too old, skipping.")
-                    continue
+        for info in data:
+            for rec in info.get("records", dict()):
+                try:
+                    last_seen = int(datetime.datetime.strptime(rec['added'].split(".")[0], '%Y-%m-%dT%H:%M:%S').strftime('%s')) * 1000
+                    if last_seen < agelimit:
+                        self.sf.debug("Record found but too old, skipping.")
+                        continue
 
-                val = None
-                evt = None
-                if rec['bucket'] == "pastes":
-                    evt = "LEAKSITE_URL"
-                    val = rec['keyvalues'][0]['value']
-                if rec['bucket'].startswith("darknet."):
-                    evt = "DARKNET_MENTION_URL"
-                    val = rec['name']
+                    val = None
+                    evt = None
+                    if rec['bucket'] == "pastes":
+                        evt = "LEAKSITE_URL"
+                        val = rec['keyvalues'][0]['value']
+                    if rec['bucket'].startswith("darknet."):
+                        evt = "DARKNET_MENTION_URL"
+                        val = rec['name']
 
-                if not val or not evt:
-                    self.sf.debug("Unexpected record, skipping (" + str(rec['bucket'] + ")"))
+                    if not val or not evt:
+                        self.sf.debug("Unexpected record, skipping (" + str(rec['bucket'] + ")"))
+                        continue
+                except BaseException as e:
+                    self.sf.error("Error processing content from IntelX: " + str(e), False)
                     continue
-            except BaseException as e:
-                self.sf.error("Error processing content from IntelX: " + str(e), False)
-                continue
-                
-            # Notify other modules of what you've found
-            e = SpiderFootEvent(evt, val, self.__name__, event)
-            self.notifyListeners(e)
+                    
+                # Notify other modules of what you've found
+                e = SpiderFootEvent(evt, val, self.__name__, event)
+                self.notifyListeners(e)
 
         if "public.intelx.io" in self.opts['base_url'] or eventName != "INTERNET_NAME":
             return None
 
-        info = self.query(eventData, "phonebook")
-        if info is None:
+        data = self.query(eventData, "phonebook")
+        if data is None:
             return None
 
         self.sf.info("Found IntelligenceX host and email data for " + eventData)
-        for rec in info.get("selectors", dict()):
-            try:
-                val = rec['selectorvalueh']
-                evt = None
-                if rec['selectortype'] == 1: #Email
-                    evt = "EMAILADDR"
-                    if val.split("@")[0] in self.opts['_genericusers'].split(","):
-                        evt = "EMAILADDR_GENERIC"
-                if rec['selectortype'] == 2: #Domain
-                    evt = "INTERNET_NAME"
-                    if val == eventData:
+        for info in data:
+            for rec in info.get("selectors", dict()):
+                try:
+                    val = rec['selectorvalueh']
+                    evt = None
+                    if rec['selectortype'] == 1: #Email
+                        evt = "EMAILADDR"
+                        if val.split("@")[0] in self.opts['_genericusers'].split(","):
+                            evt = "EMAILADDR_GENERIC"
+                    if rec['selectortype'] == 2: #Domain
+                        evt = "INTERNET_NAME"
+                        if val == eventData:
+                            continue
+                    if rec['selectortype'] == 3: #URL
+                        evt = "LINKED_URL_INTERNAL"
+
+                    if not val or not evt:
+                        self.sf.debug("Unexpected record, skipping.")
                         continue
-                if rec['selectortype'] == 3: #URL
-                    evt = "LINKED_URL_INTERNAL"
-
-                if not val or not evt:
-                    self.sf.debug("Unexpected record, skipping.")
+                except BaseException as e:
+                    self.sf.error("Error processing content from IntelX: " + str(e), False)
                     continue
-            except BaseException as e:
-                self.sf.error("Error processing content from IntelX: " + str(e), False)
-                continue
 
-            # Notify other modules of what you've found
-            e = SpiderFootEvent(evt, val, self.__name__, event)
-            self.notifyListeners(e)
-
-            if evt == "INTERNET_NAME" and self.sf.isDomain(val, self.opts['_internettlds']):
-                e = SpiderFootEvent("DOMAIN_NAME", val, self.__name__, event)
+                # Notify other modules of what you've found
+                e = SpiderFootEvent(evt, val, self.__name__, event)
                 self.notifyListeners(e)
-        
+
+                if evt == "INTERNET_NAME" and self.sf.isDomain(val, self.opts['_internettlds']):
+                    e = SpiderFootEvent("DOMAIN_NAME", val, self.__name__, event)
+                    self.notifyListeners(e)
+            
 
 
 
