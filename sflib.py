@@ -1216,10 +1216,12 @@ class SpiderFoot:
             if type(addr) == list:
                 for host in addr:
                     host = str(host).rstrip(".")
-                    ret.append(host)
+                    if host:
+                        ret.append(host)
             else:
                 addr = str(addr).rstrip(".")
-                ret.append(addr)
+                if addr:
+                    ret.append(addr)
         return ret
 
     def validEmail(self, email):

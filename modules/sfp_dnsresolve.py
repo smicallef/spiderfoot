@@ -12,7 +12,6 @@
 # -------------------------------------------------------------------------------
 
 import re
-
 import urllib
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
@@ -68,7 +67,6 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 target.setAlias(host, "INTERNET_NAME")
                 idnahost = host.encode("idna")
                 if idnahost != host:
-                    self.sf.debug("Found an IDNA alias: " + host)
                     target.setAlias(idnahost.decode('ascii', errors='replace'), "INTERNET_NAME")
 
                 # If the target was a hostname/sub-domain, we can
@@ -150,7 +148,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             return None
 
         # Search for IPs/hosts in raw data
-        if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME",
+        if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", 
                               "NETBLOCK_OWNER", "IP_ADDRESS", "IPV6_ADDRESS",
                               "INTERNET_NAME", "AFFILIATE_IPADDR"]:
             data = urllib.parse.unquote(eventData).lower()
@@ -167,19 +165,23 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 if offset < 0:
                     continue
 
-                if offset == 0:
-                    offset += len(name)
-
                 pat = re.compile("[^a-z0-9\-\.\%]([a-z0-9\-\.\%]*\." + name + ")", re.DOTALL|re.MULTILINE)
                 while offset >= 0:
-                    offset = data.find(name, offset)
-                    #print "found at offset: " + str(offset)
-                    if offset < 0:
-                        break
+                    # If the target was found at the beginning of the content, skip past it
+                    if offset == 0:
+                        offset += len(name)
+                        loop += 1
+                        continue
 
-                    # Get 200 bytes before the name to try and get hostnames
-                    chunkhost = data[(offset-200):(offset+len(name)+1)]
+                    if offset <= 100:
+                        # Start from the beginning of the text
+                        start = 0
+                    else:
+                        # Start looking for a host 100 chars before the target name
+                        start = offset - 100
 
+                    # Get up to 100 bytes before the name to try and get hostnames
+                    chunkhost = data[start:(offset+start+len(name)+1)]
                     try:
                         matches = re.findall(pat, chunkhost)
                         if matches:
@@ -191,12 +193,12 @@ class sfp_dnsresolve(SpiderFootPlugin):
                                     m = match
                                 # Remove URL-encoded stuff
                                 if '%' in m:
-                                    m = urllib.parse.unquote(m)
+                                    m = urllib2.unquote(m)
                                 self.processHost(m, parentEvent, False)
                     except Exception as e:
                         self.sf.error("Error applying regex to data (" + str(e) + ")", False)
 
-                    offset += len(name)
+                    offset = data.find(name, start + len(chunkhost))
 
             # Nothing left to do with internal links and raw data
             return None
@@ -291,7 +293,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if self.getTarget().matches(host):
                 affil = False
             # If the IP the host resolves to is in our
-            # list of aliases,
+            # list of aliases, 
             if not self.sf.validIP(host):
                 hostips = self.sf.resolveHost(host)
                 if hostips:
@@ -317,7 +319,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if htype.endswith("INTERNET_NAME"):
             resolved = self.sf.resolveHost(host)
             if htype == "INTERNET_NAME" and not resolved:
-                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host,
+                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, 
                                       self.__name__, parentEvent)
                 self.notifyListeners(evt)
                 return None
@@ -326,6 +328,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 return None
 
         # Report the host
+        # Commented this out since CNAMEs weren't being reported.
+        #if host != parentEvent.data and htype != parentEvent.eventType:
         if host != parentEvent.data:
             evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
             self.notifyListeners(evt)
@@ -388,6 +392,6 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 domevt = SpiderFootEvent("DOMAIN_NAME_PARENT", domainName,
                                          self.__name__, parentEvent)
                 self.notifyListeners(domevt)
-            return None
+        return None
 
 # End of sfp_dnsresolve class
