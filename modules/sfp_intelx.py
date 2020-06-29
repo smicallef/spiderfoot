@@ -116,7 +116,7 @@ class sfp_intelx(SpiderFootPlugin):
             limit = 30
             count = 0
             status = 3  # status 3 = No results yet, keep trying. 0 = Success with results
-            while status == 3 and count < limit:
+            while status in [3, 0] and count < limit:
                 if self.checkForStop():
                     return None
 
@@ -134,7 +134,8 @@ class sfp_intelx(SpiderFootPlugin):
                 status = ret['status']
                 count += 1
 
-                if status in [0, 1]:
+                # No more results left
+                if status == 1:
                     #print data in json format to manipulate as desired
                     self.sf.debug("Results found, returning")
                     return ret
@@ -182,7 +183,7 @@ class sfp_intelx(SpiderFootPlugin):
         for rec in info.get("records", dict()):
             try:
                 last_seen = int(datetime.datetime.strptime(rec['added'].split(".")[0], '%Y-%m-%dT%H:%M:%S').strftime('%s')) * 1000
-                if last_seen < agelimit:                                                                                                                             
+                if last_seen < agelimit:
                     self.sf.debug("Record found but too old, skipping.")
                     continue
 

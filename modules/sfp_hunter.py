@@ -97,7 +97,7 @@ class sfp_hunter(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        data = self.query(eventData, 0, 100)
+        data = self.query(eventData, 0, 10)
         if not data:
             return None
 
@@ -106,9 +106,9 @@ class sfp_hunter(SpiderFootPlugin):
 
         # Check if we have more results on further pages
         if "meta" in data:
-            maxgoal = data['meta'].get('results', 100)
+            maxgoal = data['meta'].get('results', 10)
         else:
-            maxgoal = 100
+            maxgoal = 10
 
         rescount = len(data['data'].get('emails', list()))
 
@@ -136,7 +136,7 @@ class sfp_hunter(SpiderFootPlugin):
             if rescount >= maxgoal:
                 return None
 
-            data = self.query(eventData, rescount, 100)
+            data = self.query(eventData, rescount, 10)
             if data == None:
                 return None
             if "data" not in data:

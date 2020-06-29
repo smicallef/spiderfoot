@@ -153,6 +153,11 @@ class sfp_viewdns(SpiderFootPlugin):
         self.accum = list()
         self.query(eventData, ident)
         rec = self.accum
+
+        # Leave out registrar parking sites, and other highly used IPs
+        if eventName == "IP_ADDRESS" and len(rec) > self.opts['maxcohost']:
+            return None
+
         myres = list()
         if rec is not None:
             for r in rec:
