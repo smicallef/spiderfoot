@@ -170,7 +170,6 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     # If the target was found at the beginning of the content, skip past it
                     if offset == 0:
                         offset += len(name)
-                        loop += 1
                         continue
 
                     if offset <= 100:
