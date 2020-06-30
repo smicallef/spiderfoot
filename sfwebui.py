@@ -421,9 +421,7 @@ class SpiderFootWebUi:
             print("[info] Waiting for the scan to initialize...")
             time.sleep(1)
 
-        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup)
-        return templ.render(id=scanId, name=str(scanname), docroot=self.docroot,
-            status=dbh.scanInstanceGet(scanId), pageid="SCANLIST")
+        raise cherrypy.HTTPRedirect(f"scaninfo?id={scanId}", status=302)
 
     rerunscan.exposed = True
 
