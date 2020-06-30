@@ -86,6 +86,7 @@ scanId = None
 dbh = None
 
 def handle_abort(signal, frame):
+    """handle interrupt and abort scan."""
     print("[*] Aborting...")
     if scanId and dbh:
         dbh.scanInstanceSet(scanId, None, None, "ABORTED")
@@ -145,7 +146,8 @@ if __name__ == '__main__':
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
     # Go through each module in the modules directory with a .py extension
-    for filename in os.listdir(sft.myPath() + '/modules/'):
+    mod_dir = sft.myPath() + '/modules/'
+    for filename in os.listdir(mod_dir):
         if filename.startswith("sfp_") and filename.endswith(".py"):
             # Skip the module template and debugging modules
             if filename == "sfp_template.py" or filename == 'sfp_stor_print.py':
@@ -169,7 +171,7 @@ if __name__ == '__main__':
                 sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
 
     if len(list(sfModules.keys())) < 1:
-        print("No modules found in the modules directory.")
+        print("No modules found in modules directory: %s" % mod_dir)
         sys.exit(-1)
 
     # Add module info to sfConfig so it can be used by the UI
@@ -232,6 +234,11 @@ if __name__ == '__main__':
         if "." not in target and not target.startswith("+") and "\"" not in target:
             target = "\"" + target + "\""
         targetType = sf.targetType(target)
+
+        if not targetType:
+            print("[-] Could not determine target type. Invalid target: %s" % target)
+            sys.exit(-1)
+
         target = target.strip('"')
 
         modlist = list()
@@ -264,7 +271,7 @@ if __name__ == '__main__':
 
         # Easier if scanning by module
         if args.m:
-            modlist = args.m.split(",")
+            modlist = list(filter(None, args.m.split(",")))
 
         # Add sfp__stor_stdout to the module list
         outputformat = "tab"
@@ -319,7 +326,7 @@ if __name__ == '__main__':
 
         # Run the scan
         if sfConfig['__logging']:
-            print(("[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist)))
+            print("[*] Modules enabled (%s): %s" % (len(modlist), ",".join(modlist)))
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
 
         # Debug mode is a variable that gets stored to the DB, so re-apply it
