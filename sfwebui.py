@@ -384,6 +384,10 @@ class SpiderFootWebUi:
         sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
         info = dbh.scanInstanceGet(id)
+
+        if not info:
+            return self.error("Invalid scan ID.")
+
         scanconfig = dbh.scanConfigGet(id)
         scanname = info[0]
         scantarget = info[1]
@@ -491,6 +495,10 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.config)
         types = dbh.eventTypes()
         info = dbh.scanInstanceGet(id)
+
+        if not info:
+            return self.error("Invalid scan ID.")
+
         scanconfig = dbh.scanConfigGet(id)
         scanname = info[0]
         scantarget = info[1]
@@ -951,20 +959,21 @@ class SpiderFootWebUi:
     def stopscan(self, id, cli=None):
         dbh = SpiderFootDb(self.config)
         scaninfo = dbh.scanInstanceGet(id)
-        scanstatus = scaninfo[5]
-        print(scanstatus)
-        if scaninfo is None:
+
+        if not scaninfo:
             if not cli:
                 return self.error("Invalid scan ID.")
             else:
                 return json.dumps(["ERROR", "Invalid scan ID."])
+
+        scanstatus = scaninfo[5]
+        print(scanstatus)
 
         if scanstatus == "ABORTED":
             if not cli:
                 return self.error("The scan is already aborted.")
             else:
                 return json.dumps(["ERROR", "Scan already aborted."])
-
 
         if not scanstatus == "RUNNING":
             if not cli:
