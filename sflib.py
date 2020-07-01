@@ -2395,71 +2395,108 @@ class SpiderFootPlugin(object):
     # Error state of the module
     errorState = False
     
-
-    # Not really needed in most cases.
     def __init__(self):
+        """Not really needed in most cases."""
         pass
 
-    # Hack to override module's use of socket, replacing it with
-    # one that uses the supplied SOCKS server
     def _updateSocket(self, socksProxy):
+        """Hack to override module's use of socket, replacing it with
+        one that uses the supplied SOCKS server."""
         self.socksProxy = socksProxy
 
-    # Used to clear any listener relationships, etc. This is needed because
-    # Python seems to cache local variables even between threads.
     def clearListeners(self):
+        """Used to clear any listener relationships, etc. This is needed because
+        Python seems to cache local variables even between threads."""
+
         self._listenerModules = list()
         self._stopScanning = False
 
-    # Will always be overriden by the implementer.
     def setup(self, sf, userOpts=dict()):
+        """Will always be overriden by the implementer."""
         pass
 
-    # Hardly used, only in special cases where a module can find
-    # aliases for a target.
     def enrichTarget(self, target):
+        """Hardly used, only in special cases where a module can find
+        aliases for a target."""
         pass
 
-    # Assigns the current target this module is acting against
     def setTarget(self, target):
+        """Assigns the current target this module is acting against.
+
+        Args:
+            target (str): target
+        """
         self._currentTarget = target
 
-    # Used to set the database handle, which is only to be used
-    # by modules in very rare/exceptional cases (e.g. sfp__stor_db)
     def setDbh(self, dbh):
+        """Used to set the database handle, which is only to be used
+        by modules in very rare/exceptional cases (e.g. sfp__stor_db)
+
+        Args:
+            dbh (SpiderFootDb): database handle
+        """
         self.__sfdb__ = dbh
 
-    # Set the scan ID
     def setScanId(self, id):
+        """Set the scan ID.
+
+        Args:
+            id (str): scan ID
+        """
         self.__scanId__ = id
 
-    # Get the scan ID
     def getScanId(self):
+        """Get the scan ID.
+
+        Returns:
+            str: scan ID
+        """
         return self.__scanId__
 
-    # Gets the current target this module is acting against
     def getTarget(self):
+        """Gets the current target this module is acting against."""
+
         if self._currentTarget is None:
             print("Internal Error: Module called getTarget() but no target set.")
             sys.exit(-1)
         return self._currentTarget
 
-    # Listener modules which will get notified once we have data for them to
-    # work with.
     def registerListener(self, listener):
+        """Listener modules which will get notified once we have data for them to
+        work with.
+
+        Args:
+            listener: TBD
+        """
+
         self._listenerModules.append(listener)
 
     def setOutputFilter(self, types):
         self.__outputFilter__ = types
 
-    # For SpiderFoot HX compatability of modules
     def tempStorage(self):
+        """Module temporary storage.
+
+        Note:
+            For SpiderFoot HX compatability of modules.
+
+        Returns:
+            dict: TB
+        """
         return dict()
 
-    # Call the handleEvent() method of every other plug-in listening for
-    # events from this plug-in. Remember that those plug-ins will be called
-    # within the same execution context of this thread, not on their own.
     def notifyListeners(self, sfEvent):
+        """Call the handleEvent() method of every other plug-in listening for
+        events from this plug-in. Remember that those plug-ins will be called
+        within the same execution context of this thread, not on their own.
+
+        Args:
+            sfEvent (SpiderFootEvent): event
+        """
+
+        if not isinstance(sfEvent, SpiderFootEvent):
+            raise TypeError("sfEvent is %s; expected SpiderFootEvent" % type(sfEvent))
+
         eventName = sfEvent.eventType
 
         if self.__outputFilter__:
@@ -2535,44 +2572,66 @@ class SpiderFootPlugin(object):
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
 
-    # For modules to use to check for when they should give back control
     def checkForStop(self):
+        """For modules to use to check for when they should give back control.
+
+        Returns:
+            bool
+        """
+
         scanstatus = self.__sfdb__.scanInstanceGet(self.__scanId__)
-        #Ensure that scanStatus is not None
         if scanstatus != None:              
             if scanstatus[5] == "ABORT-REQUESTED":
-
                 return True
         return False
 
-    # Return a list of the default configuration options for the module.
-    def defaultOpts(self):
-        return self.opts
-
-    # What events is this module interested in for input. The format is a list
-    # of event types that are applied to event types that this module wants to
-    # be notified of, or * if it wants everything.
-    # Will usually be overriden by the implementer, unless it is interested
-    # in all events (default behavior).
     def watchedEvents(self):
+        """What events is this module interested in for input. The format is a list
+        of event types that are applied to event types that this module wants to
+        be notified of, or * if it wants everything.
+        Will usually be overriden by the implementer, unless it is interested
+        in all events (default behavior).
+
+        Returns:
+            list: list of events this modules watches
+        """
+
         return ['*']
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return None
+        """What events this module produces
+        This is to support the end user in selecting modules based on events
+        produced.
 
-    # Handle events to this module
-    # Will usually be overriden by the implementer, unless it doesn't handle
-    # any events.
+        Returns:
+            list: list of events produced by this module
+        """
+
+        return []
+
     def handleEvent(self, sfEvent):
+        """Handle events to this module.
+        Will usually be overriden by the implementer, unless it doesn't handle
+        any events.
+
+        Args:
+            sfEvent (SpiderFootEvent): event
+
+        Returns:
+            None
+        """
+
         return None
 
-    # Kick off the work (for some modules nothing will happen here, but instead
-    # the work will start from the handleEvent() method.
-    # Will usually be overriden by the implementer.
     def start(self):
+        """Kick off the work (for some modules nothing will happen here, but instead
+        the work will start from the handleEvent() method.
+        Will usually be overriden by the implementer.
+
+        Returns:
+            None
+        """
+
         return None
 
 
