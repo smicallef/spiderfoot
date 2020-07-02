@@ -53,7 +53,7 @@ class sfp_pgp(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["EMAILADDR", "AFFILIATE_EMAILADDR", "PGP_KEY"]
+        return ["EMAILADDR", "EMAILADDR_GENERIC", "AFFILIATE_EMAILADDR", "PGP_KEY"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -82,7 +82,10 @@ class sfp_pgp(SpiderFootPlugin):
             if res['content'] is not None and res['code'] != "503":
                 emails = self.sf.parseEmails(res['content'])
                 for email in emails:
-                    evttype = "EMAILADDR"
+                    if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                        evttype = "EMAILADDR_GENERIC"
+                    else:
+                        evttype = "EMAILADDR"
 
                     mailDom = email.lower().split('@')[1]
                     if not self.getTarget().matches(mailDom):

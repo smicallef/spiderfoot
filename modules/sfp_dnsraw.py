@@ -28,7 +28,7 @@ class sfp_dnsraw(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'verify': "Verify SPF hostnames resolve."
+        'verify': "Verify identified hostnames resolve."
     }
 
     events = None
@@ -61,7 +61,6 @@ class sfp_dnsraw(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         eventDataHash = self.sf.hashstring(eventData)
-        addrs = None
         parentEvent = event
 
         self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
@@ -73,12 +72,15 @@ class sfp_dnsraw(SpiderFootPlugin):
         self.events[eventDataHash] = True
 
         self.sf.debug("Gathering DNS records for " + eventData)
+
+        domains = list()
+
         # Process the raw data alone
-        recdata = dict()
         recs = {
-            'MX': ['\S+\s+(?:\d+)?\s+IN\s+MX\s+\d+\s+(\S+)\.', 'PROVIDER_MAIL'],
-            'NS': ['\S+\s+(?:\d+)?\s+IN\s+NS\s+(\S+)\.', 'PROVIDER_DNS'],
-            'TXT': ['\S+\s+TXT\s+\"(.[^\"]*)"', 'DNS_TEXT']
+            'CNAME': r'\S+\s+(?:\d+)?\s+IN\s+CNAME\s+(\S+)\.',
+            'MX': r'\S+\s+(?:\d+)?\s+IN\s+MX\s+\d+\s+(\S+)\.',
+            'NS': r'\S+\s+(?:\d+)?\s+IN\s+NS\s+(\S+)\.',
+            'TXT': r'\S+\s+TXT\s+\"(.[^\"]*)"'
         }
 
         for rec in list(recs.keys()):
@@ -95,32 +97,54 @@ class sfp_dnsraw(SpiderFootPlugin):
                     n = ns.nameservers[0]
 
                 res = dns.query.udp(req, n, timeout=30)
-                for x in res.answer:
-                    if str(x) in self.checked:
+
+                if not len(res.answer):
+                    continue
+            except BaseException as e:
+                self.sf.error("Failed to obtain DNS response for %s (%s)" % (eventData, e), False)
+                continue
+
+            # Iterate through DNS answers
+            for x in res.answer:
+                if str(x) in self.checked:
+                    continue
+
+                self.checked[str(x)] = True
+
+                evt = SpiderFootEvent("RAW_DNS_RECORDS", str(x), self.__name__, parentEvent)
+                self.notifyListeners(evt)
+
+                for rx in list(recs.keys()):
+                    self.sf.debug("Checking " + str(x) + " + against " + recs[rx])
+                    pat = re.compile(recs[rx], re.IGNORECASE | re.DOTALL)
+                    grps = re.findall(pat, str(x))
+
+                    if len(grps) == 0:
                         continue
-                    self.checked[str(x)] = True
-                    for rx in list(recs.keys()):
-                        self.sf.debug("Checking " + str(x) + " + against " + recs[rx][0])
-                        pat = re.compile(recs[rx][0], re.IGNORECASE | re.DOTALL)
-                        grps = re.findall(pat, str(x))
 
-                        if len(grps) == 0:
-                            continue
+                    for m in grps:
+                        self.sf.debug("Matched: " + m)
+                        strdata = str(m)
 
-                        for m in grps:
-                            self.sf.debug("Matched: " + m)
-                            strdata = str(m)
-                            evt = SpiderFootEvent(recs[rx][1], strdata,
-                                                      self.__name__, parentEvent)
+                        if rx == "CNAME":
+                            domains.append(strdata.lower())
+
+                        if rx == "MX":
+                            evt = SpiderFootEvent("PROVIDER_MAIL", strdata.lower(), self.__name__, parentEvent)
                             self.notifyListeners(evt)
-                            if rec != "TXT" and not self.getTarget().matches(strdata, includeChildren=True, includeParents=True):
-                                evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME",
-                                                      strdata, self.__name__, parentEvent)
-                                self.notifyListeners(evt)
+                            domains.append(strdata.lower())
 
-                            if rec == "TXT" and "v=spf" in strdata:
-                                evt = SpiderFootEvent("DNS_SPF", strdata,
-                                                      self.__name__, parentEvent)
+                        if rx == "NS":
+                            evt = SpiderFootEvent("PROVIDER_DNS", strdata.lower(), self.__name__, parentEvent)
+                            self.notifyListeners(evt)
+                            domains.append(strdata.lower())
+
+                        if rx == "TXT":
+                            evt = SpiderFootEvent("DNS_TEXT", strdata, self.__name__, parentEvent)
+                            self.notifyListeners(evt)
+
+                            if "v=spf" in strdata or "spf2.0/" in strdata:
+                                evt = SpiderFootEvent("DNS_SPF", strdata, self.__name__, parentEvent)
                                 self.notifyListeners(evt)
 
                                 matches = re.findall(r'include:(.+?) ', strdata, re.IGNORECASE | re.DOTALL)
@@ -128,24 +152,19 @@ class sfp_dnsraw(SpiderFootPlugin):
                                     for domain in matches:
                                         if '_' in domain:
                                             continue
-                                        if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
-                                            evt_type = 'INTERNET_NAME'
-                                        else:
-                                            evt_type = 'AFFILIATE_INTERNET_NAME'
+                                        domains.append(domain.lower())
 
-                                        if self.opts['verify'] and not self.sf.resolveHost(domain):
-                                            self.sf.debug("Host " + domain + " could not be resolved")
-                                            evt_type += '_UNRESOLVED'
+        for domain in set(domains):
+            if self.getTarget().matches(domain, includeChildren=True, includeParents=True):
+                evt_type = 'INTERNET_NAME'
+            else:
+                evt_type = 'AFFILIATE_INTERNET_NAME'
 
-                                        evt = SpiderFootEvent(evt_type, domain, self.__name__, parentEvent)
-                                        self.notifyListeners(evt)
+            if self.opts['verify'] and not self.sf.resolveHost(domain):
+                self.sf.debug("Host " + domain + " could not be resolved")
+                evt_type += '_UNRESOLVED'
 
-                    strdata = str(x)
-                    evt = SpiderFootEvent("RAW_DNS_RECORDS", strdata,
-                                          self.__name__, parentEvent)
-                    self.notifyListeners(evt)
-            except BaseException as e:
-                self.sf.error("Failed to obtain DNS response for " + eventData +
-                              "(" + rec + "): " + str(e), False)
+            evt = SpiderFootEvent(evt_type, domain, self.__name__, parentEvent)
+            self.notifyListeners(evt)
 
 # End of sfp_dnsraw class

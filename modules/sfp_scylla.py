@@ -45,7 +45,7 @@ class sfp_scylla(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'INTERNET_NAME' ]
+        return [ 'DOMAIN_NAME' ]
 
     # What events this module produces
     def producedEvents(self):
@@ -143,11 +143,11 @@ class sfp_scylla(SpiderFootPlugin):
                 if not email:
                     continue
 
-                try:
-                    mailDom = email.lower().split('@')[1]
-                except BaseException as e:
-                    self.sf.debug("Encountered strange result: " + email)
+                if not self.sf.validEmail(email):
+                    self.sf.debug("Skipping invalid email address: " + email)
                     continue
+
+                mailDom = email.lower().split('@')[1]
 
                 # Skip unrelated emails
                 # Scylla sometimes returns broader results than the searched data

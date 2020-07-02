@@ -34,6 +34,7 @@ import OpenSSL
 import uuid
 import cryptography
 import dns.resolver
+from publicsuffixlist import PublicSuffixList
 from networkx import nx
 from networkx.readwrite.gexf import GEXFWriter
 from datetime import datetime
@@ -124,14 +125,27 @@ class SpiderFoot:
         except BaseException as e:
             self.fatal("Unable to re-circuit TOR: " + str(e))
 
-    # Supplied an option value, return the data based on what the
-    # value is. If val is a URL, you'll get back the fetched content,
-    # if val is a file path it will be loaded and get back the contents,
-    # and if a string it will simply be returned back.
     def optValueToData(self, val, fatal=True, splitLines=True):
-        if val is None:
-            #self.debug("fetchUrl: No val")
-            return None
+        """Supplied an option value, return the data based on what the
+        value is. If val is a URL, you'll get back the fetched content,
+        if val is a file path it will be loaded and get back the contents,
+        and if a string it will simply be returned back.
+
+        Args:
+            val (str): TBD
+            fatal (bool): TBD
+            splitLines (bool): TBD
+
+        Returns:
+            str: TBD
+        """
+
+        if not isinstance(val, str):
+            if fatal:
+                self.error("Invalid option value %s" % val)
+            else:
+                self.error("Invalid option value %s" % val, False)
+                return None
 
         if val.startswith('@'):
             fname = val.split('@')[1]
@@ -344,21 +358,19 @@ class SpiderFoot:
 
         return json.dumps(ret)
 
-    # Called usually some time after instantiation
-    # to set up a database handle and scan GUID, used
-    # for logging events to the database about a scan.
     def setDbh(self, handle):
+        """Called usually some time after instantiation
+        to set up a database handle and scan GUID, used
+        for logging events to the database about a scan.
+        """
         self.dbh = handle
 
     def setGUID(self, uid):
         """Set the GUID this instance of SpiderFoot is being used in."""
         self.GUID = uid
 
-    def genScanInstanceGUID(self, scanName):
+    def genScanInstanceGUID(self):
         """Generate an globally unique ID for this scan.
-
-        Args:
-            scanName (str): scan name
 
         Returns:
             str: scan instance unique GUID
@@ -380,10 +392,15 @@ class SpiderFoot:
             component (str): TBD
 
         Returns:
-            bool: True
+            bool: scan event logged successfully
         """
 
         #print(str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component))
+
+        if not self.dbh:
+            self.error("No database handle. Could not log event to database: %s" % message, True)
+            return False
+
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, message, exception=True):
@@ -616,10 +633,24 @@ class SpiderFoot:
     # Configuration process
     #
 
-    # Convert a Python dictionary to something storable
-    # in the database.
     def configSerialize(self, opts, filterSystem=True):
+        """Convert a Python dictionary to something storable in the database.
+
+        Args:
+            opts (dict): TBD
+            filterSystem (bool): TBD
+
+        Returns:
+            dict: config options
+        """
+
+        if not isinstance(opts, dict):
+            raise TypeError("opts is %s; expected dict()" % type(opts))
+
         storeopts = dict()
+
+        if not opts:
+            return storeopts
 
         for opt in list(opts.keys()):
             # Filter out system temporary variables like GUID and others
@@ -639,6 +670,9 @@ class SpiderFoot:
 
         if '__modules__' not in opts:
             return storeopts
+
+        if not isinstance(opts['__modules__'], dict):
+            raise TypeError("opts['__modules__'] is %s; expected dict()" % type(opts['__modules__']))
 
         for mod in opts['__modules__']:
             for opt in opts['__modules__'][mod]['opts']:
@@ -660,11 +694,26 @@ class SpiderFoot:
 
         return storeopts
 
-    # Take strings, etc. from the database or UI and convert them
-    # to a dictionary for Python to process.
-    # referencePoint is needed to know the actual types the options
-    # are supposed to be.
     def configUnserialize(self, opts, referencePoint, filterSystem=True):
+        """Take strings, etc. from the database or UI and convert them
+        to a dictionary for Python to process.
+        referencePoint is needed to know the actual types the options
+        are supposed to be.
+
+        Args:
+            opts (dict): TBD
+            referencePoint (dict): TBD
+            filterSystem (bool): TBD
+
+        Returns:
+            dict: TBD
+        """
+
+        if not isinstance(opts, dict):
+            raise TypeError("opts is %s; expected dict()" % type(opts))
+        if not isinstance(referencePoint, dict):
+            raise TypeError("referencePoint is %s; expected dict()" % type(referencePoint))
+
         returnOpts = referencePoint
 
         # Global options
@@ -695,6 +744,9 @@ class SpiderFoot:
 
         if '__modules__' not in referencePoint:
             return returnOpts
+
+        if not isinstance(referencePoint['__modules__'], dict):
+            raise TypeError("referencePoint['__modules__'] is %s; expected dict()" % type(referencePoint['__modules__']))
 
         # Module options
         # A lot of mess to handle typing..
@@ -737,19 +789,21 @@ class SpiderFoot:
         Returns:
             str: scan target seed data type
         """
+        if not target:
+            return None
 
         targetType = None
 
         regexToType = [
-            {"^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS"},
-            {"^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER"},
-            {"^.*@.*$": "EMAILADDR"},
-            {"^\+\d+$": "PHONE_NUMBER"},
-            {"^\".*\s+.*\"$": "HUMAN_NAME"},
-            {"^\".*\"$": "USERNAME"},
-            {"^\d+$": "BGP_AS_OWNER"},
-            {"^[0-9a-f:]+$": "IPV6_ADDRESS"},
-            {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
+            {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$": "IP_ADDRESS"},
+            {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/\d+$": "NETBLOCK_OWNER"},
+            {r"^.*@.*$": "EMAILADDR"},
+            {r"^\+[0-9]+$": "PHONE_NUMBER"},
+            {r"^\".+\s+.+\"$": "HUMAN_NAME"},
+            {r"^\".+\"$": "USERNAME"},
+            {r"^[0-9]+$": "BGP_AS_OWNER"},
+            {r"^[0-9a-f:]+$": "IPV6_ADDRESS"},
+            {r"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
         ]
 
         # Parse the target and set the targetType
@@ -947,9 +1001,9 @@ class SpiderFoot:
             return None
 
         if '://' in url:
-            bits = re.match('(\w+://.[^/:\?]*)[:/\?].*', url)
+            bits = re.match(r'(\w+://.[^/:\?]*)[:/\?].*', url)
         else:
-            bits = re.match('(.[^/:\?]*)[:/\?]', url)
+            bits = re.match(r'(.[^/:\?]*)[:/\?]', url)
 
         if bits is None:
             return url.lower()
@@ -1043,8 +1097,8 @@ class SpiderFoot:
         if not hostname:
             return None
 
-        ps = PublicSuffixList(tldList)
-        return ps.get_public_suffix(hostname)
+        ps = PublicSuffixList(tldList, only_icann=True)
+        return ps.privatesuffix(hostname)
 
     def validHost(self, hostname, tldList):
         """Check if the provided string is a valid hostname with a valid public suffix TLD.
@@ -1065,18 +1119,18 @@ class SpiderFoot:
         if "." not in hostname:
             return False
 
-        if not re.match("^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
+        if not re.match(r"^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
             return False
 
-        ps = PublicSuffixList(tldList)
-        sfx = ps.get_public_suffix(hostname, strict=True)
+        ps = PublicSuffixList(tldList, only_icann=True, accept_unknown=False)
+        sfx = ps.privatesuffix(hostname)
         return sfx != None
 
     def isDomain(self, hostname, tldList):
         """Check if the provided hostname string is a valid domain name.
 
         Given a possible hostname, check if it's a domain name
-        By checking whether it rests atop a TLD.
+        By checking whether it rests atop a valid TLD.
         e.g. www.example.com = False because tld of hostname is com,
         and www.example has a . in it.
 
@@ -1093,10 +1147,10 @@ class SpiderFoot:
         if not hostname:
             return False
 
-        ps = PublicSuffixList(tldList)
-        suffix = ps.get_public_suffix(hostname)
-        return hostname == suffix
-
+        ps = PublicSuffixList(tldList, only_icann=True, accept_unknown=False)
+        sfx = ps.privatesuffix(hostname)
+        return sfx == hostname
+    
     def validIP(self, address):
         """Check if the provided string is a valid IPv4 address.
 
@@ -1154,15 +1208,55 @@ class SpiderFoot:
         """
 
         ret = list()
+
+        if not res:
+            return ret
+
         for addr in res:
             if type(addr) == list:
                 for host in addr:
                     host = str(host).rstrip(".")
-                    ret.append(host)
+                    if host:
+                        ret.append(host)
             else:
                 addr = str(addr).rstrip(".")
-                ret.append(addr)
+                if addr:
+                    ret.append(addr)
         return ret
+
+    def validEmail(self, email):
+        """Check if the provided string is a valid email address.
+
+        Args:
+            email (str): The email address to check.
+
+        Returns:
+            bool
+        """
+
+        if not isinstance(email, str):
+            return False
+
+        if "@" not in email:
+            return False
+
+        # Basic regex check
+        if not re.match(r'^([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)$', email):
+            return False
+
+        # Handle false positive matches
+        if len(email) < 5:
+            return False
+
+        # Handle messed up encodings
+        if "%" in email:
+            return False
+
+        # Handle truncated emails
+        if "..." in email:
+            return False
+
+        return True
 
     def sanitiseInput(self, cmd):
         """Verify input command is safe to execute
@@ -1244,9 +1338,21 @@ class SpiderFoot:
         return list(wd.keys())
 
 
-    # Converts a dictionary of k -> array to a nested
-    # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):
+        """Converts a dictionary of k -> array to a nested
+        tree that can be digested by d3 for visualizations.
+
+        Args:
+            data (dict): dictionary of k -> array
+
+        Returns:
+            dict: nested tree
+        """
+
+        if not isinstance(data, dict):
+            self.error("Data is not a dict", False)
+            return {}
+
         def get_children(needle, haystack):
             #print("called")
             ret = list()
@@ -1293,54 +1399,94 @@ class SpiderFoot:
     #
 
     def resolveHost(self, host):
-        """Return a normalised resolution or None if not resolved."""
+        """Return a normalised resolution of a hostname.
+
+        Args:
+            host (str): host to resolve
+
+        Returns:
+            list
+        """
+
+        addrs = list()
+
+        if not host:
+            self.error("Unable to resolve %s (Invalid host)" % host, False)
+            return addrs
 
         try:
             addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
-            if len(addrs) > 0:
-                return list(set(addrs))
-            return None
         except BaseException as e:
-            self.debug("Unable to resolve " + str(host) + ": " + str(e))
-            return None
+            self.debug("Unable to resolve %s (%s)" % (host, e))
+
+        if len(addrs):
+            self.debug("Resolved %s to: %s" % (host, addrs))
+
+        return list(set(addrs))
 
     def resolveIP(self, ipaddr):
-        """Return a normalised resolution of an IPv4 address or None if not resolved."""
+        """Return a normalised resolution of an IPv4 address.
 
-        self.debug("Performing reverse-resolve of " + ipaddr)
+        Args:
+            ipaddr (str): IP address to reverse resolve
+
+        Returns:
+            list: list of domain names
+        """
+
+        addrs = list()
+
+        if not self.validIP(ipaddr) and not self.validIP6(ipaddr):
+            self.error("Unable to resolve %s (Invalid IP address)" % ipaddr, False)
+            return addrs
+
+        self.debug("Performing reverse-resolve of %s" % ipaddr)
 
         try:
             addrs = self.normalizeDNS(socket.gethostbyaddr(ipaddr))
-            if len(addrs) > 0:
-                return list(set(addrs))
-            return None
         except BaseException as e:
-            self.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
-            return None
+            self.debug("Unable to resolve %s (%s)" % (ipaddr, e))
+
+        if len(addrs):
+            self.debug("Resolved %s to: %s" % (ipaddr, addrs))
+
+        return list(set(addrs))
 
     def resolveHost6(self, hostname):
-        """Return a normalised resolution of an IPv6 address or None if not resolved."""
+        """Return a normalised resolution of an IPv6 address.
+
+        Args:
+            hostname (str): hostname to reverse resolve
+
+        Returns:
+            list
+        """
+
+        addrs = list()
+
+        if not hostname:
+            self.error("Unable to resolve %s (Invalid hostname)" % hostname, False)
+            return addrs
 
         try:
-            addrs = list()
             res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
             for addr in res:
                 if addr[4][0] not in addrs:
                     addrs.append(addr[4][0])
-            if len(addrs) < 1:
-                return None
-            self.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
-            return list(set(addrs))
         except BaseException as e:
-            self.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
-            return None
+            self.debug("Unable to IPv6 resolve %s (%s)" % (hostname, e))
+
+        if len(addrs):
+            self.debug("Resolved %s to IPv6: %s" % (hostname, addrs))
+
+        return list(set(addrs))
 
     def validateIP(self, host, ip):
         """Verify a host resolves to a given IP."""
 
         addrs = self.resolveHost(host)
 
-        if addrs is None:
+        if not addrs:
             return False
 
         for addr in addrs:
@@ -1425,14 +1571,18 @@ class SpiderFoot:
 
         returnArr = list()
 
+        if not isinstance(robotsTxtData, str):
+            return returnArr
+
         # We don't check the User-Agent rule yet.. probably should at some stage
 
         for line in robotsTxtData.splitlines():
             if line.lower().startswith('disallow:'):
-                m = re.match('disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
-                self.debug('robots.txt parsing found disallow: ' + m.group(1))
-                returnArr.append(m.group(1))
-                continue
+                # todo: fix whitespace parsing; ie, " " is not a valid disallowed path
+                m = re.match(r'disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
+                if m:
+                    self.debug('robots.txt parsing found disallow: ' + m.group(1))
+                    returnArr.append(m.group(1))
 
         return returnArr
 
@@ -1447,6 +1597,10 @@ class SpiderFoot:
         """
 
         ret = list()
+
+        if not isinstance(data, str):
+            return ret
+
         hashes = {
             "MD5": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{32})(?:[^a-fA-F\d]|\b)"),
             "SHA1": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{40})(?:[^a-fA-F\d]|\b)"),
@@ -1472,50 +1626,45 @@ class SpiderFoot:
             list: list of email addresses
         """
 
+        if not isinstance(data, str):
+            return list()
+
         emails = set()
         matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
 
         for match in matches:
-            self.debug("Found possible email: " + match)
-
-            # Handle false positive matches
-            if len(match) < 5:
-                self.debug("Skipped likely invalid email address.")
-                continue
-
-            # Handle messed up encodings
-            if "%" in match:
-                self.debug("Skipped invalid email address: " + match)
-                continue
-
-            # Handle truncated emails
-            if "..." in match:
-                self.debug("Skipped incomplete e-mail address: " + match)
-                continue
-
-            emails.add(match)
+            if self.validEmail(match):
+                emails.add(match)
 
         return list(emails)
     
-    # Find all credit card numbers with the supplied content
-    #
-    # Extracts numbers with lengths ranging from 13 - 19 digits
-    #
-    # Checks the numbers using Luhn's algorithm to verify if
-    # the number is a valid credit card number or not
-    #
-    # Returns a list
-    def parseCreditCards(self,data):
+    def parseCreditCards(self, data):
+        """Find all credit card numbers with the supplied content.
+
+        Extracts numbers with lengths ranging from 13 - 19 digits
+
+        Checks the numbers using Luhn's algorithm to verify
+        if the number is a valid credit card number or not
+
+        Args:
+            data (str): text to search for credit card numbers
+
+        Returns:
+            list: list of credit card numbers
+        """
+
+        if not isinstance(data, str):
+            return list()
+
         creditCards = set() 
-        
+
         # Remove whitespace from data. 
         # Credit cards might contain spaces between them 
         # which will cause regex mismatch
         data = data.replace(" ", "")
         
         # Extract all numbers with lengths ranging from 13 - 19 digits
-        possibleCCRegex = "\d{13,19}"
-        matches = re.findall(possibleCCRegex, data)
+        matches = re.findall(r"[0-9]{13,19}", data)
 
         # Verify each extracted number using Luhn's algorithm
         for match in matches:
@@ -1544,16 +1693,25 @@ class SpiderFoot:
                 self.debug("Skipped invalid credit card number: " + match)
         return list(creditCards)
         
-    # Find all IBAN numbers with the supplied content
-    #
-    # Extracts possible IBAN Numbers using a generic regex 
-    #
-    # Checks whether the possible IBAN number is valid or not
-    # Using country-wise length check and Mod 97 algorithm
-    #
-    # Returns a list
     def parseIBANNumbers(self, data):
-        ibanNumbers = set()
+        """Find all International Bank Account Numbers (IBANs) within the supplied content.
+
+        Extracts possible IBANs using a generic regex.
+
+        Checks whether possible IBANs are valid or not
+        using country-wise length check and Mod 97 algorithm.
+
+        Args:
+            data (str): text to search for IBANs
+
+        Returns:
+            list: list of IBAN
+        """
+
+        if not isinstance(data, str):
+            return list()
+
+        ibans = set()
 
         # Dictionary of country codes and their respective IBAN lengths
         ibanCountryLengths = {
@@ -1565,7 +1723,7 @@ class SpiderFoot:
             "FI" : 18, "FR" : 27, "GE" : 22, "DE" : 22,
             "GI" : 23, "GR" : 27, "GL" : 18, "GT" : 28,
             "VA" : 22, "HU" : 28, "IS" : 26, "IQ" : 23,
-            "IE" : 22, "IL" : 27, "JO" : 30, "KZ" : 20,
+            "IE" : 22, "IL" : 23, "JO" : 30, "KZ" : 20,
             "XK" : 20, "KW" : 30, "LV" : 21, "LB" : 28,
             "LI" : 21, "LT" : 20, "LU" : 20, "MT" : 31,
             "MR" : 27, "MU" : 30, "MD" : 24, "MC" : 27,
@@ -1583,59 +1741,62 @@ class SpiderFoot:
             "AE" : 23, "GB" : 22, "SE" : 24
         }
 
-        # Remove whitespace from data. 
-        # IBAN Numbers might contain spaces between them 
-        # which will cause regex mismatch
+        # Normalize input data to remove whitespace
         data = data.replace(" ", "")
 
-        # Extract alphanumeric characters of lengths ranging from 16 to 31
-        possibleIBANRegex = "[A-Za-z0-9]{16,31}"
-        matches = re.findall(possibleIBANRegex, data)
+        # Extract alphanumeric characters of lengths ranging from 15 to 32
+        # and starting with two characters
+        matches = re.findall("[A-Za-z]{2}[A-Za-z0-9]{13,30}", data)
 
         for match in matches:  
-            match = match.upper()
-            ibanNumber = match
+            iban = match.upper()
 
-            countryCode = ibanNumber[0:2]
+            countryCode = iban[0:2]
 
             if countryCode not in ibanCountryLengths.keys():
-                # Invalid IBAN Number due to country code not existing in dictionary
-                self.debug("Skipped invalid IBAN number: " + ibanNumber)
+                # Invalid IBAN due to country code not existing in dictionary
+                self.debug("Skipped invalid IBAN: %s" % iban)
                 continue
             
-            # Using Mod 97 algorithm to verify if IBAN Number is valid
-            if len(ibanNumber) == ibanCountryLengths[countryCode]:
-                # Move the first 4 characters to the end of the string 
-                match = match[4:] + match[0:4]  
-                
-                for character in match: 
-                    # Check if character is a letter
-                    if character.isalpha():
-                        # Replace letters to number  
-                        # where A = 10, B = 11, ...., Z = 35
-                        match = match.replace(character, str((ord(character) - 65) + 10))                     
-
-                if int(match) % 97 == 1:
-                    # IBAN Number is valid 
-                    self.debug("Found IBAN number: " + match)
-                    ibanNumbers.add(ibanNumber)
-                else:
-                    # Invalid IBAN Number due to failed Mod 97 operation
-                    self.debug("Skipped invalid IBAN number: " + ibanNumber)
-                    continue                    
-            else:
-                # Invalid IBAN Number due to length mismatch
-                self.debug("Skipped invalid IBAN number: " + ibanNumber)
+            if len(iban) != ibanCountryLengths[countryCode]:
+                # Invalid IBAN due to length mismatch
+                self.debug("Skipped invalid IBAN: %s" % iban)
                 continue
 
-        return list(ibanNumbers)
+            # Convert IBAN to integer format.
+            # Move the first 4 characters to the end of the string,
+            # then convert all characters to integers; where A = 10, B = 11, ...., Z = 35
+            iban_int = iban[4:] + iban[0:4]
+            for character in iban_int:
+                if character.isalpha():
+                    iban_int = iban_int.replace(character, str((ord(character) - 65) + 10))
 
-    
-    def sslDerToPem(self, der):
-        """Return a PEM for a DER."""
-        return ssl.DER_cert_to_PEM_cert(der)
+            # Check IBAN integer mod 97 for remainder
+            if int(iban_int) % 97 != 1:
+                # Invalid IBAN due to failed Mod 97 operation
+                self.debug("Skipped invalid IBAN: %s" % iban)
+                continue
 
-    # Parse a PEM-format SSL certificate
+            self.debug("Found IBAN: %s" % iban)
+            ibans.add(iban)
+
+        return list(ibans)
+
+    def sslDerToPem(self, der_cert):
+        """Given a certificate as a DER-encoded blob of bytes, returns a PEM-encoded string version of the same certificate.
+
+        Args:
+            der_cert (bytes): certificate in DER format
+
+        Returns:
+            str: PEM-encoded certificate as a byte string
+        """
+
+        if not isinstance(der_cert, bytes):
+            raise TypeError("der_cert is %s; expected bytes()" % type(der_cert))
+
+        return ssl.DER_cert_to_PEM_cert(der_cert)
+
     def parseCert(self, rawcert, fqdn=None, expiringdays=30):
         """Parse a PEM-format SSL certificate.
 
@@ -1757,7 +1918,7 @@ class SpiderFoot:
         """
 
         # https://tools.ietf.org/html/rfc3986#section-3.3
-        return re.findall("(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
+        return re.findall(r"(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
 
     # Find all URLs within the supplied content. This does not fetch any URLs!
     # A dictionary will be returned, where each link will have the keys
@@ -1880,10 +2041,10 @@ class SpiderFoot:
         """Remove key= and others from URLs to avoid credentials in logs."""
 
         pats = {
-            "key=\S+": "key=XXX",
-            "pass=\S+": "pass=XXX",
-            "user=\S+": "user=XXX",
-            "password=\S+": "password=XXX"
+            r'key=\S+': "key=XXX",
+            r'pass=\S+': "pass=XXX",
+            r'user=\S+': "user=XXX",
+            r'password=\S+': "password=XXX"
         }
 
         ret = url
@@ -2096,7 +2257,7 @@ class SpiderFoot:
         randpool = 'bcdfghjklmnpqrstvwxyz3456789'
         randhost = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
 
-        if self.resolveHost(randhost + "." + target) is None:
+        if not self.resolveHost(randhost + "." + target):
             return False
 
         return True
@@ -2424,16 +2585,17 @@ class SpiderFootTarget(object):
     targetAliases = list()
 
     def __init__(self, targetValue, typeName):
-        if typeName in self._validTypes:
-            self.targetType = typeName
-            if type(targetValue) != str:
-                self.targetValue = str(targetValue).lower()
-            else:
-                self.targetValue = targetValue
-            self.targetAliases = list()
+        if not isinstance(targetValue, str):
+            raise TypeError("Invalid target value %s; expected %s" % type(targetValue))
+        if typeName not in self._validTypes:
+            raise ValueError("Invalid target type %s; expected %s" % (typeName, self._validTypes))
+
+        self.targetType = typeName
+        if isinstance(targetValue, str):
+            self.targetValue = targetValue
         else:
-            print("Internal Error: Invalid target type.")
-            sys.exit(-1)
+            self.targetValue = str(targetValue).lower()
+        self.targetAliases = list()
 
     def getType(self):
         return self.targetType
@@ -2635,147 +2797,3 @@ class SpiderFootEvent(object):
 
     def setSourceEventHash(self, srcHash):
         self.sourceEventHash = srcHash
-
-
-"""
-Public Suffix List module for Python.
-See LICENSE.tp for applicable license.
-"""
-
-
-class PublicSuffixList(object):
-    def __init__(self, input_data):
-        """Reads and parses public suffix list.
-
-        input_file is a file object or another iterable that returns
-        lines of a public suffix list file. If input_file is None, an
-        UTF-8 encoded file named "publicsuffix.txt" in the same
-        directory as this Python module is used.
-
-        The file format is described at http://publicsuffix.org/list/
-        """
-
-        #if input_file is None:
-        #input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
-        #input_file = codecs.open(input_path, "r", "utf-8")
-
-        root = self._build_structure(input_data)
-        self.root = self._simplify(root)
-
-    def _find_node(self, parent, parts):
-        if not parts:
-            return parent
-
-        if len(parent) == 1:
-            parent.append({})
-
-        if len(parent) != 2:
-            return None
-
-        negate, children = parent
-
-        child = parts.pop()
-
-        child_node = children.get(child, None)
-
-        if not child_node:
-            children[child] = child_node = [0]
-
-        return self._find_node(child_node, parts)
-
-    def _add_rule(self, root, rule):
-        if rule.startswith('!'):
-            negate = 1
-            rule = rule[1:]
-        else:
-            negate = 0
-
-        parts = rule.split('.')
-        self._find_node(root, parts)[0] = negate
-
-    def _simplify(self, node):
-        if len(node) == 1:
-            return node[0]
-
-        return (node[0], dict((k, self._simplify(v)) for (k, v) in list(node[1].items())))
-
-    def _build_structure(self, fp):
-        root = [0]
-
-        for line in fp:
-            line = str(line).strip()
-            if line.startswith('//') or not line:
-                continue
-
-            self._add_rule(root, line.split()[0].lstrip('.'))
-
-        return root
-
-    def _lookup_node(self, matches, depth, parent, parts):
-        if parent in (0, 1):
-            negate = parent
-            children = None
-        else:
-            negate, children = parent
-
-        matches[-depth] = negate
-
-        if depth < len(parts) and children:
-            for name in ('*', parts[-depth]):
-                child = children.get(name, None)
-                if child is not None:
-                    self._lookup_node(matches, depth + 1, child, parts)
-
-    def get_public_suffix(self, domain, strict=False):
-        """get_public_suffix("www.example.com") -> "example.com"
-
-        Calling this function with a DNS name will return the
-        public suffix for that name.
-
-        Note that for internationalized domains the list at
-        http://publicsuffix.org uses decoded names, so it is
-        up to the caller to decode any Punycode-encoded names.
-        """
-
-        parts = domain.lower().lstrip('.').split('.')
-        hits = [None] * len(parts)
-
-        if strict and parts[-1] not in self.root[1]:
-            return None
-
-        self._lookup_node(hits, 1, self.root, parts)
-
-        for i, what in enumerate(hits):
-            if what is not None and what == 0:
-                return '.'.join(parts[i:])
-
-
-# Class for tracking the status of all running scans. Thread safe.
-class SpiderFootScanStatus:
-    statusTable = dict()
-    lock = threading.Lock()
-
-    def setStatus(self, scanId, status):
-        """Set scan status."""
-
-        with self.lock:
-            self.statusTable[scanId] = status
-
-    def getStatus(self, scanId):
-        """Get scan status."""
-
-        with self.lock:
-            if scanId in self.statusTable:
-                return self.statusTable[scanId]
-            return None
-
-    def getStatusAll(self):
-        """Set scan status for all scans."""
-
-        with self.lock:
-            return self.statusTable
-
-# Global variable accessed by various places to get the status of
-# running scans.
-globalScanStatus = SpiderFootScanStatus()
-

@@ -48,7 +48,8 @@ class sfp_grep_app(SpiderFootPlugin):
         return ["DOMAIN_NAME"]
 
     def producedEvents(self):
-        return ["EMAILADDR", "DOMAIN_NAME", "INTERNET_NAME", "RAW_RIR_DATA",
+        return ["EMAILADDR", "EMAILADDR_GENERIC", "DOMAIN_NAME", 
+                "INTERNET_NAME", "RAW_RIR_DATA",
                 "INTERNET_NAME_UNRESOLVED", "LINKED_URL_INTERNAL"]
 
     def query(self, qry, page):
@@ -188,7 +189,12 @@ class sfp_grep_app(SpiderFootPlugin):
                             continue
 
                         self.sf.info("Found e-mail address: " + email)
-                        evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
+                        if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                            evttype = "EMAILADDR_GENERIC"
+                        else:
+                            evttype = "EMAILADDR"
+
+                        evt = SpiderFootEvent(evttype, email, self.__name__, event)
                         self.notifyListeners(evt)
                         self.results[email] = True
 

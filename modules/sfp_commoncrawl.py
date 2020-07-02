@@ -155,6 +155,10 @@ class sfp_commoncrawl(SpiderFootPlugin):
                     link = json.loads(line)
                     if 'url' not in link:
                         continue
+
+                    # CommonCrawl sometimes returns hosts with a trailing . after the domain
+                    link['url'] = link['url'].replace(eventData + ".", eventData)
+
                     if link['url'] in sent:
                         continue
                     sent.append(link['url'])

@@ -37,7 +37,7 @@ class sfp_bgpview(SpiderFootPlugin):
         return ['IP_ADDRESS', 'IPV6_ADDRESS', 'BGP_AS_MEMBER', 'NETBLOCK_MEMBER']
 
     def producedEvents(self):
-        return ['BGP_AS_MEMBER', 'BGP_AS_PEER', 'NETBLOCK_MEMBER',
+        return ['BGP_AS_MEMBER', 'NETBLOCK_MEMBER',
                 'PHYSICAL_ADDRESS', 'RAW_RIR_DATA']
 
     def queryAsn(self, qry):
@@ -64,34 +64,6 @@ class sfp_bgpview(SpiderFootPlugin):
 
         if not data:
             self.sf.debug("No results found for ASN " + qry)
-            return None
-
-        return data
-
-    def queryAsnPeers(self, qry):
-        res = self.sf.fetchUrl("https://api.bgpview.io/asn/" + qry.replace('AS', '') + '/peers',
-                               useragent=self.opts['_useragent'],
-                               timeout=self.opts['_fetchtimeout'])
-
-        time.sleep(1)
-
-        if res['content'] is None:
-            return None
-
-        try:
-            json_data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug("Error processing JSON response from BGPView: " + str(e))
-            return None
-
-        if not json_data.get('status') == 'ok':
-            self.sf.debug("No peers found for ASN " + qry)
-            return None
-
-        data = json_data.get('data')
-
-        if not data:
-            self.sf.debug("No peers found for ASN " + qry)
             return None
 
         return data
@@ -185,34 +157,6 @@ class sfp_bgpview(SpiderFootPlugin):
 
             evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join([_f for _f in address if _f]), self.__name__, event)
             self.notifyListeners(evt)
-
-            data = self.queryAsnPeers(eventData)
-
-            if not data:
-                self.sf.info("No peers found for ASN " + eventData)
-                return None
-
-            peers = list()
-
-            ipv4_peers = data.get('ipv4_peers')
-            if ipv4_peers is not None:
-                for peer in ipv4_peers:
-                    asn = peer.get('asn')
-                    if not asn:
-                        continue
-                    peers.append(str(asn))
-
-            ipv6_peers = data.get('ipv6_peers')
-            if ipv6_peers is not None:
-                for peer in ipv6_peers:
-                    asn = peer.get('asn')
-                    if not asn:
-                        continue
-                    peers.append(str(asn))
-
-            for peer in set(peers):
-                evt = SpiderFootEvent('BGP_AS_PEER', str(peer), self.__name__, event)
-                self.notifyListeners(evt)
 
         if eventName == 'NETBLOCK_MEMBER':
             data = self.queryNetblock(eventData)

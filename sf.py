@@ -25,6 +25,7 @@ import argparse
 from copy import deepcopy
 import cherrypy
 import random
+import multiprocessing as mp
 from cherrypy.lib import auth_digest
 from sflib import SpiderFoot
 from sfdb import SpiderFootDb
@@ -45,6 +46,7 @@ sfConfig = {
     '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
     '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
     '_internettlds_cache': 72,
+    '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
     '__version__': '3.0',
     '__database': 'spiderfoot.db',
     '__webaddr': '127.0.0.1',
@@ -64,6 +66,7 @@ sfConfig = {
 sfOptdescs = {
     '_debug': "Enable debugging?",
     '_internettlds': "List of Internet TLDs.",
+    '_genericusers': "List of usernames that if found as usernames or as part of e-mail addresses, should be treated differently to non-generics.",
     '_internettlds_cache': "Hours to cache the Internet TLD list. This can safely be quite a long time given that the list doesn't change too often.",
     '_useragent': "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
     '_dnsserver': "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
@@ -83,6 +86,7 @@ scanId = None
 dbh = None
 
 def handle_abort(signal, frame):
+    """handle interrupt and abort scan."""
     print("[*] Aborting...")
     if scanId and dbh:
         dbh.scanInstanceSet(scanId, None, None, "ABORTED")
@@ -142,7 +146,8 @@ if __name__ == '__main__':
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
     # Go through each module in the modules directory with a .py extension
-    for filename in os.listdir(sft.myPath() + '/modules/'):
+    mod_dir = sft.myPath() + '/modules/'
+    for filename in os.listdir(mod_dir):
         if filename.startswith("sfp_") and filename.endswith(".py"):
             # Skip the module template and debugging modules
             if filename == "sfp_template.py" or filename == 'sfp_stor_print.py':
@@ -166,7 +171,7 @@ if __name__ == '__main__':
                 sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
 
     if len(list(sfModules.keys())) < 1:
-        print("No modules found in the modules directory.")
+        print("No modules found in modules directory: %s" % mod_dir)
         sys.exit(-1)
 
     # Add module info to sfConfig so it can be used by the UI
@@ -229,6 +234,11 @@ if __name__ == '__main__':
         if "." not in target and not target.startswith("+") and "\"" not in target:
             target = "\"" + target + "\""
         targetType = sf.targetType(target)
+
+        if not targetType:
+            print("[-] Could not determine target type. Invalid target: %s" % target)
+            sys.exit(-1)
+
         target = target.strip('"')
 
         modlist = list()
@@ -261,7 +271,7 @@ if __name__ == '__main__':
 
         # Easier if scanning by module
         if args.m:
-            modlist = args.m.split(",")
+            modlist = list(filter(None, args.m.split(",")))
 
         # Add sfp__stor_stdout to the module list
         outputformat = "tab"
@@ -316,9 +326,8 @@ if __name__ == '__main__':
 
         # Run the scan
         if sfConfig['__logging']:
-            print(("[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist)))
+            print("[*] Modules enabled (%s): %s" % (len(modlist), ",".join(modlist)))
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
-        scanId = sf.genScanInstanceGUID(target)
 
         # Debug mode is a variable that gets stored to the DB, so re-apply it
         if args.debug:
@@ -330,10 +339,16 @@ if __name__ == '__main__':
         if args.x and args.t:
             cfg['__outputfilter'] = args.t.split(",")
 
-        t = SpiderFootScanner(target, target, targetType, scanId,
-            modlist, cfg, dict())
-        t.daemon = True
-        t.run()
+        # Start running a new scan
+        scanName = target
+        scanId = sf.genScanInstanceGUID()
+        try:
+            p = mp.Process(target=SpiderFootScanner, args=(scanName, scanId, target, targetType, modlist, cfg))
+            p.daemon = True
+            p.start()
+        except BaseException as e:
+            print("[-] Scan [%s] failed: %s" % (scanId, e))
+            sys.exit(-1)
 
         # If field headers weren't disabled, print them
         if not args.H and args.o != "json":

@@ -50,7 +50,7 @@ class sfp_snov(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["EMAILADDR"]
+        return ["EMAILADDR", "EMAILADDR_GENERIC"]
     
     # Get Authentication token from Snov.IO API
     def queryAccessToken(self):
@@ -175,13 +175,20 @@ class sfp_snov(SpiderFootPlugin):
             if records:
                 for record in records:
                     if record:
-                        email = record.get('email')
+                        email = str(record.get('email'))
                         if email:
                             if email in self.results:
                                 continue
+                            if not self.sf.validEmail(email):
+                                continue
                             self.results[email] = True
 
-                            evt = SpiderFootEvent("EMAILADDR", str(email), self.__name__, event)
+                            if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                                evttype = "EMAILADDR_GENERIC"
+                            else:
+                                evttype = "EMAILADDR"
+
+                            evt = SpiderFootEvent(evttype, email, self.__name__, event)
                             self.notifyListeners(evt)
 
             # Determine whether the next offset can have data or not 

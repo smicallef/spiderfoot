@@ -17,7 +17,7 @@ class TestSpiderFootEvent(unittest.TestCase):
 
         event_type = 'ROOT'
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
-        self.assertEqual(SpiderFootEvent, type(evt))
+        self.assertIsInstance(evt, SpiderFootEvent)
 
     def test_init_nonroot_event_with_root_source_event(self):
         """
@@ -32,10 +32,9 @@ class TestSpiderFootEvent(unittest.TestCase):
 
         event_type = 'example non-root event type'
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
+        self.assertIsInstance(evt, SpiderFootEvent)
 
-        self.assertEqual(SpiderFootEvent, type(evt))
-
-    def test_init_event_data_type_not_string_should_exit(self):
+    def test_init_invalid_event_data_type_should_exit(self):
         """
         Test __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0)
         """
@@ -63,7 +62,7 @@ class TestSpiderFootEvent(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, -1)
 
-    def test_root_event_asdict_should_return_a_dict(self):
+    def test_asdict_root_event_should_return_a_dict(self):
         """
         Test asDict(self)
         """
@@ -75,9 +74,9 @@ class TestSpiderFootEvent(unittest.TestCase):
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         evt_dict = evt.asDict()
 
-        self.assertEqual(dict, type(evt_dict))
+        self.assertIsInstance(evt_dict, dict)
 
-    def test_nonroot_event_asdict_should_return_a_dict(self):
+    def test_asdict_nonroot_event_should_return_a_dict(self):
         """
         Test asDict(self)
         """
@@ -92,9 +91,9 @@ class TestSpiderFootEvent(unittest.TestCase):
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         evt_dict = evt.asDict()
 
-        self.assertEqual(dict, type(evt_dict))
+        self.assertIsInstance(evt_dict, dict)
 
-    def test_root_event_get_hash_should_return_root_as_a_string(self):
+    def test_get_hash_root_event_should_return_root_as_a_string(self):
         """
         Test getHash(self)
         """
@@ -108,9 +107,24 @@ class TestSpiderFootEvent(unittest.TestCase):
 
         self.assertEqual('ROOT', evt_hash)
 
-    def test_nonroot_event_get_hash_should_return_a_string(self):
+    def test_get_hash_nonroot_event_should_return_a_string(self):
         """
         Test getHash(self)
+        """
+        event_type = 'not ROOT'
+        event_data = ''
+        module = ''
+        source_event = SpiderFootEvent("ROOT", '', '', "ROOT")
+
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+        evt_hash = evt.getHash()
+
+        self.assertIsInstance(evt_hash, str)
+
+    @unittest.skip("unused function")
+    def test_set_confidence(self):
+        """
+        Test setConfidence(self, confidence)
         """
         event_type = 'ROOT'
         event_data = ''
@@ -118,37 +132,46 @@ class TestSpiderFootEvent(unittest.TestCase):
         source_event = ''
 
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
-        evt_hash = evt.getHash()
+        evt.setConfidence('confidence')
 
-        self.assertEqual(str, type(evt_hash))
-
-    def test_set_confidence(self):
-        """
-        Test setConfidence(self, confidence)
-        Note: this function is not currently used
-        """
-        self.assertEqual('TBD', 'TBD')
-
+    @unittest.skip("unused function")
     def test_set_visibility(self):
         """
         Test setVisibility(self, visibility)
-        Note: this function is not currently used
         """
-        self.assertEqual('TBD', 'TBD')
+        event_type = 'ROOT'
+        event_data = ''
+        module = ''
+        source_event = ''
 
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+        evt.setVisibility('visibility')
+
+    @unittest.skip("unused function")
     def test_set_risk(self):
         """
         Test setRisk(self, risk)
-        Note: this function is not currently used
         """
-        self.assertEqual('TBD', 'TBD')
+        event_type = 'ROOT'
+        event_data = ''
+        module = ''
+        source_event = ''
 
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+        evt.setRisk('risk')
+
+    @unittest.skip("unused function")
     def test_set_source_event_hash(self):
         """
         Test setSourceEventHash(self, srcHash)
-        Note: this function is not currently used
         """
-        self.assertEqual('TBD', 'TBD')
+        event_type = 'ROOT'
+        event_data = ''
+        module = ''
+        source_event = ''
+
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+        evt.setSourceEventHash('source event hash')
 
 if __name__ == '__main__':
     unittest.main()

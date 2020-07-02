@@ -45,7 +45,7 @@ class sfp_skymem(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["EMAILADDR"]
+        return ["EMAILADDR", "EMAILADDR_GENERIC"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -78,7 +78,11 @@ class sfp_skymem(SpiderFootPlugin):
 
             self.sf.info("Found e-mail address: " + email)
             if email not in self.results:
-                evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
+                if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                    evttype = "EMAILADDR_GENERIC"
+                else:
+                    evttype = "EMAILADDR"
+                evt = SpiderFootEvent(evttype, email, self.__name__, event)
                 self.notifyListeners(evt)
                 self.results[email] = True
 
@@ -106,7 +110,11 @@ class sfp_skymem(SpiderFootPlugin):
 
                 self.sf.info("Found e-mail address: " + email)
                 if email not in self.results:
-                    evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
+                    if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                        evttype = "EMAILADDR_GENERIC"
+                    else:
+                        evttype = "EMAILADDR"
+                    evt = SpiderFootEvent(evttype, email, self.__name__, event)
                     self.notifyListeners(evt)
                     self.results[email] = True
 

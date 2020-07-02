@@ -699,7 +699,7 @@
             });
         }
 
-        if ("${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "UNKNOWN") {
+        if ("${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "STARTED" || "${status}" == "UNKNOWN" || "${status}" == "INITIALIZING") {
             scanStatusView("${id}");
         } else {
             browseEventList("${id}");

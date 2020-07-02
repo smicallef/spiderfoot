@@ -56,7 +56,7 @@
                     return;
                 }
                 if (type == "running") {
-                    showlist(["RUNNING", "STARTING", "STARTED"], "Running");
+                    showlist(["RUNNING", "STARTING", "STARTED", "INITIALIZING"], "Running");
                     return;
                 }
                 if (type == "finished") {
@@ -203,7 +203,7 @@
                                 if (data[i][6].indexOf("ABORT") >= 0) {
                                     statusy = "badge-warning";
                                 }
-                                if (data[i][6] == "RUNNING" || data[i][6] == "STARTED" || data[i][6] == "STARTING") {
+                                if (data[i][6] == "RUNNING" || data[i][6] == "STARTED" || data[i][6] == "STARTING" || data[i][6] == "INITIALIZING") {
                                     statusy = "badge-info";
                                 }
                                 if (data[i][6].indexOf("FAILED") >= 0) {
@@ -212,7 +212,7 @@
                                 table += "<td style='text-align: center'><span class='badge " + statusy + "'>" + data[i][6] + "</span></td>";
                                 table += "<td style='text-align: center'>" + data[i][7] + "</td>";
                                 table += "<td style='text-align: center'>";
-                                if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED") {
+                                if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED" || data[i][6] == "INITIALIZING") {
                                     table += "<a rel='tooltip' title='Stop Scan' href=${docroot}/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray' /></a>";
                                 } else {
                                     table += "<a rel='tooltip' title='Delete Scan' href=${docroot}/scandelete?id=" + data[i][0] + "><i class='icon-trash icon-gray' /></a>";
