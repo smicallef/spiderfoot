@@ -2475,13 +2475,18 @@ class SpiderFootPlugin(object):
         self.__outputFilter__ = types
 
     def tempStorage(self):
-        """Module temporary storage.
+        """For future use. Module temporary storage.
+
+        A dictionary used to persist state (in memory) for a module.
+
+        Todo:
+            Move all module state to use this, which then would enable a scan to be paused/resumed.
 
         Note:
-            For SpiderFoot HX compatability of modules.
+            Required for SpiderFoot HX compatability of modules.
 
         Returns:
-            dict: TB
+            dict: module temporary state data
         """
         return dict()
 
@@ -2635,8 +2640,9 @@ class SpiderFootPlugin(object):
         return None
 
 
-# Class for targets
 class SpiderFootTarget(object):
+    """SpiderFoot target."""
+
     _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
                    "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME"]
     targetType = None
@@ -2644,16 +2650,27 @@ class SpiderFootTarget(object):
     targetAliases = list()
 
     def __init__(self, targetValue, typeName):
+        """Initialize SpiderFoot target.
+
+        Args:
+            targetValue (str): target value
+            typeName (str): target type
+
+        Returns:
+            None
+
+        Raises:
+            TypeError: targetValue type was invalid
+            ValueError: typeName value was an invalid target type
+        """
+
         if not isinstance(targetValue, str):
             raise TypeError("Invalid target value %s; expected %s" % type(targetValue))
         if typeName not in self._validTypes:
             raise ValueError("Invalid target type %s; expected %s" % (typeName, self._validTypes))
 
         self.targetType = typeName
-        if isinstance(targetValue, str):
-            self.targetValue = targetValue
-        else:
-            self.targetValue = str(targetValue).lower()
+        self.targetValue = targetValue
         self.targetAliases = list()
 
     def getType(self):
@@ -2662,13 +2679,22 @@ class SpiderFootTarget(object):
     def getValue(self):
         return self.targetValue
 
-    # Specify other hostnames, IPs, etc. that are aliases for
-    # this target.
-    # For instance, if the user searched for an ASN, a module
-    # might supply all the nested subnets as aliases.
-    # Or, if a user searched for an IP address, a module
-    # might supply the hostname as an alias.
     def setAlias(self, value, typeName):
+        """Specify other hostnames, IPs, etc. that are aliases for this target.
+
+        For instance, if the user searched for an ASN, a module
+        might supply all the nested subnets as aliases.
+        Or, if a user searched for an IP address, a module
+        might supply the hostname as an alias.
+
+        Args:
+            value (str): TBD
+            typeName (str): TBD
+
+        Returns:
+            None
+        """
+
         if value is None:
             return
             
@@ -2680,17 +2706,34 @@ class SpiderFootTarget(object):
         )
 
     def getAliases(self):
+        """TBD
+
+        Returns:
+            list: target aliases
+        """
+
         return self.targetAliases
 
     def _getEquivalents(self, typeName):
+        """TBD
+
+        Returns:
+            list: target aliases
+        """
+
         ret = list()
         for item in self.targetAliases:
             if item['type'] == typeName:
                 ret.append(item['value'].lower())
         return ret
 
-    # Get all domains associated with the target
     def getNames(self):
+        """Get all domains associated with the target.
+
+        Returns:
+            list: domains associated with the target
+        """
+
         e = self._getEquivalents("INTERNET_NAME")
         if self.targetType in ["INTERNET_NAME", "EMAILADDR"] and self.targetValue.lower() not in e:
             e.append(self.targetValue.lower())
@@ -2698,36 +2741,50 @@ class SpiderFootTarget(object):
         names = list()
         for name in e:
             names.append(name.decode("utf-8") if type(name) == bytes else name)
+
         return names
 
-    # Get all IP Subnets or IP Addresses associated with the target
     def getAddresses(self):
+        """Get all IP Subnets or IP Addresses associated with the target.
+
+        Returns:
+            list: TBD
+        """
+
         e = self._getEquivalents("IP_ADDRESS")
         if self.targetType == "IP_ADDRESS":
             e.append(self.targetValue)
+
         e = self._getEquivalents("IPV6_ADDRESS")
         if self.targetType == "IPV6_ADDRESS":
             e.append(self.targetValue)
+
         return e
 
-    # Check whether the supplied value is "tightly" related
-    # to the original target.
-    # Tightly in this case means:
-    #   1. If the value is an IP:
-    #       1.1 is it in the list of aliases or the target itself?
-    #       1.2 is it on the target's subnet?
-    #   2. If the value is a name (subdomain, domain, hostname):
-    #       2.1 is it in the list of aliases or the target itself?
-    #       2.2 is it a parent of the aliases of the target (domain/subdomain)
-    #       2.3 is it a child of the aliases of the target (hostname)
-    # Arguments:
-    # * value can be an Internet Name (hostname, subnet, domain)
-    # or an IP address.
-    # * includeParents = True means you consider a value that is
-    # a parent domain of the target to still be a tight relation.
-    # * includeChildren = False means you don't consider a value
-    # that is a child of the target to be a tight relation.
     def matches(self, value, includeParents=False, includeChildren=True):
+        """Check whether the supplied value is "tightly" related
+        to the original target.
+
+        Tightly in this case means:
+          1. If the value is an IP:
+              1.1 is it in the list of aliases or the target itself?
+              1.2 is it on the target's subnet?
+          2. If the value is a name (subdomain, domain, hostname):
+              2.1 is it in the list of aliases or the target itself?
+              2.2 is it a parent of the aliases of the target (domain/subdomain)
+              2.3 is it a child of the aliases of the target (hostname)
+
+        Args:
+            value (str): can be an Internet Name (hostname, subnet, domain) or an IP address.
+            includeParents (bool):  True means you consider a value that is
+                a parent domain of the target to still be a tight relation.
+            includeChildren (bool): False means you don't consider a value
+                that is a child of the target to be a tight relation.
+
+        Returns:
+            bool: whether the value matches the target
+        """
+
         if value is None:
             return False
 
@@ -2770,8 +2827,9 @@ class SpiderFootTarget(object):
         return None
 
 
-# Class for SpiderFoot Events
 class SpiderFootEvent(object):
+    """SpiderFoot event."""
+
     generated = None
     eventType = None
     confidence = None
@@ -2787,6 +2845,24 @@ class SpiderFootEvent(object):
 
     def __init__(self, eventType, data, module, sourceEvent,
                  confidence=100, visibility=100, risk=0):
+        """Initialize SpiderFoot event.
+
+        Args:
+            eventType (str): event type
+            data (str): event data
+            module (str): module from which the event originated
+            sourceEvent (SpiderFootEvent): source event
+            confidence (int): event confidence
+            visibility (int): event visibility
+            risk (int): event risk
+
+        Returns:
+            dict: event as dict
+
+        Raises:
+            TypeError: arg type was invalid
+        """
+
         self.eventType = eventType
         self.generated = time.time()
         self.confidence = confidence
@@ -2795,16 +2871,13 @@ class SpiderFootEvent(object):
         self.module = module
         self.sourceEvent = sourceEvent
 
-        if type(data) != str and type(data) != str:
+        if not isinstance(data, str):
             print("FATAL: Only string events are accepted, not '%s'." % type(data))
             print("FATAL: Offending module: %s" % module)
             print("FATAL: Offending type: %s" % eventType)
-            sys.exit(-1)
+            raise TypeError("data is %s; expected str()" % type(data))
 
-        if type(data) != str and data != None:
-            self.data = str(data)
-        else:
-            self.data = data
+        self.data = data
 
         # "ROOT" is a special "hash" reserved for elements with no
         # actual parent (e.g. the first page spidered.)
@@ -2812,17 +2885,23 @@ class SpiderFootEvent(object):
             self.sourceEventHash = "ROOT"
             return
 
-        if type(sourceEvent) != SpiderFootEvent:
+        if not isinstance(sourceEvent, SpiderFootEvent):
             print("FATAL: Invalid source event: %s" % sourceEvent)
             print("FATAL: Offending module: %s" % module)
             print("FATAL: Offending type: %s" % eventType)
-            sys.exit(-1)
+            raise TypeError("sourceEvent is %s; expected SpiderFootEvent()" % type(sourceEvent))
 
         self.sourceEventHash = sourceEvent.getHash()
         self.__id = self.eventType + str(self.generated) + self.module + \
                     str(random.SystemRandom().randint(0, 99999999))
 
     def asDict(self):
+        """Return event as dictionary.
+
+        Returns:
+            dict: event as dictionary
+        """
+
         evt_dict = {
             'generated': int(self.generated),
             'type': self.eventType,
@@ -2837,22 +2916,76 @@ class SpiderFootEvent(object):
 
         return evt_dict
 
-    # Unique hash of this event
     def getHash(self):
+        """ Unique hash of this event.
+
+        Returns:
+            str: unique SHA256 hash of the event, or "ROOT"
+        """
+
         if self.eventType == "ROOT":
             return "ROOT"
+
         digestStr = self.__id.encode('raw_unicode_escape')
         return hashlib.sha256(digestStr).hexdigest()
 
-    # Update variables as new information becomes available
     def setConfidence(self, confidence):
+        """Update event confidence attribute as new information becomes available.
+
+        Args:
+            confidence (int): confidence (0 to 100)
+
+        Raises:
+            TypeError: confidence type was invalid
+            ValueError: confidence value was invalid
+        """
+        if not isinstance(confidence, int):
+            raise TypeError("confidence is %s; expected int()" % type(confidence))
+        if confidence > 100 or confidence < 0:
+            raise ValueError("Invalid confidence: %s. Must be between 0 and 100" % confidence)
+
         self.confidence = confidence
 
     def setVisibility(self, visibility):
+        """Update event visibility attribute.
+
+        Args:
+            visibility (int): visibility (0 to 100)
+
+        Raises:
+            TypeError: visibility type was invalid
+            ValueError: visibility value was invalid
+        """
+        if not isinstance(visibility, int):
+            raise TypeError("visibility is %s; expected int()" % type(visibility))
+        if visibility > 100 or visibility < 0:
+            raise ValueError("Invalid visibility: %s. Must be between 0 and 100" % visibility)
+
         self.visibility = visibility
 
     def setRisk(self, risk):
+        """Update event risk attribute.
+
+        Args:
+            risk (int): risk (0 to 100)
+
+        Raises:
+            TypeError: risk type was invalid
+            ValueError: risk value was invalid
+        """
+        if not isinstance(risk, int):
+            raise TypeError("risk is %s; expected int()" % type(risk))
+        if risk > 100 or risk < 0:
+            raise ValueError("Invalid risk: %s. Must be between 0 and 100" % risk)
+
         self.risk = risk
 
     def setSourceEventHash(self, srcHash):
+        """Update event source event hash attribute.
+
+        Args:
+            srcHash (str): source event hash
+        """
+
         self.sourceEventHash = srcHash
+
