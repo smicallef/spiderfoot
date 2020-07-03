@@ -1,12 +1,28 @@
 # test_spiderfootcli.py
 from sfcli import SpiderFootCli
 import unittest
+import io
+import sys
 import subprocess
 
 class TestSpiderFootCli(unittest.TestCase):
     """
     Test TestSpiderFootCli
     """
+
+    default_options = {
+        "cli.debug": False,
+        "cli.silent": False,
+        "cli.color": True,
+        "cli.output": "pretty",
+        "cli.history": True,
+        "cli.history_file": "",
+        "cli.spool": False,
+        "cli.spool_file": "",
+        "cli.username": "",
+        "cli.password": "",
+        "cli.server_baseurl": "http://127.0.0.1:5001"
+    }
 
     def execute(self, command):
         proc = subprocess.Popen(
@@ -17,23 +33,25 @@ class TestSpiderFootCli(unittest.TestCase):
         out,err = proc.communicate()
         return out, err, proc.returncode
 
-    def test_help_arg_should_print_help(self):
-        out, err, code = self.execute(["python3", "sfcli.py", "-h"])
+    def test_help_arg_should_print_help_and_exit(self):
+        out, err, code = self.execute([sys.executable, "sfcli.py", "-h"])
         self.assertIn(b"show this help message and exit", out)
         self.assertEqual(b"", err)
         self.assertEqual(0, code)
 
-    def test_no_args(self):
-        out, err, code = self.execute(["python3", "sfcli.py"])
-        self.assertEqual(b"", err)
-        self.assertEqual(0, code)
-
-    @unittest.skip("todo")
     def test_default(self):
         """
         Test default(self, line)
         """
-        self.assertEqual('TBD', 'TBD')
+        sfcli = SpiderFootCli()
+
+        io_output = io.StringIO()
+        sys.stdout = io_output
+        sfcli.default("")
+        sys.stdout = sys.__stdout__
+        output = io_output.getvalue()
+
+        self.assertIn("Unknown command", output)
 
     @unittest.skip("todo")
     def test_complete_start(self):
@@ -75,23 +93,32 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_dprint(self):
         """
         Test dprint(self, msg, err=False, deb=False, plain=False, color=None)
         """
         sfcli = SpiderFootCli()
-        sfcli.dprint(None, None, None, None, None)
 
-        self.assertEqual('TBD', 'TBD')
+        io_output = io.StringIO()
+        sys.stdout = io_output
+        sfcli.dprint("example output")
+        sys.stdout = sys.__stdout__
+        output = io_output.getvalue()
+
+        self.assertIn("example output", output)
 
     @unittest.skip("todo")
-    def test_do_debug(self):
+    def test_do_debug_should_toggle_debugging(self):
         """
         Test do_debug(self, line)
         """
-        sfcli = SpiderFootCli()
+        sfcli = SpiderFootCli(self.default_options)
+
+        initial_debug_state = sfcli.ownopts['cli.debug']
         sfcli.do_debug(None)
+        new_debug_state = sfcli.ownopts['cli.debug']
+
+        self.assertNotEqual(initial_debug_state, new_debug_state)
 
         self.assertEqual('TBD', 'TBD')
 
@@ -116,31 +143,49 @@ class TestSpiderFootCli(unittest.TestCase):
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
-    def test_precmd(self):
+    def test_precmd_should_return_line(self):
         """
         Test precmd(self, line)
         """
         sfcli = SpiderFootCli()
-        sfcli.precmd(None)
+
+        line = 'example line'
+        precmd = sfcli.precmd(line)
+
+        self.assertEqual(line, precmd)
 
         self.assertEqual('TBD', 'TBD')
 
+    @unittest.skip("todo")
     def test_ddprint(self):
         """
         Test ddprint(self, msg)
         """
         sfcli = SpiderFootCli()
-        sfcli.ddprint(None)
 
-    @unittest.skip("todo")
+        io_output = io.StringIO()
+        sys.stdout = io_output
+        sfcli.ddprint("example debug output")
+        sys.stdout = sys.__stdout__
+        output = io_output.getvalue()
+
+        self.assertIn("example debug output", output)
+
+        self.assertEqual('TBD', 'TBD')
+
     def test_edprint(self):
         """
         Test edprint(self, msg)
         """
         sfcli = SpiderFootCli()
-        sfcli.edprint(None)
 
-        self.assertEqual('TBD', 'TBD')
+        io_output = io.StringIO()
+        sys.stdout = io_output
+        sfcli.edprint("example debug output")
+        sys.stdout = sys.__stdout__
+        output = io_output.getvalue()
+
+        self.assertIn("example debug output", output)
 
     @unittest.skip("todo")
     def test_pretty(self):
@@ -179,24 +224,32 @@ class TestSpiderFootCli(unittest.TestCase):
         self.assertIsInstance(completedefault, list)
         self.assertEqual([], completedefault)
 
-    @unittest.skip("todo")
-    def test_myparseline(self):
+    def test_myparseline_should_return_a_list_of_two_lists(self):
         """
         Test myparseline(self, cmdline, replace=True)
         """
         sfcli = SpiderFootCli()
-        sfcli.myparseline(None, None)
+        parsed_line = sfcli.myparseline("")
  
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual(len(parsed_line), 2)
+        self.assertIsInstance(parsed_line, list)
+        self.assertIsInstance(parsed_line[0], list)
+        self.assertIsInstance(parsed_line[1], list)
 
-    @unittest.skip("todo")
     def test_send_output(self):
         """
         Test send_output(self, data, cmd, titles=None, total=True, raw=False)
         """
         sfcli = SpiderFootCli()
-        sfcli.send_output(None, None, None, None, None)
  
+        io_output = io.StringIO()
+        sys.stdout = io_output
+        sfcli.send_output("{}", "", raw=True)
+        sys.stdout = sys.__stdout__
+        output = io_output.getvalue()
+
+        self.assertIn("Total records: 0", output)
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -359,13 +412,20 @@ class TestSpiderFootCli(unittest.TestCase):
  
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_print_topic(self):
         """
         Test print_topics(self, header, cmds, cmdlen, maxcol)
         """
         sfcli = SpiderFootCli()
-        sfcli.print_topics(None, None, None, None)
+
+        io_output = io.StringIO()
+        sys.stdout = io_output
+        sfcli.print_topics(None, "help", None, None)
+        sys.stdout = sys.__stdout__
+        output = io_output.getvalue()
+
+        self.assertIn("Command", output)
+        self.assertIn("Description", output)
  
         self.assertEqual('TBD', 'TBD')
 
@@ -379,25 +439,33 @@ class TestSpiderFootCli(unittest.TestCase):
  
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_shell(self):
         """
         Test do_shell(self, line)
         """
         sfcli = SpiderFootCli()
-        sfcli.do_shell(None)
- 
-        self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
+        io_output = io.StringIO()
+        sys.stdout = io_output
+        sfcli.do_shell("")
+        sys.stdout = sys.__stdout__
+        output = io_output.getvalue()
+
+        self.assertIn("Running shell command:", output)
+
     def test_do_clear(self):
         """
         Test do_clear(self, line)
         """
         sfcli = SpiderFootCli()
+
+        io_output = io.StringIO()
+        sys.stderr = io_output
         sfcli.do_clear(None)
+        sys.stderr = sys.__stderr__
+        output = io_output.getvalue()
  
-        self.assertEqual('TBD', 'TBD')
+        self.assertEqual("\x1b[2J\x1b[H", output)
 
     def test_do_exit(self):
         """
