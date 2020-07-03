@@ -36,8 +36,8 @@ class TestSpiderFootTarget(unittest.TestCase):
             with self.subTest(target_type=target_type):
                 target = SpiderFootTarget(target_value, target_type)
                 self.assertEqual(SpiderFootTarget, type(target))
-                self.assertEqual(target.getType(), target_type)
-                self.assertEqual(target.getValue(), target_value)
+                self.assertEqual(target.targetType, target_type)
+                self.assertEqual(target.targetValue, target_value)
 
     def test_set_alias(self):
         """
@@ -50,16 +50,37 @@ class TestSpiderFootTarget(unittest.TestCase):
         set_alias = target.setAlias(None, None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_get_aliases_should_return_a_list(self):
+    def test_target_type_attribute_should_return_a_string(self):
         """
-        Test getAliases(self)
+        Test targetType attribute
         """
         target_value = 'example target value'
         target_type = 'IP_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
-        aliases = target.getAliases()
-        self.assertEqual(list, type(aliases))
+        self.assertIsInstance(target.targetType, str)
+        self.assertEqual(target_type, target.targetType)
+
+    def test_target_value_attribute_should_return_a_string(self):
+        """
+        Test targetValue attribute
+        """
+        target_value = 'example target value'
+        target_type = 'IP_ADDRESS'
+        target = SpiderFootTarget(target_value, target_type)
+
+        self.assertIsInstance(target.targetValue, str)
+        self.assertEqual(target_value, target.targetValue)
+
+    def test_target_aliases_attribute_should_return_a_list(self):
+        """
+        Test targetAliases attribute
+        """
+        target_value = 'example target value'
+        target_type = 'IP_ADDRESS'
+        target = SpiderFootTarget(target_value, target_type)
+
+        self.assertIsInstance(target.targetAliases, list)
 
     def test_get_equivalents_should_return_a_list(self):
         """
