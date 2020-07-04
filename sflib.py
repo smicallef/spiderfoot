@@ -1511,8 +1511,8 @@ class SpiderFoot:
         if not target:
             return ret
 
-        t = target.getType()
-        v = target.getValue()
+        t = target.targetType
+        v = target.targetValue
 
         if t in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
             r = self.resolveIP(v)
@@ -2507,7 +2507,7 @@ class SpiderFootPlugin(object):
         if self.__outputFilter__:
             # Be strict about what events to pass on, unless they are
             # the ROOT event or the event type of the target.
-            if eventName != 'ROOT' and eventName != self.getTarget().getType() \
+            if eventName != 'ROOT' and eventName != self.getTarget().targetType \
                 and eventName not in self.__outputFilter__:
                 return None
 
@@ -2645,9 +2645,9 @@ class SpiderFootTarget(object):
 
     _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
                    "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME"]
-    targetType = None
-    targetValue = None
-    targetAliases = list()
+    _targetType = None
+    _targetValue = None
+    _targetAliases = list()
 
     def __init__(self, targetValue, typeName):
         """Initialize SpiderFoot target.
@@ -2669,15 +2669,33 @@ class SpiderFootTarget(object):
         if typeName not in self._validTypes:
             raise ValueError("Invalid target type %s; expected %s" % (typeName, self._validTypes))
 
-        self.targetType = typeName
-        self.targetValue = targetValue
-        self.targetAliases = list()
+        self._targetType = typeName
+        self._targetValue = targetValue
+        self._targetAliases = list()
 
-    def getType(self):
-        return self.targetType
+    @property
+    def targetType(self):
+        return self._targetType
 
-    def getValue(self):
-        return self.targetValue
+    @targetType.setter
+    def targetType(self, value):
+        self._targetType = value
+
+    @property
+    def targetValue(self):
+        return self._targetValue
+
+    @targetValue.setter
+    def targetValue(self, value):
+        self._targetValue = value
+
+    @property
+    def targetAliases(self):
+        return self._targetAliases
+
+    @targetAliases.setter
+    def targetAliases(self, value):
+        self._targetAliases = value
 
     def setAlias(self, value, typeName):
         """Specify other hostnames, IPs, etc. that are aliases for this target.
@@ -2704,15 +2722,6 @@ class SpiderFootTarget(object):
         self.targetAliases.append(
             {'type': typeName, 'value': value.lower()}
         )
-
-    def getAliases(self):
-        """TBD
-
-        Returns:
-            list: target aliases
-        """
-
-        return self.targetAliases
 
     def _getEquivalents(self, typeName):
         """TBD
