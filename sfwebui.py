@@ -736,6 +736,9 @@ class SpiderFootWebUi:
 
         # Cannot set FPs if a scan is not completed
         status = dbh.scanInstanceGet(id)
+        if not status:
+            return self.error("Invalid scan ID: %s" % id)
+
         if status[5] not in [ "ABORTED", "FINISHED", "ERROR-FAILED" ]:
             return json.dumps(["WARNING", "Scan must be in a finished state when " + \
                                "setting False Positives."])
@@ -931,9 +934,8 @@ class SpiderFootWebUi:
         for id in ids.split(","):
             errState = False
             scaninfo = dbh.scanInstanceGet(id)
-
-            if scaninfo is None:
-                return self.error("Invalid scan ID specified.")
+            if not scaninfo:
+                return self.error("Invalid scan ID: %s" % id)
 
             scanname = str(scaninfo[0])
             scanstatus = scaninfo[5]
