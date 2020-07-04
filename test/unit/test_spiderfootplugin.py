@@ -1,6 +1,6 @@
 # test_spiderfootplugin.py
 import sflib
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent, SpiderFootTarget
 from sfdb import SpiderFootDb
 import unittest
 
@@ -87,12 +87,24 @@ class TestSpiderFootPlugin(unittest.TestCase):
         """
         sfp = SpiderFootPlugin()
 
-        target = 'spiderfoot.net'
+        target = SpiderFootTarget("spiderfoot.net", "INTERNET_NAME")
         sfp.setTarget(target)
 
-        get_target = sfp.getTarget()
+        get_target = sfp.getTarget().targetValue
         self.assertIsInstance(get_target, str)
-        self.assertEqual(target, get_target)
+        self.assertEqual("spiderfoot.net", get_target)
+
+    def test_set_target_invalid_target_should_raise(self):
+        """
+        Test setTarget(self, target)
+        """
+        sfp = SpiderFootPlugin()
+
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                with self.assertRaises(TypeError) as cm:
+                    sfp.setTarget(invalid_type)
 
     def test_set_dbh(self):
         """
@@ -104,14 +116,18 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.setDbh(sfdb)
         self.assertIsInstance(sfp.__sfdb__, SpiderFootDb)
 
-    def test_set_scan_id(self):
+    def test_set_scan_id_should_set_a_scan_id(self):
         """
         Test setScanId(self, id)
         """
         sfp = SpiderFootPlugin()
 
-        sfp.setScanId(None)
-        self.assertEqual('TBD', 'TBD')
+        scan_id = '1234'
+        sfp.setScanId(scan_id)
+
+        get_scan_id = sfp.getScanId()
+        self.assertIsInstance(get_scan_id, str)
+        self.assertEqual(scan_id, get_scan_id)
 
     def test_get_scan_id_should_return_a_string(self):
         """
@@ -126,29 +142,36 @@ class TestSpiderFootPlugin(unittest.TestCase):
         self.assertEqual(str, type(get_scan_id))
         self.assertEqual(scan_id, get_scan_id)
 
+    def test_get_scan_id_unitialised_scanid_should_raise(self):
+        """
+        Test getScanId(self)
+        """
+        sfp = SpiderFootPlugin()
+
+        with self.assertRaises(TypeError) as cm:
+            scan_id = sfp.getScanId()
+
     def test_get_target_should_return_a_string(self):
         """
         Test getTarget(self)
         """
         sfp = SpiderFootPlugin()
 
-        target = 'spiderfoot.net'
+        target = SpiderFootTarget("spiderfoot.net", "INTERNET_NAME")
         sfp.setTarget(target)
 
-        get_target = sfp.getTarget()
+        get_target = sfp.getTarget().targetValue
         self.assertIsInstance(get_target, str)
-        self.assertEqual(target, get_target)
+        self.assertEqual("spiderfoot.net", get_target)
 
-    def test_get_target_invalid_target_should_exit(self):
+    def test_get_target_unitialised_target_should_raise(self):
         """
         Test getTarget(self)
         """
         sfp = SpiderFootPlugin()
 
-        with self.assertRaises(SystemExit) as cm:
-            sfp.getTarget()
-
-        self.assertEqual(cm.exception.code, -1)
+        with self.assertRaises(TypeError) as cm:
+            get_target = sfp.getTarget()
 
     def test_register_listener(self):
         """
