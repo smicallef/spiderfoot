@@ -2424,8 +2424,11 @@ class SpiderFootPlugin(object):
         """Assigns the current target this module is acting against.
 
         Args:
-            target (str): target
+            target (SpiderFootTarget): target
         """
+        if not isinstance(target, SpiderFootTarget):
+            raise TypeError("target is %s; expected SpiderFootTarget" % type(target))
+
         self._currentTarget = target
 
     def setDbh(self, dbh):
@@ -2437,13 +2440,16 @@ class SpiderFootPlugin(object):
         """
         self.__sfdb__ = dbh
 
-    def setScanId(self, id):
+    def setScanId(self, scanId):
         """Set the scan ID.
 
         Args:
             id (str): scan ID
         """
-        self.__scanId__ = id
+        if not isinstance(scanId, str):
+            raise TypeError("scanId is %s; expected str" % type(scanId))
+
+        self.__scanId__ = scanId
 
     def getScanId(self):
         """Get the scan ID.
@@ -2451,14 +2457,16 @@ class SpiderFootPlugin(object):
         Returns:
             str: scan ID
         """
+        if not self.__scanId__:
+            raise TypeError("Module called getScanId() but no scanId is set.")
+
         return self.__scanId__
 
     def getTarget(self):
         """Gets the current target this module is acting against."""
+        if not self._currentTarget:
+            raise TypeError("Module called getTarget() but no target is set.")
 
-        if self._currentTarget is None:
-            print("Internal Error: Module called getTarget() but no target set.")
-            sys.exit(-1)
         return self._currentTarget
 
     def registerListener(self, listener):
