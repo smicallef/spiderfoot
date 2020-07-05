@@ -1162,6 +1162,14 @@ class SpiderFootDb:
         if not isinstance(elementIdList, list):
             raise TypeError("elementIdList is %s; expected list()" % type(elementIdList))
 
+        hashIds = []
+        for hashId in elementIdList:
+            if not hashId:
+                continue
+            if not hashId.isalnum():
+                continue
+            hashIds.append(hashId)
+
         # the output of this needs to be aligned with scanResultEvent,
         # as other functions call both expecting the same output.
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
@@ -1172,12 +1180,8 @@ class SpiderFootDb:
             FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
             s.scan_instance_id = c.scan_instance_id AND \
-            t.event = c.type AND c.hash in ("
+            t.event = c.type AND c.hash in ('%s')" % "','".join(hashIds)
         qvars = [instanceId]
-
-        for hashId in elementIdList:
-            qry = qry + "'" + hashId + "',"
-        qry += "'')"
 
         with self.dbhLock:
             try:
@@ -1204,6 +1208,14 @@ class SpiderFootDb:
         if not isinstance(elementIdList, list):
             raise TypeError("elementIdList is %s; expected list()" % type(elementIdList))
 
+        hashIds = []
+        for hashId in elementIdList:
+            if not hashId:
+                continue
+            if not hashId.isalnum():
+                continue
+            hashIds.append(hashId)
+
         # the output of this needs to be aligned with scanResultEvent,
         # as other functions call both expecting the same output.
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
@@ -1214,12 +1226,8 @@ class SpiderFootDb:
             FROM tbl_scan_results c, tbl_scan_results s, tbl_event_types t \
             WHERE c.scan_instance_id = ? AND c.source_event_hash = s.hash AND \
             s.scan_instance_id = c.scan_instance_id AND \
-            t.event = c.type AND s.hash in ("
+            t.event = c.type AND s.hash in ('%s')" % "','".join(hashIds)
         qvars = [instanceId]
-
-        for hashId in elementIdList:
-            qry = qry + "'" + hashId + "',"
-        qry += "'')"
 
         with self.dbhLock:
             try:
