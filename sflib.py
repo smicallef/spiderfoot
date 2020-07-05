@@ -2669,11 +2669,14 @@ class SpiderFootTarget(object):
 
         Raises:
             TypeError: targetValue type was invalid
+            ValueError: targetValue value was empty
             ValueError: typeName value was an invalid target type
         """
 
         if not isinstance(targetValue, str):
             raise TypeError("Invalid target value %s; expected %s" % type(targetValue))
+        if not targetValue:
+            raise ValueError("Specified target value is blank.")
         if typeName not in self._validTypes:
             raise ValueError("Invalid target type %s; expected %s" % (typeName, self._validTypes))
 
