@@ -140,7 +140,8 @@ class sfp_onionsearchengine(SpiderFootPlugin):
 
                 res = self.sf.fetchUrl(link,
                                        timeout=self.opts['_fetchtimeout'],
-                                       useragent=self.opts['_useragent'])
+                                       useragent=self.opts['_useragent'],
+                                       verify=False)
 
                 if res['content'] is None:
                     self.sf.debug("Ignoring " + link + " as no data returned")

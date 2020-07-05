@@ -69,7 +69,9 @@ class sfp_scylla(SpiderFootPlugin):
         res = self.sf.fetchUrl('https://scylla.sh/search?' + urllib.parse.urlencode(params),
                                headers=headers,
                                timeout=15,
-                               useragent=self.opts['_useragent'])
+                               useragent=self.opts['_useragent'],
+                               # expired certficate
+                               verify=False)
 
         time.sleep(self.opts['pause'])
 

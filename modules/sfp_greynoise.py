@@ -74,7 +74,7 @@ class sfp_greynoise(SpiderFootPlugin):
         ret = None
 
         header = { "key": self.opts['api_key'] }
-        url = "https://" + "enterprise.api.greynoise.io/v2/experimental/gnql?query=" + qry
+        url = "https://enterprise.api.greynoise.io/v2/experimental/gnql?query=" + qry
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=header)
 

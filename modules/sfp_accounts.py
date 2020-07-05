@@ -102,7 +102,7 @@ class sfp_accounts(SpiderFootPlugin):
                 url + "</SFURL>"
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'], noLog=True)
+                               useragent=self.opts['_useragent'], noLog=True, verify=False)
 
         if not res['content']:
             with self.lock:
