@@ -24,7 +24,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "HaveIBeenPwned.com API key."
+        "api_key": "<a href=https://haveibeenpwned.com/API/Key title='paid subscription only' target=_blank>HaveIBeenPwned.com API key.</a>"
     }
 
     # Be sure to completely clear any class variables in setup()
