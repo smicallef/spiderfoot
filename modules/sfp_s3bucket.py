@@ -143,7 +143,11 @@ class sfp_s3bucket(SpiderFootPlugin):
                 self.notifyListeners(evt)
             return None
 
-        targets = [ eventData.replace('.', ''), self.sf.domainKeyword(eventData, self.opts['_internettlds']) ]
+        targets = [ eventData.replace('.', '') ]
+        kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
+        if kw:
+            targets.append(kw)
+
         urls = list()
         for t in targets:
             for e in self.opts['endpoints'].split(','):

@@ -134,6 +134,9 @@ class sfp_github(SpiderFootPlugin):
 
         if eventName == "DOMAIN_NAME":
             name = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
+            if not name:
+                return None
+
         if eventName == "USERNAME":
             name = eventData
 

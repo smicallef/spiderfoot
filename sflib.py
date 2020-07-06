@@ -1050,7 +1050,10 @@ class SpiderFoot:
             return None
 
         # Strip off the TLD
-        tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
+        dom = self.hostDomain(domain.lower(), tldList)
+        if not dom:
+            return None
+        tld = '.'.join(dom.split('.')[1:])
         ret = domain.lower().replace('.' + tld, '')
 
         # If the user supplied a domain with a sub-domain, return the second part

@@ -239,6 +239,9 @@ class sfp_accounts(SpiderFootPlugin):
 
         if eventName == "DOMAIN_NAME":
             kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
+            if not kw:
+                return None
+
             users.append(kw)
 
         if eventName == "EMAILADDR":

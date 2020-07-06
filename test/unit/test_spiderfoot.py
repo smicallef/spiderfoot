@@ -502,6 +502,8 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertEqual(None, keyword)
         keyword = sf.domainKeyword(None, sf.opts.get('_internettlds'))
         self.assertEqual(None, keyword)
+        keyword = sf.domainKeyword("net", sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
 
     def test_domain_keywords_should_return_a_set(self):
         """
