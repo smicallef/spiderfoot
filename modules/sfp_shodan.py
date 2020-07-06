@@ -29,7 +29,7 @@ class sfp_shodan(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "SHODAN API Key.",
+        "api_key": "<a href=https://account.shodan.io target=_blank>SHODAN API Key.</a>",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
