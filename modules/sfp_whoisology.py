@@ -23,7 +23,7 @@ class sfp_whoisology(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Whoisology.com API key.",
+        "api_key": "<a href=https://whoisology.com/account#api title='paid subscription only' target=_blank>Whoisology.com API key.</a>",
     }
 
     # Be sure to completely clear any class variables in setup()
