@@ -24,7 +24,7 @@ class sfp_hunter(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Hunter.io API key."
+        "api_key": "<a href=https://hunter.io/api-keys target=_blank>Hunter.io API key.</a>"
     }
 
     # Be sure to completely clear any class variables in setup()
