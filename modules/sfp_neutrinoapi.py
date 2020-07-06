@@ -27,7 +27,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'user_id': "NeutrinoAPI user ID.",
-        'api_key': "NeutrinoAPI API key.",
+        'api_key': "<a href=https://www.neutrinoapi.com/account/keys/ target=_blank>NeutrinoAPI API key.</a>",
         'timeout': "Query timeout, in seconds."
     }
 
