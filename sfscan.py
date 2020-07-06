@@ -20,7 +20,6 @@ from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, \
     SpiderFootPlugin
 
-# Eventually change this to be able to control multiple scan instances
 class SpiderFootScanner():
     def __init__(self, scanName, scanId, scanTarget, targetType, moduleList, globalOpts, start=True):
         """Initialize SpiderFootScanner object.
@@ -36,6 +35,9 @@ class SpiderFootScanner():
 
         Returns:
             None
+
+        Todo:
+             Eventually change this to be able to control multiple scan instances
         """
 
         if not isinstance(scanName, str):
@@ -85,6 +87,59 @@ class SpiderFootScanner():
         self.config['_modulesenabled'] = self.moduleList
         self.dbh.scanConfigSet(self.scanId, self.sf.configSerialize(deepcopy(self.config)))
 
+        # Process global options that point to other places for data
+
+        # If a SOCKS server was specified, set it up
+        if self.config['_socks1type']:
+            socksDns = self.config['_socks6dns']
+            socksAddr = self.config['_socks2addr']
+            socksPort = int(self.config['_socks3port'])
+            socksUsername = self.config['_socks4user'] or ''
+            socksPassword = self.config['_socks5pwd'] or ''
+
+            proxy = "%s:%s" % (socksAddr, socksPort)
+
+            if socksUsername or socksPassword:
+                proxy = "%s:%s@%s" % (socksUsername, socksPassword, proxy)
+
+            if self.config['_socks1type'] == '4':
+                proxy = 'socks4://' + proxy
+            elif self.config['_socks1type'] == '5':
+                proxy = 'socks5://' + proxy
+            elif self.config['_socks1type'] == 'HTTP':
+                proxy = 'http://' + proxy
+            elif self.config['_socks1type'] == 'TOR':
+                proxy = 'socks5h://' + proxy
+            else:
+                raise ValueError("Invalid SOCKS proxy type: %s" % self.config["_socks1ttype"])
+
+            self.sf.debug("SOCKS: %s:%s (%s:%s)" % (socksAddr, socksPort, socksUsername, socksPassword))
+
+            self.sf.updateSocket(proxy)
+        else:
+            self.sf.revertSocket()
+
+        # Override the default DNS server
+        if self.config['_dnsserver']:
+            res = dns.resolver.Resolver()
+            res.nameservers = [self.config['_dnsserver']]
+            dns.resolver.override_system_resolver(res)
+        else:
+            dns.resolver.restore_system_resolver()
+
+        # Set the user agent
+        self.config['_useragent'] = self.sf.optValueToData(self.config['_useragent'])
+
+        # Get internet TLDs
+        tlddata = self.sf.cacheGet("internet_tlds", self.config['_internettlds_cache'])
+
+        # If it wasn't loadable from cache, load it from scratch
+        if tlddata is None:
+            self.config['_internettlds'] = self.sf.optValueToData(self.config['_internettlds'])
+            self.sf.cachePut("internet_tlds", self.config['_internettlds'])
+        else:
+            self.config["_internettlds"] = tlddata.splitlines()
+
         self.setStatus("INITIALIZING", time.time() * 1000, None)
 
         if start:
@@ -128,59 +183,6 @@ class SpiderFootScanner():
         self.sf.status("Scan [" + self.scanId + "] initiated.")
 
         try:
-            # Process global options that point to other places for data
-
-            # If a SOCKS server was specified, set it up
-            if self.config['_socks1type'] != '':
-                socksDns = self.config['_socks6dns']
-                socksAddr = self.config['_socks2addr']
-                socksPort = int(self.config['_socks3port'])
-                socksUsername = self.config['_socks4user'] or ''
-                socksPassword = self.config['_socks5pwd'] or ''
-                creds = ""
-                if socksUsername and socksPassword:
-                    creds = socksUsername + ":" + socksPassword + "@"
-                proxy = creds + socksAddr + ":" + str(socksPort)
-
-                if self.config['_socks1type'] == '4':
-                    proxy = 'socks4://' + proxy
-                elif self.config['_socks1type'] == '5':
-                    proxy = 'socks5://' + proxy
-                elif self.config['_socks1type'] == 'HTTP':
-                    proxy = 'http://' + proxy
-                elif self.config['_socks1type'] == 'TOR':
-                    proxy = 'socks5h://' + proxy
-
-                self.sf.debug("SOCKS: " + socksAddr + ":" + str(socksPort) + \
-                                 "(" + socksUsername + ":" + socksPassword + ")")
-
-                self.sf.updateSocket(proxy)
-            else:
-                self.sf.revertSocket()
-
-            # Override the default DNS server
-            if self.config['_dnsserver'] != "":
-                res = dns.resolver.Resolver()
-                res.nameservers = [self.config['_dnsserver']]
-                dns.resolver.override_system_resolver(res)
-            else:
-                dns.resolver.restore_system_resolver()
-
-            # Set the user agent
-            self.config['_useragent'] = self.sf.optValueToData(
-                self.config['_useragent'])
-
-            # Get internet TLDs
-            tlddata = self.sf.cacheGet("internet_tlds",
-                                          self.config['_internettlds_cache'])
-            # If it wasn't loadable from cache, load it from scratch
-            if tlddata is None:
-                self.config['_internettlds'] = self.sf.optValueToData(
-                    self.config['_internettlds'])
-                self.sf.cachePut("internet_tlds", self.config['_internettlds'])
-            else:
-                self.config["_internettlds"] = tlddata.splitlines()
-
             # moduleList = list of modules the user wants to run
             for modName in self.moduleList:
                 if modName == '':
