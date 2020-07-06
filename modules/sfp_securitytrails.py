@@ -27,7 +27,7 @@ class sfp_securitytrails(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "SecurityTrails API key.",
+        "api_key": "<a href=https://securitytrails.com/app/account/credentials target=_blank>SecurityTrails API key.</a>",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
         'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
