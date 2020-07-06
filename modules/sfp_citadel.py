@@ -23,7 +23,7 @@ class sfp_citadel(SpiderFootPlugin):
         "timeout": 60
     }
     optdescs = {
-        "api_key": "Leak-Lookup API key. Without this you're limited to the public API.",
+        "api_key": "<a href=https://leak-lookup.com/account/manage target=_blank>Leak-Lookup API key. Without this you're limited to the public API.</a>",
         "timeout": "Custom timeout due to heavy traffic at times."
     }
 
