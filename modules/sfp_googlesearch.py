@@ -25,7 +25,7 @@ class sfp_googlesearch(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Google API Key for Google search.",
+        "api_key": "<a href=https://console.developers.google.com/apis/credentials target=_blank>Google API Key for Google search.</a>",
         "cse_id": "Google Custom Search Engine ID."
     }
 
