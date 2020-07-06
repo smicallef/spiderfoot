@@ -22,7 +22,7 @@ class sfp_botscout(SpiderFootPlugin):
         "api_key": ""
     }
     optdescs = {
-        "api_key": "Botscout.com API key. Without this you will be limited to 50 look-ups per day."
+        "api_key": "<a href=http://botscout.com/account.htm target=_blank>Botscout.com API key. Without this you will be limited to 50 look-ups per day.</a>"
     }
     results = None
     errorState = False
