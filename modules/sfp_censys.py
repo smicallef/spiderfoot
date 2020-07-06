@@ -30,7 +30,7 @@ class sfp_censys(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "censys_api_key_uid": "Censys.io API UID.",
+        "censys_api_key_uid": "<a href=https://censys.io/account/api target=_blank>Censys.io API UID.</a>",
         "censys_api_key_secret": "Censys.io API Secret.",
         'delay': 'Delay between requests, in seconds.',
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited."
