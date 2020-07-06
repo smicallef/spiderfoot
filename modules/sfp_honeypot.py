@@ -33,7 +33,7 @@ class sfp_honeypot(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': "Projecthoneypot.org API key.",
+        'api_key': "<a href=https://www.projecthoneypot.org/httpbl_configure.php target=_blank>Projecthoneypot.org API key.</a>",
         'searchengine': "Include entries considered search engines?",
         'threatscore': "Threat score minimum, 0 being everything and 255 being only the most serious.",
         'timelimit': "Maximum days old an entry can be. 255 is the maximum, 0 means you'll get nothing.",
