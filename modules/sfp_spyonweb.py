@@ -32,7 +32,7 @@ class sfp_spyonweb(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': "SpyOnWeb API key.",
+        'api_key': "<a href=https://api.spyonweb.com/account/dashboard target=_blank>SpyOnWeb API key.</a>",
         'limit': "Maximum number of results to fetch.",
         'timeout': "Query timeout, in seconds.",
         'maxage': "The maximum age of the data returned, in days, in order to be considered valid.",
