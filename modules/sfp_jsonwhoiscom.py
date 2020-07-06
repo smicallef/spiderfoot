@@ -26,7 +26,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "JsonWHOIS.com API key.",
+        "api_key": "<a href=https://jsonwhois.com/dashboard target=_blank>JsonWHOIS.com API key.</a>",
         "delay": "Delay between requests, in seconds.",
     }
 
