@@ -25,7 +25,7 @@ class sfp_snov(SpiderFootPlugin):
 
     # Option descriptions. Delete any options not applicable to this module.
     optdescs = {
-        'api_key_client_id': "Client ID for snov.io API",
+        'api_key_client_id': "<a href=https://app.snov.io/api-setting target=_blank>Client ID for snov.io API</a>",
         'api_key_client_secret': "Client Secret for snov.io API"
     }
 
