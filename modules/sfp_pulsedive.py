@@ -34,7 +34,7 @@ class sfp_pulsedive(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Pulsedive API Key.",
+        "api_key": "<a href=https://pulsedive.com/api/ target=_blank>Pulsedive API Key.</a>",
         "delay": "Delay between requests, in seconds.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
