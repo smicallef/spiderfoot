@@ -33,7 +33,7 @@ class sfp_whatcms(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': 'WhatCMS API key',
+        'api_key': '<a href=https://whatcms.org/APIKey target=_blank>WhatCMS API key</a>',
         'timeout': 'Query timeout, in seconds.',
         'delay': 'Delay between requests, in seconds.'
     }
