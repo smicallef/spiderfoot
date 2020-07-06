@@ -23,7 +23,7 @@ class sfp_ipinfo(SpiderFootPlugin):
         "api_key": ""
     }
     optdescs = {
-        "api_key": "Ipinfo.io access token."
+        "api_key": "<a href=https://ipinfo.io/account target=_blank>Ipinfo.io access token.</a>"
     }
 
     results = None
