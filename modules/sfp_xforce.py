@@ -36,7 +36,7 @@ class sfp_xforce(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "xforce_api_key": "X-Force Exchange API Key.",
+        "xforce_api_key": "<a href=https://exchange.xforce.ibmcloud.com/settings/api target=_blank>X-Force Exchange API Key.</a>",
         "xforce_api_key_password": "X-Force Exchange API Password.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
