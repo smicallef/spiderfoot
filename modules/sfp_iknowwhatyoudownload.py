@@ -25,7 +25,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         "daysback": "How far back (in days) to look for activity.",
-        "api_key": "Iknowwhatyoudownload.com API key."
+        "api_key": "<a href=https://iknowwhatyoudownload.com/en/api/ title='paid subscription only' target=_blank>Iknowwhatyoudownload.com API key.</a>"
     }
 
     # Be sure to completely clear any class variables in setup()
