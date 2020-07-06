@@ -27,7 +27,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Builtwith.com Domain API key.",
+        "api_key": "<a href=https://api.builtwith.com target=_blank>Builtwith.com Domain API key.</a>",
         "maxage": "The maximum age of the data returned, in days, in order to be considered valid."
     }
 
