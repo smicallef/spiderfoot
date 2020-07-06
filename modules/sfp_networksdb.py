@@ -252,7 +252,7 @@ class sfp_networksdb(SpiderFootPlugin):
                 network = data.get('network')
                 if network:
                     cidr = network.get('cidr')
-                    if cidr and cidr != 'N/A':
+                    if cidr and cidr != 'N/A' and self.sf.validIpNetwork(cidr):
                         evt = SpiderFootEvent('NETBLOCK_MEMBER', cidr, self.__name__, event)
                         self.notifyListeners(evt)
 
