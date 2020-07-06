@@ -22,8 +22,8 @@ class sfp_intelx(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "api_key": "9df61df0-84f7-4dc7-b34c-8ccfb8646ace",
-        "base_url": "public.intelx.io",
+        "api_key": "",
+        "base_url": "",
         "checkcohosts": False,
         "checkaffiliates": False,
         'netblocklookup': False,
@@ -35,7 +35,7 @@ class sfp_intelx(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "IntelligenceX API key.",
+        "api_key": "<a href=https://intelx.io/account?tab=developer target=_blank>IntelligenceX API key.</a>",
         "base_url": "API URL, as provided in your IntelligenceX account settings.",
         "checkcohosts": "Check co-hosted sites?",
         "checkaffiliates": "Check affiliates?",
