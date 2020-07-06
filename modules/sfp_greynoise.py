@@ -33,7 +33,7 @@ class sfp_greynoise(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Greynoise API Key.",
+        "api_key": "<a href=https://viz.greynoise.io/account/ target=_blank>Greynoise API Key.</a>",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
         'netblocklookup': "Look up netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
