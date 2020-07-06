@@ -44,7 +44,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': "<a href=https://www.abuseipdb.com/account/api target=_blank>AbuseIPDB.com API key.<a/>",
+        'api_key': "<a href=https://www.abuseipdb.com/account/api target=_blank>AbuseIPDB.com API key.</a>",
         'daysback': "How far back to query, in days?",
         'checkaffiliates': "Apply checks to affiliates?",
         'checknetblocks': "Report if any malicious IPs are found within owned netblocks?",
