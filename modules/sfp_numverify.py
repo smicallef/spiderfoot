@@ -25,7 +25,7 @@ class sfp_numverify(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': 'numverify API key.'
+        'api_key': '<a href=https://numverify.com/dashboard target=_blank>numverify API key.</a>'
     }
 
     results = None
