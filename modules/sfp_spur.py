@@ -29,7 +29,7 @@ class sfp_spur(SpiderFootPlugin):
 
     # Option descriptions. Delete any options not applicable to this module.
     optdescs = {
-        "api_key": "spur.us API Key",
+        "api_key": "<a href=https://spur.us/app/tokens target=_blank>spur.us API Key</a>",
         'checkaffiliates': "Check affiliates?",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of?",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
