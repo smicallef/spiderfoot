@@ -77,7 +77,8 @@ class sfp_filemeta(SpiderFootPlugin):
                 # typically large.
                 ret = self.sf.fetchUrl(eventData, timeout=self.opts['timeout'],
                                        useragent=self.opts['_useragent'], dontMangle=True,
-                                       sizeLimit=10000000)
+                                       sizeLimit=10000000,
+                                       verify=False)
                 if ret['content'] is None:
                     self.sf.error("Unable to fetch file for meta analysis: " +
                                   eventData, False)

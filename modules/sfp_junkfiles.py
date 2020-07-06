@@ -67,7 +67,8 @@ class sfp_junkfiles(SpiderFootPlugin):
         fetch = junkUrl + str(random.SystemRandom().randint(0, 99999999))
         res = self.sf.fetchUrl(fetch, headOnly=True,
                                timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'])
+                               useragent=self.opts['_useragent'],
+                               verify=False)
         if res['code'] != "404":
             host = self.sf.urlBaseUrl(junkUrl)
             self.skiphosts[host] = True
@@ -115,7 +116,8 @@ class sfp_junkfiles(SpiderFootPlugin):
                     res = self.sf.fetchUrl(fetch, headOnly=True,
                                            timeout=self.opts['_fetchtimeout'],
                                            useragent=self.opts['_useragent'],
-                                           sizeLimit=10000000)
+                                           sizeLimit=10000000,
+                                           verify=False)
                     if res['realurl'] != fetch:
                         self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                         continue
@@ -159,7 +161,8 @@ class sfp_junkfiles(SpiderFootPlugin):
                 continue
             res = self.sf.fetchUrl(fetch, headOnly=True,
                                    timeout=self.opts['_fetchtimeout'],
-                                   useragent=self.opts['_useragent'])
+                                   useragent=self.opts['_useragent'],
+                                   verify=False)
             if res['realurl'] != fetch:
                 self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                 continue
@@ -188,7 +191,8 @@ class sfp_junkfiles(SpiderFootPlugin):
                 continue
             res = self.sf.fetchUrl(fetch, headOnly=True,
                                    timeout=self.opts['_fetchtimeout'],
-                                   useragent=self.opts['_useragent'])
+                                   useragent=self.opts['_useragent'],
+                                   verify=False)
             if res['realurl'] != fetch:
                 self.sf.debug("Skipping because " + res['realurl'] + " isn't the fetched URL of " + fetch)
                 continue

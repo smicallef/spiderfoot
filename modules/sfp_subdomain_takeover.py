@@ -102,7 +102,8 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
                         res = self.sf.fetchUrl(
                             "%s://%s/" % (proto, eventData),
                             timeout=15,
-                            useragent=self.opts['_useragent']
+                            useragent=self.opts['_useragent'],
+                            verify=False
                         )
                         if not res:
                             continue

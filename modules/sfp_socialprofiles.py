@@ -202,6 +202,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             match,
                             timeout=self.opts["_fetchtimeout"],
                             useragent=self.opts["_useragent"],
+                            verify=False
                         )
 
                         if pres["content"] is None:

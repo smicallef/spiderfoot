@@ -130,7 +130,8 @@ class sfp_onioncity(SpiderFootPlugin):
             torlink = link.replace(".onion.link", ".onion")
             if self.opts['fetchlinks']:
                 res = self.sf.fetchUrl(torlink, timeout=self.opts['_fetchtimeout'],
-                                        useragent=self.opts['_useragent'])
+                                        useragent=self.opts['_useragent'],
+                                        verify=False)
 
                 if res['content'] is None:
                     self.sf.debug("Ignoring " + link + " as no data returned")

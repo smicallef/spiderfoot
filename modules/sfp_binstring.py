@@ -128,7 +128,8 @@ class sfp_binstring(SpiderFootPlugin):
                 res = self.sf.fetchUrl(eventData,
                                        useragent=self.opts['_useragent'],
                                        dontMangle=True,
-                                       sizeLimit=self.opts['maxfilesize'])
+                                       sizeLimit=self.opts['maxfilesize'],
+                                       verify=False)
 
         if res:
             self.sf.debug("Searching for strings")

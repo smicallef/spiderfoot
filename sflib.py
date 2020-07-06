@@ -2056,7 +2056,7 @@ class SpiderFoot:
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
                  postData=None, dontMangle=False, sizeLimit=None,
-                 headOnly=False, verify=False):
+                 headOnly=False, verify=True):
         """Fetch a URL, return the response object."""
 
         result = {
