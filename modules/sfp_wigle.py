@@ -27,7 +27,7 @@ class sfp_wigle(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key_encoded": "Wigle.net base64-encoded API name/token pair.",
+        "api_key_encoded": "<a href=https://wigle.net/account target=_blank>Wigle.net base64-encoded API name/token pair.</a>",
         "days_limit": "Maximum age of data to be considered valid.",
         "variance": "How tightly to bound queries against the latitude/longitude box extracted from idenified addresses. This value must be between 0.001 and 0.2."
 
