@@ -30,7 +30,7 @@ class sfp_networksdb(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': 'NetworksDB API key.',
+        'api_key': '<a href=https://networksdb.io/account target=_blank>NetworksDB API key.</a>',
         'delay': 'Delay between requests, in seconds.',
         'verify': "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         'cohostsamedomain': "Treat co-hosted sites on the same target domain as co-hosting?",
