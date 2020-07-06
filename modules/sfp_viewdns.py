@@ -25,7 +25,7 @@ class sfp_viewdns(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "ViewDNS.info API key.",
+        "api_key": "<a href=https://viewdns.info/api/dashboard/ target=_blank>ViewDNS.info API key.</a>",
         "verify": "Verify co-hosts are valid by checking if they still resolve to the shared IP.",
         "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting."
     }
