@@ -28,7 +28,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "api_key": "Google API Key for PasteBin search.",
+        "api_key": "<a href=https://pastebin.com/api#1 target=_blank>API Key for PasteBin search.</a>",
         "cse_id": "Google Custom Search Engine ID.",
     }
 
