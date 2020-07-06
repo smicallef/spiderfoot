@@ -23,7 +23,7 @@ class sfp_twilio(SpiderFootPlugin):
     }
 
     optdescs = {
-        'api_key_account_sid': 'Twilio Account SID',
+        'api_key_account_sid': '<a href=https://www.twilio.com/console/project/api-keys/ target=_blank>Twilio Account SID</a>',
         'api_key_auth_token': 'Twilio Auth Token'
     }
 
