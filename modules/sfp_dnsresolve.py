@@ -141,7 +141,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
             # In case the domain of the provided host is different, report that too
             dom = self.sf.hostDomain(eventData, self.opts['_internettlds'])
-            if dom == eventData:
+            if dom == eventData or dom is None:
                 return None
             evt = SpiderFootEvent(ev, dom, self.__name__, parentEvent)
             self.notifyListeners(evt)
@@ -338,6 +338,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         # Report the domain for that host
         if htype == "INTERNET_NAME":
             dom = self.sf.hostDomain(host, self.opts['_internettlds'])
+            if not dom:
+                return None
             self.processDomain(dom, evt, False, host)
 
             # Try obtain the IPv6 address
@@ -359,6 +361,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         if htype == "AFFILIATE_INTERNET_NAME":
             dom = self.sf.hostDomain(host, self.opts['_internettlds'])
+            if not dom:
+                return None
             if dom == host and not self.sf.isDomain(dom, self.opts['_internettlds']):
                 return evt
             self.processDomain(dom, evt, True, host)

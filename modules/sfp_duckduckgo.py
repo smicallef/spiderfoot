@@ -56,6 +56,8 @@ class sfp_duckduckgo(SpiderFootPlugin):
 
         if self.opts['affiliatedomains'] and "AFFILIATE_" in eventName:
             eventData = self.sf.hostDomain(eventData, self.opts['_internettlds'])
+            if not eventData:
+                return None
 
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")

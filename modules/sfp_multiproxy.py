@@ -114,6 +114,8 @@ class sfp_multiproxy(SpiderFootPlugin):
         # Get the base domain if we're supplied a domain
         if targetType == "domain":
             targetDom = self.sf.hostDomain(target, self.opts['_internettlds'])
+            if not targetDom:
+                return None
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
