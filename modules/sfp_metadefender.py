@@ -27,7 +27,7 @@ class sfp_metadefender(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': 'MetaDefender API key.',
+        'api_key': '<a href=https://portal.opswat.com target=_blank>MetaDefender API key.</a>',
         'delay': 'Delay between requests, in seconds.'
     }
 
