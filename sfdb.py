@@ -464,6 +464,7 @@ class SpiderFootDb:
         Todo:
             Do something smarter to handle database locks
         """
+
         if not isinstance(instanceId, str):
             raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
@@ -506,8 +507,18 @@ class SpiderFootDb:
             None: success
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
+
+        if not isinstance(scanName, str):
+            raise TypeError("scanName is %s; expected str()" % type(scanName))
+
+        if not isinstance(scanTarget, str):
+            raise TypeError("scanTarget is %s; expected str()" % type(scanTarget))
 
         qry = "INSERT INTO tbl_scan_instance \
             (guid, name, seed_target, created, status) \
@@ -535,8 +546,12 @@ class SpiderFootDb:
             None: success
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
         qvars = list()
         qry = "UPDATE tbl_scan_instance SET "
@@ -574,8 +589,12 @@ class SpiderFootDb:
             list: scan instance info
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
         qry = "SELECT name, seed_target, ROUND(created/1000) AS created, \
             ROUND(started/1000) AS started, ROUND(ended/1000) AS ended, status \
@@ -595,15 +614,22 @@ class SpiderFootDb:
 
         Args:
             instanceId (str): scan instance ID
-            by (str): filter
+            by (str): filter by type
 
         Returns:
             list: scan instance info
 
         Raises:
-            ValueError: arg value was invalid
+            TypeError: arg type was invalid
+            ValueError: arg valie was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
+
+        if not isinstance(by, str):
+            raise TypeError("by is %s; expected str()" % type(by))
 
         if by not in ["type", "module", "entity"]:
             raise ValueError("Invalid filter by value: %s" % by)
@@ -653,6 +679,9 @@ class SpiderFootDb:
             IOError: database I/O failed
         """
 
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
+
         if not isinstance(eventType, str):
             raise TypeError("eventType is %s; expected str()" % type(eventType))
  
@@ -700,6 +729,9 @@ class SpiderFootDb:
             IOError: database I/O failed
         """
 
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
+
         if not isinstance(eventType, str):
             raise TypeError("eventType is %s; expected str()" % type(eventType))
  
@@ -736,8 +768,12 @@ class SpiderFootDb:
             list: scan logs
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
         qry = "SELECT generated AS generated, component, \
             type, message, rowid FROM tbl_scan_log WHERE scan_instance_id = ?"
@@ -776,8 +812,12 @@ class SpiderFootDb:
             list: scan errors
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
         qry = "SELECT generated AS generated, component, \
             message FROM tbl_scan_log WHERE scan_instance_id = ? \
@@ -806,8 +846,12 @@ class SpiderFootDb:
             None: success
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
         qry1 = "DELETE FROM tbl_scan_instance WHERE guid = ?"
         qry2 = "DELETE FROM tbl_scan_config WHERE scan_instance_id = ?"
@@ -837,8 +881,12 @@ class SpiderFootDb:
             bool: success
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
         with self.dbhLock:
             for resultHash in resultHashes:
@@ -999,8 +1047,12 @@ class SpiderFootDb:
             dict: configuration data
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
         qry = "SELECT component, opt, val FROM tbl_scan_config \
                 WHERE scan_instance_id = ? ORDER BY component, opt"
@@ -1024,7 +1076,7 @@ class SpiderFootDb:
         """Store an event in the database.
 
         Args:
-            instanceId (int): scan instance ID
+            instanceId (str): scan instance ID
             sfEvent (SpiderFootEvent): A SpiderFootEvent object with the following variables:
                 - eventType: the event, e.g. URL_FORM, RAW_DATA, etc.
                 - generated: time the event occurred
@@ -1041,35 +1093,40 @@ class SpiderFootDb:
 
         Raises:
             TypeError: arg type was invalid
+            ValueError: arg value was invalid
             IOError: database I/O failed
 
         Todo:
-            Validate args and modify error handling to raise instead of calling fatal()
+            Review event attribute validation and error handling
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
+
+        if not instanceId:
+            raise ValueError("instanceId is empty")
 
         if not isinstance(sfEvent, SpiderFootEvent):
             raise TypeError("sfEvent is %s; expected SpiderFootEvent()" % type(sfEvent))
 
-        storeData = ''
+        if not isinstance(sfEvent.data, str):
+            raise TypeError("sfEvent.data is %s; expected str()" % type(sfEvent.data))
 
-        if type(sfEvent.data) is not str:
-            # If sfEvent.data is a dict or list, convert it to a string first, as
-            # those types do not have a unicode converter.
-            if type(sfEvent.data) is str:
-                storeData = str(sfEvent.data)
-            else:
-                try:
-                    storeData = str(sfEvent.data)
-                except BaseException as e:
-                    self.sf.fatal("Unhandled type detected: " + str(type(sfEvent.data)))
-        else:
-            storeData = sfEvent.data
+        if not sfEvent.data:
+            raise ValueError("sfEvent.data is empty")
 
-        if truncateSize > 0:
-            storeData = storeData[0:truncateSize]
+        if not isinstance(sfEvent.sourceEventhash, str):
+            raise TypeError("sfEvent.sourceEventHash is %s; expected str()" % type(sfEvent.sourceEventHash))
 
-        if sfEvent.sourceEventHash in ["", None]:
-            self.sf.fatal("UNABLE TO CREATE RECORD WITH EMPTY SOURCE EVENT HASH!")
+        if not sfEvent.sourceEventHash:
+            raise ValueError("sfEvent.sourceEventHash is empty")
+
+        storeData = sfEvent.data
+
+        # truncate if required
+        if isinstance(truncateSize, int):
+            if truncateSize > 0:
+                storeData = storeData[0:truncateSize]
 
         # retrieve scan results
         # sfEvent.getHash() will return the event hash for the input sfEvent event
@@ -1082,7 +1139,7 @@ class SpiderFootDb:
                  sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
                  sfEvent.module, storeData, sfEvent.sourceEventHash]
 
-        #print("STORING: " + str(qvals))
+        #print("STORING: %s" % qvals)
 
         with self.dbhLock:
             try:
@@ -1129,8 +1186,12 @@ class SpiderFootDb:
             list: scan data history
 
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
         qry = "SELECT STRFTIME('%H:%M %w', generated, 'unixepoch') AS hourmin, \
                 type, COUNT(*) FROM tbl_scan_results \
@@ -1158,6 +1219,9 @@ class SpiderFootDb:
             TypeError: arg type was invalid
             IOError: database I/O failed
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
 
         if not isinstance(elementIdList, list):
             raise TypeError("elementIdList is %s; expected list()" % type(elementIdList))
@@ -1205,6 +1269,9 @@ class SpiderFootDb:
             IOError: database I/O failed
         """
 
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
+
         if not isinstance(elementIdList, list):
             raise TypeError("elementIdList is %s; expected list()" % type(elementIdList))
 
@@ -1251,12 +1318,15 @@ class SpiderFootDb:
 
         Raises:
             TypeError: arg type was invalid
-            ValueError: arg value was invalid
             IOError: database I/O failed
         """
 
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
+
         if not isinstance(childData, list):
             raise TypeError("childData is %s; expected list()" % type(childData))
+
         if not childData:
             raise ValueError("childData is empty")
 
@@ -1318,9 +1388,19 @@ class SpiderFootDb:
         Returns:
             list: TBD
 
-        Note: FOR NOW THE BEHAVIOR IS NOT THE SAME AS THE scanElementParent*
-              FUNCTIONS - THIS ONLY RETURNS IDS!!
+        Raises:
+            TypeError: arg type was invalid
+            IOError: database I/O failed
+
+        Note: This function is not the same as the scanElementParent* functions.
+              This function returns only ids.
         """
+
+        if not isinstance(instanceId, str):
+            raise TypeError("instanceId is %s; expected str()" % type(instanceId))
+
+        if not isinstance(parentIds, list):
+            raise TypeError("parentIds is %s; expected list()" % type(parentIds))
 
         datamap = list()
         keepGoing = True

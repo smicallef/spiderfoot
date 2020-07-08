@@ -1000,8 +1000,13 @@ class SpiderFootWebUi:
     # Scan log data
     def scanlog(self, id, limit=None, rowId=None, reverse=None):
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanLogs(id, limit, rowId, reverse)
         retdata = []
+
+        try:
+            data = dbh.scanLogs(id, limit, rowId, reverse)
+        except:
+            return json.dumps(retdata)
+
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
             retdata.append([generated, row[1], row[2], html.escape(row[3]), row[4]])
@@ -1012,8 +1017,13 @@ class SpiderFootWebUi:
     # Scan error data
     def scanerrors(self, id, limit=None):
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanErrors(id, limit)
         retdata = []
+
+        try:
+            data = dbh.scanErrors(id, limit)
+        except:
+            return json.dumps(retdata)
+
         for row in data:
             generated = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000))
             retdata.append([generated, row[1],
@@ -1101,8 +1111,13 @@ class SpiderFootWebUi:
     # Unique event results for a scan
     def scaneventresultsunique(self, id, eventType, filterfp=False):
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanResultEventUnique(id, eventType, filterfp)
         retdata = []
+
+        try:
+            data = dbh.scanResultEventUnique(id, eventType, filterfp)
+        except:
+            return json.dumps(retdata)
+
         for row in data:
             escaped = html.escape(row[0])
             retdata.append([escaped, row[1], row[2]])
@@ -1112,15 +1127,24 @@ class SpiderFootWebUi:
 
     # Search
     def search(self, id=None, eventType=None, value=None):
-        retdata = self.searchBase(id, eventType, value)
-        return json.dumps(retdata, ensure_ascii=False)
+        try:
+            data = self.searchBase(id, eventType, value)
+        except:
+            return json.dumps([])
+
+        return json.dumps(data, ensure_ascii=False)
 
     search.exposed = True
 
     # Historical data for the scan, graphs will be rendered in JS
     def scanhistory(self, id):
         dbh = SpiderFootDb(self.config)
-        data = dbh.scanResultHistory(id)
+
+        try:
+            data = dbh.scanResultHistory(id)
+        except:
+            return json.dumps([])
+
         return json.dumps(data, ensure_ascii=False)
 
     scanhistory.exposed = True
