@@ -18,6 +18,7 @@ class sfp_cookie(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
 

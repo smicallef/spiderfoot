@@ -31,7 +31,6 @@ class sfp_botvrij(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_botvrij': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18

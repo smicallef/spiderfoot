@@ -31,7 +31,6 @@ class sfp_talosintel(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_talosintel': True,
         'checkaffiliates': True,
         'cacheperiod': 18,
         'checknetblocks': True,

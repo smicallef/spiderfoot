@@ -21,6 +21,8 @@ class sfp_blockchain(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
+
     results = None
 
     def setup(self, sfc, userOpts=dict()):

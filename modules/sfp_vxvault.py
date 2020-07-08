@@ -32,7 +32,6 @@ class sfp_vxvault(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_vxvault': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18

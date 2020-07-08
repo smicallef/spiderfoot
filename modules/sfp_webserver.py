@@ -19,6 +19,7 @@ class sfp_webserver(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
 

@@ -32,7 +32,6 @@ class sfp_badipscom(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_badips': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18

@@ -32,7 +32,6 @@ class sfp_openphish(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_openphish': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18

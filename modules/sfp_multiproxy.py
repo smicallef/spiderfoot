@@ -32,7 +32,6 @@ class sfp_multiproxy(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_multiproxy': True,
         'checkaffiliates': True,
         'cacheperiod': 18
     }

@@ -32,7 +32,6 @@ class sfp_phishtank(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_phishtank': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18

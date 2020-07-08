@@ -33,7 +33,6 @@ class sfp_isc(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_isc': True,
         'checkaffiliates': True
     }
 

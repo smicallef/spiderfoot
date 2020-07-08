@@ -32,7 +32,6 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_cybercrime': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18

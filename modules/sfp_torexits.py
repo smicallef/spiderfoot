@@ -32,7 +32,6 @@ class sfp_torexits(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_torexits': True,
         'checkaffiliates': True,
         'cacheperiod': 18,
         'checknetblocks': True,

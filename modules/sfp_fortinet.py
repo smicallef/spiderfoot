@@ -33,7 +33,6 @@ class sfp_fortinet(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_fortiguard': True,
         'checkaffiliates': True
     }
 

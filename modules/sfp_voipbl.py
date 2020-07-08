@@ -31,7 +31,6 @@ class sfp_voipbl(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_voipbl': True,
         'checkaffiliates': True,
         'cacheperiod': 18,
         'checknetblocks': True,

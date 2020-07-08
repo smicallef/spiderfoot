@@ -21,6 +21,7 @@ class sfp_arin(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
     currentEventSrc = None

@@ -32,7 +32,6 @@ class sfp_watchguard(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_watchguard': True,
         'checkaffiliates': True
     }
 

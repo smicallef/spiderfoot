@@ -29,7 +29,6 @@ class sfp_customfeed(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_customfeed': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'url': "",

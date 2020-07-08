@@ -31,7 +31,6 @@ class sfp_cinsscore(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_cinsscore': True,
         'checkaffiliates': True,
         'cacheperiod': 18,
         'checknetblocks': True,

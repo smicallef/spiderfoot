@@ -33,7 +33,6 @@ class sfp_totalhash(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_totalhash': True,
         'checkaffiliates': True,
         'checkcohosts': True
     }

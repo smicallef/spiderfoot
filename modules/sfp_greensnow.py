@@ -31,7 +31,6 @@ class sfp_greensnow(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_greensnow': True,
         'checkaffiliates': True,
         'cacheperiod': 18,
         'checknetblocks': True,

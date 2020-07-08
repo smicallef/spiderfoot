@@ -31,7 +31,6 @@ class sfp_cleantalk(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_cleantalk': True,
         'checkaffiliates': True,
         'cacheperiod': 18,
         'checknetblocks': True,

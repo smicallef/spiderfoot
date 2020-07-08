@@ -31,7 +31,6 @@ class sfp_emergingthreats(SpiderFootPlugin):
 
     # Default options
     opts = {
-        '_emergingthreats': True,
         'checkaffiliates': True,
         'cacheperiod': 18,
         'checknetblocks': True,
