@@ -1115,7 +1115,7 @@ class SpiderFootDb:
         if not sfEvent.data:
             raise ValueError("sfEvent.data is empty")
 
-        if not isinstance(sfEvent.sourceEventhash, str):
+        if not isinstance(sfEvent.sourceEventHash, str):
             raise TypeError("sfEvent.sourceEventHash is %s; expected str()" % type(sfEvent.sourceEventHash))
 
         if not sfEvent.sourceEventHash:

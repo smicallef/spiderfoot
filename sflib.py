@@ -2594,11 +2594,17 @@ class SpiderFootPlugin(object):
         Returns:
             bool
         """
+        if not self.__scanId__:
+            return False
 
         scanstatus = self.__sfdb__.scanInstanceGet(self.__scanId__)
-        if scanstatus != None:              
-            if scanstatus[5] == "ABORT-REQUESTED":
-                return True
+
+        if not scanstatus:
+            return False
+
+        if scanstatus[5] == "ABORT-REQUESTED":
+            return True
+
         return False
 
     def watchedEvents(self):

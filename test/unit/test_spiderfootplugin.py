@@ -251,6 +251,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
                 return [None, None, None, None, None, status]
 
         sfp.__sfdb__ = DatabaseStub()
+        sfp.__scanId__ = 'example scan id'
 
         # pseudo-parameterized test
         for status, expectedReturnValue in [("RUNNING", False), ("ABORT-REQUESTED", True)]:
