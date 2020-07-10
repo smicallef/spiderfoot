@@ -1,37 +1,5 @@
 <%include file="HEADER.tmpl"/>
-<script type='text/javascript'>
-    activeTab = "global";
-    function saveSettings() {
-        var retarr = {}
-        $(":input").each(function(i) {
-            retarr[$(this).attr('id')] = $(this).val();
-        });
-
-        $("#allopts").val(JSON.stringify(retarr));
-    }
-
-    function clearSettings() {
-        $("#allopts").val("RESET");
-    }
-
-    function switchTab(tab) {
-        $("#optsect_"+activeTab).hide();
-        $("#optsect_"+tab).show();
-        $("#tab_"+activeTab).removeClass("active");
-        $("#tab_"+tab).addClass("active");
-        activeTab = tab;
-    }
-
-    function getFile(elemId) {
-       var elem = document.getElementById(elemId);
-       if(elem && document.createEvent) {
-          var evt = document.createEvent("MouseEvents");
-          evt.initEvent("click", true, false);
-          elem.dispatchEvent(evt);
-       }
-    }
-
-</script>
+    <script type='text/javascript' src='${docroot}/static/js/spiderfoot.opts.js'></script>
     <h2>Settings</h2>
 % if updated:
 <div class="alert alert-success">

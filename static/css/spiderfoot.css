@@ -1,3 +1,21 @@
+body {
+  padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+}
+
+.navbar-brand {
+  image-rendering:   -o-crisp-edges;         /* Opera */
+  image-rendering: -webkit-optimize-contrast;/* Webkit (non-standard naming) */
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;  /* IE (non-standard property) */
+}
+
+.brand-logo {
+  display: block;
+  float: left;
+  padding-top: 5px;
+  padding-right: 20px;
+}
+
 table.tablesorter thead tr .header {
 cursor: pointer;
 background-image: url(../img/sortbg.gif);
