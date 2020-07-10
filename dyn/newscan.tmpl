@@ -20,7 +20,7 @@
         <li id='usetab' class="active"><a onClick='switchTab("use")' href='#'>By Use Case</a></li>
         <li id='typetab'><a onClick='switchTab("type")' href='#'>By Required Data</a></li>
         <li id='moduletab'><a onClick='switchTab("module")' href='#'>By Module</a></li>
-        <div style='text-align: right; display: none' id='selectors'>
+        <div class='text-right hidden' id='selectors'>
         <button type="button" onClick='selectAll()' class="btn-mini btn-info">Select All</button>&nbsp;&nbsp;
         <button type="button" onClick='deselectAll()' class="btn-mini btn-info">De-Select All</button>
         </div>
@@ -36,7 +36,7 @@
         </td></tr>
         </table>
 
-        <table class="table table-striped table-condensed" id="moduletable" style='display: none'>
+        <table class="table table-striped table-condensed hidden" id="moduletable">
             <%
             modlist = dict()
             for item in modules:
@@ -59,7 +59,7 @@
                 % endif
             % endfor
         </table>
-        <table class="table table-striped table-condensed" id="typetable" style='display: none'>
+        <table class="table table-striped table-condensed hidden" id="typetable">
             <% count = 0 %>
             % for item in sorted(types):
                 % if count % 2 == 0:
@@ -78,7 +78,7 @@
             <input type=hidden id='modulelist' name='modulelist' value=''>
             <input type=hidden id='typelist' name='typelist' value=''>
             <button onClick='submitForm();' class="btn btn-danger">Run Scan</button>
-            <span class="help-block" style='font-size: 10px'>Note: Scan will be started immediately.</span>
+            <span class="help-block">Note: Scan will be started immediately.</span>
         </div>
     </div>
 </form>

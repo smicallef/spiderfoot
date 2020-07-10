@@ -172,13 +172,13 @@
                                     if (typeName == null) {
                                         table += "<td>" + data[i][8] + "</td>";
                                     }
-                                    table += "<td><pre style='border: 0px; background-color: inherit'>";
+                                    table += "<td><pre class='table-border-bg-inherit'>";
                                     table += sf.replace_sfurltag(data[i][1]);
                                     // for debug
-                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>";
+                                    table += "</pre></td><td><pre class='table-border-bg-inherit'>";
                                     table += sf.replace_sfurltag(data[i][2]);
-                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
-                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
+                                    table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][3];
+                                    table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][0];
                                     table += "</pre></td>";
                                     table += "</tr>";
                                 }
@@ -193,7 +193,7 @@
         // Visualisation
         function graphEvents(instanceId) {
             grid = "<div id='scansummary-content'><br>"
-            grid += "<div class='span12' style='height: 650px; width: 100%' id='graph-container'></div>"
+            grid += "<div class='span12 graph-container' id='graph-container'></div>"
             grid += "</div>"
 
             $("#scansummary-content").remove();
@@ -252,18 +252,18 @@
             grid = "<div id='scansummary-content'>"
             grid += "<div class='row'>"
             grid += "<div class='span12'>"
-            grid += "<div class='btn-toolbar' style='text-align: center'>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Total</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='tcounter'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Unique</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='ucounter'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Status</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='status'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Errors</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='errors'>?</button></div>"
+            grid += "<div class='btn-toolbar text-center'>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-large'><span class='font-size-36-px'>Total</span></button>"
+            grid += "<button class='btn disabled btn-inverse btn-large' id='tcounter'><span class='font-size-36-px'>?</span></button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-large'><span class='font-size-36-px'>Unique</span></button>"
+            grid += "<button class='btn disabled btn-inverse btn-large' id='ucounter'><span class='font-size-36-px'>?</span></button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-large'><span class='font-size-36-px'>Status</span></button>"
+            grid += "<button class='btn disabled btn-inverse btn-large' id='status'><span class='font-size-36-px'>?</span></button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-large'><span class='font-size-36-px'>Errors</span></button>"
+            grid += "<button class='btn disabled btn-inverse btn-large' id='errors'><span class='font-size-36-px'>?</span></button></div>"
             grid += "</div></div></div><br>"
             grid += "<div class='row'>"
-            grid += "<div class='span12' id='vbarsummary' style='height: 480px'></div>"
+            grid += "<div class='span12 height-480-px' id='vbarsummary'></div>"
             grid += "</div><br>"
             grid += "<div class='row'>"
             grid += "<div class='span12' id='logtable'></div>"
@@ -336,7 +336,7 @@
             dataloaders.push(
                 function() {
                     sf.fetchData('${docroot}/scanlog', {'id': instanceId, 'limit': 10}, function(data) {
-                            var table = "<div class='well'><table id='statuslog-content' class='table table-condensed' style='font-size: 90%'>";
+                            var table = "<div class='well'><table id='statuslog-content' class='table table-condensed font-size-90-percent'>";
                             table += "<thead><tr> <th>Time</th> <th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr";
@@ -346,7 +346,7 @@
                                 table += "><td>" + data[i][0] + "</a></td>";
                                 table += "<td>" + data[i][1] + "</td>";
                                 table += "<td>" + data[i][2] + "</td>";
-                                table += "<td><pre style='border: 0px; background-color: inherit; font-size: 90%'>" + data[i][3] + "</pre></td>";
+                                table += "<td><pre class='table-border-bg-inherit font-size-90-percent'>" + data[i][3] + "</pre></td>";
                                 table += "</tr>";
                             }
                             table += "</tbody></table></div>"
@@ -373,7 +373,7 @@
             navTo("btn-log");
             refresh = function() { viewScanLog(instanceId); }
             sf.fetchData('${docroot}/scanlog', {'id': instanceId}, function(data) {
-                            var table = "<table id='scansummary-content' class='table table-bordered table-striped table-condensed' style='font-size: 90%'>";
+                            var table = "<table id='scansummary-content' class='table table-bordered table-striped table-condensed font-size-90-percent'>";
                             table += "<thead><tr> <th>Time</th> <th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr";
@@ -383,7 +383,7 @@
                                 table += "><td>" + data[i][0] + "</a></td>";
                                 table += "<td>" + data[i][1] + "</td>";
                                 table += "<td>" + data[i][2] + "</td>";
-                                table += "<td><pre style='border: 0px; background-color: inherit; font-size: 90%'>" + data[i][3] + "</pre></td>";
+                                table += "<td><pre class='table-border-bg-inherit font-size-90-percent'>" + data[i][3] + "</pre></td>";
                                 table += "</tr>";
                             }
                             table += "</tbody></table>"
@@ -468,8 +468,8 @@
                             crumbs += format + "\", " + filterFP + ");'>";
                             crumbs += unescape(eventTypeLabel) + "</a></li>";
                             if (fpcount > 0) {
-                                crumbs += "<li class='pull-right' style='text-align: center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide " + fpcount + " False Positives: ";
-                                crumbs += "<input style='vertical-align: top' type='checkbox' ";
+                                crumbs += "<li class='pull-right text-center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide " + fpcount + " False Positives: ";
+                                crumbs += "<input class='vertical-align-top' type='checkbox' ";
                                 crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
                                 crumbs += ",'" + format + "', ";
                                 if (!filterFP) {
@@ -485,7 +485,7 @@
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'>";
                             table += "<thead><tr>";
-                            table += "<th style='text-align: center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'>";
+                            table += "<th class='text-center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'>";
                             table += "</th>";
                             table += "<th>Data Element</th></th>";
                             table += "<th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
@@ -494,22 +494,22 @@
                                     continue;
                                 }
                                 table += "<tr>";
-                                table += "<td style='text-align: center'><input type='checkbox' id='cb_" + data[i][7] + "'>";
+                                table += "<td class='text-center'><input type='checkbox' id='cb_" + data[i][7] + "'>";
                                 if (data[i][8] == "1") {
-                                    table += "<br><i class='icon-ban-circle' style='vertical-align: bottom' />";
+                                    table += "<br><i class='icon-ban-circle' class='vertical-align-bottom' />";
                                 }
                                 table += "</td>";
-                                table += "<td><pre style='border: 0px; background-color: inherit'>";
+                                table += "<td><pre class='table-border-bg-inherit'>";
                                 //table += "<a href='${docroot}/entityinfo?id=" + data[i][7] + "'>" + data[i][1] + "</a>";
                                 table += sf.replace_sfurltag(data[i][1]);
                                 // for debug
-                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
-                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
-                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>";
+                                //table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][7];
+                                //table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][5];
+                                //table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][6];
+                                table += "</pre></td><td><pre class='table-border-bg-inherit'>";
                                 table += sf.replace_sfurltag(data[i][2]);
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
+                                table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][3];
+                                table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][0];
                                 table += "</pre></td>";
                                 table += "</tr>";
                             }
@@ -552,8 +552,8 @@
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format;
                             crumbs += "\", " + filterFP + ");'>";
                             crumbs += unescape(eventTypeLabel) + "</a></li>";
-                            crumbs += "<li class='pull-right' style='text-align: center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide False Positives: ";
-                            crumbs += "<input style='vertical-align: top' type='checkbox' ";
+                            crumbs += "<li class='pull-right text-center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide False Positives: ";
+                            crumbs += "<input class='vertical-align-top' type='checkbox' ";
                             crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
                             crumbs += ",'" + format + "', ";
                             if (!filterFP) {
@@ -569,7 +569,7 @@
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
                             table += "<thead><tr> <th>Unique Data Element</th><th>Occurrences</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr><td><pre style='border: 0px; background-color: inherit'>";
+                                table += "<tr><td><pre class='table-border-bg-inherit'>";
                                 table += sf.replace_sfurltag(data[i][0]);
                                 table += "</pre></td><td>" + data[i][2] + "</td>";
                                 table += "</tr>";
@@ -601,7 +601,7 @@
                             }
                         }
                         $("#loader").fadeOut(500);
-                        $("#mainbody").append(crumbs + "<div id='scansummary-content' style='text-align: center'></div>");
+                        $("#mainbody").append(crumbs + "<div id='scansummary-content' class='text-center'></div>");
                         sf_viz_bubble("#scansummary-content", itemList)
                     });
                 }
@@ -614,7 +614,7 @@
                         crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
 
                         $("#loader").fadeOut(500);
-                        $("#mainbody").append(crumbs + "<div id='scansummary-content' style='text-align: center'></div>");
+                        $("#mainbody").append(crumbs + "<div id='scansummary-content' class='text-center'></div>");
                         sf_viz_dendrogram("#scansummary-content", data);
                     });
                 }
@@ -677,7 +677,7 @@
                 }
                 table += "</table>";
                 table += "<h4>Module Settings</h4>";
-                table += "<table class='table table-bordered table-striped' style='width: 400px'>";
+                table += "<table class='table table-bordered table-striped width-400-px'>";
                 table += "<thead><tr><th>Module</th> <th>Option</th> <th>Value</th></tr></thead><tbody>";
                 keys = [];
                 for (var key in data['config']) {
@@ -716,5 +716,5 @@
         }, 5000);
 
     </script>
-<iframe style='display: none' id='exportframe'>
+<iframe class="hidden" id='exportframe'>
 <%include file="FOOTER.tmpl"/>
