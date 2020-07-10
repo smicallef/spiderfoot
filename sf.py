@@ -373,7 +373,7 @@ if __name__ == '__main__':
                     print('{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
 
         if args.o == "json":
-            print("[", end='')
+            print("[")
 
         while True:
             info = dbh.scanInstanceGet(scanId)
