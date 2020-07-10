@@ -38,16 +38,3 @@
         $("[id^="+activeTab+"_]").prop("checked", false);
     }
 
-  $('#scantarget').popover({ 'html': true, 'animation': true, 'trigger': 'focus'});
-  if ("${selectedmods}" != "") {
-          switchTab("module");
-  
-          $("input[id^=module_]").each(function(id, obj) { 
-              if ("${selectedmods}".indexOf(obj.id.replace("module_", "")) >= 0) {
-                  $("#" + obj.id).attr("checked", true);
-              } else {
-                  $("#" + obj.id).attr("checked", false);
-              }
-          });
-  }
-
