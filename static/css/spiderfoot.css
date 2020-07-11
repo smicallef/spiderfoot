@@ -59,13 +59,11 @@ body {
   vertical-align: bottom;
 }
 
-table.tablesorter thead tr .header {
-cursor: pointer;
-background-image: url(../img/sortbg.gif);
-background-repeat: no-repeat; 
-background-position: center left; 
-padding-left: 20px; 
-margin-left: -1px; 
+.tablesorter-header {
+  cursor: pointer;
+  background-image: url(../img/sortbg.gif);
+  background-repeat: no-repeat;
+  background-position: center right;
 }
 
 a.link:hover {
