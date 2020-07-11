@@ -185,14 +185,14 @@
                             
                             buttons += "</div>";
                             var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter'>";
-                            table += "<thead><tr><th style='text-align: center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'></th> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th style='text-align: center'>Status</th> <th style='text-align: center'>Elements</th><th style='text-align: center'>Action</th> </tr></thead><tbody>";
+                            table += "<thead><tr><th class='text-center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'></th> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th class='text-center'>Status</th> <th class='text-center'>Elements</th><th class='text-center'>Action</th> </tr></thead><tbody>";
                             filtered = 0;
                             for (var i = 0; i < data.length; i++) {
                                 if (types != null && $.inArray(data[i][6], types)) {
                                     filtered++;
                                     continue;
                                 }
-                                table += "<tr><td style='text-align: center'><input type='checkbox' id='cb_" + data[i][0] + "'></td>"
+                                table += "<tr><td class='text-center'><input type='checkbox' id='cb_" + data[i][0] + "'></td>"
                                 table += "<td><a href=${docroot}/scaninfo?id=" + data[i][0] + ">" + data[i][1] + "</a></td>";
                                 table += "<td>" + data[i][2] + "</td>";
                                 table += "<td>" + data[i][3] + "</td>";
@@ -209,9 +209,9 @@
                                 if (data[i][6].indexOf("FAILED") >= 0) {
                                     statusy = "badge-important";
                                 }
-                                table += "<td style='text-align: center'><span class='badge " + statusy + "'>" + data[i][6] + "</span></td>";
-                                table += "<td style='text-align: center'>" + data[i][7] + "</td>";
-                                table += "<td style='text-align: center'>";
+                                table += "<td class='text-center'><span class='badge " + statusy + "'>" + data[i][6] + "</span></td>";
+                                table += "<td class='text-center'>" + data[i][7] + "</td>";
+                                table += "<td class='text-center'>";
                                 if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED" || data[i][6] == "INITIALIZING") {
                                     table += "<a rel='tooltip' title='Stop Scan' href=${docroot}/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray' /></a>";
                                 } else {
@@ -260,5 +260,5 @@
 
     </script>
 </div>
-<iframe style='display: none' id='exportframe'>
+<iframe class='hidden' id='exportframe'>
 <%include file="FOOTER.tmpl"/>

@@ -1,37 +1,5 @@
 <%include file="HEADER.tmpl"/>
-<script type='text/javascript'>
-    activeTab = "global";
-    function saveSettings() {
-        var retarr = {}
-        $(":input").each(function(i) {
-            retarr[$(this).attr('id')] = $(this).val();
-        });
-
-        $("#allopts").val(JSON.stringify(retarr));
-    }
-
-    function clearSettings() {
-        $("#allopts").val("RESET");
-    }
-
-    function switchTab(tab) {
-        $("#optsect_"+activeTab).hide();
-        $("#optsect_"+tab).show();
-        $("#tab_"+activeTab).removeClass("active");
-        $("#tab_"+tab).addClass("active");
-        activeTab = tab;
-    }
-
-    function getFile(elemId) {
-       var elem = document.getElementById(elemId);
-       if(elem && document.createEvent) {
-          var evt = document.createEvent("MouseEvents");
-          evt.initEvent("click", true, false);
-          elem.dispatchEvent(evt);
-       }
-    }
-
-</script>
+    <script type='text/javascript' src='${docroot}/static/js/spiderfoot.opts.js'></script>
     <h2>Settings</h2>
 % if updated:
 <div class="alert alert-success">
@@ -41,10 +9,10 @@
 </div>
 % endif
 <form class="form" action='${docroot}/savesettings' id=savesettingsform method='POST' enctype="multipart/form-data">
-<div style='text-align: left'>
+<div class='text-left'>
     <input type=hidden id='allopts' name='allopts' value=''>
     <input type=hidden id='token' name='token' value="${token}">
-    <input type="file" name='configFile' id="configFile" style='display:none' onChange='$("#savesettingsform").submit()' />
+    <input type="file" name='configFile' id="configFile" class='hidden' onChange='$("#savesettingsform").submit()' />
     <button onClick='saveSettings();' class='btn btn-primary'>Save Changes</button>
     <button onClick='getFile("configFile"); return false;' class='btn btn-info'>Import API Keys</button>
     <button onClick='javascript:window.location.href="${docroot}/optsexport?pattern=api_key"; return false' class='btn btn-info'>Export API Keys</button>
@@ -111,7 +79,7 @@
 </div>
 % for mod in sorted(opts['__modules__'].keys()):
     <% modopts = opts['__modules__'][mod]['opts'] %>
-    <div id='optsect_${mod}' style='display: none' class="tab-content">
+    <div id='optsect_${mod}' class="tab-content hidden">
     <h4>${mod} Settings</h4>
     <table class='table table-bordered table-striped'>
     <thead><tr> <th>Option</th> <th>Value</th></tr></thead>
