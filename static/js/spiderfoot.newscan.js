@@ -38,3 +38,13 @@
         $("[id^="+activeTab+"_]").prop("checked", false);
     }
 
+$(document).ready(function() {
+    $("#usetab").click(function() { switchTab("use"); });
+    $("#typetab").click(function() { switchTab("type"); });
+    $("#moduletab").click(function() { switchTab("module"); });
+    $("#btn-select-all").click(function() { selectAll(); });
+    $("#btn-deselect-all").click(function() { deselectAll(); });
+    $("#btn-run-scan").click(function() { submitForm(); });
+
+    $('#scantarget').popover({ 'html': true, 'animation': true, 'trigger': 'focus'});
+});

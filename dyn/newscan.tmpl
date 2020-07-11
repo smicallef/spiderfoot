@@ -17,12 +17,12 @@
 
     <div class="control-group">
         <ul class='nav nav-tabs'>
-        <li id='usetab' class="active"><a onClick='switchTab("use")' href='#'>By Use Case</a></li>
-        <li id='typetab'><a onClick='switchTab("type")' href='#'>By Required Data</a></li>
-        <li id='moduletab'><a onClick='switchTab("module")' href='#'>By Module</a></li>
+        <li id='usetab' class="active"><a href='#'>By Use Case</a></li>
+        <li id='typetab'><a href='#'>By Required Data</a></li>
+        <li id='moduletab'><a href='#'>By Module</a></li>
         <div class='text-right' id='selectors' style='display: none'>
-        <button type="button" onClick='selectAll()' class="btn-mini btn-info">Select All</button>&nbsp;&nbsp;
-        <button type="button" onClick='deselectAll()' class="btn-mini btn-info">De-Select All</button>
+        <button id="btn-select-all" type="button" class="btn-mini btn-info">Select All</button>&nbsp;&nbsp;
+        <button id="btn-deselect-all" type="button" class="btn-mini btn-info">De-Select All</button>
         </div>
         </ul>
         <table class="table table-striped table-condensed" id="usetable">
@@ -77,13 +77,12 @@
         <div class="controls">
             <input type=hidden id='modulelist' name='modulelist' value=''>
             <input type=hidden id='typelist' name='typelist' value=''>
-            <button onClick='submitForm();' class="btn btn-danger">Run Scan</button>
+            <button id="btn-run-scan" class="btn btn-danger">Run Scan</button>
             <span class="help-block">Note: Scan will be started immediately.</span>
         </div>
     </div>
 </form>
 <script type='text/javascript'>
-  $('#scantarget').popover({ 'html': true, 'animation': true, 'trigger': 'focus'});
   if ("${selectedmods}" != "") {
           switchTab("module");
 
