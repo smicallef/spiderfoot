@@ -29,6 +29,7 @@ class sfp_strangeheaders(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
 

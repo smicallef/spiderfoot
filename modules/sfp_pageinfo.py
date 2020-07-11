@@ -33,6 +33,7 @@ class sfp_pageinfo(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
 

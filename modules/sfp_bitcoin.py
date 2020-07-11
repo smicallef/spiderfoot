@@ -21,6 +21,7 @@ class sfp_bitcoin(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
 

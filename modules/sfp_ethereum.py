@@ -20,6 +20,7 @@ class sfp_ethereum(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
 

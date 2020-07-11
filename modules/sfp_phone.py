@@ -24,6 +24,7 @@ class sfp_phone(SpiderFootPlugin):
     opts = {}
 
     results = None
+    optdescs = {}
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc

@@ -23,6 +23,7 @@ class sfp_ripe(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
     currentEventSrc = None
