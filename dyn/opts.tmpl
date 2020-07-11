@@ -79,7 +79,7 @@
 </div>
 % for mod in sorted(opts['__modules__'].keys()):
     <% modopts = opts['__modules__'][mod]['opts'] %>
-    <div id='optsect_${mod}' class="tab-content hidden">
+    <div id='optsect_${mod}' class="tab-content" style="display: none">
     <h4>${mod} Settings</h4>
     <table class='table table-bordered table-striped'>
     <thead><tr> <th>Option</th> <th>Value</th></tr></thead>
