@@ -28,3 +28,11 @@ function getFile(elemId) {
       elem.dispatchEvent(evt);
    }
 }
+
+$(document).ready(function() {
+  $("#btn-save-changes").click(function() { saveSettings(); return false; });
+  $("#btn-import-config").click(function() { getFile("configFile"); return false; });
+  $("#btn-reset-settings").click(function() { clearSettings(); });
+  $("#btn-opt-export").click(function() { window.location.href=docroot + "/optsexport?pattern=api_key"; return false; });
+  $("#tab_global").click(function() { switchTab("global"); });
+});

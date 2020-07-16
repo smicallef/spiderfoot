@@ -13,16 +13,16 @@
     <input type=hidden id='allopts' name='allopts' value=''>
     <input type=hidden id='token' name='token' value="${token}">
     <input type="file" name='configFile' id="configFile" class='hidden' onChange='$("#savesettingsform").submit()' />
-    <button onClick='saveSettings();' class='btn btn-primary'>Save Changes</button>
-    <button onClick='getFile("configFile"); return false;' class='btn btn-info'>Import API Keys</button>
-    <button onClick='javascript:window.location.href="${docroot}/optsexport?pattern=api_key"; return false' class='btn btn-info'>Export API Keys</button>
-    <button onClick='clearSettings();' class='btn btn-danger'>Reset to Factory Default</button>
+    <button id="btn-save-changes" class='btn btn-primary'>Save Changes</button>
+    <button id="btn-import-config" class='btn btn-info'>Import API Keys</button>
+    <button id="btn-opt-export" class='btn btn-info'>Export API Keys</button>
+    <button id="btn-reset-settings" class='btn btn-danger'>Reset to Factory Default</button>
 <br><br>
 </div>
 
 <div class="tabbable tabs-left">
 <ul class="nav nav-tabs">
-<li id='tab_global' class="active"><a href='#' onClick='switchTab("global");'>Global</a></li>
+<li id='tab_global' class="active"><a href="#">Global</a></li>
 % for mod in sorted(opts['__modules__'].keys()):
     <% keylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].items() if not k.startswith('_')) %>
     % if len(keylist) > 0:
@@ -32,7 +32,7 @@
         if len(apikeylist) > 0: 
             keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\"></i>"
         %>
-        <li id='tab_${mod}'><a href='#' onClick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}${keyicon}</a></li>
+        <li id='tab_${mod}'><a href='#' onclick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}${keyicon}</a></li>
     % endif
 % endfor
 </ul>
