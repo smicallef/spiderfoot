@@ -61,7 +61,7 @@ class SpiderFootWebUi:
           'request.error_response': self.error_page
         })
 
-        secure_headers = SecureHeaders(csp="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'")
+        secure_headers = SecureHeaders(csp="default-src 'self'; script-src 'self' 'unsafe-inline' blob: ; style-src 'self' 'unsafe-inline'")
 
         cherrypy.config.update({
             "tools.response_headers.on": True,
