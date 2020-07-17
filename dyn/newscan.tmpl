@@ -15,6 +15,8 @@
             </div>
         </div>
 
+    <p></p>
+
     <div class="control-group">
         <ul class='nav nav-tabs'>
         <li id='usetab' class="active"><a href='#'>By Use Case</a></li>
@@ -50,7 +52,7 @@
                     <% apikeylist = dict((k, v) for k, v in modules[item]['opts'].items() if k.find("api_key") >= 0) %>
                     <%
                     if len(apikeylist) > 0:
-                        keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\" rel='tooltip' title='Needs API key'></i>"
+                        keyicon = "&nbsp;&nbsp;<i class=\"glyphicon glyphicon-lock\" rel='tooltip' title='Needs API key'></i>"
                     %>
                 % endif
 
@@ -82,6 +84,7 @@
         </div>
     </div>
 </form>
+
 <script type='text/javascript'>
   if ("${selectedmods}" != "") {
           switchTab("module");

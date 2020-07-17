@@ -35,10 +35,6 @@ body {
   background-color: inherit;
 }
 
-.font-size-36-px {
-  font-size: 36px;
-}
-
 .font-size-90-percent {
   font-size: 90%;
 }
@@ -103,5 +99,9 @@ fill: orangered ;
 
 .x.axis path {
 display: none;
+}
+
+.fade.in {
+   background: #fff;
 }
 

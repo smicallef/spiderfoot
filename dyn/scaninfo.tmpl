@@ -3,26 +3,26 @@
 <h2>${name} &nbsp;<img id=loader src=${docroot}/static/img/loader.gif></h2>
   <div class="btn-toolbar">
    <div class="btn-group">
-      <a id='btn-status' class="btn" onClick='scanStatusView("${id}")'><i class='icon-eye-open'></i>&nbsp;Status</a>
-      <a id='btn-browse' class="btn" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
-      <a id='btn-graph' class="btn" onClick='graphEvents("${id}")'><i class='icon-asterisk'></i>&nbsp;Graph</a>
-      <a id='btn-info' class="btn" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
-      <a id='btn-log' class="btn" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
+      <a id='btn-status' class="btn btn-default" onClick='scanStatusView("${id}")'><i class='glyphicon glyphicon-eye-open'></i>&nbsp;Status</a>
+      <a id='btn-browse' class="btn btn-default" onClick='browseEventList("${id}")'><i class='glyphicon glyphicon-th-list'></i>&nbsp;Browse</a>
+      <a id='btn-graph' class="btn btn-default" onClick='graphEvents("${id}")'><i class='glyphicon glyphicon-asterisk'></i>&nbsp;Graph</a>
+      <a id='btn-info' class="btn btn-default" onClick='viewScanConfig("${id}")'><i class='glyphicon glyphicon-cog'></i>&nbsp;Scan Settings</a>
+      <a id='btn-log' class="btn btn-default" onClick='viewScanLog("${id}")'><i class='glyphicon glyphicon-book'></i>&nbsp;Log</a>
     </div>
     <div id='btn-search' class='btn-group pull-right input-append'>
     <input class=span2 id=searchvalue type=text placeholder='Search...' data-toggle='popover' data-html=true data-animation=true data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchregex/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>.<br><br><b>Note</b> that the current scope is what's searched."> 
         <button class='btn btn-primary' id=searchbutton type=button onClick=$('#btn-search').popover('toggle');searchDirector('${id}')>
-            <i class='icon-search icon-white'></i>
+            <i class='glyphicon glyphicon-search glyphicon glyphicon-white'></i>
         </button>
     </div>
     <div class="btn-group pull-right">
-    <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
-    <a id='btn-export' rel="tooltip" title="Export Data" class="btn-success btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
+    <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn btn-default" onClick='refresh()'><i class='glyphicon glyphicon-refresh glyphicon glyphicon-white'></i></a>
+    <a id='btn-export' rel="tooltip" title="Export Data" class="btn-success btn btn-default" onClick='exportEventData("${id}", currentType)'><i class='glyphicon glyphicon-download-alt glyphicon glyphicon-white'></i></a>
     </div> 
     <div id='customtabview' class="btn-group pull-right">
-     <a id='btn-fullview' rel="tooltip" data-title="Full Data View" class="btn-inverse btn active" onClick='browseUpdate("full")'><i class='icon-th icon-white'></i></a>
-     <a id='btn-uniqueview' rel="tooltip" data-title="Unique Data View" class="btn-inverse btn" onClick='browseUpdate("unique")'><i class='icon-align-justify icon-white'></i></a>
-     <a id='btn-vizview' rel="tooltip" data-title="Visualize" class="btn-inverse btn dropdown-toggle" data-toggle="dropdown"><i class='icon-picture icon-white'></i></a>
+     <a id='btn-fullview' rel="tooltip" data-title="Full Data View" class="btn btn-default active" onClick='browseUpdate("full")'><i class='glyphicon glyphicon-th glyphicon glyphicon-white'></i></a>
+     <a id='btn-uniqueview' rel="tooltip" data-title="Unique Data View" class="btn btn-default" onClick='browseUpdate("unique")'><i class='glyphicon glyphicon-align-justify glyphicon glyphicon-white'></i></a>
+     <a id='btn-vizview' rel="tooltip" data-title="Visualize" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><i class='glyphicon glyphicon-picture glyphicon glyphicon-white'></i></a>
      <ul class="dropdown-menu">
         <li><a class='link' onClick='browseUpdate("viz-bubble-data")'>Bubble (Data Element)</a></li>
         <li><a class='link' onClick='browseUpdate("viz-bubble-source")'>Bubble (Source Data Element)</a></li>
@@ -30,12 +30,12 @@
      </ul>
     </div>
     <div id='customvizview' class="btn-group pull-right">
-     <a id='btn-random' rel="tooltip" data-title="Random Layout" class="btn-inverse btn active" onClick='vizUpdate("random")'><b>R</b></a>
-     <a id='btn-forceatlas' rel="tooltip" data-title="Force Layout" class="btn-inverse btn" onClick='vizUpdate("force")'><b>F</b></a>
-     <a id='btn-saveimage' rel="tooltip" data-title="Save Image" class="btn-inverse btn dropdown-toggle" onClick='vizUpdate("download")'><i class='icon-picture icon-white'></i></a>
+     <a id='btn-random' rel="tooltip" data-title="Random Layout" class="btn btn-default active" onClick='vizUpdate("random")'><b>R</b></a>
+     <a id='btn-forceatlas' rel="tooltip" data-title="Force Layout" class="btn btn-default" onClick='vizUpdate("force")'><b>F</b></a>
+     <a id='btn-saveimage' rel="tooltip" data-title="Save Image" class="btn btn-default dropdown-toggle" onClick='vizUpdate("download")'><i class='glyphicon glyphicon-picture glyphicon glyphicon-white'></i></a>
     </div>
     <div id='modifyactions' class="btn-group pull-right">
-        <a id='btn-setfp' rel="tooltip" data-title="Set/Unset False Positive flag" class="btn-warning btn dropdown-toggle" data-toggle="dropdown"><i class='icon-ban-circle icon-white'></i></a>
+        <a id='btn-setfp' rel="tooltip" data-title="Set/Unset False Positive flag" class="btn-warning btn btn-default dropdown-toggle" data-toggle="dropdown"><i class='glyphicon glyphicon-ban-circle glyphicon glyphicon-white'></i></a>
         <ul class="dropdown-menu">
             <li><a href='#' class='link' onClick='setFp(1)'>Set False Positive flag</a></li>
             <li><a href='#' class='link' onClick='setFp(0)'>Unset False Positive flag</a></li>
@@ -193,7 +193,7 @@
         // Visualisation
         function graphEvents(instanceId) {
             grid = "<div id='scansummary-content'><br>"
-            grid += "<div class='span12 graph-container' id='graph-container'></div>"
+            grid += "<div class='col-md-12 graph-container' id='graph-container'></div>"
             grid += "</div>"
 
             $("#scansummary-content").remove();
@@ -251,22 +251,22 @@
         function scanStatusView(instanceId) {
             grid = "<div id='scansummary-content'>"
             grid += "<div class='row'>"
-            grid += "<div class='span12'>"
+            grid += "<div class='col-md-12'>"
             grid += "<div class='btn-toolbar text-center'>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Total</span></button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' id='tcounter' style='font-size: 36px'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Unique</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' id='ucounter' style='font-size: 36px'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Status</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' id='status' style='font-size: 36px'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Errors</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' id='errors' style='font-size: 36px'>?</button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-lg btn-default'>Total</span></button>"
+            grid += "<button class='btn disabled btn-lg btn-default' id='tcounter'>?</button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-lg btn-default'>Unique</button>"
+            grid += "<button class='btn disabled btn-lg btn-default' id='ucounter'>?</button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-lg btn-default'>Status</button>"
+            grid += "<button class='btn disabled btn-lg btn-default' id='status'>?</button></div>"
+            grid += "<div class='btn-group'><button class='btn disabled btn-lg btn-default'>Errors</button>"
+            grid += "<button class='btn disabled btn-lg btn-default' id='errors'>?</button></div>"
             grid += "</div></div></div><br>"
             grid += "<div class='row'>"
-            grid += "<div class='span12 height-480-px' id='vbarsummary'></div>"
+            grid += "<div class='col-md-12 height-480-px' id='vbarsummary'></div>"
             grid += "</div><br>"
             grid += "<div class='row'>"
-            grid += "<div class='span12' id='logtable'></div>"
+            grid += "<div class='col-md-12' id='logtable'></div>"
             grid += "</div></div>"
 
             $("#scansummary-content").remove();
@@ -341,7 +341,7 @@
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr";
                                 if (data[i][2] == "ERROR") {
-                                    table += " class='error'"
+                                    table += " class='danger'"
                                 }
                                 table += "><td>" + data[i][0] + "</a></td>";
                                 table += "<td>" + data[i][1] + "</td>";
@@ -378,7 +378,7 @@
                             for (var i = 0; i < data.length; i++) {
                                 table += "<tr";
                                 if (data[i][2] == "ERROR") {
-                                    table += " class='error'"
+                                    table += " class='danger'"
                                 }
                                 table += "><td>" + data[i][0] + "</a></td>";
                                 table += "<td>" + data[i][1] + "</td>";
@@ -468,7 +468,7 @@
                             crumbs += format + "\", " + filterFP + ");'>";
                             crumbs += unescape(eventTypeLabel) + "</a></li>";
                             if (fpcount > 0) {
-                                crumbs += "<li class='pull-right text-center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide " + fpcount + " False Positives: ";
+                                crumbs += "<li class='pull-right text-center'><i class='glyphicon glyphicon-ban-circle' />&nbsp;&nbsp;Hide " + fpcount + " False Positives: ";
                                 crumbs += "<input class='vertical-align-top' type='checkbox' ";
                                 crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
                                 crumbs += ",'" + format + "', ";
@@ -496,7 +496,7 @@
                                 table += "<tr>";
                                 table += "<td class='text-center'><input type='checkbox' id='cb_" + data[i][7] + "'>";
                                 if (data[i][8] == "1") {
-                                    table += "<br><i class='icon-ban-circle' class='vertical-align-bottom' />";
+                                    table += "<br><i class='glyphicon glyphicon-ban-circle' class='vertical-align-bottom' />";
                                 }
                                 table += "</td>";
                                 table += "<td><pre class='table-border-bg-inherit'>";
@@ -552,7 +552,7 @@
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format;
                             crumbs += "\", " + filterFP + ");'>";
                             crumbs += unescape(eventTypeLabel) + "</a></li>";
-                            crumbs += "<li class='pull-right text-center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide False Positives: ";
+                            crumbs += "<li class='pull-right text-center'><i class='glyphicon glyphicon-ban-circle' />&nbsp;&nbsp;Hide False Positives: ";
                             crumbs += "<input class='vertical-align-top' type='checkbox' ";
                             crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
                             crumbs += ",'" + format + "', ";

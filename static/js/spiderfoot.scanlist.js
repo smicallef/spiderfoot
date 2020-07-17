@@ -124,8 +124,8 @@
                 }
                 var buttons = "<div class='btn-toolbar'>";
                 buttons += "<div class='btn-group'>";
-                buttons += "<button id='btn-filter' class='btn'><i class='icon-filter'></i>&nbsp;Filter: " + filter + "</button>";
-                buttons += "<button class='btn dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>";
+                buttons += "<button id='btn-filter' class='btn btn-default'><i class='glyphicon glyphicon-filter'></i>&nbsp;Filter: " + filter + "</button>";
+                buttons += "<button class='btn dropdown-toggle btn-default' data-toggle='dropdown'><span class='caret'></span></button>";
                 buttons += "<ul class='dropdown-menu'>";
                 buttons += "<li><a href='javascript:filter(\"all\")'>None</a></li>";
                 buttons += "<li><a href='javascript:filter(\"running\")'>Running</a></li>";
@@ -134,13 +134,13 @@
                 buttons += "</div>";
 
                 buttons += "<div class='btn-group pull-right'>";
-                buttons += "<button rel='tooltip' data-title='Delete Selected' id='btn-delete' class='btn btn-danger'><i class='icon-trash icon-white'></i></button>";
+                buttons += "<button rel='tooltip' data-title='Delete Selected' id='btn-delete' class='btn btn-default btn-danger'><i class='glyphicon glyphicon-trash glyphicon-white'></i></button>";
                 buttons += "</div>";
 
                 buttons += "<div class='btn-group pull-right'>";
-                buttons += "<button rel='tooltip' data-title='Refresh' id='btn-refresh' class='btn btn-success'><i class='icon-refresh icon-white'></i></a>";
-                buttons += "<button rel='tooltip' data-title='Export Selected' id='btn-export' class='btn btn-success'><i class='icon-download-alt icon-white'></i></button>";
-                buttons += "<button class='btn dropdown-toggle btn-success' data-toggle='dropdown'><span class='caret'></span></button>";
+                buttons += "<button rel='tooltip' data-title='Refresh' id='btn-refresh' class='btn btn-default btn-success'><i class='glyphicon glyphicon-refresh glyphicon-white'></i></a>";
+                buttons += "<button rel='tooltip' data-title='Export Selected' id='btn-export' class='btn btn-default btn-success'><i class='glyphicon glyphicon-download-alt glyphicon-white'></i></button>";
+                buttons += "<button class='btn btn-default dropdown-toggle btn-success' data-toggle='dropdown'><span class='caret'></span></button>";
                 buttons += "<ul class='dropdown-menu'>";
                 buttons += "<li><a href='javascript:exportSelected(\"csv\")'>CSV</a></li>";
                 buttons += "<li><a href='javascript:exportSelected(\"gexf\")'>GEXF</a></li>";
@@ -149,9 +149,9 @@
                 buttons += "</div>";
 
                 buttons += "<div class='btn-group pull-right'>";
-                buttons += "<button rel='tooltip' data-title='Re-run Selected' id='btn-rerun' class='btn btn-inverse'><i class='icon-repeat icon-white'></i></button>";
-                buttons += "<button rel='tooltip' data-title='Stop Selected' id='btn-stop' class='btn btn-inverse'>";
-                buttons += "<i class='icon-stop icon-white'></i></button>";
+                buttons += "<button rel='tooltip' data-title='Re-run Selected' id='btn-rerun' class='btn btn-default'><i class='glyphicon glyphicon-repeat glyphicon-white'></i></button>";
+                buttons += "<button rel='tooltip' data-title='Stop Selected' id='btn-stop' class='btn btn-default'>";
+                buttons += "<i class='glyphicon glyphicon-stop glyphicon-white'></i></button>";
                 buttons += "</div>";
 
                 buttons += "</div>";
@@ -184,12 +184,12 @@
                     table += "<td class='text-center'>" + data[i][7] + "</td>";
                     table += "<td class='text-center'>";
                     if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED" || data[i][6] == "INITIALIZING") {
-                        table += "<a rel='tooltip' title='Stop Scan' href=" + docroot + "/stopscan?id=" + data[i][0] +"><i class='icon-stop icon-gray' /></a>";
+                        table += "<a rel='tooltip' title='Stop Scan' href=" + docroot + "/stopscan?id=" + data[i][0] +"><i class='glyphicon glyphicon-stop text-muted' /></a>";
                     } else {
-                        table += "<a rel='tooltip' title='Delete Scan' href=" + docroot + "/scandelete?id=" + data[i][0] + "><i class='icon-trash icon-gray' /></a>";
-                        table += "&nbsp;&nbsp;<a rel='tooltip' title='Re-run Scan' href=" + docroot + "/rerunscan?id=" + data[i][0] + "><i class='icon-repeat icon-gray' /></a>";
+                        table += "<a rel='tooltip' title='Delete Scan' href=" + docroot + "/scandelete?id=" + data[i][0] + "><i class='glyphicon glyphicon-trash text-muted' /></a>";
+                        table += "&nbsp;&nbsp;<a rel='tooltip' title='Re-run Scan' href=" + docroot + "/rerunscan?id=" + data[i][0] + "><i class='glyphicon glyphicon-repeat text-muted' /></a>";
                     }
-                    table += "&nbsp;&nbsp;<a rel='tooltip' title='Clone Scan' href=" + docroot + "/clonescan?id=" + data[i][0] + "><i class='icon-plus-sign icon-gray' /></a>";
+                    table += "&nbsp;&nbsp;<a rel='tooltip' title='Clone Scan' href=" + docroot + "/clonescan?id=" + data[i][0] + "><i class='glyphicon glyphicon-plus-sign text-muted' /></a>";
                     table += "</td></tr>";
                 }
                 footer = "<div>Total Scans: <b>" + i + "</b>";

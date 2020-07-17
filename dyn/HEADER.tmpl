@@ -12,51 +12,67 @@
     <script type='text/javascript' src='${docroot}/static/js/viz.js'></script>
 
     <link href="${docroot}/static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="${docroot}/static/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link href="${docroot}/static/css/spiderfoot.css" rel="stylesheet">
   </head>
 
   <body>
 
-    <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <a class="navbar-brand brand-logo" href="${docroot}/"><img class="spiderfoot-header-image" src="${docroot}/static/img/spiderfoot-header.png" /></a>
-          <div class="nav-collapse collapse">
-            <ul class="nav">
-                    <li
+<nav class="navbar navbar-fixed-top navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand brand-logo" href="${docroot}/"><img class="spiderfoot-header-image" src="${docroot}/static/img/spiderfoot-header.png" /></a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="main-navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li
 % if pageid == "NEWSCAN":
     class="active"
 % endif
-><a href="${docroot}/newscan"><i class="icon-screenshot"></i>&nbsp;New Scan</a></li>
-                    <li 
+class="nav-item"
+><a href="${docroot}/newscan"><i class="glyphicon glyphicon-screenshot"></i>&nbsp;New Scan</a></li>
+        <li 
 % if pageid == "SCANLIST": 
     class="active"
 % endif
-><a href="${docroot}/"><i class="icon-list"></i>&nbsp;Scans</a></li>
-                    <li
+class="nav-item"
+><a href="${docroot}/"><i class="glyphicon glyphicon-list"></i>&nbsp;Scans</a></li>
+        <li
 % if pageid == "SETTINGS":
     class="active"
 %endif
-><a href="${docroot}/opts"><i class="icon-wrench"></i>&nbsp;Settings</a></li>
-            </ul>
-            <ul class="nav pull-right">
-                    <li><a href="#aboutmodal" data-toggle="modal"><i class="icon-info-sign"></i>&nbsp;About</a></li>
-            </ul>
-          </div><!--/.nav-collapse -->
-        </div>
-      </div>
+class="nav-item"><a href="${docroot}/opts" class="nav-link"><i class="glyphicon glyphicon-wrench"></i>&nbsp;Settings</a></li>
+ 
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="glyphicon glyphicon-cog"></i><span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="${docroot}/opts" class="nav-link"><i class="glyphicon glyphicon-wrench"></i>&nbsp;Settings</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#aboutmodal" data-toggle="modal" data-target="#aboutmodal"><i class="glyphicon glyphicon-info-sign"></i>&nbsp;About</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+    <div id="aboutmodal" class="modal fade" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+    <div class="modal-header">
+      <h3 class="modal-title">SpiderFoot 3.1-DEV</h3>
     </div>
 
-    <div id="aboutmodal" class="modal hide fade">
-    <div class="modal-header">
-    <h3>SpiderFoot 3.1-DEV</h3>
-    </div>
     <div class="modal-body">
     <p>SpiderFoot is an open source, GPL-licensed footprinting tool, created by <a href='https://twitter.com/binarypool' target=_new>Steve Micallef</a>. It is designed to be easy to use, fast and extensible.</p>
     <p>If you have any bugs to report, or requests for enhancements, please contact the support mailing list at <a href=mailto:support@spiderfoot.net>support@spiderfoot.net</a>.
@@ -67,10 +83,13 @@
     <p> Latest updates @ Twitter <a href='https://twitter.com/spiderfoot' target=_new>https://twitter.com/spiderfoot</a>.</p>
     <p> Join the OSINT community on RocketChat! #spiderfoot on <a href='https://osint.team' target=_new>osint.team</a>.</p>
     <p> Want something cloud-based with more capabilities? <a href='https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQvaHgvCg==&s=os_int' target=_new>Check out SpiderFoot HX</a>.</p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
 
     </div>
-    <div class="modal-footer">
-    <a href="#" data-dismiss="modal" class="btn">Close</a>
     </div>
     </div>
 
