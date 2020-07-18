@@ -169,27 +169,27 @@
                     table += "<td>" + data[i][3] + "</td>";
                     table += "<td>" + data[i][5] + "</td>";
                     if (data[i][6] == "FINISHED") {
-                        statusy = "badge-success";
+                        statusy = "alert-success";
                     }
                     if (data[i][6].indexOf("ABORT") >= 0) {
-                        statusy = "badge-warning";
+                        statusy = "alert-warning";
                     }
                     if (data[i][6] == "RUNNING" || data[i][6] == "STARTED" || data[i][6] == "STARTING" || data[i][6] == "INITIALIZING") {
-                        statusy = "badge-info";
+                        statusy = "alert-info";
                     }
                     if (data[i][6].indexOf("FAILED") >= 0) {
-                        statusy = "badge-important";
+                        statusy = "alert-danger";
                     }
                     table += "<td class='text-center'><span class='badge " + statusy + "'>" + data[i][6] + "</span></td>";
                     table += "<td class='text-center'>" + data[i][7] + "</td>";
                     table += "<td class='text-center'>";
                     if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED" || data[i][6] == "INITIALIZING") {
-                        table += "<a rel='tooltip' title='Stop Scan' href=" + docroot + "/stopscan?id=" + data[i][0] +"><i class='glyphicon glyphicon-stop text-muted' /></a>";
+                        table += "<a rel='tooltip' title='Stop Scan' href=" + docroot + "/stopscan?id=" + data[i][0] +"><i class='glyphicon glyphicon-stop text-muted'></i></a>";
                     } else {
-                        table += "<a rel='tooltip' title='Delete Scan' href=" + docroot + "/scandelete?id=" + data[i][0] + "><i class='glyphicon glyphicon-trash text-muted' /></a>";
-                        table += "&nbsp;&nbsp;<a rel='tooltip' title='Re-run Scan' href=" + docroot + "/rerunscan?id=" + data[i][0] + "><i class='glyphicon glyphicon-repeat text-muted' /></a>";
+                        table += "<a rel='tooltip' title='Delete Scan' href=" + docroot + "/scandelete?id=" + data[i][0] + "><i class='glyphicon glyphicon-trash text-muted'></i></a>";
+                        table += "&nbsp;&nbsp;<a rel='tooltip' title='Re-run Scan' href=" + docroot + "/rerunscan?id=" + data[i][0] + "><i class='glyphicon glyphicon-repeat text-muted'></i></a>";
                     }
-                    table += "&nbsp;&nbsp;<a rel='tooltip' title='Clone Scan' href=" + docroot + "/clonescan?id=" + data[i][0] + "><i class='glyphicon glyphicon-plus-sign text-muted' /></a>";
+                    table += "&nbsp;&nbsp;<a rel='tooltip' title='Clone Scan' href=" + docroot + "/clonescan?id=" + data[i][0] + "><i class='glyphicon glyphicon-plus-sign text-muted'></i></a>";
                     table += "</td></tr>";
                 }
                 footer = "<div>Total Scans: <b>" + i + "</b>";
