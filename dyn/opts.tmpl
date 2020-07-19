@@ -21,7 +21,7 @@
 </div>
 
 <div class="tabbable tabs-left">
-<ul class="nav nav-tabs">
+<ul class="nav nav-pills nav-stacked col-md-3">
 <li id='tab_global' class="active"><a href="#">Global</a></li>
 % for mod in sorted(opts['__modules__'].keys()):
     <% keylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].items() if not k.startswith('_')) %>
@@ -30,13 +30,17 @@
         <% apikeylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].items() if k.find("api_key") >= 0) %>
         <% 
         if len(apikeylist) > 0: 
-            keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\"></i>"
+            keyicon = "&nbsp;&nbsp;<i class=\"glyphicon glyphicon-lock\"></i>"
         %>
         <li id='tab_${mod}'><a href='#' onclick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}${keyicon}</a></li>
     % endif
 % endfor
 </ul>
-<div id='optsect_global' class="tab-content">
+</div>
+
+<div class="tab-content col-md-9">
+
+<div id='optsect_global' class="tab-pane active">
 <h4>Global Settings</h4>
 <table class='table table-bordered table-striped'>
 <thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>
@@ -79,7 +83,7 @@
 </div>
 % for mod in sorted(opts['__modules__'].keys()):
     <% modopts = opts['__modules__'][mod]['opts'] %>
-    <div id='optsect_${mod}' class="tab-content" style="display: none">
+    <div id='optsect_${mod}' class="tab-pane" style="display: none">
     <h4>${mod} Settings</h4>
     <table class='table table-bordered table-striped'>
     <thead><tr> <th>Option</th> <th>Value</th></tr></thead>
@@ -132,6 +136,7 @@
     </div>
 % endfor
 </div>
+</div> <!-- /tabbable tabs-left -->
 </form>
 <br><br>
 <%include file="FOOTER.tmpl"/>
