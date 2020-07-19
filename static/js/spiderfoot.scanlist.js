@@ -122,7 +122,7 @@
                 if (filter == null) {
                     filter = "None";
                 }
-                var buttons = "<div class='btn-toolbar'>";
+                var buttons = "<div class='btn-toolbar' style='padding-bottom: 10px'>";
                 buttons += "<div class='btn-group'>";
                 buttons += "<button id='btn-filter' class='btn btn-default'><i class='glyphicon glyphicon-filter'></i>&nbsp;Filter: " + filter + "</button>";
                 buttons += "<button class='btn dropdown-toggle btn-default' data-toggle='dropdown'><span class='caret'></span></button>";
@@ -155,7 +155,7 @@
                 buttons += "</div>";
 
                 buttons += "</div>";
-                var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter'>";
+                var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter' style='padding-top: 10px'>";
                 table += "<thead><tr><th class='text-center'><input id='checkall' type='checkbox'></th> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th class='text-center'>Status</th> <th class='text-center'>Elements</th><th class='text-center'>Action</th> </tr></thead><tbody>";
                 filtered = 0;
                 for (var i = 0; i < data.length; i++) {
