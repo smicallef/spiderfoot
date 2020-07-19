@@ -78,19 +78,16 @@ function sf_viz_vbar(targetId, gdata) {
 
     var formatPercent = d3.format(".0%");
 
-    var x = d3.scale.ordinal()
-        .rangeRoundBands([0, width], .1);
+    var x = d3.scaleBand()
+        .rangeRound([0, width])
+        .padding(0.1);
 
-    var y = d3.scale.linear()
+    var y = d3.scaleLinear()
         .range([height, 0]);
 
-    var xAxis = d3.svg.axis()
-        .scale(x)
-        .orient("bottom");
+    var xAxis = d3.axisBottom(x);
 
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .orient("left")
+    var yAxis = d3.axisLeft(y)
         .tickFormat(formatPercent);
 
 /*    var tip = d3.tip()
@@ -142,7 +139,7 @@ function sf_viz_vbar(targetId, gdata) {
       .enter().append("rect")
         .attr("class", "bar")
         .attr("x", function(d) { return x(d.name); })
-        .attr("width", x.rangeBand())
+        .attr("width", x.bandwidth())
         .attr("y", function(d) { return y(d.pct); })
         .attr("height", function(d) { return height - y(d.pct); })
         .on('mousedown', function(d) { showToolTip(" ",0,0,false); d.link(d); } )
@@ -284,7 +281,7 @@ function sf_viz_dendrogram(targetId, data) {
 function sf_viz_bubble(targetId, plotData) { 
     var diameter = 900,
         format = d3.format(",d"),
-        color = d3.scale.category20c();
+        color = d3.scaleLinear.category20c();
 
     var bubble = d3.layout.pack()
         .sort(null)
