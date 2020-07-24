@@ -122,7 +122,7 @@
                 if (filter == null) {
                     filter = "None";
                 }
-                var buttons = "<div class='btn-toolbar' style='padding-bottom: 10px'>";
+                var buttons = "<div class='btn-toolbar'>";
                 buttons += "<div class='btn-group'>";
                 buttons += "<button id='btn-filter' class='btn btn-default'><i class='glyphicon glyphicon-filter'></i>&nbsp;Filter: " + filter + "</button>";
                 buttons += "<button class='btn dropdown-toggle btn-default' data-toggle='dropdown'><span class='caret'></span></button>";
@@ -155,8 +155,8 @@
                 buttons += "</div>";
 
                 buttons += "</div>";
-                var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter' style='padding-top: 10px'>";
-                table += "<thead><tr><th class='text-center'><input id='checkall' type='checkbox'></th> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th class='text-center'>Status</th> <th class='text-center'>Elements</th><th class='text-center'>Action</th> </tr></thead><tbody>";
+                var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter'>";
+                table += "<thead><tr><th class='sorter-false text-center'><input id='checkall' type='checkbox'></th> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th class='text-center'>Status</th> <th class='text-center'>Elements</th><th class='sorter-false text-center'>Action</th> </tr></thead><tbody>";
                 filtered = 0;
                 for (var i = 0; i < data.length; i++) {
                     if (types != null && $.inArray(data[i][6], types)) {
@@ -192,17 +192,42 @@
                     table += "&nbsp;&nbsp;<a rel='tooltip' title='Clone Scan' href=" + docroot + "/clonescan?id=" + data[i][0] + "><i class='glyphicon glyphicon-plus-sign text-muted'></i></a>";
                     table += "</td></tr>";
                 }
+
+                table += '</tbody><tfoot><tr><th colspan="8" class="ts-pager form-inline">';
+                table += '<div class="btn-group btn-group-sm" role="group">';
+                table += '<button type="button" class="btn btn-default first"><span class="glyphicon glyphicon-step-backward"></span></button>';
+                table += '<button type="button" class="btn btn-default prev"><span class="glyphicon glyphicon-backward"></span></button>';
+                table += '</div>';
+                table += '<div class="btn-group btn-group-sm" role="group">';
+                table += '<button type="button" class="btn btn-default next"><span class="glyphicon glyphicon-forward"></span></button>';
+                table += '<button type="button" class="btn btn-default last"><span class="glyphicon glyphicon-step-forward"></span></button>';
+                table += '</div>';
+                table += '<select class="form-control input-sm pagesize" title="Select page size">';
+                table += '<option selected="selected" value="10">10</option>';
+                table += '<option value="20">20</option>';
+                table += '<option value="30">30</option>';
+                table += '<option value="all">All Rows</option>';
+                table += '</select>';
+                table += '<select class="form-control input-sm pagenum" title="Select page number"></select>';
+                table += '<span class="pagedisplay pull-right"></span>';
+                table += '</th></tr></tfoot>';
+                table += "</table>";
+
                 footer = "<div>Total Scans: <b>" + i + "</b>";
                 if (filtered > 0) {
                     footer += "&nbsp;&nbsp;(" + filtered + " filtered out)";
                 }
                 footer += "</div>";
-                table += "</tbody></table>" + footer;
+
                 $("#loader").fadeOut(500);
                 $("#scancontent-wrapper").remove();
-                $("#scancontent").append("<div id='scancontent-wrapper'> " + buttons + table + "</div>");
+                $("#scancontent").append("<div id='scancontent-wrapper'> " + buttons + table + footer + "</div>");
                 sf.updateTooltips();
-                $("#scanlist").tablesorter( { headers: { 7: { sorter: false }, 0: { sorter: false } } } );
+                $("#scanlist").tablesorter().tablesorterPager({
+                  container: $(".ts-pager"),
+                  cssGoto: ".pagenum",
+                  output: 'Scans {startRow} - {endRow} / {filteredRows} ({totalRows})'
+                });
                 $("[class^=tooltip]").remove();
 
                 $(document).ready(function() {
@@ -218,7 +243,6 @@
                             var end = chkboxes.index(lastChecked);
     
                             chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
-
                         }
 
                         lastChecked = this;
