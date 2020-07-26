@@ -21,6 +21,27 @@ body {
   image-rendering: auto;
 }
 
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table td {
+  word-wrap: break-word;
+}
+
+table td input {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+table pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
 .help-block {
   font-size: 10px;
 }
@@ -39,14 +60,6 @@ body {
   font-size: 90%;
 }
 
-.height-480-px {
-  height: 480px;
-}
-
-.width-400-px {
-  width: 400px;
-}
-
 .vertical-align-top {
   vertical-align: top;
 }
@@ -55,15 +68,8 @@ body {
   vertical-align: bottom;
 }
 
-.tablesorter-header {
-  cursor: pointer;
-  background-image: url(../img/sortbg.gif);
-  background-repeat: no-repeat;
-  background-position: center right;
-}
-
 a.link:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .dend-node circle {

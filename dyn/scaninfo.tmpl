@@ -1,7 +1,7 @@
 ## -*- coding: utf-8 -*-
 <%include file="HEADER.tmpl"/>
-<h2>${name} &nbsp;<img id=loader src=${docroot}/static/img/loader.gif></h2>
-  <div class="btn-toolbar">
+<h2>${name} &nbsp;<img id="loader" src="${docroot}/static/img/loader.gif"></h2>
+  <div class="btn-toolbar" style='padding-bottom: 10px'>
    <div class="btn-group">
       <a id='btn-status' class="btn btn-default" onClick='scanStatusView("${id}")'><i class='glyphicon glyphicon-eye-open'></i>&nbsp;Status</a>
       <a id='btn-browse' class="btn btn-default" onClick='browseEventList("${id}")'><i class='glyphicon glyphicon-th-list'></i>&nbsp;Browse</a>
@@ -164,7 +164,7 @@
                             } else {
                                 var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'><thead><tr>";
                                 if (typeName == null) {
-                                    table += "<th>Data Element Type</th>";
+                                    table += "<th class='sorter-false'>Data Element Type</th>";
                                 }
                                 table += "<th>Data Element</th><th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
                                 for (var i = 0; i < data.length; i++) {
@@ -263,7 +263,7 @@
             grid += "<button class='btn disabled btn-lg btn-default' id='errors'>?</button></div>"
             grid += "</div></div></div><br>"
             grid += "<div class='row'>"
-            grid += "<div class='col-md-12 height-480-px' id='vbarsummary'></div>"
+            grid += "<div class='col-md-12' id='vbarsummary'></div>"
             grid += "</div><br>"
             grid += "<div class='row'>"
             grid += "<div class='col-md-12' id='logtable'></div>"
@@ -336,14 +336,15 @@
             dataloaders.push(
                 function() {
                     sf.fetchData('${docroot}/scanlog', {'id': instanceId, 'limit': 10}, function(data) {
-                            var table = "<div class='well'><table id='statuslog-content' class='table table-condensed font-size-90-percent'>";
-                            table += "<thead><tr> <th>Time</th> <th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
+                            var table = "<div class='well'><h4>Recent Logs</h4><table id='statuslog-content' class='table table-bordered table-striped table-condensed font-size-90-percent'>";
+                            table += "<thead><tr><th>Time</th><th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr";
                                 if (data[i][2] == "ERROR") {
-                                    table += " class='danger'"
+                                    table += "<tr class='danger'>"
+                                } else {
+                                    table += "<tr>";
                                 }
-                                table += "><td>" + data[i][0] + "</a></td>";
+                                table += "<td>" + data[i][0] + "</a></td>";
                                 table += "<td>" + data[i][1] + "</td>";
                                 table += "<td>" + data[i][2] + "</td>";
                                 table += "<td><pre class='table-border-bg-inherit font-size-90-percent'>" + data[i][3] + "</pre></td>";
@@ -373,22 +374,24 @@
             navTo("btn-log");
             refresh = function() { viewScanLog(instanceId); }
             sf.fetchData('${docroot}/scanlog', {'id': instanceId}, function(data) {
-                            var table = "<table id='scansummary-content' class='table table-bordered table-striped table-condensed font-size-90-percent'>";
-                            table += "<thead><tr> <th>Time</th> <th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
+                            var table = "<div class='table-responsive'><table id='scansummary-content' class='table table-bordered table-striped table-condensed font-size-90-percent'>";
+                            table += "<thead><tr><th>Time</th><th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr";
                                 if (data[i][2] == "ERROR") {
-                                    table += " class='danger'"
+                                  table += "<tr class='danger'>";
+                                } else {
+                                  table += "<tr>";
                                 }
-                                table += "><td>" + data[i][0] + "</a></td>";
+                                table += "<td>" + data[i][0] + "</a></td>";
                                 table += "<td>" + data[i][1] + "</td>";
                                 table += "<td>" + data[i][2] + "</td>";
-                                table += "<td><pre class='table-border-bg-inherit font-size-90-percent'>" + data[i][3] + "</pre></td>";
+                                table += "<td>" + data[i][3] + "</td>";
                                 table += "</tr>";
                             }
-                            table += "</tbody></table>"
+                            table += "</tbody></table></div>";
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(table);
+                            $("#scansummary-content").tablesorter();
             });
         }
 
@@ -485,10 +488,13 @@
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'>";
                             table += "<thead><tr>";
-                            table += "<th class='text-center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'>";
-                            table += "</th>";
+                            table += "<th class='text-center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'></th>";
                             table += "<th>Data Element</th></th>";
-                            table += "<th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
+                            table += "<th>Source Data Element</th>";
+                            table += "<th>Source Module</th>";
+                            table += "<th>Identified</th>";
+                            table += "</tr></thead><tbody>";
+
                             for (var i = 0; i < data.length; i++) {
                                 if (filterFP && data[i][8] == "1") {
                                     continue;
@@ -668,7 +674,7 @@
                 table += "</table>";
                 table += "<h4>Global Settings</h4>";
                 table += "<table class='table table-bordered table-striped'>";
-                table += "<thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>";
+                table += "<thead><tr><th>Option</th><th>Value</th></tr></thead><tbody>";
                 for (var key in data['config']) {
                     if (key.indexOf(":") > 0) {
                         continue;
@@ -677,7 +683,7 @@
                 }
                 table += "</table>";
                 table += "<h4>Module Settings</h4>";
-                table += "<table class='table table-bordered table-striped width-400-px'>";
+                table += "<div class='table-responsive'><table class='table table-bordered table-striped' style='table-layout: fixed'>";
                 table += "<thead><tr><th>Module</th> <th>Option</th> <th>Value</th></tr></thead><tbody>";
                 keys = [];
                 for (var key in data['config']) {
@@ -692,7 +698,7 @@
                         table += "<tr><td>" + bits[0] + "</td><td>" + data['configdesc'][key] + "</td><td>" + data['config'][key] + "</td></tr>";
                     }
                 }
-                table += "</table></div>";
+                table += "</table></div></div>";
 
                 $("#loader").fadeOut(500);
                 $("#mainbody").append(table);
