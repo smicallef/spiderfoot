@@ -78,11 +78,11 @@ class sfp_pageinfo(SpiderFootPlugin):
             self.sf.debug("Not gathering page info for external site " + eventSource)
             return None
 
-        if eventSource not in self.results:
-            self.results[eventSource] = list()
-        else:
+        if eventSource in self.results:
             self.sf.debug("Already checked this page for a page type, skipping.")
             return None
+
+        self.results[eventSource] = list()
 
         # Check the configured regexps to determine the page type
         for regexpGrp in regexps:
@@ -109,11 +109,15 @@ class sfp_pageinfo(SpiderFootPlugin):
         matches = re.findall(pat, eventData)
         if len(matches) > 0:
             for match in matches:
-                if '://' in match and not self.getTarget().matches(self.sf.urlFQDN(match)):
-                    self.sf.debug("Externally hosted Javascript found at: " + match)
-                    evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match,
-                                          self.__name__, event)
-                    self.notifyListeners(evt)
+                if '://' not in match:
+                    continue
+                if not self.sf.urlFQDN(match):
+                    continue
+                if self.getTarget().matches(self.sf.urlFQDN(match)):
+                    continue
+                self.sf.debug("Externally hosted JavaScript found at: %s" % match)
+                evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match, self.__name__, event)
+                self.notifyListeners(evt)
 
         return None
 
