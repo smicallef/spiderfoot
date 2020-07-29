@@ -68,11 +68,16 @@ class SpiderFootWebUi:
             "tools.response_headers.headers": secure_headers.cherrypy()
         })
 
+        if (cherrypy.server.ssl_certificate != None and cherrypy.server.ssl_private_key != None):
+            url = "https://%s:%s%s" % (addr, self.config['__webport'], self.docroot)
+        else:
+            url = "http://%s:%s%s" % (addr, self.config['__webport'], self.docroot)
+
         print("")
         print("")
         print("*************************************************************")
         print(" Use SpiderFoot by starting your web browser of choice and ")
-        print(" browse to http://" + addr + ":" + str(self.config['__webport']) + self.docroot)
+        print(" browse to %s" % url)
         print("*************************************************************")
         print("")
         print("")
