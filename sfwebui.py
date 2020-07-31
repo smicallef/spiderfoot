@@ -1066,6 +1066,10 @@ class SpiderFootWebUi:
     def scanstatus(self, id):
         dbh = SpiderFootDb(self.config)
         data = dbh.scanInstanceGet(id)
+
+        if not data:
+            return json.dumps([])
+
         created = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data[2]))
         started = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data[3]))
         ended = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data[4]))

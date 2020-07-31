@@ -60,13 +60,13 @@ class TestSpiderFootWebUi(unittest.TestCase):
         sfwebui = SpiderFootWebUi(self.default_options)
         sfwebui.error_page()
 
-    @unittest.skip("todo")
     def test_error_page_404(self):
         """
         Test error_page_404(self, status, message, traceback, version)
         """
         sfwebui = SpiderFootWebUi(self.default_options)
-        sfwebui.error_page_404(None, None, None, None, None)
+        error_page_404 = sfwebui.error_page_404(None, None, None, None)
+        self.assertIsInstance(error_page_404, str)
 
     def test_clean_user_input_should_return_a_list(self):
         """
@@ -141,7 +141,11 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         Test scanexportjsonmulti(self, ids)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        search_results = sfwebui.scanexportjsonmulti(None)
+        self.assertIsInstance(search_results, bytes)
 
     @unittest.skip("todo")
     def test_scan_viz_should_return_a_string(self):
@@ -172,19 +176,26 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_rerunscan(self):
         """
         Test rerunscan(self, id)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        rerunscan = sfwebui.rerunscan("example scan instance")
+        self.assertIsInstance(rerunscan, str)
 
     @unittest.skip("todo")
     def test_rerunscanmulti(self):
         """
         Test rerunscanmulti(self, ids)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        rerunscanmulti = sfwebui.rerunscanmulti("example scan instance")
+        self.assertIsInstance(rerunscanmulti, str)
 
     @unittest.skip("todo")
     def test_newscan(self):
@@ -193,26 +204,35 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_clonescan(self):
         """
         Test clonescan(self, id)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        clone_scan = sfwebui.clonescan("example scan instance")
+        self.assertIsInstance(clone_scan, str)
 
-    @unittest.skip("todo")
     def test_index(self):
         """
         Test index(self)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        index = sfwebui.index()
+        self.assertIsInstance(index, str)
 
-    @unittest.skip("todo")
     def test_scaninfo(self):
         """
         Test scaninfo(self, id)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_info = sfwebui.scaninfo("example scan instance")
+        self.assertIsInstance(scan_info, str)
 
     @unittest.skip("todo")
     def test_opts(self):
@@ -248,19 +268,26 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_scandelete(self):
         """
         Test scandelete(self, id, confirm=None, raw=False)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_delete = sfwebui.scandelete("example scan id", None, None)
+        self.assertIsInstance(scan_delete, str)
 
     @unittest.skip("todo")
     def test_scandeletemulti(self):
         """
         Test scandeletemulti(self, ids, confirm=None)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        scan_delete = sfwebui.scandeletemulti("example scan id", None)
+        self.assertIsInstance(scan_delete, str)
 
     @unittest.skip("todo")
     def test_savesettings(self):
@@ -331,19 +358,25 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_stopscanmulti(self):
         """
         Test stopscanmulti(self, ids)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        stop_scan = sfwebui.stopscanmulti("example scan id")
+        self.assertIsInstance(stop_scan, str)
 
-    @unittest.skip("todo")
     def test_stopscan(self):
         """
         Test stopscan(self, id, cli=None)
         """
-        self.assertEqual('TBD', 'TBD')
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(opts)
+        stop_scan = sfwebui.stopscan("example scan id")
+        self.assertIsInstance(stop_scan, str)
 
     def test_scanlog_should_return_a_string(self):
         """
@@ -375,7 +408,6 @@ class TestSpiderFootWebUi(unittest.TestCase):
         scan_list = sfwebui.scanlist()
         self.assertIsInstance(scan_list, str)
 
-    @unittest.skip("todo")
     def test_scanstatus_should_return_a_string(self):
         """
         Test scanstatus(self, id)
@@ -383,7 +415,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
-        scan_status = sfwebui.scanstatus(None)
+        scan_status = sfwebui.scanstatus("example scan instance")
         self.assertIsInstance(scan_status, str)
 
     def test_scansummary_should_return_a_string(self):
