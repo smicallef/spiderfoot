@@ -390,8 +390,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # Start the web server so you can start looking at results
-    url = 'http://' + sfConfig['__webaddr'] + ":" + str(sfConfig['__webport']) + sfConfig['__docroot']
-    print(('Starting web server at %s ...' % url))
+    print('Starting web server at %s:%s ...' % (sfConfig['__webaddr'], sfConfig['__webport']))
 
     cherrypy.config.update({
         'server.socket_host': sfConfig['__webaddr'],
