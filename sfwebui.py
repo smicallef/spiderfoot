@@ -553,10 +553,11 @@ class SpiderFootWebUi:
     scaninfo.exposed = True
 
     # Settings
-    def opts(self):
+    def opts(self, updated=None):
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
         self.token = random.SystemRandom().randint(0, 99999999)
-        return templ.render(opts=self.config, pageid='SETTINGS', token=self.token, docroot=self.docroot)
+        return templ.render(opts=self.config, pageid='SETTINGS', token=self.token, 
+                            updated=updated, docroot=self.docroot)
 
     opts.exposed = True
 
@@ -697,8 +698,7 @@ class SpiderFootWebUi:
         except Exception as e:
             return self.error("Processing one or more of your inputs failed: " + str(e))
 
-
-        raise cherrypy.HTTPRedirect("/opts")
+        raise cherrypy.HTTPRedirect("/opts?updated=1")
 
     savesettings.exposed = True
 

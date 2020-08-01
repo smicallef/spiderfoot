@@ -213,15 +213,9 @@
                 table += '</th></tr></tfoot>';
                 table += "</table>";
 
-                footer = "<div>Total Scans: <b>" + i + "</b>";
-                if (filtered > 0) {
-                    footer += "&nbsp;&nbsp;(" + filtered + " filtered out)";
-                }
-                footer += "</div>";
-
                 $("#loader").fadeOut(500);
                 $("#scancontent-wrapper").remove();
-                $("#scancontent").append("<div id='scancontent-wrapper'> " + buttons + table + footer + "</div>");
+                $("#scancontent").append("<div id='scancontent-wrapper'> " + buttons + table + "</div>");
                 sf.updateTooltips();
                 $("#scanlist").tablesorter().tablesorterPager({
                   container: $(".ts-pager"),

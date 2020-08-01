@@ -46,12 +46,16 @@
 <thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>
 % for opt in sorted(opts.keys()):
     % if not opt.startswith("__"):
-    <tr><td>${opts['__globaloptdescs__'][opt]}</td><td>
+    <tr><td>${opts['__globaloptdescs__'][opt]}</td><td style='width: 75%;vertical-align: middle'>
         % if type(opts[opt]) is int:
-            <input id='${opt}' class='input-mini' type=text value="${opts[opt]}">
+        <div class='input-group-lg' style='width: 100px'>
+            <input id='${opt}' class='form-control' type=text value="${opts[opt]}">
+        </div>
         % endif
         % if type(opts[opt]) is str:
-            <input id='${opt}' class='input-xxlarge' type=text value="${opts[opt]}">
+        <div class='input-group-lg'>
+            <input id='${opt}' class='form-control' type=text value="${opts[opt]}">
+        </div>
         % endif
         % if type(opts[opt]) is bool:
         <%
@@ -69,11 +73,15 @@
         % endif
         % if type(opts[opt]) is list and type(opts[opt][0]) is str:
             <% expandedopt = ','.join(opts[opt]) %>
-            <input id='${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+            <div class='input-group-lg'>
+                <input id='${opt}' class='form-control' type=text value="${expandedopt}">
+            </div>
         % endif
         % if type(opts[opt]) is list and type(opts[opt][0]) is int:
             <% expandedopt = ','.join(str(x) for x in opts[opt]) %>
-            <input id='${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+            <div class='input-group-lg' style='width: 100px'>
+                <input id='${opt}' class='form-control' type=text value="${expandedopt}">
+            </div>
         % endif
     </td></tr>
     % endif
@@ -98,12 +106,16 @@
                 optdesc = opts['__modules__'][mod]['optdescs'][opt]
             %>
 
-            <tr><td>${optdesc}</td><td>
+            <tr><td>${optdesc}</td><td style='width: 75%;vertical-align: middle'>
             % if type(modopts[opt]) is int:
-                <input id='${mod}:${opt}' class='input-mini' type=text value="${modopts[opt]}">
+                <div class='input-group-lg' style='width: 100px'>
+                    <input id='${mod}:${opt}' class='form-control' type=text value="${modopts[opt]}">
+                </div>
             % endif
             % if type(modopts[opt]) is str:
-                <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${modopts[opt]}">
+                <div class='input-group-lg'>
+                    <input id='${mod}:${opt}' class='form-control' type=text value="${modopts[opt]}">
+                </div>
             % endif
             % if type(modopts[opt]) is bool:
             <%
@@ -121,11 +133,15 @@
             % endif
             % if type(modopts[opt]) is list and type(modopts[opt][0]) is str:
                 <% expandedopt = ','.join(modopts[opt]) %>
-                <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+                <div class='input-group-lg'>
+                    <input id='${mod}:${opt}' class='form-control' type=text value="${expandedopt}">
+                </div>
             % endif
             % if type(modopts[opt]) is list and type(modopts[opt][0]) is int:
                 <% expandedopt = ','.join(str(x) for x in modopts[opt]) %>
-                <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+                <div class='input-group-lg' style='width: 100px'>
+                    <input id='${mod}:${opt}' class='form-control' type=text value="${expandedopt}">
+                </div>
             % endif
 
             </td></tr>

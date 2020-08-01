@@ -9,8 +9,8 @@
       <a id='btn-info' class="btn btn-default" onClick='viewScanConfig("${id}")'><i class='glyphicon glyphicon-cog'></i>&nbsp;Scan Settings</a>
       <a id='btn-log' class="btn btn-default" onClick='viewScanLog("${id}")'><i class='glyphicon glyphicon-book'></i>&nbsp;Log</a>
     </div>
-    <div class='pull-right'>
-        <div id='btn-search' class='input-group'>
+    <div class='btn-group pull-right'>
+        <div id='btn-search' class='input-group pull-right'>
           <input class='form-control' id='searchvalue' type='text' placeholder='Search...' data-toggle='popover' data-html='true' data-animation='true' data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchregex/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>.<br><br><b>Note</b> that the current scope is what's searched.">
             <div class='input-group-btn'>
               <button class='btn btn-primary' id='searchbutton' type='button' onClick="$('#btn-search').popover('toggle');searchDirector('${id}')">
@@ -19,14 +19,11 @@
             </div>
         </div>
     </div>
-    <div class='pull-right'>
-        <div class="btn-group" role="group">
-            <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn btn-default" onClick='refresh()'><i class='glyphicon glyphicon-refresh glyphicon glyphicon-white'></i></a>
-            <a id='btn-export' rel="tooltip" title="Export Data" class="btn-success btn btn-default" onClick='exportEventData("${id}", currentType)'><i class='glyphicon glyphicon-download-alt glyphicon glyphicon-white'></i></a>
+        <div class="btn-group pull-right" role="group">
+            <button id='btn-refresh' rel="tooltip" title="Refresh" class="btn btn-success btn-default" onClick='refresh()'><i class='glyphicon glyphicon-refresh glyphicon glyphicon-white'></i></button>
+            <button id='btn-export' rel="tooltip" title="Export Data" class="btn btn-success btn-default" onClick='exportEventData("${id}", currentType)'><i class='glyphicon glyphicon-download-alt glyphicon glyphicon-white'></i></button>
         </div> 
-    </div>
-    <div class='pull-right'>
-        <div id='customtabview' role="group" class="btn-group">
+        <div id='customtabview' role="group" class="btn-group pull-right">
          <a id='btn-fullview' rel="tooltip" data-title="Full Data View" class="btn btn-default active" onClick='browseUpdate("full")'><i class='glyphicon glyphicon-th glyphicon glyphicon-white'></i></a>
          <a id='btn-uniqueview' rel="tooltip" data-title="Unique Data View" class="btn btn-default" onClick='browseUpdate("unique")'><i class='glyphicon glyphicon-align-justify glyphicon glyphicon-white'></i></a>
          <a id='btn-vizview' rel="tooltip" data-title="Visualize" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><i class='glyphicon glyphicon-picture glyphicon glyphicon-white'></i></a>
@@ -36,23 +33,18 @@
             <li><a class='link' onClick='browseUpdate("viz-dendro")'>Discovery Path</a></li>
          </ul>
         </div>
-    </div>
-    <div class='pull-right'>
-        <div id='customvizview' class="btn-group">
+        <div id='customvizview' class="btn-group pull-right">
          <a id='btn-random' rel="tooltip" data-title="Random Layout" class="btn btn-default active" onClick='vizUpdate("random")'><b>R</b></a>
          <a id='btn-forceatlas' rel="tooltip" data-title="Force Layout" class="btn btn-default" onClick='vizUpdate("force")'><b>F</b></a>
          <a id='btn-saveimage' rel="tooltip" data-title="Save Image" class="btn btn-default dropdown-toggle" onClick='vizUpdate("download")'><i class='glyphicon glyphicon-picture glyphicon glyphicon-white'></i></a>
         </div>
-    </div>
-    <div class='pull-right'>
-        <div id='modifyactions' role="group" class="btn-group">
+        <div id='modifyactions' role="group" class="btn-group pull-right">
             <a id='btn-setfp' rel="tooltip" data-title="Set/Unset False Positive flag" class="btn-warning btn btn-default dropdown-toggle" data-toggle="dropdown"><i class='glyphicon glyphicon-ban-circle glyphicon glyphicon-white'></i></a>
             <ul class="dropdown-menu">
                 <li><a href='#' class='link' onClick='setFp(1)'>Set False Positive flag</a></li>
                 <li><a href='#' class='link' onClick='setFp(0)'>Unset False Positive flag</a></li>
             </ul>
         </div>
-    </div>
   </div>
     <script src="${docroot}/static/js/sigma.min.js"></script>
     <script src="${docroot}/static/js/sigma.parsers.json.min.js"></script>
@@ -162,11 +154,11 @@
                             lastSearchType = typeName;
                             lastSearchQuery = query;
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                            crumbs += " <span class='divider'>&gt;</span></li>";
+                            crumbs += " <span class='divider'></span></li>";
                             if (typeName != null) {
                                 crumbs += " <li><a class='link' onClick=";
                                 crumbs += "'browseEventData(\"" + instanceId + "\",\"" + currentTypeName + "\",\"" + typeName + "\",\"full\");'>";
-                                crumbs += unescape(currentTypeName) + "</a><span class='divider'>&gt;</span></li>";
+                                crumbs += unescape(currentTypeName) + "</a><span class='divider'></span></li>";
                             }
                             crumbs += "<li>Search results";
                             crumbs += " (" + data.length + " records)</li></ul>";
@@ -348,7 +340,7 @@
             dataloaders.push(
                 function() {
                     sf.fetchData('${docroot}/scanlog', {'id': instanceId, 'limit': 10}, function(data) {
-                            var table = "<div class='well'><h4>Recent Logs</h4><table id='statuslog-content' class='table table-bordered table-striped table-condensed font-size-90-percent'>";
+                            var table = "<div><h4>Recent Logs</h4><table id='statuslog-content' class='table table-bordered table-striped table-condensed font-size-90-percent'>";
                             table += "<thead><tr><th>Time</th><th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 if (data[i][2] == "ERROR") {
@@ -478,12 +470,12 @@
                                 }
                             }
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                            crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                            crumbs += " <span class='divider'></span></li> <li><a class='link' onClick=";
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"";
                             crumbs += format + "\", " + filterFP + ");'>";
                             crumbs += unescape(eventTypeLabel) + "</a></li>";
                             if (fpcount > 0) {
-                                crumbs += "<li class='pull-right text-center'><i class='glyphicon glyphicon-ban-circle' />&nbsp;&nbsp;Hide " + fpcount + " False Positives: ";
+                                crumbs += "<div class='pull-right text-center'><i class='glyphicon glyphicon-ban-circle'></i>&nbsp;&nbsp;Hide " + fpcount + " False Positives: ";
                                 crumbs += "<input class='vertical-align-top' type='checkbox' ";
                                 crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
                                 crumbs += ",'" + format + "', ";
@@ -494,7 +486,7 @@
                                     fp = 0;
                                     ch = "checked";
                                 }
-                                crumbs += fp + ")\" " + ch + "></input></li>";
+                                crumbs += fp + ")\" " + ch + "></input></div>";
                             }
                             crumbs += "</ul>";
 
@@ -566,11 +558,11 @@
                 }
                 sf.fetchData('${docroot}/scaneventresultsunique', {'id': instanceId, 'eventType': eventType, 'filterfp': filterFP }, function(data) {
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                            crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                            crumbs += " <span class='divider'></span></li> <li><a class='link' onClick=";
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format;
                             crumbs += "\", " + filterFP + ");'>";
                             crumbs += unescape(eventTypeLabel) + "</a></li>";
-                            crumbs += "<li class='pull-right text-center'><i class='glyphicon glyphicon-ban-circle' />&nbsp;&nbsp;Hide False Positives: ";
+                            crumbs += "<div class='pull-right text-center'><i class='glyphicon glyphicon-ban-circle'></i>&nbsp;&nbsp;&nbsp;&nbsp;Hide False Positives: ";
                             crumbs += "<input class='vertical-align-top' type='checkbox' ";
                             crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
                             crumbs += ",'" + format + "', ";
@@ -581,7 +573,7 @@
                                 fp = 0;
                                 ch = "checked";
                             }
-                            crumbs += fp + ")\" " + ch + "></input></li>";
+                            crumbs += fp + ")\" " + ch + "></input></div>";
                             crumbs += "</ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
@@ -606,7 +598,7 @@
                 if (format.indexOf("viz-bubble") == 0) {
                     sf.fetchData('${docroot}/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
                         var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                        crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                        crumbs += " <span class='divider'>;</span></li> <li><a class='link' onClick=";
                         crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
                         crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
                         itemList = []
@@ -627,7 +619,7 @@
                 if (format == "viz-dendro") {
                     sf.fetchData("${docroot}/scanelementtypediscovery", {'id': instanceId, 'eventType': eventType }, function(data) {
                         var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                        crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                        crumbs += " <span class='divider'></span></li> <li><a class='link' onClick=";
                         crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
                         crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
 
