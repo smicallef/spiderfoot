@@ -80,6 +80,13 @@ class SpiderFootCli(cmd.Cmd):
     # Command completion for arguments
     def complete_default(self, text, line, startidx, endidx):
         ret = list()
+
+        if not isinstance(text, str):
+            return ret
+
+        if not isinstance(line, str):
+            return ret
+
         if "-m" in line and line.find("-m") > line.find("-t"):
             for m in self.modules:
                 if m.startswith(text):
@@ -197,6 +204,9 @@ class SpiderFootCli(cmd.Cmd):
 
     # Print nice tables.
     def pretty(self, data, titlemap=None):
+        if not data:
+            return ""
+
         out = list()
         # Get the column titles
         maxsize = dict()
@@ -322,6 +332,14 @@ class SpiderFootCli(cmd.Cmd):
 
     # Make a request to the SpiderFoot server
     def request(self, url, post=None):
+        if not url:
+            self.edprint("Invalid request URL")
+            return None
+
+        if not isinstance(url, str):
+            self.edprint("Invalid request URL: %s" % url)
+            return None
+
         #logging.basicConfig()
         #logging.getLogger().setLevel(logging.DEBUG)
         #requests_log = logging.getLogger("requests.packages.urllib3")

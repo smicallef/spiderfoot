@@ -19,6 +19,7 @@ class TestSpiderFootCli(unittest.TestCase):
         "cli.history_file": "",
         "cli.spool": False,
         "cli.spool_file": "",
+        "cli.ssl_verify": True,
         "cli.username": "",
         "cli.password": "",
         "cli.server_baseurl": "http://127.0.0.1:5001"
@@ -53,45 +54,41 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertIn("Unknown command", output)
 
-    @unittest.skip("todo")
-    def test_complete_start(self):
+    def test_complete_start_should_return_a_list(self):
         """
         Test complete_start(self, text, line, startidx, endidx)
         """
         sfcli = SpiderFootCli()
-        sfcli.complete_start(None, None, None, None)
+        start = sfcli.complete_start(None, None, None, None)
+        self.assertIsInstance(start, list)
+        self.assertEqual([], start)
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
-    def test_complete_find(self):
+    def test_complete_find_should_return_a_list(self):
         """
         Test complete_find(self, text, line, startidx, endidx)
         """
         sfcli = SpiderFootCli()
-        sfcli.complete_find(None, None, None, None)
+        find = sfcli.complete_find(None, None, None, None)
+        self.assertIsInstance(find, list)
+        self.assertEqual([], find)
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
-    def test_complete_data(self):
+    def test_complete_data_should_return_a_list(self):
         """
         Test complete_data(self, text, line, startidx, endidx)
         """
         sfcli = SpiderFootCli()
-        sfcli.complete_data(None, None, None, None)
+        data = sfcli.complete_data(None, None, None, None)
+        self.assertIsInstance(data, list)
+        self.assertEqual([], data)
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_complete_default(self):
         """
         Test complete_default(self, text, line, startidx, endidx)
         """
         sfcli = SpiderFootCli()
-        sfcli.complete_default(None, None, None, None)
-
-        self.assertEqual('TBD', 'TBD')
+        default = sfcli.complete_default(None, None, None, None)
+        self.assertIsInstance(default, list)
+        self.assertEqual([], default)
 
     def test_dprint(self):
         """
@@ -137,8 +134,28 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         Test do_history(self, line)
         """
-        sfcli = SpiderFootCli()
+        sfcli = SpiderFootCli(self.default_options)
+
         sfcli.do_history(None)
+
+        self.assertEqual('TBD', 'TBD')
+
+    @unittest.skip("todo")
+    def test_precmd_should_print_line(self):
+        """
+        Test precmd(self, line)
+        """
+        sfcli = SpiderFootCli()
+
+        line = "example line"
+
+        io_output = io.StringIO()
+        sys.stdout = io_output
+        precmd = sfcli.precmd(line)
+        sys.stdout = sys.__stdout__
+        output = io_output.getvalue()
+
+        self.assertEqual(line, precmd)
 
         self.assertEqual('TBD', 'TBD')
 
@@ -149,7 +166,8 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
 
-        line = 'example line'
+        line = "example line"
+
         precmd = sfcli.precmd(line)
 
         self.assertEqual(line, precmd)
@@ -187,15 +205,17 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertIn("example debug output", output)
 
-    @unittest.skip("todo")
-    def test_pretty(self):
+    def test_pretty_should_return_a_string(self):
         """
         Test pretty(self, data, titlemap=None)
         """
         sfcli = SpiderFootCli()
-        sfcli.pretty(None, None)
 
-        self.assertEqual('TBD', 'TBD')
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                pretty = sfcli.pretty(invalid_type)
+                self.assertEqual("", pretty)
 
     @unittest.skip("todo")
     def test_request(self):
