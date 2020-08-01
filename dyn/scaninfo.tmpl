@@ -673,7 +673,7 @@
                 table += "<tr><td>Status:</td><td>" + data['meta'][5] + "</td></tr>";
                 table += "</table>";
                 table += "<h4>Global Settings</h4>";
-                table += "<table class='table table-bordered table-striped'>";
+                table += "<table class='table table-bordered table-striped' style='table-layout: fixed'>";
                 table += "<thead><tr><th>Option</th><th>Value</th></tr></thead><tbody>";
                 for (var key in data['config']) {
                     if (key.indexOf(":") > 0) {
