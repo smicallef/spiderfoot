@@ -1,0 +1,4 @@
+#!/bin/sh
+openssl req -new -newkey rsa:4096 -sha256 -x509 -days 365 -nodes -out spiderfoot.crt -keyout spiderfoot.key -subj "/CN=localhost"
+chmod 600 spiderfoot.crt
+chmod 600 spiderfoot.key
