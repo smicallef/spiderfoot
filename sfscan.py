@@ -167,7 +167,7 @@ class SpiderFootScanner():
             None
         """
 
-        if status not in ["INITIALIZING", "STARTING", "STARTED", "RUNNING", "ABORT-REQUESTED", "ABORTED", "FINISHED", "ERROR-FAILED"]:
+        if status not in ["INITIALIZING", "STARTING", "STARTED", "RUNNING", "ABORT-REQUESTED", "ABORTED", "ABORTING", "FINISHED", "ERROR-FAILED"]:
             raise ValueError("Invalid scan status '%s'" % status)
 
         self.status = status
