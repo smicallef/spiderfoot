@@ -30,7 +30,7 @@ function getFile(elemId) {
 }
 
 $(document).ready(function() {
-  $("#btn-save-changes").click(function() { saveSettings(); return false; });
+  $("#btn-save-changes").click(function() { saveSettings(); });
   $("#btn-import-config").click(function() { getFile("configFile"); return false; });
   $("#btn-reset-settings").click(function() { clearSettings(); });
   $("#btn-opt-export").click(function() { window.location.href=docroot + "/optsexport?pattern=api_key"; return false; });

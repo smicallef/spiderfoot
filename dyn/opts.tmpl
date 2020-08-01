@@ -8,12 +8,12 @@
  Settings updated. These will take effect the next time you run a scan.
 </div>
 % endif
-<form class="form" action='${docroot}/savesettings' id=savesettingsform method='POST' enctype="multipart/form-data">
+<form class="form" action='${docroot}/savesettings' id="savesettingsform" method='POST' enctype="multipart/form-data">
 <div class='text-left'>
     <input type=hidden id='allopts' name='allopts' value=''>
     <input type=hidden id='token' name='token' value="${token}">
     <input type="file" name='configFile' id="configFile" class='hidden' onChange='$("#savesettingsform").submit()' />
-    <button id="btn-save-changes" class='btn btn-primary'>Save Changes</button>
+    <button id="btn-save-changes" class='btn btn-primary' type="submit">Save Changes</button>
     <button id="btn-import-config" class='btn btn-info'>Import API Keys</button>
     <button id="btn-opt-export" class='btn btn-info'>Export API Keys</button>
     <button id="btn-reset-settings" class='btn btn-danger'>Reset to Factory Default</button>
