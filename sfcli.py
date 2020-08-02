@@ -56,6 +56,7 @@ class SpiderFootCli(cmd.Cmd):
         "cli.history_file": "",
         "cli.spool": False,
         "cli.spool_file": "",
+        "cli.ssl_verify": True,
         "cli.username": "",
         "cli.password": "",
         "cli.server_baseurl": "http://127.0.0.1:5001"
@@ -355,6 +356,7 @@ class SpiderFootCli(cmd.Cmd):
             if not post:
                 r = requests.get(url,
                              headers = headers,
+                             verify = self.ownopts['cli.ssl_verify'],
                              auth = requests.auth.HTTPDigestAuth(
                                         self.ownopts['cli.username'],
                                         self.ownopts['cli.password']
@@ -363,6 +365,7 @@ class SpiderFootCli(cmd.Cmd):
             else:
                 r = requests.post(url,
                              headers = headers,
+                             verify = self.ownopts['cli.ssl_verify'],
                              auth = requests.auth.HTTPDigestAuth(
                                         self.ownopts['cli.username'],
                                         self.ownopts['cli.password']
@@ -1210,6 +1213,7 @@ if __name__ == "__main__":
     p.add_argument("-l", metavar="FILE", type=str, help="Log command history to FILE. By default, history is stored to ~/.spiderfoot_history unless disabled with -n.")
     p.add_argument("-n", action='store_true', help="Disable history logging.")
     p.add_argument("-o", metavar="FILE", type=str, help="Spool commands and output to FILE.")
+    p.add_argument("-i", help="Allow insecure server connections when using SSL", action='store_true')
     p.add_argument("-q", help="Silent output, only errors reported.", action='store_true')
     p.add_argument("-k", help="Turn off color-coded output.", action='store_true')
     p.add_argument("-b", "-v", help="Print the banner w/ version and exit.", action='store_true')
@@ -1241,6 +1245,8 @@ if __name__ == "__main__":
         except BaseException as e:
             print("Unable to open " + args.P + ":" + " (" + str(e) + ")")
             sys.exit(-1)
+    if args.i:
+        s.ownopts['cli.ssl_verify'] = False
     if args.k:
         s.ownopts['cli.color'] = False
     if args.s:
