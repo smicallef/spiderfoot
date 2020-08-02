@@ -361,8 +361,11 @@
                         $('#scanstatusbadge').removeClass(["alert-info", "alert-warning", "alert-danger"]).addClass(statusy);
                         $('#status').html(scanStatus);
                         $("#vbarsummary").empty();
-                        sf_viz_vbar("#vbarsummary", scanSummary);
-
+                        if (scanSummary.length == 0) {
+                          $("#vbarsummary").append("<div id='scansummary-content' class='alert alert-warning'><h4>No data.</h4>If the scan is still running please try again soon.</div>");
+                        } else {
+                          sf_viz_vbar("#vbarsummary", scanSummary);
+                        }
                         $("#loader").fadeOut(500);
                     });
                 }
