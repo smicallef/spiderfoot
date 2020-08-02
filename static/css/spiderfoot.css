@@ -17,7 +17,8 @@ body {
 }
 
 .spiderfoot-header-image {
-  height: 40px;
+  height: 35px;
+  padding-top: 5px;
   image-rendering: auto;
 }
 

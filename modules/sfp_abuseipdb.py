@@ -16,27 +16,21 @@ import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-    'AbuseIPDB Single IP': {
+    'AbuseIPDB': {
         'id': 'abuseipdbip',
-        'type': 'query',
+        'type': 'list',
         'checks': ['ip'],
-        'url': 'https://www.abuseipdb.com/check/{0}/json?key={1}&days={2}'
-    },
-    'AbuseIPDB Netblock': {
-        'id': 'abuseipdbnetblock',
-        'type': 'query',
-        'checks': ['netblock'],
-        'url': 'https://www.abuseipdb.com/check-block/json?network={0}&key={1}&days={2}'
+        'url': 'https://api.abuseipdb.com/api/v2/blacklist?confidenceMinimum={0}&plaintext=1'
     }
 }
 
 class sfp_abuseipdb(SpiderFootPlugin):
-    """AbuseIPDB:Investigate,Passive:Reputation Systems:apikey:Check if a netblock or IP is malicious according to AbuseIPDB.com."""
+    """AbuseIPDB:Investigate,Passive:Reputation Systems:apikey:Check if an IP address is malicious according to AbuseIPDB.com."""
 
     # Default options
     opts = {
         'api_key': '',
-        'daysback': 30,
+        'confidenceminimum': 90,
         'checkaffiliates': True,
         'checknetblocks': True,
         'checksubnets': True
@@ -45,7 +39,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'api_key': "AbuseIPDB.com API key.",
-        'daysback': "How far back to query, in days?",
+        'confidenceminimum': "The minimium AbuseIPDB confidence level to require.",
         'checkaffiliates': "Apply checks to affiliates?",
         'checknetblocks': "Report if any malicious IPs are found within owned netblocks?",
         'checksubnets': "Check if any malicious IPs are found within the same subnet of the target?"
@@ -98,44 +92,97 @@ class sfp_abuseipdb(SpiderFootPlugin):
         self.sf.debug("Neither good nor bad, unknown.")
         return None
 
-    # Look up 'query' type sources
-    def resourceQuery(self, id, target, targetType):
-        apikey = self.opts['api_key']
-        daysback = self.opts['daysback']
-        self.sf.debug("Querying " + id + " for maliciousness of " + target)
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if id == cid and malchecks[check]['type'] == "query":
-                url = str(malchecks[check]['url'])
-                res = self.sf.fetchUrl(url.format(target, apikey, daysback),
-                                       timeout=self.opts['_fetchtimeout'],
-                                       useragent=self.opts['_useragent'])
-                if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target, "masked", daysback), False)
-                    return None
-
-                try:
-                    if "rate limit" in res['content']:
-                        return None
-                    j = json.loads(res['content'])
-                    if len(j) == 0:
-                        return None
-                except BaseException as e:
-                    self.sf.error("Malformatted JSON response: " + str(e), False)
-                    return None
-
-                return "https://www.abuseipdb.com/check/" + target
-
-        return None
-
     def lookupItem(self, resourceId, itemType, target):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
                 self.sf.debug("Checking maliciousness of " + target + " (" +
                               itemType + ") with: " + cid)
-                if malchecks[check]['type'] == "query":
-                    return self.resourceQuery(cid, target, itemType)
+                if malchecks[check]['type'] == "list":
+                    return self.resourceList(cid, target, itemType)
+        return None
+
+    # Look up 'list' type resources
+    def resourceList(self, id, target, targetType):
+        targetDom = ''
+        # Get the base domain if we're supplied a domain
+        if targetType == "domain":
+            targetDom = self.sf.hostDomain(target, self.opts['_internettlds'])
+            if not targetDom:
+                return None
+
+        for check in list(malchecks.keys()):
+            cid = malchecks[check]['id']
+            if id == cid and malchecks[check]['type'] == "list":
+                data = dict()
+                url = malchecks[check]['url'].format(self.opts['confidenceminimum'])
+                hdr = {
+                    'Key': self.opts['api_key'],
+                    'Accept': "text/plain"
+                }
+                data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+                                        useragent=self.opts['_useragent'], headers=hdr)
+                if data['content'] is None:
+                    self.sf.error("Unable to fetch " + url, False)
+                    return None
+
+                url = "https://www.abuseipdb.com/check/" + target
+
+                # If we're looking at netblocks
+                if targetType == "netblock":
+                    iplist = list()
+                    # Get the regex, replace {0} with an IP address matcher to
+                    # build a list of IP.
+                    # Cycle through each IP and check if it's in the netblock.
+                    if 'regex' in malchecks[check]:
+                        rx = malchecks[check]['regex'].replace("{0}",
+                                                               "(\d+\.\d+\.\d+\.\d+)")
+                        pat = re.compile(rx, re.IGNORECASE)
+                        self.sf.debug("New regex for " + check + ": " + rx)
+                        for line in data['content'].split('\n'):
+                            grp = re.findall(pat, line)
+                            if len(grp) > 0:
+                                #self.sf.debug("Adding " + grp[0] + " to list.")
+                                iplist.append(grp[0])
+                    else:
+                        iplist = data['content'].split('\n')
+
+                    for ip in iplist:
+                        if len(ip) < 8 or ip.startswith("#"):
+                            continue
+                        ip = ip.strip()
+
+                        try:
+                            if IPAddress(ip) in IPNetwork(target):
+                                self.sf.debug(ip + " found within netblock/subnet " +
+                                              target + " in " + check)
+                                return url
+                        except Exception as e:
+                            self.sf.debug("Error encountered parsing: " + str(e))
+                            continue
+
+                    return None
+
+                # If we're looking at hostnames/domains/IPs
+                if 'regex' not in malchecks[check]:
+                    for line in data['content'].split('\n'):
+                        if line == target or (targetType == "domain" and line == targetDom):
+                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                            return url
+                else:
+                    # Check for the domain and the hostname
+                    try:
+                        rxDom = str(malchecks[check]['regex']).format(targetDom)
+                        rxTgt = str(malchecks[check]['regex']).format(target)
+                        for line in data['content'].split('\n'):
+                            if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
+                                    re.match(rxTgt, line, re.IGNORECASE):
+                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                                return url
+                    except BaseException as e:
+                        self.sf.debug("Error encountered parsing 2: " + str(e))
+                        continue
+
         return None
 
     # Handle events sent to this module
