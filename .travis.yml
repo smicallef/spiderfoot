@@ -9,4 +9,4 @@ install:
   - pip install -r requirements_test.txt
 
 script:
-  - python -m unittest discover -s test/unit
+  - python -m pytest
