@@ -25,6 +25,7 @@ class sfp_cookie(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.__dataSource__ = "Target Website"
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]

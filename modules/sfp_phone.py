@@ -86,6 +86,10 @@ class sfp_phone(SpiderFootPlugin):
 
             if number_carrier:
                 evt = SpiderFootEvent("PROVIDER_TELCO", number_carrier, self.__name__, event)
+                if event.moduleDataSource:
+                    evt.moduleDataSource = event.moduleDataSource
+                else:
+                    evt.moduleDataSource = "Unknown"
                 self.notifyListeners(evt)
             else:
                 self.sf.debug("No carrier information found for " + eventData)
