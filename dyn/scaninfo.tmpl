@@ -11,7 +11,7 @@
     statusy = "alert-danger"
   end
 %>
-<h2>${name}&nbsp;<span class='badge ${statusy}'>${status}</span>&nbsp;<img id="loader" src="${docroot}/static/img/loader.gif"></h2>
+<h2>${name}&nbsp;<span id='scanstatusbadge' class='badge ${statusy}'>${status}</span>&nbsp;<img id="loader" src="${docroot}/static/img/loader.gif"></h2>
   <div class="btn-toolbar" role="toolbar" style='padding-bottom: 10px'>
    <div class="btn-group">
       <a id='btn-status' class="btn btn-default" onClick='scanSummaryView("${id}")'><i class='glyphicon glyphicon-eye-open'></i>&nbsp;Summary</a>
@@ -345,6 +345,20 @@
 
                         $('#ucounter').html(uniqueCount);
                         $('#tcounter').html(totalCount);
+                        $('#scanstatusbadge').html(scanStatus);
+                        if (scanStatus == "FINISHED") {
+                            statusy = "alert-success";
+                        }
+                        if (scanStatus.indexOf("ABORT") >= 0) {
+                            statusy = "alert-warning";
+                        }
+                        if (scanStatus == "RUNNING" || scanStatus == "STARTED" || scanStatus == "STARTING" || scanStatus == "INITIALIZING") {
+                            statusy = "alert-info";
+                        }
+                        if (scanStatus.indexOf("FAILED") >= 0) {
+                            statusy = "alert-danger";
+                        }
+                        $('#scanstatusbadge').removeClass(["alert-info", "alert-warning", "alert-danger"]).addClass(statusy);
                         $('#status').html(scanStatus);
                         $("#vbarsummary").empty();
                         sf_viz_vbar("#vbarsummary", scanSummary);
