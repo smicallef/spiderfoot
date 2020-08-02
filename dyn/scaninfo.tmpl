@@ -11,8 +11,8 @@
     </div>
     <div class='btn-group pull-right'>
         <div id='btn-search' class='input-group pull-right'>
-          <input class='form-control' id='searchvalue' type='text' placeholder='Search...' data-toggle='popover' data-html='true' data-animation='true' data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchregex/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>.<br><br><b>Note</b> that the current scope is what's searched.">
-            <div class='input-group-btn'>
+          <input class='form-control' id='searchvalue' type='text' placeholder='Search...' data-toggle='popover' data-html='true' data-animation='true' data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchregex/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>.<br /><br /><b>Note</b> that the current scope is what's searched.">
+            <div class='input-group-btn' style='width: 0px'> <!-- Chrome fix -->
               <button class='btn btn-primary' id='searchbutton' type='button' onClick="$('#btn-search').popover('toggle');searchDirector('${id}')">
                 <i class='glyphicon glyphicon-search glyphicon glyphicon-white'></i>
               </button>
@@ -196,7 +196,7 @@
 
         // Visualisation
         function graphEvents(instanceId) {
-            grid = "<div id='scansummary-content'><br>"
+            grid = "<div id='scansummary-content'><br />"
             grid += "<div class='col-md-12 graph-container' id='graph-container'></div>"
             grid += "</div>"
 
@@ -218,6 +218,11 @@
             sigma.parsers.json("${docroot}/scanviz?id=" + instanceId + "&gexf=0", {
                 container: 'graph-container'
             }, function(s) { 
+                if (s.renderers[0].nodesOnScreen.length == 0) {
+                    $("#graph-container").append("<div class='alert alert-danger'>Insufficient data to produce a graph.</div>");
+                    $("#loader").hide();
+                    return;
+                }
                 sharedSigma = s;
                 s.settings({
                     edgeColor: 'default',
@@ -255,20 +260,20 @@
         function scanStatusView(instanceId) {
             grid = "<div id='scansummary-content'>"
             grid += "<div class='row'>"
-            grid += "<div class='col-md-12'>"
-            grid += "<div class='btn-toolbar text-center'>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-lg btn-default'>Total</span></button>"
+            grid += "<div class='col-md-12 text-center'>"
+            grid += "<div class='btn-toolbar'>";
+            grid += "<div class='btn-group' style='float: unset'><button class='btn disabled btn-lg btn-secondary'>Total</span></button>"
             grid += "<button class='btn disabled btn-lg btn-default' id='tcounter'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-lg btn-default'>Unique</button>"
+            grid += "<div class='btn-group' style='float: unset'><button class='btn disabled btn-lg btn-secondary'>Unique</button>"
             grid += "<button class='btn disabled btn-lg btn-default' id='ucounter'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-lg btn-default'>Status</button>"
+            grid += "<div class='btn-group' style='float: unset'><button class='btn disabled btn-lg btn-secondary'>Status</button>"
             grid += "<button class='btn disabled btn-lg btn-default' id='status'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-lg btn-default'>Errors</button>"
+            grid += "<div class='btn-group' style='float: unset'><button class='btn disabled btn-lg btn-secondary'>Errors</button>"
             grid += "<button class='btn disabled btn-lg btn-default' id='errors'>?</button></div>"
-            grid += "</div></div></div><br>"
+            grid += "</div></div></div><br />"
             grid += "<div class='row'>"
             grid += "<div class='col-md-12' id='vbarsummary'></div>"
-            grid += "</div><br>"
+            grid += "</div><br />"
             grid += "<div class='row'>"
             grid += "<div class='col-md-12' id='logtable'></div>"
             grid += "</div></div>"
@@ -506,7 +511,7 @@
                                 table += "<tr>";
                                 table += "<td class='text-center'><input type='checkbox' id='cb_" + data[i][7] + "'>";
                                 if (data[i][8] == "1") {
-                                    table += "<br><i class='glyphicon glyphicon-ban-circle' class='vertical-align-bottom' />";
+                                    table += "<br /><i class='glyphicon glyphicon-ban-circle' class='vertical-align-bottom' />";
                                 }
                                 table += "</td>";
                                 table += "<td><pre class='table-border-bg-inherit'>";

@@ -111,3 +111,9 @@ display: none;
    background: #fff;
 }
 
+input[type=checkbox] {
+    width: 14px;
+    height: 14px;
+    margin: 0px;
+    display: inline;
+}
