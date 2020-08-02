@@ -105,6 +105,7 @@ class sfp_ahmia(SpiderFootPlugin):
                                 continue
                             evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                             self.notifyListeners(evt)
+                            reported = True
 
                             try:
                                 startIndex = res['content'].index(eventData) - 120

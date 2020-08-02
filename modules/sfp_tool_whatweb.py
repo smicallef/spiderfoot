@@ -131,6 +131,9 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             self.sf.error("Couldn't parse the JSON output of WhatWeb: " + str(e), False)
             return None
 
+        if len(result_json) == 0:
+            return None
+
         evt = SpiderFootEvent('RAW_RIR_DATA', str(result_json), self.__name__, event)
         self.notifyListeners(evt)
 
