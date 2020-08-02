@@ -362,7 +362,7 @@
                         $('#status').html(scanStatus);
                         $("#vbarsummary").empty();
                         if (scanSummary.length == 0) {
-                          $("#vbarsummary").append("<div id='scansummary-content' class='alert alert-warning'><h4>No data.</h4>If the scan is still running please try again soon.</div>");
+                          $("#vbarsummary").append("<div id='scansummary-content' class='alert alert-warning'><h4>No data.</h4>If the scan is still running this section will update shortly.</div>");
                         } else {
                           sf_viz_vbar("#vbarsummary", scanSummary);
                         }
