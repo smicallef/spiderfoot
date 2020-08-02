@@ -2,9 +2,9 @@
 
 
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE)
-[![Python Version](https://img.shields.io/badge/python-3.6+-green)](https://www.python.org)]
+[![Python Version](https://img.shields.io/badge/python-3.6+-green)](https://www.python.org)
 [![Stable Release](https://img.shields.io/badge/version-3.1-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v3.1)
-![Travis (.org)](https://img.shields.io/travis/smicallef/spiderfoot)
+[![CI Status](https://img.shields.io/travis/smicallef/spiderfoot)](https://travis-ci.com/github/smicallef/spiderfoot)
 [![Last Commit](https://img.shields.io/github/last-commit/smicallef/spiderfoot)](https://github.com/smicallef/spiderfoot/commits/master)
 [![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/github/smicallef/spiderfoot)](https://libraries.io/github/smicallef/spiderfoot)
 [![Twitter Follow](https://img.shields.io/twitter/follow/spiderfoot?label=follow&style=social)](https://twitter.com/spiderfoot)
