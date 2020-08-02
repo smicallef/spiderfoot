@@ -13,7 +13,7 @@
 
 SpiderFoot has an embedded web-server for providing a clean and intuitive web-based interface but can also be used completely via the command-line.  It's written in **Python 3** and **GPL-licensed**.
 
-<img src="https://www.spiderfoot.net/wp-content/themes/spiderfoot/img/spiderfoot-browse.png">
+<img src="https://www.spiderfoot.net/wp-content/uploads/2020/08/Screenshot_2020-08-02-SpiderFoot-v3-1.png">
 
 ### FEATURES
 
@@ -33,7 +33,21 @@ SpiderFoot has an embedded web-server for providing a clean and intuitive web-ba
 
 ### USES
 
-SpiderFoot's 170+ modules feed each other in a pub/sub model to ensure maximum data extraction to do things like:
+SpiderFoot can be used offensively (e.g. in a red team exercise or penetration test) for reconnaissance of your target or defensively to gather information about what you or your organisation might have exposed over the Internet.
+
+You can target the following entities in a SpiderFoot scan:
+
+ - IP address
+ - Domain/sub-domain name
+ - Hostname
+ - Network subnet (CIDR)
+ - ASN
+ - E-mail address
+ - Phone number
+ - Username
+ - Person's name
+ 
+SpiderFoot's 170+ modules feed each other in a publisher/subscriber model to ensure maximum data extraction to do things like:
 
 - Host/sub-domain/TLD enumeration/extraction
 - E-mail address enumeration/extraction
@@ -55,21 +69,6 @@ See it in action here, performing some DNS recon:
 
 [![asciicast](https://asciinema.org/a/295912.svg)](https://asciinema.org/a/295912)
 
-### PURPOSE
-
-SpiderFoot can be used offensively (e.g. in a red team exercise or penetration test) for reconnaissance of your target or defensively to gather information about what you or your organisation might have exposed over the Internet.
-
-You can target the following entities in a SpiderFoot scan:
-
- - IP address
- - Domain/sub-domain name
- - Hostname
- - Network subnet (CIDR)
- - ASN
- - E-mail address
- - Phone number
- - Username
- - Person's name
 
 ### MODULES
 
