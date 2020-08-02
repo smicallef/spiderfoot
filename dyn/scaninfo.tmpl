@@ -3,7 +3,7 @@
 <h2>${name} &nbsp;<img id="loader" src="${docroot}/static/img/loader.gif"></h2>
   <div class="btn-toolbar" role="toolbar" style='padding-bottom: 10px'>
    <div class="btn-group">
-      <a id='btn-status' class="btn btn-default" onClick='scanStatusView("${id}")'><i class='glyphicon glyphicon-eye-open'></i>&nbsp;Status</a>
+      <a id='btn-status' class="btn btn-default" onClick='scanSummaryView("${id}")'><i class='glyphicon glyphicon-eye-open'></i>&nbsp;Summary</a>
       <a id='btn-browse' class="btn btn-default" onClick='browseEventList("${id}")'><i class='glyphicon glyphicon-th-list'></i>&nbsp;Browse</a>
       <a id='btn-graph' class="btn btn-default" onClick='graphEvents("${id}")'><i class='glyphicon glyphicon-asterisk'></i>&nbsp;Graph</a>
       <a id='btn-info' class="btn btn-default" onClick='viewScanConfig("${id}")'><i class='glyphicon glyphicon-cog'></i>&nbsp;Scan Settings</a>
@@ -257,7 +257,7 @@
         }
 
         // Scan status
-        function scanStatusView(instanceId) {
+        function scanSummaryView(instanceId) {
             grid = "<div id='scansummary-content'>"
             grid += "<div class='row'>"
             grid += "<div class='col-md-12 text-center'>"
@@ -325,6 +325,7 @@
                             scanSummary[i].link = function(d) { return browseEventData(d.scanId, d.name, d.id, "full"); };
                             totalCount += data[i][3];
                             uniqueCount += data[i][4];
+                            scanStatus = data[i][5];
                         }
 
                         for (x = 0; x < i; x++) {
@@ -338,30 +339,6 @@
                         sf_viz_vbar("#vbarsummary", scanSummary);
 
                         $("#loader").fadeOut(500);
-                    });
-                }
-            );
-
-            dataloaders.push(
-                function() {
-                    sf.fetchData('${docroot}/scanlog', {'id': instanceId, 'limit': 10}, function(data) {
-                            var table = "<div><h4>Recent Logs</h4><table id='statuslog-content' class='table table-bordered table-striped table-condensed font-size-90-percent'>";
-                            table += "<thead><tr><th>Time</th><th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
-                            for (var i = 0; i < data.length; i++) {
-                                if (data[i][2] == "ERROR") {
-                                    table += "<tr class='danger'>"
-                                } else {
-                                    table += "<tr>";
-                                }
-                                table += "<td>" + data[i][0] + "</a></td>";
-                                table += "<td>" + data[i][1] + "</td>";
-                                table += "<td>" + data[i][2] + "</td>";
-                                table += "<td><pre class='table-border-bg-inherit font-size-90-percent'>" + data[i][3] + "</pre></td>";
-                                table += "</tr>";
-                            }
-                            table += "</tbody></table></div>"
-                            $("#logtable").empty();
-                            $("#logtable").append(table);
                     });
                 }
             );
@@ -715,7 +692,7 @@
         }
 
         if ("${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "STARTED" || "${status}" == "UNKNOWN" || "${status}" == "INITIALIZING") {
-            scanStatusView("${id}");
+            scanSummaryView("${id}");
         } else {
             browseEventList("${id}");
         }

@@ -1086,15 +1086,20 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.config)
 
         try:
-            data = dbh.scanResultSummary(id, by)
+            scandata = dbh.scanResultSummary(id, by)
         except:
             return json.dumps(retdata)
 
-        for row in data:
+        try:
+            statusdata = dbh.scanInstanceGet(id)
+        except:
+            return json.dumps(retdata)
+
+        for row in scandata:
             if row[0] == "ROOT":
                 continue
             lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[2]))
-            retdata.append([row[0], row[1], lastseen, row[3], row[4]])
+            retdata.append([row[0], row[1], lastseen, row[3], row[4], statusdata[5]])
         return json.dumps(retdata)
 
     scansummary.exposed = True
