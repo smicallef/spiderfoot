@@ -9,4 +9,7 @@ install:
   - pip install -r requirements_test.txt
 
 script:
-  - python -m pytest
+  - python -m pytest --cov-report term --cov=spiderfoot test/
+
+after_success:
+  - codecov
