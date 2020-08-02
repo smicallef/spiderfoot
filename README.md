@@ -1,49 +1,13 @@
+<a href="https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQv&s=os_gh"><img src="https://www.spiderfoot.net/wp-content/themes/spiderfoot/img/spiderfoot-wide.png"></a>
+
+
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE)
-[![Stable Release](https://img.shields.io/badge/version-3.0-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v3.0)
-[![Repositories](https://repology.org/badge/tiny-repos/spiderfoot.svg)](https://repology.org/project/spiderfoot/versions)
-
-<h1 align="center">
-  <a href="https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQv&s=os_gh"><img src="https://www.spiderfoot.net/wp-content/themes/spiderfoot/img/spiderfoot-wide.png"></a>
-</h1>
-
-### ABOUT
-
-<table>
-  <tr>
-    <th>Version</th>
-    <td>
-      <a href="https://github.com/smicallef/spiderfoot/releases" target="_blank">
-        <img alt="Version 3.0" src="https://img.shields.io/badge/version-3.0-brightgreen.svg"/>
-      </a>
-    </td>
-  </tr>
-    <tr>
-    <th>Homepage</th>
-    <td>
-      <a href="https://www.spiderfoot.net/" target="_blank">https://www.spiderfoot.net/</a>
-    </td>
-  </tr>
-  <tr>
-    <th>Github</th>
-    <td>
-      <a href="https://github.com/smicallef/spiderfoot">https://github.com/smicallef/spiderfoot</a>
-    </td>
-  </tr>
-  <tr>
-    <th>Twitter</th>
-    <td>
-      <a href="https://twitter.com/spiderfoot" target="_blank">https://twitter.com/spiderfoot</a>
-    </td>
-  </tr>
-  <tr>
-    <th>License</th>
-    <td>
-      <a href="https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE" target="_blank">
-        <img alt="GPLv2 License" src="https://img.shields.io/badge/license-GPLv2-brightgreen.svg"/>
-      </a>
-    </td>
-  </tr>
-</table>
+[![Python Version](https://img.shields.io/badge/python-3.6+-green)](https://www.python.org)]
+[![Stable Release](https://img.shields.io/badge/version-3.1-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v3.1)
+![Travis (.org)](https://img.shields.io/travis/smicallef/spiderfoot)
+[![Last Commit](https://img.shields.io/github/last-commit/smicallef/spiderfoot)](https://github.com/smicallef/spiderfoot/commits/master)
+[![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/github/smicallef/spiderfoot)](https://libraries.io/github/smicallef/spiderfoot)
+[![Twitter Follow](https://img.shields.io/twitter/follow/spiderfoot?label=follow&style=social)](https://twitter.com/spiderfoot)
 
 **SpiderFoot** is an open source intelligence (OSINT) automation tool. It integrates with just about every data source available and utilises a range of methods for data analysis, making that data easy to navigate. 
 
