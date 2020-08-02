@@ -1,6 +1,17 @@
 ## -*- coding: utf-8 -*-
 <%include file="HEADER.tmpl"/>
-<h2>${name} &nbsp;<img id="loader" src="${docroot}/static/img/loader.gif"></h2>
+<%
+  if status == "FINISHED":
+    statusy = "alert-success"
+  elif status.startswith("ABORT"):
+    statusy = "alert-warning"
+  elif status == "RUNNING" or status == "STARTED" or status == "STARTING" or status == "INITIALIZING":
+    statusy = "alert-info"
+  elif status == "FAILED":
+    statusy = "alert-danger"
+  end
+%>
+<h2>${name}&nbsp;<span class='badge ${statusy}'>${status}</span>&nbsp;<img id="loader" src="${docroot}/static/img/loader.gif"></h2>
   <div class="btn-toolbar" role="toolbar" style='padding-bottom: 10px'>
    <div class="btn-group">
       <a id='btn-status' class="btn btn-default" onClick='scanSummaryView("${id}")'><i class='glyphicon glyphicon-eye-open'></i>&nbsp;Summary</a>
