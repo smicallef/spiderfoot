@@ -446,7 +446,16 @@ if __name__ == '__main__':
                 'tools.auth_digest.key': random.SystemRandom().randint(0, 99999999)
             }
         else:
+            print("")
+            print("********************************************************************")
             print("Warning: passwd file contains no passwords. Authentication disabled.")
+            print("********************************************************************")
+    else:
+            print("")
+            print("********************************************************************")
+            print("Please consider adding authentication to protect this instance!")
+            print("Refer to https://www.spiderfoot.net/documentation/#security.")
+            print("********************************************************************")
 
     key_path = sf.dataPath() + '/spiderfoot.key'
     crt_path = sf.dataPath() + '/spiderfoot.crt'
