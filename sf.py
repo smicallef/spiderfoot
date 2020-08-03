@@ -401,7 +401,6 @@ if __name__ == '__main__':
     cherrypy.engine.autoreload.unsubscribe()
 
     # Enable access to static files via the web directory
-    currentDir = os.path.abspath(sf.myPath())
     conf = {
         '/query': {
             'tools.encode.text_only': False,
@@ -409,7 +408,8 @@ if __name__ == '__main__':
         },
         '/static': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': os.path.join(currentDir, 'static')
+            'tools.staticdir.dir': 'static',
+            'tools.staticdir.root': sf.myPath()
         }
     }
 
