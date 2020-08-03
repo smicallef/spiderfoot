@@ -49,20 +49,21 @@ You can target the following entities in a SpiderFoot scan:
  
 SpiderFoot's 185+ modules feed each other in a publisher/subscriber model to ensure maximum data extraction to do things like:
 
-- Host/sub-domain/TLD enumeration/extraction
-- E-mail address enumeration/extraction
-- Phone number extraction
-- Bitcoin and Ethereum address extraction
+- [Host/sub-domain/TLD enumeration/extraction](https://asciinema.org/a/295912)
+- [Email address, phone number and human name extraction](https://asciinema.org/a/295947)
+- [Bitcoin and Ethereum address extraction](https://asciinema.org/a/295957)
+- [Check for susceptibility to sub-domain hijacking](https://asciinema.org/a/344377)
 - DNS zone transfers
-- Threat intelligence and Blacklist queries
-- API integraiton with SHODAN, HaveIBeenPwned, Censys, AlienVault, SecurityTrails, etc.
-- Social media account enumeration
-- S3/Azure/Digitalocean bucket enumeration/scraping
+- [Threat intelligence and Blacklist queries](https://asciinema.org/a/295949)
+- API integraiton with [SHODAN](https://asciinema.org/a/127601), [HaveIBeenPwned](https://asciinema.org/a/128731), [GreyNoise](https://asciinema.org/a/295943), AlienVault, SecurityTrails, etc.
+- [Social media account enumeration](https://asciinema.org/a/295923)
+- [S3/Azure/Digitalocean bucket enumeration/scraping](https://asciinema.org/a/295941)
 - IP geo-location
 - Web scraping, web content analysis
-- Image and binary file meta data analysis
-- Office document meta data analysis
+- [Image, document and binary file meta data analysis](https://asciinema.org/a/296274)
 - Dark web searches
+- [Port scanning and banner grabbing](https://asciinema.org/a/295939)
+- [Data breach searches](https://asciinema.org/a/296145)
 - So much more...
 
 ### INSTALLING & RUNNING
