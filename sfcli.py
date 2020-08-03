@@ -39,7 +39,7 @@ class bcolors:
     GREYBLUE_DARK = '\x1b[38;5;24m'
 
 class SpiderFootCli(cmd.Cmd):
-    version = "3.1"
+    version = "3.2-DEV"
     pipecmd = None
     output = None
     modules = []
