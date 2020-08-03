@@ -70,7 +70,7 @@ SpiderFoot's 185+ modules feed each other in a publisher/subscriber model to ens
 
 To install and run SpiderFoot, you need at least Python 3.6 and a number of Python libraries which you can install with `pip`. We recommend you install a packaged release since master will often have bleeding edge features and modules that aren't fully tested.
 
-#### As a packaged release (stable)
+#### Stable build (packaged release):
 
 ```
 $ wget https://github.com/smicallef/spiderfoot/archive/v3.1.tar.gz
@@ -80,7 +80,7 @@ $ pip3 install -r requirements.txt
 ~/spiderfoot$ python3 ./sf.py -l 127.0.0.1:5001
 ```
 
-#### From git (cloning master - may be buggy!):
+#### Development build (cloning git master branch):
 
 ```
 $ git clone https://github.com/smicallef/spiderfoot.git
