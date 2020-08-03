@@ -93,6 +93,8 @@ Check out the [documentation](https://www.spiderfoot.net/documentation) and our 
 
 ### MODULES / INTEGRATIONS
 
+SpiderFoot has over 185 modules, most of which *don't require API keys*, and many of those that do require API keys *have a free tier*.
+
 | Name          | Description  |
 |:-------------| :------------|
 abuse.ch|Check if a host/domain, IP or netblock is malicious according to abuse.ch.|
