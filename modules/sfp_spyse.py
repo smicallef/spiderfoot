@@ -66,7 +66,7 @@ class sfp_spyse(SpiderFootPlugin):
                 "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS"]
 
     # Query Subdomains
-    # https://spyse.com/tools/api#/domain/subdomain
+    # https://spyse.com/v3/data/tools/api#/domain/subdomain
     def querySubdomains(self, qry, currentOffset):
         params = {
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
@@ -79,7 +79,7 @@ class sfp_spyse(SpiderFootPlugin):
         }
         
         res = self.sf.fetchUrl(
-          'https://api.spyse.com/v2/data/domain/subdomain?' + urllib.parse.urlencode(params),
+          'https://api.spyse.com/v3/data/domain/subdomain?' + urllib.parse.urlencode(params),
           headers=headers,
           timeout=15,
           useragent=self.opts['_useragent']
@@ -90,7 +90,7 @@ class sfp_spyse(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     # Query IP port lookup
-    # https://spyse.com/tools/api#/ip/port_by_ip
+    # https://spyse.com/v3/data/tools/api#/ip/port_by_ip
     def queryIPPort(self, qry, currentOffset):
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
@@ -102,7 +102,7 @@ class sfp_spyse(SpiderFootPlugin):
             'Authorization' : "Bearer " + self.opts['api_key']
         }
         res = self.sf.fetchUrl(
-          'https://api.spyse.com/v2/data/ip/port?' + urllib.parse.urlencode(params),
+          'https://api.spyse.com/v3/data/ip/port?' + urllib.parse.urlencode(params),
           headers=headers,
           timeout=15,
           useragent=self.opts['_useragent']
@@ -113,7 +113,7 @@ class sfp_spyse(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     # Query domains on IP
-    # https://spyse.com/tools/api#/ip/domain_by_ip
+    # https://spyse.com/v3/data/tools/api#/ip/domain_by_ip
     def queryDomainsOnIP(self, qry, currentOffset):
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
@@ -125,7 +125,7 @@ class sfp_spyse(SpiderFootPlugin):
             'Authorization' : "Bearer " + self.opts['api_key']
         }
         res = self.sf.fetchUrl(
-          'https://api.spyse.com/v2/data/ip/domain?' + urllib.parse.urlencode(params),
+          'https://api.spyse.com/v3/data/ip/domain?' + urllib.parse.urlencode(params),
           headers=headers,
           timeout=15,
           useragent=self.opts['_useragent']
@@ -136,7 +136,7 @@ class sfp_spyse(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     # Query domains using domain as MX server
-    # https://spyse.com/apidocs#/Domain%20related%20information/get_domains_using_as_mx
+    # https://spyse.com/v3/data/apidocs#/Domain%20related%20information/get_domains_using_as_mx
     # Note: currently unused
     def queryDomainsAsMX(self, qry, page=1):
         params = {
@@ -151,44 +151,18 @@ class sfp_spyse(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://api.spyse.com/v2/data/ip/mx?' + urllib.parse.urlencode(params),
+          'https://api.spyse.com/v3/data/ip/mx?' + urllib.parse.urlencode(params),
           headers=headers,
           timeout=15,
           useragent=self.opts['_useragent']
         )
 
-        time.sleep(self.opts['delay'])
-
-        return self.parseAPIResponse(res)
-
-
-    # Query SSL Certificates
-    # https://spyse.com/tools/api#/certificate/certificate
-    # Note: currently unused
-    def querySSLCertificates(self, qry, currentOffset):
-        params = {
-            'hash': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.limit, 
-            'offset': currentOffset
-        }
-
-        headers = {
-            'Accept' : "application/json",
-            'Authorization' : "Bearer " + self.opts['api_key']
-        }
-        
-        res = self.sf.fetchUrl(
-          'https://api.spyse.com/v2/data/cert?' + urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
-        )
         time.sleep(self.opts['delay'])
 
         return self.parseAPIResponse(res)
 
     # Parse API response
-    # https://spyse.com/apidocs
+    # https://spyse.com/v3/data/apidocs
     def parseAPIResponse(self, res):
         if res['code'] == '400':
             self.sf.error("Malformed request", False)
