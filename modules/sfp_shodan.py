@@ -12,6 +12,7 @@
 
 import json
 import urllib.request, urllib.parse, urllib.error
+import time
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
