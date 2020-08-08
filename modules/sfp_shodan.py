@@ -61,6 +61,7 @@ class sfp_shodan(SpiderFootPlugin):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
                                "?key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        time.sleep(1)
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
             return None
@@ -77,6 +78,7 @@ class sfp_shodan(SpiderFootPlugin):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?query=hostname:" + qry +
                                "&key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        time.sleep(1)
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
             return None
@@ -97,6 +99,7 @@ class sfp_shodan(SpiderFootPlugin):
 
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?" + urllib.parse.urlencode(params),
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        time.sleep(1)
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
             return None
