@@ -54,6 +54,21 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertIn("Unknown command", output)
 
+    def test_default_should_ignore_comments(self):
+        """
+        Test default(self, line)
+        """
+        sfcli = SpiderFootCli()
+
+        io_output = io.StringIO()
+        sys.stdout = io_output
+        result = sfcli.default("# test comment")
+        sys.stdout = sys.__stdout__
+        output = io_output.getvalue()
+
+        self.assertEqual(None, result)
+        self.assertEqual("", output)
+
     def test_complete_start_should_return_a_list(self):
         """
         Test complete_start(self, text, line, startidx, endidx)
@@ -86,7 +101,27 @@ class TestSpiderFootCli(unittest.TestCase):
         Test complete_default(self, text, line, startidx, endidx)
         """
         sfcli = SpiderFootCli()
-        default = sfcli.complete_default(None, None, None, None)
+        default = sfcli.complete_default("", "-t -m", None, None)
+        self.assertEqual('TBD', 'TBD')
+
+        default = sfcli.complete_default("", "-m -t", None, None)
+        self.assertEqual('TBD', 'TBD')
+
+    def test_complete_default_invalid_text_should_return_a_string(self):
+        """
+        Test complete_default(self, text, line, startidx, endidx)
+        """
+        sfcli = SpiderFootCli()
+        default = sfcli.complete_default(None, "example line", None, None)
+        self.assertIsInstance(default, list)
+        self.assertEqual([], default)
+
+    def test_complete_default_invalid_line_should_return_a_string(self):
+        """
+        Test complete_default(self, text, line, startidx, endidx)
+        """
+        sfcli = SpiderFootCli()
+        default = sfcli.complete_default("example text", None, None, None)
         self.assertIsInstance(default, list)
         self.assertEqual([], default)
 
@@ -105,29 +140,34 @@ class TestSpiderFootCli(unittest.TestCase):
         self.assertIn("example output", output)
 
     @unittest.skip("todo")
-    def test_do_debug_should_toggle_debugging(self):
+    def test_do_debug_should_toggle_debug(self):
         """
         Test do_debug(self, line)
         """
         sfcli = SpiderFootCli(self.default_options)
 
+        sfcli.do_debug(0)
         initial_debug_state = sfcli.ownopts['cli.debug']
-        sfcli.do_debug(None)
+        sfcli.do_debug(1)
         new_debug_state = sfcli.ownopts['cli.debug']
 
         self.assertNotEqual(initial_debug_state, new_debug_state)
 
-        self.assertEqual('TBD', 'TBD')
-
     @unittest.skip("todo")
-    def test_do_spool(self):
+    def test_do_spool_should_toggle_spool(self):
         """
         Test do_spool(self, line)
         """
         sfcli = SpiderFootCli()
-        sfcli.do_spool(None)
 
-        self.assertEqual('TBD', 'TBD')
+        sfcli.ownopts['cli.spool_file'] = '/dev/null'
+
+        sfcli.do_spool(0)
+        initial_spool_state = sfcli.ownopts['cli.spool']
+        sfcli.do_spool(1)
+        new_spool_state = sfcli.ownopts['cli.spool']
+
+        self.assertNotEqual(initial_spool_state, new_spool_state)
 
     @unittest.skip("todo")
     def test_do_history(self):
@@ -226,6 +266,18 @@ class TestSpiderFootCli(unittest.TestCase):
         sfcli.request(None, None)
 
         self.assertEqual('TBD', 'TBD')
+
+    def test_request_invalid_url_should_return_none(self):
+        """
+        Test request(self, url, post=None)
+        """
+        sfcli = SpiderFootCli()
+
+        invalid_types = [None, list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                result = sfcli.request(invalid_type)
+                self.assertEqual(None, result)
 
     def test_emptyline_should_return_none(self):
         """
