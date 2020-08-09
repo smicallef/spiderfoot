@@ -1,0 +1,281 @@
+# -*- coding: utf-8 -*-
+# -------------------------------------------------------------------------------
+# Name:        sfp_hybrid_analysis
+# Purpose:     Search Hybrid Analysis for domains and URLs related to the target.
+#
+# Authors:     <bcoles@gmail.com>
+#
+# Created:     2020-08-09
+# Copyright:   (c) bcoles 2020
+# Licence:     GPL
+# -------------------------------------------------------------------------------
+
+import json
+import time
+from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+
+class sfp_hybrid_analysis(SpiderFootPlugin):
+    """Hybrid Analysis:Footprint,Investigate,Passive:Reputation Systems:apikey:Search Hybrid Analysis for domains and URLs related to the target."""
+
+    # Default options
+    opts = {
+        "api_key": "",
+        "verify": True,
+        "delay": 1
+    }
+
+    # Option descriptions
+    optdescs = {
+        "api_key": "Hybrid Analysis API key.",
+        "verify": "Verify identified domains still resolve to the associated specified IP address.",
+        "delay": "Delay between requests, in seconds."
+    }
+
+    results = None
+    errorState = False
+
+    def setup(self, sfc, userOpts=dict()):
+        """
+        Initialize module and module options
+        """
+        self.sf = sfc
+        self.results = self.tempStorage()
+        self.errorState = False
+
+        for opt in userOpts.keys():
+            self.opts[opt] = userOpts[opt]
+
+    def watchedEvents(self):
+        """
+        What events is this module interested in for input
+        """
+        return ["IP_ADDRESS", "DOMAIN_NAME"]
+
+    def producedEvents(self):
+        """
+        What events this module produces
+        """
+        return ["RAW_RIR_DATA", "INTERNET_NAME", "DOMAIN_NAME", "LINKED_URL_INTERNAL"]
+
+    def queryDomain(self, qry):
+        """
+        Query domain
+        https://www.hybrid-analysis.com/docs/api/v2
+        """
+
+        params = {
+            "domain": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
+        }
+        headers = {
+            "Accept": "application/json",
+            'api-key': self.opts['api_key']
+        }
+        res = self.sf.fetchUrl(
+            'https://www.hybrid-analysis.com/api/v2/search/terms',
+            headers=headers,
+            timeout=15,
+            useragent="Falcon Sandbox",
+            postData=params
+        )
+
+        time.sleep(self.opts['delay'])
+
+        return self.parseAPIResponse(res)
+
+    def queryHost(self, qry):
+        """
+        Query host
+        https://www.hybrid-analysis.com/docs/api/v2
+        """
+
+        params = {
+            "host": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
+        }
+        headers = {
+            "Accept": "application/json",
+            'api-key': self.opts['api_key']
+        }
+        res = self.sf.fetchUrl(
+            'https://www.hybrid-analysis.com/api/v2/search/terms',
+            headers=headers,
+            timeout=15,
+            useragent="Falcon Sandbox",
+            postData=params
+        )
+
+        time.sleep(self.opts['delay'])
+
+        return self.parseAPIResponse(res)
+
+    def queryHash(self, qry):
+        """
+        Query hash
+        https://www.hybrid-analysis.com/docs/api/v2
+        """
+ 
+        params = {
+            "hash": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
+        }
+        headers = {
+            "Accept" : "application/json",
+            'api-key': self.opts['api_key']
+        }
+        res = self.sf.fetchUrl(
+            'https://www.hybrid-analysis.com/api/v2/search/hash',
+            headers=headers,
+            timeout=15,
+            useragent="Falcon Sandbox",
+            postData=params
+        )
+
+        time.sleep(self.opts['delay'])
+
+        return self.parseAPIResponse(res)
+
+    def parseAPIResponse(self, res):
+        """
+        Parse API response
+        """
+
+        if res['code'] == '400':
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: Invalid request", False)
+            self.sf.debug("API response: %s" % res['content'])
+            return None
+
+        # Future proofing - Hybrid Analysis does not implement rate limiting
+        if res['code'] == '429':
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: rate limit exceeded", False)
+            self.errorState = True
+            return None
+
+        # Catch all non-200 status codes, and presume something went wrong
+        if res['code'] != '200':
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: Unexpected response status %s" % res['code'], False)
+            self.errorState = True
+            return None
+
+        if res['content'] is None:
+            return None
+
+        try:
+            data = json.loads(res['content'])
+        except Exception as e:
+            self.sf.debug("Error processing JSON response.")
+            return None
+
+        return data
+
+    def handleEvent(self, event):
+        """
+        Handle events sent to this module
+        """
+
+        eventName = event.eventType
+        srcModuleName = event.module
+        eventData = event.data
+
+        if self.errorState:
+            return None
+
+        if eventData in self.results:
+            return None
+
+        self.results[eventData] = True
+
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+
+        if eventName not in ["IP_ADDRESS", "DOMAIN_NAME"]:
+            return None
+
+        if eventName == "IP_ADDRESS":
+            data = self.queryHost(eventData)
+        elif eventName == "DOMAIN_NAME":
+            data = self.queryDomain(eventData)
+        else:
+            return None
+
+        if data is None:
+            self.sf.debug("No information found for %s" % eventData)
+            return None
+
+        evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        self.notifyListeners(evt)
+
+        results = data.get("result")
+
+        if not results:
+            return None
+
+        hashes = []
+
+        for result in results:
+            hash = result.get('sha256')
+            if hash:
+                hashes.append(hash)
+
+        if not hashes:
+            return None
+
+        self.sf.info("Found %s results for %s" % (len(hashes), eventData))
+
+        urls = []
+        domains = []
+ 
+        for hash in hashes:
+            results = self.queryHash(hash)
+
+            if not results:
+                self.sf.debug("No information found for hash %s" % hash)
+                continue
+
+            evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
+            self.notifyListeners(evt)
+
+            for result in results:
+                if not result:
+                    continue
+
+                result_domains = result.get('domains')
+                if result_domains:
+                    for r in result_domains:
+                        domains.append(r)
+
+                submissions = result.get('submissions')
+                if submissions:
+                    for submission in submissions:
+                        url = submission.get('url')
+                        if url:
+                            urls.append(url)
+
+        for url in set(urls):
+            host = self.sf.urlFQDN(url.lower())
+    
+            if not self.getTarget().matches(host, includeChildren=True, includeParents=True):
+                continue
+
+            domains.append(host)
+
+            evt = SpiderFootEvent('LINKED_URL_INTERNAL', url, self.__name__, event)
+            self.notifyListeners(evt)
+
+        for domain in set(domains):
+            if self.checkForStop():
+                return None
+
+            if domain in self.results:
+                continue
+
+            if not self.getTarget().matches(domain, includeChildren=True, includeParents=True):
+                continue
+
+            if self.opts['verify'] and not self.sf.resolveHost(domain):
+                self.sf.debug("Host %s could not be resolved" % domain)
+                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
+                self.notifyListeners(evt)
+            else:
+                evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
+                self.notifyListeners(evt)
+
+        return None
+
+# End of sfp_hybrid_analysis class
