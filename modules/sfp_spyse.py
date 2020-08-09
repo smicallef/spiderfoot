@@ -229,7 +229,7 @@ class sfp_spyse(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == '':
-            self.sf.error("Warning: You enabled sfp_spyse but did not set an API key! Only the first page of results will be returned.", False)
+            self.sf.error("You enabled sfp_spyse but did not set an API key!", False)
             self.errorState = True
             return None
 
