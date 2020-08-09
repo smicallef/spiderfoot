@@ -103,6 +103,7 @@ class SpiderFootCli(cmd.Cmd):
         cout = ""
         sout = ""
         pfx = ""
+        col = ""
         if err:
             pfx = "[!]"
             if self.ownopts['cli.color']:
