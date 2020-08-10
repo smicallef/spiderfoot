@@ -171,7 +171,7 @@ class sfp_phishstats(SpiderFootPlugin):
                 evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
                 self.notifyListeners(evt)
 
-            maliciousIPDesc = "Phishstats [ " + str(maliciousIP) + "]\n"
+            maliciousIPDesc = "Phishstats [" + str(maliciousIP) + "]\n"
 
             maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)
             if maliciousIPDescHash in self.results:

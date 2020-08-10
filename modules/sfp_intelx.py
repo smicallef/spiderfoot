@@ -22,8 +22,8 @@ class sfp_intelx(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "api_key": "9df61df0-84f7-4dc7-b34c-8ccfb8646ace",
-        "base_url": "public.intelx.io",
+        "api_key": "",
+        "base_url": "2.intelx.io",
         "checkcohosts": False,
         "checkaffiliates": False,
         'netblocklookup': False,

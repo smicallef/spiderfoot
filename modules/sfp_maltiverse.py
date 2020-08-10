@@ -181,7 +181,7 @@ class sfp_maltiverse(SpiderFootPlugin):
                 evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
                 self.notifyListeners(evt)
             
-            maliciousIPDesc = "Maltiverse [ " + str(maliciousIP) + " ]\n"
+            maliciousIPDesc = "Maltiverse [" + str(maliciousIP) + " ]\n"
 
             for blacklistedRecord in blacklistedRecords:
                 lastSeen = blacklistedRecord.get('last_seen')
