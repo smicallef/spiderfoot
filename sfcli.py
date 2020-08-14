@@ -241,7 +241,7 @@ class SpiderFootCli(cmd.Cmd):
                 else:
                     # we have a dict key
                     cn = c
-                    v = r[c]
+                    v = str(r[c])
                 #print(str(cn) + ", " + str(c) + ", " + str(v))
                 if len(v) > maxsize.get(cn, 0):
                     maxsize[cn] = len(v)
@@ -303,7 +303,7 @@ class SpiderFootCli(cmd.Cmd):
                 else:
                     # we have a dict key
                     cn = c
-                    v = r[c]
+                    v = str(r[c])
                 if cn not in cols:
                     i += 1
                     continue
