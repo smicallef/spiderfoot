@@ -78,7 +78,7 @@ class sfp_psbdmp(SpiderFootPlugin):
         if 'count' in ret:
             if ret['count'] > 0:
                 for d in ret['data']:
-                    ids.append("https://psbdmp.cc/" + d['id'])
+                    ids.append("https://pastebin.com/" + d['id'])
             else:
                 return None
         else:
