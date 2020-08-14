@@ -23,14 +23,15 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         Test __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0)
         """
+        event_type = 'ROOT'
         event_data = ''
         module = ''
         source_event = ''
-
-        event_type = 'ROOT'
         source_event = SpiderFootEvent(event_type, event_data, module, source_event)
 
         event_type = 'example non-root event type'
+        event_data = ''
+        module = 'example module'
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         self.assertIsInstance(evt, SpiderFootEvent)
 
@@ -53,7 +54,7 @@ class TestSpiderFootEvent(unittest.TestCase):
         Test __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0)
         """
         event_data = 'example event data'
-        module = ''
+        module = 'example module'
         event_type = 'example non-root event type'
 
         invalid_types = [None, "", list(), dict()]
@@ -80,14 +81,15 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         Test asDict(self)
         """
+        event_type = 'ROOT'
         event_data = ''
         module = ''
         source_event = ''
-
-        event_type = 'ROOT'
         source_event = SpiderFootEvent(event_type, event_data, module, source_event)
 
         event_type = 'example non-root event type'
+        event_data = ''
+        module = 'example_module'
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         evt_dict = evt.asDict()
 
@@ -113,7 +115,7 @@ class TestSpiderFootEvent(unittest.TestCase):
         """
         event_type = 'not ROOT'
         event_data = ''
-        module = ''
+        module = 'example module'
         source_event = SpiderFootEvent("ROOT", '', '', "ROOT")
 
         evt = SpiderFootEvent(event_type, event_data, module, source_event)

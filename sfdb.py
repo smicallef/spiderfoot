@@ -1077,15 +1077,7 @@ class SpiderFootDb:
 
         Args:
             instanceId (str): scan instance ID
-            sfEvent (SpiderFootEvent): A SpiderFootEvent object with the following variables:
-                - eventType: the event, e.g. URL_FORM, RAW_DATA, etc.
-                - generated: time the event occurred
-                - confidence: how sure are we of this data's validity, 0-100
-                - visibility: how 'visible' was this data, 0-100
-                - risk: how much risk does this data represent, 0-100
-                - module: module that generated the event
-                - data: the actual data, i.e. a URL, port number, webpage content, etc.
-                - sourceEventHash: hash of the event that triggered this event
+            sfEvent (SpiderFootEvent): event to be stored in the database
             truncateSize (int): truncate size for event data
 
         Returns:
@@ -1095,9 +1087,6 @@ class SpiderFootDb:
             TypeError: arg type was invalid
             ValueError: arg value was invalid
             IOError: database I/O failed
-
-        Todo:
-            Review event attribute validation and error handling
         """
 
         if not isinstance(instanceId, str):
@@ -1109,11 +1098,50 @@ class SpiderFootDb:
         if not isinstance(sfEvent, SpiderFootEvent):
             raise TypeError("sfEvent is %s; expected SpiderFootEvent()" % type(sfEvent))
 
+        if not sfEvent.generated:
+            raise ValueError("sfEvent.generated is empty")
+
+        if not isinstance(sfEvent.generated, str):
+            raise TypeError("generated is %s; expected str()" % type(instanceId))
+
+        if not isinstance(sfEvent.type, str):
+            raise TypeError("sfEvent.type is %s; expected str()" % type(sfEvent.data))
+
+        if not sfEvent.type:
+            raise ValueError("sfEvent.type is empty")
+
         if not isinstance(sfEvent.data, str):
             raise TypeError("sfEvent.data is %s; expected str()" % type(sfEvent.data))
 
         if not sfEvent.data:
             raise ValueError("sfEvent.data is empty")
+
+        if not isinstance(sfEvent.module, str):
+            raise TypeError("sfEvent.module is %s; expected str()" % type(sfEvent.module ))
+
+        if not sfEvent.module:
+            raise ValueError("sfEvent.module is empty")
+
+        if not isinstance(sfEvent.confidence, int):
+            raise TypeError("sfEvent.confidence is %s; expected int()" % type(sfEvent.confidence))
+
+        if not 0 <= sfEvent.confidence <= 100:
+            raise ValueError("sfEvent.confidence value is %s; expected 0 - 100" % sfEvent.confidence)
+
+        if not isinstance(sfEvent.visibility, int):
+            raise TypeError("sfEvent.visibility is %s; expected int()" % type(sfEvent.visibility))
+
+        if not 0 <= sfEvent.visibility <= 100:
+            raise ValueError("sfEvent.visibility value is %s; expected 0 - 100" % sfEvent.visibility)
+
+        if not isinstance(sfEvent.risk, int):
+            raise TypeError("sfEvent.risk is %s; expected int()" % type(sfEvent.risk))
+
+        if not 0 <= sfEvent.risk <= 100:
+            raise ValueError("sfEvent.risk value is %s; expected 0 - 100" % sfEvent.risk)
+
+        if not isinstance(sfEvent.sourceEvent, SpiderFootEvent):
+            raise TypeError("sfEvent.sourceEvent is %s; expected str()" % type(sfEvent.sourceEvent))
 
         if not isinstance(sfEvent.sourceEventHash, str):
             raise TypeError("sfEvent.sourceEventHash is %s; expected str()" % type(sfEvent.sourceEventHash))

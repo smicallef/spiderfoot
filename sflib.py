@@ -2494,7 +2494,7 @@ class SpiderFootPlugin(object):
             Move all module state to use this, which then would enable a scan to be paused/resumed.
 
         Note:
-            Required for SpiderFoot HX compatability of modules.
+            Required for SpiderFoot HX compatibility of modules.
 
         Returns:
             dict: module temporary state data
@@ -2857,7 +2857,7 @@ class SpiderFootTarget(object):
 
 
 class SpiderFootEvent(object):
-    """SpiderFoot event."""
+    """SpiderFootEvent object representing identified data and associated meta data"""
 
     generated = None
     eventType = None
@@ -2868,8 +2868,8 @@ class SpiderFootEvent(object):
     data = None
     sourceEvent = None
     sourceEventHash = None
-    moduleDataSource = None
-    actualSource = None
+    moduleDataSource = None  # Required for SpiderFoot HX compatibility of modules
+    actualSource = None  # Required for SpiderFoot HX compatibility of modules
     __id = None
 
     def __init__(self, eventType, data, module, sourceEvent,
@@ -2877,28 +2877,23 @@ class SpiderFootEvent(object):
         """Initialize SpiderFoot event.
 
         Args:
-            eventType (str): event type
-            data (str): event data
+            eventType (str): event type, e.g. URL_FORM, RAW_DATA, etc.
+            data (str): event data, e.g. a URL, port number, webpage content, etc.
             module (str): module from which the event originated
-            sourceEvent (SpiderFootEvent): source event
-            confidence (int): event confidence
-            visibility (int): event visibility
-            risk (int): event risk
+            sourceEvent (SpiderFootEvent): hash of the SpiderFootEvent event that triggered this event
+            confidence (int): how sure are we of this data's validity, 0-100
+            visibility (int): how 'visible' was this data, 0-100
+            risk (int): how much risk does this data represent, 0-100
 
         Returns:
             dict: event as dict
 
         Raises:
             TypeError: arg type was invalid
+            ValueError: arg value was invalid
         """
 
-        self.eventType = eventType
         self.generated = time.time()
-        self.confidence = confidence
-        self.visibility = visibility
-        self.risk = risk
-        self.module = module
-        self.sourceEvent = sourceEvent
 
         if not isinstance(data, str):
             print("FATAL: Only string events are accepted, not '%s'." % type(data))
@@ -2908,8 +2903,51 @@ class SpiderFootEvent(object):
 
         self.data = data
 
-        # "ROOT" is a special "hash" reserved for elements with no
-        # actual parent (e.g. the first page spidered.)
+        if not isinstance(eventType, str):
+            raise TypeError("eventType is %s; expected str()" % type(eventType))
+
+        if not eventType:
+            raise ValueError("eventType is empty")
+
+        self.eventType = eventType
+
+        if not isinstance(module, str):
+            raise TypeError("module is %s; expected str()" % type(module ))
+
+        if not module:
+            if eventType != "ROOT":
+                raise ValueError("module is empty")
+
+        self.module = module
+
+        if not isinstance(confidence, int):
+            raise TypeError("confidence is %s; expected int()" % type(confidence))
+
+        if not 0 <= confidence <= 100:
+            raise ValueError("confidence value is %s; expected 0 - 100" % confidence)
+
+        self.confidence = confidence
+
+        if not isinstance(visibility, int):
+            raise TypeError("visibility is %s; expected int()" % type(visibility))
+
+        if not 0 <= visibility <= 100:
+            raise ValueError("visibility value is %s; expected 0 - 100" % visibility)
+
+        self.visibility = visibility
+
+        if not isinstance(risk, int):
+            raise TypeError("risk is %s; expected int()" % type(risk))
+
+        if not 0 <= risk <= 100:
+            raise ValueError("risk value is %s; expected 0 - 100" % risk)
+
+        self.risk = risk
+
+        # "ROOT" is a special "hash" reserved for elements with no parent,
+        # such as targets provided via the web UI or CLI.
+        # return here, as there's no need to proceed with calculating
+        # a sourceEventHash or __id (apparently?).
         if eventType == "ROOT":
             self.sourceEventHash = "ROOT"
             return
@@ -2919,6 +2957,8 @@ class SpiderFootEvent(object):
             print("FATAL: Offending module: %s" % module)
             print("FATAL: Offending type: %s" % eventType)
             raise TypeError("sourceEvent is %s; expected SpiderFootEvent()" % type(sourceEvent))
+
+        self.sourceEvent = sourceEvent
 
         self.sourceEventHash = sourceEvent.getHash()
         self.__id = self.eventType + str(self.generated) + self.module + \
