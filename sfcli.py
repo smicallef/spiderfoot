@@ -349,7 +349,8 @@ class SpiderFootCli(cmd.Cmd):
         #requests_log.propagate = True
         try:
             headers = {
-                "User-agent": "SpiderFoot-CLI/" + self.version
+                "User-agent": "SpiderFoot-CLI/" + self.version,
+                "Accept": "application/json"
             }
 
             self.ddprint("Fetching: " + url)
@@ -898,7 +899,7 @@ class SpiderFootCli(cmd.Cmd):
             return
 
         d = self.request(self.ownopts['cli.server_baseurl'] + \
-                         "/stopscan?id=" + id + "&cli=1")
+                         "/stopscan?id=" + id + "")
         if not d:
             return
 
