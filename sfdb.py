@@ -1104,11 +1104,11 @@ class SpiderFootDb:
         if not isinstance(sfEvent.generated, float):
             raise TypeError("generated is %s; expected float()" % type(sfEvent.generated))
 
-        if not isinstance(sfEvent.type, str):
-            raise TypeError("sfEvent.type is %s; expected str()" % type(sfEvent.data))
+        if not isinstance(sfEvent.eventType, str):
+            raise TypeError("sfEvent.eventType is %s; expected str()" % type(sfEvent.eventType))
 
-        if not sfEvent.type:
-            raise ValueError("sfEvent.type is empty")
+        if not sfEvent.eventType:
+            raise ValueError("sfEvent.eventType is empty")
 
         if not isinstance(sfEvent.data, str):
             raise TypeError("sfEvent.data is %s; expected str()" % type(sfEvent.data))
@@ -1120,7 +1120,8 @@ class SpiderFootDb:
             raise TypeError("sfEvent.module is %s; expected str()" % type(sfEvent.module ))
 
         if not sfEvent.module:
-            raise ValueError("sfEvent.module is empty")
+            if sfEvent.eventType != "ROOT":
+                raise ValueError("sfEvent.module is empty")
 
         if not isinstance(sfEvent.confidence, int):
             raise TypeError("sfEvent.confidence is %s; expected int()" % type(sfEvent.confidence))
@@ -1141,7 +1142,8 @@ class SpiderFootDb:
             raise ValueError("sfEvent.risk value is %s; expected 0 - 100" % sfEvent.risk)
 
         if not isinstance(sfEvent.sourceEvent, SpiderFootEvent):
-            raise TypeError("sfEvent.sourceEvent is %s; expected str()" % type(sfEvent.sourceEvent))
+            if sfEvent.eventType != "ROOT":
+                raise TypeError("sfEvent.sourceEvent is %s; expected str()" % type(sfEvent.sourceEvent))
 
         if not isinstance(sfEvent.sourceEventHash, str):
             raise TypeError("sfEvent.sourceEventHash is %s; expected str()" % type(sfEvent.sourceEventHash))
