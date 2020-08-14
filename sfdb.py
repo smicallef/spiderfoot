@@ -1104,11 +1104,11 @@ class SpiderFootDb:
         if not isinstance(sfEvent.generated, float):
             raise TypeError("generated is %s; expected float()" % type(sfEvent.generated))
 
-        if not isinstance(sfEvent.type, str):
-            raise TypeError("sfEvent.type is %s; expected str()" % type(sfEvent.data))
+        if not isinstance(sfEvent.eventType, str):
+            raise TypeError("sfEvent.eventType is %s; expected str()" % type(sfEvent.eventType))
 
-        if not sfEvent.type:
-            raise ValueError("sfEvent.type is empty")
+        if not sfEvent.eventType:
+            raise ValueError("sfEvent.eventType is empty")
 
         if not isinstance(sfEvent.data, str):
             raise TypeError("sfEvent.data is %s; expected str()" % type(sfEvent.data))
