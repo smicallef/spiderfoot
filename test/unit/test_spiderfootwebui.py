@@ -177,6 +177,7 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
 
         self.assertEqual('TBD', 'TBD')
 
+    @unittest.skip("todo")
     def test_scandelete_invalid_scan_returns_200(self):
         self.getPage("/scandelete?id=doesnotexist")
         self.assertStatus('200 OK')
@@ -540,7 +541,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts_export = sfwebui.optsexport(None)
         self.assertIsInstance(opts_export, str)
 
-    def test_optsraw_should_return_a_string(self):
+    def test_optsraw_should_return_bytes(self):
         """
         Test optsraw(self)
         """
@@ -548,7 +549,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         opts_raw = sfwebui.optsraw()
-        self.assertIsInstance(opts_raw, str)
+        self.assertIsInstance(opts_raw, bytes)
 
     @unittest.skip("todo")
     def test_error(self):
@@ -559,12 +560,12 @@ class TestSpiderFootWebUi(unittest.TestCase):
 
     def test_scandelete(self):
         """
-        Test scandelete(self, id, confirm=None, raw=False)
+        Test scandelete(self, id, confirm=None)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
-        scan_delete = sfwebui.scandelete("example scan id", None, None)
+        scan_delete = sfwebui.scandelete("example scan id", None)
         self.assertIsInstance(scan_delete, str)
 
     @unittest.skip("todo")
@@ -599,7 +600,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    def test_eventtypes_should_return_a_string(self):
+    def test_eventtypes_should_return_bytes(self):
         """
         Test eventtypes(self)
         """
@@ -607,9 +608,9 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         event_types = sfwebui.eventtypes()
-        self.assertIsInstance(event_types, str)
+        self.assertIsInstance(event_types, bytes)
 
-    def test_modules_should_return_a_string(self):
+    def test_modules_should_return_bytes(self):
         """
         Test modules(self)
         """
@@ -617,9 +618,9 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         modules = sfwebui.eventtypes()
-        self.assertIsInstance(modules, str)
+        self.assertIsInstance(modules, bytes)
 
-    def test_ping_should_return_a_string(self):
+    def test_ping_should_return_bytes(self):
         """
         Test ping(self)
         """
@@ -627,7 +628,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         ping = sfwebui.ping()
-        self.assertIsInstance(ping, str)
+        self.assertIsInstance(ping, bytes)
 
     def test_query_should_perform_a_sql_query(self):
         """
@@ -637,13 +638,13 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         query = sfwebui.query("SELECT 12345")
-        self.assertIsInstance(query, str)
-        self.assertIn("12345", query)
+        self.assertIsInstance(query, bytes)
+        self.assertIn(b"12345", query)
 
     @unittest.skip("todo")
     def test_start_scan(self):
         """
-        Test startscan(self, scanname, scantarget, modulelist, typelist, usecase, cli=None)
+        Test startscan(self, scanname, scantarget, modulelist, typelist, usecase)
         """
         self.assertEqual('TBD', 'TBD')
 
@@ -657,9 +658,10 @@ class TestSpiderFootWebUi(unittest.TestCase):
         stop_scan = sfwebui.stopscanmulti("example scan id")
         self.assertIsInstance(stop_scan, str)
 
+    @unittest.skip("todo")
     def test_stopscan(self):
         """
-        Test stopscan(self, id, cli=None)
+        Test stopscan(self, id)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
@@ -667,7 +669,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         stop_scan = sfwebui.stopscan("example scan id")
         self.assertIsInstance(stop_scan, str)
 
-    def test_scanlog_should_return_a_string(self):
+    def test_scanlog_should_return_bytes(self):
         """
         Test scanlog(self, id, limit=None, rowId=None, reverse=None)
         """
@@ -675,9 +677,9 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         scan_log = sfwebui.scanlog(None, None, None, None)
-        self.assertIsInstance(scan_log, str)
+        self.assertIsInstance(scan_log, bytes)
 
-    def test_scanerrors_should_return_a_string(self):
+    def test_scanerrors_should_return_bytes(self):
         """
         Test scanerrors(self, id, limit=None)
         """
@@ -685,9 +687,9 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         scan_errors = sfwebui.scanerrors(None, None)
-        self.assertIsInstance(scan_errors, str)
+        self.assertIsInstance(scan_errors, bytes)
 
-    def test_scanlist_should_return_a_string(self):
+    def test_scanlist_should_return_bytes(self):
         """
         Test scanlist(self)
         """
@@ -695,9 +697,9 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         scan_list = sfwebui.scanlist()
-        self.assertIsInstance(scan_list, str)
+        self.assertIsInstance(scan_list, bytes)
 
-    def test_scanstatus_should_return_a_string(self):
+    def test_scanstatus_should_return_bytes(self):
         """
         Test scanstatus(self, id)
         """
@@ -705,9 +707,9 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         scan_status = sfwebui.scanstatus("example scan instance")
-        self.assertIsInstance(scan_status, str)
+        self.assertIsInstance(scan_status, bytes)
 
-    def test_scansummary_should_return_a_string(self):
+    def test_scansummary_should_return_bytes(self):
         """
         Test scansummary(self, id, by)
         """
@@ -715,9 +717,9 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         scan_summary = sfwebui.scansummary(None, None)
-        self.assertIsInstance(scan_summary, str)
+        self.assertIsInstance(scan_summary, bytes)
 
-    def test_scaneventresults_should_return_a_string(self):
+    def test_scaneventresults_should_return_bytes(self):
         """
         Test scaneventresults(self, id, eventType, filterfp=False)
         """
@@ -725,7 +727,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         scan_results = sfwebui.scaneventresults(None, None, None)
-        self.assertIsInstance(scan_results, str)
+        self.assertIsInstance(scan_results, bytes)
 
     @unittest.skip("todo")
     def test_scaneventresultsunique_should_return_a_string(self):
@@ -738,7 +740,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         scan_results = sfwebui.scaneventresultsunique(None, None, None)
         self.assertIsInstance(scan_results, str)
 
-    def test_search_should_return_a_string(self):
+    def test_search_should_return_bytes(self):
         """
         Test search(self, id=None, eventType=None, value=None)
         """
@@ -746,9 +748,9 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         search_results = sfwebui.search(None, None, None)
-        self.assertIsInstance(search_results, str)
+        self.assertIsInstance(search_results, bytes)
 
-    def test_scan_history_should_return_a_string(self):
+    def test_scan_history_should_return_bytes(self):
         """
         Test scanhistory(self, id)
         """
@@ -756,7 +758,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(opts)
         scan_history = sfwebui.scanhistory(None)
-        self.assertIsInstance(scan_history, str)
+        self.assertIsInstance(scan_history, bytes)
 
     @unittest.skip("todo")
     def test_scan_element_type_discovery_should_return_a_string(self):
