@@ -1143,7 +1143,7 @@ class SpiderFootDb:
 
         if not isinstance(sfEvent.sourceEvent, SpiderFootEvent):
             if sfEvent.eventType != "ROOT":
-                raise TypeError(f"sfEvent.sourceEvent is {type(isfEvent.sourceEvent)}; expected str()")
+                raise TypeError(f"sfEvent.sourceEvent is {type(sfEvent.sourceEvent)}; expected str()")
 
         if not isinstance(sfEvent.sourceEventHash, str):
             raise TypeError(f"sfEvent.sourceEventHash is {type(sfEvent.sourceEventHash)}; expected str()")
