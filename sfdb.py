@@ -874,7 +874,7 @@ class SpiderFootDb:
 
         Args:
             instanceId (str): scan instance ID
-            resultHashes (str): TBD
+            resultHashes (list): list of event hashes
             fpFlag (int): false positive
 
         Returns:
@@ -887,6 +887,9 @@ class SpiderFootDb:
 
         if not isinstance(instanceId, str):
             raise TypeError(f"instanceId is {type(instanceId)}; expected str()")
+
+        if not isinstance(resultHashes, list):
+            raise TypeError(f"resultHashes is {type(resultHashes)}; expected list()")
 
         with self.dbhLock:
             for resultHash in resultHashes:
@@ -1098,11 +1101,11 @@ class SpiderFootDb:
         if not isinstance(sfEvent, SpiderFootEvent):
             raise TypeError(f"sfEvent is {type(sfEvent)}; expected SpiderFootEvent()")
 
+        if not isinstance(sfEvent.generated, float):
+            raise TypeError(f"sfEvent.generated is {type(sfEvent.generated)}; expected float()")
+
         if not sfEvent.generated:
             raise ValueError("sfEvent.generated is empty")
-
-        if not isinstance(sfEvent.generated, float):
-            raise TypeError(f"generated is {type(generated)}; expected float()")
 
         if not isinstance(sfEvent.eventType, str):
             raise TypeError(f"sfEvent.eventType is {type(sfEvent.eventType,)}; expected str()")
