@@ -98,7 +98,6 @@ meta = {
 
     """abuse.ch:Investigate,Passive:Reputation Systems::Check if a host/domain, IP or netblock is malicious according to abuse.ch."""
 
-
     # Default options
     opts = {
         'abusezeusdomain': True,
