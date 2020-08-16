@@ -20,7 +20,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_hackertarget(SpiderFootPlugin):
-    """HackerTarget.com:Footprint,Investigate,Passive:Passive DNS::Search HackerTarget.com for hosts sharing the same IP."""
+    """HackerTarget:Footprint,Investigate,Passive:Passive DNS::Search HackerTarget.com for hosts sharing the same IP."""
 
 
     # Default options
@@ -193,7 +193,7 @@ class sfp_hackertarget(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if srcModuleName == "sfp_hackertarget" and eventName == "IP_ADDRESS":
             self.sf.debug("Ignoring " + eventName + ", from self.")

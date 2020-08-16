@@ -45,7 +45,7 @@ class sfp_scylla(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'INTERNET_NAME' ]
+        return [ 'DOMAIN_NAME' ]
 
     # What events this module produces
     def producedEvents(self):
@@ -69,7 +69,9 @@ class sfp_scylla(SpiderFootPlugin):
         res = self.sf.fetchUrl('https://scylla.sh/search?' + urllib.parse.urlencode(params),
                                headers=headers,
                                timeout=15,
-                               useragent=self.opts['_useragent'])
+                               useragent=self.opts['_useragent'],
+                               # expired certficate
+                               verify=False)
 
         time.sleep(self.opts['pause'])
 
@@ -104,7 +106,7 @@ class sfp_scylla(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         position = 0
         max_pages = int(self.opts['max_pages'])
@@ -143,15 +145,15 @@ class sfp_scylla(SpiderFootPlugin):
                 if not email:
                     continue
 
-                try:
-                    mailDom = email.lower().split('@')[1]
-                except BaseException as e:
-                    self.sf.debug("Encountered strange result: " + email)
+                if not self.sf.validEmail(email):
+                    self.sf.debug("Skipping invalid email address: " + email)
                     continue
+
+                mailDom = email.lower().split('@')[1]
 
                 # Skip unrelated emails
                 # Scylla sometimes returns broader results than the searched data
-                if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
+                if not self.getTarget().matches(mailDom):
                     self.sf.debug("Skipped address: " + email)
                     continue
 

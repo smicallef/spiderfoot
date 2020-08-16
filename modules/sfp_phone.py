@@ -18,12 +18,13 @@ from phonenumbers import carrier
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_phone(SpiderFootPlugin):
-    """Phone Number Extractor:Passive,Footprint,Investigate:Real World::Identify phone numbers in scraped webpages."""
+    """Phone Number Extractor:Passive,Footprint,Investigate:Content Analysis::Identify phone numbers in scraped webpages."""
 
     # Default options
     opts = {}
 
     results = None
+    optdescs = {}
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -54,7 +55,7 @@ class sfp_phone(SpiderFootPlugin):
         else:
             self.results[sourceData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventName in ['TARGET_WEB_CONTENT', 'DOMAIN_WHOIS', 'NETBLOCK_WHOIS']:
             # Make potential phone numbers more friendly to parse
@@ -85,6 +86,10 @@ class sfp_phone(SpiderFootPlugin):
 
             if number_carrier:
                 evt = SpiderFootEvent("PROVIDER_TELCO", number_carrier, self.__name__, event)
+                if event.moduleDataSource:
+                    evt.moduleDataSource = event.moduleDataSource
+                else:
+                    evt.moduleDataSource = "Unknown"
                 self.notifyListeners(evt)
             else:
                 self.sf.debug("No carrier information found for " + eventData)

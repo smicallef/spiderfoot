@@ -113,7 +113,7 @@ class sfp_binstring(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventData in self.results:
             return None
@@ -128,7 +128,8 @@ class sfp_binstring(SpiderFootPlugin):
                 res = self.sf.fetchUrl(eventData,
                                        useragent=self.opts['_useragent'],
                                        dontMangle=True,
-                                       sizeLimit=self.opts['maxfilesize'])
+                                       sizeLimit=self.opts['maxfilesize'],
+                                       verify=False)
 
         if res:
             self.sf.debug("Searching for strings")

@@ -31,6 +31,7 @@ class sfp_intfiles(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.__dataSource__ = "Target Website"
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -51,7 +52,7 @@ class sfp_intfiles(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventData in self.results:
             return None

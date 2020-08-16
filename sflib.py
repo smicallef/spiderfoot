@@ -15,6 +15,7 @@ from stem import Signal
 from stem.control import Controller
 import inspect
 import hashlib
+import html
 import urllib.request, urllib.parse, urllib.error
 import json
 import re
@@ -33,11 +34,14 @@ import OpenSSL
 import uuid
 import cryptography
 import dns.resolver
+from publicsuffixlist import PublicSuffixList
 from networkx import nx
 from networkx.readwrite.gexf import GEXFWriter
 from datetime import datetime
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy
+import io
+
 
 # For hiding the SSL warnings coming from the requests lib
 import urllib3
@@ -45,39 +49,74 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class SpiderFoot:
+    """SpiderFoot
+
+    Attributes:
+        dbh: TBD
+        GUID: TBD
+        savedSock: TBD
+        socksProxy: TBD
+    """
+ 
     dbh = None
     GUID = None
     savedsock = socket
     socksProxy = None
 
-    # 'options' is a dictionary of options which changes the behaviour
-    # of how certain things are done in this module
-    # 'handle' will be supplied if the module is being used within the
-    # SpiderFoot GUI, in which case all feedback should be fed back
     def __init__(self, options, handle=None):
+        """Initialize SpiderFoot object.
+
+        Args:
+            options (dict): dictionary of configuration options.
+            handle (str): a handle to something. will be supplied if the module
+            is being used within the SpiderFoot GUI, in which case all feedback
+            should be fed back
+        """
+
         self.handle = handle
         self.opts = deepcopy(options)
+
         # This is ugly but we don't want any fetches to fail - we expect
         # to encounter unverified SSL certs!
-        if sys.version_info >= (2, 7, 9):
-            ssl._create_default_https_context = ssl._create_unverified_context
+        ssl._create_default_https_context = ssl._create_unverified_context
 
         if self.opts.get('_dnsserver', "") != "":
             res = dns.resolver.Resolver()
             res.nameservers = [self.opts['_dnsserver']]
             dns.resolver.override_system_resolver(res)
 
-    # Bit of a hack to support SOCKS because of the loading order of
-    # modules. sfscan will call this to update the socket reference
-    # to the SOCKS one.
     def updateSocket(self, socksProxy):
+        """Update socket.
+
+        Bit of a hack to support SOCKS because of the loading order of
+        modules. sfscan will call this to update the socket reference
+        to the SOCKS one.
+
+        Args:
+            socksProxy (str): TBD
+
+        Returns:
+            None
+        """
+
         self.socksProxy = socksProxy
 
     def revertSocket(self):
+        """Revert socket.
+
+        Returns:
+            None
+        """
+
         self.socksProxy = None
 
-    # Tell TOR to re-circuit
     def refreshTorIdent(self):
+        """Tell TOR to re-circuit.
+
+        Returns:
+            None
+        """
+
         if self.opts['_socks1type'] != "TOR":
             return None
 
@@ -91,14 +130,27 @@ class SpiderFoot:
         except BaseException as e:
             self.fatal("Unable to re-circuit TOR: " + str(e))
 
-    # Supplied an option value, return the data based on what the
-    # value is. If val is a URL, you'll get back the fetched content,
-    # if val is a file path it will be loaded and get back the contents,
-    # and if a string it will simply be returned back.
     def optValueToData(self, val, fatal=True, splitLines=True):
-        if val is None:
-            #self.debug("fetchUrl: No val")
-            return None
+        """Supplied an option value, return the data based on what the
+        value is. If val is a URL, you'll get back the fetched content,
+        if val is a file path it will be loaded and get back the contents,
+        and if a string it will simply be returned back.
+
+        Args:
+            val (str): TBD
+            fatal (bool): TBD
+            splitLines (bool): TBD
+
+        Returns:
+            str: TBD
+        """
+
+        if not isinstance(val, str):
+            if fatal:
+                self.error("Invalid option value %s" % val)
+            else:
+                self.error("Invalid option value %s" % val, False)
+                return None
 
         if val.startswith('@'):
             fname = val.split('@')[1]
@@ -139,9 +191,18 @@ class SpiderFoot:
 
         return val
 
-    # Return a format-agnostic collection of tuples to use as the
-    # basis for building graphs in various formats.
     def buildGraphData(self, data, flt=list()):
+        """Return a format-agnostic collection of tuples to use as the
+        basis for building graphs in various formats.
+
+        Args:
+            root (str): TBD
+            flt (list): TBD
+
+        Returns:
+            set: TBD
+        """
+
         mapping = set()
         entities = dict()
         parents = dict()
@@ -189,12 +250,24 @@ class SpiderFoot:
                             mapping.add((entity, next_parent))
         return mapping
 
-    # Convert supplied raw data into GEXF format (e.g. for Gephi)
-    # GEXF produced by PyGEXF doesn't work with SigmaJS because
-    # SJS needs coordinates for each node.
-    # flt is a list of event types to include, if not set everything is
-    # included.
     def buildGraphGexf(self, root, title, data, flt=[]):
+        """Convert supplied raw data into GEXF format (e.g. for Gephi)
+
+        GEXF produced by PyGEXF doesn't work with SigmaJS because
+        SJS needs coordinates for each node.
+        flt is a list of event types to include, if not set everything is
+        included.
+
+        Args:
+            root (str): TBD
+            title (str): TBD
+            data (str): TBD
+            flt (list): TBD
+
+        Returns:
+            str: TBD
+        """
+
         mapping = self.buildGraphData(data, flt)
         graph = nx.Graph()
 
@@ -229,8 +302,18 @@ class SpiderFoot:
         gexf = GEXFWriter(graph=graph)
         return str(gexf).encode('utf-8')
 
-    # Convert supplied raw data into JSON format for SigmaJS
     def buildGraphJson(self, root, data, flt=list()):
+        """Convert supplied raw data into JSON format for SigmaJS.
+
+        Args:
+            root (str): TBD
+            data (str): TBD
+            flt (list): TBD
+
+        Returns:
+            str: TBD
+        """
+
         mapping = self.buildGraphData(data, flt)
         ret = dict()
         ret['nodes'] = list()
@@ -280,31 +363,55 @@ class SpiderFoot:
 
         return json.dumps(ret)
 
-    # Called usually some time after instantiation
-    # to set up a database handle and scan GUID, used
-    # for logging events to the database about a scan.
     def setDbh(self, handle):
+        """Called usually some time after instantiation
+        to set up a database handle and scan GUID, used
+        for logging events to the database about a scan.
+        """
         self.dbh = handle
 
-    # Set the GUID this instance of SpiderFoot is being
-    # used in.
     def setGUID(self, uid):
+        """Set the GUID this instance of SpiderFoot is being used in."""
         self.GUID = uid
 
-    # Generate an globally unique ID for this scan
-    def genScanInstanceGUID(self, scanName):
-        # hashStr = hashlib.sha256(
-        #     scanName +
-        #     str(time.time() * 1000) +
-        #     str(random.SystemRandom().randint(100000, 999999))
-        # ).hexdigest()
+    def genScanInstanceGUID(self):
+        """Generate an globally unique ID for this scan.
+
+        Returns:
+            str: scan instance unique GUID
+        """
+
         return str(uuid.uuid4()).split("-")[0].upper()
 
     def _dblog(self, level, message, component=None):
-        #print(str(self.GUID) + ":" + str(level) + ":" + str(message) + ":" + str(component))
+        """Log a scan event.
+
+        Args:
+            level (str): TBD
+            message (str): TBD
+            component (str): TBD
+
+        Returns:
+            bool: scan event logged successfully
+        """
+
+        if not self.dbh:
+            self.error("No database handle. Could not log event to database: %s" % message, True)
+            return False
+
         return self.dbh.scanLogEvent(self.GUID, level, message, component)
 
     def error(self, message, exception=True):
+        """Print an error message and optionally also raise an exception.
+
+        Args:
+            message (str): error message
+            exception (bool): also raise an exception
+
+        Returns:
+            None
+        """
+
         if not self.opts['__logging']:
             return None
 
@@ -318,6 +425,15 @@ class SpiderFoot:
             raise BaseException("Internal Error Encountered: " + message)
 
     def fatal(self, error):
+        """Print an error message and stacktrace then exit.
+
+        Args:
+            error (str): error message
+
+        Returns:
+            None
+        """
+
         if self.dbh is None:
             print('[Fatal] %s' % error)
         else:
@@ -326,6 +442,15 @@ class SpiderFoot:
         sys.exit(-1)
 
     def status(self, message):
+        """Log and print a status message.
+
+        Args:
+            message (str): status message
+
+        Returns:
+            None
+        """
+
         if not self.opts['__logging']:
             return None
 
@@ -337,6 +462,15 @@ class SpiderFoot:
             print("[*] %s" % message)
 
     def info(self, message):
+        """Log and print an info message.
+
+        Args:
+            message (str): info message
+
+        Returns:
+            None
+        """
+
         if not self.opts['__logging']:
             return None
 
@@ -365,6 +499,15 @@ class SpiderFoot:
         return
 
     def debug(self, message):
+        """Log and print a debug message.
+
+        Args:
+            message (str): debug message
+
+        Returns:
+            None
+        """
+
         if not self.opts['_debug']:
             return
         if not self.opts['__logging']:
@@ -393,7 +536,8 @@ class SpiderFoot:
             print("[d:%s] %s" % (modName, message))
         return
 
-    def myPath(self):
+    @staticmethod
+    def myPath():
         # This will get us the program's directory, even if we are frozen using py2exe.
 
         # Determine whether we've been compiled by py2exe
@@ -402,43 +546,81 @@ class SpiderFoot:
 
         return os.path.dirname(__file__)
 
+    @classmethod
+    def dataPath(cls):
+        """Returns the file system location of SpiderFoot data and configuration files.
+
+        Returns:
+            str: SpiderFoot file system path
+        """
+
+        path = os.environ.get('SPIDERFOOT_DATA')
+        return path if path is not None else cls.myPath()
+
     def hashstring(self, string):
+        """Returns a SHA256 hash of the specified input.
+
+        Args:
+            string (str, list, dict): data to be hashed
+
+        Returns:
+            str: SHA256 hash
+        """
+
         s = string
         if type(string) in [list, dict]:
             s = str(string)
         return hashlib.sha256(s.encode('raw_unicode_escape')).hexdigest()
 
-    #
-    # Caching
-    #
-
-    # Return the cache path
     def cachePath(self):
+        """Returns the file system location of the cacha data files.
+
+        Returns:
+            str: SpiderFoot cache file system path
+        """
+
         path = self.myPath() + '/cache'
         if not os.path.isdir(path):
             os.mkdir(path)
         return path
 
-    # Store data to the cache
     def cachePut(self, label, data):
+        """Store data to the cache
+
+        Args:
+            label (str): TBD
+            data (str): TBD
+        """
+
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
-        fp = open(cacheFile, "w")
-        if type(data) is list:
-            for line in data:
-                if type(line) is str:
-                    fp.write(line)
-                    fp.write("\n")
-                else:
-                    fp.write(line.decode('utf-8') + '\n')
-        elif type(data) is bytes:
-            fp.write(data.decode('utf-8'))
-        else:
-            fp.write(data)
-        fp.close()
+        with io.open(cacheFile, "w", encoding="utf-8", errors="ignore") as fp:
+            if type(data) is list:
+                for line in data:
+                    if type(line) is str:
+                        fp.write(line)
+                        fp.write("\n")
+                    else:
+                        fp.write(line.decode('utf-8') + '\n')
+            elif type(data) is bytes:
+                fp.write(data.decode('utf-8'))
+            else:
+                fp.write(data)
 
-    # Retreive data from the cache
     def cacheGet(self, label, timeoutHrs):
+        """Retreive data from the cache
+
+        Args:
+            label (str): TBD
+            timeoutHrs (str): TBD
+
+        Returns:
+            str: cached data
+        """
+
+        if label is None:
+            return None
+
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
         cacheFile = self.cachePath() + "/" + pathLabel
         try:
@@ -453,17 +635,27 @@ class SpiderFoot:
                 return fileContents
             else:
                 return None
-        except BaseException as e:
+        except BaseException:
             return None
 
-    #
-    # Configuration process
-    #
-
-    # Convert a Python dictionary to something storable
-    # in the database.
     def configSerialize(self, opts, filterSystem=True):
+        """Convert a Python dictionary to something storable in the database.
+
+        Args:
+            opts (dict): TBD
+            filterSystem (bool): TBD
+
+        Returns:
+            dict: config options
+        """
+
+        if not isinstance(opts, dict):
+            raise TypeError("opts is %s; expected dict()" % type(opts))
+
         storeopts = dict()
+
+        if not opts:
+            return storeopts
 
         for opt in list(opts.keys()):
             # Filter out system temporary variables like GUID and others
@@ -483,6 +675,9 @@ class SpiderFoot:
 
         if '__modules__' not in opts:
             return storeopts
+
+        if not isinstance(opts['__modules__'], dict):
+            raise TypeError("opts['__modules__'] is %s; expected dict()" % type(opts['__modules__']))
 
         for mod in opts['__modules__']:
             for opt in opts['__modules__'][mod]['opts']:
@@ -504,11 +699,26 @@ class SpiderFoot:
 
         return storeopts
 
-    # Take strings, etc. from the database or UI and convert them
-    # to a dictionary for Python to process.
-    # referencePoint is needed to know the actual types the options
-    # are supposed to be.
     def configUnserialize(self, opts, referencePoint, filterSystem=True):
+        """Take strings, etc. from the database or UI and convert them
+        to a dictionary for Python to process.
+        referencePoint is needed to know the actual types the options
+        are supposed to be.
+
+        Args:
+            opts (dict): TBD
+            referencePoint (dict): TBD
+            filterSystem (bool): TBD
+
+        Returns:
+            dict: TBD
+        """
+
+        if not isinstance(opts, dict):
+            raise TypeError("opts is %s; expected dict()" % type(opts))
+        if not isinstance(referencePoint, dict):
+            raise TypeError("referencePoint is %s; expected dict()" % type(referencePoint))
+
         returnOpts = referencePoint
 
         # Global options
@@ -539,6 +749,9 @@ class SpiderFoot:
 
         if '__modules__' not in referencePoint:
             return returnOpts
+
+        if not isinstance(referencePoint['__modules__'], dict):
+            raise TypeError("referencePoint['__modules__'] is %s; expected dict()" % type(referencePoint['__modules__']))
 
         # Module options
         # A lot of mess to handle typing..
@@ -572,20 +785,30 @@ class SpiderFoot:
 
         return returnOpts
 
-    # Return the type for a scan
     def targetType(self, target):
+        """Return the scan target seed data type for the specified scan target input.
+
+        Args:
+            target (str): scan target seed input
+
+        Returns:
+            str: scan target seed data type
+        """
+        if not target:
+            return None
+
         targetType = None
 
         regexToType = [
-            {"^\d+\.\d+\.\d+\.\d+$": "IP_ADDRESS"},
-            {"^\d+\.\d+\.\d+\.\d+/\d+$": "NETBLOCK_OWNER"},
-            {"^.*@.*$": "EMAILADDR"},
-            {"^\+\d+$": "PHONE_NUMBER"},
-            {"^\".*\s+.*\"$": "HUMAN_NAME"},
-            {"^\".*\"$": "USERNAME"},
-            {"^\d+$": "BGP_AS_OWNER"},
-            {"^[0-9a-f:]+$": "IPV6_ADDRESS"},
-            {"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
+            {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$": "IP_ADDRESS"},
+            {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/\d+$": "NETBLOCK_OWNER"},
+            {r"^.*@.*$": "EMAILADDR"},
+            {r"^\+[0-9]+$": "PHONE_NUMBER"},
+            {r"^\".+\s+.+\"$": "HUMAN_NAME"},
+            {r"^\".+\"$": "USERNAME"},
+            {r"^[0-9]+$": "BGP_AS_OWNER"},
+            {r"^[0-9a-f:]+$": "IPV6_ADDRESS"},
+            {r"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"}
         ]
 
         # Parse the target and set the targetType
@@ -596,10 +819,20 @@ class SpiderFoot:
                 break
         return targetType
 
-    # Return an array of module names for returning the
-    # types specified.
     def modulesProducing(self, events):
+        """Return an array of modules that produce the list of types supplied.
+
+        Args:
+            events (list): list of event types
+
+        Returns:
+            list: list of modules
+        """
         modlist = list()
+
+        if not events:
+            return modlist
+
         for mod in list(self.opts['__modules__'].keys()):
             if self.opts['__modules__'][mod]['provides'] is None:
                 continue
@@ -612,10 +845,20 @@ class SpiderFoot:
 
         return modlist
 
-    # Return an array of modules that consume the types
-    # specified.
     def modulesConsuming(self, events):
+        """Return an array of modules that consume the list of types supplied.
+
+        Args:
+            events (list): list of event types
+
+        Returns:
+            list: list of modules
+        """
         modlist = list()
+
+        if not events:
+            return modlist
+
         for mod in list(self.opts['__modules__'].keys()):
             if self.opts['__modules__'][mod]['consumes'] is None:
                 continue
@@ -629,10 +872,20 @@ class SpiderFoot:
 
         return modlist
 
-    # Return an array of types that are produced by the list
-    # of modules supplied.
     def eventsFromModules(self, modules):
+        """Return an array of types that are produced by the list of modules supplied.
+
+        Args:
+            modules (list): list of modules
+
+        Returns:
+            list: list of types
+        """
         evtlist = list()
+
+        if not modules:
+            return evtlist
+
         for mod in modules:
             if mod in list(self.opts['__modules__'].keys()):
                 if self.opts['__modules__'][mod]['provides'] is not None:
@@ -641,10 +894,20 @@ class SpiderFoot:
 
         return evtlist
 
-    # Return an array of types that are consumed by the list
-    # of modules supplied.
     def eventsToModules(self, modules):
+        """Return an array of types that are consumed by the list of modules supplied.
+
+        Args:
+            modules (list): list of modules
+
+        Returns:
+            list: list of types
+        """
         evtlist = list()
+
+        if not modules:
+            return evtlist
+
         for mod in modules:
             if mod in list(self.opts['__modules__'].keys()):
                 if self.opts['__modules__'][mod]['consumes'] is not None:
@@ -653,12 +916,20 @@ class SpiderFoot:
 
         return evtlist
 
-    #
-    # URL parsing functions
-    #
-
-    # Turn a relative path into an absolute path
     def urlRelativeToAbsolute(self, url):
+        """Turn a relative path into an absolute path
+
+        Args:
+            url (str): URL
+
+        Returns:
+            str: URL relative path
+        """
+
+        if not url:
+            self.error("Invalid URL: %s" % url, False)
+            return None
+
         finalBits = list()
 
         if '..' not in url:
@@ -681,45 +952,76 @@ class SpiderFoot:
 
             finalBits.append(chunk)
 
-        #self.debug('xfrmed rel to abs path: ' + url + ' to ' + '/'.join(finalBits))
         return '/'.join(finalBits)
 
-    # Extract the top level directory from a URL
     def urlBaseDir(self, url):
+        """Extract the top level directory from a URL
+
+        Args:
+            url (str): URL
+
+        Returns:
+            str: base directory
+        """
+
+        if not url:
+            self.error("Invalid URL: %s" % url, False)
+            return None
 
         bits = url.split('/')
 
         # For cases like 'www.somesite.com'
         if len(bits) == 0:
-            #self.debug('base dir of ' + url + ' not identified, using URL as base.')
             return url + '/'
 
         # For cases like 'http://www.blah.com'
         if '://' in url and url.count('/') < 3:
-            #self.debug('base dir of ' + url + ' is: ' + url + '/')
             return url + '/'
 
         base = '/'.join(bits[:-1])
-        #self.debug('base dir of ' + url + ' is: ' + base + '/')
+
         return base + '/'
 
-    # Extract the scheme and domain from a URL
-    # Does not return the trailing slash! So you can do .endswith()
-    # checks.
     def urlBaseUrl(self, url):
+        """Extract the scheme and domain from a URL
+
+        Does not return the trailing slash! So you can do .endswith() checks.
+
+        Args:
+            url (str): URL
+
+        Returns:
+            str: base URL without trailing slash
+        """
+
+        if not url:
+            self.error("Invalid URL: %s" % url, False)
+            return None
+
         if '://' in url:
-            bits = re.match('(\w+://.[^/:\?]*)[:/\?].*', url)
+            bits = re.match(r'(\w+://.[^/:\?]*)[:/\?].*', url)
         else:
-            bits = re.match('(.[^/:\?]*)[:/\?]', url)
+            bits = re.match(r'(.[^/:\?]*)[:/\?]', url)
 
         if bits is None:
             return url.lower()
 
-        #self.debug('base url of ' + url + ' is: ' + bits.group(1))
         return bits.group(1).lower()
 
-    # Extract the FQDN from a URL
     def urlFQDN(self, url):
+        """Extract the FQDN from a URL.
+
+        Args:
+            url (str): URL
+
+        Returns:
+            str: FQDN
+        """
+
+        if not url:
+            self.error("Invalid URL: %s" % url, False)
+            return None
+
         baseurl = self.urlBaseUrl(url)
         if '://' not in baseurl:
             count = 0
@@ -729,11 +1031,27 @@ class SpiderFoot:
         # http://abc.com will split to ['http:', '', 'abc.com']
         return baseurl.split('/')[count].lower()
 
-    # Extract the keyword (the domain without the TLD or any subdomains)
-    # from a domain.
     def domainKeyword(self, domain, tldList):
+        """Extract the keyword (the domain without the TLD or any subdomains) from a domain.
+
+        Args:
+            domain (str): The domain to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            str: The keyword
+        """
+
+        if not domain:
+            self.error("Invalid domain: %s" % domain, False)
+            return None
+
         # Strip off the TLD
-        tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
+        dom = self.hostDomain(domain.lower(), tldList)
+        if not dom:
+            return None
+
+        tld = '.'.join(dom.split('.')[1:])
         ret = domain.lower().replace('.' + tld, '')
 
         # If the user supplied a domain with a sub-domain, return the second part
@@ -742,90 +1060,213 @@ class SpiderFoot:
         else:
             return ret
 
-    # Extract the keywords (the domains without the TLD or any subdomains)
-    # from a list of domains.
     def domainKeywords(self, domainList, tldList):
-        arr = list()
+        """Extract the keywords (the domains without the TLD or any subdomains) from a list of domains.
+
+        Args:
+            domainList (list): The list of domains to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            set: List of keywords
+        """
+
+        if not domainList:
+            self.error("Invalid domain list: %s" % domainList, False)
+            return set()
+
+        keywords = list()
         for domain in domainList:
-            # Strip off the TLD
-            tld = '.'.join(self.hostDomain(domain.lower(), tldList).split('.')[1:])
-            ret = domain.lower().replace('.' + tld, '')
+            keywords.append(self.domainKeyword(domain, tldList))
 
-            # If the user supplied a domain with a sub-domain, return the second part
-            if '.' in ret:
-                arr.append(ret.split('.')[-1])
-            else:
-                arr.append(ret)
+        self.debug("Keywords: %s" % keywords)
+        return set([k for k in keywords if k])
 
-        self.debug("Keywords: " + str(arr))
-        return arr
-
-    # Obtain the domain name for a supplied hostname
-    # tldList needs to be an array based on the Mozilla public list
     def hostDomain(self, hostname, tldList):
-        ps = PublicSuffixList(tldList)
-        return ps.get_public_suffix(hostname)
+        """Obtain the domain name for a supplied hostname.
 
-    # Is the host a valid host (some filenames look like hosts)
+        Args:
+            hostname (str): The hostname to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            str: The domain name.
+        """
+
+        if not tldList:
+            return None
+        if not hostname:
+            return None
+
+        ps = PublicSuffixList(tldList, only_icann=True)
+        return ps.privatesuffix(hostname)
+
     def validHost(self, hostname, tldList):
-        # First basic content checks
+        """Check if the provided string is a valid hostname with a valid public suffix TLD.
+
+        Args:
+            hostname (str): The hostname to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            bool
+        """
+
+        if not tldList:
+            return False
+        if not hostname:
+            return False
+
         if "." not in hostname:
             return False
 
-        if not re.match("^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
+        if not re.match(r"^[a-z0-9-\.]*$", hostname, re.IGNORECASE):
             return False
 
-        # Finally check if it's on a valid TLD
-        ps = PublicSuffixList(tldList)
-        sfx = ps.get_public_suffix(hostname, strict=True)
+        ps = PublicSuffixList(tldList, only_icann=True, accept_unknown=False)
+        sfx = ps.privatesuffix(hostname)
         return sfx != None
 
-    # Given a possible hostname, check if it's a domain name
-    # By checking whether it rests atop a TLD.
-    # e.g. www.example.com = False because tld of hostname is com,
-    # and www.example has a . in it.
     def isDomain(self, hostname, tldList):
-        ps = PublicSuffixList(tldList)
-        suffix = ps.get_public_suffix(hostname)
-        return hostname == suffix
+        """Check if the provided hostname string is a valid domain name.
 
-    # Simple way to verify IPv4 addresses.
+        Given a possible hostname, check if it's a domain name
+        By checking whether it rests atop a valid TLD.
+        e.g. www.example.com = False because tld of hostname is com,
+        and www.example has a . in it.
+
+        Args:
+            hostname (str): The hostname to check.
+            tldList (str): The list of TLDs based on the Mozilla public list.
+
+        Returns:
+            bool
+        """
+
+        if not tldList:
+            return False
+        if not hostname:
+            return False
+
+        ps = PublicSuffixList(tldList, only_icann=True, accept_unknown=False)
+        sfx = ps.privatesuffix(hostname)
+        return sfx == hostname
+    
     def validIP(self, address):
+        """Check if the provided string is a valid IPv4 address.
+
+        Args:
+            address (str): The IPv4 address to check.
+
+        Returns:
+            bool
+        """
+
         if not address:
             return False
         return netaddr.valid_ipv4(address)
 
-    # Simple way to verify IPv6 addresses.
     def validIP6(self, address):
+        """Check if the provided string is a valid IPv6 address.
+
+        Args:
+            address (str): The IPv6 address to check.
+
+        Returns:
+            bool
+        """
+
         if not address:
             return False
         return netaddr.valid_ipv6(address)
 
-    # Simple way to verify netblock.
     def validIpNetwork(self, cidr):
+        """Check if the provided string is a valid CIDR netblock.
+
+        Args:
+            cidr (str): The netblock to check.
+
+        Returns:
+            bool
+        """
+
         try:
             if '/' in str(cidr) and netaddr.IPNetwork(str(cidr)).size > 0:
                 return True
             else:
                 return False
-        except:
+        except BaseException:
             return False
 
-    # Clean DNS results to be a simple list
     def normalizeDNS(self, res):
+        """Clean DNS results to be a simple list
+
+        Args:
+            res (list): List of DNS names
+
+        Returns:
+            list: list of domains
+        """
+
         ret = list()
+
+        if not res:
+            return ret
+
         for addr in res:
             if type(addr) == list:
                 for host in addr:
                     host = str(host).rstrip(".")
-                    ret.append(host)
+                    if host:
+                        ret.append(host)
             else:
                 addr = str(addr).rstrip(".")
-                ret.append(addr)
+                if addr:
+                    ret.append(addr)
         return ret
 
-    # Verify input is OK to execute
+    def validEmail(self, email):
+        """Check if the provided string is a valid email address.
+
+        Args:
+            email (str): The email address to check.
+
+        Returns:
+            bool: email is a valid email address
+        """
+
+        if not isinstance(email, str):
+            return False
+
+        if "@" not in email:
+            return False
+
+        if not re.match(r'^([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)$', email):
+            return False
+
+        if len(email) < 5:
+            return False
+
+        # Handle messed up encodings
+        if "%" in email:
+            return False
+
+        # Handle truncated emails
+        if "..." in email:
+            return False
+
+        return True
+
     def sanitiseInput(self, cmd):
+        """Verify input command is safe to execute
+
+        Args:
+            cmd (str): The command to check
+
+        Returns:
+            bool: command is "safe"
+        """
+
         chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
          'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
          '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
@@ -844,17 +1285,21 @@ class SpiderFoot:
 
         return True
 
-    # Return dictionary words and/or names
     def dictwords(self):
+        """Return dictionary words and/or names from several language dictionaries
+
+        Returns:
+            list: words and names from dictionaries
+        """
+
         wd = dict()
 
         dicts = [ "english", "german", "french", "spanish" ]
 
         for d in dicts:
             try:
-                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
-                dlines = wdct.readlines()
-                wdct.close()
+                with io.open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r', encoding='utf8', errors='ignore') as wdct:
+                    dlines = wdct.readlines()
             except BaseException as e:
                 self.debug("Could not read dictionary: " + str(e))
                 continue
@@ -865,8 +1310,13 @@ class SpiderFoot:
 
         return list(wd.keys())
 
-    # Return dictionary names
     def dictnames(self):
+        """Return names of available dictionary files.
+
+        Returns:
+            list: list of dictionary file names.
+        """
+
         wd = dict()
 
         dicts = [ "names" ]
@@ -887,11 +1337,22 @@ class SpiderFoot:
         return list(wd.keys())
 
 
-    # Converts a dictionary of k -> array to a nested
-    # tree that can be digested by d3 for visualizations.
     def dataParentChildToTree(self, data):
+        """Converts a dictionary of k -> array to a nested
+        tree that can be digested by d3 for visualizations.
+
+        Args:
+            data (dict): dictionary of k -> array
+
+        Returns:
+            dict: nested tree
+        """
+
+        if not isinstance(data, dict):
+            self.error("Data is not a dict", False)
+            return {}
+
         def get_children(needle, haystack):
-            #print("called")
             ret = list()
 
             if needle not in list(haystack.keys()):
@@ -901,7 +1362,6 @@ class SpiderFoot:
                 return None
 
             for c in haystack[needle]:
-                #print("found child of " + needle + ": " + c)
                 ret.append({"name": c, "children": get_children(c, haystack)})
             return ret
 
@@ -924,62 +1384,99 @@ class SpiderFoot:
                 break
 
         if root is None:
-            #print("*BUG*: Invalid structure - needs to go back to one root.")
-            final = {}
-        else:
-            final = {"name": root, "children": get_children(root, data)}
+            return {}
 
-        return final
+        return {"name": root, "children": get_children(root, data)}
 
-    #
-    # General helper functions to automate many common tasks between modules
-    #
-
-    # Return a normalised resolution or None if not resolved.
     def resolveHost(self, host):
+        """Return a normalised resolution of a hostname.
+
+        Args:
+            host (str): host to resolve
+
+        Returns:
+            list: IP addresses
+        """
+
+        addrs = list()
+
+        if not host:
+            self.error("Unable to resolve %s (Invalid host)" % host, False)
+            return addrs
+
         try:
             addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
-            if len(addrs) > 0:
-                return list(set(addrs))
-            return None
         except BaseException as e:
-            self.debug("Unable to resolve " + str(host) + ": " + str(e))
-            return None
+            self.debug("Unable to resolve %s (%s)" % (host, e))
 
-    # Return a normalised resolution of an IPv4 address or None if not resolved.
+        if len(addrs):
+            self.debug("Resolved %s to: %s" % (host, addrs))
+
+        return list(set(addrs))
+
     def resolveIP(self, ipaddr):
-        self.debug("Performing reverse-resolve of " + ipaddr)
+        """Return a normalised resolution of an IPv4 address.
+
+        Args:
+            ipaddr (str): IP address to reverse resolve
+
+        Returns:
+            list: list of domain names
+        """
+
+        addrs = list()
+
+        if not self.validIP(ipaddr) and not self.validIP6(ipaddr):
+            self.error("Unable to resolve %s (Invalid IP address)" % ipaddr, False)
+            return addrs
+
+        self.debug("Performing reverse-resolve of %s" % ipaddr)
 
         try:
             addrs = self.normalizeDNS(socket.gethostbyaddr(ipaddr))
-            if len(addrs) > 0:
-                return list(set(addrs))
-            return None
         except BaseException as e:
-            self.debug("Unable to resolve " + ipaddr + " (" + str(e) + ")")
-            return None
+            self.debug("Unable to resolve %s (%s)" % (ipaddr, e))
 
-    # Return a normalised resolution of an IPv6 address or None if not resolved.
+        if len(addrs):
+            self.debug("Resolved %s to: %s" % (ipaddr, addrs))
+
+        return list(set(addrs))
+
     def resolveHost6(self, hostname):
+        """Return a normalised resolution of an IPv6 address.
+
+        Args:
+            hostname (str): hostname to reverse resolve
+
+        Returns:
+            list
+        """
+
+        addrs = list()
+
+        if not hostname:
+            self.error("Unable to resolve %s (Invalid hostname)" % hostname, False)
+            return addrs
+
         try:
-            addrs = list()
             res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
             for addr in res:
                 if addr[4][0] not in addrs:
                     addrs.append(addr[4][0])
-            if len(addrs) < 1:
-                return None
-            self.debug("Resolved " + hostname + " to IPv6: " + str(addrs))
-            return list(set(addrs))
         except BaseException as e:
-            self.debug("Unable to IPv6 resolve " + hostname + " (" + str(e) + ")")
-            return None
+            self.debug("Unable to IPv6 resolve %s (%s)" % (hostname, e))
 
-    # Verify a host resolves to a given IP
+        if len(addrs):
+            self.debug("Resolved %s to IPv6: %s" % (hostname, addrs))
+
+        return list(set(addrs))
+
     def validateIP(self, host, ip):
+        """Verify a host resolves to a given IP."""
+
         addrs = self.resolveHost(host)
 
-        if addrs is None:
+        if not addrs:
             return False
 
         for addr in addrs:
@@ -988,11 +1485,24 @@ class SpiderFoot:
 
         return False
 
-    # Resolve alternative names for a given target
     def resolveTargets(self, target, validateReverse):
+        """Resolve alternative names for a given target.
+
+        Args:
+            target (SpiderFootTarget): target object
+            validateReverse (bool): validate domain names resolve
+
+        Returns:
+            list: list of domain names and IP addresses
+        """
+
         ret = list()
-        t = target.getType()
-        v = target.getValue()
+
+        if not target:
+            return ret
+
+        t = target.targetType
+        v = target.targetValue
 
         if t in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
             r = self.resolveIP(v)
@@ -1022,18 +1532,16 @@ class SpiderFoot:
                                     ret.append(host)
                     else:
                         ret.extend(names)
-        if len(ret) > 0:
-            return list(set(ret))
-        return None
+        return list(set(ret))
 
-    # Create a safe socket that's using SOCKS/TOR if it was enabled
     def safeSocket(self, host, port, timeout):
+        """Create a safe socket that's using SOCKS/TOR if it was enabled."""
         sock = socket.create_connection((host, int(port)), int(timeout))
         sock.settimeout(int(timeout))
         return sock
 
-    # Create a safe SSL connection that's using SOCKs/TOR if it was enabled
     def safeSSLSocket(self, host, port, timeout):
+        """Create a safe SSL connection that's using SOCKs/TOR if it was enabled."""
         s = socket.socket()
         s.settimeout(int(timeout))
         s.connect((host, int(port)))
@@ -1041,25 +1549,50 @@ class SpiderFoot:
         sock.do_handshake()
         return sock
 
-    # Parse the contents of robots.txt, returns a list of patterns
-    # which should not be followed
     def parseRobotsTxt(self, robotsTxtData):
+        """Parse the contents of robots.txt.
+
+        Args:
+            robotsTxtData (str): robots.txt file contents
+
+        Returns:
+            list: list of patterns which should not be followed
+
+        Todo:
+            We don't check the User-Agent rule yet.. probably should at some stage
+
+            fix whitespace parsing; ie, " " is not a valid disallowed path
+        """
+
         returnArr = list()
 
-        # We don't check the User-Agent rule yet.. probably should at some stage
+        if not isinstance(robotsTxtData, str):
+            return returnArr
 
         for line in robotsTxtData.splitlines():
             if line.lower().startswith('disallow:'):
-                m = re.match('disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
-                self.debug('robots.txt parsing found disallow: ' + m.group(1))
-                returnArr.append(m.group(1))
-                continue
+                m = re.match(r'disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
+                if m:
+                    self.debug('robots.txt parsing found disallow: ' + m.group(1))
+                    returnArr.append(m.group(1))
 
         return returnArr
 
-    # Finds all hashes within the supplied content
     def parseHashes(self, data):
+        """Extract all hashes within the supplied content.
+
+        Args:
+            data (str): text to search for hashes
+
+        Returns:
+            list: list of hashes
+        """
+
         ret = list()
+
+        if not isinstance(data, str):
+            return ret
+
         hashes = {
             "MD5": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{32})(?:[^a-fA-F\d]|\b)"),
             "SHA1": re.compile(r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{40})(?:[^a-fA-F\d]|\b)"),
@@ -1075,53 +1608,55 @@ class SpiderFoot:
 
         return ret
 
-    # Find all emails within the supplied content
-    # Returns an Array
     def parseEmails(self, data):
+        """Extract all email addresses within the supplied content.
+
+        Args:
+            data (str): text to search for email addresses
+
+        Returns:
+            list: list of email addresses
+        """
+
+        if not isinstance(data, str):
+            return list()
+
         emails = set()
         matches = re.findall(r'([\%a-zA-Z\.0-9_\-\+]+@[a-zA-Z\.0-9\-]+\.[a-zA-Z\.0-9\-]+)', data)
 
         for match in matches:
-            self.debug("Found possible email: " + match)
-
-            # Handle false positive matches
-            if len(match) < 5:
-                self.debug("Skipped likely invalid email address.")
-                continue
-
-            # Handle messed up encodings
-            if "%" in match:
-                self.debug("Skipped invalid email address: " + match)
-                continue
-
-            # Handle truncated emails
-            if "..." in match:
-                self.debug("Skipped incomplete e-mail address: " + match)
-                continue
-
-            emails.add(match)
+            if self.validEmail(match):
+                emails.add(match)
 
         return list(emails)
     
-    # Find all credit card numbers with the supplied content
-    #
-    # Extracts numbers with lengths ranging from 13 - 19 digits
-    #
-    # Checks the numbers using Luhn's algorithm to verify if
-    # the number is a valid credit card number or not
-    #
-    # Returns a list
-    def parseCreditCards(self,data):
+    def parseCreditCards(self, data):
+        """Find all credit card numbers with the supplied content.
+
+        Extracts numbers with lengths ranging from 13 - 19 digits
+
+        Checks the numbers using Luhn's algorithm to verify
+        if the number is a valid credit card number or not
+
+        Args:
+            data (str): text to search for credit card numbers
+
+        Returns:
+            list: list of credit card numbers
+        """
+
+        if not isinstance(data, str):
+            return list()
+
         creditCards = set() 
-        
+
         # Remove whitespace from data. 
         # Credit cards might contain spaces between them 
         # which will cause regex mismatch
         data = data.replace(" ", "")
         
         # Extract all numbers with lengths ranging from 13 - 19 digits
-        possibleCCRegex = "\d{13,19}"
-        matches = re.findall(possibleCCRegex, data)
+        matches = re.findall(r"[0-9]{13,19}", data)
 
         # Verify each extracted number using Luhn's algorithm
         for match in matches:
@@ -1150,16 +1685,25 @@ class SpiderFoot:
                 self.debug("Skipped invalid credit card number: " + match)
         return list(creditCards)
         
-    # Find all IBAN numbers with the supplied content
-    #
-    # Extracts possible IBAN Numbers using a generic regex 
-    #
-    # Checks whether the possible IBAN number is valid or not
-    # Using country-wise length check and Mod 97 algorithm
-    #
-    # Returns a list
     def parseIBANNumbers(self, data):
-        ibanNumbers = set()
+        """Find all International Bank Account Numbers (IBANs) within the supplied content.
+
+        Extracts possible IBANs using a generic regex.
+
+        Checks whether possible IBANs are valid or not
+        using country-wise length check and Mod 97 algorithm.
+
+        Args:
+            data (str): text to search for IBANs
+
+        Returns:
+            list: list of IBAN
+        """
+
+        if not isinstance(data, str):
+            return list()
+
+        ibans = set()
 
         # Dictionary of country codes and their respective IBAN lengths
         ibanCountryLengths = {
@@ -1171,7 +1715,7 @@ class SpiderFoot:
             "FI" : 18, "FR" : 27, "GE" : 22, "DE" : 22,
             "GI" : 23, "GR" : 27, "GL" : 18, "GT" : 28,
             "VA" : 22, "HU" : 28, "IS" : 26, "IQ" : 23,
-            "IE" : 22, "IL" : 27, "JO" : 30, "KZ" : 20,
+            "IE" : 22, "IL" : 23, "JO" : 30, "KZ" : 20,
             "XK" : 20, "KW" : 30, "LV" : 21, "LB" : 28,
             "LI" : 21, "LT" : 20, "LU" : 20, "MT" : 31,
             "MR" : 27, "MU" : 30, "MD" : 24, "MC" : 27,
@@ -1189,60 +1733,75 @@ class SpiderFoot:
             "AE" : 23, "GB" : 22, "SE" : 24
         }
 
-        # Remove whitespace from data. 
-        # IBAN Numbers might contain spaces between them 
-        # which will cause regex mismatch
+        # Normalize input data to remove whitespace
         data = data.replace(" ", "")
 
-        # Extract alphanumeric characters of lengths ranging from 16 to 31
-        possibleIBANRegex = "[A-Za-z0-9]{16,31}"
-        matches = re.findall(possibleIBANRegex, data)
+        # Extract alphanumeric characters of lengths ranging from 15 to 32
+        # and starting with two characters
+        matches = re.findall("[A-Za-z]{2}[A-Za-z0-9]{13,30}", data)
 
         for match in matches:  
-            match = match.upper()
-            ibanNumber = match
+            iban = match.upper()
 
-            countryCode = ibanNumber[0:2]
+            countryCode = iban[0:2]
 
             if countryCode not in ibanCountryLengths.keys():
-                # Invalid IBAN Number due to country code not existing in dictionary
-                self.debug("Skipped invalid IBAN number: " + ibanNumber)
+                self.debug("Skipped invalid IBAN (invalid country code): %s" % iban)
                 continue
             
-            # Using Mod 97 algorithm to verify if IBAN Number is valid
-            if len(ibanNumber) == ibanCountryLengths[countryCode]:
-                # Move the first 4 characters to the end of the string 
-                match = match[4:] + match[0:4]  
-                
-                for character in match: 
-                    # Check if character is a letter
-                    if character.isalpha():
-                        # Replace letters to number  
-                        # where A = 10, B = 11, ...., Z = 35
-                        match = match.replace(character, str((ord(character) - 65) + 10))                     
-
-                if int(match) % 97 == 1:
-                    # IBAN Number is valid 
-                    self.debug("Found IBAN number: " + match)
-                    ibanNumbers.add(ibanNumber)
-                else:
-                    # Invalid IBAN Number due to failed Mod 97 operation
-                    self.debug("Skipped invalid IBAN number: " + ibanNumber)
-                    continue                    
-            else:
-                # Invalid IBAN Number due to length mismatch
-                self.debug("Skipped invalid IBAN number: " + ibanNumber)
+            if len(iban) != ibanCountryLengths[countryCode]:
+                self.debug("Skipped invalid IBAN (invalid length): %s" % iban)
                 continue
 
-        return list(ibanNumbers)
+            # Convert IBAN to integer format.
+            # Move the first 4 characters to the end of the string,
+            # then convert all characters to integers; where A = 10, B = 11, ...., Z = 35
+            iban_int = iban[4:] + iban[0:4]
+            for character in iban_int:
+                if character.isalpha():
+                    iban_int = iban_int.replace(character, str((ord(character) - 65) + 10))
 
-    
-    # Return a PEM for a DER
-    def sslDerToPem(self, der):
-        return ssl.DER_cert_to_PEM_cert(der)
+            # Check IBAN integer mod 97 for remainder
+            if int(iban_int) % 97 != 1:
+                self.debug("Skipped invalid IBAN: %s" % iban)
+                continue
 
-    # Parse a PEM-format SSL certificate
+            self.debug("Found IBAN: %s" % iban)
+            ibans.add(iban)
+
+        return list(ibans)
+
+    def sslDerToPem(self, der_cert):
+        """Given a certificate as a DER-encoded blob of bytes, returns a PEM-encoded string version of the same certificate.
+
+        Args:
+            der_cert (bytes): certificate in DER format
+
+        Returns:
+            str: PEM-encoded certificate as a byte string
+        """
+
+        if not isinstance(der_cert, bytes):
+            raise TypeError("der_cert is %s; expected bytes()" % type(der_cert))
+
+        return ssl.DER_cert_to_PEM_cert(der_cert)
+
     def parseCert(self, rawcert, fqdn=None, expiringdays=30):
+        """Parse a PEM-format SSL certificate.
+
+        Args:
+            rawcert (str): TBD
+            fqdn (str): TBD
+            expiringdays (int): TBD
+
+        Returns:
+            dict: certificate details
+        """
+
+        if not rawcert:
+            self.error("Invalid certificate: %s" % rawcert, False)
+            return None
+
         ret = dict()
         if '\r' in rawcert:
             rawcert = rawcert.replace('\r', '')
@@ -1337,40 +1896,63 @@ class SpiderFoot:
 
         return ret
 
-    # Find all URLs within the supplied content. This does not fetch any URLs!
-    # A dictionary will be returned, where each link will have the keys
-    # 'source': The URL where the link was obtained from
-    # 'original': What the link looked like in the content it was obtained from
-    # The key will be the *absolute* URL of the link obtained, so for example if
-    # the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
-    # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
+    def extractUrls(self, content):
+        """Extract all URLs from a string.
+
+        Args:
+            content (str): text to search for URLs
+
+        Returns:
+            list: list of identified URLs
+        """
+
+        # https://tools.ietf.org/html/rfc3986#section-3.3
+        return re.findall(r"(https?://[a-zA-Z0-9-\.:]+/[\-\._~!\$&'\(\)\*\+\,\;=:@/a-zA-Z0-9]*)", html.unescape(content))
+
     def parseLinks(self, url, data, domains):
+        """Find all URLs within the supplied content.
+
+        This does not fetch any URLs!
+        A dictionary will be returned, where each link will have the keys
+        'source': The URL where the link was obtained from
+        'original': What the link looked like in the content it was obtained from
+        The key will be the *absolute* URL of the link obtained, so for example if
+        the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
+        be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
+
+        Args:
+            url (str): TBD
+            data: TBD
+            domains: TBD
+        """
+
         returnLinks = dict()
-        urlsRel = []
+
+        if data is None or len(data) == 0:
+            self.debug("parseLinks() called with no data to parse.")
+            return returnLinks
 
         if type(domains) is str:
             domains = [domains]
 
         tags = {
-                    'a': 'href',
-                    'img': 'src',
-                    'script': 'src',
-                    'link': 'href',
-                    'area': 'href',
-                    'base': 'href',
-                    'form': 'action'
+            'a': 'href',
+            'img': 'src',
+            'script': 'src',
+            'link': 'href',
+            'area': 'href',
+            'base': 'href',
+            'form': 'action'
         }
 
         try:
             proto = url.split(":")[0]
-        except BaseException as e:
+        except BaseException:
             proto = "http"
         if proto == None:
             proto = "http"
 
-        if data is None or len(data) == 0:
-            self.debug("parseLinks() called with no data to parse.")
-            return None
+        urlsRel = []
 
         try:
             for t in list(tags.keys()):
@@ -1380,12 +1962,13 @@ class SpiderFoot:
                         urlsRel.append(lnk[tags[t]])
         except BaseException as e:
             self.error("Error parsing with BeautifulSoup: " + str(e), False)
-            return None
+            return returnLinks
 
         # Loop through all the URLs/links found
         for link in urlsRel:
             if type(link) != str:
                 link = str(link)
+            link = link.strip()
             linkl = link.lower()
             absLink = None
 
@@ -1452,13 +2035,14 @@ class SpiderFoot:
             }
         return session
 
-    # Remove key= and others from URLs to avoid credentials in logs
     def removeUrlCreds(self, url):
+        """Remove key= and others from URLs to avoid credentials in logs."""
+
         pats = {
-            "key=\S+": "key=XXX",
-            "pass=\S+": "pass=XXX",
-            "user=\S+": "user=XXX",
-            "password=\S+": "password=XXX"
+            r'key=\S+': "key=XXX",
+            r'pass=\S+': "pass=XXX",
+            r'user=\S+': "user=XXX",
+            r'password=\S+': "password=XXX"
         }
 
         ret = url
@@ -1467,11 +2051,12 @@ class SpiderFoot:
 
         return ret
 
-    # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
                  postData=None, dontMangle=False, sizeLimit=None,
-                 headOnly=False, verify=False):
+                 headOnly=False, verify=True):
+        """Fetch a URL, return the response object."""
+
         result = {
             'code': None,
             'status': None,
@@ -1481,8 +2066,9 @@ class SpiderFoot:
         }
 
         if url is None:
-            #self.debug("fetchUrl: No url")
             return None
+
+        url = url.strip()
 
         proxies = dict()
         if self.opts['_socks1type']:
@@ -1543,7 +2129,12 @@ class SpiderFoot:
                 hdr = self.getSession().head(url, headers=header, proxies=proxies,
                                     verify=verify, timeout=timeout)
                 size = int(hdr.headers.get('content-length', 0))
-                result['realurl'] = hdr.headers.get('location', url)
+                newloc = hdr.headers.get('location', url).strip()
+
+                # Relative re-direct
+                if newloc.startswith("/") or newloc.startswith("../"):
+                    newloc = self.urlBaseUrl(url) + newloc
+                result['realurl'] = newloc
                 result['code'] = str(hdr.status_code)
 
                 if headOnly:
@@ -1566,20 +2157,16 @@ class SpiderFoot:
 
                     if size > sizeLimit:
                         return result
-            if cookies is not None:
-                #req.add_header('cookie', cookies)
-                if not noLog:
+
+            if not noLog:
+                if cookies is None:
+                    self.info("Fetching: " + self.removeUrlCreds(url) + " [user-agent: " + \
+                          header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
+                else:
                     self.info("Fetching (incl. cookies): " + self.removeUrlCreds(url) + \
                           " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
                           str(timeout) + "]")
-            else:
-                if not noLog:
-                    self.info("Fetching: " + self.removeUrlCreds(url) + " [user-agent: " + \
-                          header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
 
-            #
-            # MAKE THE REQUEST
-            #
             try:
                 if postData:
                     res = self.getSession().post(url, data=postData, headers=header, proxies=proxies,
@@ -1655,29 +2242,42 @@ class SpiderFoot:
                   " (" + self.removeUrlCreds(url) + "), took " + t + "s")
         return result
 
-    # Check if wildcard DNS is enabled by looking up a random hostname
     def checkDnsWildcard(self, target):
+        """Check if wildcard DNS is enabled by looking up a random hostname
+
+        Args:
+            target (str): TBD
+        """
+
         if not target:
-            #self.debug("checkDnsWildcard: No target")
             return False
 
         randpool = 'bcdfghjklmnpqrstvwxyz3456789'
         randhost = ''.join([random.SystemRandom().choice(randpool) for x in range(10)])
 
-        if self.resolveHost(randhost + "." + target) is None:
+        if not self.resolveHost(randhost + "." + target):
             return False
 
         return True
 
-    # Request search results from the Google API. Will return a dict:
-    # {
-    #   "urls": a list of urls that match the query string,
-    #   "webSearchUrl": url for Google results page,
-    # }
-    # Options accepted:
-    # useragent: User-Agent string to use
-    # timeout: API call timeout
     def googleIterate(self, searchString, opts=dict()):
+        """Request search results from the Google API.
+
+        Will return a dict:
+        {
+          "urls": a list of urls that match the query string,
+          "webSearchUrl": url for Google results page,
+        }
+
+        Options accepted:
+            useragent: User-Agent string to use
+            timeout: API call timeout
+
+        Args:
+            searchString (str) :TBD
+            opts (dict): TBD
+        """
+
         endpoint = "https://www.googleapis.com/customsearch/v1?q={search_string}&".format(
             search_string=searchString.replace(" ", "%20")
         )
@@ -1701,39 +2301,48 @@ class SpiderFoot:
             self.error("the key 'content' in the Google API response doesn't contain valid json.", exception=False)
             return None
 
-        if "items" in response_json:
-            # We attempt to make the URL look as authentically human as possible
-            params = {
-                "ie": "utf-8",
-                "oe": "utf-8",
-                "aq": "t",
-                "rls": "org.mozilla:en-US:official",
-                "client": "firefox-a",
-            }
-            search_url = "https://www.google.com/search?q={search_string}&{params}".format(
-                search_string=searchString.replace(" ", "%20"),
-                params=urllib.parse.urlencode(params)
-            )
-            results = {
-                "urls": [str(k['link']) for k in response_json['items']],
-                "webSearchUrl": search_url,
-            }
-        else:
+        if "items" not in response_json:
             return None
+
+        # We attempt to make the URL look as authentically human as possible
+        params = {
+            "ie": "utf-8",
+            "oe": "utf-8",
+            "aq": "t",
+            "rls": "org.mozilla:en-US:official",
+            "client": "firefox-a",
+        }
+        search_url = "https://www.google.com/search?q={search_string}&{params}".format(
+            search_string=searchString.replace(" ", "%20"),
+            params=urllib.parse.urlencode(params)
+        )
+        results = {
+            "urls": [str(k['link']) for k in response_json['items']],
+            "webSearchUrl": search_url,
+        }
 
         return results
 
-
-    # Request search results from the Bing API. Will return a dict:
-    # {
-    #   "urls": a list of urls that match the query string,
-    #   "webSearchUrl": url for bing results page,
-    # }
-    # Options accepted:
-    # count: number of search results to request from the API
-    # useragent: User-Agent string to use
-    # timeout: API call timeout
     def bingIterate(self, searchString, opts=dict()):
+        """Request search results from the Bing API.
+
+        Will return a dict:
+        {
+          "urls": a list of urls that match the query string,
+          "webSearchUrl": url for bing results page,
+        }
+
+        Options accepted:
+            count: number of search results to request from the API
+            useragent: User-Agent string to use
+            timeout: API call timeout
+
+        Args:
+            searchString (str): TBD
+            opts (dict): TBD
+
+        """
+
         endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&".format(
             search_string=searchString.replace(" ", "%20")
         )
@@ -1775,9 +2384,24 @@ class SpiderFoot:
         return results
 
 
-# SpiderFoot plug-in module base class
-#
 class SpiderFootPlugin(object):
+    """SpiderFootPlugin module object
+
+    Attributes:
+        _stopScanning (bool): Will be set to True by the controller if the user aborts scanning
+        listenerModules (list): Modules that will be notified when this module produces events
+        _currentEvent (SpiderFootEvent): Current event being processed
+        _currentTarget (str): Target currently being acted against
+        _name_: Name of this module, set at startup time
+        __sfdb__: Direct handle to the database - not to be directly used
+                  by modules except the sfp__stor_db module.
+        __scanId__: ID of the scan the module is running against
+        __datasource__: (Unused) tracking of data sources
+        __outputFilter: If set, events not matching this list are dropped
+        _priority (int): Priority, smaller numbers should run first
+        errorState (bool): error state of the module
+    """
+
     # Will be set to True by the controller if the user aborts scanning
     _stopScanning = False
     # Modules that will be notified when this module produces events
@@ -1801,84 +2425,134 @@ class SpiderFootPlugin(object):
     _priority = 1
     # Error state of the module
     errorState = False
-
-    # Not really needed in most cases.
+    
     def __init__(self):
+        """Not really needed in most cases."""
         pass
 
-    # Hack to override module's use of socket, replacing it with
-    # one that uses the supplied SOCKS server
     def _updateSocket(self, socksProxy):
+        """Hack to override module's use of socket, replacing it with
+        one that uses the supplied SOCKS server."""
         self.socksProxy = socksProxy
 
-    # Used to clear any listener relationships, etc. This is needed because
-    # Python seems to cache local variables even between threads.
     def clearListeners(self):
+        """Used to clear any listener relationships, etc. This is needed because
+        Python seems to cache local variables even between threads."""
+
         self._listenerModules = list()
         self._stopScanning = False
 
-    # Will always be overriden by the implementer.
     def setup(self, sf, userOpts=dict()):
+        """Will always be overriden by the implementer."""
         pass
 
-    # Hardly used, only in special cases where a module can find
-    # aliases for a target.
     def enrichTarget(self, target):
+        """Hardly used, only in special cases where a module can find
+        aliases for a target."""
         pass
 
-    # Assigns the current target this module is acting against
     def setTarget(self, target):
+        """Assigns the current target this module is acting against.
+
+        Args:
+            target (SpiderFootTarget): target
+        """
+        if not isinstance(target, SpiderFootTarget):
+            raise TypeError("target is %s; expected SpiderFootTarget" % type(target))
+
         self._currentTarget = target
 
-    # Used to set the database handle, which is only to be used
-    # by modules in very rare/exceptional cases (e.g. sfp__stor_db)
     def setDbh(self, dbh):
+        """Used to set the database handle, which is only to be used
+        by modules in very rare/exceptional cases (e.g. sfp__stor_db)
+
+        Args:
+            dbh (SpiderFootDb): database handle
+        """
         self.__sfdb__ = dbh
 
-    # Set the scan ID
-    def setScanId(self, id):
-        self.__scanId__ = id
+    def setScanId(self, scanId):
+        """Set the scan ID.
 
-    # Get the scan ID
+        Args:
+            id (str): scan ID
+        """
+        if not isinstance(scanId, str):
+            raise TypeError("scanId is %s; expected str" % type(scanId))
+
+        self.__scanId__ = scanId
+
     def getScanId(self):
+        """Get the scan ID.
+
+        Returns:
+            str: scan ID
+        """
+        if not self.__scanId__:
+            raise TypeError("Module called getScanId() but no scanId is set.")
+
         return self.__scanId__
 
-    # Gets the current target this module is acting against
     def getTarget(self):
-        if self._currentTarget is None:
-            print("Internal Error: Module called getTarget() but no target set.")
-            sys.exit(-1)
+        """Gets the current target this module is acting against."""
+        if not self._currentTarget:
+            raise TypeError("Module called getTarget() but no target is set.")
+
         return self._currentTarget
 
-    # Listener modules which will get notified once we have data for them to
-    # work with.
     def registerListener(self, listener):
+        """Listener modules which will get notified once we have data for them to
+        work with.
+
+        Args:
+            listener: TBD
+        """
+
         self._listenerModules.append(listener)
 
     def setOutputFilter(self, types):
         self.__outputFilter__ = types
 
-    # For SpiderFoot HX compatability of modules
     def tempStorage(self):
+        """For future use. Module temporary storage.
+
+        A dictionary used to persist state (in memory) for a module.
+
+        Todo:
+            Move all module state to use this, which then would enable a scan to be paused/resumed.
+
+        Note:
+            Required for SpiderFoot HX compatibility of modules.
+
+        Returns:
+            dict: module temporary state data
+        """
         return dict()
 
-    # Call the handleEvent() method of every other plug-in listening for
-    # events from this plug-in. Remember that those plug-ins will be called
-    # within the same execution context of this thread, not on their own.
     def notifyListeners(self, sfEvent):
+        """Call the handleEvent() method of every other plug-in listening for
+        events from this plug-in. Remember that those plug-ins will be called
+        within the same execution context of this thread, not on their own.
+
+        Args:
+            sfEvent (SpiderFootEvent): event
+        """
+
+        if not isinstance(sfEvent, SpiderFootEvent):
+            raise TypeError("sfEvent is %s; expected SpiderFootEvent" % type(sfEvent))
+
         eventName = sfEvent.eventType
 
         if self.__outputFilter__:
             # Be strict about what events to pass on, unless they are
             # the ROOT event or the event type of the target.
-            if eventName != 'ROOT' and eventName != self.getTarget().getType() \
+            if eventName != 'ROOT' and eventName != self.getTarget().targetType \
                 and eventName not in self.__outputFilter__:
                 return None
 
         storeOnly = False  # Under some conditions, only store and don't notify
 
         if sfEvent.data is None or (type(sfEvent.data) is str and len(sfEvent.data) == 0):
-            #print("No data to send for " + eventName + " to " + listener.__module__)
             return None
 
         if self.checkForStop():
@@ -1903,7 +2577,6 @@ class SpiderFootPlugin(object):
             if prevEvent.sourceEvent is not None:
                 if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
                                 prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
-                    #print("Skipping notification of " + sfEvent.eventType + " / " + sfEvent.data)
                     storeOnly = True
                     break
             prevEvent = prevEvent.sourceEvent
@@ -1911,16 +2584,12 @@ class SpiderFootPlugin(object):
         self._listenerModules.sort(key=lambda m: m._priority)
 
         for listener in self._listenerModules:
-            #print(listener.__module__ + ": " + listener.watchedEvents().__str__())
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
-                #print(listener.__module__ + " not listening for " + eventName)
                 continue
 
             if storeOnly and "__stor" not in listener.__module__:
-                #print("Storing only for " + sfEvent.eventType + " / " + sfEvent.data)
                 continue
 
-            #print("Notifying " + eventName + " to " + listener.__module__)
             listener._currentEvent = sfEvent
 
             # Check if we've been asked to stop in the meantime, so that
@@ -1928,92 +2597,174 @@ class SpiderFootPlugin(object):
             if self.checkForStop():
                 return None
 
-            #print("EVENT: " + str(sfEvent))
             try:
                 if type(sfEvent.data) == bytes:
                     sfEvent.data = sfEvent.data.decode('utf-8', 'ignore')
 
                 listener.handleEvent(sfEvent)
             except BaseException as e:
-                f = open("sferror.log", "a")
-                f.write("[" + time.ctime() + "]: Module (" + listener.__module__ + ") encountered an error: " + str(e) + "\n")
+                with open(os.path.join(SpiderFoot.dataPath(), "sferror.log"), "a") as f:
+                    f.write("[" + time.ctime() + "]: Module (" + listener.__module__ +
+                            ") encountered an error: " + str(e) + "\n")
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
 
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
-                f.close()
-
-    # For modules to use to check for when they should give back control
     def checkForStop(self):
-        global globalScanStatus
+        """For modules to use to check for when they should give back control.
 
-        if globalScanStatus.getStatus(self.__scanId__) == "ABORT-REQUESTED":
+        Returns:
+            bool
+        """
+        if not self.__scanId__:
+            return False
+
+        scanstatus = self.__sfdb__.scanInstanceGet(self.__scanId__)
+
+        if not scanstatus:
+            return False
+
+        if scanstatus[5] == "ABORT-REQUESTED":
             return True
+
         return False
 
-    # Return a list of the default configuration options for the module.
-    def defaultOpts(self):
-        return self.opts
-
-    # What events is this module interested in for input. The format is a list
-    # of event types that are applied to event types that this module wants to
-    # be notified of, or * if it wants everything.
-    # Will usually be overriden by the implementer, unless it is interested
-    # in all events (default behavior).
     def watchedEvents(self):
+        """What events is this module interested in for input. The format is a list
+        of event types that are applied to event types that this module wants to
+        be notified of, or * if it wants everything.
+        Will usually be overriden by the implementer, unless it is interested
+        in all events (default behavior).
+
+        Returns:
+            list: list of events this modules watches
+        """
+
         return ['*']
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return None
+        """What events this module produces
+        This is to support the end user in selecting modules based on events
+        produced.
 
-    # Handle events to this module
-    # Will usually be overriden by the implementer, unless it doesn't handle
-    # any events.
+        Returns:
+            list: list of events produced by this module
+        """
+
+        return []
+
     def handleEvent(self, sfEvent):
+        """Handle events to this module.
+        Will usually be overriden by the implementer, unless it doesn't handle
+        any events.
+
+        Args:
+            sfEvent (SpiderFootEvent): event
+
+        Returns:
+            None
+        """
+
         return None
 
-    # Kick off the work (for some modules nothing will happen here, but instead
-    # the work will start from the handleEvent() method.
-    # Will usually be overriden by the implementer.
     def start(self):
+        """Kick off the work (for some modules nothing will happen here, but instead
+        the work will start from the handleEvent() method.
+        Will usually be overriden by the implementer.
+
+        Returns:
+            None
+        """
+
         return None
 
 
-# Class for targets
 class SpiderFootTarget(object):
+    """SpiderFoot target.
+
+    Attributes:
+        validTypes (list): valid event types accepted as a target
+        targetType (str): target type
+        targetValue (str): target value
+        targetAliases (list): target aliases
+    """
+
     _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
                    "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME"]
-    targetType = None
-    targetValue = None
-    targetAliases = list()
+    _targetType = None
+    _targetValue = None
+    _targetAliases = list()
 
     def __init__(self, targetValue, typeName):
-        if typeName in self._validTypes:
-            self.targetType = typeName
-            if type(targetValue) != str:
-                self.targetValue = str(targetValue).lower()
-            else:
-                self.targetValue = targetValue
-            self.targetAliases = list()
-        else:
-            print("Internal Error: Invalid target type.")
-            sys.exit(-1)
+        """Initialize SpiderFoot target.
 
-    def getType(self):
-        return self.targetType
+        Args:
+            targetValue (str): target value
+            typeName (str): target type
 
-    def getValue(self):
-        return self.targetValue
+        Raises:
+            TypeError: targetValue type was invalid
+            ValueError: targetValue value was empty
+            ValueError: typeName value was an invalid target type
+        """
 
-    # Specify other hostnames, IPs, etc. that are aliases for
-    # this target.
-    # For instance, if the user searched for an ASN, a module
-    # might supply all the nested subnets as aliases.
-    # Or, if a user searched for an IP address, a module
-    # might supply the hostname as an alias.
+        self.targetType = typeName
+        self.targetValue = targetValue
+        self.targetAliases = list()
+
+    @property
+    def targetType(self):
+        return self._targetType
+
+    @targetType.setter
+    def targetType(self, targetType):
+        if not isinstance(targetType, str):
+            raise TypeError(f"targetType is {type(targetType)}; expected str()")
+ 
+        if targetType not in self._validTypes:
+            raise ValueError(f"targetType value is {targetType}; expected {self._validTypes}")
+
+        self._targetType = targetType
+
+    @property
+    def targetValue(self):
+        return self._targetValue
+
+    @targetValue.setter
+    def targetValue(self, targetValue):
+        if not isinstance(targetValue, str):
+            raise TypeError(f"targetValue is {type(targetValue)}; expected str()")
+        if not targetValue:
+            raise ValueError("targetValue value is blank")
+
+        self._targetValue = targetValue
+
+    @property
+    def targetAliases(self):
+        return self._targetAliases
+
+    @targetAliases.setter
+    def targetAliases(self, value):
+        self._targetAliases = value
+
     def setAlias(self, value, typeName):
+        """Specify other hostnames, IPs, etc. that are aliases for this target.
+
+        For instance, if the user searched for an ASN, a module
+        might supply all the nested subnets as aliases.
+        Or, if a user searched for an IP address, a module
+        might supply the hostname as an alias.
+
+        Args:
+            value (str): TBD
+            typeName (str): TBD
+
+        Returns:
+            None
+        """
+
+        if value is None:
+            return
+            
         if {'type': typeName, 'value': value} in self.targetAliases:
             return None
 
@@ -2021,18 +2772,26 @@ class SpiderFootTarget(object):
             {'type': typeName, 'value': value.lower()}
         )
 
-    def getAliases(self):
-        return self.targetAliases
-
     def _getEquivalents(self, typeName):
+        """TBD
+
+        Returns:
+            list: target aliases
+        """
+
         ret = list()
         for item in self.targetAliases:
             if item['type'] == typeName:
                 ret.append(item['value'].lower())
         return ret
 
-    # Get all domains associated with the target
     def getNames(self):
+        """Get all domains associated with the target.
+
+        Returns:
+            list: domains associated with the target
+        """
+
         e = self._getEquivalents("INTERNET_NAME")
         if self.targetType in ["INTERNET_NAME", "EMAILADDR"] and self.targetValue.lower() not in e:
             e.append(self.targetValue.lower())
@@ -2040,36 +2799,53 @@ class SpiderFootTarget(object):
         names = list()
         for name in e:
             names.append(name.decode("utf-8") if type(name) == bytes else name)
+
         return names
 
-    # Get all IP Subnets or IP Addresses associated with the target
     def getAddresses(self):
+        """Get all IP Subnets or IP Addresses associated with the target.
+
+        Returns:
+            list: TBD
+        """
+
         e = self._getEquivalents("IP_ADDRESS")
         if self.targetType == "IP_ADDRESS":
             e.append(self.targetValue)
+
         e = self._getEquivalents("IPV6_ADDRESS")
         if self.targetType == "IPV6_ADDRESS":
             e.append(self.targetValue)
+
         return e
 
-    # Check whether the supplied value is "tightly" related
-    # to the original target.
-    # Tightly in this case means:
-    #   1. If the value is an IP:
-    #       1.1 is it in the list of aliases or the target itself?
-    #       1.2 is it on the target's subnet?
-    #   2. If the value is a name (subdomain, domain, hostname):
-    #       2.1 is it in the list of aliases or the target itself?
-    #       2.2 is it a parent of the aliases of the target (domain/subdomain)
-    #       2.3 is it a child of the aliases of the target (hostname)
-    # Arguments:
-    # * value can be an Internet Name (hostname, subnet, domain)
-    # or an IP address.
-    # * includeParents = True means you consider a value that is
-    # a parent domain of the target to still be a tight relation.
-    # * includeChildren = False means you don't consider a value
-    # that is a child of the target to be a tight relation.
     def matches(self, value, includeParents=False, includeChildren=True):
+        """Check whether the supplied value is "tightly" related
+        to the original target.
+
+        Tightly in this case means:
+          1. If the value is an IP:
+              1.1 is it in the list of aliases or the target itself?
+              1.2 is it on the target's subnet?
+          2. If the value is a name (subdomain, domain, hostname):
+              2.1 is it in the list of aliases or the target itself?
+              2.2 is it a parent of the aliases of the target (domain/subdomain)
+              2.3 is it a child of the aliases of the target (hostname)
+
+        Args:
+            value (str): can be an Internet Name (hostname, subnet, domain) or an IP address.
+            includeParents (bool):  True means you consider a value that is
+                a parent domain of the target to still be a tight relation.
+            includeChildren (bool): False means you don't consider a value
+                that is a child of the target to be a tight relation.
+
+        Returns:
+            bool: whether the value matches the target
+        """
+
+        if value is None:
+            return False
+
         value = value.lower()
 
         value = value.decode("utf-8") if type(value) == bytes else value
@@ -2109,225 +2885,298 @@ class SpiderFootTarget(object):
         return None
 
 
-# Class for SpiderFoot Events
 class SpiderFootEvent(object):
-    generated = None
-    eventType = None
-    confidence = None
-    visibility = None
-    risk = None
-    module = None
-    data = None
-    sourceEvent = None
-    sourceEventHash = None
-    moduleDataSource = None
-    actualSource = None
+    """SpiderFootEvent object representing identified data and associated meta data.
+
+    Attributes:
+        generated (float): timestamp of event creation time
+        eventType (str): event type, e.g. URL_FORM, RAW_DATA, etc.
+        confidence (int): how sure are we of this data's validity, 0-100
+        visibility (int): how 'visible' was this data, 0-100
+        risk (int): how much risk does this data represent, 0-100
+        module (str): module from which the event originated
+        data (str): event data, e.g. a URL, port number, webpage content, etc.
+        sourceEvent (SpiderFootEvent): SpiderFootEvent that triggered this event
+        sourceEventHash (str): hash of the SpiderFootEvent event that triggered this event
+        hash (str): unique SHA256 hash of the event, or "ROOT"
+        moduleDataSource (str): module data source
+        actualSource (str): source data of parent event
+        __id: unique ID of the event, generated using eventType, generated, module, and a random integer
+    """
+
+    _generated = None
+    _eventType = None
+    _confidence = None
+    _visibility = None
+    _risk = None
+    _module = None
+    _data = None
+    _sourceEvent = None
+    _sourceEventHash = None
+    _moduleDataSource = None
+    _actualSource = None
     __id = None
 
-    def __init__(self, eventType, data, module, sourceEvent,
-                 confidence=100, visibility=100, risk=0):
+    def __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0):
+        """Initialize SpiderFoot event object.
+
+        Args:
+            eventType (str): event type, e.g. URL_FORM, RAW_DATA, etc.
+            data (str): event data, e.g. a URL, port number, webpage content, etc.
+            module (str): module from which the event originated
+            sourceEvent (SpiderFootEvent): SpiderFootEvent event that triggered this event
+            confidence (int): how sure are we of this data's validity, 0-100
+            visibility (int): how 'visible' was this data, 0-100
+            risk (int): how much risk does this data represent, 0-100
+
+        Raises:
+            TypeError: arg type was invalid
+            ValueError: arg value was invalid
+        """
+
+        self._generated = time.time()
+        self.data = data
         self.eventType = eventType
-        self.generated = time.time()
+        self.module = module
         self.confidence = confidence
         self.visibility = visibility
         self.risk = risk
-        self.module = module
         self.sourceEvent = sourceEvent
+        self.__id = f"{self.eventType}{self.generated}{self.module}{random.SystemRandom().randint(0, 99999999)}"
 
-        if type(data) != str and type(data) != str:
-            print("FATAL: Only string events are accepted, not '%s'." % type(data))
-            print("FATAL: Offending module: %s" % module)
-            print("FATAL: Offending type: %s" % eventType)
-            sys.exit(-1)
+    @property
+    def generated(self):
+        """
+        Returns:
+            float: timestamp of event creation time
+        """
+        return self._generated
 
-        if type(data) != str and data != None:
-            self.data = str(data)
-        else:
-            self.data = data
+    @property
+    def eventType(self):
+        return self._eventType
 
-        # "ROOT" is a special "hash" reserved for elements with no
-        # actual parent (e.g. the first page spidered.)
-        if eventType == "ROOT":
-            self.sourceEventHash = "ROOT"
+    @property
+    def confidence(self):
+        """
+        Returns:
+            int: How sure are we of this data's validity (0 to 100)
+        """
+        return self._confidence
+
+    @property
+    def visibility(self):
+        """
+        Returns:
+            int: How 'visible' was this data (0 to 100)
+        """
+        return self._visibility
+
+    @property
+    def risk(self):
+        """
+        Returns:
+            int: How much risk does this data represent (0 to 100)
+        """
+        return self._risk
+
+    @property
+    def module(self):
+        return self._module
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def sourceEvent(self):
+        return self._sourceEvent
+
+    @property
+    def sourceEventHash(self):
+        return self._sourceEventHash
+
+    @property
+    def actualSource(self):
+        """actual source"""
+        return self._actualSource
+
+    @property
+    def moduleDataSource(self):
+        """module data source"""
+        return self._moduleDataSource
+
+    @property
+    def hash(self):
+        """Unique hash of this event.
+
+        Returns:
+            str: unique SHA256 hash of the event, or "ROOT"
+        """
+        if self.eventType == "ROOT":
+            return "ROOT"
+
+        digestStr = self.__id.encode('raw_unicode_escape')
+        return hashlib.sha256(digestStr).hexdigest()
+
+    @eventType.setter
+    def eventType(self, eventType):
+        """
+        Args:
+            eventType (str): type of data for this event
+
+        Raises:
+            TypeError: confidence type was invalid
+            ValueError: confidence value was invalid
+        """
+ 
+        if not isinstance(eventType, str):
+            raise TypeError(f"eventType is {type(eventType)}; expected str()")
+
+        if not eventType:
+            raise ValueError("eventType is empty")
+
+        self._eventType = eventType
+
+    @confidence.setter
+    def confidence(self, confidence):
+        """
+        Args:
+            confidence (int): How sure are we of this data's validitya(0 to 100)
+
+        Raises:
+            TypeError: confidence type was invalid
+            ValueError: confidence value was invalid
+        """
+ 
+        if not isinstance(confidence, int):
+            raise TypeError(f"confidence is {type(confidence)}; expected int()")
+
+        if not 0 <= confidence <= 100:
+            raise ValueError(f"confidence value is {confidence}; expected 0 - 100")
+
+        self._confidence = confidence
+
+    @visibility.setter
+    def visibility(self, visibility):
+        """
+        Args:
+            visibility (int): How 'visible' was this data (0 to 100)
+
+        Raises:
+            TypeError: visibility type was invalid
+            ValueError: visibility value was invalid
+        """
+ 
+        if not isinstance(visibility, int):
+            raise TypeError(f"visibility is {type(visibility)}; expected int()")
+
+        if not 0 <= visibility <= 100:
+            raise ValueError(f"visibility value is {visibility}; expected 0 - 100")
+
+        self._visibility = visibility
+
+    @risk.setter
+    def risk(self, risk):
+        """
+        Args:
+            risk (int): How much risk does this data represent (0 to 100)
+
+        Raises:
+            TypeError: risk type was invalid
+            ValueError: risk value was invalid
+        """
+ 
+        if not isinstance(risk, int):
+            raise TypeError(f"risk is {type(risk)}; expected int()")
+
+        if not 0 <= risk <= 100:
+            raise ValueError(f"risk value is {risk}; expected 0 - 100")
+
+        self._risk = risk
+
+    @module.setter
+    def module(self, module):
+        """
+        Raises:
+            TypeError: module type was invalid
+            ValueError: module value was invalid
+        """
+ 
+        if not isinstance(module, str):
+            raise TypeError(f"module is {type(module )}; expected str()")
+
+        if not module:
+            if self.eventType != "ROOT":
+                raise ValueError("module is empty")
+
+        self._module = module
+
+    @data.setter
+    def data(self, data):
+        """
+        Raises:
+            TypeError: data type was invalid
+            ValueError: data value was invalid
+        """
+ 
+        if not isinstance(data, str):
+            raise TypeError(f"data is {type(data)}; expected str()")
+
+        if not data:
+            raise ValueError("data is empty")
+
+        self._data = data
+
+    @sourceEvent.setter
+    def sourceEvent(self, sourceEvent):
+        """
+        Raises:
+            TypeError: sourceEvent type was invalid
+        """
+ 
+        # "ROOT" is a special "hash" reserved for elements with no parent,
+        # such as targets provided via the web UI or CLI.
+        if self.eventType == "ROOT":
+            self._sourceEvent = None
+            self._sourceEventHash = "ROOT"
             return
 
-        if type(sourceEvent) != SpiderFootEvent:
-            print("FATAL: Invalid source event: %s" % sourceEvent)
-            print("FATAL: Offending module: %s" % module)
-            print("FATAL: Offending type: %s" % eventType)
-            sys.exit(-1)
+        if not isinstance(sourceEvent, SpiderFootEvent):
+            raise TypeError(f"sourceEvent is {type(sourceEvent)}; expected SpiderFootEvent()")
 
-        self.sourceEventHash = sourceEvent.getHash()
-        self.__id = self.eventType + str(self.generated) + self.module + \
-                    str(random.SystemRandom().randint(0, 99999999))
+        self._sourceEvent = sourceEvent
+        self._sourceEventHash = self.sourceEvent.hash
+
+    @actualSource.setter
+    def actualSource(self, actualSource):
+        self._actualSource = actualSource
+
+    @moduleDataSource.setter
+    def moduleDataSource(self, moduleDataSource):
+        self._moduleDataSource = moduleDataSource
 
     def asDict(self):
+        """
+        Returns:
+            dict: event as dictionary
+        """
+
         evt_dict = {
             'generated': int(self.generated),
             'type': self.eventType,
             'data': self.data,
-            'module': self.module
+            'module': self.module,
+            'source': ''
         }
 
-        if self.eventType == 'ROOT':
-            evt_dict['source'] = ''
-        else:
-            evt_dict['source'] = self.sourceEvent.data
+        if self.sourceEvent is not None:
+            if self.sourceEvent.data is not None:
+                evt_dict['source'] = self.sourceEvent.data
 
         return evt_dict
 
-    # Unique hash of this event
     def getHash(self):
-        if self.eventType == "ROOT":
-            return "ROOT"
-        digestStr = self.__id.encode('raw_unicode_escape')
-        return hashlib.sha256(digestStr).hexdigest()
-
-    # Update variables as new information becomes available
-    def setConfidence(self, confidence):
-        self.confidence = confidence
-
-    def setVisibility(self, visibility):
-        self.visibility = visibility
-
-    def setRisk(self, risk):
-        self.risk = risk
-
-    def setSourceEventHash(self, srcHash):
-        self.sourceEventHash = srcHash
-
-
-"""
-Public Suffix List module for Python.
-See LICENSE.tp for applicable license.
-"""
-
-
-class PublicSuffixList(object):
-    def __init__(self, input_data):
-        """Reads and parses public suffix list.
-
-        input_file is a file object or another iterable that returns
-        lines of a public suffix list file. If input_file is None, an
-        UTF-8 encoded file named "publicsuffix.txt" in the same
-        directory as this Python module is used.
-
-        The file format is described at http://publicsuffix.org/list/
-        """
-
-        #if input_file is None:
-        #input_path = os.path.join(os.path.dirname(__file__), 'publicsuffix.txt')
-        #input_file = codecs.open(input_path, "r", "utf-8")
-
-        root = self._build_structure(input_data)
-        self.root = self._simplify(root)
-
-    def _find_node(self, parent, parts):
-        if not parts:
-            return parent
-
-        if len(parent) == 1:
-            parent.append({})
-
-        assert len(parent) == 2
-        negate, children = parent
-
-        child = parts.pop()
-
-        child_node = children.get(child, None)
-
-        if not child_node:
-            children[child] = child_node = [0]
-
-        return self._find_node(child_node, parts)
-
-    def _add_rule(self, root, rule):
-        if rule.startswith('!'):
-            negate = 1
-            rule = rule[1:]
-        else:
-            negate = 0
-
-        parts = rule.split('.')
-        self._find_node(root, parts)[0] = negate
-
-    def _simplify(self, node):
-        if len(node) == 1:
-            return node[0]
-
-        return (node[0], dict((k, self._simplify(v)) for (k, v) in list(node[1].items())))
-
-    def _build_structure(self, fp):
-        root = [0]
-
-        for line in fp:
-            line = str(line).strip()
-            if line.startswith('//') or not line:
-                continue
-
-            self._add_rule(root, line.split()[0].lstrip('.'))
-
-        return root
-
-    def _lookup_node(self, matches, depth, parent, parts):
-        if parent in (0, 1):
-            negate = parent
-            children = None
-        else:
-            negate, children = parent
-
-        matches[-depth] = negate
-
-        if depth < len(parts) and children:
-            for name in ('*', parts[-depth]):
-                child = children.get(name, None)
-                if child is not None:
-                    self._lookup_node(matches, depth + 1, child, parts)
-
-    def get_public_suffix(self, domain, strict=False):
-        """get_public_suffix("www.example.com") -> "example.com"
-
-        Calling this function with a DNS name will return the
-        public suffix for that name.
-
-        Note that for internationalized domains the list at
-        http://publicsuffix.org uses decoded names, so it is
-        up to the caller to decode any Punycode-encoded names.
-        """
-
-        parts = domain.lower().lstrip('.').split('.')
-        hits = [None] * len(parts)
-
-        if strict and parts[-1] not in self.root[1]:
-            return None
-
-        self._lookup_node(hits, 1, self.root, parts)
-
-        for i, what in enumerate(hits):
-            if what is not None and what == 0:
-                return '.'.join(parts[i:])
-
-
-# Class for tracking the status of all running scans. Thread safe.
-class SpiderFootScanStatus:
-    statusTable = dict()
-    lock = threading.Lock()
-
-    def setStatus(self, scanId, status):
-        with self.lock:
-            self.statusTable[scanId] = status
-
-    def getStatus(self, scanId):
-        with self.lock:
-            if scanId in self.statusTable:
-                return self.statusTable[scanId]
-            return None
-
-    def getStatusAll(self):
-        with self.lock:
-            return self.statusTable
-
-# Global variable accessed by various places to get the status of
-# running scans.
-globalScanStatus = SpiderFootScanStatus()
+        """Required for SpiderFoot HX compatibility of modules"""
+        return self.hash
 

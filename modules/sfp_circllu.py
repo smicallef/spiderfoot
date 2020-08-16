@@ -87,7 +87,7 @@ class sfp_circllu(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=30,
                                useragent="SpiderFoot", headers=headers)
 
-        if res['code'] in [ "400", "429", "500", "403" ]:
+        if res['code'] not in [ "200", "201" ]:
             self.sf.error("CIRCL.LU access seems to have been rejected or you have exceeded usage limits.", False)
             self.errorState = True
             return None
@@ -108,7 +108,7 @@ class sfp_circllu(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Ignore messages from myself
         if srcModuleName == "sfp_circllu":

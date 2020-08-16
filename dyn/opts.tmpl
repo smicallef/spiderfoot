@@ -1,37 +1,5 @@
 <%include file="HEADER.tmpl"/>
-<script type='text/javascript'>
-    activeTab = "global";
-    function saveSettings() {
-        var retarr = {}
-        $(":input").each(function(i) {
-            retarr[$(this).attr('id')] = $(this).val();
-        });
-
-        $("#allopts").val(JSON.stringify(retarr));
-    }
-
-    function clearSettings() {
-        $("#allopts").val("RESET");
-    }
-
-    function switchTab(tab) {
-        $("#optsect_"+activeTab).hide();
-        $("#optsect_"+tab).show();
-        $("#tab_"+activeTab).removeClass("active");
-        $("#tab_"+tab).addClass("active");
-        activeTab = tab;
-    }
-
-    function getFile(elemId) {
-       var elem = document.getElementById(elemId);
-       if(elem && document.createEvent) {
-          var evt = document.createEvent("MouseEvents");
-          evt.initEvent("click", true, false);
-          elem.dispatchEvent(evt);
-       }
-    }
-
-</script>
+    <script type='text/javascript' src='${docroot}/static/js/spiderfoot.opts.js'></script>
     <h2>Settings</h2>
 % if updated:
 <div class="alert alert-success">
@@ -40,21 +8,21 @@
  Settings updated. These will take effect the next time you run a scan.
 </div>
 % endif
-<form class="form" action='${docroot}/savesettings' id=savesettingsform method='POST' enctype="multipart/form-data">
-<div style='text-align: left'>
+<form class="form" action='${docroot}/savesettings' id="savesettingsform" method='POST' enctype="multipart/form-data">
+<div class='text-left'>
     <input type=hidden id='allopts' name='allopts' value=''>
     <input type=hidden id='token' name='token' value="${token}">
-    <input type="file" name='configFile' id="configFile" style='display:none' onChange='$("#savesettingsform").submit()' />
-    <button onClick='saveSettings();' class='btn btn-primary'>Save Changes</button>
-    <button onClick='getFile("configFile"); return false;' class='btn btn-info'>Import API Keys</button>
-    <button onClick='javascript:window.location.href="${docroot}/optsexport?pattern=api_key"; return false' class='btn btn-info'>Export API Keys</button>
-    <button onClick='clearSettings();' class='btn btn-danger'>Reset to Factory Default</button>
+    <input type="file" name='configFile' id="configFile" class='hidden' onChange='$("#savesettingsform").submit()' />
+    <button id="btn-save-changes" class='btn btn-primary' type="submit">Save Changes</button>
+    <button id="btn-import-config" class='btn btn-info'>Import API Keys</button>
+    <button id="btn-opt-export" class='btn btn-info'>Export API Keys</button>
+    <button id="btn-reset-settings" class='btn btn-danger'>Reset to Factory Default</button>
 <br><br>
 </div>
 
 <div class="tabbable tabs-left">
-<ul class="nav nav-tabs">
-<li id='tab_global' class="active"><a href='#' onClick='switchTab("global");'>Global</a></li>
+<ul class="nav nav-pills nav-stacked col-md-3">
+<li id='tab_global' class="active"><a href="#">Global</a></li>
 % for mod in sorted(opts['__modules__'].keys()):
     <% keylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].items() if not k.startswith('_')) %>
     % if len(keylist) > 0:
@@ -62,24 +30,32 @@
         <% apikeylist = dict((k, v) for k, v in opts['__modules__'][mod]['opts'].items() if k.find("api_key") >= 0) %>
         <% 
         if len(apikeylist) > 0: 
-            keyicon = "&nbsp;&nbsp;<i class=\"icon-lock\"></i>"
+            keyicon = "&nbsp;&nbsp;<i class=\"glyphicon glyphicon-lock\"></i>"
         %>
-        <li id='tab_${mod}'><a href='#' onClick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}${keyicon}</a></li>
+        <li id='tab_${mod}'><a href='#' onclick='switchTab("${mod}");' >${opts['__modules__'][mod]['name']}${keyicon}</a></li>
     % endif
 % endfor
 </ul>
-<div id='optsect_global' class="tab-content">
+</div>
+
+<div class="tab-content col-md-9">
+
+<div id='optsect_global' class="tab-pane active">
 <h4>Global Settings</h4>
 <table class='table table-bordered table-striped'>
 <thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>
 % for opt in sorted(opts.keys()):
     % if not opt.startswith("__"):
-    <tr><td>${opts['__globaloptdescs__'][opt]}</td><td>
+    <tr><td>${opts['__globaloptdescs__'][opt]}</td><td style='vertical-align: middle'>
         % if type(opts[opt]) is int:
-            <input id='${opt}' class='input-mini' type=text value="${opts[opt]}">
+        <div class='input-group'>
+            <input id='${opt}' class='form-control' type=text value="${opts[opt]}">
+        </div>
         % endif
         % if type(opts[opt]) is str:
-            <input id='${opt}' class='input-xxlarge' type=text value="${opts[opt]}">
+        <div class='input-group'>
+            <input id='${opt}' style='width: 500px' class='form-control' type=text value="${opts[opt]}">
+        </div>
         % endif
         % if type(opts[opt]) is bool:
         <%
@@ -97,11 +73,15 @@
         % endif
         % if type(opts[opt]) is list and type(opts[opt][0]) is str:
             <% expandedopt = ','.join(opts[opt]) %>
-            <input id='${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+            <div class='input-group'>
+                <input id='${opt}' style='width: 500px' class='form-control' type=text value="${expandedopt}">
+            </div>
         % endif
         % if type(opts[opt]) is list and type(opts[opt][0]) is int:
             <% expandedopt = ','.join(str(x) for x in opts[opt]) %>
-            <input id='${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+            <div class='input-group'>
+                <input id='${opt}' class='form-control' type=text value="${expandedopt}">
+            </div>
         % endif
     </td></tr>
     % endif
@@ -111,7 +91,7 @@
 </div>
 % for mod in sorted(opts['__modules__'].keys()):
     <% modopts = opts['__modules__'][mod]['opts'] %>
-    <div id='optsect_${mod}' style='display: none' class="tab-content">
+    <div id='optsect_${mod}' class="tab-pane" style="display: none">
     <h4>${mod} Settings</h4>
     <table class='table table-bordered table-striped'>
     <thead><tr> <th>Option</th> <th>Value</th></tr></thead>
@@ -126,12 +106,16 @@
                 optdesc = opts['__modules__'][mod]['optdescs'][opt]
             %>
 
-            <tr><td>${optdesc}</td><td>
+            <tr><td>${optdesc}</td><td style='vertical-align: middle'>
             % if type(modopts[opt]) is int:
-                <input id='${mod}:${opt}' class='input-mini' type=text value="${modopts[opt]}">
+                <div class='input-group'>
+                    <input id='${mod}:${opt}' class='form-control' type=text value="${modopts[opt]}">
+                </div>
             % endif
             % if type(modopts[opt]) is str:
-                <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${modopts[opt]}">
+                <div class='input-group'>
+                    <input id='${mod}:${opt}' style='width: 500px' class='form-control' type=text value="${modopts[opt]}">
+                </div>
             % endif
             % if type(modopts[opt]) is bool:
             <%
@@ -149,11 +133,15 @@
             % endif
             % if type(modopts[opt]) is list and type(modopts[opt][0]) is str:
                 <% expandedopt = ','.join(modopts[opt]) %>
-                <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+                <div class='input-group'>
+                    <input id='${mod}:${opt}' style='width: 500px' class='form-control' type=text value="${expandedopt}">
+                </div>
             % endif
             % if type(modopts[opt]) is list and type(modopts[opt][0]) is int:
                 <% expandedopt = ','.join(str(x) for x in modopts[opt]) %>
-                <input id='${mod}:${opt}' class='input-xxlarge' type=text value="${expandedopt}">
+                <div class='input-group'>
+                    <input id='${mod}:${opt}' class='form-control' type=text value="${expandedopt}">
+                </div>
             % endif
 
             </td></tr>
@@ -164,6 +152,7 @@
     </div>
 % endfor
 </div>
+</div> <!-- /tabbable tabs-left -->
 </form>
 <br><br>
 <%include file="FOOTER.tmpl"/>

@@ -58,7 +58,7 @@ class sfp_crossref(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # The SIMILARDOMAIN and CO_HOSTED_SITE events supply domains,
         # not URLs. Assume HTTP.
@@ -78,7 +78,9 @@ class sfp_crossref(SpiderFootPlugin):
 
         self.sf.debug("Testing for affiliation: " + eventData)
         res = self.sf.fetchUrl(eventData, timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'], sizeLimit=10000000)
+                               useragent=self.opts['_useragent'],
+                               sizeLimit=10000000,
+                               verify=False)
 
         if res['content'] is None:
             self.sf.debug("Ignoring " + eventData + " as no data returned")
@@ -108,7 +110,8 @@ class sfp_crossref(SpiderFootPlugin):
 
                 res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                        useragent=self.opts['_useragent'],
-                                       sizeLimit=10000000)
+                                       sizeLimit=10000000,
+                                       verify=False)
                 if res['content'] is not None:
                     for name in self.getTarget().getNames():
                         pat = re.compile("([\.\'\/\"\ ]" + name + "[\'\/\"\ ])",

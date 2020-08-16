@@ -15,7 +15,7 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_names(SpiderFootPlugin):
-    """Human Name Extractor:Footprint,Passive:Real World:errorprone:Attempt to identify human names in fetched content."""
+    """Human Name Extractor:Footprint,Passive:Content Analysis:errorprone:Attempt to identify human names in fetched content."""
 
     # Default options
     opts = {
@@ -63,7 +63,7 @@ class sfp_names(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # If the source event is web content, check if the source URL was javascript
         # or CSS, in which case optionally ignore it.

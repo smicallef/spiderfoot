@@ -45,7 +45,7 @@ class sfp_email(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["EMAILADDR", "AFFILIATE_EMAILADDR"]
+        return ["EMAILADDR", "EMAILADDR_GENERIC", "AFFILIATE_EMAILADDR"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -53,7 +53,7 @@ class sfp_email(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         emails = self.sf.parseEmails(eventData)
         myres = list()
@@ -73,6 +73,9 @@ class sfp_email(SpiderFootPlugin):
 
             if eventName.startswith("AFFILIATE_"):
                 evttype = "AFFILIATE_EMAILADDR"
+
+            if not evttype.startswith("AFFILIATE_") and email.split("@")[0] in self.opts['_genericusers'].split(","):
+                evttype = "EMAILADDR_GENERIC"
 
             self.sf.info("Found e-mail address: " + email)
             mail = email.strip('.')

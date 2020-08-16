@@ -79,7 +79,7 @@ class sfp_fringeproject(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if srcModuleName == 'sfp_fringeproject':
             self.sf.debug("Ignoring " + eventData + ", from self.")

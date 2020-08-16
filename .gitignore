@@ -57,3 +57,4 @@ venv3/
 .coverage
 coverage/
 report/
+htmlcov/

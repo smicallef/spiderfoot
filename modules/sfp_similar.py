@@ -23,8 +23,8 @@ nearchars = {
  'g': [ 'f', 'h' ],
  'h': [ 'g', 'j', 'n' ],
  'i': [ 'o', 'u', '1' ],
- 'j': [ 'k', 'h' , 'i' ],
- 'k': [ 'l' , 'j' ],
+ 'j': [ 'k', 'h', 'i' ],
+ 'k': [ 'l', 'j' ],
  'l': [ 'i', '1', 'k' ],
  'm': [ 'n' ],
  'n': [ 'm' ],
@@ -98,6 +98,9 @@ class sfp_similar(SpiderFootPlugin):
         domlist = list()
 
         dom = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
+        if not dom:
+            return None
+
         tld = "." + eventData.split(dom + ".")[-1]
         self.sf.debug("Keyword extracted from " + eventData + ": " + dom)
 

@@ -41,6 +41,7 @@ class sfp_filemeta(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.__dataSource__ = "Target Website"
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -61,7 +62,7 @@ class sfp_filemeta(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventData in self.results:
             return None
@@ -77,7 +78,8 @@ class sfp_filemeta(SpiderFootPlugin):
                 # typically large.
                 ret = self.sf.fetchUrl(eventData, timeout=self.opts['timeout'],
                                        useragent=self.opts['_useragent'], dontMangle=True,
-                                       sizeLimit=10000000)
+                                       sizeLimit=10000000,
+                                       verify=False)
                 if ret['content'] is None:
                     self.sf.error("Unable to fetch file for meta analysis: " +
                                   eventData, False)

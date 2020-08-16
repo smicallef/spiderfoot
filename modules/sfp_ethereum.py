@@ -16,10 +16,11 @@ import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_ethereum(SpiderFootPlugin):
-    """Ethereum Address Finder:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
+    """Ethereum Address Extractor:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
 
@@ -52,7 +53,7 @@ class sfp_ethereum(SpiderFootPlugin):
         else:
             self.results[sourceData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # thanks to https://stackoverflow.com/questions/21683680/regex-to-match-ethereum-addresses
         matches = re.findall("[\s:=\>](0x[a-fA-F0-9]{40})", eventData)

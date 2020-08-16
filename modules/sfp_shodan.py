@@ -12,6 +12,7 @@
 
 import json
 import urllib.request, urllib.parse, urllib.error
+import time
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
@@ -61,6 +62,7 @@ class sfp_shodan(SpiderFootPlugin):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
                                "?key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        time.sleep(1)
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
             return None
@@ -77,6 +79,7 @@ class sfp_shodan(SpiderFootPlugin):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?query=hostname:" + qry +
                                "&key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        time.sleep(1)
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
             return None
@@ -97,6 +100,7 @@ class sfp_shodan(SpiderFootPlugin):
 
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?" + urllib.parse.urlencode(params),
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        time.sleep(1)
         if res['content'] is None:
             self.sf.info("No SHODAN info found for " + qry)
             return None
@@ -118,7 +122,7 @@ class sfp_shodan(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_shodan but did not set an API key!", False)
@@ -218,6 +222,11 @@ class sfp_shodan(SpiderFootPlugin):
 
             if 'data' in rec:
                 self.sf.info("Found SHODAN data for " + eventData)
+                ports = list()
+                banners = list()
+                asns = list()
+                products = list()
+                vulnlist = list()
                 for r in rec['data']:
                     port = str(r.get('port'))
                     banner = r.get('banner')
@@ -228,32 +237,41 @@ class sfp_shodan(SpiderFootPlugin):
                     if port is not None:
                         # Notify other modules of what you've found
                         cp = addr + ":" + port
-                        evt = SpiderFootEvent("TCP_PORT_OPEN", cp,
-                                              self.__name__, pevent)
-                        self.notifyListeners(evt)
-
-                    if banner is not None:
-                        # Notify other modules of what you've found
-                        evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
-                                              self.__name__, pevent)
-                        self.notifyListeners(evt)
-
-                    if product is not None:
-                        evt = SpiderFootEvent("SOFTWARE_USED", product,
-                                              self.__name__, pevent)
-                        self.notifyListeners(evt)
-
-                    if asn is not None:
-                        evt = SpiderFootEvent("BGP_AS_MEMBER", asn.replace("AS", ""),
-                                              self.__name__, pevent)
-                        self.notifyListeners(evt)
-
-                    if vulns is not None:
-                        for vuln in list(vulns.keys()):
-                            evt = SpiderFootEvent('VULNERABILITY', vuln,
+                        if cp not in ports:
+                            ports.append(cp)
+                            evt = SpiderFootEvent("TCP_PORT_OPEN", cp,
                                                   self.__name__, pevent)
                             self.notifyListeners(evt)
 
+                    if banner is not None:
+                        if banner not in banners:
+                            banners.append(banner)
+                            # Notify other modules of what you've found
+                            evt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
+                                                  self.__name__, pevent)
+                            self.notifyListeners(evt)
+
+                    if product is not None:
+                        if product not in products:
+                            products.append(product)
+                            evt = SpiderFootEvent("SOFTWARE_USED", product,
+                                                  self.__name__, pevent)
+                            self.notifyListeners(evt)
+
+                    if asn is not None:
+                        if asn not in asns:
+                            asns.append(asn)
+                            evt = SpiderFootEvent("BGP_AS_MEMBER", asn.replace("AS", ""),
+                                                  self.__name__, pevent)
+                            self.notifyListeners(evt)
+
+                    if vulns is not None:
+                        for vuln in vulns.keys():
+                            if vuln not in vulnlist:
+                                vulnlist.append(vuln)
+                                evt = SpiderFootEvent('VULNERABILITY', vuln,
+                                                      self.__name__, pevent)
+                                self.notifyListeners(evt)
         return None
 
 # End of sfp_shodan class

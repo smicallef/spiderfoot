@@ -9,20 +9,22 @@ class TestSpiderFootTarget(unittest.TestCase):
 
     valid_target_types = [
         'IP_ADDRESS', 'IPV6_ADDRESS', 'NETBLOCK_OWNER', 'INTERNET_NAME',
-        'EMAILADDR', 'HUMAN_NAME', 'BGP_AS_OWNER', 'PHONE_NUMBER'
+        'EMAILADDR', 'HUMAN_NAME', 'BGP_AS_OWNER', 'PHONE_NUMBER', "USERNAME"
     ]
 
-    def test_init_unsupported_target_type_should_exit(self):
+    def test_init_invalid_target_value_should_raise(self):
         """
         Test __init__(self, targetValue, typeName)
         """
-        target_value = 'example target value'
+        with self.assertRaises(TypeError) as cm:
+            target = SpiderFootTarget(None, 'IP_ADDRESS')
 
-        with self.assertRaises(SystemExit) as cm:
-            target_type = 'example target type'
-            target = SpiderFootTarget(target_value, target_type)
-
-        self.assertEqual(cm.exception.code, -1)
+    def test_init_unsupported_target_type_should_raise(self):
+        """
+        Test __init__(self, targetValue, typeName)
+        """
+        with self.assertRaises(ValueError) as cm:
+            target = SpiderFootTarget('example target value', 'example target type')
 
     def test_init_supported_target_types(self):
         """
@@ -31,12 +33,11 @@ class TestSpiderFootTarget(unittest.TestCase):
         target_value = 'example target value'
 
         for target_type in self.valid_target_types:
-            # subTest not supported in Python2
-            #with self.subTest(target_type=target_type):
+            with self.subTest(target_type=target_type):
                 target = SpiderFootTarget(target_value, target_type)
                 self.assertEqual(SpiderFootTarget, type(target))
-                self.assertEqual(target.getType(), target_type)
-                self.assertEqual(target.getValue(), target_value)
+                self.assertEqual(target.targetType, target_type)
+                self.assertEqual(target.targetValue, target_value)
 
     def test_set_alias(self):
         """
@@ -49,16 +50,37 @@ class TestSpiderFootTarget(unittest.TestCase):
         set_alias = target.setAlias(None, None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_get_aliases_should_return_a_list(self):
+    def test_target_type_attribute_should_return_a_string(self):
         """
-        Test getAliases(self)
+        Test targetType attribute
         """
         target_value = 'example target value'
         target_type = 'IP_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
-        aliases = target.getAliases()
-        self.assertEqual(list, type(aliases))
+        self.assertIsInstance(target.targetType, str)
+        self.assertEqual(target_type, target.targetType)
+
+    def test_target_value_attribute_should_return_a_string(self):
+        """
+        Test targetValue attribute
+        """
+        target_value = 'example target value'
+        target_type = 'IP_ADDRESS'
+        target = SpiderFootTarget(target_value, target_type)
+
+        self.assertIsInstance(target.targetValue, str)
+        self.assertEqual(target_value, target.targetValue)
+
+    def test_target_aliases_attribute_should_return_a_list(self):
+        """
+        Test targetAliases attribute
+        """
+        target_value = 'example target value'
+        target_type = 'IP_ADDRESS'
+        target = SpiderFootTarget(target_value, target_type)
+
+        self.assertIsInstance(target.targetAliases, list)
 
     def test_get_equivalents_should_return_a_list(self):
         """
@@ -82,7 +104,7 @@ class TestSpiderFootTarget(unittest.TestCase):
         names = target.getNames()
         self.assertEqual(list, type(names))
 
-    def test_get_addresses(self):
+    def test_get_addresses_should_return_a_list(self):
         """
         Test getAddresses(self)
         """
@@ -90,10 +112,10 @@ class TestSpiderFootTarget(unittest.TestCase):
         target_type = 'IP_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
-        target.getAddresses()
-        self.assertEqual('TBD', 'TBD')
+        addresses = target.getAddresses()
+        self.assertEqual(list, type(addresses))
 
-    def test_matches(self):
+    def test_matches_should_return_a_boolean(self):
         """
         Test matches(self, value, includeParents=False, includeChildren=True)
         """
@@ -101,8 +123,8 @@ class TestSpiderFootTarget(unittest.TestCase):
         target_type = 'IP_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
-        target.matches(None)
-        self.assertEqual('TBD', 'TBD')
+        matches = target.matches(None)
+        self.assertEqual(bool, type(matches))
 
 if __name__ == '__main__':
     unittest.main()

@@ -45,7 +45,7 @@ class sfp_skymem(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["EMAILADDR"]
+        return ["EMAILADDR", "EMAILADDR_GENERIC"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -58,7 +58,7 @@ class sfp_skymem(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Get e-mail addresses on this domain
         res = self.sf.fetchUrl("http://www.skymem.info/srch?q=" + eventData, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
@@ -72,13 +72,17 @@ class sfp_skymem(SpiderFootPlugin):
         for email in emails:
             # Skip unrelated emails
             mailDom = email.lower().split('@')[1]
-            if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
+            if not self.getTarget().matches(mailDom):
                 self.sf.debug("Skipped address: " + email)
                 continue
 
             self.sf.info("Found e-mail address: " + email)
             if email not in self.results:
-                evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
+                if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                    evttype = "EMAILADDR_GENERIC"
+                else:
+                    evttype = "EMAILADDR"
+                evt = SpiderFootEvent(evttype, email, self.__name__, event)
                 self.notifyListeners(evt)
                 self.results[email] = True
 
@@ -100,13 +104,17 @@ class sfp_skymem(SpiderFootPlugin):
             for email in emails:
                 # Skip unrelated emails
                 mailDom = email.lower().split('@')[1]
-                if not self.getTarget().matches(mailDom, includeChildren=True, includeParents=True):
+                if not self.getTarget().matches(mailDom):
                     self.sf.debug("Skipped address: " + email)
                     continue
 
                 self.sf.info("Found e-mail address: " + email)
                 if email not in self.results:
-                    evt = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
+                    if email.split("@")[0] in self.opts['_genericusers'].split(","):
+                        evttype = "EMAILADDR_GENERIC"
+                    else:
+                        evttype = "EMAILADDR"
+                    evt = SpiderFootEvent(evttype, email, self.__name__, event)
                     self.notifyListeners(evt)
                     self.results[email] = True
 

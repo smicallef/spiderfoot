@@ -1,46 +1,63 @@
 ## -*- coding: utf-8 -*-
 <%include file="HEADER.tmpl"/>
-<h2>${name} &nbsp;<img id=loader src=${docroot}/static/img/loader.gif></h2>
-  <div class="btn-toolbar">
+<%
+  if status == "FINISHED":
+    statusy = "alert-success"
+  elif status.startswith("ABORT"):
+    statusy = "alert-warning"
+  elif status == "CREATED" or status == "RUNNING" or status == "STARTED" or status == "STARTING" or status == "INITIALIZING":
+    statusy = "alert-info"
+  elif status == "ERROR-FAILED":
+    statusy = "alert-danger"
+  else:
+    statusy = "alert-info"
+  end
+%>
+<h2>${name}&nbsp;<span id='scanstatusbadge' class='badge ${statusy}'>${status}</span>&nbsp;<img id="loader" src="${docroot}/static/img/loader.gif"></h2>
+  <div class="btn-toolbar" role="toolbar" style='padding-bottom: 10px'>
    <div class="btn-group">
-      <a id='btn-status' class="btn" onClick='scanStatusView("${id}")'><i class='icon-eye-open'></i>&nbsp;Status</a>
-      <a id='btn-browse' class="btn" onClick='browseEventList("${id}")'><i class='icon-th-list'></i>&nbsp;Browse</a>
-      <a id='btn-graph' class="btn" onClick='graphEvents("${id}")'><i class='icon-asterisk'></i>&nbsp;Graph</a>
-      <a id='btn-info' class="btn" onClick='viewScanConfig("${id}")'><i class='icon-cog'></i>&nbsp;Scan Settings</a>
-      <a id='btn-log' class="btn" onClick='viewScanLog("${id}")'><i class='icon-book'></i>&nbsp;Log</a>
+      <a id='btn-status' class="btn btn-default" onClick='scanSummaryView("${id}")'><i class='glyphicon glyphicon-eye-open'></i>&nbsp;Summary</a>
+      <a id='btn-browse' class="btn btn-default" onClick='browseEventList("${id}")'><i class='glyphicon glyphicon-th-list'></i>&nbsp;Browse</a>
+      <a id='btn-graph' class="btn btn-default" onClick='graphEvents("${id}")'><i class='glyphicon glyphicon-asterisk'></i>&nbsp;Graph</a>
+      <a id='btn-info' class="btn btn-default" onClick='viewScanConfig("${id}")'><i class='glyphicon glyphicon-cog'></i>&nbsp;Scan Settings</a>
+      <a id='btn-log' class="btn btn-default" onClick='viewScanLog("${id}")'><i class='glyphicon glyphicon-book'></i>&nbsp;Log</a>
     </div>
-    <div id='btn-search' class='btn-group pull-right input-append'>
-    <input class=span2 id=searchvalue type=text placeholder='Search...' data-toggle='popover' data-html=true data-animation=true data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchregex/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>.<br><br><b>Note</b> that the current scope is what's searched."> 
-        <button class='btn btn-primary' id=searchbutton type=button onClick=$('#btn-search').popover('toggle');searchDirector('${id}')>
-            <i class='icon-search icon-white'></i>
-        </button>
+    <div class='btn-group pull-right'>
+        <div id='btn-search' class='input-group pull-right'>
+          <input class='form-control' id='searchvalue' type='text' placeholder='Search...' data-toggle='popover' data-html='true' data-animation='true' data-title='Usage' data-content="Supply a regular expression encapsulated in '/', e.g. <i>/searchregex/</i> or a simple wildcard search, e.g. <i>*string*</i> or an exact value, e.g. <i>string</i>.<br /><br /><b>Note</b> that the current scope is what's searched.">
+            <div class='input-group-btn' style='width: 0px'> <!-- Chrome fix -->
+              <button class='btn btn-primary' id='searchbutton' type='button' onClick="$('#btn-search').popover('toggle');searchDirector('${id}')">
+                <i class='glyphicon glyphicon-search glyphicon glyphicon-white'></i>
+              </button>
+            </div>
+        </div>
     </div>
-    <div class="btn-group pull-right">
-    <a id='btn-refresh' rel="tooltip" title="Refresh" class="btn-success btn" onClick='refresh()'><i class='icon-refresh icon-white'></i></a>
-    <a id='btn-export' rel="tooltip" title="Export Data" class="btn-success btn" onClick='exportEventData("${id}", currentType)'><i class='icon-download-alt icon-white'></i></a>
-    </div> 
-    <div id='customtabview' class="btn-group pull-right">
-     <a id='btn-fullview' rel="tooltip" data-title="Full Data View" class="btn-inverse btn active" onClick='browseUpdate("full")'><i class='icon-th icon-white'></i></a>
-     <a id='btn-uniqueview' rel="tooltip" data-title="Unique Data View" class="btn-inverse btn" onClick='browseUpdate("unique")'><i class='icon-align-justify icon-white'></i></a>
-     <a id='btn-vizview' rel="tooltip" data-title="Visualize" class="btn-inverse btn dropdown-toggle" data-toggle="dropdown"><i class='icon-picture icon-white'></i></a>
-     <ul class="dropdown-menu">
-        <li><a class='link' onClick='browseUpdate("viz-bubble-data")'>Bubble (Data Element)</a></li>
-        <li><a class='link' onClick='browseUpdate("viz-bubble-source")'>Bubble (Source Data Element)</a></li>
-        <li><a class='link' onClick='browseUpdate("viz-dendro")'>Discovery Path</a></li>
-     </ul>
-    </div>
-    <div id='customvizview' class="btn-group pull-right">
-     <a id='btn-random' rel="tooltip" data-title="Random Layout" class="btn-inverse btn active" onClick='vizUpdate("random")'><b>R</b></a>
-     <a id='btn-forceatlas' rel="tooltip" data-title="Force Layout" class="btn-inverse btn" onClick='vizUpdate("force")'><b>F</b></a>
-     <a id='btn-saveimage' rel="tooltip" data-title="Save Image" class="btn-inverse btn dropdown-toggle" onClick='vizUpdate("download")'><i class='icon-picture icon-white'></i></a>
-    </div>
-    <div id='modifyactions' class="btn-group pull-right">
-        <a id='btn-setfp' rel="tooltip" data-title="Set/Unset False Positive flag" class="btn-warning btn dropdown-toggle" data-toggle="dropdown"><i class='icon-ban-circle icon-white'></i></a>
-        <ul class="dropdown-menu">
-            <li><a href='#' class='link' onClick='setFp(1)'>Set False Positive flag</a></li>
-            <li><a href='#' class='link' onClick='setFp(0)'>Unset False Positive flag</a></li>
-        </ul>
-    </div>
+        <div class="btn-group pull-right" role="group">
+            <button id='btn-refresh' rel="tooltip" title="Refresh" class="btn btn-success btn-default" onClick='refresh()'><i class='glyphicon glyphicon-refresh glyphicon glyphicon-white'></i></button>
+            <button id='btn-export' rel="tooltip" title="Export Data" class="btn btn-success btn-default" onClick='exportEventData("${id}", currentType)'><i class='glyphicon glyphicon-download-alt glyphicon glyphicon-white'></i></button>
+        </div> 
+        <div id='customtabview' role="group" class="btn-group pull-right">
+         <a id='btn-fullview' rel="tooltip" data-title="Full Data View" class="btn btn-default active" onClick='browseUpdate("full")'><i class='glyphicon glyphicon-th glyphicon glyphicon-white'></i></a>
+         <a id='btn-uniqueview' rel="tooltip" data-title="Unique Data View" class="btn btn-default" onClick='browseUpdate("unique")'><i class='glyphicon glyphicon-align-justify glyphicon glyphicon-white'></i></a>
+         <a id='btn-vizview' rel="tooltip" data-title="Visualize" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><i class='glyphicon glyphicon-picture glyphicon glyphicon-white'></i></a>
+         <ul class="dropdown-menu">
+            <li><a class='link' onClick='browseUpdate("viz-bubble-data")'>Bubble (Data Element)</a></li>
+            <li><a class='link' onClick='browseUpdate("viz-bubble-source")'>Bubble (Source Data Element)</a></li>
+            <li><a class='link' onClick='browseUpdate("viz-dendro")'>Discovery Path</a></li>
+         </ul>
+        </div>
+        <div id='customvizview' class="btn-group pull-right">
+         <a id='btn-random' rel="tooltip" data-title="Random Layout" class="btn btn-default active" onClick='vizUpdate("random")'><b>R</b></a>
+         <a id='btn-forceatlas' rel="tooltip" data-title="Force Layout" class="btn btn-default" onClick='vizUpdate("force")'><b>F</b></a>
+         <a id='btn-saveimage' rel="tooltip" data-title="Save Image" class="btn btn-default dropdown-toggle" onClick='vizUpdate("download")'><i class='glyphicon glyphicon-picture glyphicon glyphicon-white'></i></a>
+        </div>
+        <div id='modifyactions' role="group" class="btn-group pull-right">
+            <a id='btn-setfp' rel="tooltip" data-title="Set/Unset False Positive flag" class="btn-warning btn btn-default dropdown-toggle" data-toggle="dropdown"><i class='glyphicon glyphicon-ban-circle glyphicon glyphicon-white'></i></a>
+            <ul class="dropdown-menu">
+                <li><a href='#' class='link' onClick='setFp(1)'>Set False Positive flag</a></li>
+                <li><a href='#' class='link' onClick='setFp(0)'>Unset False Positive flag</a></li>
+            </ul>
+        </div>
   </div>
     <script src="${docroot}/static/js/sigma.min.js"></script>
     <script src="${docroot}/static/js/sigma.parsers.json.min.js"></script>
@@ -150,11 +167,11 @@
                             lastSearchType = typeName;
                             lastSearchQuery = query;
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                            crumbs += " <span class='divider'>&gt;</span></li>";
+                            crumbs += " <span class='divider'></span></li>";
                             if (typeName != null) {
                                 crumbs += " <li><a class='link' onClick=";
                                 crumbs += "'browseEventData(\"" + instanceId + "\",\"" + currentTypeName + "\",\"" + typeName + "\",\"full\");'>";
-                                crumbs += unescape(currentTypeName) + "</a><span class='divider'>&gt;</span></li>";
+                                crumbs += unescape(currentTypeName) + "</a><span class='divider'></span></li>";
                             }
                             crumbs += "<li>Search results";
                             crumbs += " (" + data.length + " records)</li></ul>";
@@ -164,21 +181,21 @@
                             } else {
                                 var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'><thead><tr>";
                                 if (typeName == null) {
-                                    table += "<th>Data Element Type</th>";
+                                    table += "<th class='sorter-false'>Data Element Type</th>";
                                 }
                                 table += "<th>Data Element</th><th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
                                 for (var i = 0; i < data.length; i++) {
                                     table += "<tr>";
                                     if (typeName == null) {
-                                        table += "<td>" + data[i][8] + "</td>";
+                                        table += "<td><pre class='table-border-bg-inherit'>" + data[i][8] + "</pre></td>";
                                     }
-                                    table += "<td><pre style='border: 0px; background-color: inherit'>";
+                                    table += "<td><pre class='table-border-bg-inherit'>";
                                     table += sf.replace_sfurltag(data[i][1]);
                                     // for debug
-                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>";
+                                    table += "</pre></td><td><pre class='table-border-bg-inherit'>";
                                     table += sf.replace_sfurltag(data[i][2]);
-                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
-                                    table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
+                                    table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][3];
+                                    table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][0];
                                     table += "</pre></td>";
                                     table += "</tr>";
                                 }
@@ -192,8 +209,8 @@
 
         // Visualisation
         function graphEvents(instanceId) {
-            grid = "<div id='scansummary-content'><br>"
-            grid += "<div class='span12' style='height: 650px; width: 100%' id='graph-container'></div>"
+            grid = "<div id='scansummary-content'><br />"
+            grid += "<div class='col-md-12 graph-container' id='graph-container'></div>"
             grid += "</div>"
 
             $("#scansummary-content").remove();
@@ -214,6 +231,11 @@
             sigma.parsers.json("${docroot}/scanviz?id=" + instanceId + "&gexf=0", {
                 container: 'graph-container'
             }, function(s) { 
+                if (s.renderers[0].nodesOnScreen.length == 0) {
+                    $("#graph-container").append("<div class='alert alert-danger'>Insufficient data to produce a graph.</div>");
+                    $("#loader").hide();
+                    return;
+                }
                 sharedSigma = s;
                 s.settings({
                     edgeColor: 'default',
@@ -248,25 +270,25 @@
         }
 
         // Scan status
-        function scanStatusView(instanceId) {
+        function scanSummaryView(instanceId) {
             grid = "<div id='scansummary-content'>"
             grid += "<div class='row'>"
-            grid += "<div class='span12'>"
-            grid += "<div class='btn-toolbar' style='text-align: center'>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Total</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='tcounter'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Unique</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='ucounter'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Status</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='status'>?</button></div>"
-            grid += "<div class='btn-group'><button class='btn disabled btn-large' style='font-size: 36px'>Errors</button>"
-            grid += "<button class='btn disabled btn-inverse btn-large' style='font-size: 36px' id='errors'>?</button></div>"
-            grid += "</div></div></div><br>"
+            grid += "<div class='col-md-12 text-center'>"
+            grid += "<div class='btn-toolbar'>";
+            grid += "<div class='btn-group' style='float: unset; padding: 10px'><button class='btn disabled btn-lg btn-secondary' style='cursor: default;'>Total</span></button>"
+            grid += "<button class='btn disabled btn-lg btn-default' id='tcounter' style='cursor: default;'>?</button></div>"
+            grid += "<div class='btn-group' style='float: unset; padding: 10px'><button class='btn disabled btn-lg btn-secondary' style='cursor: default;'>Unique</button>"
+            grid += "<button class='btn disabled btn-lg btn-default' id='ucounter' style='cursor: default;'>?</button></div>"
+            grid += "<div class='btn-group' style='float: unset; padding: 10px'><button class='btn disabled btn-lg btn-secondary' style='cursor: default;'>Status</button>"
+            grid += "<button class='btn disabled btn-lg btn-default' id='status' style='cursor: default;'>?</button></div>"
+            grid += "<div class='btn-group' style='float: unset; padding: 10px'><button class='btn disabled btn-lg btn-secondary' style='cursor: default;'>Errors</button>"
+            grid += "<button class='btn disabled btn-lg btn-default' id='errors' style='cursor: default;'>?</button></div>"
+            grid += "</div></div></div><br />"
             grid += "<div class='row'>"
-            grid += "<div class='span12' id='vbarsummary' style='height: 480px'></div>"
-            grid += "</div><br>"
+            grid += "<div class='col-md-12' id='vbarsummary'></div>"
+            grid += "</div><br />"
             grid += "<div class='row'>"
-            grid += "<div class='span12' id='logtable'></div>"
+            grid += "<div class='col-md-12' id='logtable'></div>"
             grid += "</div></div>"
 
             $("#scansummary-content").remove();
@@ -316,6 +338,7 @@
                             scanSummary[i].link = function(d) { return browseEventData(d.scanId, d.name, d.id, "full"); };
                             totalCount += data[i][3];
                             uniqueCount += data[i][4];
+                            scanStatus = data[i][5];
                         }
 
                         for (x = 0; x < i; x++) {
@@ -324,34 +347,28 @@
 
                         $('#ucounter').html(uniqueCount);
                         $('#tcounter').html(totalCount);
+                        $('#scanstatusbadge').html(scanStatus);
+                        if (scanStatus == "FINISHED") {
+                            statusy = "alert-success";
+                        }
+                        if (scanStatus.indexOf("ABORT") >= 0) {
+                            statusy = "alert-warning";
+                        }
+                        if (scanStatus == "RUNNING" || scanStatus == "STARTED" || scanStatus == "STARTING" || scanStatus == "INITIALIZING") {
+                            statusy = "alert-info";
+                        }
+                        if (scanStatus.indexOf("FAILED") >= 0) {
+                            statusy = "alert-danger";
+                        }
+                        $('#scanstatusbadge').removeClass(["alert-info", "alert-warning", "alert-danger"]).addClass(statusy);
                         $('#status').html(scanStatus);
                         $("#vbarsummary").empty();
-                        sf_viz_vbar("#vbarsummary", scanSummary);
-
+                        if (scanSummary.length == 0) {
+                          $("#vbarsummary").append("<div id='scansummary-content' class='alert alert-warning'><h4>No data.</h4>If the scan is still running this section will update shortly.</div>");
+                        } else {
+                          sf_viz_vbar("#vbarsummary", scanSummary);
+                        }
                         $("#loader").fadeOut(500);
-                    });
-                }
-            );
-
-            dataloaders.push(
-                function() {
-                    sf.fetchData('${docroot}/scanlog', {'id': instanceId, 'limit': 10}, function(data) {
-                            var table = "<div class='well'><table id='statuslog-content' class='table table-condensed' style='font-size: 90%'>";
-                            table += "<thead><tr> <th>Time</th> <th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
-                            for (var i = 0; i < data.length; i++) {
-                                table += "<tr";
-                                if (data[i][2] == "ERROR") {
-                                    table += " class='error'"
-                                }
-                                table += "><td>" + data[i][0] + "</a></td>";
-                                table += "<td>" + data[i][1] + "</td>";
-                                table += "<td>" + data[i][2] + "</td>";
-                                table += "<td><pre style='border: 0px; background-color: inherit; font-size: 90%'>" + data[i][3] + "</pre></td>";
-                                table += "</tr>";
-                            }
-                            table += "</tbody></table></div>"
-                            $("#logtable").empty();
-                            $("#logtable").append(table);
                     });
                 }
             );
@@ -373,22 +390,24 @@
             navTo("btn-log");
             refresh = function() { viewScanLog(instanceId); }
             sf.fetchData('${docroot}/scanlog', {'id': instanceId}, function(data) {
-                            var table = "<table id='scansummary-content' class='table table-bordered table-striped table-condensed' style='font-size: 90%'>";
-                            table += "<thead><tr> <th>Time</th> <th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
+                            var table = "<div class='table-responsive'><table id='scansummary-content' class='table table-bordered table-striped table-condensed font-size-90-percent'>";
+                            table += "<thead><tr><th>Time</th><th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr";
                                 if (data[i][2] == "ERROR") {
-                                    table += " class='error'"
+                                  table += "<tr class='danger'>";
+                                } else {
+                                  table += "<tr>";
                                 }
-                                table += "><td>" + data[i][0] + "</a></td>";
+                                table += "<td>" + data[i][0] + "</a></td>";
                                 table += "<td>" + data[i][1] + "</td>";
                                 table += "<td>" + data[i][2] + "</td>";
-                                table += "<td><pre style='border: 0px; background-color: inherit; font-size: 90%'>" + data[i][3] + "</pre></td>";
+                                table += "<td>" + data[i][3] + "</td>";
                                 table += "</tr>";
                             }
-                            table += "</tbody></table>"
+                            table += "</tbody></table></div>";
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(table);
+                            $("#scansummary-content").tablesorter();
             });
         }
 
@@ -463,13 +482,13 @@
                                 }
                             }
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                            crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                            crumbs += " <span class='divider'></span></li> <li><a class='link' onClick=";
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"";
                             crumbs += format + "\", " + filterFP + ");'>";
                             crumbs += unescape(eventTypeLabel) + "</a></li>";
                             if (fpcount > 0) {
-                                crumbs += "<li class='pull-right' style='text-align: center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide " + fpcount + " False Positives: ";
-                                crumbs += "<input style='vertical-align: top' type='checkbox' ";
+                                crumbs += "<div class='pull-right text-center'><i class='glyphicon glyphicon-ban-circle'></i>&nbsp;&nbsp;Hide " + fpcount + " False Positives: ";
+                                crumbs += "<input class='vertical-align-top' type='checkbox' ";
                                 crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
                                 crumbs += ",'" + format + "', ";
                                 if (!filterFP) {
@@ -479,37 +498,40 @@
                                     fp = 0;
                                     ch = "checked";
                                 }
-                                crumbs += fp + ")\" " + ch + "></input></li>";
+                                crumbs += fp + ")\" " + ch + "></input></div>";
                             }
                             crumbs += "</ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small tablesorter'>";
                             table += "<thead><tr>";
-                            table += "<th style='text-align: center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'>";
-                            table += "</th>";
+                            table += "<th class='text-center'><input id='checkall' type='checkbox' onClick='switchSelectAll()'></th>";
                             table += "<th>Data Element</th></th>";
-                            table += "<th>Source Data Element</th><th>Source Module</th><th>Identified</th></tr></thead><tbody>";
+                            table += "<th>Source Data Element</th>";
+                            table += "<th>Source Module</th>";
+                            table += "<th>Identified</th>";
+                            table += "</tr></thead><tbody>";
+
                             for (var i = 0; i < data.length; i++) {
                                 if (filterFP && data[i][8] == "1") {
                                     continue;
                                 }
                                 table += "<tr>";
-                                table += "<td style='text-align: center'><input type='checkbox' id='cb_" + data[i][7] + "'>";
+                                table += "<td class='text-center'><input type='checkbox' id='cb_" + data[i][7] + "'>";
                                 if (data[i][8] == "1") {
-                                    table += "<br><i class='icon-ban-circle' style='vertical-align: bottom' />";
+                                    table += "<br /><i class='glyphicon glyphicon-ban-circle' class='vertical-align-bottom' />";
                                 }
                                 table += "</td>";
-                                table += "<td><pre style='border: 0px; background-color: inherit'>";
+                                table += "<td><pre class='table-border-bg-inherit'>";
                                 //table += "<a href='${docroot}/entityinfo?id=" + data[i][7] + "'>" + data[i][1] + "</a>";
                                 table += sf.replace_sfurltag(data[i][1]);
                                 // for debug
-                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][7];
-                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][5];
-                                //table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][6];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>";
+                                //table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][7];
+                                //table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][5];
+                                //table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][6];
+                                table += "</pre></td><td><pre class='table-border-bg-inherit'>";
                                 table += sf.replace_sfurltag(data[i][2]);
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][3];
-                                table += "</pre></td><td><pre style='border: 0px; background-color: inherit'>" + data[i][0];
+                                table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][3];
+                                table += "</pre></td><td><pre class='table-border-bg-inherit'>" + data[i][0];
                                 table += "</pre></td>";
                                 table += "</tr>";
                             }
@@ -548,12 +570,12 @@
                 }
                 sf.fetchData('${docroot}/scaneventresultsunique', {'id': instanceId, 'eventType': eventType, 'filterfp': filterFP }, function(data) {
                             var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                            crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                            crumbs += " <span class='divider'></span></li> <li><a class='link' onClick=";
                             crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format;
                             crumbs += "\", " + filterFP + ");'>";
                             crumbs += unescape(eventTypeLabel) + "</a></li>";
-                            crumbs += "<li class='pull-right' style='text-align: center'><i class='icon-ban-circle' />&nbsp;&nbsp;Hide False Positives: ";
-                            crumbs += "<input style='vertical-align: top' type='checkbox' ";
+                            crumbs += "<div class='pull-right text-center'><i class='glyphicon glyphicon-ban-circle'></i>&nbsp;&nbsp;&nbsp;&nbsp;Hide False Positives: ";
+                            crumbs += "<input class='vertical-align-top' type='checkbox' ";
                             crumbs += "onClick=\"browseEventData('" + instanceId + "', '" + eventTypeLabel +"', '" + eventType + "'";
                             crumbs += ",'" + format + "', ";
                             if (!filterFP) {
@@ -563,13 +585,13 @@
                                 fp = 0;
                                 ch = "checked";
                             }
-                            crumbs += fp + ")\" " + ch + "></input></li>";
+                            crumbs += fp + ")\" " + ch + "></input></div>";
                             crumbs += "</ul>";
 
                             var table = "<table id='scansummary-content' class='table table-bordered table-striped small'>";
                             table += "<thead><tr> <th>Unique Data Element</th><th>Occurrences</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
-                                table += "<tr><td><pre style='border: 0px; background-color: inherit'>";
+                                table += "<tr><td><pre class='table-border-bg-inherit'>";
                                 table += sf.replace_sfurltag(data[i][0]);
                                 table += "</pre></td><td>" + data[i][2] + "</td>";
                                 table += "</tr>";
@@ -588,7 +610,7 @@
                 if (format.indexOf("viz-bubble") == 0) {
                     sf.fetchData('${docroot}/scaneventresults', {'id': instanceId, 'eventType': eventType }, function(data) {
                         var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                        crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                        crumbs += " <span class='divider'>;</span></li> <li><a class='link' onClick=";
                         crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
                         crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
                         itemList = []
@@ -601,7 +623,7 @@
                             }
                         }
                         $("#loader").fadeOut(500);
-                        $("#mainbody").append(crumbs + "<div id='scansummary-content' style='text-align: center'></div>");
+                        $("#mainbody").append(crumbs + "<div id='scansummary-content' class='text-center'></div>");
                         sf_viz_bubble("#scansummary-content", itemList)
                     });
                 }
@@ -609,12 +631,12 @@
                 if (format == "viz-dendro") {
                     sf.fetchData("${docroot}/scanelementtypediscovery", {'id': instanceId, 'eventType': eventType }, function(data) {
                         var crumbs = " <ul class='breadcrumb' id='breadcrumbs'> <li><a class='link' onClick='browseEventList(\"" + instanceId + "\");'>Browse</a>";
-                        crumbs += " <span class='divider'>&gt;</span></li> <li><a class='link' onClick=";
+                        crumbs += " <span class='divider'></span></li> <li><a class='link' onClick=";
                         crumbs += "'browseEventData(\"" + instanceId + "\",\"" + eventTypeLabel + "\",\"" + eventType + "\",\"" + format + "\");'>";
                         crumbs += unescape(eventTypeLabel) + "</a></li></ul>";
 
                         $("#loader").fadeOut(500);
-                        $("#mainbody").append(crumbs + "<div id='scansummary-content' style='text-align: center'></div>");
+                        $("#mainbody").append(crumbs + "<div id='scansummary-content' class='text-center'></div>");
                         sf_viz_dendrogram("#scansummary-content", data);
                     });
                 }
@@ -667,8 +689,8 @@
                 table += "<tr><td>Status:</td><td>" + data['meta'][5] + "</td></tr>";
                 table += "</table>";
                 table += "<h4>Global Settings</h4>";
-                table += "<table class='table table-bordered table-striped'>";
-                table += "<thead><tr> <th>Option</th> <th>Value</th></tr></thead><tbody>";
+                table += "<table class='table table-bordered table-striped' style='table-layout: fixed'>";
+                table += "<thead><tr><th>Option</th><th>Value</th></tr></thead><tbody>";
                 for (var key in data['config']) {
                     if (key.indexOf(":") > 0) {
                         continue;
@@ -677,7 +699,7 @@
                 }
                 table += "</table>";
                 table += "<h4>Module Settings</h4>";
-                table += "<table class='table table-bordered table-striped' style='width: 400px'>";
+                table += "<div class='table-responsive'><table class='table table-bordered table-striped' style='table-layout: fixed'>";
                 table += "<thead><tr><th>Module</th> <th>Option</th> <th>Value</th></tr></thead><tbody>";
                 keys = [];
                 for (var key in data['config']) {
@@ -692,15 +714,15 @@
                         table += "<tr><td>" + bits[0] + "</td><td>" + data['configdesc'][key] + "</td><td>" + data['config'][key] + "</td></tr>";
                     }
                 }
-                table += "</table></div>";
+                table += "</table></div></div>";
 
                 $("#loader").fadeOut(500);
                 $("#mainbody").append(table);
             });
         }
 
-        if ("${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "UNKNOWN") {
-            scanStatusView("${id}");
+        if ("${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "STARTED" || "${status}" == "UNKNOWN" || "${status}" == "INITIALIZING") {
+            scanSummaryView("${id}");
         } else {
             browseEventList("${id}");
         }
@@ -716,5 +738,5 @@
         }, 5000);
 
     </script>
-<iframe style='display: none' id='exportframe'>
+<iframe class="hidden" id='exportframe'>
 <%include file="FOOTER.tmpl"/>

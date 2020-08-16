@@ -16,7 +16,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sslcert(SpiderFootPlugin):
-    """SSL Certificates:Footprint,Investigate:Crawling and Scanning::Gather information about SSL certificates used by the target's HTTPS sites."""
+    """SSL Certificate Analyzer:Footprint,Investigate:Crawling and Scanning::Gather information about SSL certificates used by the target's HTTPS sites."""
 
     # Default options
     opts = {
@@ -71,7 +71,7 @@ class sfp_sslcert(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventName == "LINKED_URL_INTERNAL":
             if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:

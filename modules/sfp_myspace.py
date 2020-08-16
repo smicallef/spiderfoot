@@ -53,7 +53,7 @@ class sfp_myspace(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Search by email address
         if eventName == "EMAILADDR":

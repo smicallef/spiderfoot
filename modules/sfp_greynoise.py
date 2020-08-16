@@ -74,7 +74,7 @@ class sfp_greynoise(SpiderFootPlugin):
         ret = None
 
         header = { "key": self.opts['api_key'] }
-        url = "https://" + "enterprise.api.greynoise.io/v2/experimental/gnql?query=" + qry
+        url = "https://enterprise.api.greynoise.io/v2/experimental/gnql?query=" + qry
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=header)
 
@@ -100,7 +100,7 @@ class sfp_greynoise(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_greynoise but did not set an API key!", False)

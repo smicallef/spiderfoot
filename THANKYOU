@@ -3,7 +3,17 @@ bug fixes or new functionality. Thank you!
 
 - Brendan Coles (https://github.com/bcoles)
     - Second highest contributor to the project
+    - Tons of modules, fixes and established the whole testing framework
     - Too many contributions to list here, see https://github.com/smicallef/spiderfoot/pulls?q=is%3Apr+author%3Abcoles+is%3Aclosed
+
+- Krishnasis Mandal (https://github.com/krishnasism)
+    - Many modules, see https://github.com/smicallef/spiderfoot/pulls?q=is%3Apr+author%3Akrishnasism+is%3Aclosed
+
+- Steve Bate (https://github.com/steve-bate)
+    - Multiple bug fixes, performance and quality improvements
+
+- fallingcubes (https://github.com/fallingcubes)
+    - Use of multiprocessing instead of threading for running multiple scans simultaneously
 
 - Counter Intrusive Technologies (https://github.com/counterintrusive)
     - sfp_citadel updates
@@ -47,3 +57,5 @@ bug fixes or new functionality. Thank you!
 - HackershubNL (https://github.com/HackershubNL)
     - Contributions towards authentication functionality
 
+- Mathew Woodyard (https://github.com/woodrad)
+    - Bad Packets module improvements

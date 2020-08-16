@@ -91,7 +91,6 @@ function sf_viz_vbar(targetId, gdata) {
     var yAxis = d3.svg.axis()
         .scale(y)
         .orient("left")
-        .tickFormat(formatPercent);
 
 /*    var tip = d3.tip()
       .attr('class', 'd3-tip')
@@ -113,7 +112,7 @@ function sf_viz_vbar(targetId, gdata) {
         data[i] = sf_viz_vbar_type(gdata[i])
     }
     x.domain(data.map(function(d) { return d.name; }));
-    y.domain([0, d3.max(data, function(d) { return d.pct; })]);
+    y.domain([0, d3.max(data, function(d) { return d.pct*100; })]);
 
     svg.append("g")
         .attr("class", "x axis")
@@ -143,8 +142,8 @@ function sf_viz_vbar(targetId, gdata) {
         .attr("class", "bar")
         .attr("x", function(d) { return x(d.name); })
         .attr("width", x.rangeBand())
-        .attr("y", function(d) { return y(d.pct); })
-        .attr("height", function(d) { return height - y(d.pct); })
+        .attr("y", function(d) { return y(d.pct*100); })
+        .attr("height", function(d) { return height - y(d.pct*100); })
         .on('mousedown', function(d) { showToolTip(" ",0,0,false); d.link(d); } )
         .on("mouseover", function(d, i) {
             showToolTip(buildPopupMessage(d), d3.event.pageX+10, d3.event.pageY+10,true);

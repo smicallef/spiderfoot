@@ -19,6 +19,7 @@ class sfp_webserver(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
 
@@ -48,7 +49,7 @@ class sfp_webserver(SpiderFootPlugin):
         eventData = event.data
         eventSource = event.actualSource
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
         if eventSource in self.results:
             return None
         else:

@@ -6,15 +6,38 @@
 # Written by: Michael Pellon <m@pellon.io>
 # Updated by: Chandrapal <bnchandrapal@protonmail.com>
 # Updated by: Steve Micallef <steve@binarypool.com>
+# Updated by: Steve Bate <svc-spiderfoot@stevebate.net>
 #    -> Inspired by https://github.com/combro2k/dockerfiles/tree/master/alpine-spiderfoot
 #
 # Usage:
 #
 #   sudo docker build -t spiderfoot .
-#   sudo docker run -it -p 5001:5001 spiderfoot
+#   sudo docker run -p 5001:5001 spiderfoot
+#
+# Using Docker volume for spiderfoot data
+#
+#   sudo docker run -p 5001:5001 -v /mydir/spiderfoot:/var/lib/spiderfoot spiderfoot
+#
+# Using SpiderFoot remote command line with web server
+#
+#   docker run --rm -it spiderfoot sfcli.py -s http://my.spiderfoot.host:5001/
+#
+# Running spiderfoot commands without web server (can optionally specify volume)
+#
+#   sudo docker run --rm spiderfoot sf.py -h
+#
+# Running spiderfoot unit tests in container
+#   
+#   sudo docker run --rm spiderfoot -m unittest discover -s test/unit
 
 # Pull the base image.
-FROM alpine:latest
+FROM alpine:3.9.6
+
+WORKDIR /home/spiderfoot
+
+# Place database and configs outside installation directory
+ENV SPIDERFOOT_DATA /var/lib/spiderfoot
+
 COPY requirements.txt .
 
 # Run everything as one command so that only one layer is created
@@ -26,21 +49,19 @@ RUN apk --update add --no-cache --virtual build-dependencies gcc git curl py3-pi
     && addgroup spiderfoot \
     && adduser -G spiderfoot -h /home/spiderfoot -s /sbin/nologin \
                -g "SpiderFoot User" -D spiderfoot \
-    && rmdir /home/spiderfoot \
-    && cd /home \
-    && curl -sSL https://github.com/smicallef/spiderfoot/archive/v3.0.tar.gz \
-       | tar -v -C /home -xz \
-    && mv /home/spiderfoot-3.0 /home/spiderfoot \
-    && chown -R spiderfoot:spiderfoot /home/spiderfoot \
     && apk del --purge build-dependencies \
     && rm -rf /var/cache/apk/* \
-    && rm -rf /root/.cache
+    && rm -rf /lib/apk/db \
+    && rm -rf /root/.cache \
+    && mkdir $SPIDERFOOT_DATA \
+    && chown spiderfoot:spiderfoot /var/lib/spiderfoot
 
 USER spiderfoot
-WORKDIR /home/spiderfoot
 
 EXPOSE 5001
 
 # Run the application.
 ENTRYPOINT ["/usr/bin/python3"] 
-CMD ["./sf.py", "-l", "0.0.0.0:5001"]
+CMD ["sf.py", "-l", "0.0.0.0:5001"]
+
+COPY . .

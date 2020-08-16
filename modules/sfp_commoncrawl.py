@@ -18,7 +18,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_commoncrawl(SpiderFootPlugin):
-    """CommonCrawl:Footprint,Passive:Crawling and Scanning::Searches for URLs found through CommonCrawl.org."""
+    """CommonCrawl:Footprint,Passive:Search Engines::Searches for URLs found through CommonCrawl.org."""
 
 
     # Default options
@@ -117,7 +117,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.errorState:
             return None
@@ -155,6 +155,10 @@ class sfp_commoncrawl(SpiderFootPlugin):
                     link = json.loads(line)
                     if 'url' not in link:
                         continue
+
+                    # CommonCrawl sometimes returns hosts with a trailing . after the domain
+                    link['url'] = link['url'].replace(eventData + ".", eventData)
+
                     if link['url'] in sent:
                         continue
                     sent.append(link['url'])

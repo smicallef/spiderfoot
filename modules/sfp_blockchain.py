@@ -21,6 +21,8 @@ class sfp_blockchain(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
+
     results = None
 
     def setup(self, sfc, userOpts=dict()):
@@ -46,7 +48,7 @@ class sfp_blockchain(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Don't look up stuff twice
         if eventData in self.results:

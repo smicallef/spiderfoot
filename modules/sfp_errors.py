@@ -73,7 +73,7 @@ class sfp_errors(SpiderFootPlugin):
 
         eventSource = event.actualSource
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventSource not in list(self.results.keys()):
             self.results[eventSource] = list()

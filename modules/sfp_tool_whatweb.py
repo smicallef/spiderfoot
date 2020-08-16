@@ -57,7 +57,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.errorState:
             return None
@@ -131,6 +131,9 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             self.sf.error("Couldn't parse the JSON output of WhatWeb: " + str(e), False)
             return None
 
+        if len(result_json) == 0:
+            return None
+
         evt = SpiderFootEvent('RAW_RIR_DATA', str(result_json), self.__name__, event)
         self.notifyListeners(evt)
 
@@ -161,7 +164,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             for plugin in plugin_matches:
                 if plugin in blacklist:
                     continue
-                evt = SpiderFootEvent('SOFTWARE_USED', plugin, self.__name__, event)
+                evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', plugin, self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_tool_whatweb class

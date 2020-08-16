@@ -5,7 +5,7 @@
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
-# Created:     21/04/2020
+# Created:     2020-04-21
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
@@ -13,6 +13,94 @@
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_template(SpiderFootPlugin):
+    # The module descriptor dictionary contains all the meta data about a module necessary
+    # for users to understand...
+
+    meta = {
+        # Module name: A very short but human readable name for the module.
+        'name': "Template Module",
+
+        # Description: A sentence briefly describing the module.
+        'summary': "This is an example module to help developers create their own SpiderFoot modules.",
+
+        # Flags: Attributes about this module:
+        #   - apikey: Needs an API key to function
+        #   - slow: Can be slow to find information
+        #   - errorprone: Might generate high false positives
+        #   - invasive: Interrogates the target, might be intensive
+        #   - tool: Runs an external tool to collect data
+        'flags': [ "slow", "apikey"],
+
+        # Use cases: The use case(s) this module should be included in, options are Footprint, Investigate and Passive.
+        #   - Passive means the user's scan target is not contacted at all
+        #   - Footprint means that this module is useful when understanding the target's footprint on the Internet
+        #   - Investigate means that this module is useful when investigating the danger/risk of a target
+        'useCases': [ "Passive" ],
+
+        # Categories: The categories this module belongs in, describing how it operates. Only the first category is 
+        # used for now.
+        #   - Content Analysis: Analyses content found
+        #   - Crawling and Scanning: Performs crawling or scanning of the target
+        #   - DNS: Queries DNS
+        #   - Leaks, Dumps and Breaches: Queries data dumps and breaches
+        #   - Passive DNS: Analyses passive DNS sources
+        #   - Public Registries: Queries open/public registries of information
+        #   - Real World: Queries sources about the real world (addresses, names, etc.)
+        #   - Reputation Systems: Queries systems that describe the reptuation of other systems
+        #   - Search Engines: Searches public search engines with data about the whole Internet
+        #   - Secondary Networks: Queries information about participation on secondary networks, like Bitcoin
+        #   - Social Media: Searches social media data sources
+        'categories': [ "Social Media" ],
+        
+        # Information about the data source (if any) this module queries for data. For modules
+        # that purley parse data from other modules (e.g. sfp_email), this may be omitted.
+        'dataSource': {
+            # The primary website for the data source.
+            'website': "https://www.datasource.com",
+
+            # The subscription model for this data source.
+            # - FREE_NOAUTH_UNLIMITED: Completely free, no need to obtain an API key and no limits 
+            #                          imposed beyond throttling.
+            # - FREE_NOAUTH_LIMITED:   Completely free, no need to obtain an API key however limits
+            #                          are imposed and you need to register/pay to exceed them.
+            # - FREE_AUTH_UNLIMITED: Completely free, however you must obtain an API key to access
+            #                        the service with no limits imposed beyond throttling.
+            # - FREE_AUTH_LIMITED: Completely free, however you must obtain an API key and limits
+            #                      are imposed. You need to register/pay to exceed them.
+            # - COMMERCIAL_ONLY: No free tier is available at all.
+            # - PRIVATE_ONLY: Invite only. Usually for betas and similar programs.
+            'model': "FREE_NOAUTH_LIMITED",
+
+            # Links to additional information. May be omitted.
+            'references': [
+                "https://www.datasource.com/api-documentation"
+            ],
+
+            # If an API key is optional or required, information on how to obtain the API key.
+            # Each array element is a step.
+            'apiKeyInstructions': [
+                "Visit www.datasource.com",
+                "Register a free account",
+                "Click on 'Account Settings'",
+                "Click on 'Developer'",
+                "The API key is listed under 'Your API Key'"
+            ],
+
+            # URL of the favicon for the data source.
+            'favIcon': "https://www.datasource.com/favicon.ico",
+
+            # URL of the full-size logo for the data source.
+            'logo': "https://www.datasource.com/logo.gif",
+
+            # A paragraph or two about the data source.
+            'description': "A paragraph of text with details about the data source / services. "
+                               "Keep things neat by breaking the text up across multiple lines as "
+                               "has been done here. If line breaks are needed for breaking up "
+                               "multiple paragraphs, use \n.",
+        }
+    }
+
+    # The below docstring is going away in 3.2, in favor of the module descriptor dictionary.
     #
     # Format of the below must be, in order, separated by ':'
     #
@@ -159,8 +247,8 @@ class sfp_template(SpiderFootPlugin):
             self.sf.info("No SHODAN info found for " + qry)
             return None
 
-        # Always always always process external data with try/except since we cannot
-        # trust the data is as intended.
+        # Always process external data which is expected to be in a specific format
+        # with try/except since we cannot trust the data is formatted as intended.
         try:
             info = json.loads(res['content'])
         except Exception as e:
@@ -185,7 +273,7 @@ class sfp_template(SpiderFootPlugin):
 
         # Log this before complaining about a missing API key so we know the
         # event was received.
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
@@ -290,9 +378,9 @@ class sfp_template(SpiderFootPlugin):
             # means we won't get an exception if the 'os' key doesn't exist. In
             # general, you should always use .get() instead of accessing keys
             # directly in case the key doesn't exist.
-            if rec.get('os') is not None:
-                evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os') +
-                                      " (" + addr + ")", self.__name__, pevent)
+            os = rec.get('os')
+            if os:
+                evt = SpiderFootEvent("OPERATING_SYSTEM", f"{os} ({addr})", self.__name__, pevent)
                 self.notifyListeners(evt)
 
 # End of sfp_template class

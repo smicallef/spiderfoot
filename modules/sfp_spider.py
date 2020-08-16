@@ -91,7 +91,8 @@ class sfp_spider(SpiderFootPlugin):
         # Fetch the contents of the supplied URL (object returned)
         fetched = self.sf.fetchUrl(url, False, cookies,
                                    self.opts['_fetchtimeout'], self.opts['_useragent'],
-                                   sizeLimit=10000000)
+                                   sizeLimit=10000000,
+                                   verify=False)
         self.fetchedPages[url] = True
 
         # Track cookies a site has sent, then send the back in subsquent requests
@@ -257,7 +258,7 @@ class sfp_spider(SpiderFootPlugin):
         eventData = event.data
         spiderTarget = None
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if eventData in self.urlEvents:
             self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")
@@ -273,7 +274,8 @@ class sfp_spider(SpiderFootPlugin):
         if eventName == "INTERNET_NAME":
             for prefix in self.opts['start']:
                 res = self.sf.fetchUrl(prefix + eventData, timeout=self.opts['_fetchtimeout'],
-                                       useragent=self.opts['_useragent'])
+                                       useragent=self.opts['_useragent'],
+                                       verify=False)
                 if res['content'] is not None:
                     spiderTarget = prefix + eventData
                     evt = SpiderFootEvent("LINKED_URL_INTERNAL", spiderTarget,
@@ -303,7 +305,9 @@ class sfp_spider(SpiderFootPlugin):
         # Are we respecting robots.txt?
         if self.opts['robotsonly'] and targetBase not in self.robotsRules:
             robotsTxt = self.sf.fetchUrl(targetBase + '/robots.txt',
-                                         timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+                                         timeout=self.opts['_fetchtimeout'],
+                                         useragent=self.opts['_useragent'],
+                                         verify=False)
             if robotsTxt['content'] is not None:
                 self.sf.debug('robots.txt contents: ' + robotsTxt['content'])
                 self.robotsRules[targetBase] = self.sf.parseRobotsTxt(robotsTxt['content'])

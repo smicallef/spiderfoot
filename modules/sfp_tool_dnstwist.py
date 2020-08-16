@@ -59,7 +59,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.errorState:
             return None
@@ -109,6 +109,9 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             try:
                 j = json.loads(content)
                 for r in j:
+                    if self.getTarget().matches(r['domain-name']):
+                        continue
+
                     evt = SpiderFootEvent("SIMILARDOMAIN", r['domain-name'],
                                            self.__name__, event)
                     self.notifyListeners(evt)

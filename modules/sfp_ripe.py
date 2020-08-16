@@ -23,6 +23,7 @@ class sfp_ripe(SpiderFootPlugin):
 
     # Default options
     opts = {}
+    optdescs = {}
 
     results = None
     currentEventSrc = None
@@ -52,7 +53,7 @@ class sfp_ripe(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["NETBLOCK_MEMBER", "NETBLOCK_OWNER", "BGP_AS_MEMBER",
-                "RAW_RIR_DATA", "BGP_AS_OWNER", "BGP_AS_PEER"]
+                "RAW_RIR_DATA", "BGP_AS_OWNER"]
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
@@ -247,7 +248,7 @@ class sfp_ripe(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # Don't look up stuff twice
         if eventData in self.results:
@@ -255,28 +256,6 @@ class sfp_ripe(SpiderFootPlugin):
             return None
         else:
             self.results[eventData] = True
-
-        # BGP AS Owner/Member -> BGP AS Peers
-        if eventName.startswith("BGP_AS_"):
-            neighs = self.asNeighbours(eventData)
-            if neighs is None:
-                self.sf.debug("No neighbors found to AS " + eventData)
-                return None
-
-            for nasn in neighs:
-                if self.checkForStop():
-                    return None
-
-                ownerinfo = self.asOwnerInfo(nasn)
-                ownertext = ''
-                if ownerinfo is not None:
-                    for k, v in ownerinfo.items():
-                        ownertext = ownertext + k + ": " + ', '.join(v) + "\n"
-
-                    if len(ownerinfo) > 0:
-                        evt = SpiderFootEvent("BGP_AS_PEER", nasn,
-                                              self.__name__, event)
-                        self.notifyListeners(evt)
 
         # BGP AS Owner -> Other Netblocks
         if eventName == "BGP_AS_OWNER":

@@ -89,7 +89,7 @@ class sfp_darksearch(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         page = 1
         pages = self.opts['max_pages']
@@ -141,7 +141,8 @@ class sfp_darksearch(SpiderFootPlugin):
                 if self.opts['fetchlinks']:
                     res = self.sf.fetchUrl(link,
                                            timeout=self.opts['_fetchtimeout'],
-                                           useragent=self.opts['_useragent'])
+                                           useragent=self.opts['_useragent'],
+                                           verify=False)
 
                     if res['content'] is None:
                         self.sf.debug("Ignoring " + link + " as no data returned")

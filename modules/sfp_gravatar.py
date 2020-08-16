@@ -46,14 +46,14 @@ class sfp_gravatar(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ['RAW_RIR_DATA', 'HUMAN_NAME', 'USERNAME',
-                'EMAILADDR', 'PHONE_NUMBER', 'GEOINFO',
+                'EMAILADDR', 'EMAILADDR_GENERIC', 'PHONE_NUMBER', 'GEOINFO',
                 'ACCOUNT_EXTERNAL_OWNED', 'SOCIAL_MEDIA']
 
     # Query Gravatar API for the specified email address
     # https://secure.gravatar.com/site/implement/
     # https://secure.gravatar.com/site/implement/profiles/
     def query(self, qry):
-        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()
+        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest() # nosec
         output = 'json'
 
         res = self.sf.fetchUrl("https://secure.gravatar.com/" + email_hash + '.' + output,
@@ -91,7 +91,7 @@ class sfp_gravatar(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, " + eventName + ", from " + srcModuleName)
+        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         data = self.query(eventData)
 
@@ -137,8 +137,16 @@ class sfp_gravatar(SpiderFootPlugin):
 
         if data.get('emails') is not None:
             for email in data.get('emails'):
-                if email.get('value') is not None and email.get('value') != eventData:
-                    evt = SpiderFootEvent("EMAILADDR", email.get('value'), self.__name__, event)
+                em = email.get('value')
+                if not em:
+                    continue
+                if self.sf.validEmail(em) and em != eventData:
+                    if em.split("@")[0] in self.opts['_genericusers'].split(","):
+                        evttype = "EMAILADDR_GENERIC"
+                    else:
+                        evttype = "EMAILADDR"
+
+                    evt = SpiderFootEvent(evttype, em, self.__name__, event)
                     self.notifyListeners(evt)
 
         if data.get('ims') is not None:

@@ -12,6 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import sys
+
+if sys.version_info < (3, 6):
+    print("SpiderFoot 3.1+ requires Python 3.6 or higher.")
+    sys.exit(-1)
+
 import os
 import os.path
 import signal
@@ -20,6 +25,7 @@ import argparse
 from copy import deepcopy
 import cherrypy
 import random
+import multiprocessing as mp
 from cherrypy.lib import auth_digest
 from sflib import SpiderFoot
 from sfdb import SpiderFootDb
@@ -40,7 +46,8 @@ sfConfig = {
     '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
     '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
     '_internettlds_cache': 72,
-    '__version__': '3.0',
+    '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
+    '__version__': '3.2-DEV',
     '__database': 'spiderfoot.db',
     '__webaddr': '127.0.0.1',
     '__webport': 5001,
@@ -59,6 +66,7 @@ sfConfig = {
 sfOptdescs = {
     '_debug': "Enable debugging?",
     '_internettlds': "List of Internet TLDs.",
+    '_genericusers': "List of usernames that if found as usernames or as part of e-mail addresses, should be treated differently to non-generics.",
     '_internettlds_cache': "Hours to cache the Internet TLD list. This can safely be quite a long time given that the list doesn't change too often.",
     '_useragent': "User-Agent string to use for HTTP requests. Prefix with an '@' to randomly select the User Agent from a file containing user agent strings for each request, e.g. @C:\\useragents.txt or @/home/bob/useragents.txt. Or supply a URL to load the list from there.",
     '_dnsserver': "Override the default resolver with another DNS server. For example, 8.8.8.8 is Google's open DNS server.",
@@ -78,6 +86,7 @@ scanId = None
 dbh = None
 
 def handle_abort(signal, frame):
+    """handle interrupt and abort scan."""
     print("[*] Aborting...")
     if scanId and dbh:
         dbh.scanInstanceSet(scanId, None, None, "ABORTED")
@@ -85,17 +94,17 @@ def handle_abort(signal, frame):
 
 if __name__ == '__main__':
     if len(sys.argv) == 0:
-        print("SpiderFoot 3.0 now requires -l <ip>:<port> to start the web server.")
+        print("SpiderFoot 3.x now requires -l <ip>:<port> to start the web server.")
         sys.exit(-1)
 
     if len(sys.argv) > 1:
         if not sys.argv[1].startswith("-"):
-            print("SpiderFoot 3.0 now requires -l <ip>:<port> to start the web server.")
+            print("SpiderFoot 3.x now requires -l <ip>:<port> to start the web server.")
             sys.exit(-1)
 
     # Legacy way to run the server
     args = None
-    p = argparse.ArgumentParser(description='SpiderFoot 3.0: Open Source Intelligence Automation.')
+    p = argparse.ArgumentParser(description='SpiderFoot 3.1: Open Source Intelligence Automation.')
     p.add_argument("-d", "--debug", action='store_true', help="Enable debug output.")
     p.add_argument("-l", metavar="IP:port", help="IP and port to listen on.")
     p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")
@@ -137,7 +146,8 @@ if __name__ == '__main__':
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
     # Go through each module in the modules directory with a .py extension
-    for filename in os.listdir(sft.myPath() + '/modules/'):
+    mod_dir = sft.myPath() + '/modules/'
+    for filename in os.listdir(mod_dir):
         if filename.startswith("sfp_") and filename.endswith(".py"):
             # Skip the module template and debugging modules
             if filename == "sfp_template.py" or filename == 'sfp_stor_print.py':
@@ -161,7 +171,7 @@ if __name__ == '__main__':
                 sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
 
     if len(list(sfModules.keys())) < 1:
-        print("No modules found in the modules directory.")
+        print("No modules found in modules directory: %s" % mod_dir)
         sys.exit(-1)
 
     # Add module info to sfConfig so it can be used by the UI
@@ -224,6 +234,11 @@ if __name__ == '__main__':
         if "." not in target and not target.startswith("+") and "\"" not in target:
             target = "\"" + target + "\""
         targetType = sf.targetType(target)
+
+        if not targetType:
+            print("[-] Could not determine target type. Invalid target: %s" % target)
+            sys.exit(-1)
+
         target = target.strip('"')
 
         modlist = list()
@@ -256,7 +271,7 @@ if __name__ == '__main__':
 
         # Easier if scanning by module
         if args.m:
-            modlist = args.m.split(",")
+            modlist = list(filter(None, args.m.split(",")))
 
         # Add sfp__stor_stdout to the module list
         outputformat = "tab"
@@ -311,9 +326,8 @@ if __name__ == '__main__':
 
         # Run the scan
         if sfConfig['__logging']:
-            print(("[*] Modules enabled (" + str(len(modlist)) + "): " + ",".join(modlist)))
+            print("[*] Modules enabled (%s): %s" % (len(modlist), ",".join(modlist)))
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
-        scanId = sf.genScanInstanceGUID(target)
 
         # Debug mode is a variable that gets stored to the DB, so re-apply it
         if args.debug:
@@ -325,10 +339,19 @@ if __name__ == '__main__':
         if args.x and args.t:
             cfg['__outputfilter'] = args.t.split(",")
 
-        t = SpiderFootScanner(target, target, targetType, scanId,
-            modlist, cfg, dict())
-        t.daemon = True
-        t.start()
+        if args.o == "json":
+            print("[", end='')
+
+        # Start running a new scan
+        scanName = target
+        scanId = sf.genScanInstanceGUID()
+        try:
+            p = mp.Process(target=SpiderFootScanner, args=(scanName, scanId, target, targetType, modlist, cfg))
+            p.daemon = True
+            p.start()
+        except BaseException as e:
+            print("[-] Scan [%s] failed: %s" % (scanId, e))
+            sys.exit(-1)
 
         # If field headers weren't disabled, print them
         if not args.H and args.o != "json":
@@ -352,9 +375,6 @@ if __name__ == '__main__':
                 else:
                     print('{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
 
-        if args.o == "json":
-            print("[", end='')
-
         while True:
             info = dbh.scanInstanceGet(scanId)
             if not info:
@@ -370,8 +390,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # Start the web server so you can start looking at results
-    url = 'http://' + sfConfig['__webaddr'] + ":" + str(sfConfig['__webport']) + sfConfig['__docroot']
-    print(('Starting web server at %s ...' % url))
+    print('Starting web server at %s:%s ...' % (sfConfig['__webaddr'], sfConfig['__webport']))
 
     cherrypy.config.update({
         'server.socket_host': sfConfig['__webaddr'],
@@ -382,13 +401,19 @@ if __name__ == '__main__':
     cherrypy.engine.autoreload.unsubscribe()
 
     # Enable access to static files via the web directory
-    currentDir = os.path.abspath(sf.myPath())
-    conf = {'/static': {
-        'tools.staticdir.on': True,
-        'tools.staticdir.dir': os.path.join(currentDir, 'static')
-    }}
+    conf = {
+        '/query': {
+            'tools.encode.text_only': False,
+            'tools.encode.add_charset': True,
+        },
+        '/static': {
+            'tools.staticdir.on': True,
+            'tools.staticdir.dir': 'static',
+            'tools.staticdir.root': sf.myPath()
+        }
+    }
 
-    passwd_file = sf.myPath() + '/passwd'
+    passwd_file = sf.dataPath() + '/passwd'
     if os.path.isfile(passwd_file):
         if not os.access(passwd_file, os.R_OK):
             print("Could not read passwd file. Permission denied.")
@@ -421,10 +446,19 @@ if __name__ == '__main__':
                 'tools.auth_digest.key': random.SystemRandom().randint(0, 99999999)
             }
         else:
+            print("")
+            print("********************************************************************")
             print("Warning: passwd file contains no passwords. Authentication disabled.")
+            print("********************************************************************")
+    else:
+            print("")
+            print("********************************************************************")
+            print("Please consider adding authentication to protect this instance!")
+            print("Refer to https://www.spiderfoot.net/documentation/#security.")
+            print("********************************************************************")
 
-    key_path = sf.myPath() + '/spiderfoot.key'
-    crt_path = sf.myPath() + '/spiderfoot.crt'
+    key_path = sf.dataPath() + '/spiderfoot.key'
+    crt_path = sf.dataPath() + '/spiderfoot.crt'
     if os.path.isfile(key_path) and os.path.isfile(crt_path):
         if not os.access(crt_path, os.R_OK):
             print("Could not read spiderfoot.crt file. Permission denied.")
