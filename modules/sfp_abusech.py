@@ -58,7 +58,7 @@ malchecks = {
 }
 
 class sfp_abusech(SpiderFootPlugin):
-meta = {
+    meta = {
         'name': "abuse.ch",
         'summary': "Check if a host/domain, IP or netblock is malicious according to abuse.ch.",
         'flags': [],
