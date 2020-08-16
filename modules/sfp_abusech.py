@@ -60,48 +60,34 @@ malchecks = {
 class sfp_abusech(SpiderFootPlugin):
 meta = {
         'name': "abuse.ch",
-
         'summary': "Check if a host/domain, IP or netblock is malicious according to abuse.ch.",
-
         'flags': [],
-
         'useCases': [ "Passive", "Investigate" ],
-
         'categories': [ "Reputation Systems" ],
-        
         'dataSource': {
             'website': "https://www.abuse.ch",
-
             'model': "FREE_AUTH_UNLIMITED",
-
             'references': [
                 "https://bazaar.abuse.ch/",
                 "https://feodotracker.abuse.ch/",
                 "https://igotphished.abuse.ch/",
                 "https://sslbl.abuse.ch/",
-                "https://urlhaus.abuse.ch/",
-                "https://www.datasource.com/api-documentation"
+                "https://urlhaus.abuse.ch/"
             ],
-
             'apiKeyInstructions': [
                 "Visit https://bazaar.abuse.ch/api#api_key",
                 "Login using a Twitter Account",
                 "Navigate to 'Account Settings'",
                 "The API key is listed under 'Your API Key'",
-
                 "Visit https://igotphished.abuse.ch/api/",
                 "Request an API key from the email listed under 'Submit data to I Got Phished'",
-
                 "Visit urlhaus.abuse.ch/api/",
                 "Login using a Twitter Account at urlhaus.abuse.ch/login/",
                 "Navigate to urlhaus.abuse.ch/api/#account",
                 "The API Key is listed under 'API-Key'"
             ],
-
             'favIcon': "https://abuse.ch/favicon.ico",
-
             'logo': "https://abuse.ch/images/abusech.svg",
-
             'description': "abuse.ch is operated by a random swiss guy fighting malware for non-profit, "
                                 "running a couple of projects helping internet service providers and "
                                 "network operators protecting their infrastructure from malware.\n"
