@@ -724,55 +724,6 @@ class TestSpiderFootDb(unittest.TestCase):
                 with self.assertRaises(TypeError) as cm:
                     sfdb.scanEventStore(instance_id, invalid_type)
 
-    def test_scanEventStore_argument_sfEvent_with_invalid_generated_property_type_should_raise_TypeError(self):
-        """
-        Test scanEventStore(self, instanceId, sfEvent, truncateSize=0)
-        """
-        sfdb = SpiderFootDb(self.default_options, False)
-
-        event_type = 'ROOT'
-        event_data = 'example data'
-        module = ''
-        source_event = ''
-        source_event = SpiderFootEvent(event_type, event_data, module, source_event)
-
-        event_type = 'example event type'
-        event_data = 'example event data'
-        module = 'example module'
-        event = SpiderFootEvent(event_type, event_data, module, source_event)
-
-        instance_id = "example instance id"
-        invalid_types = [None, "", list(), dict(), int()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
-                    event = SpiderFootEvent(event_type, event_data, module, source_event)
-                    event.generated = invalid_type
-                    sfdb.scanEventStore(instance_id, event)
-
-    def test_scanEventStore_argument_sfEvent_with_empty_generated_property_value_should_raise_ValueError(self):
-        """
-        Test scanEventStore(self, instanceId, sfEvent, truncateSize=0)
-        """
-        sfdb = SpiderFootDb(self.default_options, False)
-
-        event_type = 'ROOT'
-        event_data = 'example data'
-        module = ''
-        source_event = ''
-        source_event = SpiderFootEvent(event_type, event_data, module, source_event)
-
-        event_type = 'example event type'
-        event_data = 'example event data'
-        module = 'example module'
-        event = SpiderFootEvent(event_type, event_data, module, source_event)
-
-        instance_id = "example instance id"
-        event.generated = float()
-
-        with self.assertRaises(ValueError) as cm:
-            sfdb.scanEventStore(instance_id, event)
-
     def test_scanEventStore_argument_sfEvent_with_invalid_eventType_property_type_should_raise_TypeError(self):
         """
         Test scanEventStore(self, instanceId, sfEvent, truncateSize=0)
@@ -817,9 +768,9 @@ class TestSpiderFootDb(unittest.TestCase):
         event = SpiderFootEvent(event_type, event_data, module, source_event)
 
         instance_id = "example instance id"
-        event.eventType = ''
 
         with self.assertRaises(ValueError) as cm:
+            event.eventType = ''
             sfdb.scanEventStore(instance_id, event)
 
     def test_scanEventStore_argument_sfEvent_with_invalid_data_property_type_should_raise_TypeError(self):
@@ -866,9 +817,9 @@ class TestSpiderFootDb(unittest.TestCase):
         event = SpiderFootEvent(event_type, event_data, module, source_event)
 
         instance_id = "example instance id"
-        event.data = ''
 
         with self.assertRaises(ValueError) as cm:
+            event.data = ''
             sfdb.scanEventStore(instance_id, event)
 
     def test_scanEventStore_argument_sfEvent_with_invalid_module_property_type_should_raise_TypeError(self):
@@ -915,8 +866,8 @@ class TestSpiderFootDb(unittest.TestCase):
         event = SpiderFootEvent(event_type, event_data, module, source_event)
 
         instance_id = "example instance id"
-        event.module = ''
         with self.assertRaises(ValueError) as cm:
+            event.module = ''
             sfdb.scanEventStore(instance_id, event)
 
     def test_scanEventStore_argument_sfEvent_with_invalid_confidence_property_type_should_raise_TypeError(self):
@@ -1100,54 +1051,6 @@ class TestSpiderFootDb(unittest.TestCase):
                     event = SpiderFootEvent(event_type, event_data, module, source_event)
                     event.sourceEvent = invalid_type
                     sfdb.scanEventStore(instance_id, event)
-
-    def test_scanEventStore_argument_sfEvent_with_invalid_sourceEventHash_property_type_should_raise_TypeError(self):
-        """
-        Test scanEventStore(self, instanceId, sfEvent, truncateSize=0)
-        """
-        sfdb = SpiderFootDb(self.default_options, False)
-
-        event_type = 'ROOT'
-        event_data = 'example data'
-        module = ''
-        source_event = ''
-        source_event = SpiderFootEvent(event_type, event_data, module, source_event)
-
-        event_type = 'example event type'
-        event_data = 'example event data'
-        module = 'example module'
-        event = SpiderFootEvent(event_type, event_data, module, source_event)
-
-        instance_id = "example instance id"
-        invalid_types = [None, list(), dict()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
-                    event = SpiderFootEvent(event_type, event_data, module, source_event)
-                    event.sourceEventHash = invalid_type
-                    sfdb.scanEventStore(instance_id, event)
-
-    def test_scanEventStore_argument_sfEvent_with_empty_sourceEventHash_property_value_should_raise_ValueError(self):
-        """
-        Test scanEventStore(self, instanceId, sfEvent, truncateSize=0)
-        """
-        sfdb = SpiderFootDb(self.default_options, False)
-
-        event_type = 'ROOT'
-        event_data = 'example data'
-        module = ''
-        source_event = ''
-        source_event = SpiderFootEvent(event_type, event_data, module, source_event)
-
-        event_type = 'example event type'
-        event_data = 'example event data'
-        module = 'example module'
-        event = SpiderFootEvent(event_type, event_data, module, source_event)
-
-        instance_id = "example instance id"
-        event.sourceEventHash = ''
-        with self.assertRaises(ValueError) as cm:
-            sfdb.scanEventStore(instance_id, event)
 
     def test_scanInstanceList_should_return_a_list(self):
         """

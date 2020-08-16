@@ -49,6 +49,15 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class SpiderFoot:
+    """SpiderFoot
+
+    Attributes:
+        dbh: TBD
+        GUID: TBD
+        savedSock: TBD
+        socksProxy: TBD
+    """
+ 
     dbh = None
     GUID = None
     savedsock = socket
@@ -62,9 +71,6 @@ class SpiderFoot:
             handle (str): a handle to something. will be supplied if the module
             is being used within the SpiderFoot GUI, in which case all feedback
             should be fed back
-
-        Returns:
-            None
         """
 
         self.handle = handle
@@ -2377,7 +2383,25 @@ class SpiderFoot:
 
         return results
 
+
 class SpiderFootPlugin(object):
+    """SpiderFootPlugin module object
+
+    Attributes:
+        _stopScanning (bool): Will be set to True by the controller if the user aborts scanning
+        listenerModules (list): Modules that will be notified when this module produces events
+        _currentEvent (SpiderFootEvent): Current event being processed
+        _currentTarget (str): Target currently being acted against
+        _name_: Name of this module, set at startup time
+        __sfdb__: Direct handle to the database - not to be directly used
+                  by modules except the sfp__stor_db module.
+        __scanId__: ID of the scan the module is running against
+        __datasource__: (Unused) tracking of data sources
+        __outputFilter: If set, events not matching this list are dropped
+        _priority (int): Priority, smaller numbers should run first
+        errorState (bool): error state of the module
+    """
+
     # Will be set to True by the controller if the user aborts scanning
     _stopScanning = False
     # Modules that will be notified when this module produces events
@@ -2655,7 +2679,14 @@ class SpiderFootPlugin(object):
 
 
 class SpiderFootTarget(object):
-    """SpiderFoot target."""
+    """SpiderFoot target.
+
+    Attributes:
+        validTypes (list): valid event types accepted as a target
+        targetType (str): target type
+        targetValue (str): target value
+        targetAliases (list): target aliases
+    """
 
     _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
                    "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME"]
@@ -2670,41 +2701,42 @@ class SpiderFootTarget(object):
             targetValue (str): target value
             typeName (str): target type
 
-        Returns:
-            None
-
         Raises:
             TypeError: targetValue type was invalid
             ValueError: targetValue value was empty
             ValueError: typeName value was an invalid target type
         """
 
-        if not isinstance(targetValue, str):
-            raise TypeError("Invalid target value %s; expected %s" % type(targetValue))
-        if not targetValue:
-            raise ValueError("Specified target value is blank.")
-        if typeName not in self._validTypes:
-            raise ValueError("Invalid target type %s; expected %s" % (typeName, self._validTypes))
-
-        self._targetType = typeName
-        self._targetValue = targetValue
-        self._targetAliases = list()
+        self.targetType = typeName
+        self.targetValue = targetValue
+        self.targetAliases = list()
 
     @property
     def targetType(self):
         return self._targetType
 
     @targetType.setter
-    def targetType(self, value):
-        self._targetType = value
+    def targetType(self, targetType):
+        if not isinstance(targetType, str):
+            raise TypeError(f"targetType is {type(targetType)}; expected str()")
+ 
+        if targetType not in self._validTypes:
+            raise ValueError(f"targetType value is {targetType}; expected {self._validTypes}")
+
+        self._targetType = targetType
 
     @property
     def targetValue(self):
         return self._targetValue
 
     @targetValue.setter
-    def targetValue(self, value):
-        self._targetValue = value
+    def targetValue(self, targetValue):
+        if not isinstance(targetValue, str):
+            raise TypeError(f"targetValue is {type(targetValue)}; expected str()")
+        if not targetValue:
+            raise ValueError("targetValue value is blank")
+
+        self._targetValue = targetValue
 
     @property
     def targetAliases(self):
@@ -2854,116 +2886,278 @@ class SpiderFootTarget(object):
 
 
 class SpiderFootEvent(object):
-    """SpiderFootEvent object representing identified data and associated meta data"""
+    """SpiderFootEvent object representing identified data and associated meta data.
 
-    generated = None
-    eventType = None
-    confidence = None
-    visibility = None
-    risk = None
-    module = None
-    data = None
-    sourceEvent = None
-    sourceEventHash = None
-    moduleDataSource = None  # Required for SpiderFoot HX compatibility of modules
-    actualSource = None  # Required for SpiderFoot HX compatibility of modules
+    Attributes:
+        generated (float): timestamp of event creation time
+        eventType (str): event type, e.g. URL_FORM, RAW_DATA, etc.
+        confidence (int): how sure are we of this data's validity, 0-100
+        visibility (int): how 'visible' was this data, 0-100
+        risk (int): how much risk does this data represent, 0-100
+        module (str): module from which the event originated
+        data (str): event data, e.g. a URL, port number, webpage content, etc.
+        sourceEvent (SpiderFootEvent): SpiderFootEvent that triggered this event
+        sourceEventHash (str): hash of the SpiderFootEvent event that triggered this event
+        hash (str): unique SHA256 hash of the event, or "ROOT"
+        moduleDataSource (str): module data source
+        actualSource (str): source data of parent event
+        __id: unique ID of the event, generated using eventType, generated, module, and a random integer
+    """
+
+    _generated = None
+    _eventType = None
+    _confidence = None
+    _visibility = None
+    _risk = None
+    _module = None
+    _data = None
+    _sourceEvent = None
+    _sourceEventHash = None
+    _moduleDataSource = None
+    _actualSource = None
     __id = None
 
-    def __init__(self, eventType, data, module, sourceEvent,
-                 confidence=100, visibility=100, risk=0):
-        """Initialize SpiderFoot event.
+    def __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0):
+        """Initialize SpiderFoot event object.
 
         Args:
             eventType (str): event type, e.g. URL_FORM, RAW_DATA, etc.
             data (str): event data, e.g. a URL, port number, webpage content, etc.
             module (str): module from which the event originated
-            sourceEvent (SpiderFootEvent): hash of the SpiderFootEvent event that triggered this event
+            sourceEvent (SpiderFootEvent): SpiderFootEvent event that triggered this event
             confidence (int): how sure are we of this data's validity, 0-100
             visibility (int): how 'visible' was this data, 0-100
             risk (int): how much risk does this data represent, 0-100
-
-        Returns:
-            dict: event as dict
 
         Raises:
             TypeError: arg type was invalid
             ValueError: arg value was invalid
         """
 
-        self.generated = time.time()
-
-        if not isinstance(data, str):
-            print("FATAL: Only string events are accepted, not '%s'." % type(data))
-            print("FATAL: Offending module: %s" % module)
-            print("FATAL: Offending type: %s" % eventType)
-            raise TypeError("data is %s; expected str()" % type(data))
-
+        self._generated = time.time()
         self.data = data
+        self.eventType = eventType
+        self.module = module
+        self.confidence = confidence
+        self.visibility = visibility
+        self.risk = risk
+        self.sourceEvent = sourceEvent
+        self.__id = f"{self.eventType}{self.generated}{self.module}{random.SystemRandom().randint(0, 99999999)}"
 
+    @property
+    def generated(self):
+        """
+        Returns:
+            float: timestamp of event creation time
+        """
+        return self._generated
+
+    @property
+    def eventType(self):
+        return self._eventType
+
+    @property
+    def confidence(self):
+        """
+        Returns:
+            int: How sure are we of this data's validity (0 to 100)
+        """
+        return self._confidence
+
+    @property
+    def visibility(self):
+        """
+        Returns:
+            int: How 'visible' was this data (0 to 100)
+        """
+        return self._visibility
+
+    @property
+    def risk(self):
+        """
+        Returns:
+            int: How much risk does this data represent (0 to 100)
+        """
+        return self._risk
+
+    @property
+    def module(self):
+        return self._module
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def sourceEvent(self):
+        return self._sourceEvent
+
+    @property
+    def sourceEventHash(self):
+        return self._sourceEventHash
+
+    @property
+    def actualSource(self):
+        """actual source"""
+        return self._actualSource
+
+    @property
+    def moduleDataSource(self):
+        """module data source"""
+        return self._moduleDataSource
+
+    @property
+    def hash(self):
+        """Unique hash of this event.
+
+        Returns:
+            str: unique SHA256 hash of the event, or "ROOT"
+        """
+        if self.eventType == "ROOT":
+            return "ROOT"
+
+        digestStr = self.__id.encode('raw_unicode_escape')
+        return hashlib.sha256(digestStr).hexdigest()
+
+    @eventType.setter
+    def eventType(self, eventType):
+        """
+        Args:
+            eventType (str): type of data for this event
+
+        Raises:
+            TypeError: confidence type was invalid
+            ValueError: confidence value was invalid
+        """
+ 
         if not isinstance(eventType, str):
-            raise TypeError("eventType is %s; expected str()" % type(eventType))
+            raise TypeError(f"eventType is {type(eventType)}; expected str()")
 
         if not eventType:
             raise ValueError("eventType is empty")
 
-        self.eventType = eventType
+        self._eventType = eventType
 
-        if not isinstance(module, str):
-            raise TypeError("module is %s; expected str()" % type(module ))
+    @confidence.setter
+    def confidence(self, confidence):
+        """
+        Args:
+            confidence (int): How sure are we of this data's validitya(0 to 100)
 
-        if not module:
-            if eventType != "ROOT":
-                raise ValueError("module is empty")
-
-        self.module = module
-
+        Raises:
+            TypeError: confidence type was invalid
+            ValueError: confidence value was invalid
+        """
+ 
         if not isinstance(confidence, int):
-            raise TypeError("confidence is %s; expected int()" % type(confidence))
+            raise TypeError(f"confidence is {type(confidence)}; expected int()")
 
         if not 0 <= confidence <= 100:
-            raise ValueError("confidence value is %s; expected 0 - 100" % confidence)
+            raise ValueError(f"confidence value is {confidence}; expected 0 - 100")
 
-        self.confidence = confidence
+        self._confidence = confidence
 
+    @visibility.setter
+    def visibility(self, visibility):
+        """
+        Args:
+            visibility (int): How 'visible' was this data (0 to 100)
+
+        Raises:
+            TypeError: visibility type was invalid
+            ValueError: visibility value was invalid
+        """
+ 
         if not isinstance(visibility, int):
-            raise TypeError("visibility is %s; expected int()" % type(visibility))
+            raise TypeError(f"visibility is {type(visibility)}; expected int()")
 
         if not 0 <= visibility <= 100:
-            raise ValueError("visibility value is %s; expected 0 - 100" % visibility)
+            raise ValueError(f"visibility value is {visibility}; expected 0 - 100")
 
-        self.visibility = visibility
+        self._visibility = visibility
 
+    @risk.setter
+    def risk(self, risk):
+        """
+        Args:
+            risk (int): How much risk does this data represent (0 to 100)
+
+        Raises:
+            TypeError: risk type was invalid
+            ValueError: risk value was invalid
+        """
+ 
         if not isinstance(risk, int):
-            raise TypeError("risk is %s; expected int()" % type(risk))
+            raise TypeError(f"risk is {type(risk)}; expected int()")
 
         if not 0 <= risk <= 100:
-            raise ValueError("risk value is %s; expected 0 - 100" % risk)
+            raise ValueError(f"risk value is {risk}; expected 0 - 100")
 
-        self.risk = risk
+        self._risk = risk
 
+    @module.setter
+    def module(self, module):
+        """
+        Raises:
+            TypeError: module type was invalid
+            ValueError: module value was invalid
+        """
+ 
+        if not isinstance(module, str):
+            raise TypeError(f"module is {type(module )}; expected str()")
+
+        if not module:
+            if self.eventType != "ROOT":
+                raise ValueError("module is empty")
+
+        self._module = module
+
+    @data.setter
+    def data(self, data):
+        """
+        Raises:
+            TypeError: data type was invalid
+            ValueError: data value was invalid
+        """
+ 
+        if not isinstance(data, str):
+            raise TypeError(f"data is {type(data)}; expected str()")
+
+        if not data:
+            raise ValueError("data is empty")
+
+        self._data = data
+
+    @sourceEvent.setter
+    def sourceEvent(self, sourceEvent):
+        """
+        Raises:
+            TypeError: sourceEvent type was invalid
+        """
+ 
         # "ROOT" is a special "hash" reserved for elements with no parent,
         # such as targets provided via the web UI or CLI.
-        # return here, as there's no need to proceed with calculating
-        # a sourceEventHash or __id (apparently?).
-        if eventType == "ROOT":
-            self.sourceEventHash = "ROOT"
+        if self.eventType == "ROOT":
+            self._sourceEvent = None
+            self._sourceEventHash = "ROOT"
             return
 
         if not isinstance(sourceEvent, SpiderFootEvent):
-            print("FATAL: Invalid source event: %s" % sourceEvent)
-            print("FATAL: Offending module: %s" % module)
-            print("FATAL: Offending type: %s" % eventType)
-            raise TypeError("sourceEvent is %s; expected SpiderFootEvent()" % type(sourceEvent))
+            raise TypeError(f"sourceEvent is {type(sourceEvent)}; expected SpiderFootEvent()")
 
-        self.sourceEvent = sourceEvent
+        self._sourceEvent = sourceEvent
+        self._sourceEventHash = self.sourceEvent.hash
 
-        self.sourceEventHash = sourceEvent.getHash()
-        self.__id = self.eventType + str(self.generated) + self.module + \
-                    str(random.SystemRandom().randint(0, 99999999))
+    @actualSource.setter
+    def actualSource(self, actualSource):
+        self._actualSource = actualSource
+
+    @moduleDataSource.setter
+    def moduleDataSource(self, moduleDataSource):
+        self._moduleDataSource = moduleDataSource
 
     def asDict(self):
-        """Return event as dictionary.
-
+        """
         Returns:
             dict: event as dictionary
         """
@@ -2972,86 +3166,17 @@ class SpiderFootEvent(object):
             'generated': int(self.generated),
             'type': self.eventType,
             'data': self.data,
-            'module': self.module
+            'module': self.module,
+            'source': ''
         }
 
-        if self.eventType == 'ROOT':
-            evt_dict['source'] = ''
-        else:
-            evt_dict['source'] = self.sourceEvent.data
+        if self.sourceEvent is not None:
+            if self.sourceEvent.data is not None:
+                evt_dict['source'] = self.sourceEvent.data
 
         return evt_dict
 
     def getHash(self):
-        """ Unique hash of this event.
-
-        Returns:
-            str: unique SHA256 hash of the event, or "ROOT"
-        """
-
-        if self.eventType == "ROOT":
-            return "ROOT"
-
-        digestStr = self.__id.encode('raw_unicode_escape')
-        return hashlib.sha256(digestStr).hexdigest()
-
-    def setConfidence(self, confidence):
-        """Update event confidence attribute as new information becomes available.
-
-        Args:
-            confidence (int): confidence (0 to 100)
-
-        Raises:
-            TypeError: confidence type was invalid
-            ValueError: confidence value was invalid
-        """
-        if not isinstance(confidence, int):
-            raise TypeError("confidence is %s; expected int()" % type(confidence))
-        if confidence > 100 or confidence < 0:
-            raise ValueError("Invalid confidence: %s. Must be between 0 and 100" % confidence)
-
-        self.confidence = confidence
-
-    def setVisibility(self, visibility):
-        """Update event visibility attribute.
-
-        Args:
-            visibility (int): visibility (0 to 100)
-
-        Raises:
-            TypeError: visibility type was invalid
-            ValueError: visibility value was invalid
-        """
-        if not isinstance(visibility, int):
-            raise TypeError("visibility is %s; expected int()" % type(visibility))
-        if visibility > 100 or visibility < 0:
-            raise ValueError("Invalid visibility: %s. Must be between 0 and 100" % visibility)
-
-        self.visibility = visibility
-
-    def setRisk(self, risk):
-        """Update event risk attribute.
-
-        Args:
-            risk (int): risk (0 to 100)
-
-        Raises:
-            TypeError: risk type was invalid
-            ValueError: risk value was invalid
-        """
-        if not isinstance(risk, int):
-            raise TypeError("risk is %s; expected int()" % type(risk))
-        if risk > 100 or risk < 0:
-            raise ValueError("Invalid risk: %s. Must be between 0 and 100" % risk)
-
-        self.risk = risk
-
-    def setSourceEventHash(self, srcHash):
-        """Update event source event hash attribute.
-
-        Args:
-            srcHash (str): source event hash
-        """
-
-        self.sourceEventHash = srcHash
+        """Required for SpiderFoot HX compatibility of modules"""
+        return self.hash
 
