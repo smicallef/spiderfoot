@@ -59,8 +59,6 @@ class SpiderFootScanner():
         Todo:
              Eventually change this to be able to control multiple scan instances
         """
-        print(str(moduleList))
-
         if not isinstance(globalOpts, dict):
             raise TypeError(f"globalOpts is {type(globalOpts)}; expected dict()")
         if not globalOpts:
