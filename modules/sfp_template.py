@@ -51,6 +51,22 @@ class sfp_template(SpiderFootPlugin):
         #   - Secondary Networks: Queries information about participation on secondary networks, like Bitcoin
         #   - Social Media: Searches social media data sources
         'categories': [ "Social Media" ],
+
+        # For tool modules, have some basic information about the tool.
+        'toolDetails': {
+            # The name of the tool
+            'name': "Nmap",
+
+            # Descriptive text about the tool
+            'description': "Detailed descriptive text about the tool",
+
+            # The website for the tool. In many cases this will also be the
+            # repo, but no harm in duplicating it.
+            'website': 'https://tool.org',
+
+            # The repo where the code of the tool lives.
+            'repository': 'https://github.com/author/tool'
+        },
         
         # Information about the data source (if any) this module queries for data. For modules
         # that purley parse data from other modules (e.g. sfp_email), this may be omitted.
