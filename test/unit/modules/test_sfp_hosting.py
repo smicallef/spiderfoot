@@ -73,7 +73,7 @@ class TestModuleHosting(unittest.TestCase):
         module.setTarget(target)
 
         event_type = 'ROOT'
-        event_data = ''
+        event_data = 'example data'
         event_module = ''
         source_event = ''
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)

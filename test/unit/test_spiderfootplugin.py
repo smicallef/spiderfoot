@@ -281,7 +281,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         Test handleEvent(self, sfEvent)
         """
         event_type = 'ROOT'
-        event_data = ''
+        event_data = 'example event data'
         module = ''
         source_event = ''
         evt = SpiderFootEvent(event_type, event_data, module, source_event)

@@ -1162,13 +1162,12 @@ class SpiderFootDb:
                 storeData = storeData[0:truncateSize]
 
         # retrieve scan results
-        # sfEvent.getHash() will return the event hash for the input sfEvent event
         qry = "INSERT INTO tbl_scan_results \
             (scan_instance_id, hash, type, generated, confidence, \
             visibility, risk, module, data, source_event_hash) \
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-        qvals = [instanceId, sfEvent.getHash(), sfEvent.eventType, sfEvent.generated,
+        qvals = [instanceId, sfEvent.hash, sfEvent.eventType, sfEvent.generated,
                  sfEvent.confidence, sfEvent.visibility, sfEvent.risk,
                  sfEvent.module, storeData, sfEvent.sourceEventHash]
 
