@@ -5,7 +5,7 @@
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
-# Created:     21/04/2020
+# Created:     2020-04-21
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ class sfp_template(SpiderFootPlugin):
             #                      are imposed. You need to register/pay to exceed them.
             # - COMMERCIAL_ONLY: No free tier is available at all.
             # - PRIVATE_ONLY: Invite only. Usually for betas and similar programs.
-            'model': "FREE_NOAUTH_LIMITED"
+            'model': "FREE_NOAUTH_LIMITED",
 
             # Links to additional information. May be omitted.
             'references': [
@@ -247,8 +247,8 @@ class sfp_template(SpiderFootPlugin):
             self.sf.info("No SHODAN info found for " + qry)
             return None
 
-        # Always always always process external data with try/except since we cannot
-        # trust the data is as intended.
+        # Always process external data which is expected to be in a specific format
+        # with try/except since we cannot trust the data is formatted as intended.
         try:
             info = json.loads(res['content'])
         except Exception as e:
@@ -378,9 +378,9 @@ class sfp_template(SpiderFootPlugin):
             # means we won't get an exception if the 'os' key doesn't exist. In
             # general, you should always use .get() instead of accessing keys
             # directly in case the key doesn't exist.
-            if rec.get('os') is not None:
-                evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os') +
-                                      " (" + addr + ")", self.__name__, pevent)
+            os = rec.get('os')
+            if os:
+                evt = SpiderFootEvent("OPERATING_SYSTEM", f"{os} ({addr})", self.__name__, pevent)
                 self.notifyListeners(evt)
 
 # End of sfp_template class
