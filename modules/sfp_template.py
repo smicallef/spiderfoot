@@ -29,7 +29,7 @@ class sfp_template(SpiderFootPlugin):
         #   - errorprone: Might generate high false positives
         #   - invasive: Interrogates the target, might be intensive
         #   - tool: Runs an external tool to collect data
-        'flags': [ 'slow', 'apikey'],
+        'flags': [ "slow", "apikey"],
 
         # Use cases: The use case(s) this module should be included in, options are Footprint, Investigate and Passive.
         #   - Passive means the user's scan target is not contacted at all
