@@ -5,10 +5,12 @@
     statusy = "alert-success"
   elif status.startswith("ABORT"):
     statusy = "alert-warning"
-  elif status == "RUNNING" or status == "STARTED" or status == "STARTING" or status == "INITIALIZING":
+  elif status == "CREATED" or status == "RUNNING" or status == "STARTED" or status == "STARTING" or status == "INITIALIZING":
     statusy = "alert-info"
   elif status == "ERROR-FAILED":
     statusy = "alert-danger"
+  else:
+    statusy = "alert-info"
   end
 %>
 <h2>${name}&nbsp;<span id='scanstatusbadge' class='badge ${statusy}'>${status}</span>&nbsp;<img id="loader" src="${docroot}/static/img/loader.gif"></h2>
