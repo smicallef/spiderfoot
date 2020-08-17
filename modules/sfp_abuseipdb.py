@@ -27,6 +27,40 @@ malchecks = {
 class sfp_abuseipdb(SpiderFootPlugin):
     """AbuseIPDB:Investigate,Passive:Reputation Systems:apikey:Check if an IP address is malicious according to AbuseIPDB.com."""
 
+    meta = {
+        'name': "AbuseIPDB",
+        'summary': "Check if an IP address is malicious according to AbuseIPDB.com.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Passive", "Investigate" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://www.abuseipdb.com",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://docs.abuseipdb.com/#introduction",
+                "https://www.abuseipdb.com/fail2ban.html",
+                "https://www.abuseipdb.com/csf",
+                "https://www.abuseipdb.com/suricata",
+                "https://www.abuseipdb.com/splunk",
+                "https://www.abuseipdb.com/categories"
+            ],
+            'apiKeyInstructions': [
+                "Visit www.abuseipdb.com/pricing",
+                "Select the plan required",
+                "Register a new account with an email",
+                "Navigate to www.abuseipdb.com/account/api",
+                "The API Key is listed under 'Keys'"
+            ],
+            'favIcon': "https://www.abuseipdb.com/favicon.ico",
+            'logo': "https://www.abuseipdb.com/img/abuseipdb.png.pagespeed.ce.CI8T6WsXU7.png",
+            'description': "AbuseIPDB is a project dedicated to helping combat the spread of hackers," 
+                                "spammers, and abusive activity on the internet.\n"
+                                "Our mission is to help make Web safer by providing a central blacklist for" 
+                                "webmasters, system administrators, and other interested parties to"
+                                "report and find IP addresses that have been associated with malicious activity online.\n"
+        }
+    }
+
     # Default options
     opts = {
         'api_key': '',
