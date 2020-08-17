@@ -40,7 +40,24 @@ class sfp_bambenek(SpiderFootPlugin):
 		'summary': "Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.",
 		'flags': [ "" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "http://www.bambenekconsulting.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "http://www.bambenekconsulting.com/free-osint-tools/",
+                "https://osint.bambenekconsulting.com/feeds/",
+                "https://osint.bambenekconsulting.com/feeds/license.txt"
+            ],
+            'favIcon': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/mini-logo1.ico",
+            'logo': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/logo_transparent21-300x84.png",
+            'description': "Bambenek Consulting is an cybersecurity investigations and intelligence consulting firm "
+                                "focusing on tackling major criminal threats. "
+                                "Every day, there is another story about another company having their banking accounts drained, "
+                                "someone having their identity stolen, or critical infrastructure being taken offline by hostile entities. "
+                                "Led by IT security expert, John Bambenek, we have the resources to bring to your business so "
+                                "you can be sure your organization and your customers’ data is safe.\n",    
+        }
 	}
 
     # Default options
