@@ -23,7 +23,32 @@ class sfp_apility(SpiderFootPlugin):
         'summary': "Search Apility API for IP address and domain reputation.",
         'flags': [ "apikey" ],
         'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ]
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://auth0.com/signals/docs/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://auth0.com/signals/docs/#ip-reputation-analytics",
+                "https://auth0.com/signals/docs/#objects",
+                "https://auth0.com/",
+                "https://apility.io/apidocs/"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://auth0.com/signals/ip",
+                "Register a free account",
+                "Navigate back to https://auth0.com/signals/ip",
+                "The API key is listed under 'This is your Key'"
+            ],
+            'favIcon': "https://cdn.auth0.com/styleguide/components/1.0.8/media/logos/img/favicon.png",
+            'logo': "https://auth0.com/signals/docs/images/signals-docs-logo.svg",
+            'description': "Apility.io was recently acquired by Auth0.\n"
+                               "Malicious login traffic is detected with Auth0’s Anomaly Detection engine. "
+                               "This helps protect our customers from automated attacks, such as credential stuffing.\n"
+                               "The engine consumes an unparalleled number of risk signals, such as domain reputation "
+                               "and breached password detection to understand a source’s risk level.\n"
+                               "We refer to this data as Auth0 Signals and make much of it freely available to everyone "
+                               "via API to help you combat automated attacks with adaptive authentication.\n",
+        }       
     }
 
     # Default options
