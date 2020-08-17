@@ -27,7 +27,7 @@ class sfp_archiveorg(SpiderFootPlugin):
         'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://archive.org/",
-            'model': "FREE_NOAUTH_LIMITED",
+            'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://archive.org/projects/",
                 "https://archive.org/services/docs/api/"
