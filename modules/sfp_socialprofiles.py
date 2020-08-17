@@ -45,6 +45,14 @@ sites = {
 class sfp_socialprofiles(SpiderFootPlugin):
     """Social Media Profile Finder:Footprint,Passive:Social Media:slow,apikey:Tries to discover the social media profiles for human names identified."""
 
+    meta = {
+		'name': "Social Media Profile Finder",
+		'summary': "Tries to discover the social media profiles for human names identified.",
+		'flags': [ "slow", "apikey" ],
+		'useCases': [ "Footprint", "Passive" ],
+		'categories': [ "Social Media" ]
+	}
+
     # Default options
     opts = {
         "count": 20,

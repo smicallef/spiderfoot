@@ -17,6 +17,14 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 class sfp_dnscommonsrv(SpiderFootPlugin):
     """DNS Common SRV:Footprint,Investigate,Passive:DNS::Attempts to identify hostnames through common SRV."""
 
+    meta = {
+		'name': "DNS Common SRV",
+		'summary': "Attempts to identify hostnames through common SRV.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "DNS" ]
+	}
+
     # Default options
     opts = {}
 

@@ -20,6 +20,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_circllu(SpiderFootPlugin):
     """CIRCL.LU:Investigate,Passive:Reputation Systems:apikey:Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases."""
 
+    meta = {
+		'name': "CIRCL.LU",
+		'summary': "Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         "api_key_login": "",

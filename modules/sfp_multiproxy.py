@@ -29,6 +29,13 @@ malchecks = {
 class sfp_multiproxy(SpiderFootPlugin):
     """multiproxy.org Open Proxies:Investigate,Passive:Secondary Networks::Check if an IP is an open proxy according to multiproxy.org' open proxy list."""
 
+    meta = {
+		'name': "multiproxy.org Open Proxies",
+		'summary': "Check if an IP is an open proxy according to multiproxy.org' open proxy list.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Secondary Networks" ]
+	}
 
     # Default options
     opts = {

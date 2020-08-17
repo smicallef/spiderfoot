@@ -19,6 +19,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_sorbs(SpiderFootPlugin):
     """SORBS:Investigate,Passive:Reputation Systems::Query the SORBS database for open relays, open proxies, vulnerable servers, etc."""
 
+    meta = {
+		'name': "SORBS",
+		'summary': "Query the SORBS database for open relays, open proxies, vulnerable servers, etc.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

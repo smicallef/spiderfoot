@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_apility(SpiderFootPlugin):
     """Apility:Footprint,Investigate,Passive:Reputation Systems:apikey:Search Apility API for IP address and domain reputation."""
 
+    meta = { 
+        'name': "Apility",
+        'summary': "Search Apility API for IP address and domain reputation.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ]
+    }
+
     # Default options
     opts = {
         'api_key': '',

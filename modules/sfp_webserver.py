@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_webserver(SpiderFootPlugin):
     """Web Server Identifier:Footprint,Investigate,Passive:Content Analysis::Obtain web server banners to identify versions of web servers being used."""
 
+    meta = {
+		'name': "Web Server Identifier",
+		'summary': "Obtain web server banners to identify versions of web servers being used.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Content Analysis" ]
+	}
+
     # Default options
     opts = {}
     optdescs = {}

@@ -18,6 +18,14 @@ import re
 class sfp_onioncity(SpiderFootPlugin):
     """Onion.link:Footprint,Investigate:Search Engines:apikey:Search Tor 'Onion City' search engine for mentions of the target domain."""
 
+    meta = {
+		'name': "Onion.link",
+		'summary': "Search Tor 'Onion City' search engine for mentions of the target domain.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
         "api_key": "",

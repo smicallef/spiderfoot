@@ -20,6 +20,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_fringeproject(SpiderFootPlugin):
     """Fringe Project:Investigate,Footprint,Passive:Search Engines::Obtain network information from Fringe Project API."""
 
+    meta = {
+		'name': "Fringe Project",
+		'summary': "Obtain network information from Fringe Project API.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Footprint", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     opts = {
     }
 

@@ -20,6 +20,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_tool_nmap(SpiderFootPlugin):
     """Tool - Nmap:Footprint,Investigate:Crawling and Scanning:tool,slow,invasive:Identify what Operating System might be used."""
 
+    meta = {
+		'name': "Tool - Nmap",
+		'summary': "Identify what Operating System might be used.",
+		'flags': [ "tool", "slow", "invasive" ],
+		'useCases': [ "Footprint", "Investigate" ],
+		'categories': [ "Crawling and Scanning" ]
+	}
+
     # Default options
     opts = {
         'nmappath': "",

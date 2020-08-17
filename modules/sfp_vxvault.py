@@ -29,6 +29,13 @@ malchecks = {
 class sfp_vxvault(SpiderFootPlugin):
     """VXVault.net:Investigate,Passive:Reputation Systems::Check if a domain or IP is malicious according to VXVault.net."""
 
+    meta = {
+		'name': "VXVault.net",
+		'summary': "Check if a domain or IP is malicious according to VXVault.net.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

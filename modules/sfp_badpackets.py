@@ -19,6 +19,14 @@ import json
 class sfp_badpackets(SpiderFootPlugin):
     """Bad Packets:Investigate,Passive:Reputation Systems:apikey:Obtain information about any malicious activities involving IP addresses found"""
 
+    meta = {
+		'name': "Bad Packets",
+		'summary': "Obtain information about any malicious activities involving IP addresses found",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     opts = {
         'api_key': '',
         'checkaffiliates': True,

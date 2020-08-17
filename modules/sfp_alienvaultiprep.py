@@ -29,6 +29,31 @@ malchecks = {
 class sfp_alienvaultiprep(SpiderFootPlugin):
     """AlienVault IP Reputation:Investigate,Passive:Reputation Systems::Check if an IP or netblock is malicious according to the AlienVault IP Reputation database."""
 
+    meta = {
+        'name': "AlienVault IP Reputation",
+        'summary': "Check if an IP or netblock is malicious according to the AlienVault IP Reputation database.",
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://cybersecurity.att.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://cybersecurity.att.com/documentation/",
+                "https://cybersecurity.att.com/resource-center#content_solution-brief",
+                "https://cybersecurity.att.com/resource-center#content_data-sheet",
+                "https://cybersecurity.att.com/resource-center#content_case-studies",
+                "https://cybersecurity.att.com/training",
+                "https://cybersecurity.att.com/pricing/request-quote"
+            ],
+            'favIcon': "https://cdn-cybersecurity.att.com/images/uploads/logos/att-globe.svg",
+            'logo': "https://cdn-cybersecurity.att.com/images/uploads/logos/att-business-web.svg",
+            'description': "Looking at security through new eyes.\n"
+                               "AT&T Business and AlienVault have joined forces to create AT&T Cybersecurity, "
+                               "with a vision to bring together the people, process, and technology "
+                               "that help businesses of any size stay ahead of threats.\n",
+        }
+    }
+
     # Default options
     opts = {
         'checkaffiliates': True,

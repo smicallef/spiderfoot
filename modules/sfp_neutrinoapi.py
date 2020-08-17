@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_neutrinoapi(SpiderFootPlugin):
     """NeutrinoAPI:Footprint,Investigate,Passive:Reputation Systems:apikey:Search NeutrinoAPI for IP address info and check IP reputation."""
 
+    meta = {
+		'name': "NeutrinoAPI",
+		'summary': "Search NeutrinoAPI for IP address info and check IP reputation.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         'user_id': '',

@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_instagram(SpiderFootPlugin):
     """Instagram:Footprint,Investigate,Passive:Social Media::Gather information from Instagram profiles."""
 
+    meta = {
+		'name': "Instagram",
+		'summary': "Gather information from Instagram profiles.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Social Media" ]
+	}
+
     # Default options
     opts = {
     }

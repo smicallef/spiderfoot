@@ -19,6 +19,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_uceprotect(SpiderFootPlugin):
     """UCEPROTECT:Investigate,Passive:Reputation Systems::Query the UCEPROTECT databases for open relays, open proxies, vulnerable servers, etc."""
 
+    meta = {
+		'name': "UCEPROTECT",
+		'summary': "Query the UCEPROTECT databases for open relays, open proxies, vulnerable servers, etc.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

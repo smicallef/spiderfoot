@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_hybrid_analysis(SpiderFootPlugin):
     """Hybrid Analysis:Footprint,Investigate,Passive:Reputation Systems:apikey:Search Hybrid Analysis for domains and URLs related to the target."""
 
+    meta = {
+		'name': "Hybrid Analysis",
+		'summary': "Search Hybrid Analysis for domains and URLs related to the target.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         "api_key": "",

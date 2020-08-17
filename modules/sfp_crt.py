@@ -19,6 +19,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_crt(SpiderFootPlugin):
     """Certificate Transparency:Footprint,Investigate,Passive:Search Engines::Gather hostnames from historical certificates in crt.sh."""
 
+    meta = {
+		'name': "Certificate Transparency",
+		'summary': "Gather hostnames from historical certificates in crt.sh.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     opts = {
         'verify': True,
     }

@@ -16,6 +16,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_viewdns(SpiderFootPlugin):
     """ViewDNS.info:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using ViewDNS.info."""
 
+    meta = {
+		'name': "ViewDNS.info",
+		'summary': "Reverse Whois lookups using ViewDNS.info.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
         "api_key": "",

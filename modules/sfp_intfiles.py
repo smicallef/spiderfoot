@@ -16,6 +16,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_intfiles(SpiderFootPlugin):
     """Interesting File Finder:Footprint,Passive:Crawling and Scanning::Identifies potential files of interest, e.g. office documents, zip files."""
 
+    meta = {
+		'name': "Interesting File Finder",
+		'summary': "Identifies potential files of interest, e.g. office documents, zip files.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Passive" ],
+		'categories': [ "Crawling and Scanning" ]
+	}
+
     # Default options
     opts = {
         'fileexts': ["doc", "docx", "ppt", "pptx", "pdf", 'xls', 'xlsx', 'zip']

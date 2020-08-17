@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_spider(SpiderFootPlugin):
     """Web Spider:Footprint,Investigate:Crawling and Scanning:slow:Spidering of web-pages to extract content for searching."""
 
+    meta = {
+		'name': "Web Spider",
+		'summary': "Spidering of web-pages to extract content for searching.",
+		'flags': [ "slow" ],
+		'useCases': [ "Footprint", "Investigate" ],
+		'categories': [ "Crawling and Scanning" ]
+	}
+
     # Default options
     opts = {
         'robotsonly': False,  # only follow links specified by robots.txt

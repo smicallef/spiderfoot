@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_whatcms(SpiderFootPlugin):
     """WhatCMS:Footprint,Investigate,Passive:Content Analysis:apikey,slow:Check web technology using WhatCMS.org API."""
 
+    meta = {
+		'name': "WhatCMS",
+		'summary': "Check web technology using WhatCMS.org API.",
+		'flags': [ "apikey", "slow" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Content Analysis" ]
+	}
+
     # Default options
     opts = {
         'api_key': '',

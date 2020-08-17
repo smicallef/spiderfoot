@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_opencorporates(SpiderFootPlugin):
     """OpenCorporates:Passive,Footprint,Investigate:Search Engines::Look up company information from OpenCorporates."""
 
+    meta = {
+		'name': "OpenCorporates",
+		'summary': "Look up company information from OpenCorporates.",
+		'flags': [ "" ],
+		'useCases': [ "Passive", "Footprint", "Investigate" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
         'confidence': 100,

@@ -29,6 +29,14 @@ malchecks = {
 class sfp_botvrij(SpiderFootPlugin):
     """botvrij.eu:Investigate,Passive:Reputation Systems::Check if a domain is malicious according to botvrij.eu."""
 
+    meta = {
+		'name': "botvrij.eu",
+		'summary': "Check if a domain is malicious according to botvrij.eu.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         'checkaffiliates': True,

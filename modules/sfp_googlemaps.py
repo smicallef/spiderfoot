@@ -18,6 +18,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_googlemaps(SpiderFootPlugin):
     """Google Maps:Footprint,Investigate,Passive:Real World:apikey:Identifies potential physical addresses and latitude/longitude coordinates."""
 
+    meta = {
+		'name': "Google Maps",
+		'summary': "Identifies potential physical addresses and latitude/longitude coordinates.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Real World" ]
+	}
 
     # Default options
     opts = {

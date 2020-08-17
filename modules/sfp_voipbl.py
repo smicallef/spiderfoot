@@ -29,6 +29,14 @@ malchecks = {
 class sfp_voipbl(SpiderFootPlugin):
     """VoIPBL OpenPBX IPs:Investigate,Passive:Reputation Systems::Check if an IP or netblock is an open PBX according to VoIPBL OpenPBX IPs."""
 
+    meta = {
+		'name': "VoIPBL OpenPBX IPs",
+		'summary': "Check if an IP or netblock is an open PBX according to VoIPBL OpenPBX IPs.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         'checkaffiliates': True,

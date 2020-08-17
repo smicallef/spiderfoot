@@ -23,6 +23,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_dnsgrep(SpiderFootPlugin):
     """DNSGrep:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API."""
 
+    meta = {
+		'name': "DNSGrep",
+		'summary': "Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Passive DNS" ]
+	}
+
     # Default options
     opts = {
         'timeout': 30,

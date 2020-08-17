@@ -19,6 +19,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_onionsearchengine(SpiderFootPlugin):
     """Onionsearchengine.com:Footprint,Investigate:Search Engines::Search Tor onionsearchengine.com for mentions of the target domain."""
 
+    meta = {
+		'name': "Onionsearchengine.com",
+		'summary': "Search Tor onionsearchengine.com for mentions of the target domain.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
         'timeout': 10,

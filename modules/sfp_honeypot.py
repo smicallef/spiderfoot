@@ -18,6 +18,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_honeypot(SpiderFootPlugin):
     """Honeypot Checker:Investigate,Passive:Reputation Systems:apikey:Query the projecthoneypot.org database for entries."""
 
+    meta = {
+		'name': "Honeypot Checker",
+		'summary': "Query the projecthoneypot.org database for entries.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

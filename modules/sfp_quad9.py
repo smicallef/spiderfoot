@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_quad9(SpiderFootPlugin):
     """Quad9:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Quad9"""
 
+    meta = {
+		'name': "Quad9",
+		'summary': "Check if a host would be blocked by Quad9",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+    
     # Default options
     opts = {
     }

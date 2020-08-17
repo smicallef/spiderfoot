@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_mnemonic(SpiderFootPlugin):
     """Mnemonic PassiveDNS:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from PassiveDNS.mnemonic.no."""
+   
+    meta = {
+		'name': "Mnemonic PassiveDNS",
+		'summary': "Obtain Passive DNS information from PassiveDNS.mnemonic.no.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Passive DNS" ]
+	}
 
     # Default options
     opts = {

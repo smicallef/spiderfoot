@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_botscout(SpiderFootPlugin):
     """BotScout:Passive,Investigate:Reputation Systems:apikey:Searches botscout.com's database of spam-bot IPs and e-mail addresses."""
 
+    meta = {
+		'name': "BotScout",
+		'summary': "Searches botscout.com's database of spam-bot IPs and e-mail addresses.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Passive", "Investigate" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         "api_key": ""
