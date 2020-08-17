@@ -25,7 +25,30 @@ class sfp_circllu(SpiderFootPlugin):
 		'summary': "Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases.",
 		'flags': [ "apikey" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://www.circl.lu/",
+            'model': "FREE_AUTH_UNLIMITED",
+            'references': [
+                "https://www.circl.lu/services/training/",
+                "https://www.circl.lu/services/",
+                "https://www.circl.lu/pub/",
+                "https://www.circl.lu/projects"
+            ],
+            'apiKeyInstructions': [
+                "Visit www.circl.lu/contact/",
+                "Contact with email or phone to request access for API",
+                "The API access will be provided once approved"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://www.circl.lu/",
+            'logo': "https://www.circl.lu/assets/images/circl-logo.png",
+            'description': "The Computer Incident Response Center Luxembourg (CIRCL) is a government-driven initiative "
+                                "designed to gather, review, report and respond to computer security threats and incidents.\n"
+                                "CIRCL provides a reliable and trusted point of contact for any users, companies and organizations "
+                                "based in Luxembourg, for the handling of attacks and incidents. "
+                                "Its team of experts acts like a fire brigade, with the ability to react promptly and "
+                                "efficiently whenever threats are suspected, detected or incidents occur.\n",
+        }
 	}
 
     # Default options
