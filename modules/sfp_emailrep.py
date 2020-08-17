@@ -120,9 +120,6 @@ class sfp_emailrep(SpiderFootPlugin):
         if res is None:
             return None
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
-        self.notifyListeners(evt)
-
         details = res.get('details')
 
         if not details:
@@ -136,6 +133,10 @@ class sfp_emailrep(SpiderFootPlugin):
         malicious_activity = details.get('malicious_activity')
         if malicious_activity:
             evt = SpiderFootEvent('MALICIOUS_EMAILADDR', 'EmailRep [' + eventData + ']', self.__name__, event)
+            self.notifyListeners(evt)
+
+        if malicious_activity or credentials_leaked:
+            evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_emailrep class
