@@ -18,6 +18,33 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_adblock(SpiderFootPlugin):
     """AdBlock Check:Investigate,Passive:Reputation Systems::Check if linked pages would be blocked by AdBlock Plus."""
 
+    meta = {
+        'name': "AdBlock Check",
+        'summary': "Check if linked pages would be blocked by AdBlock Plus.",
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://adblockplus.org/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://help.eyeo.com/en/adblockplus/",
+                "https://adblockplus.org/en/download",
+                "https://chrome.google.com/webstore/detail/adblock-plus-free-ad-bloc/cfhdojbkjhnklbpkdaibdccddilifddb"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://adblockplus.org/en/",
+            'logo': "https://adblockplus.org/img/navbar-logo.svg",
+            'description': "Adblock Plus is a free extension that allows you to customize your web experience."
+                                "You can block annoying ads, disable tracking and lots more."
+                                "It’s available for all major desktop browsers and for your mobile devices.\n" 
+                                "Block ads that interrupt your browsing experience."
+                                "Say goodbye to video ads, pop-ups, flashing banners and more."
+                                "Blocking these annoyances means pages load faster.\n"
+                                "With Adblock Plus avoiding tracking and malware is easy."
+                                "Blocking intrusive ads reduces the risk of \"malvertising\" infections."
+                                "Blocking tracking stops companies following your online activity.\n"
+        }
+    }
+
     # Default options
     opts = {
         "blocklist": "https://easylist-downloads.adblockplus.org/easylist.txt"

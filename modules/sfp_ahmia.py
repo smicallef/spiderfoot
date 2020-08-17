@@ -18,6 +18,33 @@ import re
 class sfp_ahmia(SpiderFootPlugin):
     """Ahmia:Footprint,Investigate:Search Engines::Search Tor 'Ahmia' search engine for mentions of the target domain."""
 
+    meta = {
+        'name': "Ahmia",
+        'summary': "Search Tor 'Ahmia' search engine for mentions of the target domain.",
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://ahmia.fi/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://ahmia.fi/documentation/",
+                "https://github.com/ahmia/",
+                "http://msydqstlz2kzerdg.onion/",
+                "https://ahmia.fi/stats"
+            ],
+            'favIcon': "https://ahmia.fi/static/images/favicon.ico",
+            'logo': "https://ahmia.fi/static/images/ahmiafi_black.png",
+            'description': "Ahmia searches hidden services on the Tor network. To access these hidden services,"
+                                "you need the Tor browser bundle. Abuse material is not allowed on Ahmia. "
+                                "See our service blacklist and report abuse material if you find it in the index. "
+                                "It will be removed as soon as possible.\n"
+                                "Contributors to Ahmia believe that the Tor network is an important and "
+                                "resilient distributed platform for anonymity and privacy worldwide. "
+                                "By providing a search engine for what many call the \"deep web\" or \"dark net\", "
+                                "Ahmia makes hidden services accessible to a wide range of people, not just Tor network early adopters.\n"
+        }
+    }
+
     # Default options
     opts = {
         # We don't bother with pagination as ahmia seems fairly limited in coverage

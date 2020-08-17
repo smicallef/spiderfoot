@@ -18,6 +18,45 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_alienvault(SpiderFootPlugin):
     """AlienVault OTX:Investigate,Passive:Reputation Systems:apikey:Obtain information from AlienVault Open Threat Exchange (OTX)"""
+        
+    meta = {
+        'name': "AlienVault OTX",
+        'summary': "Obtain information from AlienVault Open Threat Exchange (OTX)",
+        'flags': [ "apikey"],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://otx.alienvault.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://otx.alienvault.com/faq",
+                "https://otx.alienvault.com/api",
+                "https://otx.alienvault.com/submissions/list",
+                "https://otx.alienvault.com/pulse/create",
+                "https://otx.alienvault.com/endpoint-security/welcome",
+                "https://otx.alienvault.com/browse/"
+            ],
+            'apiKeyInstructions': [
+                "Visit otx.alienvault.com/",
+                "Sign up for a free account",
+                "Navigate to otx.alienvault.com/settings",
+                "The API key is listed under 'OTX Key'"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://otx.alienvault.com/",
+            'logo': "https://otx.alienvault.com/assets/images/otx-logo.svg",
+            'description': "The World’s First Truly Open Threat Intelligence Community\n"
+                               "Open Threat Exchange is the neighborhood watch of the global intelligence community. "
+                               "It enables private companies, independent security researchers, and government agencies to "
+                               "openly collaborate and share the latest information about emerging threats, attack methods, "
+                               "and malicious actors, promoting greater security across the entire community.\n"
+                               "OTX changed the way the intelligence community creates and consumes threat data. "
+                               "In OTX, anyone in the security community can contribute, discuss, research, validate, "
+                               "and share threat data. You can integrate community-generated OTX threat data directly "
+                               "into your AlienVault and third-party security products, so that your threat detection defenses "
+                               "are always up to date with the latest threat intelligence. "
+                               "Today, 100,000 participants in 140 countries contribute over 19 million threat indicators daily.\n"
+        }
+    }
 
     # Default options
     opts = {
