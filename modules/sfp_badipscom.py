@@ -20,7 +20,21 @@ class sfp_badipscom(SpiderFootPlugin):
 		'summary': "Check if an IP address is malicious according to BadIPs.com.",
 		'flags': [ "" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://www.badips.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.badips.com/documentation",
+                "https://www.badips.com/info"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://www.badips.com/",
+            'logo': "https://www.badips.com/img/badips.com-lm.png",
+            'description': "badips.com is a community based IP blacklist service. "
+                                "You can report malicious IPs and you can download blacklists or query our API to find out if a IP is listed. "
+                                "We're also offering some eye-candy: Get personalized stats and graphs of attackers trying to brute-force your systems, "
+                                "see where the bad guys come from and share your knowledge!\n",
+        }
 	}
 
     # Default options
