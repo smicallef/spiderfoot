@@ -20,6 +20,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_censys(SpiderFootPlugin):
     """Censys:Investigate,Passive:Search Engines:apikey:Obtain information from Censys.io"""
 
+    meta = {
+		'name': "Censys",
+		'summary': "Obtain information from Censys.io",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
         "censys_api_key_uid": "",

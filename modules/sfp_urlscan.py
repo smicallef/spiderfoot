@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_urlscan(SpiderFootPlugin):
     """URLScan.io:Footprint,Investigate,Passive:Search Engines::Search URLScan.io cache for domain information."""
 
+    meta = {
+		'name': "URLScan.io",
+		'summary': "Search URLScan.io cache for domain information.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     opts = {
         'verify': True
     }

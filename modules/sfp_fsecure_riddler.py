@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_fsecure_riddler(SpiderFootPlugin):
     """F-Secure Riddler.io:Investigate,Footprint,Passive:Search Engines:apikey:Obtain network information from F-Secure Riddler.io API."""
 
+    meta = {
+		'name': "F-Secure Riddler.io",
+		'summary': "Obtain network information from F-Secure Riddler.io API.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Footprint", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     opts = {
         'verify': True,
         'username': '',

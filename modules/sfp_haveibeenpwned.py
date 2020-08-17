@@ -16,6 +16,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_haveibeenpwned(SpiderFootPlugin):
     """HaveIBeenPwned:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches."""
 
+    meta = {
+		'name': "HaveIBeenPwned",
+		'summary': "Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Leaks", " Dumps and Breaches" ]
+	}
 
     # Default options
     opts = {

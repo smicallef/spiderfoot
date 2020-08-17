@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_names(SpiderFootPlugin):
     """Human Name Extractor:Footprint,Passive:Content Analysis:errorprone:Attempt to identify human names in fetched content."""
 
+    meta = {
+		'name': "Human Name Extractor",
+		'summary': "Attempt to identify human names in fetched content.",
+		'flags': [ "errorprone" ],
+		'useCases': [ "Footprint", "Passive" ],
+		'categories': [ "Content Analysis" ]
+	}
+
     # Default options
     opts = {
         'algolimit': 75,

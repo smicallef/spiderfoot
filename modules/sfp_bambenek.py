@@ -35,6 +35,13 @@ malchecks = {
 class sfp_bambenek(SpiderFootPlugin):
     """Bambenek C&C List:Investigate,Passive:Reputation Systems::Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists."""
 
+    meta = {
+		'name': "Bambenek C&C List",
+		'summary': "Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

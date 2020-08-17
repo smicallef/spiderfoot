@@ -16,6 +16,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_slideshare(SpiderFootPlugin):
     """SlideShare:Footprint,Investigate,Passive:Social Media::Gather name and location from SlideShare profiles."""
 
+    meta = {
+		'name': "SlideShare",
+		'summary': "Gather name and location from SlideShare profiles.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Social Media" ]
+	}
+
     # Default options
     opts = {
     }

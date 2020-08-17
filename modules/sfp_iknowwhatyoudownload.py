@@ -15,6 +15,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_iknowwhatyoudownload(SpiderFootPlugin):
     """Iknowwhatyoudownload.com:Footprint,Investigate,Passive:Secondary Networks:apikey:Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent."""
 
+    meta = {
+		'name': "Iknowwhatyoudownload.com",
+		'summary': "Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Secondary Networks" ]
+	}
 
     # Default options
     opts = {

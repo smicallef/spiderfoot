@@ -35,6 +35,13 @@ malchecks = {
 class sfp_coinblocker(SpiderFootPlugin):
     """CoinBlocker Lists:Investigate,Passive:Reputation Systems::Check if a host/domain or IP appears on CoinBlocker lists."""
 
+    meta = {
+		'name': "CoinBlocker Lists",
+		'summary': "Check if a host/domain or IP appears on CoinBlocker lists.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

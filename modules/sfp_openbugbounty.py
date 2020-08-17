@@ -16,7 +16,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_openbugbounty(SpiderFootPlugin):
     """Open Bug Bounty:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed."""
 
-
+    meta = {
+		'name': "Open Bug Bounty",
+		'summary': "Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Leaks", " Dumps and Breaches" ]
+	}
 
     # Default options
     opts = {

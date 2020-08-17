@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_callername(SpiderFootPlugin):
     """CallerName:Footprint,Investigate,Passive:Real World::Lookup US phone number location and reputation information."""
 
+    meta = {
+		'name': "CallerName",
+		'summary': "Lookup US phone number location and reputation information.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Real World" ]
+	}
+
     # Default options
     opts = {
     }

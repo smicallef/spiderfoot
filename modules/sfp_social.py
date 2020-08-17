@@ -33,6 +33,14 @@ regexps = dict({
 class sfp_social(SpiderFootPlugin):
     """Social Network Identifier:Footprint,Passive:Social Media::Identify presence on social media networks such as LinkedIn, Twitter and others."""
 
+    meta = {
+		'name': "Social Network Identifier",
+		'summary': "Identify presence on social media networks such as LinkedIn, Twitter and others.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Passive" ],
+		'categories': [ "Social Media" ]
+	}
+
     # Default options
     opts = {}
 

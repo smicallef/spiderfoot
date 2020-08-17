@@ -19,6 +19,14 @@ from datetime import datetime
 class sfp_maltiverse(SpiderFootPlugin):
     """Maltiverse:Investigate,Passive:Reputation Systems::Obtain information about any malicious activities involving IP addresses"""
 
+    meta = {
+		'name': "Maltiverse",
+		'summary': "Obtain information about any malicious activities involving IP addresses",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     opts = {
         'checkaffiliates': True,
         'subnetlookup': False,

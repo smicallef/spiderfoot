@@ -16,6 +16,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_emergingthreats(SpiderFootPlugin):
     """Emerging Threats:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to emergingthreats.net."""
 
+    meta = {
+		'name': "Emerging Threats",
+		'summary': "Check if a netblock or IP is malicious according to emergingthreats.net.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         'checkaffiliates': True,

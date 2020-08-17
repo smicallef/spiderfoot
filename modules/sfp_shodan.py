@@ -20,6 +20,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_shodan(SpiderFootPlugin):
     """SHODAN:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from SHODAN about identified IP addresses."""
 
+    meta = {
+		'name': "SHODAN",
+		'summary': "Obtain information from SHODAN about identified IP addresses.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
 
     # Default options
     opts = {

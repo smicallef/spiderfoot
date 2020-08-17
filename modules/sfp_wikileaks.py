@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_wikileaks(SpiderFootPlugin):
     """Wikileaks:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Search Wikileaks for mentions of domain names and e-mail addresses."""
 
+    meta = {
+		'name': "Wikileaks",
+		'summary': "Search Wikileaks for mentions of domain names and e-mail addresses.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Leaks", " Dumps and Breaches" ]
+	}
+
     # Default options
     opts = {
         'daysback': 365,

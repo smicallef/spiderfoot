@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_citadel(SpiderFootPlugin):
     """Leak-Lookup:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Searches Leak-Lookup.com's database of breaches."""
 
+    meta = {
+		'name': "Leak-Lookup",
+		'summary': "Searches Leak-Lookup.com's database of breaches.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Leaks", " Dumps and Breaches" ]
+	}
+
     # Default options
     opts = {
         "api_key": "",

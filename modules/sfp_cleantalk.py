@@ -16,6 +16,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_cleantalk(SpiderFootPlugin):
     """CleanTalk Spam List:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is on CleanTalk.org's spam IP list."""
 
+    meta = {
+		'name': "CleanTalk Spam List",
+		'summary': "Check if a netblock or IP address is on CleanTalk.org's spam IP list.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         'checkaffiliates': True,

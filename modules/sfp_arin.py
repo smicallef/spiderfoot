@@ -18,6 +18,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_arin(SpiderFootPlugin):
     """ARIN:Footprint,Investigate,Passive:Public Registries::Queries ARIN registry for contact information."""
 
+    meta = { 
+        'name': "ARIN",
+        'summary': "Queries ARIN registry for contact information.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Public Registries" ]
+    }
 
     # Default options
     opts = {}

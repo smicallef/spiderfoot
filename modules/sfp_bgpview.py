@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_bgpview(SpiderFootPlugin):
     """BGPView:Investigate,Footprint,Passive:Search Engines::Obtain network information from BGPView API."""
 
+    meta = {
+		'name': "BGPView",
+		'summary': "Obtain network information from BGPView API.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Footprint", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+    
     opts = {
     }
 

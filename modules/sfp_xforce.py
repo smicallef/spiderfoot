@@ -21,6 +21,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_xforce(SpiderFootPlugin):
     """XForce Exchange:Investigate,Passive:Reputation Systems:apikey:Obtain information from IBM X-Force Exchange"""
 
+    meta = {
+		'name': "XForce Exchange",
+		'summary': "Obtain information from IBM X-Force Exchange",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         "xforce_api_key": "",

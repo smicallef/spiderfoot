@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_greensnow(SpiderFootPlugin):
     """Greensnow:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is malicious according to greensnow.co."""
 
+    meta = {
+		'name': "Greensnow",
+		'summary': "Check if a netblock or IP address is malicious according to greensnow.co.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         'checkaffiliates': True,

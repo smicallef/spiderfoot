@@ -20,6 +20,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_fraudguard(SpiderFootPlugin):
     """Fraudguard:Investigate,Passive:Reputation Systems:apikey:Obtain threat information from Fraudguard.io"""
 
+    meta = {
+		'name': "Fraudguard",
+		'summary': "Obtain threat information from Fraudguard.io",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

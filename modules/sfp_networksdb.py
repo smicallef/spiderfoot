@@ -19,6 +19,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_networksdb(SpiderFootPlugin):
     """NetworksDB:Footprint,Investigate,Passive:Passive DNS:apikey:Search NetworksDB.io API for IP address and domain information."""
 
+    meta = {
+		'name': "NetworksDB",
+		'summary': "Search NetworksDB.io API for IP address and domain information.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Passive DNS" ]
+	}
+
     # Default options
     opts = {
         'api_key': '',

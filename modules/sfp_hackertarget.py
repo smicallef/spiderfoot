@@ -22,6 +22,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_hackertarget(SpiderFootPlugin):
     """HackerTarget:Footprint,Investigate,Passive:Passive DNS::Search HackerTarget.com for hosts sharing the same IP."""
 
+    meta = {
+        'name': "HackerTarget",
+        'summary': "Search HackerTarget.com for hosts sharing the same IP.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Passive DNS" ]
+    }
 
     # Default options
     opts = {

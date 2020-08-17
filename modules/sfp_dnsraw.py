@@ -21,6 +21,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_dnsraw(SpiderFootPlugin):
     """DNS Raw Records:Footprint,Investigate,Passive:DNS::Retrieves raw DNS records such as MX, TXT and others."""
 
+    meta = {
+		'name': "DNS Raw Records",
+		'summary': "Retrieves raw DNS records such as MX, TXT and others.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "DNS" ]
+	}
+
     # Default options
     opts = {
         'verify': True,

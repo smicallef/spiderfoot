@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_emailrep(SpiderFootPlugin):
     """EmailRep:Footprint,Investigate,Passive:Search Engines::Search EmailRep.io for email address reputation."""
 
+    meta = {
+		'name': "EmailRep",
+		'summary': "Search EmailRep.io for email address reputation.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     opts = {
     }
 

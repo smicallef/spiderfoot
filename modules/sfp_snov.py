@@ -18,6 +18,14 @@ import json
 class sfp_snov(SpiderFootPlugin):
     """Snov:Footprint,Investigate,Passive:Search Engines:apikey:Gather available email IDs from identified domains"""
 
+    meta = {
+		'name': "Snov",
+		'summary': "Gather available email IDs from identified domains",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     opts = {
         'api_key_client_id': '',
         'api_key_client_secret': ''

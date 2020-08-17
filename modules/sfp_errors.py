@@ -29,6 +29,14 @@ regexps = dict({
 class sfp_errors(SpiderFootPlugin):
     """Error String Extractor:Footprint,Passive:Content Analysis::Identify common error messages in content like SQL errors, etc."""
 
+    meta = {
+		'name': "Error String Extractor",
+		'summary': "Identify common error messages in content like SQL errors, etc.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Passive" ],
+		'categories': [ "Content Analysis" ]
+	}
+
     # Default options
     opts = {}
 

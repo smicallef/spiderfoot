@@ -16,6 +16,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_cinsscore(SpiderFootPlugin):
     """CINS Army List:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is malicious according to cinsscore.com's Army List."""
 
+    meta = {
+		'name': "CINS Army List",
+		'summary': "Check if a netblock or IP address is malicious according to cinsscore.com's Army List.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         'checkaffiliates': True,

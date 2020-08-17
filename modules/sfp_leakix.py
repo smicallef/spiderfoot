@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_leakix(SpiderFootPlugin):
     """LeakIX:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Search LeakIX for host data leaks, open ports, software and geoip."""
 
+    meta = {
+		'name': "LeakIX",
+		'summary': "Search LeakIX for host data leaks, open ports, software and geoip.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Leaks", " Dumps and Breaches" ]
+	}
+
     # Default options
     opts = {
         'delay': 1,

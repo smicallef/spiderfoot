@@ -19,6 +19,14 @@ import json
 class sfp_phishstats(SpiderFootPlugin):
     """PhishStats:Investigate,Passive:Reputation Systems::Determine if an IP Address is malicious"""
 
+    meta = {
+		'name': "PhishStats",
+		'summary': "Determine if an IP Address is malicious",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     opts = {
         'checkaffiliates': True,
         'subnetlookup': False,
