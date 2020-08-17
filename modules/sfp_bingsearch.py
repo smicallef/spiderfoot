@@ -20,7 +20,24 @@ class sfp_bingsearch(SpiderFootPlugin):
 		'summary': "Obtain information from bing to identify sub-domains and links.",
 		'flags': [ "apikey" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://www.bing.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://docs.microsoft.com/en-us/azure/cognitive-services/bing-web-search/"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://azure.microsoft.com/en-in/services/cognitive-services/bing-web-search-api/",
+                "Register a free account",
+                "Select on Bing Custom Search",
+                "The API keys are listed under 'Key1', 'Key2'"
+            ],
+            'favIcon': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
+            'logo': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
+            'description': "The Bing Search APIs let you build web-connected apps and services that "
+                                "find webpages, images, news, locations, and more without advertisements.\n",
+        }
 	}
 
     # Default options
