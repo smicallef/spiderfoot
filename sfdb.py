@@ -375,16 +375,29 @@ class SpiderFootDb:
             TypeError: arg type was invalid
             ValueError: arg value was invalid
             IOError: database I/O failed
-
-        Todo:
-            Raise errors upon invalid args
         """
-
         if not isinstance(criteria, dict):
             raise TypeError(f"criteria is {type(criteria)}; expected dict()")
 
-        if list(criteria.values()).count(None) >= 3:
-            raise ValueError("Invalid number of search criteria provided; expected at least 2")
+        valid_criteria = ['scan_id', 'type', 'value', 'regex']
+
+        for key in list(criteria.keys()):
+            if key not in valid_criteria:
+                criteria.pop(key, None)
+                continue
+
+            if not isinstance(criteria.get(key), str):
+                raise TypeError(f"criteria[{key}] is {type(criteria.get(key))}; expected str()")
+
+            if not criteria[key]:
+                criteria.pop(key, None)
+                continue
+
+        if len(criteria) == 0:
+            raise ValueError(f"No valid search criteria provided; expected: {', '.join(valid_criteria)}")
+
+        if len(criteria) == 1:
+            raise ValueError(f"Only one search criteria provided; expected at least two")
 
         qvars = list()
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \

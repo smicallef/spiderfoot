@@ -90,10 +90,10 @@ class TestSpiderFootDb(unittest.TestCase):
         sfdb = SpiderFootDb(self.default_options, False)
 
         criteria = {
-            'scan_id': "",
-            'type': "",
-            'value': "",
-            'regex': ""
+            'scan_id': "example scan id",
+            'type': "example type",
+            'value': "example value",
+            'regex': "example regex"
         }
 
         search_results = sfdb.search(criteria, False)
@@ -106,23 +106,48 @@ class TestSpiderFootDb(unittest.TestCase):
         """
         sfdb = SpiderFootDb(self.default_options, False)
 
-        invalid_types = [None, "", list()]
+        invalid_types = [None, "", list(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
                     search_results = sfdb.search(invalid_type, False)
 
-    def test_search_argument_criteria_invalid_value_should_raise_ValueError(self):
+    def test_search_argument_criteria_key_of_invalid_type_should_raise_TypeError(self):
         """
         Test search(self, criteria, filterFp=False)
         """
         sfdb = SpiderFootDb(self.default_options, False)
 
         criteria = {
-            'scan_id': None,
-            'type': None,
-            'value': None,
-            'regex': None
+            'type': "example type",
+            'value': "example value",
+            'regex': []
+        }
+
+        with self.assertRaises(TypeError) as cm:
+            search_results = sfdb.search(criteria, False)
+
+    def test_search_argument_criteria_no_valid_criteria_should_raise_ValueError(self):
+        """
+        Test search(self, criteria, filterFp=False)
+        """
+        sfdb = SpiderFootDb(self.default_options, False)
+
+        criteria = {
+            'invalid_criteria': "example invalid criteria"
+        }
+
+        with self.assertRaises(ValueError) as cm:
+            search_results = sfdb.search(criteria, False)
+
+    def test_search_argument_criteria_one_criteria_should_raise_ValueError(self):
+        """
+        Test search(self, criteria, filterFp=False)
+        """
+        sfdb = SpiderFootDb(self.default_options, False)
+
+        criteria = {
+            'type': "example type"
         }
 
         with self.assertRaises(ValueError) as cm:
