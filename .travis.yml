@@ -9,7 +9,7 @@ install:
   - pip install -r requirements_test.txt
 
 script:
-  - python -m pytest --cov-report term --cov=. test/
+  - python -m pytest --durations=5 --cov-report term --cov=. test/
 
 after_success:
   - codecov
