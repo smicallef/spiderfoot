@@ -36,7 +36,7 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
         'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://cybersecurity.att.com/",
-            'model': "COMMERCIAL_ONLY",
+            'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://cybersecurity.att.com/documentation/",
                 "https://cybersecurity.att.com/resource-center#content_solution-brief",
