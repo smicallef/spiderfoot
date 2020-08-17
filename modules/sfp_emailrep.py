@@ -15,7 +15,7 @@ import time
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_emailrep(SpiderFootPlugin):
-    """EmailRep:Footprint,Investigate,Passive:Search Engines::Search EmailRep.io for email address reputation."""
+    """EmailRep:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailRep.io for email address reputation."""
 
     meta = {
 		'name': "EmailRep",
@@ -26,9 +26,11 @@ class sfp_emailrep(SpiderFootPlugin):
 	}
 
     opts = {
+        'api_key': '',
     }
 
     optdescs = {
+        'api_key': 'EmailRep API key.',
     }
 
     results = None
@@ -50,11 +52,21 @@ class sfp_emailrep(SpiderFootPlugin):
 
     # https://emailrep.io/docs/
     def query(self, qry):
-        res = self.sf.fetchUrl('https://emailrep.io/' + qry,
-                               useragent='curl', # cURL user-agent appears to be required
-                               timeout=self.opts['_fetchtimeout'])
+        headers = {
+            'Accept': "application/json"
+        }
 
-        # Documentation does not indicate rate limit
+        if self.opts['api_key'] != '':
+            headers['Key'] = self.opts['api_key']
+
+        res = self.sf.fetchUrl(
+            'https://emailrep.io/' + qry,
+            headers=headers,
+            useragent='SpiderFoot',
+            timeout=self.opts['_fetchtimeout']
+        )
+
+        # Documentation does not indicate rate limit threshold (50 queries/day)
         time.sleep(1)
 
         if res['content'] is None:
@@ -62,6 +74,11 @@ class sfp_emailrep(SpiderFootPlugin):
 
         if res['code'] == '400':
             self.sf.error('API error: Bad request', False)
+            self.errorState = True
+            return None
+
+        if res['code'] == '401':
+            self.sf.error('API error: Invalid API key', False)
             self.errorState = True
             return None
 
@@ -94,6 +111,9 @@ class sfp_emailrep(SpiderFootPlugin):
         self.results[eventData] = True
 
         self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+
+        if self.opts['api_key'] == '':
+            self.sf.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.", False)
 
         res = self.query(eventData)
 
