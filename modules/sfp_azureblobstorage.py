@@ -26,7 +26,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 		'categories': [ "Crawling and Scanning" ],
         'dataSource': {
             'website': "https://azure.microsoft.com/en-in/services/storage/blobs/",
-            'model': "COMMERCIAL_ONLY",
+            'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://docs.microsoft.com/en-in/azure/storage/blobs/storage-quickstart-blobs-dotnet",
                 "https://azure.microsoft.com/en-in/pricing/details/storage/",
