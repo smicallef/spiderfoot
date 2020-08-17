@@ -34,8 +34,8 @@ class sfp_binaryedge(SpiderFootPlugin):
             'apiKeyInstructions': [
                 "Visit www.binaryedge.io/pricing.html",
                 "Select a plan",
-                "Sign up with new account'",
-                "Go to Account'",
+                "Sign up with new account",
+                "Go to Account",
                 "The API key is listed under 'API Access'"
             ],
             'favIcon': "https://www.binaryedge.io/img/favicon/favicon-32x32.png",
