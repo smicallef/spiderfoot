@@ -23,7 +23,28 @@ class sfp_arin(SpiderFootPlugin):
         'summary': "Queries ARIN registry for contact information.",
         'flags': [ "" ],
         'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Public Registries" ]
+        'categories': [ "Public Registries" ],
+        'dataSource': {
+            'website': "https://www.arin.net/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.arin.net/resources/",
+                "https://www.arin.net/reference/",
+                "https://www.arin.net/participate/",
+                "https://www.arin.net/resources/guide/request/",
+                "https://www.arin.net/resources/registry/transfers/",
+                "https://www.arin.net/resources/guide/ipv6/"
+            ],
+            'favIcon': "https://www.arin.net/img/favicon.ico",
+            'logo': "https://www.arin.net/img/logo-stnd.svg",
+            'description': "ARIN is a nonprofit, member-based organization that administers IP addresses & "
+                                "ASNs in support of the operation and growth of the Internet.\n"
+                                "Established in December 1997 as a Regional Internet Registry, "
+                                "the American Registry for Internet Numbers (ARIN) is responsible for the management "
+                                "and distribution of Internet number resources such as Internet Protocol (IP) addresses "
+                                "and Autonomous System Numbers (ASNs). ARIN manages these resources within its service region, "
+                                "which is comprised of Canada, the United States, and many Caribbean and North Atlantic islands.\n.",
+        }
     }
 
     # Default options
