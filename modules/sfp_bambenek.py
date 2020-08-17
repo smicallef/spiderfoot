@@ -43,7 +43,7 @@ class sfp_bambenek(SpiderFootPlugin):
 		'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "http://www.bambenekconsulting.com/",
-            'model': "FREE_NOAUTH_LIMITED",
+            'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "http://www.bambenekconsulting.com/free-osint-tools/",
                 "https://osint.bambenekconsulting.com/feeds/",
