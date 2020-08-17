@@ -21,7 +21,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 		'summary': "Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks", " Dumps and Breaches" ]
+		'categories': [ "Leaks, Dumps and Breaches" ]
 	}
 
     # Default options

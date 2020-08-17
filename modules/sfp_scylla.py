@@ -23,7 +23,7 @@ class sfp_scylla(SpiderFootPlugin):
 		'summary': "Gather breach data from Scylla API.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks", " Dumps and Breaches" ]
+		'categories': [ "Leaks, Dumps and Breaches" ]
 	}
 
     # Default options

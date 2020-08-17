@@ -21,7 +21,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 		'summary': "Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks", " Dumps and Breaches" ]
+		'categories': [ "Leaks, Dumps and Breaches" ]
 	}
 
     # Default options

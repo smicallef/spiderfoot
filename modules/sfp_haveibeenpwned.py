@@ -21,7 +21,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 		'summary': "Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches.",
 		'flags': [ "apikey" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks", " Dumps and Breaches" ]
+		'categories': [ "Leaks, Dumps and Breaches" ]
 	}
 
     # Default options

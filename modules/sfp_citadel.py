@@ -22,7 +22,7 @@ class sfp_citadel(SpiderFootPlugin):
 		'summary': "Searches Leak-Lookup.com's database of breaches.",
 		'flags': [ "apikey" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks", " Dumps and Breaches" ]
+		'categories': [ "Leaks, Dumps and Breaches" ]
 	}
 
     # Default options

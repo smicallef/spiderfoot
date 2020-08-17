@@ -22,7 +22,7 @@ class sfp_psbdmp(SpiderFootPlugin):
 		'summary': "Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks", " Dumps and Breaches" ]
+		'categories': [ "Leaks, Dumps and Breaches" ]
 	}
 
     # Default options

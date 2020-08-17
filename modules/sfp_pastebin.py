@@ -24,7 +24,7 @@ class sfp_pastebin(SpiderFootPlugin):
 		'summary': "PasteBin scraping (via Google) to identify related content.",
 		'flags': [ "apikey" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks", " Dumps and Breaches" ]
+		'categories': [ "Leaks, Dumps and Breaches" ]
 	}
 
     # Default options

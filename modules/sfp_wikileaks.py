@@ -22,7 +22,7 @@ class sfp_wikileaks(SpiderFootPlugin):
 		'summary': "Search Wikileaks for mentions of domain names and e-mail addresses.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks", " Dumps and Breaches" ]
+		'categories': [ "Leaks, Dumps and Breaches" ]
 	}
 
     # Default options
