@@ -24,7 +24,27 @@ class sfp_badpackets(SpiderFootPlugin):
 		'summary': "Obtain information about any malicious activities involving IP addresses found",
 		'flags': [ "apikey" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://badpackets.net",
+            'model': "COMMERCIAL_ONLY",
+            'references': [
+                "https://docs.badpackets.net/"
+            ],
+            'apiKeyInstructions': [
+                "Visit badpackets.net/pricing/",
+                "Select a monthly plan",
+                "Fill out the contact form",
+                "BadPackets will reach out to you with your API key"
+            ],
+            'favIcon': "https://i1.wp.com/badpackets.net/wp-content/uploads/2019/04/cropped-512x512_logo.png?fit=32%2C32&ssl=1",
+            'logo': "https://badpackets.net/wp-content/uploads/2019/05/badpackets-rgb-350x70.png",
+            'description': "Bad Packets provides cyber threat intelligence on emerging threats, DDoS botnets and network abuse by continuously monitoring "
+                                "and detecting malicious activity. Our team of experienced security professionals conducts "
+                                "comprehensive and ethical research to ensure our data is of the highest quality and accuracy.\n"
+                                "Constant aggregation and analysis of relevant data allows us to empower our partners with "
+                                "actionable information to proactively defend against emerging security threats.\n.",
+        }
 	}
 
     opts = {
