@@ -23,7 +23,31 @@ class sfp_builtwith(SpiderFootPlugin):
 		'summary': "Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more.",
 		'flags': [ "apikey" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://builtwith.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://api.builtwith.com/",
+                "https://kb.builtwith.com/",
+                "https://builtwith.com/screencast",
+                "https://builtwith.com/faq"
+            ],
+            'apiKeyInstructions': [
+                "Visit api.builtwith.com/free-api",
+                "Register a free account",
+                "Navigate to api.builtwith.com/free-api",
+                "The API key is listed under 'Your API Key'"
+            ],
+            'favIcon': "https://d28rh9vvmrd65v.cloudfront.net/favicon.ico",
+            'logo': "https://d28rh9vvmrd65v.cloudfront.net/favicon.ico",
+            'description': "Build lists of websites from our database of 38,701+ web technologies and over a quarter of a billion websites showing "
+                                "which sites use shopping carts, analytics, hosting and many more. "
+                                "Filter by location, traffic, vertical and more.\n"
+                                "Know your prospects platform before you talk to them. "
+                                "Improve your conversions with validated market adoption.\n"
+                                "Get advanced technology market share information and country based analytics for all web technologies.\n",
+        }
 	}
 
     # Default options
