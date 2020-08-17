@@ -26,7 +26,7 @@ class sfp_arin(SpiderFootPlugin):
         'categories': [ "Public Registries" ],
         'dataSource': {
             'website': "https://www.arin.net/",
-            'model': "COMMERCIAL_ONLY",
+            'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://www.arin.net/resources/",
                 "https://www.arin.net/reference/",
