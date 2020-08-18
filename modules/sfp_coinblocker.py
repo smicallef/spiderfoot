@@ -40,7 +40,22 @@ class sfp_coinblocker(SpiderFootPlugin):
 		'summary': "Check if a host/domain or IP appears on CoinBlocker lists.",
 		'flags': [ "" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://zerodot1.gitlab.io/CoinBlockerListsWeb/downloads.html",
+                "https://zerodot1.gitlab.io/CoinBlockerListsWeb/references.html",
+                "https://zerodot1.gitlab.io/CoinBlockerListsWeb/aboutthisproject.html"
+            ],
+            'favIcon': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/assets/img/favicon.png",
+            'logo': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/assets/img/favicon.png",
+            'description': "The CoinBlockerLists are a project to prevent illegal mining in "
+                                "browsers or other applications using IPlists and URLLists.\n"
+                                "It's not just to block everything without any reason, but to protect "
+                                "internet users from illegal mining.\n",
+        }
 	}
 
     # Default options
