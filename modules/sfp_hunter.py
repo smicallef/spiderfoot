@@ -17,12 +17,32 @@ class sfp_hunter(SpiderFootPlugin):
     """Hunter.io:Footprint,Investigate,Passive:Search Engines:apikey:Check for e-mail addresses and names on hunter.io."""
 
     meta = {
-		'name': "Hunter.io",
-		'summary': "Check for e-mail addresses and names on hunter.io.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "Hunter.io",
+        'summary': "Check for e-mail addresses and names on hunter.io.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://hunter.io/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://hunter.io/api"
+            ],
+            'apiKeyInstructions': [
+                "Visit hunter.io/",
+                "Sign up for a free account",
+                "Click on 'Account Settings'",
+                "Click on 'API'",
+                "The API key is listed under 'Your API Key'"
+            ],
+            'favIcon': "https://hunter.io/assets/head/favicon-d5796c45076e78aa5cf22dd53c5a4a54155062224bac758a412f3a849f38690b.ico",
+            'logo': "https://hunter.io/assets/head/touch-icon-iphone-fd9330e31552eeaa12b177489943de997551bfd991c4c44e8c3d572e78aea5f3.png",
+            'description': "Hunter lets you find email addresses in seconds and connect with the people that matter for your business.\n"
+                                "The Domain Search lists all the people working in a company with their name "
+                                "and email address found on the web. With 100+ million email addresses indexed, "
+                                "effective search filters and scoring, it's the most powerful email-finding tool ever created.\n",
+        }
+    }
 
     # Default options
     opts = {
