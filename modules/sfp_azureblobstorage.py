@@ -26,21 +26,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 		'categories': [ "Crawling and Scanning" ],
         'dataSource': {
             'website': "https://azure.microsoft.com/en-in/services/storage/blobs/",
-            'model': "FREE_NOAUTH_UNLIMITED",
-            'references': [
-                "https://docs.microsoft.com/en-in/azure/storage/blobs/storage-quickstart-blobs-dotnet",
-                "https://azure.microsoft.com/en-in/pricing/details/storage/",
-                "https://azure.microsoft.com/en-in/updates/?product=storage",
-                "https://azure.microsoft.com/en-in/features/storage-explorer/"
-            ],
-            'favIcon': "https://azurecomcdn.azureedge.net/cvt-1d5d83e09d2171261e69bc5faba5f3018c1bf1c590f0e666d26c9bc9ef7a561b/images/icon/favicon.ico",
-            'logo': "",
-            'description': "Massively scalable object storage for unstructured data.\n"
-                               "Get scalable, cost-effective cloud storage for all your unstructured data. "
-                               "Pay only for what you use and save money compared with on-premises storage options. "
-                               "Choose from among four storage tiers, depending on how often you will access the data. "
-                               "Store performance-sensitive data in Premium, frequently accessed data in "
-                               "Hot, infrequently accessed data in Cool and rarely accessed data in Archive.\n.",
+            'model': "FREE_NOAUTH_UNLIMITED"
         }
 	}
 
