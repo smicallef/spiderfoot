@@ -33,7 +33,7 @@ class sfp_flickr(SpiderFootPlugin):
             'references': [
                 "https://www.flickr.com/services/api/"
                 "https://www.flickr.com/services/developer/api/",
-                "https://code.flickr.net/",
+                "https://code.flickr.net/"
             ],
             'favIcon': "https://combo.staticflickr.com/pw/favicon.ico",
             'logo': "https://combo.staticflickr.com/pw/favicon.ico",
