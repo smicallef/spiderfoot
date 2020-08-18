@@ -35,7 +35,22 @@ class sfp_fortinet(SpiderFootPlugin):
 		'summary': "Check if an IP is malicious according to Fortiguard.com.",
 		'flags': [ "" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://fortiguard.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://docs.fortinet.com/document/fortimail/6.0.4/rest-api-reference",
+                "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/d8d8ade1-2fd8-11e9-94bf-00505692583a/FortiMail_REST_API_Reference.pdf"
+            ],
+            'favIcon': "https://fortiguard.com/favicon.ico",
+            'logo': "https://fortiguard.com/static/images/Fortinet-logo%20white.png?v=880",
+            'description': " Fortinet empowers its customers with intelligent, seamless protection across the "
+                                "expanding attack surface and the power to take on ever-increasing performance requirements of "
+                                "the borderless network—today and into the future. "
+                                "Only the Fortinet Security Fabric architecture can deliver security without compromise "
+                                "to address the most critical security challenges, whether in networked, application, cloud, or mobile environments.\n",
+        }
 	}
 
     # Default options
