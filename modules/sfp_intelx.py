@@ -21,12 +21,36 @@ class sfp_intelx(SpiderFootPlugin):
     """IntelligenceX:Investigate,Passive:Search Engines:apikey:Obtain information from IntelligenceX about identified IP addresses, domains, e-mail addresses and phone numbers."""
 
     meta = {
-		'name': "IntelligenceX",
-		'summary': "Obtain information from IntelligenceX about identified IP addresses, domains, e-mail addresses and phone numbers.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "IntelligenceX",
+        'summary': "Obtain information from IntelligenceX about identified IP addresses, domains, e-mail addresses and phone numbers.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://intelx.io/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://ginseg.com/wp-content/uploads/sites/2/2019/07/Manual-Intelligence-X-API.pdf",
+                "https://blog.intelx.io/2019/01/25/new-developer-tab/",
+                "https://github.com/IntelligenceX/SDK"
+            ],
+            'apiKeyInstructions': [
+                "Visit intelx.io/",
+                "Register a free account",
+                "Navigate to intelx.io/account?tab=developer",
+                "The API key is listed under 'Your API details'"
+            ],
+            'favIcon': "https://intelx.io/favicon/favicon-32x32.png",
+            'logo': "https://intelx.io/assets/img/IntelligenceX.svg",
+            'description': "Intelligence X is an independent European technology company founded in 2018 by Peter Kleissner. "
+                                "Its mission is to develop and maintain the search engine and data archive.\n"
+                                "The search works with selectors, i.e. specific search terms such as "
+                                "email addresses, domains, URLs, IPs, CIDRs, Bitcoin addresses, IPFS hashes, etc.\n"
+                                "It searches in places such as the darknet, document sharing platforms, whois data, public data leaks and others.\n"
+                                "It keeps a historical data archive of results, "
+                                "similar to how the Wayback Machine from archive.org stores historical copies of websites.\n.",
+        }
+    }
 
     # Default options
     opts = {
