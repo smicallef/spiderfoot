@@ -23,7 +23,20 @@ class sfp_cloudflaredns(SpiderFootPlugin):
 		'summary': "Check if a host would be blocked by CloudFlare Malware-blocking DNS",
 		'flags': [ "" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://www.cloudflare.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://developers.cloudflare.com/1.1.1.1/1.1.1.1-for-families/"
+            ],
+            'favIcon': "https://www.cloudflare.com/img/favicon/favicon-32x32.png",
+            'logo': "https://www.cloudflare.com/img/logo-web-badges/cf-logo-on-white-bg.svg",
+            'description': "1.1.1.1 for Families is the easiest way to add a layer of protection to "
+                                "your home network and protect it from malware and adult content. "
+                                "1.1.1.1 for Families leverages Cloudflare’s global network to ensure "
+                                "that it is fast and secure around the world. \n.",
+        }
 	}
 
     # Default options
