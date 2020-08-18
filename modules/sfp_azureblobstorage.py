@@ -23,7 +23,11 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 		'summary': "Search for potential Azure blobs associated with the target and attempt to list their contents.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Passive" ],
-		'categories': [ "Crawling and Scanning" ]
+		'categories': [ "Crawling and Scanning" ],
+        'dataSource': {
+            'website': "https://azure.microsoft.com/en-in/services/storage/blobs/",
+            'model': "FREE_NOAUTH_UNLIMITED"
+        }
 	}
 
     # Default options
