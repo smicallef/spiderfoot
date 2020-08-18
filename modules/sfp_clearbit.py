@@ -21,7 +21,31 @@ class sfp_clearbit(SpiderFootPlugin):
 		'summary': "Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com.",
 		'flags': [ "apikey" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://clearbit.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://clearbit.com/docs"
+            ],
+            'apiKeyInstructions': [
+                "Visit clearbit.com",
+                "Register account for a Free Trial",
+                "Navigate to dashboard.clearbit.com/api",
+                "The API key is listed under 'Your API Key'"
+            ],
+            'favIcon': "https://clearbit.com/assets/site/logo.png",
+            'logo': "https://clearbit.com/assets/site/logo.png",
+            'description': "Clearbit is the marketing data engine for all of your customer interactions. "
+                                "Deeply understand your customers, identify future prospects, "
+                                "and personalize every single marketing and sales interaction.\n"
+                                "Rely on fresh, accurate data with our proprietary real-time lookups. "
+                                "Then act on new information immediately, with sales alerting and job change notifications.\n"
+                                "Get company attributes like employee count, technologies used, and industry classification—and "
+                                "get employee details like role, seniority, and even job change notifications, right at your fingertips.\n"
+                                "With our dataset and machine learning algorithms, you’ll have all of "
+                                "the information you need to convert leads and grow your business.\n.",
+        }
 	}
 
     # Default options
