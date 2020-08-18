@@ -17,6 +17,25 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_bgpview(SpiderFootPlugin):
     """BGPView:Investigate,Footprint,Passive:Search Engines::Obtain network information from BGPView API."""
 
+    meta = {
+		'name': "BGPView",
+		'summary': "Obtain network information from BGPView API.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Footprint", "Passive" ],
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://bgpview.io/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://bgpview.docs.apiary.io/#",
+                "https://bgpview.docs.apiary.io/api-description-document"
+            ],
+            'favIcon': "https://bgpview.io/favicon-32x32.png",
+            'logo': "https://bgpview.io/assets/logo.png",
+            'description': "BGPView is a simple API allowing consumers to view all sort of analytics data about the current state and structure of the internet.\n",
+        }
+	}
+    
     opts = {
     }
 

@@ -20,6 +20,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_open_passive_dns_database(SpiderFootPlugin):
     """Open Passive DNS Database:Footprint,Investigate,Passive:Passive DNS::Obtain passive DNS information from pdns.daloo.de Open passive DNS database."""
 
+    meta = {
+		'name': "Open Passive DNS Database",
+		'summary': "Obtain passive DNS information from pdns.daloo.de Open passive DNS database.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Passive DNS" ]
+	}
+
     # Default options
     opts = {
         "timeout": 30,

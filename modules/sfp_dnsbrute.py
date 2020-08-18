@@ -19,6 +19,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_dnsbrute(SpiderFootPlugin):
     """DNS Brute-forcer:Footprint,Investigate:DNS::Attempts to identify hostnames through brute-forcing common names and iterations."""
 
+    meta = {
+		'name': "DNS Brute-forcer",
+		'summary': "Attempts to identify hostnames through brute-forcing common names and iterations.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate" ],
+		'categories': [ "DNS" ]
+	}
 
     # Default options
     opts = {

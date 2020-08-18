@@ -19,6 +19,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_wikipediaedits(SpiderFootPlugin):
     """Wikipedia Edits:Footprint,Investigate,Passive:Secondary Networks::Identify edits to Wikipedia articles made from a given IP address or username."""
 
+    meta = {
+		'name': "Wikipedia Edits",
+		'summary': "Identify edits to Wikipedia articles made from a given IP address or username.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Secondary Networks" ]
+	}
+
     # Default options
     opts = {
         "days_limit": "365"

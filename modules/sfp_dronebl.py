@@ -19,6 +19,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_dronebl(SpiderFootPlugin):
     """DroneBL:Investigate,Passive:Reputation Systems::Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc."""
 
+    meta = {
+		'name': "DroneBL",
+		'summary': "Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

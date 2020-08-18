@@ -16,6 +16,36 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_cleantalk(SpiderFootPlugin):
     """CleanTalk Spam List:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is on CleanTalk.org's spam IP list."""
 
+    meta = {
+		'name': "CleanTalk Spam List",
+		'summary': "Check if a netblock or IP address is on CleanTalk.org's spam IP list.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://cleantalk.org",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://cleantalk.org/help",
+                "https://cleantalk.org/help/introduction",
+                "https://cleantalk.org/help/api-spam-check",
+                "https://cleantalk.org/wordpress-security-malware-firewall",
+                "https://cleantalk.org/price-anti-spam",
+                "https://cleantalk.org/ssl-certificates/cheap-positivessl-certificate",
+                "https://cleantalk.org/email-checker",
+                "https://cleantalk.org/blacklists"
+            ],
+            'favIcon': "https://cleantalk.org/favicons/favicon-16x16.png",
+            'logo': "https://cleantalk.org/favicons/favicon-16x16.png",
+            'description': "CleanTalk is a Cloud-Based spam filtering service that allows you to protect your website from spam. "
+                                "CleanTalk provides spam protection that invisible to visitors "
+                                "without using captcha or other methods when visitors have to prove that they are real people.\n"
+                                "CleanTalk provides cloud anti-spam solutions for CMS and we developed plugins for the most of popular "
+                                "CMS: WordPress anti-spam plugin, Joomla anti-spam plugin, Drupal and etc. "
+                                "With our simple cloud spam checker, you can be sure your website is protected from spam bots, spam comments, and users.\n",
+        }
+	}
+
     # Default options
     opts = {
         'checkaffiliates': True,

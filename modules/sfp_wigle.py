@@ -17,6 +17,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_wigle(SpiderFootPlugin):
     """Wigle.net:Footprint,Investigate,Passive:Secondary Networks:apikey:Query wigle.net to identify nearby WiFi access points."""
 
+    meta = {
+		'name': "Wigle.net",
+		'summary': "Query wigle.net to identify nearby WiFi access points.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Secondary Networks" ]
+	}
 
     # Default options
     opts = {

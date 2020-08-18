@@ -17,7 +17,36 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_binaryedge(SpiderFootPlugin):
     """BinaryEdge:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from BinaryEdge.io's Internet scanning systems about breaches, vulerabilities, torrents and passive DNS."""
-
+	
+    meta = {
+		'name': "BinaryEdge",
+		'summary': "Obtain information from BinaryEdge.io's Internet scanning systems about breaches, vulerabilities, torrents and passive DNS.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://www.binaryedge.io/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://docs.binaryedge.io/",
+                "https://www.binaryedge.io/data.html"
+            ],
+            'apiKeyInstructions': [
+                "Visit www.binaryedge.io/pricing.html",
+                "Select a plan",
+                "Sign up with new account",
+                "Go to Account",
+                "The API key is listed under 'API Access'"
+            ],
+            'favIcon': "https://www.binaryedge.io/img/favicon/favicon-32x32.png",
+            'logo': "https://www.binaryedge.io/img/logo.png",
+            'description': "We scan the entire public internet, create real-time threat intelligence streams, "
+                                "and reports that show the exposure of what is connected to the Internet.\n"
+                                "We have built a distributed platform of scanners and honeypots, to acquire, classify and correlate different types of data.\n"
+                                "We use all of these datapoints to match those digital assets to an organization, "
+                                "allowing us to provide a global, up-to-date, view of organizations known and unknown assets.\n",
+        }
+	}
 
     # Default options
     opts = {

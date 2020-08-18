@@ -19,6 +19,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_spamcop(SpiderFootPlugin):
     """SpamCop:Investigate,Passive:Reputation Systems::Query various spamcop databases for open relays, open proxies, vulnerable servers, etc."""
 
+    meta = {
+		'name': "SpamCop",
+		'summary': "Query various spamcop databases for open relays, open proxies, vulnerable servers, etc.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

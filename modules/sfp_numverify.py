@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_numverify(SpiderFootPlugin):
     """numverify:Footprint,Investigate,Passive:Real World:apikey:Lookup phone number location and carrier information from numverify.com."""
 
+    meta = {
+		'name': "numverify",
+		'summary': "Lookup phone number location and carrier information from numverify.com.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Real World" ]
+	}
+
     # Default options
     opts = {
         'api_key': ''

@@ -20,6 +20,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_phone(SpiderFootPlugin):
     """Phone Number Extractor:Passive,Footprint,Investigate:Content Analysis::Identify phone numbers in scraped webpages."""
 
+    meta = {
+		'name': "Phone Number Extractor",
+		'summary': "Identify phone numbers in scraped webpages.",
+		'flags': [ "" ],
+		'useCases': [ "Passive", "Footprint", "Investigate" ],
+		'categories': [ "Content Analysis" ]
+	}
+
     # Default options
     opts = {}
 

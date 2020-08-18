@@ -16,6 +16,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_whoxy(SpiderFootPlugin):
     """Whoxy:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using Whoxy.com."""
 
+    meta = {
+		'name': "Whoxy",
+		'summary': "Reverse Whois lookups using Whoxy.com.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
         "api_key": ""

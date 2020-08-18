@@ -19,7 +19,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_alienvault(SpiderFootPlugin):
     """AlienVault OTX:Investigate,Passive:Reputation Systems:apikey:Obtain information from AlienVault Open Threat Exchange (OTX)"""
         
-        meta = {
+    meta = {
         'name': "AlienVault OTX",
         'summary': "Obtain information from AlienVault Open Threat Exchange (OTX)",
         'flags': [ "apikey"],

@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_scylla(SpiderFootPlugin):
     """Scylla:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Gather breach data from Scylla API."""
 
+    meta = {
+		'name': "Scylla",
+		'summary': "Gather breach data from Scylla API.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Leaks, Dumps and Breaches" ]
+	}
+
     # Default options
     opts = {
         'pause': 3,

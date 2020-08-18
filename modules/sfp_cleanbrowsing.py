@@ -18,6 +18,34 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_cleanbrowsing(SpiderFootPlugin):
     """Cleanbrowsing.org:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Cleanbrowsing.org DNS"""
 
+    meta = {
+		'name': "Cleanbrowsing.org",
+		'summary': "Check if a host would be blocked by Cleanbrowsing.org DNS",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://cleanbrowsing.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://cleanbrowsing.org/guides/",
+                "https://cleanbrowsing.org/how-it-works",
+                "https://cleanbrowsing.org/web-filtering-for-shools-and-cipa-compliance",
+                "https://cleanbrowsing.org/getting-started"
+            ],
+            'favIcon': "https://cleanbrowsing.org/favicon-new.ico",
+            'logo': "https://cleanbrowsing.org/images/logos/CleanBrowsing-logo-large-2019-Orange-II.png",
+            'description': "You get to decide what type of content is allowed in your home or network via our "
+                                "DNS-based content filtering service. Parents can protect their kids from adult content, "
+                                "schools can be CIPA compliant and businesses can block malicious domains and "
+                                "gain visibility into their network.\n"
+                                "CleanBrowsing is a DNS-based content filtering service that offers a safe way to browse the web without surprises. "
+                                "It intercepts domain requests and filter sites that should be blocked, based on your requirements. "
+                                "Our free family filter, for example, blocks adult content, while still allowing Google, "
+                                "Youtube, Bing, DuckDuckGo and the rest of the web to load safely.\n",
+        }
+	}
+
     # Default options
     opts = {
     }

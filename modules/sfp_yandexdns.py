@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_yandexdns(SpiderFootPlugin):
     """Yandex DNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Yandex DNS"""
 
+    meta = {
+		'name': "Yandex DNS",
+		'summary': "Check if a host would be blocked by Yandex DNS",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
     }

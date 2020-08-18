@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_ipinfo(SpiderFootPlugin):
     """IPInfo.io:Footprint,Investigate,Passive:Real World:apikey:Identifies the physical location of IP addresses identified using ipinfo.io."""
 
+    meta = {
+		'name': "IPInfo.io",
+		'summary': "Identifies the physical location of IP addresses identified using ipinfo.io.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Real World" ]
+	}
+
     # Default options
     opts = {
         "api_key": ""

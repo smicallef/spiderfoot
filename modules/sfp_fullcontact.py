@@ -17,6 +17,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_fullcontact(SpiderFootPlugin):
     """FullContact:Footprint,Investigate,Passive:Search Engines:apikey:Gather domain and e-mail information from fullcontact.com."""
 
+    meta = {
+		'name': "FullContact",
+		'summary': "Gather domain and e-mail information from fullcontact.com.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
 
     # Default options
     opts = {

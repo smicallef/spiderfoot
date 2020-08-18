@@ -31,6 +31,14 @@ regexps = dict({
 class sfp_pageinfo(SpiderFootPlugin):
     """Page Information:Footprint,Investigate,Passive:Content Analysis::Obtain information about web pages (do they take passwords, do they contain forms, etc.)"""
 
+    meta = {
+		'name': "Page Information",
+		'summary': "Obtain information about web pages (do they take passwords, do they contain forms, etc.)",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Content Analysis" ]
+	}
+
     # Default options
     opts = {}
     optdescs = {}

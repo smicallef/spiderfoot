@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_jsonwhoiscom(SpiderFootPlugin):
     """JsonWHOIS.com:Footprint,Investigate,Passive:Search Engines:apikey:Search JsonWHOIS.com for WHOIS records associated with a domain."""
 
+    meta = {
+		'name': "JsonWHOIS.com",
+		'summary': "Search JsonWHOIS.com for WHOIS records associated with a domain.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
         "api_key": "",

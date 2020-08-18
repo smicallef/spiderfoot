@@ -20,6 +20,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_spyse(SpiderFootPlugin):
     """Spyse:Footprint,Investigate,Passive:Passive DNS:apikey:SpiderFoot plug-in to search Spyse API for IP address and domain information."""
 
+    meta = {
+		'name': "Spyse",
+		'summary': "SpiderFoot plug-in to search Spyse API for IP address and domain information.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Passive DNS" ]
+	}
+
     # Default options
     opts = {
         'api_key': '',

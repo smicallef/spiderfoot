@@ -18,6 +18,34 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_archiveorg(SpiderFootPlugin):
     """Archive.org:Footprint,Passive:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
+	
+    meta = { 
+        'name': "Archive.org",
+        'summary': "Identifies historic versions of interesting files/pages from the Wayback Machine.",
+        'flags': [ "slow" ],
+        'useCases': [ "Footprint", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://archive.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://archive.org/projects/",
+                "https://archive.org/services/docs/api/"
+            ],
+            'favIcon': "https://archive.org/images/glogo.jpg",
+            'logo': "https://archive.org/images/glogo.jpg",
+            'description': "Internet Archive is a non-profit library of millions of free books, movies, software, music, websites, and more.\n"
+                               "The Internet Archive, a 501(c)(3) non-profit, is building a digital library of Internet sites "
+                               "and other cultural artifacts in digital form. Like a paper library, we provide free access to "
+                               "researchers, historians, scholars, the print disabled, and the general public. "
+                               "Our mission is to provide Universal Access to All Knowledge.\n"
+                               "We began in 1996 by archiving the Internet itself, a medium that was just beginning to grow in use. "
+                               "Like newspapers, the content published on the web was ephemeral - but unlike newspapers, no one was saving it. "
+                               "Today we have 20+ years of web history accessible through the Wayback Machine and we work with 625+ library and "
+                               "other partners through our Archive-It program to identify important web pages.\n",
+        }
+    
+    }
 
     # Default options
     opts = {

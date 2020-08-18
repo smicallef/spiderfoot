@@ -17,6 +17,40 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_citadel(SpiderFootPlugin):
     """Leak-Lookup:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Searches Leak-Lookup.com's database of breaches."""
 
+    meta = {
+		'name': "Leak-Lookup",
+		'summary': "Searches Leak-Lookup.com's database of breaches.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Leaks, Dumps and Breaches" ],
+        'dataSource': {
+            'website': "https://leak-lookup.com/",
+            'model': "FREE_AUTH_UNLIMITED",
+            'references': [
+                "https://leak-lookup.com/api",
+                "https://leak-lookup.com/databases"
+            ],
+            'apiKeyInstructions': [
+                "Visit leak-lookup.com",
+                "Register an account",
+                "Login to your account",
+                "Click on 'Account'",
+                "Click on 'API'",
+                "The API key is listed under 'API Key'"
+            ],
+            'favIcon': "https://leak-lookup.com/favicon.png",
+            'logo': "https://leak-lookup.com/favicon.png",
+            'description': "Leak-Lookup allows you to search across thousands of data breaches "
+                                "to stay on top of credentials that may have been compromised in the wild.\n"
+                                "The creators came together when they realized they had a vast trove of data "
+                                "that could be of great value to pen-testers seeking weaknesses in client passwords "
+                                "and those concerned about which of their credentials have been leaked into the wild.\n"
+                                "Always looking forward, Leak-Lookup invests all of its profits back into securing the "
+                                "latest data breaches and leaks / dumps as they become available, ensuring that "
+                                "as well as historical data, Leak-Lookup becomes a field leader in credential monitoring.\n",
+        }
+	}
+
     # Default options
     opts = {
         "api_key": "",

@@ -19,6 +19,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_whois(SpiderFootPlugin):
     """Whois:Footprint,Investigate,Passive:Public Registries::Perform a WHOIS look-up on domain names and owned netblocks."""
 
+    meta = {
+		'name': "Whois",
+		'summary': "Perform a WHOIS look-up on domain names and owned netblocks.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Public Registries" ]
+	}
+
     # Default options
     opts = {
     }

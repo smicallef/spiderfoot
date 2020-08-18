@@ -19,6 +19,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_darksearch(SpiderFootPlugin):
     """Darksearch:Footprint,Investigate:Search Engines::Search the Darksearch.io Tor search engine for mentions of the target domain."""
 
+    meta = {
+		'name': "Darksearch",
+		'summary': "Search the Darksearch.io Tor search engine for mentions of the target domain.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
         'fetchlinks': True,

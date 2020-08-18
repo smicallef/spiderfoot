@@ -19,6 +19,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_greynoise(SpiderFootPlugin):
     """Greynoise:Investigate,Passive:Reputation Systems:apikey:Obtain information from Greynoise.io's Enterprise API."""
 
+    meta = {
+		'name': "Greynoise",
+		'summary': "Obtain information from Greynoise.io's Enterprise API.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

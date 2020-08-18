@@ -16,6 +16,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_venmo(SpiderFootPlugin):
     """Venmo:Footprint,Investigate,Passive:Social Media::Gather user information from Venmo API."""
 
+    meta = {
+		'name': "Venmo",
+		'summary': "Gather user information from Venmo API.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Social Media" ]
+	}
+
     # Default options
     opts = {
     }

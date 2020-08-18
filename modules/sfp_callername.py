@@ -18,6 +18,29 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_callername(SpiderFootPlugin):
     """CallerName:Footprint,Investigate,Passive:Real World::Lookup US phone number location and reputation information."""
 
+    meta = {
+		'name': "CallerName",
+		'summary': "Lookup US phone number location and reputation information.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Real World" ],
+        'dataSource': {
+            'website': "http://callername.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://callername.com/faq",
+                "https://callername.com/stats"
+            ],
+            'favIcon': "http://static.callername.com/favicon.ico",
+            'logo': "http://static.callername.com/img/logo.min.png",
+            'description': "CallerName is a free, reverse phone lookup service for both cell and landline numbers. "
+                                "It relies on a database of white pages and business pages taken from public sources. "
+                                "The easy-to-use and streamlined interface allow users to look up the caller ID information of any number quickly. "
+                                "Just type the unknown number into the search bar to start. "
+                                "You need not pay nor register to use this 100% free service.\n",
+        }
+	}
+
     # Default options
     opts = {
     }

@@ -18,6 +18,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_ethereum(SpiderFootPlugin):
     """Ethereum Address Extractor:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
 
+    meta = {
+		'name': "Ethereum Address Extractor",
+		'summary': "Identify ethereum addresses in scraped webpages.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Content Analysis" ]
+	}
+
     # Default options
     opts = {}
     optdescs = {}

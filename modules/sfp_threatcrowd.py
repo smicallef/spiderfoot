@@ -18,6 +18,13 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_threatcrowd(SpiderFootPlugin):
     """ThreatCrowd:Investigate,Passive:Reputation Systems::Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses."""
 
+    meta = {
+		'name': "ThreatCrowd",
+		'summary': "Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

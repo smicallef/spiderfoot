@@ -17,7 +17,30 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_blockchain(SpiderFootPlugin):
     """Blockchain:Footprint,Investigate,Passive:Public Registries::Queries blockchain.info to find the balance of identified bitcoin wallet addresses."""
-
+	
+    meta = {
+		'name': "Blockchain",
+		'summary': "Queries blockchain.info to find the balance of identified bitcoin wallet addresses.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Public Registries" ],
+        'dataSource': {
+            'website': "https://www.blockchain.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://exchange.blockchain.com/api/#introduction",
+                "https://exchange.blockchain.com/markets",
+                "https://exchange.blockchain.com/fees",
+                "https://exchange.blockchain.com/trade"
+            ],
+            'favIcon': "https://www.blockchain.com/static/favicon.ico",
+            'logo': "https://exchange.blockchain.com/api/assets/images/logo.png",
+            'description': "Blockchain Exchange is the most secure place to buy, sell, and trade crypto.\n"
+                                "Use the most popular block explorer to search and "
+                                "verify transactions on the Bitcoin, Ethereum, and Bitcoin Cash blockchains.\n"
+                                "Stay on top of Bitcoin and other top cryptocurrency prices, news, and market information.\n",
+        }
+	}
 
     # Default options
     opts = {}

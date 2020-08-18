@@ -19,6 +19,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_gravatar(SpiderFootPlugin):
     """Gravatar:Footprint,Investigate,Passive:Social Media::Retrieve user information from Gravatar API."""
 
+    meta = {
+		'name': "Gravatar",
+		'summary': "Retrieve user information from Gravatar API.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Social Media" ]
+	}
+
     # Default options
     opts = {
     }

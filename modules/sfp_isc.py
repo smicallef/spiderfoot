@@ -30,6 +30,13 @@ malchecks = {
 class sfp_isc(SpiderFootPlugin):
     """Internet Storm Center:Investigate,Passive:Reputation Systems::Check if an IP is malicious according to SANS ISC."""
 
+    meta = {
+		'name': "Internet Storm Center",
+		'summary': "Check if an IP is malicious according to SANS ISC.",
+		'flags': [ "" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
 
     # Default options
     opts = {

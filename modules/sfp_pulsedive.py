@@ -20,6 +20,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_pulsedive(SpiderFootPlugin):
     """Pulsedive:Investigate,Passive:Reputation Systems:apikey:Obtain information from Pulsedive's API."""
 
+    meta = {
+		'name': "Pulsedive",
+		'summary': "Obtain information from Pulsedive's API.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     # Default options
     opts = {
         "api_key": "",

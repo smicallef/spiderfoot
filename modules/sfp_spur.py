@@ -18,6 +18,14 @@ import json
 class sfp_spur(SpiderFootPlugin):
     """spur.us:Investigate,Passive:Reputation Systems:apikey:Obtain information about any malicious activities involving IP addresses found"""
 
+    meta = {
+		'name': "spur.us",
+		'summary': "Obtain information about any malicious activities involving IP addresses found",
+		'flags': [ "apikey" ],
+		'useCases': [ "Investigate", "Passive" ],
+		'categories': [ "Reputation Systems" ]
+	}
+
     opts = {
         'api_key': '',
         'checkaffiliates': True,

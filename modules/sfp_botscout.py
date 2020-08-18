@@ -17,6 +17,37 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_botscout(SpiderFootPlugin):
     """BotScout:Passive,Investigate:Reputation Systems:apikey:Searches botscout.com's database of spam-bot IPs and e-mail addresses."""
 
+    meta = {
+		'name': "BotScout",
+		'summary': "Searches botscout.com's database of spam-bot IPs and e-mail addresses.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Passive", "Investigate" ],
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "http://botscout.com/",
+            'model': "FREE_NOAUTH_LIMITED",
+            'references': [
+                "http://botscout.com/api.htm",
+                "http://botscout.com/api_queries.htm",
+                "http://botscout.com/getkey.htm",
+                "http://botscout.com/corp_users.htm"
+            ],
+            'apiKeyInstructions': [
+                "Visit http://botscout.com/getkey.htm",
+                "Register a free account",
+                "The API key will be emailed to your account"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=http://botscout.com/",
+            'logo': "http://botscout.com/image/bslogo.gif",
+            'description': "BotScout helps prevent automated web scripts, known as \"bots\", "
+                                "from registering on forums, polluting databases, spreading spam, "
+                                "and abusing forms on web sites. We do this by tracking the names, IPs, "
+                                "and email addresses that bots use and logging them as unique signatures for future reference. "
+                                "We also provide a simple yet powerful API that you can use to test forms "
+                                "when they're submitted on your site.\n",
+        }
+	}
+
     # Default options
     opts = {
         "api_key": ""

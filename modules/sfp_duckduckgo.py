@@ -16,6 +16,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_duckduckgo(SpiderFootPlugin):
     """DuckDuckGo:Footprint,Investigate,Passive:Search Engines::Query DuckDuckGo's API for descriptive information about your target."""
 
+    meta = {
+		'name': "DuckDuckGo",
+		'summary': "Query DuckDuckGo's API for descriptive information about your target.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
             "affiliatedomains": True

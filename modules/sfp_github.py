@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_github(SpiderFootPlugin):
     """Github:Footprint,Passive:Social Media::Identify associated public code repositories on Github."""
 
+    meta = {
+		'name': "Github",
+		'summary': "Identify associated public code repositories on Github.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Passive" ],
+		'categories': [ "Social Media" ]
+	}
+
     # Default options
     opts = {
         'namesonly':    True

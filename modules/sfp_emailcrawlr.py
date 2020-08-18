@@ -19,6 +19,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 class sfp_emailcrawlr(SpiderFootPlugin):
     """EmailCrawlr:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailCrawlr for email addresses and phone numbers associated with a domain."""
 
+    meta = {
+		'name': "EmailCrawlr",
+		'summary': "Search EmailCrawlr for email addresses and phone numbers associated with a domain.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
+
     # Default options
     opts = {
         "api_key": "",
