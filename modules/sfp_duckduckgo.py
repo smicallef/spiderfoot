@@ -21,7 +21,20 @@ class sfp_duckduckgo(SpiderFootPlugin):
 		'summary': "Query DuckDuckGo's API for descriptive information about your target.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://duckduckgo.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://api.duckduckgo.com/api",
+                "https://help.duckduckgo.com/company/partnerships/",
+                "https://help.duckduckgo.com/duckduckgo-help-pages/"
+            ],
+            'favIcon': "https://duckduckgo.com/favicon.ico",
+            'logo': "https://duckduckgo.com/assets/icons/meta/DDG-icon_256x256.png",
+            'description': "Our Instant Answer API gives you free access to many of our instant answers like: "
+                                "topic summaries , categories, disambiguation, and !bang redirects.\n",
+        }
 	}
 
     # Default options
