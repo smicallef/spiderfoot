@@ -17,12 +17,23 @@ class sfp_h1nobbdde(SpiderFootPlugin):
     """HackerOne (Unofficial):Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed."""
 
     meta = {
-		'name': "HackerOne (Unofficial)",
-		'summary': "Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks, Dumps and Breaches" ]
-	}
+        'name': "HackerOne (Unofficial)",
+        'summary': "Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Leaks, Dumps and Breaches" ],
+        'dataSource': {
+            'website': "http://www.nobbd.de/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "http://www.nobbd.de/index.php#projekte",
+                "https://twitter.com/disclosedh1"
+            ],
+            'favIcon': "http://www.nobbd.de/favicon.ico",
+            'logo': "http://www.nobbd.de/favicon.ico",
+            'description': "Unofficial Bug Monitoring platform for HackerOne\n.",
+        }
+    }
 
     # Default options
     opts = {
