@@ -16,12 +16,31 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
     """Iknowwhatyoudownload.com:Footprint,Investigate,Passive:Secondary Networks:apikey:Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent."""
 
     meta = {
-		'name': "Iknowwhatyoudownload.com",
-		'summary': "Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Secondary Networks" ]
-	}
+        'name': "Iknowwhatyoudownload.com",
+        'summary': "Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Secondary Networks" ],
+        'dataSource': {
+            'website': "https://iknowwhatyoudownload.com/en/peer/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://iknowwhatyoudownload.com/en/api/",
+                "https://iknowwhatyoudownload.com/en/link/",
+                "https://iknowwhatyoudownload.com/en/peer/"
+            ],
+            'apiKeyInstructions': [
+                "Visit iknowwhatyoudownload.com/en/api/",
+                "Request Demo Key with email id",
+                "The API key will be sent to your email"
+            ],
+            'favIcon': "https://iknowwhatyoudownload.com/assets/img/utorrent2.png",
+            'logo': "https://iknowwhatyoudownload.com/assets/img/logo.png",
+            'description': "Our system collects torrent files in two ways: parsing torrent sites, and listening DHT network. "
+                                "We have more than 1.500.000 torrents which where classified and which are using now "
+                                "for collecting peer sharing facts (up to 200.000.000 daily).\n",
+        }
+    }
 
     # Default options
     opts = {
