@@ -23,7 +23,12 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
 		'summary': "Search for potential Digital Ocean Spaces associated with the target and attempt to list their contents.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Passive" ],
-		'categories': [ "Crawling and Scanning" ]
+		'categories': [ "Crawling and Scanning" ],
+        'dataSource': {
+            'website': "https://www.digitalocean.com/products/spaces/",
+            'model': "FREE_NOAUTH_UNLIMITED"
+        }
+
 	}
 
     # Default options
