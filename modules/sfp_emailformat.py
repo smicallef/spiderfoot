@@ -24,7 +24,19 @@ class sfp_emailformat(SpiderFootPlugin):
 		'summary': "Look up e-mail addresses on email-format.com.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://www.email-format.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.email-format.com/i/api_access/",
+                "https://www.email-format.com/i/api_v2/",
+                "https://www.email-format.com/i/api_v1/"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://www.email-format.com/",
+            'logo': "https://www.google.com/s2/favicons?domain=https://www.email-format.com/",
+            'description': "Save time and energy - find the email address formats in use at thousands of companies.\n",
+        }
 	}
 
     results = None
