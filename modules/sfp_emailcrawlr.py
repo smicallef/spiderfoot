@@ -24,7 +24,27 @@ class sfp_emailcrawlr(SpiderFootPlugin):
 		'summary': "Search EmailCrawlr for email addresses and phone numbers associated with a domain.",
 		'flags': [ "apikey" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://emailcrawlr.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://emailcrawlr.com/docs"
+            ],
+            'apiKeyInstructions': [
+                "Visit emailcrawlr.com",
+                "Sign up for free account",
+                "Navigate to emailcrawlr.com/dashboard",
+                "The API key is listed under 'API Key'"
+            ],
+            'favIcon': "https://emailcrawlr.com/assets/fav-165eaa698b0dc774f0b250fadb2b41266e4c70dfbd7fb5fd4413e4bdecfd229d.png",
+            'logo': "https://emailcrawlr.com/assets/logo_black-d136617b2fc5d52df6eea245a4db78477d8d99f873e08c24a9c3c7defe1c1379.png",
+            'description': "By using the EmailCrawlr JSON API you can: "
+                                "Get key information about company websites.\n"
+                                "Find all email addresses associated with a domain.\n"
+                                "Get social accounts associated with an email.\n"
+                                "Verify email address deliverability.\n",
+        }
 	}
 
     # Default options
