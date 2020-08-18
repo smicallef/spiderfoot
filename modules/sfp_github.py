@@ -22,7 +22,18 @@ class sfp_github(SpiderFootPlugin):
 		'summary': "Identify associated public code repositories on Github.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Passive" ],
-		'categories': [ "Social Media" ]
+		'categories': [ "Social Media" ],
+        'dataSource': {
+            'website': "https://github.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://developer.github.com/"
+            ],
+            'favIcon': "https://github.githubassets.com/favicons/favicon.png",
+            'logo': "https://github.githubassets.com/favicons/favicon.png",
+            'description': "GitHub brings together the world's largest community of "
+                                "developers to discover, share, and build better software.\n.",
+        }
 	}
 
     # Default options
