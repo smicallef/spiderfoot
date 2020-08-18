@@ -31,7 +31,7 @@ class sfp_flickr(SpiderFootPlugin):
             'website': "https://www.flickr.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
-                "https://www.flickr.com/services/api/"
+                "https://www.flickr.com/services/api/",
                 "https://www.flickr.com/services/developer/api/",
                 "https://code.flickr.net/"
             ],
