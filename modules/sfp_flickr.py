@@ -26,7 +26,26 @@ class sfp_flickr(SpiderFootPlugin):
 		'summary': "Search Flickr for domains, URLs and emails related to the specified domain.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Social Media" ]
+		'categories': [ "Social Media" ],
+        'dataSource': {
+            'website': "https://www.flickr.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.flickr.com/services/api/"
+                "https://www.flickr.com/services/developer/api/",
+                "https://code.flickr.net/",
+            ],
+            'favIcon': "https://combo.staticflickr.com/pw/favicon.ico",
+            'logo': "https://combo.staticflickr.com/pw/favicon.ico",
+            'description': "Flickr is almost certainly the best online photo management and sharing application in the world.\n "
+                                "On Flickr, members upload photos, share them securely, supplement their photos with "
+                                "metadata like license information, geo-location, people, tags, etc., "
+                                "and interact with their family, friends, contacts or anyone in the community. "
+                                "Practically all the features on Flickr's various platforms -- web, mobile and desktop -- "
+                                "are accompanied by a longstanding API program. "
+                                "Since 2005, developers have collaborated on top of Flickr's APIs to build fun, creative, "
+                                "and gorgeous experiences around photos that extend beyond Flickr.\n",
+        }
 	}
 
     # Default options
