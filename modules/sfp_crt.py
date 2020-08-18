@@ -24,7 +24,19 @@ class sfp_crt(SpiderFootPlugin):
 		'summary': "Gather hostnames from historical certificates in crt.sh.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://crt.sh/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://sectigo.com/",
+                "https://github.com/crtsh"
+            ],
+            'favIcon': "https://crt.sh/sectigo_s.png",
+            'logo': "https://crt.sh/sectigo_s.png",
+            'description': "Enter an Identity (Domain Name, Organization Name, etc), "
+                                "a Certificate Fingerprint (SHA-1 or SHA-256) or a crt.sh ID\n",
+        }
 	}
 
     opts = {
