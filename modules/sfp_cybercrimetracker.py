@@ -34,7 +34,19 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
 		'summary': "Check if a host/domain or IP is malicious according to cybercrime-tracker.net.",
 		'flags': [ "" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "http://cybercrime-tracker.net/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://cybercrime-tracker.net/tools.php",
+                "http://cybercrime-tracker.net/about.php"
+            ],
+            'favIcon': "http://cybercrime-tracker.net/favicon.ico",
+            'logo': "http://cybercrime-tracker.net/favicon.ico",
+            'description': "CyberCrime is a C&C panel tracker, in other words, "
+                                "it lists the administration interfaces of certain in-the-wild botnets.\n.",
+        }
 	}
 
     # Default options
