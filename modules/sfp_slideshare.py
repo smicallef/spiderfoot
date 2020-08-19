@@ -17,12 +17,27 @@ class sfp_slideshare(SpiderFootPlugin):
     """SlideShare:Footprint,Investigate,Passive:Social Media::Gather name and location from SlideShare profiles."""
 
     meta = {
-		'name': "SlideShare",
-		'summary': "Gather name and location from SlideShare profiles.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Social Media" ]
-	}
+        'name': "SlideShare",
+        'summary': "Gather name and location from SlideShare profiles.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Social Media" ],
+        'dataSource': {
+            'website': "https://www.slideshare.net",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.slideshare.net/developers/documentation",
+                "https://www.slideshare.net/developers",
+                "https://www.slideshare.net/developers/resources",
+                "https://www.slideshare.net/developers/oembed"
+            ],
+            'favIcon': "https://public.slidesharecdn.com/favicon.ico?d8e2a4ed15",
+            'logo': "https://public.slidesharecdn.com/images/logo/linkedin-ss/SS_Logo_White_Large.png?6d1f7a78a6",
+            'description': "LinkedIn SlideShare is an American hosting service for professional content including "
+                                "presentations, infographics, documents, and videos. "
+                                "Users can upload files privately or publicly in PowerPoint, Word, PDF, or OpenDocument format\n",
+        }
+    }
 
     # Default options
     opts = {
