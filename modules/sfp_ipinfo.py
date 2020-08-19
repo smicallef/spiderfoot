@@ -19,12 +19,30 @@ class sfp_ipinfo(SpiderFootPlugin):
     """IPInfo.io:Footprint,Investigate,Passive:Real World:apikey:Identifies the physical location of IP addresses identified using ipinfo.io."""
 
     meta = {
-		'name': "IPInfo.io",
-		'summary': "Identifies the physical location of IP addresses identified using ipinfo.io.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Real World" ]
-	}
+        'name': "IPInfo.io",
+        'summary': "Identifies the physical location of IP addresses identified using ipinfo.io.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Real World" ],
+        'dataSource': {
+            'website': "https://ipinfo.io",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://ipinfo.io/developers"
+            ],
+            'apiKeyInstructions': [
+                "Visit ipinfo.io/",
+                "Sign up for a free account",
+                "Navigate to ipinfo.io/account",
+                "The API key is listed above 'is your access token'"
+            ],
+            'favIcon': "https://ipinfo.io/static/favicon-96x96.png?v3",
+            'logo': "https://ipinfo.io/static/deviceicons/android-icon-96x96.png",
+            'description': "The Trusted Source for IP Address Data.\n"
+                                "With IPinfo, you can pinpoint your users’ locations, customize their experiences, "
+                                "prevent fraud, ensure compliance, and so much more.\n",
+        }
+    }
 
     # Default options
     opts = {
