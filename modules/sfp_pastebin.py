@@ -20,12 +20,32 @@ class sfp_pastebin(SpiderFootPlugin):
     """PasteBin:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:PasteBin scraping (via Google) to identify related content."""
 
     meta = {
-		'name': "PasteBin",
-		'summary': "PasteBin scraping (via Google) to identify related content.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks, Dumps and Breaches" ]
-	}
+        'name': "PasteBin",
+        'summary': "PasteBin scraping (via Google) to identify related content.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Leaks, Dumps and Breaches" ],
+        'dataSource': {
+            'website': "https://pastebin.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://pastebin.com/doc_api",
+                "https://pastebin.com/faq"
+            ],
+            'apiKeyInstructions': [
+                "Visit pastebin.com",
+                "Register a free account",
+                "Navigate to pastebin.com/doc_api",
+                "The API key is listed under 'Your Unique Developer API Key'"
+            ],
+            'favIcon': "https://pastebin.com/favicon.ico",
+            'logo': "https://pastebin.com/favicon.ico",
+            'description': "Pastebin is a website where you can store any text online for easy sharing. "
+                                "The website is mainly used by programmers to store pieces of source code or "
+                                "configuration information, but anyone is more than welcome to paste any type of text. "
+                                "The idea behind the site is to make it more convenient for people to share large amounts of text online.\n",
+        }
+    }
 
     # Default options
     opts = {
