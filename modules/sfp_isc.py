@@ -48,7 +48,7 @@ class sfp_isc(SpiderFootPlugin):
             ],
             'favIcon': "https://isc.sans.edu/iscfavicon.ico",
             'logo': "https://isc.sans.edu/images/logos/isc/large.png",
-            'description': "the ISC provides a free analysis and warning service to thousands of Internet users "
+            'description': "The ISC provides a free analysis and warning service to thousands of Internet users "
                                 "and organizations, and is actively working with Internet Service Providers to "
                                 "fight back against the most malicious attackers.\n"
                                 "Thousands of sensors that work with most firewalls, intrusion detection systems, "
