@@ -20,11 +20,11 @@ class sfp_maltiverse(SpiderFootPlugin):
     """Maltiverse:Investigate,Passive:Reputation Systems::Obtain information about any malicious activities involving IP addresses"""
 
     meta = {
-		'name': "Maltiverse",
-		'summary': "Obtain information about any malicious activities involving IP addresses",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "Maltiverse",
+        'summary': "Obtain information about any malicious activities involving IP addresses",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://maltiverse.com",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -38,7 +38,7 @@ class sfp_maltiverse(SpiderFootPlugin):
                                 "Enhance your SIEM or Firewall and crosscheck your event data with "
                                 "top quality Threat Intelligence information to highlight what requires action.\n",
         }
-	}
+    }
 
     opts = {
         'checkaffiliates': True,
