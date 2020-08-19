@@ -17,29 +17,12 @@ class sfp_openbugbounty(SpiderFootPlugin):
     """Open Bug Bounty:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed."""
 
     meta = {
-        'name': "Open Bug Bounty",
-        'summary': "Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
-        'dataSource': {
-            'website': "https://www.openbugbounty.org/",
-            'model': "FREE_NOAUTH_UNLIMITED",
-            'references': [
-                "https://www.openbugbounty.org/cert/"
-            ],
-            'favIcon': "https://www.openbugbounty.org/favicon.ico",
-            'logo': "https://www.openbugbounty.org/images/design/logo-obbnew.svg",
-            'description': "Open Bug Bounty is an open, disintermediated, cost-free, and community-driven bug bounty platform "
-                                "for coordinated, responsible and ISO 29147 compatible vulnerability disclosure.\n"
-                                "The role of Open Bug Bounty is limited to independent verification of the "
-                                "submitted vulnerabilities and proper notification of website owners by all available means. "
-                                "Once notified, the website owner and the researcher are in direct contact to "
-                                "remediate the vulnerability and coordinate its disclosure. "
-                                "At this and at any later stages, we never act as an intermediary between "
-                                "website owners and security researchers.\n",
-        }
-    }
+		'name': "Open Bug Bounty",
+		'summary': "Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Leaks, Dumps and Breaches" ]
+	}
 
     # Default options
     opts = {
