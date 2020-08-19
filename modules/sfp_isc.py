@@ -31,12 +31,35 @@ class sfp_isc(SpiderFootPlugin):
     """Internet Storm Center:Investigate,Passive:Reputation Systems::Check if an IP is malicious according to SANS ISC."""
 
     meta = {
-		'name': "Internet Storm Center",
-		'summary': "Check if an IP is malicious according to SANS ISC.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Internet Storm Center",
+        'summary': "Check if an IP is malicious according to SANS ISC.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://isc.sans.edu",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://isc.sans.edu/api/",
+                "https://isc.sans.edu/howto.html",
+                "https://isc.sans.edu/honeypot.html",
+                "https://isc.sans.edu/glossary.html",
+                "https://isc.sans.edu/fightback.html"
+            ],
+            'favIcon': "https://isc.sans.edu/iscfavicon.ico",
+            'logo': "https://isc.sans.edu/images/logos/isc/large.png",
+            'description': "the ISC provides a free analysis and warning service to thousands of Internet users "
+                                "and organizations, and is actively working with Internet Service Providers to "
+                                "fight back against the most malicious attackers.\n"
+                                "Thousands of sensors that work with most firewalls, intrusion detection systems, "
+                                "home broadband devices, and nearly all operating systems are constantly collecting information about "
+                                "unwanted traffic arriving from the Internet. "
+                                "These devices feed the DShield database where human volunteers as well as machines pour through "
+                                "the data looking for abnormal trends and behavior. "
+                                "The resulting analysis is posted to the ISC's main web page where it can be automatically retrieved "
+                                "by simple scripts or can be viewed in near real time by any Internet user.\n",
+        }
+    }
 
     # Default options
     opts = {
