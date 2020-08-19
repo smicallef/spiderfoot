@@ -21,12 +21,30 @@ class sfp_pulsedive(SpiderFootPlugin):
     """Pulsedive:Investigate,Passive:Reputation Systems:apikey:Obtain information from Pulsedive's API."""
 
     meta = {
-		'name': "Pulsedive",
-		'summary': "Obtain information from Pulsedive's API.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Pulsedive",
+        'summary': "Obtain information from Pulsedive's API.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://pulsedive.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://pulsedive.com/api/"
+            ],
+            'apiKeyInstructions': [
+                "Visit pulsedive.com",
+                "Register a free account",
+                "Navigate to pulsedive.com/account",
+                "The API key is listed under 'Your API Key'"
+            ],
+            'favIcon': "https://pulsedive.com/favicon.ico?v=3.9.72",
+            'logo': "https://pulsedive.com/img/logo.svg",
+            'description': "Why check 30 different solutions for varying snippets of data when you can just check one? "
+                                "Pulsedive enriches IOCs but also fetches article summaries from Wikipedia and "
+                                "even posts from Reddit and the infosec blogosphere to provide contextual information for threats.\n",
+        }
+    }
 
     # Default options
     opts = {
