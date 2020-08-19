@@ -20,30 +20,12 @@ class sfp_networksdb(SpiderFootPlugin):
     """NetworksDB:Footprint,Investigate,Passive:Passive DNS:apikey:Search NetworksDB.io API for IP address and domain information."""
 
     meta = {
-        'name': "NetworksDB",
-        'summary': "Search NetworksDB.io API for IP address and domain information.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ],
-        'dataSource': {
-            'website': "https://networksdb.io/",
-            'model': "FREE_AUTH_LIMITED",
-            'references': [
-                "https://networksdb.io/api/docs"
-            ],
-            'apiKeyInstructions': [
-                "Visit networksdb.io/api/order/free",
-                "Register a free account",
-                "Click on 'Generate a Free API Key'",
-                "The API key is listed under 'API Key: Free plan'"
-            ],
-            'favIcon': "https://networksdb.io/img/favicon/favicon-96x96.png",
-            'logo': "https://networksdb.io/img/logo.png",
-            'description': "Our database contains information about the public IPv4 and IPv6 addresses, "
-                                "networks and domains owned by companies and organisations across the world "
-                                "along with city-level IP geolocation data and autonomous system information.\n",
-        }
-    }
+		'name': "NetworksDB",
+		'summary': "Search NetworksDB.io API for IP address and domain information.",
+		'flags': [ "apikey" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Passive DNS" ]
+	}
 
     # Default options
     opts = {
