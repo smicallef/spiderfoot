@@ -20,12 +20,23 @@ class sfp_keybase(SpiderFootPlugin):
     """Keybase:Footprint,Investigate,Passive:Public Registries::Obtain additional information about target username"""
 
     meta = {
-		'name': "Keybase",
-		'summary': "Obtain additional information about target username",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Public Registries" ]
-	}
+        'name': "Keybase",
+        'summary': "Obtain additional information about target username",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Public Registries" ],
+        'dataSource': {
+            'website': "https://keybase.io/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://keybase.io/docs"
+            ],
+            'favIcon': "https://keybase.io/images/icons/icon-keybase-logo-48.png",
+            'logo': "https://keybase.io/images/icons/icon-keybase-logo-48.png",
+            'description': "Keybase is a key directory that maps social media identities to encryption keys "
+                                "in a publicly auditable manner.\n",
+        }
+    }
 
     opts = {
     }
