@@ -24,7 +24,20 @@ class sfp_maltiverse(SpiderFootPlugin):
 		'summary': "Obtain information about any malicious activities involving IP addresses",
 		'flags': [ "" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://maltiverse.com",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://maltiverse.com/faq",
+                "https://app.swaggerhub.com/apis-docs/maltiverse/api/1.0.0-oas3"
+            ],
+            'favIcon': "https://maltiverse.com/favicon.ico",
+            'logo': "https://maltiverse.com/assets/images/logo/logo.png",
+            'description': "The Open IOC Search Engine.\n."
+                                "Enhance your SIEM or Firewall and crosscheck your event data with "
+                                "top quality Threat Intelligence information to highlight what requires action.\n",
+        }
 	}
 
     opts = {
