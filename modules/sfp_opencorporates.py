@@ -22,7 +22,20 @@ class sfp_opencorporates(SpiderFootPlugin):
 		'summary': "Look up company information from OpenCorporates.",
 		'flags': [ "" ],
 		'useCases': [ "Passive", "Footprint", "Investigate" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://opencorporates.com",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://api.opencorporates.com/documentation/API-Reference"
+            ],
+            'favIcon': "https://opencorporates.com/assets/favicons/favicon.png",
+            'logo': "https://opencorporates.com/contents/ui/theme/img/oc-logo.svg",
+            'description': "The largest open database of companies in the world.\n"
+                               "As the largest, open database of companies in the world, "
+                               "our business is making high-quality, official company data openly available. "
+                               "Data that can be trusted, accessed, analysed and interrogated when and how it’s needed.\n",
+        }
 	}
 
     # Default options
