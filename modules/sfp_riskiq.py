@@ -18,14 +18,14 @@ class sfp_riskiq(SpiderFootPlugin):
     """RiskIQ:Investigate,Passive:Reputation Systems:apikey:Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases."""
 
     meta = {
-		'name': "RiskIQ",
-		'summary': "Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "RiskIQ",
+        'summary': "Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://community.riskiq.com/",
-            'model': "FREE_NOAUTH_LIMITED",
+            'model': "FREE_AUTH_LIMITED",
             'references': [
                 "https://info.riskiq.net/help",
                 "https://www.riskiq.com/resources/?type=training_videos",
@@ -35,7 +35,8 @@ class sfp_riskiq(SpiderFootPlugin):
                 "Visit community.riskiq.com/home",
                 "Register a free account",
                 "Navigate to community.riskiq.com/settings",
-                "The API key is listed under 'Your API Key'"
+                "Click on 'Show' beside 'User'",
+                "The API Key combination will be under 'Key' and 'Secret'"
             ],
             'favIcon': "https://community.riskiq.com/static/assets/favicon.png",
             'logo': "https://community.riskiq.com/static/assets/favicon.png",
@@ -44,7 +45,7 @@ class sfp_riskiq(SpiderFootPlugin):
                                 "Understand your digital assets that are internet-exposed, "
                                 "and map and monitor your external attack surface. \n",
         }
-	}
+    }
 
     # Default options
     opts = {
