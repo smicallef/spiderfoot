@@ -34,7 +34,7 @@ class sfp_maltiverse(SpiderFootPlugin):
             ],
             'favIcon': "https://maltiverse.com/favicon.ico",
             'logo': "https://maltiverse.com/assets/images/logo/logo.png",
-            'description': "The Open IOC Search Engine.\n."
+            'description': "The Open IOC Search Engine.\n"
                                 "Enhance your SIEM or Firewall and crosscheck your event data with "
                                 "top quality Threat Intelligence information to highlight what requires action.\n",
         }
