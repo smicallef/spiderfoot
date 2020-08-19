@@ -7,7 +7,7 @@
 # Author:      Filip Aleksić <faleksicdev@gmail.com>
 #
 # Created:     2020-08-18
-# Copyright:   (c) Filip Aleksić
+# Copyright:   (c) Steve Micallef
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
@@ -177,7 +177,9 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_template but did not set an API key!", False)
+            self.sf.error(
+                "You enabled sfp_googlesafebrowsing but did not set an API key!", False
+            )
             self.errorState = True
             return None
 
@@ -217,4 +219,4 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         self.notifyListeners(evt)
 
 
-# End of sfp_template class
+# End of sfp_googlesafebrowsing class
