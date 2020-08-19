@@ -1,11 +1,11 @@
-# test_sfp_hosting.py
+# test_sfp_filemeta.py
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
 import unittest
-from modules.sfp_hosting import sfp_hosting
+from modules.sfp_filemeta import sfp_filemeta
 
-class TestModuleHosting(unittest.TestCase):
+class TestModuleFilemeta(unittest.TestCase):
     """
-    Test modules.sfp_hosting
+    Test modules.sfp_filemeta
     """
 
     default_options = {
@@ -37,7 +37,7 @@ class TestModuleHosting(unittest.TestCase):
     }
 
     def test_opts(self):
-        module = sfp_hosting()
+        module = sfp_filemeta()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
@@ -46,25 +46,24 @@ class TestModuleHosting(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_hosting()
+        module = sfp_filemeta()
         module.setup(sf, dict())
 
     def test_watchedEvents_should_return_list(self):
-        module = sfp_hosting()
+        module = sfp_filemeta()
         self.assertIsInstance(module.watchedEvents(), list)
 
     def test_producedEvents_should_return_list(self):
-        module = sfp_hosting()
+        module = sfp_filemeta()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo - test fails due to self.opts['_useragent'] = None")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_hosting()
+        module = sfp_filemeta()
         module.setup(sf, dict())
 
         target_value = 'example target value'
