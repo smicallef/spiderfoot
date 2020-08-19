@@ -20,12 +20,28 @@ class sfp_mnemonic(SpiderFootPlugin):
     """Mnemonic PassiveDNS:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from PassiveDNS.mnemonic.no."""
    
     meta = {
-		'name': "Mnemonic PassiveDNS",
-		'summary': "Obtain Passive DNS information from PassiveDNS.mnemonic.no.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Passive DNS" ]
-	}
+        'name': "Mnemonic PassiveDNS",
+        'summary': "Obtain Passive DNS information from PassiveDNS.mnemonic.no.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Passive DNS" ],
+        'dataSource': {
+            'website': "https://www.mnemonic.no",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.mnemonic.no/resources/whitepapers/",
+                "https://www.mnemonic.no/research-and-development/"
+            ],
+            'favIcon': "https://www.mnemonic.no/favicon-96x96.png",
+            'logo': "https://www.mnemonic.no/UI/logo.svg",
+            'description': "mnemonic helps businesses manage their security risks, "
+                                "protect their data and defend against cyber threats.\n"
+                                "Our expert team of security consultants, product specialists, "
+                                "threat researchers, incident responders and ethical hackers, combined "
+                                "with our Argus security platform ensures we stay ahead of "
+                                "advanced cyberattacks and protect our customers from evolving threats.\n",
+        }
+    }
 
     # Default options
     opts = {
