@@ -19,12 +19,32 @@ class sfp_numverify(SpiderFootPlugin):
     """numverify:Footprint,Investigate,Passive:Real World:apikey:Lookup phone number location and carrier information from numverify.com."""
 
     meta = {
-		'name': "numverify",
-		'summary': "Lookup phone number location and carrier information from numverify.com.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Real World" ]
-	}
+        'name': "numverify",
+        'summary': "Lookup phone number location and carrier information from numverify.com.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Real World" ],
+        'dataSource': {
+            'website': "http://numverify.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://numverify.com/documentation",
+                "https://numverify.com/faq"
+            ],
+            'apiKeyInstructions': [
+                "Visit numverify.com",
+                "Sign up for a free account",
+                "Navigate to numverify.com/dashboard",
+                "The API key is listed under 'Your API Access Key'"
+            ],
+            'favIcon': "https://numverify.com/images/icons/numverify_shortcut_icon.ico",
+            'logo': "https://numverify.com/images/logos/numverify_header.png",
+            'description': "Global Phone Number Validation & Lookup JSON API.\n"
+                            "NumVerify offers a full-featured yet simple RESTful JSON API for "
+                            "national and international phone number validation and information lookup for a total of 232 countries around the world.\n"
+                            "Requested numbers are processed in real-time, cross-checked with the latest international numbering plan databases "
+                            "and returned in handy JSON format enriched with useful carrier, geographical location and line type data.\n",        }
+    }
 
     # Default options
     opts = {
