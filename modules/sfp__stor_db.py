@@ -16,12 +16,13 @@ from sflib import SpiderFoot, SpiderFootPlugin
 
 class sfp__stor_db(SpiderFootPlugin):
     """Storage::::Stores scan results into the back-end SpiderFoot database. You will need this."""
-    _priority = 0
 
     meta = {
         'name': "Storage",
         'summary': "Stores scan results into the back-end SpiderFoot database. You will need this."
     }
+
+    _priority = 0
 
     # Default options
     opts = {
