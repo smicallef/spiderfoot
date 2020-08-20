@@ -53,7 +53,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
     opts = {"api_key": ""}
 
     optdescs = {
-        "api_key": "Google Safe Browsing API key, it must be created and API enabled in the Google Developer Console. Without this you cannot obtain their feed.",
+        "api_key": "Google Safe Browsing API key.",
     }
 
     results = None
