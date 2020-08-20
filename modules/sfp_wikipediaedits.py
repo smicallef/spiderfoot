@@ -20,12 +20,25 @@ class sfp_wikipediaedits(SpiderFootPlugin):
     """Wikipedia Edits:Footprint,Investigate,Passive:Secondary Networks::Identify edits to Wikipedia articles made from a given IP address or username."""
 
     meta = {
-		'name': "Wikipedia Edits",
-		'summary': "Identify edits to Wikipedia articles made from a given IP address or username.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Secondary Networks" ]
-	}
+        'name': "Wikipedia Edits",
+        'summary': "Identify edits to Wikipedia articles made from a given IP address or username.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Secondary Networks" ],
+        'dataSource': {
+            'website': "https://www.wikipedia.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.mediawiki.org/wiki/API:Tutorial",
+                "https://www.mediawiki.org/wiki/How_to_contribute",
+                "https://www.mediawiki.org/wiki/API:Main_page"
+            ],
+            'favIcon': "https://www.wikipedia.org/static/favicon/wikipedia.ico",
+            'logo': "https://www.wikipedia.org/static/apple-touch/wikipedia.png",
+            'description': "Wikipedia is a multilingual online encyclopedia created and maintained as an "
+                                "open collaboration project by a community of volunteer editors, using a wiki-based editing system.\n",
+        }
+    }
 
     # Default options
     opts = {
