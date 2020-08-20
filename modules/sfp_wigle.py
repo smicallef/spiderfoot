@@ -18,12 +18,32 @@ class sfp_wigle(SpiderFootPlugin):
     """Wigle.net:Footprint,Investigate,Passive:Secondary Networks:apikey:Query wigle.net to identify nearby WiFi access points."""
 
     meta = {
-		'name': "Wigle.net",
-		'summary': "Query wigle.net to identify nearby WiFi access points.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Secondary Networks" ]
-	}
+        'name': "Wigle.net",
+        'summary': "Query wigle.net to identify nearby WiFi access points.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Secondary Networks" ],
+        'dataSource': {
+            'website': "https://wigle.net/",
+            'model': "FREE_AUTH_UNLIMITED",
+            'references': [
+                "https://api.wigle.net/",
+                "https://api.wigle.net/swagger"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://wigle.net/",
+                "Register a free account",
+                "Navigate to wigle.net/account",
+                "Click on 'Show my token'",
+                "The API key is listed under 'API Token'"
+            ],
+            'favIcon': "https://wigle.net/favicon.ico?v=A0Ra9gElOR",
+            'logo': "https://wigle.net/images/planet-bubble.png",
+            'description': "We consolidate location and information of wireless networks world-wide to a central database, "
+                                "and have user-friendly desktop and web applications that can map, "
+                                "query and update the database via the web.\n",
+        }
+    }
 
     # Default options
     opts = {
