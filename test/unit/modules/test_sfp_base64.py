@@ -1,11 +1,11 @@
-# test_sfp_hosting.py
+# test_sfp_base64.py
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
 import unittest
-from modules.sfp_hosting import sfp_hosting
+from modules.sfp_base64 import sfp_base64
 
-class TestModuleHosting(unittest.TestCase):
+class TestModuleBase64(unittest.TestCase):
     """
-    Test modules.sfp_hosting
+    Test modules.sfp_base64
     """
 
     default_options = {
@@ -37,7 +37,7 @@ class TestModuleHosting(unittest.TestCase):
     }
 
     def test_opts(self):
-        module = sfp_hosting()
+        module = sfp_base64()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
@@ -46,25 +46,24 @@ class TestModuleHosting(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_hosting()
+        module = sfp_base64()
         module.setup(sf, dict())
 
     def test_watchedEvents_should_return_list(self):
-        module = sfp_hosting()
+        module = sfp_base64()
         self.assertIsInstance(module.watchedEvents(), list)
 
     def test_producedEvents_should_return_list(self):
-        module = sfp_hosting()
+        module = sfp_base64()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo - test fails due to self.opts['_useragent'] = None")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_hosting()
+        module = sfp_base64()
         module.setup(sf, dict())
 
         target_value = 'example target value'
