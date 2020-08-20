@@ -21,12 +21,24 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
     """Open Passive DNS Database:Footprint,Investigate,Passive:Passive DNS::Obtain passive DNS information from pdns.daloo.de Open passive DNS database."""
 
     meta = {
-		'name': "Open Passive DNS Database",
-		'summary': "Obtain passive DNS information from pdns.daloo.de Open passive DNS database.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Passive DNS" ]
-	}
+        'name': "Open Passive DNS Database",
+        'summary': "Obtain passive DNS information from pdns.daloo.de Open passive DNS database.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Passive DNS" ],
+        'dataSource': {
+            'website': "http://pdns.daloo.de/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "http://pdns.daloo.de/faq.php"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=http://pdns.daloo.de/",
+            'logo': "https://www.google.com/s2/favicons?domain=http://pdns.daloo.de/",
+            'description': "This is a personal project to track DNS responses. "
+                                "You can use the DNS resolver to add data to it or just browse what the crawler found. "
+                                "I mainly did it because I found no really open database.\n",
+        }
+    }
 
     # Default options
     opts = {
