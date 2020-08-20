@@ -20,12 +20,24 @@ class sfp_onionsearchengine(SpiderFootPlugin):
     """Onionsearchengine.com:Footprint,Investigate:Search Engines::Search Tor onionsearchengine.com for mentions of the target domain."""
 
     meta = {
-		'name': "Onionsearchengine.com",
-		'summary': "Search Tor onionsearchengine.com for mentions of the target domain.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "Onionsearchengine.com",
+        'summary': "Search Tor onionsearchengine.com for mentions of the target domain.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://as.onionsearchengine.com",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://helpdesk.onionsearchengine.com/?v=knowledgebase",
+                "https://onionsearchengine.com/add_url.php"
+            ],
+            'favIcon': "https://as.onionsearchengine.com/images/onionsearchengine.jpg",
+            'logo': "https://as.onionsearchengine.com/images/onionsearchengine.jpg",
+            'description': "No cookies, no javascript, no trace. We protect your privacy.\n"
+                                "Onion search engine is search engine with ability to find content on tor network / deepweb / darkweb.\n",
+        }
+    }
 
     # Default options
     opts = {
