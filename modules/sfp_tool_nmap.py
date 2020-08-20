@@ -21,12 +21,22 @@ class sfp_tool_nmap(SpiderFootPlugin):
     """Tool - Nmap:Footprint,Investigate:Crawling and Scanning:tool,slow,invasive:Identify what Operating System might be used."""
 
     meta = {
-		'name': "Tool - Nmap",
-		'summary': "Identify what Operating System might be used.",
-		'flags': [ "tool", "slow", "invasive" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "Crawling and Scanning" ]
-	}
+        'name': "Tool - Nmap",
+        'summary': "Identify what Operating System might be used.",
+        'flags': [ "tool", "slow", "invasive" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "Crawling and Scanning" ],
+        'toolDetails': {
+            'name': "Nmap",
+            'description': "Nmap (\"Network Mapper\") is a free and open source utility for network discovery and security auditing.\n"
+                                "Nmap uses raw IP packets in novel ways to determine what hosts are available on the network, "
+                                "what services (application name and version) those hosts are offering, "
+                                "what operating systems (and OS versions) they are running, "
+                                "what type of packet filters/firewalls are in use, and dozens of other characteristics.\n",
+            'website': "https://nmap.org/",
+            'repository': "https://nmap.org/book/install.html#inst-svn"
+        },
+    }
 
     # Default options
     opts = {
