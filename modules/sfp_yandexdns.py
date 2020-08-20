@@ -19,12 +19,24 @@ class sfp_yandexdns(SpiderFootPlugin):
     """Yandex DNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Yandex DNS"""
 
     meta = {
-		'name': "Yandex DNS",
-		'summary': "Check if a host would be blocked by Yandex DNS",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Yandex DNS",
+        'summary': "Check if a host would be blocked by Yandex DNS",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://yandex.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://tech.yandex.com/"
+            ],
+            'favIcon': "https://yastatic.net/iconostasis/_/tToKamh-mh5XlViKpgiJRQgjz1Q.png",
+            'logo': "https://yastatic.net/iconostasis/_/tToKamh-mh5XlViKpgiJRQgjz1Q.png",
+            'description': "Yandex is a technology company that builds intelligent products and services powered by machine learning. "
+                                "Our goal is to help consumers and businesses better navigate the online and offline world. "
+                                "Since 1997, we have delivered world-class, locally relevant search and information services.\n",
+        }
+    }
 
     # Default options
     opts = {
