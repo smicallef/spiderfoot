@@ -30,6 +30,12 @@ class sfp_spur(SpiderFootPlugin):
             'references': [
                 "https://spur.us/api"
             ],
+            'apiKeyInstructions': [
+                "Visit spur.us",
+                "Register an account",
+                "Navigate to spur.us/app/context/tokens",
+                "The API key is listed under 'Token'"
+            ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://spur.us",
             'logo': "https://spur.us/app/horizontal_logo.svg",
             'description': "We expose VPNs, residential proxies, botnets, anonymization behavior, geo-fraud, and more. "
