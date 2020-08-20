@@ -19,6 +19,11 @@ class sfp__stor_stdout(SpiderFootPlugin):
     _priority = 0
     firstEvent = True
 
+    meta = {
+        'name': "Command-line output",
+        'summary': "Dumps output to standard out. Used for when a SpiderFoot scan is run via the command-line."
+    }
+
     # Default options
     opts = {
         "_format": "tab", # tab, csv, json

@@ -18,6 +18,11 @@ class sfp__stor_db(SpiderFootPlugin):
     """Storage::::Stores scan results into the back-end SpiderFoot database. You will need this."""
     _priority = 0
 
+    meta = {
+        'name': "Storage",
+        'summary': "Stores scan results into the back-end SpiderFoot database. You will need this."
+    }
+
     # Default options
     opts = {
         'maxstorage': 1024,  # max bytes for any piece of info stored (0 = unlimited)
