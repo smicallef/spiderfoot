@@ -17,13 +17,31 @@ import json
 class sfp_twilio(SpiderFootPlugin):
     """Twilio:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio."""
     
-    meta = {
-		'name': "Twilio",
-		'summary': "Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "Twilio",
+        'summary': "Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://www.twilio.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://www.twilio.com/docs/all",
+                "https://www.twilio.com/blog/what-does-twilio-do"
+            ],
+            'apiKeyInstructions': [
+                "Visit www.twilio.com",
+                "Register a free account",
+                "Navigate to www.twilio.com/console",
+                "The API key combination is listed under 'Account SID' and 'Auth Token'"
+            ],
+            'favIcon': "https://www.datasource.com/favicon.ico",
+            'logo': "https://www.datasource.com/logo.gif",
+            'description': "Twilio is a cloud communications platform as a service company based in San Francisco, California. "
+                                "Twilio allows software developers to programmatically make and receive phone calls, "
+                                "send and receive text messages, and perform other communication functions using its web service APIs.\n",
+        }
+    }
 
     opts = {
         'api_key_account_sid': '',
