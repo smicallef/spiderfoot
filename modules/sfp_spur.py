@@ -33,6 +33,7 @@ class sfp_spur(SpiderFootPlugin):
             'apiKeyInstructions': [
                 "Visit spur.us",
                 "Register an account",
+                "Pay for a subscription",
                 "Navigate to spur.us/app/context/tokens",
                 "The API key is listed under 'Token'"
             ],
