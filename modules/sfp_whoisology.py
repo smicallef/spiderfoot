@@ -17,12 +17,25 @@ class sfp_whoisology(SpiderFootPlugin):
     """Whoisology:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using Whoisology.com."""
 
     meta = {
-		'name': "Whoisology",
-		'summary': "Reverse Whois lookups using Whoisology.com.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "Whoisology",
+        'summary': "Reverse Whois lookups using Whoisology.com.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://whoisology.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://whoisology.com/whois-database-download",
+                "https://whoisology.com/tutorial"
+            ],
+            'favIcon': "https://whoisology.com/img/w-logo.png",
+            'logo': "https://whoisology.com/assets/images/il1.gif",
+            'description': "Whoisology is a domain name ownership archive with literally billions of searchable and cross referenced domain name whois records.\n"
+                                "Our main focus is reverse whois which is used for cyber crime investigation / InfoSec, "
+                                "corporate intelligence, legal research, business development, and for good ol' fashioned poking around.\n",
+        }
+    }
 
     # Default options
     opts = {
