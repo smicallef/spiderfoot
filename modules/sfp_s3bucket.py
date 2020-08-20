@@ -19,12 +19,16 @@ class sfp_s3bucket(SpiderFootPlugin):
     """Amazon S3 Bucket Finder:Footprint,Passive:Crawling and Scanning::Search for potential Amazon S3 buckets associated with the target and attempt to list their contents."""
 
     meta = {
-		'name': "Amazon S3 Bucket Finder",
-		'summary': "Search for potential Amazon S3 buckets associated with the target and attempt to list their contents.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Passive" ],
-		'categories': [ "Crawling and Scanning" ]
-	}
+        'name': "Amazon S3 Bucket Finder",
+        'summary': "Search for potential Amazon S3 buckets associated with the target and attempt to list their contents.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Passive" ],
+        'categories': [ "Crawling and Scanning" ],
+        'dataSource': {
+            'website': "https://aws.amazon.com/s3/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+        }
+    }
 
     # Default options
     opts = {
