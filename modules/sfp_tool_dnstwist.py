@@ -20,12 +20,21 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
     """Tool - DNSTwist:Footprint,Investigate:DNS:tool:Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation."""
 
     meta = {
-		'name': "Tool - DNSTwist",
-		'summary': "Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation.",
-		'flags': [ "tool" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "DNS" ]
-	}
+        'name': "Tool - DNSTwist",
+        'summary': "Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation.",
+        'flags': [ "tool" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "DNS" ],
+        'toolDetails': {
+            'name': "DNSTwist",
+            'description': "See what sort of trouble users can get in trying to type your domain name. "
+                                "Find lookalike domains that adversaries can use to attack you. "
+                                "Can detect typosquatters, phishing attacks, fraud, and brand impersonation. "
+                                "Useful as an additional source of targeted threat intelligence.",
+            'website': 'https://github.com/elceef/dnstwist',
+            'repository': 'https://github.com/elceef/dnstwist'
+        },
+    }
 
     # Default options
     opts = {
