@@ -20,11 +20,11 @@ class sfp_uceprotect(SpiderFootPlugin):
     """UCEPROTECT:Investigate,Passive:Reputation Systems::Query the UCEPROTECT databases for open relays, open proxies, vulnerable servers, etc."""
 
     meta = {
-		'name': "UCEPROTECT",
-		'summary': "Query the UCEPROTECT databases for open relays, open proxies, vulnerable servers, etc.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "UCEPROTECT",
+        'summary': "Query the UCEPROTECT databases for open relays, open proxies, vulnerable servers, etc.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "http://www.uceprotect.net/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -37,7 +37,7 @@ class sfp_uceprotect(SpiderFootPlugin):
             'logo': "http://www.uceprotect.net/en/logo.gif",
             'description': "UCE Protect is a DNS Blacklisting service whose mission is to stop mail abuse globally.\n",
         }
-	}
+    }
 
     # Default options
     opts = {
