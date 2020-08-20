@@ -17,12 +17,26 @@ class sfp_twitter(SpiderFootPlugin):
     """Twitter:Footprint,Investigate,Passive:Social Media::Gather name and location from Twitter profiles."""
 
     meta = {
-		'name': "Twitter",
-		'summary': "Gather name and location from Twitter profiles.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Social Media" ]
-	}
+        'name': "Twitter",
+        'summary': "Gather name and location from Twitter profiles.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Social Media" ],
+        'dataSource': {
+            'website': "https://twitter.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://developer.twitter.com/en/docs",
+                "https://developer.twitter.com/en/docs/basics/getting-started",
+                "https://developer.twitter.com/en/docs/api-reference-index"
+            ],
+            'favIcon': "https://abs.twimg.com/favicons/twitter.ico",
+            'logo': "https://abs.twimg.com/responsive-web/web/icon-ios.8ea219d4.png",
+            'description': "Twitter is an American microblogging and social networking service "
+                                "on which users post and interact with messages known as \"tweets\". "
+                                "Registered users can post, like, and retweet tweets, but unregistered users can only read them.\n",
+        }
+    }
 
     # Default options
     opts = {
