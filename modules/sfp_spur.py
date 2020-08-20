@@ -19,12 +19,25 @@ class sfp_spur(SpiderFootPlugin):
     """spur.us:Investigate,Passive:Reputation Systems:apikey:Obtain information about any malicious activities involving IP addresses found"""
 
     meta = {
-		'name': "spur.us",
-		'summary': "Obtain information about any malicious activities involving IP addresses found",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "spur.us",
+        'summary': "Obtain information about any malicious activities involving IP addresses found",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://spur.us/",
+            'model': "COMMERCIAL ONLY",
+            'references': [
+                "https://spur.us/api"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://spur.us",
+            'logo': "https://spur.us/app/horizontal_logo.svg",
+            'description': "We expose VPNs, residential proxies, botnets, anonymization behavior, geo-fraud, and more. "
+                                "Anonymous infrastructure has changed; it is time the security industry caught up.\n"
+                                "Identify commercial and private VPN exit points along with the name of the service. "
+                                "We expose over 80 different commercial providers.\n",
+        }
+    }
 
     opts = {
         'api_key': '',
