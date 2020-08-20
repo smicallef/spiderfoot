@@ -21,12 +21,32 @@ class sfp_spyse(SpiderFootPlugin):
     """Spyse:Footprint,Investigate,Passive:Passive DNS:apikey:SpiderFoot plug-in to search Spyse API for IP address and domain information."""
 
     meta = {
-		'name': "Spyse",
-		'summary': "SpiderFoot plug-in to search Spyse API for IP address and domain information.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Passive DNS" ]
-	}
+        'name': "Spyse",
+        'summary': "SpiderFoot plug-in to search Spyse API for IP address and domain information.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Passive DNS" ],
+        'dataSource': {
+            'website': "https://spyse.com",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://spyse.com/tools/api"
+            ],
+            'apiKeyInstructions': [
+                "Visit spyse.com",
+                "Register a free account",
+                "Navigate to spyse.com/user",
+                "The API key is listed under 'API token'"
+            ],
+            'favIcon': "https://spyse.com/favicon/favicon-32x32.png",
+            'logo': "https://spyse.com/favicon/favicon-32x32.png",
+            'description': " Spyse Search can explore entire countries, various types of infrastructures and "
+                                "everything down to the smallest particles of the web. "
+                                "Use the plethora of search parameters at your disposal to achieve the most accurate results.\n"
+                                "Spyse Scoring has been designed to quickly evaluate the "
+                                "security status of different elements of a network - IPs and domains.\n",
+        }
+    }
 
     # Default options
     opts = {
