@@ -25,11 +25,7 @@ class sfp_twitter(SpiderFootPlugin):
         'dataSource': {
             'website': "https://twitter.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
-            'references': [
-                "https://developer.twitter.com/en/docs",
-                "https://developer.twitter.com/en/docs/basics/getting-started",
-                "https://developer.twitter.com/en/docs/api-reference-index"
-            ],
+            'references': [],
             'favIcon': "https://abs.twimg.com/favicons/twitter.ico",
             'logo': "https://abs.twimg.com/responsive-web/web/icon-ios.8ea219d4.png",
             'description': "Twitter is an American microblogging and social networking service "
