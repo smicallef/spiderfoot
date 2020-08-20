@@ -33,10 +33,11 @@ class sfp_pastebin(SpiderFootPlugin):
                 "https://pastebin.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit pastebin.com",
-                "Register a free account",
-                "Navigate to pastebin.com/doc_api",
-                "The API key is listed under 'Your Unique Developer API Key'"
+                "Visit developers.google.com/custom-search/v1/introduction",
+                "Register a free Google account",
+                "Click on 'Get A Key'",
+                "Connect a Project",
+                "The API Key will be listed under 'YOUR API KEY'"
             ],
             'favIcon': "https://pastebin.com/favicon.ico",
             'logo': "https://pastebin.com/favicon.ico",
