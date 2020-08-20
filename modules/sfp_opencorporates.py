@@ -25,7 +25,7 @@ class sfp_opencorporates(SpiderFootPlugin):
         'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://opencorporates.com",
-            'model': "FREE_NOAUTH_UNLIMITED",
+            'model': "FREE_NOAUTH_LIMITED",
             'references': [
                 "https://api.opencorporates.com/documentation/API-Reference"
             ],
