@@ -20,27 +20,12 @@ class sfp_threatminer(SpiderFootPlugin):
     """ThreatMiner:Footprint,Investigate,Passive:Search Engines::Obtain information from ThreatMiner's database for passive DNS and threat intelligence."""
 
     meta = {
-        'name': "ThreatMiner",
-        'summary': "Obtain information from ThreatMiner's database for passive DNS and threat intelligence.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
-        'dataSource': {
-            'website': "https://www.threatminer.org/",
-            'model': "FREE_NOAUTH_UNLIMITED",
-            'references': [
-                "https://www.threatminer.org/api.php",
-                "https://www.threatminer.org/features.php"
-            ],
-            'favIcon': "https://www.threatminer.org/images/favicon.gif",
-            'logo': "https://www.threatminer.org/images/logo.png",
-            'description': "ThreatMiner is a threat intelligence portal designed to enable analysts to research under a single interface. "
-                                "It is used in the SANS FOR578 Cyber Threat Intelligence course.\n"
-                                "Threat intelligence and intrusion analysts who regularly perform research "
-                                "into malware and network infrastructure often find the need to rely on "
-                                "mutliple websites that individually holds a small piece of the larger puzzle.\n",
-        }
-    }
+		'name': "ThreatMiner",
+		'summary': "Obtain information from ThreatMiner's database for passive DNS and threat intelligence.",
+		'flags': [ "" ],
+		'useCases': [ "Footprint", "Investigate", "Passive" ],
+		'categories': [ "Search Engines" ]
+	}
 
     # Default options
     opts = {
