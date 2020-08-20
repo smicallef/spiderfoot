@@ -18,12 +18,25 @@ class sfp_wikileaks(SpiderFootPlugin):
     """Wikileaks:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Search Wikileaks for mentions of domain names and e-mail addresses."""
 
     meta = {
-		'name': "Wikileaks",
-		'summary': "Search Wikileaks for mentions of domain names and e-mail addresses.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks, Dumps and Breaches" ]
-	}
+        'name': "Wikileaks",
+        'summary': "Search Wikileaks for mentions of domain names and e-mail addresses.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Leaks, Dumps and Breaches" ],
+        'dataSource': {
+            'website': "https://wikileaks.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://wikileaks.org/-Leaks-.html#submit",
+                "https://wikileaks.org/What-is-WikiLeaks.html"
+            ],
+            'favIcon': "https://wikileaks.org/IMG/favicon.ico",
+            'logo': "https://wikileaks.org/IMG/favicon.ico",
+            'description': "WikiLeaks specializes in the analysis and publication of large datasets of censored "
+                                "or otherwise restricted official materials involving war, spying and corruption. "
+                                "It has so far published more than 10 million documents and associated analyses.\n",
+        }
+    }
 
     # Default options
     opts = {
