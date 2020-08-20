@@ -19,12 +19,24 @@ class sfp_threatcrowd(SpiderFootPlugin):
     """ThreatCrowd:Investigate,Passive:Reputation Systems::Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses."""
 
     meta = {
-		'name': "ThreatCrowd",
-		'summary': "Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "ThreatCrowd",
+        'summary': "Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://www.threatcrowd.org",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://threatcrowd.blogspot.com/2015/03/tutorial.html"
+            ],
+            'favIcon': "https://www.threatcrowd.org/img/favicon-32x32.png",
+            'logo': "https://www.threatcrowd.org/img/home.png",
+            'description': "The ThreatCrowd API allows you to quickly identify related infrastructure and malware.\n"
+                                "With the ThreatCrowd API you can search for Domains, IP Addreses, E-mail adddresses, "
+                                "Filehashes, Antivirus detections \n",
+        }
+    }
 
     # Default options
     opts = {
