@@ -30,12 +30,22 @@ class sfp_phishtank(SpiderFootPlugin):
     """PhishTank:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to PhishTank."""
 
     meta = {
-		'name': "PhishTank",
-		'summary': "Check if a host/domain is malicious according to PhishTank.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "PhishTank",
+        'summary': "Check if a host/domain is malicious according to PhishTank.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://phishtank.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://phishtank.com/developer_info.php"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://phishtank.com/",
+            'logo': "https://phishtank.com/images/logo_with_tagline.gif",
+            'description': "Submit suspected phishes. Track the status of your submissions. Verify other users' submissions.\n",
+        }
+    }
 
     # Default options
     opts = {
