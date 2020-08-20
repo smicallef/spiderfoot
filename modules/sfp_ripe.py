@@ -21,12 +21,29 @@ class sfp_ripe(SpiderFootPlugin):
     """RIPE:Footprint,Investigate,Passive:Public Registries::Queries the RIPE registry (includes ARIN data) to identify netblocks and other info."""
 
     meta = {
-		'name': "RIPE",
-		'summary': "Queries the RIPE registry (includes ARIN data) to identify netblocks and other info.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Public Registries" ]
-	}
+        'name': "RIPE",
+        'summary': "Queries the RIPE registry (includes ARIN data) to identify netblocks and other info.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Public Registries" ],
+        'dataSource': {
+            'website': "https://www.ripe.net/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.ripe.net/publications/ipv6-info-centre/training-and-materials",
+                "https://www.ripe.net/publications/ipv6-info-centre/ipv6-documents",
+                "https://www.ripe.net/manage-ips-and-asns/db/support/documentation/ripe-database-documentation",
+                "https://www.ripe.net/manage-ips-and-asns/db/support/documentation/ripe-database-documentation/updating-objects-in-the-ripe-database/6-1-restful-api"
+            ],
+            'favIcon': "https://www.ripe.net/favicon.ico",
+            'logo': "https://www.ripe.net/++resource++ripe.plonetheme.images/RIPE_NCC_logo.png",
+            'description': "We're an independent, not-for-profit membership organisation that supports the "
+                                "infrastructure of the Internet through technical coordination in our service region. "
+                                "Our most prominent activity is to act as the Regional Internet Registry (RIR) providing "
+                                "global Internet resources and related services (IPv4, IPv6 and AS Number resources) "
+                                "to members in our service region. \n",
+        }
+    }
 
     # Default options
     opts = {}
