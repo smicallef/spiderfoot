@@ -29,7 +29,7 @@ class sfp_xforce(SpiderFootPlugin):
         'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://exchange.xforce.ibmcloud.com/",
-            'model': "FREE_NOAUTH_LIMITED",
+            'model': "FREE_AUTH_LIMITED",
             'references': [
                 "https://api.xforce.ibmcloud.com/doc/",
                 "https://exchange.xforce.ibmcloud.com/faq"
