@@ -22,12 +22,35 @@ class sfp_xforce(SpiderFootPlugin):
     """XForce Exchange:Investigate,Passive:Reputation Systems:apikey:Obtain information from IBM X-Force Exchange"""
 
     meta = {
-		'name': "XForce Exchange",
-		'summary': "Obtain information from IBM X-Force Exchange",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "XForce Exchange",
+        'summary': "Obtain information from IBM X-Force Exchange",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://exchange.xforce.ibmcloud.com/",
+            'model': "FREE_NOAUTH_LIMITED",
+            'references': [
+                "https://api.xforce.ibmcloud.com/doc/",
+                "https://exchange.xforce.ibmcloud.com/faq"
+            ],
+            'apiKeyInstructions': [
+                "Visit exchange.xforce.ibmcloud.com",
+                "Register a free account",
+                "Navigate to exchange.xforce.ibmcloud.com/settings",
+                "Click on 'API Access'",
+                "Provide an API name, and click 'Generate'",
+                "The API key combination is listed under 'API Key' and 'API Password'"
+            ],
+            'favIcon': "https://exchange.xforce.ibmcloud.com/images/shortcut-icons/apple-icon-57x57.png",
+            'logo': "https://exchange.xforce.ibmcloud.com/images/shortcut-icons/apple-icon-57x57.png",
+            'description': "IBM® X-Force Exchange is a cloud-based, threat intelligence sharing platform that you can use "
+                                "to rapidly research the latest global security threats, aggregate actionable intelligence, "
+                                "consult with experts and collaborate with peers. "
+                                "IBM X-Force Exchange, supported by human- and machine-generated intelligence, "
+                                "leverages the scale of IBM X-Force to help users stay ahead of emerging threats.\n",
+        }
+    }
 
     # Default options
     opts = {
