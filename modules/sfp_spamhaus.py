@@ -20,12 +20,29 @@ class sfp_spamhaus(SpiderFootPlugin):
     """Spamhaus:Investigate,Passive:Reputation Systems::Query the Spamhaus databases for open relays, open proxies, vulnerable servers, etc."""
 
     meta = {
-		'name': "Spamhaus",
-		'summary': "Query the Spamhaus databases for open relays, open proxies, vulnerable servers, etc.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Spamhaus",
+        'summary': "Query the Spamhaus databases for open relays, open proxies, vulnerable servers, etc.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://www.spamhaus.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.spamhaus.org/organization/dnsblusage/",
+                "https://www.spamhaus.org/datafeed/",
+                "https://www.spamhaus.org/whitepapers/dnsbl_function/",
+                "https://www.spamhaus.org/faq/section/DNSBL%20Usage"
+            ],
+            'favIcon': "https://www.spamhaus.org/favicon.ico",
+            'logo': "https://www.spamhaus.org/images/sh_logo1.jpg",
+            'description': "The Spamhaus Project is an international nonprofit organization that "
+                                "tracks spam and related cyber threats such as phishing, malware and botnets, "
+                                "provides realtime actionable and highly accurate threat intelligence to "
+                                "the Internet's major networks, corporations and security vendors, "
+                                "and works with law enforcement agencies to identify and pursue spam and malware sources worldwide.\n",
+        }
+    }
 
     # Default options
     opts = {
