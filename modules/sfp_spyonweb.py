@@ -20,12 +20,30 @@ class sfp_spyonweb(SpiderFootPlugin):
     """SpyOnWeb:Footprint,Investigate,Passive:Passive DNS:apikey:Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code."""
 
     meta = {
-		'name': "SpyOnWeb",
-		'summary': "Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Passive DNS" ]
-	}
+        'name': "SpyOnWeb",
+        'summary': "Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Passive DNS" ],
+        'dataSource': {
+            'website': "http://spyonweb.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://api.spyonweb.com/v1/docs",
+                "https://api.spyonweb.com/"
+            ],
+            'apiKeyInstructions': [
+                "Visit api.spyonweb.com",
+                "Sign up for a free account",
+                "Click on 'Dashboard'",
+                "The API key is listed under 'Access Token'"
+            ],
+            'favIcon': "http://spyonweb.com/favicon.ico",
+            'logo': "http://spyonweb.com/favicon.ico",
+            'description': "We take the information from public sources, then structure it for your quick and convenient search "
+                                "for the websites that probably belong to the same owner.\n",
+        }
+    }
 
     # Default options
     opts = {
