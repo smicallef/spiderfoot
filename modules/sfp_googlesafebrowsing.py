@@ -210,7 +210,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         if rec is None:
             return None
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, pevent)
+        evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
         self.notifyListeners(evt)
 
         evt = SpiderFootEvent(
