@@ -31,12 +31,26 @@ class sfp_totalhash(SpiderFootPlugin):
     """TotalHash.com:Investigate,Passive:Reputation Systems::Check if a host/domain or IP is malicious according to TotalHash.com."""
 
     meta = {
-		'name': "TotalHash.com",
-		'summary': "Check if a host/domain or IP is malicious according to TotalHash.com.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "TotalHash.com",
+        'summary': "Check if a host/domain or IP is malicious according to TotalHash.com.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://totalhash.cymru.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://totalhash.cymru.com/contact-us/",
+                "https://totalhash.cymru.com/glossary/",
+                "https://totalhash.cymru.com/browse/"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://totalhash.cymru.com/",
+            'logo': "https://totalhash.cymru.com/wp-content/uploads/2014/12/TC_logo-300x141.png",
+            'description': "#totalhash provides static and dynamic analysis of Malware samples. "
+                                "The data available on this site is free for non commercial use. "
+                                "If you have samples that you would like analyzed you may upload them to our anonymous FTP server.\n",
+        }
+    }
 
     # Default options
     opts = {
