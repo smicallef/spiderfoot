@@ -30,12 +30,26 @@ class sfp_vxvault(SpiderFootPlugin):
     """VXVault.net:Investigate,Passive:Reputation Systems::Check if a domain or IP is malicious according to VXVault.net."""
 
     meta = {
-		'name': "VXVault.net",
-		'summary': "Check if a domain or IP is malicious according to VXVault.net.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "VXVault.net",
+        'summary': "Check if a domain or IP is malicious according to VXVault.net.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "http://vxvault.net/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "http://vxvault.net/URL_List.php",
+                "https://github.com/InfectedPacket/VxVault"
+            ],
+            'favIcon': "",
+            'logo': "",
+            'description': "VxVault is a malware management program to automatically download and classify malware samples. "
+                                "VxVault downloads malware samples from links from online sources such as webpages or RSS feeds, "
+                                "downloads them and attempts to identify the malware using VirusTotal. "
+                                "It then sort the malware onto a local file system and into a SQLite database.\n",
+        }
+    }
 
     # Default options
     opts = {
