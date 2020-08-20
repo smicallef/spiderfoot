@@ -30,12 +30,25 @@ class sfp_voipbl(SpiderFootPlugin):
     """VoIPBL OpenPBX IPs:Investigate,Passive:Reputation Systems::Check if an IP or netblock is an open PBX according to VoIPBL OpenPBX IPs."""
 
     meta = {
-		'name': "VoIPBL OpenPBX IPs",
-		'summary': "Check if an IP or netblock is an open PBX according to VoIPBL OpenPBX IPs.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "VoIPBL OpenPBX IPs",
+        'summary': "Check if an IP or netblock is an open PBX according to VoIPBL OpenPBX IPs.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "http://www.voipbl.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "http://www.voipbl.org/#install",
+                "http://www.voipbl.org/#advanced"
+            ],
+            'favIcon': "",
+            'logo': "http://www.voipbl.org/images/scopserv.png",
+            'description': "Protect your business and PBX's against VoIP Fraud.\n"
+                                "Minimize the risks of attacks on your Telephony Server.\n"
+                                "Save bandwidth by using Geolocation filtering.\n",
+        }
+    }
 
     # Default options
     opts = {
