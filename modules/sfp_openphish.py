@@ -30,12 +30,26 @@ class sfp_openphish(SpiderFootPlugin):
     """OpenPhish:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to OpenPhish.com."""
 
     meta = {
-		'name': "OpenPhish",
-		'summary': "Check if a host/domain is malicious according to OpenPhish.com.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "OpenPhish",
+        'summary': "Check if a host/domain is malicious according to OpenPhish.com.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://openphish.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://openphish.com/faq.html",
+                "https://openphish.com/feed.txt"
+            ],
+            'favIcon': "",
+            'logo': "https://openphish.com/static/openphish_logo2.png",
+            'description': "Timely. Accurate. Relevant Threat Intelligence.\n"
+                                "OpenPhish is a fully automated self-contained platform for phishing intelligence. "
+                                "It identifies phishing sites and performs intelligence analysis ""in real time "
+                                "without human intervention and without using any external resources, such as blacklists.\n",
+        }
+    }
 
     # Default options
     opts = {
