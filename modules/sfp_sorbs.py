@@ -20,12 +20,29 @@ class sfp_sorbs(SpiderFootPlugin):
     """SORBS:Investigate,Passive:Reputation Systems::Query the SORBS database for open relays, open proxies, vulnerable servers, etc."""
 
     meta = {
-		'name': "SORBS",
-		'summary': "Query the SORBS database for open relays, open proxies, vulnerable servers, etc.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "SORBS",
+        'summary': "Query the SORBS database for open relays, open proxies, vulnerable servers, etc.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "http://www.sorbs.net/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "http://www.sorbs.net/information/proxy.shtml",
+                "http://www.sorbs.net/information/spamfo/",
+                "http://www.sorbs.net/general/using.shtml"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=http://www.sorbs.net/",
+            'logo': "http://www.sorbs.net/img/pix.gif",
+            'description': "The Spam and Open Relay Blocking System (SORBS) was conceived as an anti-spam project "
+                                "where a daemon would check \"on-the-fly\", all servers from which it received email "
+                                "to determine if that email was sent via various types of proxy and open-relay servers.\n"
+                                "The SORBS (Spam and Open Relay Blocking System) provides free access to its "
+                                "DNS-based Block List (DNSBL) to effectively block email from more than 12 million host servers "
+                                "known to disseminate spam, phishing attacks and other forms of malicious email.\n",
+        }
+    }
 
     # Default options
     opts = {

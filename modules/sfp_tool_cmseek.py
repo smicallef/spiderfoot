@@ -21,12 +21,18 @@ class sfp_tool_cmseek(SpiderFootPlugin):
     """Tool - CMSeeK:Footprint,Investigate:Content Analysis:tool:Identify what Content Management System (CMS) might be used."""
 
     meta = {
-		'name': "Tool - CMSeeK",
-		'summary': "Identify what Content Management System (CMS) might be used.",
-		'flags': [ "tool" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Tool - CMSeeK",
+        'summary': "Identify what Content Management System (CMS) might be used.",
+        'flags': [ "tool" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "Content Analysis" ],
+        'toolDetails': {
+            'name': "CMSeeK",
+            'description': "CMSeek is a tool that is used to extract Content Management System(CMS) details of a website.",
+            'website': 'https://github.com/Tuhinshubhra/CMSeeK',
+            'repository': 'https://github.com/Tuhinshubhra/CMSeeK'
+        },
+    }
 
     # Default options
     opts = {

@@ -17,12 +17,33 @@ class sfp_whoxy(SpiderFootPlugin):
     """Whoxy:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using Whoxy.com."""
 
     meta = {
-		'name': "Whoxy",
-		'summary': "Reverse Whois lookups using Whoxy.com.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "Whoxy",
+        'summary': "Reverse Whois lookups using Whoxy.com.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://www.whoxy.com/",
+            'model': "COMMERCIAL_ONLY",
+            'references': [
+                "https://www.whoxy.com/#api",
+                "https://www.whoxy.com/whois-history/",
+                "https://www.whoxy.com/free-whois-api/"
+            ],
+            'apiKeyInstructions': [
+                "Visit www.whoxy.com/pricing.php",
+                "Select a plan and register an account",
+                "Pay for the plan",
+                "The API key will be presented upon payment"
+            ],
+            'favIcon': "https://www.whoxy.com/favicon.ico",
+            'logo': "https://www.whoxy.com/images/logo.png",
+            'description': "Whois API is a hosted web service that returns well-parsed WHOIS fields "
+                                "to your application in popular XML & JSON formats per HTTP request. "
+                                "Leave all the hard work to us, as you need not worry about the query limit and "
+                                "restrictions imposed by various domain registrars.\n",
+        }
+    }
 
     # Default options
     opts = {

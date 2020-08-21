@@ -19,12 +19,30 @@ class sfp_snov(SpiderFootPlugin):
     """Snov:Footprint,Investigate,Passive:Search Engines:apikey:Gather available email IDs from identified domains"""
 
     meta = {
-		'name': "Snov",
-		'summary': "Gather available email IDs from identified domains",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "Snov",
+        'summary': "Gather available email IDs from identified domains",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://snov.io/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://snov.io/api"
+            ],
+            'apiKeyInstructions': [
+                "Visit snov.io",
+                "Register a free account",
+                "Navigate to app.snov.io/api-setting",
+                "The API key combination is listed under 'API User ID' and 'API Secret'"
+            ],
+            'favIcon': "https://snov.io/img/favicon/favicon-96x96.png",
+            'logo': "https://cdn.snov.io/img/common/icon-logo.svg?cf6b11aa56fa13f6c94c969282424cfc",
+            'description': "Snov.io API allows to get a list of all emails from a particular domain, "
+                                "find email addresses by name and domain, verify emails, add prospects to a list, "
+                                "change a recipient's status and more.\n",
+        }
+    }
 
     opts = {
         'api_key_client_id': '',

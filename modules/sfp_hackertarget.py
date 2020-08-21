@@ -27,7 +27,22 @@ class sfp_hackertarget(SpiderFootPlugin):
         'summary': "Search HackerTarget.com for hosts sharing the same IP.",
         'flags': [ "" ],
         'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ]
+        'categories': [ "Passive DNS" ],
+        'dataSource': {
+            'website': "https://hackertarget.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://hackertarget.com/research/",
+                "https://hackertarget.com/category/tools/"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://hackertarget.com/",
+            'logo': "https://hackertarget.com/wp-content/uploads/2018/03/online-security.png",
+            'description': "Simplify the security assessment process with hosted vulnerability scanners. " 
+                                "From attack surface discovery to vulnerability identification, "
+                                "actionable network intelligence for IT & security operations. "
+                                "Proactively hunt for security weakness. "
+                                "Pivot from attack surface discovery to vulnerability identification.\n.",
+        }
     }
 
     # Default options

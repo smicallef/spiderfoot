@@ -26,7 +26,17 @@ class sfp_grep_app(SpiderFootPlugin):
 		'summary': "Search grep.app API for links and emails related to the specified domain.",
 		'flags': [ "" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://grep.app/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [],
+            'favIcon': "https://grep.app/favicon-16x16.png",
+            'logo': "https://grep.app/apple-touch-icon.png",
+            'description': "grep.app searches code from over a half million public repositories on GitHub.\n" 
+                                "It searches for the exact string you enter, including any punctuation or other characters.\n"
+                                "You can also search by regular expression, using the RE2 syntax.\n.",
+        }
 	}
 
     # Default options

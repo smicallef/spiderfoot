@@ -21,12 +21,22 @@ class sfp_tool_whatweb(SpiderFootPlugin):
     """Tool - WhatWeb:Footprint,Investigate:Content Analysis:tool:Identify what software is in use on the specified website."""
 
     meta = {
-		'name': "Tool - WhatWeb",
-		'summary': "Identify what software is in use on the specified website.",
-		'flags': [ "tool" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Tool - WhatWeb",
+        'summary': "Identify what software is in use on the specified website.",
+        'flags': [ "tool" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "Content Analysis" ],
+        'toolDetails': {
+            'name': "WhatWeb",
+            'description': "WhatWeb identifies websites. Its goal is to answer the question, \"What is that Website?\". "
+                                "WhatWeb recognises web technologies including content management systems (CMS), "
+                                "blogging platforms, statistic/analytics packages, JavaScript libraries, web servers, and embedded devices. "
+                                "WhatWeb has over 1800 plugins, each to recognise something different. "
+                                "WhatWeb also identifies version numbers, email addresses, account IDs, web framework modules, SQL errors, and more.\n",
+            'website': 'https://github.com/urbanadventurer/whatweb',
+            'repository': 'https://github.com/urbanadventurer/whatweb'
+        },
+    }
 
     # Default options
     opts = {

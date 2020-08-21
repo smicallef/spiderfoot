@@ -18,12 +18,34 @@ class sfp_riskiq(SpiderFootPlugin):
     """RiskIQ:Investigate,Passive:Reputation Systems:apikey:Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases."""
 
     meta = {
-		'name': "RiskIQ",
-		'summary': "Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "RiskIQ",
+        'summary': "Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://community.riskiq.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://info.riskiq.net/help",
+                "https://www.riskiq.com/resources/?type=training_videos",
+                "https://api.riskiq.net/api/concepts.html"
+            ],
+            'apiKeyInstructions': [
+                "Visit community.riskiq.com/home",
+                "Register a free account",
+                "Navigate to community.riskiq.com/settings",
+                "Click on 'Show' beside 'User'",
+                "The API Key combination will be under 'Key' and 'Secret'"
+            ],
+            'favIcon': "https://community.riskiq.com/static/assets/favicon.png",
+            'logo': "https://community.riskiq.com/static/assets/favicon.png",
+            'description': "RiskIQ Community brings petabytes of internet intelligence directly to your fingertips. "
+                                "Investigate threats by pivoting through attacker infrastructure data. "
+                                "Understand your digital assets that are internet-exposed, "
+                                "and map and monitor your external attack surface.\n",
+        }
+    }
 
     # Default options
     opts = {

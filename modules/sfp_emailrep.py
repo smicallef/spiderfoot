@@ -20,10 +20,30 @@ class sfp_emailrep(SpiderFootPlugin):
     meta = {
 		'name': "EmailRep",
 		'summary': "Search EmailRep.io for email address reputation.",
-		'flags': [ "" ],
+		'flags': [ "apikey" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://emailrep.io/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://docs.emailrep.io/"
+            ],
+            'apiKeyInstructions': [
+                "Visit emailrep.io/free",
+                "Request a free API Key",
+                "The API key will be sent to registered email account on approval"
+            ],
+            'favIcon': "https://emailrep.io/assets/img/favicon.png",
+            'logo': "https://emailrep.io/assets/img/logo-light.png",
+            'description': "Illuminate the \"reputation\" behind an email address.\n"
+                               "EmailRep uses hundreds of factors like domain age, traffic rankings, "
+                               "presence on social media sites, professional networking sites, personal connections, "
+                               "public records, deliverability, data breaches, dark web credential leaks, "
+                               "phishing emails, threat actor emails, and more to answer these types of questions.\n",
+        }
 	}
+	
 
     opts = {
         'api_key': '',

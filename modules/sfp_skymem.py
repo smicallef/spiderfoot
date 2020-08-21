@@ -20,12 +20,22 @@ class sfp_skymem(SpiderFootPlugin):
     """Skymem:Footprint,Investigate,Passive:Search Engines::Look up e-mail addresses on Skymem."""
 
     meta = {
-		'name': "Skymem",
-		'summary': "Look up e-mail addresses on Skymem.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "Skymem",
+        'summary': "Look up e-mail addresses on Skymem.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "http://www.skymem.info/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "http://www.skymem.info/faq"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=http://www.skymem.info/",
+            'logo': "",
+            'description': "Find email addresses of companies and people.\n",
+        }
+    }
 
     results = None
 

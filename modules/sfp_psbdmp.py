@@ -18,12 +18,25 @@ class sfp_psbdmp(SpiderFootPlugin):
     """Psbdmp:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains."""
 
     meta = {
-		'name': "Psbdmp",
-		'summary': "Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks, Dumps and Breaches" ]
-	}
+        'name': "Psbdmp",
+        'summary': "Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Leaks, Dumps and Breaches" ],
+        'dataSource': {
+            'website': "https://psbdmp.cc/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://psbdmp.cc/"
+            ],
+            'favIcon': "",
+            'logo': "",
+            'description': "Search dump(s) by some word.\n"
+                                "Search dump(s) by email.\n"
+                                "Search dump(s) by domain.\n"
+                                "Search dump(s) from specific date.\n",
+        }
+    }
 
     # Default options
     opts = {

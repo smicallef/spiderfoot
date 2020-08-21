@@ -18,12 +18,32 @@ class sfp_securitytrails(SpiderFootPlugin):
     """SecurityTrails:Investigate,Passive:Search Engines:apikey:Obtain Passive DNS and other information from SecurityTrails"""
 
     meta = {
-		'name': "SecurityTrails",
-		'summary': "Obtain Passive DNS and other information from SecurityTrails",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "SecurityTrails",
+        'summary': "Obtain Passive DNS and other information from SecurityTrails",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://securitytrails.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://docs.securitytrails.com/docs",
+                "https://docs.securitytrails.com/reference#general"
+            ],
+            'apiKeyInstructions': [
+                "Visit securitytrails.com",
+                "Register a free account",
+                "Navigate to securitytrails.com/app/account/credentials",
+                "The API key is listed under 'API Key'"
+            ],
+            'favIcon': "https://securitytrails.com/user/themes/lego/favicon/apple-touch-icon.png",
+            'logo': "https://securitytrails.com/user/themes/lego/favicon/apple-touch-icon.png",
+            'description': "Data for Security companies, researchers and teams. Fast, always up API that "
+                                "allows you to access current and historical data. "
+                                "The API is paid via a simple pricing structure that allows you to embed our data into your applications.\n"
+                                "Search nearly 3 billion historical and current WHOIS data and WHOIS changes.\n",
+        }
+    }
 
     # Default options
     opts = {

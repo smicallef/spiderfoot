@@ -21,12 +21,32 @@ class sfp_shodan(SpiderFootPlugin):
     """SHODAN:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from SHODAN about identified IP addresses."""
 
     meta = {
-		'name': "SHODAN",
-		'summary': "Obtain information from SHODAN about identified IP addresses.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "SHODAN",
+        'summary': "Obtain information from SHODAN about identified IP addresses.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+            'dataSource': {
+            'website': "https://www.shodan.io/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://developer.shodan.io/api",
+                "https://developer.shodan.io/apps"
+            ],
+            'apiKeyInstructions': [
+                "Visit shodan.io",
+                "Register a free account",
+                "Navigate to account.shodan.io/",
+                "The API key is listed under 'API Key'"
+            ],
+            'favIcon': "https://static.shodan.io/shodan/img/favicon.png",
+            'logo': "https://static.shodan.io/developer/img/logo.png",
+            'description': "Shodan is the world's first search engine for Internet-connected devices.\n"
+                                "Use Shodan to discover which of your devices are connected to the Internet, where they are located and who is using them."
+                                "Keep track of all the computers on your network that are directly accessible from the Internet. "
+                                "Shodan lets you understand your digital footprint.\n",
+        }
+    }
 
     # Default options
     opts = {

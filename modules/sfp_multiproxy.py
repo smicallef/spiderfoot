@@ -30,12 +30,30 @@ class sfp_multiproxy(SpiderFootPlugin):
     """multiproxy.org Open Proxies:Investigate,Passive:Secondary Networks::Check if an IP is an open proxy according to multiproxy.org' open proxy list."""
 
     meta = {
-		'name': "multiproxy.org Open Proxies",
-		'summary': "Check if an IP is an open proxy according to multiproxy.org' open proxy list.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Secondary Networks" ]
-	}
+        'name': "multiproxy.org Open Proxies",
+        'summary': "Check if an IP is an open proxy according to multiproxy.org' open proxy list.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Secondary Networks" ],
+        'dataSource': {
+            'website': "https://multiproxy.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://multiproxy.org/faq.htm",
+                "https://multiproxy.org/env_check.htm",
+                "https://multiproxy.org/anon_proxy.htm",
+                "https://multiproxy.org/help.htm"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://multiproxy.org/",
+            'logo': "https://multiproxy.org/images/mproxy_title.png",
+            'description': "MultiProxy is a multifunctional personal proxy server that protects your privacy "
+                                "while on the Internet as well as speeds up your downloads, "
+                                "especially if you are trying to get several files form overseas or from otherwise rather slow server. "
+                                "It can also completely hide your IP address by dynamically connecting to "
+                                "non-transparent anonymizing public proxy servers. "
+                                "You can also test a list of proxy servers and sort them by connection speed and level of anonimity.\n",
+        }
+    }
 
     # Default options
     opts = {

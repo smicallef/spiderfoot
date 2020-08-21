@@ -18,12 +18,28 @@ class sfp_urlscan(SpiderFootPlugin):
     """URLScan.io:Footprint,Investigate,Passive:Search Engines::Search URLScan.io cache for domain information."""
 
     meta = {
-		'name': "URLScan.io",
-		'summary': "Search URLScan.io cache for domain information.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "URLScan.io",
+        'summary': "Search URLScan.io cache for domain information.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://urlscan.io/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://urlscan.io/about-api/"
+            ],
+            'favIcon': "https://urlscan.io/img/urlscan_256.png",
+            'logo': "https://urlscan.io/img/urlscan_256.png",
+            'description': "urlscan.io is a service to scan and analyse websites. "
+                                "When a URL is submitted to urlscan.io, an automated process will browse to the URL "
+                                "like a regular user and record the activity that this page navigation creates. "
+                                "This includes the domains and IPs contacted, the resources (JavaScript, CSS, etc) requested from "
+                                "those domains, as well as additional information about the page itself. "
+                                "urlscan.io will take a screenshot of the page, record the DOM content, JavaScript global variables, "
+                                "cookies created by the page, and a myriad of other observations. \n",
+        }
+    }
 
     opts = {
         'verify': True

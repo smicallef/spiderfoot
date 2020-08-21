@@ -29,12 +29,29 @@ class sfp_talosintel(SpiderFootPlugin):
     """Talos Intelligence:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to talosintelligence.com."""
 
     meta = {
-		'name': "Talos Intelligence",
-		'summary': "Check if a netblock or IP is malicious according to talosintelligence.com.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Talos Intelligence",
+        'summary': "Check if a netblock or IP is malicious according to talosintelligence.com.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://talosintelligence.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://talosintelligence.com/vulnerability_info",
+                "https://talosintelligence.com/reputation"
+            ],
+            'favIcon': "https://talosintelligence.com/assets/favicons/favicon-49c9b25776778ff43873cf5ebde2e1ffcd0747ad1042ac5a5306cdde3ffca8cd.ico",
+            'logo': "https://talosintelligence.com/assets/favicons/favicon-49c9b25776778ff43873cf5ebde2e1ffcd0747ad1042ac5a5306cdde3ffca8cd.ico",
+            'description': "Cisco Talos Incident Response provides a full suite of proactive and reactive services "
+                                "to help you prepare, respond and recover from a breach. "
+                                "With Talos IR, you have direct access to the same threat intelligence available "
+                                "to Cisco and world-class emergency response capabilities — "
+                                "in addition to more than 350 threat researchers for questions and analysis. "
+                                "Let our experts work with you to evaluate existing plans, develop a new plan, "
+                                "and provide rapid assistance when you need it most. \n",
+        }
+    }
 
     # Default options
     opts = {

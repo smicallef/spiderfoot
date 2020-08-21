@@ -113,7 +113,7 @@ class sfp_template(SpiderFootPlugin):
             # - FREE_AUTH_UNLIMITED: Completely free, however you must obtain an API key to access
             #                        the service with no limits imposed beyond throttling.
             # - FREE_AUTH_LIMITED: Completely free, however you must obtain an API key and limits
-            #                      are imposed. You need to register/pay to exceed them.
+            #                      are imposed. You need to upgrade(pay) to exceed them.
             # - COMMERCIAL_ONLY: No free tier is available at all.
             # - PRIVATE_ONLY: Invite only. Usually for betas and similar programs.
             'model': "FREE_NOAUTH_LIMITED",

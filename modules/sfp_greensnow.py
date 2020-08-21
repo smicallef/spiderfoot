@@ -23,7 +23,21 @@ class sfp_greensnow(SpiderFootPlugin):
 		'summary': "Check if a netblock or IP address is malicious according to greensnow.co.",
 		'flags': [ "" ],
 		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
+		'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://greensnow.co/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://blocklist.greensnow.co/greensnow.txt",
+                "https://greensnow.co/faq"
+            ],
+            'favIcon': "https://greensnow.co/favicon.ico",
+            'logo': "https://greensnow.co/img/logo.png",
+            'description': "GreenSnow is a team consisting of the best specialists in computer security, "
+                                "we harvest a large number of IPs from different computers located around the world. "
+                                "GreenSnow is comparable with SpamHaus.org for attacks of any kind except for spam. "
+                                "Our list is updated automatically and you can withdraw at any time your IP address if it has been listed.\n.",
+        }
 	}
 
     # Default options

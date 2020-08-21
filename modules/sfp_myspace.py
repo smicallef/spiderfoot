@@ -17,12 +17,26 @@ class sfp_myspace(SpiderFootPlugin):
     """MySpace:Footprint,Investigate,Passive:Social Media::Gather username and location from MySpace.com profiles."""
 
     meta = {
-		'name': "MySpace",
-		'summary': "Gather username and location from MySpace.com profiles.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Social Media" ]
-	}
+        'name': "MySpace",
+        'summary': "Gather username and location from MySpace.com profiles.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Social Media" ],
+        'dataSource': {
+            'website': "https://myspace.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.programmableweb.com/api/myspace"
+            ],
+            'favIcon': "https://x.myspacecdn.com/new/common/images/favicons/favicon.ico",
+            'logo': "https://x.myspacecdn.com/new/common/images/favicons/114-Retina-iPhone.png",
+            'description': "Myspace is a place where people come to connect, discover, and share.\n"
+                                "Through an open design, compelling editorial features, "
+                                "and analytics-based recommendations, Myspace creates a creative community "
+                                "of people who connect around mutual affinity and inspiration for the purpose "
+                                "of shaping, sharing, and discovering what's next.\n",
+        }
+    }
 
     # Default options
     opts = {

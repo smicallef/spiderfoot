@@ -22,7 +22,34 @@ class sfp_fullcontact(SpiderFootPlugin):
 		'summary': "Gather domain and e-mail information from fullcontact.com.",
 		'flags': [ "apikey" ],
 		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
+		'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://www.fullcontact.com",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://dashboard.fullcontact.com/api-ref",
+                "https://www.fullcontact.com/developer-portal/",
+                "https://www.fullcontact.com/insights-bundles/",
+                "https://dashboard.fullcontact.com/docs",
+                "https://www.fullcontact.com/faq/"
+            ],
+            'apiKeyInstructions': [
+                "Visit fullcontact.com",
+                "Register a free account",
+                "Navigate to dashboard.fullcontact.com",
+                "Click on 'Get an API Key'",
+                "Verify your account using your contact number",
+                "The API Key will be listed under 'Your API Keys'"
+            ],
+            'favIcon': "https://1a3asl4eps7u26kl661u3bi9-wpengine.netdna-ssl.com/wp-content/uploads/2019/11/cropped-full-contact-isologo-32x32.png",
+            'logo': "https://1a3asl4eps7u26kl661u3bi9-wpengine.netdna-ssl.com/wp-content/themes/fc-theme/assets/images/common/full-contact-logo.svg?1574450351",
+            'description': "Connecting data. Consolidating identities. Applying insights. Amplifying media reach. "
+                                "We provide person-centered identity resolution to improve your customer interactions with a simple, "
+                                "real-time API integration.\n"
+                                "FullContact is a privacy-safe Identity Resolution company building trust between people and brands. "
+                                "We deliver the capabilities needed to create tailored customer experiences by unifying data and "
+                                "applying insights in the moments that matter.\n",
+        }
 	}
 
     # Default options

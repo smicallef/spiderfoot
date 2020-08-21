@@ -55,8 +55,7 @@ class sfp_creditcard(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["TARGET_WEB_CONTENT", "DARKNET_MENTION_CONTENT",
-                "LEAKSITE_CONTENT" ]
+        return [ "DARKNET_MENTION_CONTENT", "LEAKSITE_CONTENT" ]
 
     # What events this module produces
     def producedEvents(self):

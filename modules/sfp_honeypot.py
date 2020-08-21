@@ -19,12 +19,36 @@ class sfp_honeypot(SpiderFootPlugin):
     """Honeypot Checker:Investigate,Passive:Reputation Systems:apikey:Query the projecthoneypot.org database for entries."""
 
     meta = {
-		'name': "Honeypot Checker",
-		'summary': "Query the projecthoneypot.org database for entries.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Honeypot Checker",
+        'summary': "Query the projecthoneypot.org database for entries.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://www.projecthoneypot.org/",
+            'model': "FREE_AUTH_UNLIMITED",
+            'references': [
+                "https://www.projecthoneypot.org/httpbl_api.php",
+                "https://www.projecthoneypot.org/services_overview.php",
+                "https://www.projecthoneypot.org/faq.php"
+            ],
+            'apiKeyInstructions': [
+                "Visit www.projecthoneypot.org",
+                "Sign up for a free account",
+                "Navigate to www.projecthoneypot.org/httpbl_configure.php'",
+                "Request for an API key",
+                "The API key is listed under 'Your http:BL Access Key'"
+            ],
+            'favIcon': "https://www.projecthoneypot.org/favicon.ico",
+            'logo': "https://www.projecthoneypot.org/images/php_logo.gif",
+            'description': "Project Honey Pot is the first and only distributed system for identifying spammers "
+                                "and the spambots they use to scrape addresses from your website. "
+                                "Using the Project Honey Pot system you can install addresses "
+                                "that are custom-tagged to the time and IP address of a visitor to your site. "
+                                "If one of these addresses begins receiving email we not only can tell that the messages are spam, "
+                                "but also the exact moment when the address was harvested and the IP address that gathered it.\n",
+        }
+    }
 
     # Default options
     opts = {

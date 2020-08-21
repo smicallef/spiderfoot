@@ -18,12 +18,23 @@ class sfp_instagram(SpiderFootPlugin):
     """Instagram:Footprint,Investigate,Passive:Social Media::Gather information from Instagram profiles."""
 
     meta = {
-		'name': "Instagram",
-		'summary': "Gather information from Instagram profiles.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Social Media" ]
-	}
+        'name': "Instagram",
+        'summary': "Gather information from Instagram profiles.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Social Media" ],
+        'dataSource': {
+            'website': "https://www.instagram.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.instagram.com/developer/",
+                "https://developers.facebook.com/docs/instagram-basic-display-api"
+            ],
+            'favIcon': "https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png",
+            'logo': "https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png",
+            'description': "Instagram is an American photo and video sharing social networking service\n.",
+        }
+    }
 
     # Default options
     opts = {

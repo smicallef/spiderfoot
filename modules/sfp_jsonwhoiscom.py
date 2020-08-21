@@ -19,12 +19,31 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
     """JsonWHOIS.com:Footprint,Investigate,Passive:Search Engines:apikey:Search JsonWHOIS.com for WHOIS records associated with a domain."""
 
     meta = {
-		'name': "JsonWHOIS.com",
-		'summary': "Search JsonWHOIS.com for WHOIS records associated with a domain.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ]
-	}
+        'name': "JsonWHOIS.com",
+        'summary': "Search JsonWHOIS.com for WHOIS records associated with a domain.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://jsonwhois.com",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://jsonwhois.com/docs"
+            ],
+            'apiKeyInstructions': [
+                "Visit jsonwhois.com",
+                "Sign up for a free account",
+                "Navigate to jsonwhois.com/dashboard",
+                "The API key is listed under 'Api Key'"
+            ],
+            'favIcon': "https://jsonwhois.com/assets/fav.ico",
+            'logo': "https://jsonwhois.com/assets/fav.ico",
+            'description': "Get access to accurate Whois records for generic and country TLDs. "
+                                "Around 1000 gTLDs include .com, .org, .net, .us, .biz, .info, .mobi, .pro, .asia and many other new ones.\n"
+                                "Raw and parsed Whois data are both accessible for downloads in the form of "
+                                "MYSQL or MYSQL database dumps and Comma Separated Values (.CSV) files.\n",
+        }
+    }
 
     # Default options
     opts = {

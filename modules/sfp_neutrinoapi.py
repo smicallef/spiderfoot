@@ -18,12 +18,31 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     """NeutrinoAPI:Footprint,Investigate,Passive:Reputation Systems:apikey:Search NeutrinoAPI for IP address info and check IP reputation."""
 
     meta = {
-		'name': "NeutrinoAPI",
-		'summary': "Search NeutrinoAPI for IP address info and check IP reputation.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "NeutrinoAPI",
+        'summary': "Search NeutrinoAPI for IP address info and check IP reputation.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "https://www.neutrinoapi.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://www.neutrinoapi.com/api/phone-validate/"
+            ],
+            'apiKeyInstructions': [
+                "Visit www.neutrinoapi.com/",
+                "Sign up for a free account",
+                "Click on 'My Account'",
+                "The API key is listed under 'Master Key'"
+            ],
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://www.neutrinoapi.com/",
+            'logo': "https://www.google.com/s2/favicons?domain=https://www.neutrinoapi.com/",
+            'description': "Parse, validate and get location information about a phone number.\n"
+                                "Use this API to validate local and international phone numbers in any country. "
+                                "You can determine the location of the number and also reformat the number into "
+                                "local and international dialing formats.\n",
+        }
+    }
 
     # Default options
     opts = {

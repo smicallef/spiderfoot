@@ -31,12 +31,24 @@ class sfp_watchguard(SpiderFootPlugin):
     """Watchguard:Investigate,Passive:Reputation Systems::Check if an IP is malicious according to Watchguard's reputationauthority.org."""
 
     meta = {
-		'name': "Watchguard",
-		'summary': "Check if an IP is malicious according to Watchguard's reputationauthority.org.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Watchguard",
+        'summary': "Check if an IP is malicious according to Watchguard's reputationauthority.org.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "http://reputationauthority.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "http://www.reputationauthority.org/faq.php"
+            ],
+            'favIcon': "http://reputationauthority.org/images/favicon.ico",
+            'logo': "http://reputationauthority.org/images/ripley/footer_logo.gif",
+            'description': "WatchGuard ReputationAuthority is the world's most effective reputation service for email and web security, "
+                                "providing critical protection and a better performing network to businesses, government organizations, "
+                                "ISPs, and other security vendors.\n",
+        }
+    }
 
     # Default options
     opts = {

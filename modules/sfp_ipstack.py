@@ -19,12 +19,31 @@ class sfp_ipstack(SpiderFootPlugin):
     """ipstack:Footprint,Investigate,Passive:Real World:apikey:Identifies the physical location of IP addresses identified using ipstack.com."""
 
     meta = {
-		'name': "ipstack",
-		'summary': "Identifies the physical location of IP addresses identified using ipstack.com.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Real World" ]
-	}
+        'name': "ipstack",
+        'summary': "Identifies the physical location of IP addresses identified using ipstack.com.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Real World" ],
+        'dataSource': {
+            'website': "https://ipstack.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://ipstack.com/documentation",
+                "https://ipstack.com/faq"
+            ],
+            'apiKeyInstructions': [
+                "Visit ipstack.com/product",
+                "Click on 'Get Free API Key'",
+                "Click on 'Dashboard'",
+                "The API key is listed under 'Your API Access Key'"
+            ],
+            'favIcon': "https://ipstack.com/ipstack_images/ipstack_logo.svg",
+            'logo': "https://ipstack.com/ipstack_images/ipstack_logo.svg",
+            'description': "Locate and identify website visitors by IP address.\n"
+                                "ipstack offers one of the leading IP to geolocation APIS "
+                                "and global IP database services worldwide.\n",
+        }
+    }
 
     # Default options
     opts = {

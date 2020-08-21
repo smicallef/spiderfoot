@@ -18,12 +18,31 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
     """Hybrid Analysis:Footprint,Investigate,Passive:Reputation Systems:apikey:Search Hybrid Analysis for domains and URLs related to the target."""
 
     meta = {
-		'name': "Hybrid Analysis",
-		'summary': "Search Hybrid Analysis for domains and URLs related to the target.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Hybrid Analysis",
+        'summary': "Search Hybrid Analysis for domains and URLs related to the target.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
+        'dataSource': {
+            'website': "www.hybrid-analysis.com",
+            'model': "FREE_AUTH_UNLIMITED",
+            'references': [
+                "https://www.hybrid-analysis.com/knowledge-base",
+                "https://www.hybrid-analysis.com/docs/api/v2"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://www.hybrid-analysis.com/signup",
+                "Register a free account",
+                "Navigate to www.hybrid-analysis.com/my-account?tab=%23api-key-tab",
+                "Create an API Key",
+                "The API key is listed under 'API Key'"
+            ],
+            'favIcon': "https://www.hybrid-analysis.com/favicon.ico",
+            'logo': "https://www.hybrid-analysis.com/img/logo.svg",
+            'description': "A free malware analysis service for the community. "
+                                "Using this service you can submit files for in-depth static and dynamic analysis.\n",
+        }
+    }
 
     # Default options
     opts = {
