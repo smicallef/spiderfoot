@@ -41,7 +41,7 @@ class sfp_whoxy(SpiderFootPlugin):
             'description': "Whois API is a hosted web service that returns well-parsed WHOIS fields "
                                 "to your application in popular XML & JSON formats per HTTP request. "
                                 "Leave all the hard work to us, as you need not worry about the query limit and "
-                                "restrictions imposed by various domain registrars.\n",
+                                "restrictions imposed by various domain registrars.",
         }
     }
 

@@ -44,7 +44,7 @@ class sfp_spyse(SpiderFootPlugin):
                                 "everything down to the smallest particles of the web. "
                                 "Use the plethora of search parameters at your disposal to achieve the most accurate results.\n"
                                 "Spyse Scoring has been designed to quickly evaluate the "
-                                "security status of different elements of a network - IPs and domains.\n",
+                                "security status of different elements of a network - IPs and domains.",
         }
     }
 

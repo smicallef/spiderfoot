@@ -18,11 +18,11 @@ class sfp_bingsharedip(SpiderFootPlugin):
     """Bing (Shared IPs):Footprint,Investigate,Passive:Search Engines:apikey:Search Bing for hosts sharing the same IP."""
 
     meta = {
-		'name': "Bing (Shared IPs)",
-		'summary': "Search Bing for hosts sharing the same IP.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "Bing (Shared IPs)",
+        'summary': "Search Bing for hosts sharing the same IP.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://www.bing.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -38,9 +38,9 @@ class sfp_bingsharedip(SpiderFootPlugin):
             'favIcon': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
             'logo': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
             'description': "The Bing Search APIs let you build web-connected apps and services that "
-                                "find webpages, images, news, locations, and more without advertisements.\n",
+                                "find webpages, images, news, locations, and more without advertisements.",
         }
-	}
+    }
 
     # Default options
     opts = {

@@ -31,11 +31,11 @@ class sfp_fortinet(SpiderFootPlugin):
     """Fortiguard.com:Investigate,Passive:Reputation Systems::Check if an IP is malicious according to Fortiguard.com."""
 
     meta = {
-		'name': "Fortiguard.com",
-		'summary': "Check if an IP is malicious according to Fortiguard.com.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "Fortiguard.com",
+        'summary': "Check if an IP is malicious according to Fortiguard.com.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://fortiguard.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -49,9 +49,9 @@ class sfp_fortinet(SpiderFootPlugin):
                                 "expanding attack surface and the power to take on ever-increasing performance requirements of "
                                 "the borderless network—today and into the future. "
                                 "Only the Fortinet Security Fabric architecture can deliver security without compromise "
-                                "to address the most critical security challenges, whether in networked, application, cloud, or mobile environments.\n",
+                                "to address the most critical security challenges, whether in networked, application, cloud, or mobile environments.",
         }
-	}
+    }
 
     # Default options
     opts = {

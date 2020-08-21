@@ -40,7 +40,7 @@ class sfp_sorbs(SpiderFootPlugin):
                                 "to determine if that email was sent via various types of proxy and open-relay servers.\n"
                                 "The SORBS (Spam and Open Relay Blocking System) provides free access to its "
                                 "DNS-based Block List (DNSBL) to effectively block email from more than 12 million host servers "
-                                "known to disseminate spam, phishing attacks and other forms of malicious email.\n",
+                                "known to disseminate spam, phishing attacks and other forms of malicious email.",
         }
     }
 

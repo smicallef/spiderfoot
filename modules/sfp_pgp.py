@@ -19,12 +19,12 @@ class sfp_pgp(SpiderFootPlugin):
     """PGP Key Servers:Footprint,Investigate,Passive:Public Registries::Look up e-mail addresses in PGP public key servers."""
 
     meta = {
-		'name': "PGP Key Servers",
-		'summary': "Look up e-mail addresses in PGP public key servers.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Public Registries" ]
-	}
+        'name': "PGP Key Servers",
+        'summary': "Look up e-mail addresses in PGP public key servers.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Public Registries" ]
+    }
 
     results = None
 

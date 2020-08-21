@@ -42,7 +42,7 @@ class sfp_archiveorg(SpiderFootPlugin):
                                "We began in 1996 by archiving the Internet itself, a medium that was just beginning to grow in use. "
                                "Like newspapers, the content published on the web was ephemeral - but unlike newspapers, no one was saving it. "
                                "Today we have 20+ years of web history accessible through the Wayback Machine and we work with 625+ library and "
-                               "other partners through our Archive-It program to identify important web pages.\n",
+                               "other partners through our Archive-It program to identify important web pages.",
         }
     
     }

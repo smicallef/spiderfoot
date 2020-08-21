@@ -48,7 +48,7 @@ class sfp_intelx(SpiderFootPlugin):
                                 "email addresses, domains, URLs, IPs, CIDRs, Bitcoin addresses, IPFS hashes, etc.\n"
                                 "It searches in places such as the darknet, document sharing platforms, whois data, public data leaks and others.\n"
                                 "It keeps a historical data archive of results, "
-                                "similar to how the Wayback Machine from archive.org stores historical copies of websites.\n.",
+                                "similar to how the Wayback Machine from archive.org stores historical copies of websites.",
         }
     }
 

@@ -32,7 +32,7 @@ class sfp_instagram(SpiderFootPlugin):
             ],
             'favIcon': "https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png",
             'logo': "https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png",
-            'description': "Instagram is an American photo and video sharing social networking service\n.",
+            'description': "Instagram is an American photo and video sharing social networking service.",
         }
     }
 

@@ -21,11 +21,11 @@ class sfp_fringeproject(SpiderFootPlugin):
     """Fringe Project:Investigate,Footprint,Passive:Search Engines::Obtain network information from Fringe Project API."""
 
     meta = {
-		'name': "Fringe Project",
-		'summary': "Obtain network information from Fringe Project API.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Footprint", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "Fringe Project",
+        'summary': "Obtain network information from Fringe Project API.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Footprint", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://fringeproject.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -35,11 +35,11 @@ class sfp_fringeproject(SpiderFootPlugin):
             'favIcon': "https://fringeproject.com/favicon.png",
             'logo': "https://fringeproject.com/favicon.png",
             'description': "Discover the Right Data for Your Security Assessment.\n"
-                               "FringeProject allows you to scan and search through various source of information to discover assets and vulnerabilities.\n"
-                               "We parse your data and add it to our runner. " 
-                               "It does active and passive scanning to find new assets on the Internet.\n",
+                                "FringeProject allows you to scan and search through various source of information to discover assets and vulnerabilities.\n"
+                                "We parse your data and add it to our runner. " 
+                                "It does active and passive scanning to find new assets on the Internet.",
         }
-	}
+    }
 
     opts = {
     }

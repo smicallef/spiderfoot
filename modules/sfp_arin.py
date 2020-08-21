@@ -43,7 +43,7 @@ class sfp_arin(SpiderFootPlugin):
                                 "the American Registry for Internet Numbers (ARIN) is responsible for the management "
                                 "and distribution of Internet number resources such as Internet Protocol (IP) addresses "
                                 "and Autonomous System Numbers (ASNs). ARIN manages these resources within its service region, "
-                                "which is comprised of Canada, the United States, and many Caribbean and North Atlantic islands.\n.",
+                                "which is comprised of Canada, the United States, and many Caribbean and North Atlantic islands.",
         }
     }
 

@@ -16,11 +16,11 @@ class sfp_badipscom(SpiderFootPlugin):
     """badips.com:Investigate,Passive:Reputation Systems::Check if an IP address is malicious according to BadIPs.com."""
 	
     meta = {
-		'name': "badips.com",
-		'summary': "Check if an IP address is malicious according to BadIPs.com.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "badips.com",
+        'summary': "Check if an IP address is malicious according to BadIPs.com.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://www.badips.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -33,9 +33,9 @@ class sfp_badipscom(SpiderFootPlugin):
             'description': "badips.com is a community based IP blacklist service. "
                                 "You can report malicious IPs and you can download blacklists or query our API to find out if a IP is listed. "
                                 "We're also offering some eye-candy: Get personalized stats and graphs of attackers trying to brute-force your systems, "
-                                "see where the bad guys come from and share your knowledge!\n",
+                                "see where the bad guys come from and share your knowledge!",
         }
-	}
+    }
 
     # Default options
     opts = {

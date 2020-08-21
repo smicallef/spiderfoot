@@ -41,7 +41,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                                 "From attack surface discovery to vulnerability identification, "
                                 "actionable network intelligence for IT & security operations. "
                                 "Proactively hunt for security weakness. "
-                                "Pivot from attack surface discovery to vulnerability identification.\n.",
+                                "Pivot from attack surface discovery to vulnerability identification.",
         }
     }
 

@@ -41,7 +41,7 @@ class sfp_ripe(SpiderFootPlugin):
                                 "infrastructure of the Internet through technical coordination in our service region. "
                                 "Our most prominent activity is to act as the Regional Internet Registry (RIR) providing "
                                 "global Internet resources and related services (IPv4, IPv6 and AS Number resources) "
-                                "to members in our service region. \n",
+                                "to members in our service region.",
         }
     }
 

@@ -30,7 +30,7 @@ class sfp_twitter(SpiderFootPlugin):
             'logo': "https://abs.twimg.com/responsive-web/web/icon-ios.8ea219d4.png",
             'description': "Twitter is an American microblogging and social networking service "
                                 "on which users post and interact with messages known as \"tweets\". "
-                                "Registered users can post, like, and retweet tweets, but unregistered users can only read them.\n",
+                                "Registered users can post, like, and retweet tweets, but unregistered users can only read them.",
         }
     }
 

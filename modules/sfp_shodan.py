@@ -44,7 +44,7 @@ class sfp_shodan(SpiderFootPlugin):
             'description': "Shodan is the world's first search engine for Internet-connected devices.\n"
                                 "Use Shodan to discover which of your devices are connected to the Internet, where they are located and who is using them."
                                 "Keep track of all the computers on your network that are directly accessible from the Internet. "
-                                "Shodan lets you understand your digital footprint.\n",
+                                "Shodan lets you understand your digital footprint.",
         }
     }
 

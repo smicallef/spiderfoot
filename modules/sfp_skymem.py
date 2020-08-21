@@ -33,7 +33,7 @@ class sfp_skymem(SpiderFootPlugin):
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=http://www.skymem.info/",
             'logo': "",
-            'description': "Find email addresses of companies and people.\n",
+            'description': "Find email addresses of companies and people.",
         }
     }
 

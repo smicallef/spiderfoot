@@ -35,7 +35,7 @@ class sfp_uceprotect(SpiderFootPlugin):
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=http://www.uceprotect.net/",
             'logo': "http://www.uceprotect.net/en/logo.gif",
-            'description': "UCE Protect is a DNS Blacklisting service whose mission is to stop mail abuse globally.\n",
+            'description': "UCE Protect is a DNS Blacklisting service whose mission is to stop mail abuse globally.",
         }
     }
 

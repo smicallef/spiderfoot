@@ -34,7 +34,7 @@ class sfp_psbdmp(SpiderFootPlugin):
             'description': "Search dump(s) by some word.\n"
                                 "Search dump(s) by email.\n"
                                 "Search dump(s) by domain.\n"
-                                "Search dump(s) from specific date.\n",
+                                "Search dump(s) from specific date.",
         }
     }
 

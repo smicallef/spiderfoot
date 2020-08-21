@@ -41,7 +41,7 @@ class sfp_ipstack(SpiderFootPlugin):
             'logo': "https://ipstack.com/ipstack_images/ipstack_logo.svg",
             'description': "Locate and identify website visitors by IP address.\n"
                                 "ipstack offers one of the leading IP to geolocation APIS "
-                                "and global IP database services worldwide.\n",
+                                "and global IP database services worldwide.",
         }
     }
 

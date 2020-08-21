@@ -18,12 +18,12 @@ class sfp_dnsneighbor(SpiderFootPlugin):
     """DNS Look-aside:Footprint,Investigate:DNS::Attempt to reverse-resolve the IP addresses next to your target to see if they are related."""
 
     meta = {
-		'name': "DNS Look-aside",
-		'summary': "Attempt to reverse-resolve the IP addresses next to your target to see if they are related.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "DNS" ]
-	}
+        'name': "DNS Look-aside",
+        'summary': "Attempt to reverse-resolve the IP addresses next to your target to see if they are related.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "DNS" ]
+    }
 
     # Default options
     opts = {

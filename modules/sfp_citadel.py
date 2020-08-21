@@ -18,11 +18,11 @@ class sfp_citadel(SpiderFootPlugin):
     """Leak-Lookup:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Searches Leak-Lookup.com's database of breaches."""
 
     meta = {
-		'name': "Leak-Lookup",
-		'summary': "Searches Leak-Lookup.com's database of breaches.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Leaks, Dumps and Breaches" ],
+        'name': "Leak-Lookup",
+        'summary': "Searches Leak-Lookup.com's database of breaches.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Leaks, Dumps and Breaches" ],
         'dataSource': {
             'website': "https://leak-lookup.com/",
             'model': "FREE_AUTH_UNLIMITED",
@@ -47,9 +47,9 @@ class sfp_citadel(SpiderFootPlugin):
                                 "and those concerned about which of their credentials have been leaked into the wild.\n"
                                 "Always looking forward, Leak-Lookup invests all of its profits back into securing the "
                                 "latest data breaches and leaks / dumps as they become available, ensuring that "
-                                "as well as historical data, Leak-Lookup becomes a field leader in credential monitoring.\n",
+                                "as well as historical data, Leak-Lookup becomes a field leader in credential monitoring.",
         }
-	}
+    }
 
     # Default options
     opts = {

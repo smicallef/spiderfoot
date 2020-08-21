@@ -18,11 +18,11 @@ class sfp_fullcontact(SpiderFootPlugin):
     """FullContact:Footprint,Investigate,Passive:Search Engines:apikey:Gather domain and e-mail information from fullcontact.com."""
 
     meta = {
-		'name': "FullContact",
-		'summary': "Gather domain and e-mail information from fullcontact.com.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "FullContact",
+        'summary': "Gather domain and e-mail information from fullcontact.com.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://www.fullcontact.com",
             'model': "FREE_AUTH_LIMITED",
@@ -48,9 +48,9 @@ class sfp_fullcontact(SpiderFootPlugin):
                                 "real-time API integration.\n"
                                 "FullContact is a privacy-safe Identity Resolution company building trust between people and brands. "
                                 "We deliver the capabilities needed to create tailored customer experiences by unifying data and "
-                                "applying insights in the moments that matter.\n",
+                                "applying insights in the moments that matter.",
         }
-	}
+    }
 
     # Default options
     opts = {

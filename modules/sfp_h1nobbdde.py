@@ -31,7 +31,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
             ],
             'favIcon': "http://www.nobbd.de/favicon.ico",
             'logo': "http://www.nobbd.de/favicon.ico",
-            'description': "Unofficial Bug Monitoring platform for HackerOne\n.",
+            'description': "Unofficial Bug Monitoring platform for HackerOne.",
         }
     }
 

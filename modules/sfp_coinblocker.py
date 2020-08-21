@@ -36,11 +36,11 @@ class sfp_coinblocker(SpiderFootPlugin):
     """CoinBlocker Lists:Investigate,Passive:Reputation Systems::Check if a host/domain or IP appears on CoinBlocker lists."""
 
     meta = {
-		'name': "CoinBlocker Lists",
-		'summary': "Check if a host/domain or IP appears on CoinBlocker lists.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "CoinBlocker Lists",
+        'summary': "Check if a host/domain or IP appears on CoinBlocker lists.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -54,9 +54,9 @@ class sfp_coinblocker(SpiderFootPlugin):
             'description': "The CoinBlockerLists are a project to prevent illegal mining in "
                                 "browsers or other applications using IPlists and URLLists.\n"
                                 "It's not just to block everything without any reason, but to protect "
-                                "internet users from illegal mining.\n",
+                                "internet users from illegal mining.",
         }
-	}
+    }
 
     # Default options
     opts = {

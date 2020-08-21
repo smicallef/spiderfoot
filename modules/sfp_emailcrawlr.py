@@ -20,11 +20,11 @@ class sfp_emailcrawlr(SpiderFootPlugin):
     """EmailCrawlr:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailCrawlr for email addresses and phone numbers associated with a domain."""
 
     meta = {
-		'name': "EmailCrawlr",
-		'summary': "Search EmailCrawlr for email addresses and phone numbers associated with a domain.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "EmailCrawlr",
+        'summary': "Search EmailCrawlr for email addresses and phone numbers associated with a domain.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://emailcrawlr.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -43,9 +43,9 @@ class sfp_emailcrawlr(SpiderFootPlugin):
                                 "Get key information about company websites.\n"
                                 "Find all email addresses associated with a domain.\n"
                                 "Get social accounts associated with an email.\n"
-                                "Verify email address deliverability.\n",
+                                "Verify email address deliverability.",
         }
-	}
+    }
 
     # Default options
     opts = {

@@ -37,7 +37,7 @@ class sfp_urlscan(SpiderFootPlugin):
                                 "This includes the domains and IPs contacted, the resources (JavaScript, CSS, etc) requested from "
                                 "those domains, as well as additional information about the page itself. "
                                 "urlscan.io will take a screenshot of the page, record the DOM content, JavaScript global variables, "
-                                "cookies created by the page, and a myriad of other observations. \n",
+                                "cookies created by the page, and a myriad of other observations.",
         }
     }
 

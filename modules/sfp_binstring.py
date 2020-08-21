@@ -17,12 +17,12 @@ class sfp_binstring(SpiderFootPlugin):
     """Binary String Extractor:Footprint:Content Analysis:errorprone:Attempt to identify strings in binary content."""
 
     meta = {
-		'name': "Binary String Extractor",
-		'summary': "Attempt to identify strings in binary content.",
-		'flags': [ "errorprone" ],
-		'useCases': [ "Footprint" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Binary String Extractor",
+        'summary': "Attempt to identify strings in binary content.",
+        'flags': [ "errorprone" ],
+        'useCases': [ "Footprint" ],
+        'categories': [ "Content Analysis" ]
+    }
 
     # Default options
     opts = {

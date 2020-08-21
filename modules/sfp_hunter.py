@@ -40,7 +40,7 @@ class sfp_hunter(SpiderFootPlugin):
             'description': "Hunter lets you find email addresses in seconds and connect with the people that matter for your business.\n"
                                 "The Domain Search lists all the people working in a company with their name "
                                 "and email address found on the web. With 100+ million email addresses indexed, "
-                                "effective search filters and scoring, it's the most powerful email-finding tool ever created.\n",
+                                "effective search filters and scoring, it's the most powerful email-finding tool ever created.",
         }
     }
 

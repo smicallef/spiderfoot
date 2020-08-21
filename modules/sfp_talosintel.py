@@ -49,7 +49,7 @@ class sfp_talosintel(SpiderFootPlugin):
                                 "to Cisco and world-class emergency response capabilities — "
                                 "in addition to more than 350 threat researchers for questions and analysis. "
                                 "Let our experts work with you to evaluate existing plans, develop a new plan, "
-                                "and provide rapid assistance when you need it most. \n",
+                                "and provide rapid assistance when you need it most.",
         }
     }
 

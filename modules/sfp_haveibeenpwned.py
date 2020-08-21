@@ -32,7 +32,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             'apiKeyInstructions': [],
             'favIcon': "https://haveibeenpwned.com/favicon.ico",
             'logo': "https://haveibeenpwned.com/favicon.ico",
-            'description': "Check if you have an account that has been compromised in a data breach.\n",
+            'description': "Check if you have an account that has been compromised in a data breach.",
         }
     }
 

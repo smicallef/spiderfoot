@@ -19,11 +19,11 @@ class sfp_builtwith(SpiderFootPlugin):
     """BuiltWith:Footprint,Investigate,Passive:Search Engines:apikey:Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more."""
 
     meta = {
-		'name': "BuiltWith",
-		'summary': "Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "BuiltWith",
+        'summary': "Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://builtwith.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -46,9 +46,9 @@ class sfp_builtwith(SpiderFootPlugin):
                                 "Filter by location, traffic, vertical and more.\n"
                                 "Know your prospects platform before you talk to them. "
                                 "Improve your conversions with validated market adoption.\n"
-                                "Get advanced technology market share information and country based analytics for all web technologies.\n",
+                                "Get advanced technology market share information and country based analytics for all web technologies.",
         }
-	}
+    }
 
     # Default options
     opts = {

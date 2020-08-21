@@ -51,7 +51,7 @@ class sfp_multiproxy(SpiderFootPlugin):
                                 "especially if you are trying to get several files form overseas or from otherwise rather slow server. "
                                 "It can also completely hide your IP address by dynamically connecting to "
                                 "non-transparent anonymizing public proxy servers. "
-                                "You can also test a list of proxy servers and sort them by connection speed and level of anonimity.\n",
+                                "You can also test a list of proxy servers and sort them by connection speed and level of anonimity.",
         }
     }
 
