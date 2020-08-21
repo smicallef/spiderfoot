@@ -17,12 +17,20 @@ class sfp_venmo(SpiderFootPlugin):
     """Venmo:Footprint,Investigate,Passive:Social Media::Gather user information from Venmo API."""
 
     meta = {
-		'name': "Venmo",
-		'summary': "Gather user information from Venmo API.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Social Media" ]
-	}
+        'name': "Venmo",
+        'summary': "Gather user information from Venmo API.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Social Media" ],
+        'dataSource': {
+            'website': "https://venmo.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [],
+            'favIcon': "https://d1v6x81qdeozhc.cloudfront.net/static/images/logo/apple-touch-icon-1a10ee4b947b728d54265ac8c5084f78.png",
+            'logo': "https://d1v6x81qdeozhc.cloudfront.net/static/images/logo/apple-touch-icon-1a10ee4b947b728d54265ac8c5084f78.png",
+            'description': "Venmo is a digital wallet that allows you to send money and make purchases at approved merchants\n",
+        }
+    }
 
     # Default options
     opts = {
