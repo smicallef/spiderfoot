@@ -30,8 +30,7 @@ class sfp_junkfiles(SpiderFootPlugin):
         'urlextstry': ['asp', 'php', 'jsp', ],
         'files': ["old", "passwd", ".htaccess", ".htpasswd",
                   "Thumbs.db", "backup"],
-        'dirs': ['zip', 'tar.gz', 'tgz', 'tar'],
-        'skipfake': True
+        'dirs': ['zip', 'tar.gz', 'tgz', 'tar']
     }
 
     # Option descriptions
@@ -39,8 +38,7 @@ class sfp_junkfiles(SpiderFootPlugin):
         'fileexts': "File extensions to try.",
         'urlextstry': "Try those extensions against URLs with these extensions.",
         'files': "Try to fetch each of these files from the directory of the URL.",
-        'dirs': "Try to fetch the containing folder with these extensions.",
-        'skipfake': "Try to fetch an obviously fake page and if no 404 is returned, stop trying that particular host for junk files. Good for avoiding false positives in cases where servers return content for pages that don't exist."
+        'dirs': "Try to fetch the containing folder with these extensions."
     }
 
     results = None
@@ -97,13 +95,13 @@ class sfp_junkfiles(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if self.opts['skipfake'] and host in self.skiphosts:
+        if host in self.skiphosts:
             self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
             return None
 
         # http://www/blah/abc.php -> try http://www/blah/abc.php.[fileexts]
         for ext in self.opts['urlextstry']:
-            if self.opts['skipfake'] and host in self.skiphosts:
+            if host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
                 return None
 
@@ -147,7 +145,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            if self.opts['skipfake'] and host in self.skiphosts:
+            if host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
                 return None
 
@@ -182,7 +180,7 @@ class sfp_junkfiles(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            if self.opts['skipfake'] and host in self.skiphosts:
+            if host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
                 return None
 
