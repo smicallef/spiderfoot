@@ -20,12 +20,12 @@ class sfp_bitcoin(SpiderFootPlugin):
     """Bitcoin Finder:Footprint,Investigate,Passive:Content Analysis::Identify bitcoin addresses in scraped webpages."""
 	
     meta = {
-		'name': "Bitcoin Finder",
-		'summary': "Identify bitcoin addresses in scraped webpages.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Bitcoin Finder",
+        'summary': "Identify bitcoin addresses in scraped webpages.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Content Analysis" ]
+    }
 
     # Default options
     opts = {}

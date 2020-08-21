@@ -46,7 +46,7 @@ class sfp_honeypot(SpiderFootPlugin):
                                 "Using the Project Honey Pot system you can install addresses "
                                 "that are custom-tagged to the time and IP address of a visitor to your site. "
                                 "If one of these addresses begins receiving email we not only can tell that the messages are spam, "
-                                "but also the exact moment when the address was harvested and the IP address that gathered it.\n",
+                                "but also the exact moment when the address was harvested and the IP address that gathered it.",
         }
     }
 

@@ -20,11 +20,11 @@ class sfp_dronebl(SpiderFootPlugin):
     """DroneBL:Investigate,Passive:Reputation Systems::Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc."""
 
     meta = {
-		'name': "DroneBL",
-		'summary': "Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "DroneBL",
+        'summary': "Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://dronebl.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -37,9 +37,9 @@ class sfp_dronebl(SpiderFootPlugin):
             'logo': "https://dronebl.org/images/dronebl-logo.svg",
             'description': "DroneBL is a realtime monitor of abusable IPs, which has "
                                 "the goal of stopping abuse of infected machines.\n"
-                               "A real-time tracker of abusable IPs.\n",
+                                "A real-time tracker of abusable IPs.",
         }
-	}
+    }
 
     # Default options
     opts = {

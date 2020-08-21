@@ -28,12 +28,12 @@ class sfp_customfeed(SpiderFootPlugin):
     """Custom Threat Feed:Investigate,Passive:Reputation Systems::Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed."""
 
     meta = {
-		'name': "Custom Threat Feed",
-		'summary': "Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Custom Threat Feed",
+        'summary': "Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ]
+    }
 
     # Default options
     opts = {

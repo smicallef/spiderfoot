@@ -20,12 +20,12 @@ class sfp_dnszonexfer(SpiderFootPlugin):
     """DNS Zone Transfer:Footprint,Investigate:DNS::Attempts to perform a full DNS zone transfer."""
 
     meta = {
-		'name': "DNS Zone Transfer",
-		'summary': "Attempts to perform a full DNS zone transfer.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "DNS" ]
-	}
+        'name': "DNS Zone Transfer",
+        'summary': "Attempts to perform a full DNS zone transfer.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "DNS" ]
+    }
 
     # Default options
     opts = {

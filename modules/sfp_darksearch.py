@@ -20,11 +20,11 @@ class sfp_darksearch(SpiderFootPlugin):
     """Darksearch:Footprint,Investigate:Search Engines::Search the Darksearch.io Tor search engine for mentions of the target domain."""
 
     meta = {
-		'name': "Darksearch",
-		'summary': "Search the Darksearch.io Tor search engine for mentions of the target domain.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "Search Engines" ],
+        'name': "Darksearch",
+        'summary': "Search the Darksearch.io Tor search engine for mentions of the target domain.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://darksearch.io/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -35,11 +35,11 @@ class sfp_darksearch(SpiderFootPlugin):
             'favIcon': "https://darksearch.io/favicons/favicon-64.png",
             'logo': "https://darksearch.io/images/darksearch-logo-02.svg?366834f96a6d3988f0f11f99dba27bf4",
             'description': "The 1st real Dark Web search engine.\n"
-                               "Our DarkWeb search engine is completely free.\n"
-                               "Access the results directly, without the need to install Tor.\n"
-                               "Our API is available for free to automate your research.\n.",
+                                "Our DarkWeb search engine is completely free.\n"
+                                "Access the results directly, without the need to install Tor.\n"
+                                "Our API is available for free to automate your research.",
         }
-	}
+    }
 
     # Default options
     opts = {

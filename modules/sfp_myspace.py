@@ -34,7 +34,7 @@ class sfp_myspace(SpiderFootPlugin):
                                 "Through an open design, compelling editorial features, "
                                 "and analytics-based recommendations, Myspace creates a creative community "
                                 "of people who connect around mutual affinity and inspiration for the purpose "
-                                "of shaping, sharing, and discovering what's next.\n",
+                                "of shaping, sharing, and discovering what's next.",
         }
     }
 

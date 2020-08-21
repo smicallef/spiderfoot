@@ -17,11 +17,11 @@ class sfp_duckduckgo(SpiderFootPlugin):
     """DuckDuckGo:Footprint,Investigate,Passive:Search Engines::Query DuckDuckGo's API for descriptive information about your target."""
 
     meta = {
-		'name': "DuckDuckGo",
-		'summary': "Query DuckDuckGo's API for descriptive information about your target.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "DuckDuckGo",
+        'summary': "Query DuckDuckGo's API for descriptive information about your target.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://duckduckgo.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -33,9 +33,9 @@ class sfp_duckduckgo(SpiderFootPlugin):
             'favIcon': "https://duckduckgo.com/favicon.ico",
             'logo': "https://duckduckgo.com/assets/icons/meta/DDG-icon_256x256.png",
             'description': "Our Instant Answer API gives you free access to many of our instant answers like: "
-                                "topic summaries , categories, disambiguation, and !bang redirects.\n",
+                                "topic summaries , categories, disambiguation, and !bang redirects.",
         }
-	}
+    }
 
     # Default options
     opts = {

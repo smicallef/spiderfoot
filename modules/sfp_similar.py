@@ -62,12 +62,12 @@ class sfp_similar(SpiderFootPlugin):
     """Similar Domain Finder:Footprint,Investigate:DNS::Search various sources to identify similar looking domain names, for instance squatted domains."""
 
     meta = {
-		'name': "Similar Domain Finder",
-		'summary': "Search various sources to identify similar looking domain names, for instance squatted domains.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "DNS" ]
-	}
+        'name': "Similar Domain Finder",
+        'summary': "Search various sources to identify similar looking domain names, for instance squatted domains.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "DNS" ]
+    }
 
     # Default options
     opts = {

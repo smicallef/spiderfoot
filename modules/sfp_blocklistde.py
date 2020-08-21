@@ -29,11 +29,11 @@ class sfp_blocklistde(SpiderFootPlugin):
     """blocklist.de:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to blocklist.de."""
 
     meta = {
-		'name': "blocklist.de",
-		'summary': "Check if a netblock or IP is malicious according to blocklist.de.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "blocklist.de",
+        'summary': "Check if a netblock or IP is malicious according to blocklist.de.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "http://www.blocklist.de/en/index.html",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -49,9 +49,9 @@ class sfp_blocklistde(SpiderFootPlugin):
             'description': "www.blocklist.de is a free and voluntary service provided by a Fraud/Abuse-specialist, "
                                 "whose servers are often attacked via SSH-, Mail-Login-, FTP-, Webserver- and other services.\n"
                                 "The mission is to report any and all attacks to the respective abuse departments of the infected PCs/servers, "
-                                "to ensure that the responsible provider can inform their customer about the infection and disable the attacker.\n"
+                                "to ensure that the responsible provider can inform their customer about the infection and disable the attacker."
         }
-	}
+    }
 
     # Default options
     opts = {

@@ -19,12 +19,12 @@ class sfp_norton(SpiderFootPlugin):
     """Norton ConnectSafe:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Norton ConnectSafe DNS"""
 
     meta = {
-		'name': "Norton ConnectSafe",
-		'summary': "Check if a host would be blocked by Norton ConnectSafe DNS",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ]
-	}
+        'name': "Norton ConnectSafe",
+        'summary': "Check if a host would be blocked by Norton ConnectSafe DNS",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ]
+    }
 
     # Default options
     opts = {

@@ -41,7 +41,7 @@ class sfp_ahmia(SpiderFootPlugin):
                                 "Contributors to Ahmia believe that the Tor network is an important and "
                                 "resilient distributed platform for anonymity and privacy worldwide. "
                                 "By providing a search engine for what many call the \"deep web\" or \"dark net\", "
-                                "Ahmia makes hidden services accessible to a wide range of people, not just Tor network early adopters.\n"
+                                "Ahmia makes hidden services accessible to a wide range of people, not just Tor network early adopters."
         }
     }
 

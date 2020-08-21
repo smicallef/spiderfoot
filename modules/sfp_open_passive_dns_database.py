@@ -36,7 +36,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
             'logo': "https://www.google.com/s2/favicons?domain=http://pdns.daloo.de/",
             'description': "This is a personal project to track DNS responses. "
                                 "You can use the DNS resolver to add data to it or just browse what the crawler found. "
-                                "I mainly did it because I found no really open database.\n",
+                                "I mainly did it because I found no really open database.",
         }
     }
 

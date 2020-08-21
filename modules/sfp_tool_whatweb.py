@@ -32,7 +32,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
                                 "WhatWeb recognises web technologies including content management systems (CMS), "
                                 "blogging platforms, statistic/analytics packages, JavaScript libraries, web servers, and embedded devices. "
                                 "WhatWeb has over 1800 plugins, each to recognise something different. "
-                                "WhatWeb also identifies version numbers, email addresses, account IDs, web framework modules, SQL errors, and more.\n",
+                                "WhatWeb also identifies version numbers, email addresses, account IDs, web framework modules, SQL errors, and more.",
             'website': 'https://github.com/urbanadventurer/whatweb',
             'repository': 'https://github.com/urbanadventurer/whatweb'
         },

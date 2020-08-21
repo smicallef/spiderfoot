@@ -34,7 +34,7 @@ class sfp_scylla(SpiderFootPlugin):
             'logo': "",
             'description': "scylla.sh has two major goals. One is to have a community-oriented database leak community "
                                 "that is a useful tool for security researchers.\n"
-                                "The other major goal is to undercut those people that are selling databases.\n",
+                                "The other major goal is to undercut those people that are selling databases.",
         }
     }
 

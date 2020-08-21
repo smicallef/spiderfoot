@@ -34,7 +34,7 @@ class sfp_opencorporates(SpiderFootPlugin):
             'description': "The largest open database of companies in the world.\n"
                                 "As the largest, open database of companies in the world, "
                                 "our business is making high-quality, official company data openly available. "
-                                "Data that can be trusted, accessed, analysed and interrogated when and how it’s needed.\n",
+                                "Data that can be trusted, accessed, analysed and interrogated when and how it’s needed.",
         }
     }
 

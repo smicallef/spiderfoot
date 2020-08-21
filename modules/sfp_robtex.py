@@ -36,7 +36,7 @@ class sfp_robtex(SpiderFootPlugin):
             'description': "Robtex is used for various kinds of research of IP numbers, Domain names, etc\n"
                                 "Robtex uses various sources to gather public information about "
                                 "IP numbers, domain names, host names, Autonomous systems, routes etc. "
-                                "It then indexes the data in a big database and provide free access to the data.\n",
+                                "It then indexes the data in a big database and provide free access to the data.",
         }
     }
 

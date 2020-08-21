@@ -19,11 +19,11 @@ class sfp_callername(SpiderFootPlugin):
     """CallerName:Footprint,Investigate,Passive:Real World::Lookup US phone number location and reputation information."""
 
     meta = {
-		'name': "CallerName",
-		'summary': "Lookup US phone number location and reputation information.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Real World" ],
+        'name': "CallerName",
+        'summary': "Lookup US phone number location and reputation information.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Real World" ],
         'dataSource': {
             'website': "http://callername.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -37,9 +37,9 @@ class sfp_callername(SpiderFootPlugin):
                                 "It relies on a database of white pages and business pages taken from public sources. "
                                 "The easy-to-use and streamlined interface allow users to look up the caller ID information of any number quickly. "
                                 "Just type the unknown number into the search bar to start. "
-                                "You need not pay nor register to use this 100% free service.\n",
+                                "You need not pay nor register to use this 100% free service.",
         }
-	}
+    }
 
     # Default options
     opts = {

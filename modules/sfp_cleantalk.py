@@ -17,11 +17,11 @@ class sfp_cleantalk(SpiderFootPlugin):
     """CleanTalk Spam List:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is on CleanTalk.org's spam IP list."""
 
     meta = {
-		'name': "CleanTalk Spam List",
-		'summary': "Check if a netblock or IP address is on CleanTalk.org's spam IP list.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "CleanTalk Spam List",
+        'summary': "Check if a netblock or IP address is on CleanTalk.org's spam IP list.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://cleantalk.org",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -42,9 +42,9 @@ class sfp_cleantalk(SpiderFootPlugin):
                                 "without using captcha or other methods when visitors have to prove that they are real people.\n"
                                 "CleanTalk provides cloud anti-spam solutions for CMS and we developed plugins for the most of popular "
                                 "CMS: WordPress anti-spam plugin, Joomla anti-spam plugin, Drupal and etc. "
-                                "With our simple cloud spam checker, you can be sure your website is protected from spam bots, spam comments, and users.\n",
+                                "With our simple cloud spam checker, you can be sure your website is protected from spam bots, spam comments, and users.",
         }
-	}
+    }
 
     # Default options
     opts = {

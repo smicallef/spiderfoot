@@ -39,7 +39,7 @@ class sfp_zoneh(SpiderFootPlugin):
                                 "Sometimes, the hackers themselves submit their hacked pages to the site.\n"
                                 "It is an Internet security portal containing original IT security news, digital warfare news, "
                                 "geopolitics, proprietary and general advisories, analyses, forums, researches. "
-                                "Zone-H is the largest web intrusions archive. It is published in several languages.\n",
+                                "Zone-H is the largest web intrusions archive. It is published in several languages.",
         }
     }
 

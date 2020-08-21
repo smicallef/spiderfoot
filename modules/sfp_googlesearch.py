@@ -17,11 +17,11 @@ class sfp_googlesearch(SpiderFootPlugin):
     """Google:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from the Google Custom Search API to identify sub-domains and links."""
 
     meta = {
-		'name': "Google",
-		'summary': "Obtain information from the Google Custom Search API to identify sub-domains and links.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "Google",
+        'summary': "Obtain information from the Google Custom Search API to identify sub-domains and links.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://developers.google.com/custom-search",
             'model': "FREE_AUTH_LIMITED",
@@ -42,9 +42,9 @@ class sfp_googlesearch(SpiderFootPlugin):
             'description': "Google Custom Search enables you to create a search engine for your website, your blog, or a collection of websites. "
                                 "You can configure your engine to search both web pages and images. "
                                 "You can fine-tune the ranking, add your own promotions and customize the look and feel of the search results. "
-                                "You can monetize the search by connecting your engine to your Google AdSense account.\n",
+                                "You can monetize the search by connecting your engine to your Google AdSense account.",
         }
-	}
+    }
 
     # Default options
     opts = {

@@ -48,7 +48,7 @@ class sfp_xforce(SpiderFootPlugin):
                                 "to rapidly research the latest global security threats, aggregate actionable intelligence, "
                                 "consult with experts and collaborate with peers. "
                                 "IBM X-Force Exchange, supported by human- and machine-generated intelligence, "
-                                "leverages the scale of IBM X-Force to help users stay ahead of emerging threats.\n",
+                                "leverages the scale of IBM X-Force to help users stay ahead of emerging threats.",
         }
     }
 

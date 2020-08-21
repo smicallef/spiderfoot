@@ -50,7 +50,7 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
             'description': "Looking at security through new eyes.\n"
                                "AT&T Business and AlienVault have joined forces to create AT&T Cybersecurity, "
                                "with a vision to bring together the people, process, and technology "
-                               "that help businesses of any size stay ahead of threats.\n",
+                               "that help businesses of any size stay ahead of threats.",
         }
     }
 

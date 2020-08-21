@@ -33,7 +33,7 @@ class sfp_phishstats(SpiderFootPlugin):
             ],
             'favIcon': "https://phishstats.info/phish.ico",
             'logo': "",
-            'description': "PhishStats - is a real time Phishing database that gathers phishing URLs from several sources.\n",
+            'description': "PhishStats - is a real time Phishing database that gathers phishing URLs from several sources.",
         }
     }
 

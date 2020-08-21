@@ -22,12 +22,12 @@ class sfp_portscan_tcp(SpiderFootPlugin):
     """Port Scanner - TCP:Footprint,Investigate:Crawling and Scanning:slow,invasive:Scans for commonly open TCP ports on Internet-facing systems."""
 
     meta = {
-		'name': "Port Scanner - TCP",
-		'summary': "Scans for commonly open TCP ports on Internet-facing systems.",
-		'flags': [ "slow", "invasive" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "Crawling and Scanning" ]
-	}
+        'name': "Port Scanner - TCP",
+        'summary': "Scans for commonly open TCP ports on Internet-facing systems.",
+        'flags': [ "slow", "invasive" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "Crawling and Scanning" ]
+    }
 
     # Default options
     opts = {

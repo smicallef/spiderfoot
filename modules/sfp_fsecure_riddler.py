@@ -18,11 +18,11 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
     """F-Secure Riddler.io:Investigate,Footprint,Passive:Search Engines:apikey:Obtain network information from F-Secure Riddler.io API."""
 
     meta = {
-		'name': "F-Secure Riddler.io",
-		'summary': "Obtain network information from F-Secure Riddler.io API.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Footprint", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "F-Secure Riddler.io",
+        'summary': "Obtain network information from F-Secure Riddler.io API.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Footprint", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://riddler.io/",
             'model': "PRIVATE_ONLY",
@@ -41,9 +41,9 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
                                 "Unlike others, we do not rely on simple port scanning techniques - we crawl the web, "
                                 "ensuring an in-depth quality data set you will not find anywhere else.\n"
                                 "Use Riddler to enumerate possible attack vectors during your pen-test or use the very same data "
-                                "to monitor potential threats before it is too late.\n",
+                                "to monitor potential threats before it is too late.",
         }
-	}
+    }
 
     opts = {
         'verify': True,

@@ -21,12 +21,12 @@ class sfp_countryname(SpiderFootPlugin):
     """Country Name Extractor:Footprint,Investigate,Passive:Content Analysis::Identify country names in any obtained data."""
 
     meta = {
-		'name': "Country Name Extractor",
-		'summary': "Identify country names in any obtained data.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Country Name Extractor",
+        'summary': "Identify country names in any obtained data.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Content Analysis" ]
+    }
 
     # Default options
     opts = {

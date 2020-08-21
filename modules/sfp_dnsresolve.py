@@ -20,12 +20,12 @@ class sfp_dnsresolve(SpiderFootPlugin):
     """DNS Resolver:Footprint,Investigate,Passive:DNS::Resolves Hosts and IP Addresses identified, also extracted from raw content."""
 
     meta = {
-		'name': "DNS Resolver",
-		'summary': "Resolves Hosts and IP Addresses identified, also extracted from raw content.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "DNS" ]
-	}
+        'name': "DNS Resolver",
+        'summary': "Resolves Hosts and IP Addresses identified, also extracted from raw content.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "DNS" ]
+    }
 
     # Default options
     opts = {

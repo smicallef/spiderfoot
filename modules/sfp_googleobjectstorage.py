@@ -19,16 +19,16 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
     """Google Object Storage Finder:Footprint,Passive:Crawling and Scanning::Search for potential Google Object Storage buckets associated with the target and attempt to list their contents."""
 
     meta = {
-		'name': "Google Object Storage Finder",
-		'summary': "Search for potential Google Object Storage buckets associated with the target and attempt to list their contents.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Passive" ],
-		'categories': [ "Crawling and Scanning" ],
+        'name': "Google Object Storage Finder",
+        'summary': "Search for potential Google Object Storage buckets associated with the target and attempt to list their contents.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Passive" ],
+        'categories': [ "Crawling and Scanning" ],
         'dataSource': {
             'website': "https://cloud.google.com/storage",
             'model': "FREE_NOAUTH_UNLIMITED"
         }
-	}
+    }
 
     # Default options
     opts = {

@@ -38,7 +38,7 @@ class sfp_threatminer(SpiderFootPlugin):
                                 "It is used in the SANS FOR578 Cyber Threat Intelligence course.\n"
                                 "Threat intelligence and intrusion analysts who regularly perform research "
                                 "into malware and network infrastructure often find the need to rely on "
-                                "mutliple websites that individually holds a small piece of the larger puzzle.\n",
+                                "mutliple websites that individually holds a small piece of the larger puzzle.",
         }
     }
     # Default options

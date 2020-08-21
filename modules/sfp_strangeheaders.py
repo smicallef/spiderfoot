@@ -28,12 +28,12 @@ class sfp_strangeheaders(SpiderFootPlugin):
     """Strange Header Identifier:Footprint,Passive:Content Analysis::Obtain non-standard HTTP headers returned by web servers."""
 
     meta = {
-		'name': "Strange Header Identifier",
-		'summary': "Obtain non-standard HTTP headers returned by web servers.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Passive" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Strange Header Identifier",
+        'summary': "Obtain non-standard HTTP headers returned by web servers.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Passive" ],
+        'categories': [ "Content Analysis" ]
+    }
 
     # Default options
     opts = {}

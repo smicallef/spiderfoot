@@ -45,7 +45,7 @@ class sfp_greynoise(SpiderFootPlugin):
                                 "and opportunistic scan and attack activity that reaches every server directly connected to the Internet. "
                                 "Mass scanners (such as Shodan and Censys), search engines, bots, worms, "
                                 "and crawlers generate logs and events omnidirectionally on every IP address in the IPv4 space. "
-                                "GreyNoise gives you the ability to filter this useless noise out.\n.",
+                                "GreyNoise gives you the ability to filter this useless noise out.",
         }
     }
 

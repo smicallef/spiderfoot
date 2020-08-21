@@ -19,11 +19,11 @@ class sfp_greensnow(SpiderFootPlugin):
     """Greensnow:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is malicious according to greensnow.co."""
 
     meta = {
-		'name': "Greensnow",
-		'summary': "Check if a netblock or IP address is malicious according to greensnow.co.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "Greensnow",
+        'summary': "Check if a netblock or IP address is malicious according to greensnow.co.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://greensnow.co/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -36,9 +36,9 @@ class sfp_greensnow(SpiderFootPlugin):
             'description': "GreenSnow is a team consisting of the best specialists in computer security, "
                                 "we harvest a large number of IPs from different computers located around the world. "
                                 "GreenSnow is comparable with SpamHaus.org for attacks of any kind except for spam. "
-                                "Our list is updated automatically and you can withdraw at any time your IP address if it has been listed.\n.",
+                                "Our list is updated automatically and you can withdraw at any time your IP address if it has been listed.",
         }
-	}
+    }
 
     # Default options
     opts = {

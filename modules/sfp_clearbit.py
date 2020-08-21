@@ -17,11 +17,11 @@ class sfp_clearbit(SpiderFootPlugin):
     """Clearbit:Footprint,Investigate,Passive:Search Engines:apikey:Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com."""
 
     meta = {
-		'name': "Clearbit",
-		'summary': "Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "Clearbit",
+        'summary': "Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://clearbit.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -44,9 +44,9 @@ class sfp_clearbit(SpiderFootPlugin):
                                 "Get company attributes like employee count, technologies used, and industry classification—and "
                                 "get employee details like role, seniority, and even job change notifications, right at your fingertips.\n"
                                 "With our dataset and machine learning algorithms, you’ll have all of "
-                                "the information you need to convert leads and grow your business.\n.",
+                                "the information you need to convert leads and grow your business.",
         }
-	}
+    }
 
     # Default options
     opts = {

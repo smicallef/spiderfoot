@@ -43,7 +43,7 @@ class sfp_phishtank(SpiderFootPlugin):
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://phishtank.com/",
             'logo': "https://phishtank.com/images/logo_with_tagline.gif",
-            'description': "Submit suspected phishes. Track the status of your submissions. Verify other users' submissions.\n",
+            'description': "Submit suspected phishes. Track the status of your submissions. Verify other users' submissions.",
         }
     }
 
