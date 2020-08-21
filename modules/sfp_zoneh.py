@@ -20,12 +20,28 @@ class sfp_zoneh(SpiderFootPlugin):
     """Zone-H Defacement Check:Investigate,Passive:Leaks, Dumps and Breaches::Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed."""
 
     meta = {
-		'name': "Zone-H Defacement Check",
-		'summary': "Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Leaks, Dumps and Breaches" ]
-	}
+        'name': "Zone-H Defacement Check",
+        'summary': "Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Leaks, Dumps and Breaches" ],
+        'dataSource': {
+            'website': "https://zone-h.org/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://www.zone-h.org/archive",
+                "https://www.zone-h.org/archive/special=1"
+            ],
+            'favIcon': "https://zone-h.org/images/logo.gif",
+            'logo': "https://zone-h.org/images/logo.gif",
+            'description': "Once a defaced website is submitted to Zone-H, it is mirrored on the Zone-H servers. "
+                                "The website is then moderated by the Zone-H staff to check if the defacement was fake. "
+                                "Sometimes, the hackers themselves submit their hacked pages to the site.\n"
+                                "It is an Internet security portal containing original IT security news, digital warfare news, "
+                                "geopolitics, proprietary and general advisories, analyses, forums, researches. "
+                                "Zone-H is the largest web intrusions archive. It is published in several languages.\n",
+        }
+    }
 
     # Default options
     opts = {
