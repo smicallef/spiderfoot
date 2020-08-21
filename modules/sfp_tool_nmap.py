@@ -34,7 +34,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
                                 "what operating systems (and OS versions) they are running, "
                                 "what type of packet filters/firewalls are in use, and dozens of other characteristics.\n",
             'website': "https://nmap.org/",
-            'repository': "https://nmap.org/book/install.html#inst-svn"
+            'repository': "https://svn.nmap.org/nmap"
         },
     }
 
