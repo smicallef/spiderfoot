@@ -131,23 +131,55 @@ class sfp_xforce(SpiderFootPlugin):
         url = xforce_url + "/" + querytype + "/" + qry
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
 
-        if res['code'] in [ "400", "401", "402", "403" ]:
-            self.sf.error("XForce API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+        return self.parseAPIResponse(res)
+
+    # Parse API Response from X-Force Exchange
+    # https://exchange.xforce.ibmcloud.com/api/doc/
+    def parseAPIResponse(self, res):
+        if res['content'] is None:
+            self.sf.info("No X-Force Exchange information found")
+            return None
+
+        if res['code'] == '400':
+            self.sf.error("Bad request", False)
+            return None
+
+        if res['code'] == '404':
+            self.sf.info("No X-Force Exchange information found")
+            return None
+
+        if res['code'] == '401':
+            self.sf.error("X-Force Exchange API key seems to have been rejected.", False)
             self.errorState = True
             return None
 
-        if res['content'] is None:
-            self.sf.info("No XForce info found for " + qry)
+        if res['code'] == '402':
+            self.sf.error("X-Force Exchange monthly quota exceeded", False)
+            self.errorState = True
+            return None
+
+        if res['code'] == '403':
+            self.sf.error("Access denied", False)
+            self.errorState = True
+            return None
+
+        if res['code'] == '429':
+            self.sf.error("Rate limit exceeded", False)
+            self.errorState = True
+            return None
+
+        # Catch all non-200 status codes, and presume something went wrong
+        if res['code'] != '200':
+            self.sf.error("Failed to retrieve content from X-Force Exchange", False)
             return None
 
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from XForce.", False)
+            self.sf.error("Error processing JSON response from X-Force Exchange.", False)
             return None
 
         return info
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
