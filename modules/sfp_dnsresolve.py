@@ -173,7 +173,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 if offset < 0:
                     continue
 
-                pat = re.compile("[^a-z0-9\-\.]([a-z0-9\-\.]*\." + name + ")", re.DOTALL|re.MULTILINE)
+                pat = re.compile(r"[^a-z0-9\-\.]([a-z0-9\-\.]*\." + name + ")", re.DOTALL|re.MULTILINE)
                 while offset >= 0:
                     # If the target was found at the beginning of the content, skip past it
                     if offset == 0:

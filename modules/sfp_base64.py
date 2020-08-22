@@ -61,7 +61,7 @@ class sfp_base64(SpiderFootPlugin):
 
         self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
-        pat = re.compile("([A-Za-z0-9+\/]+\=\=|[A-Za-z0-9+\/]+\=)")
+        pat = re.compile(r"([A-Za-z0-9+\/]+\=\=|[A-Za-z0-9+\/]+\=)")
         m = re.findall(pat, eventData)
         for match in m:
             if self.checkForStop():
