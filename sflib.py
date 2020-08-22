@@ -63,17 +63,15 @@ class SpiderFoot:
     savedsock = socket
     socksProxy = None
 
-    def __init__(self, options, handle=None):
+    def __init__(self, options):
         """Initialize SpiderFoot object.
 
         Args:
             options (dict): dictionary of configuration options.
-            handle (str): a handle to something. will be supplied if the module
-            is being used within the SpiderFoot GUI, in which case all feedback
-            should be fed back
         """
+        if not isinstance(options, dict):
+            raise TypeError("options is %s; expected dict()" % type(options))
 
-        self.handle = handle
         self.opts = deepcopy(options)
 
         # This is ugly but we don't want any fetches to fail - we expect
