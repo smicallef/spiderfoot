@@ -1,11 +1,11 @@
-# test_sfp_strangeheaders.py
+# test sfp_webframework.py
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
 import unittest
-from modules.sfp_strangeheaders import sfp_strangeheaders
+from modules.sfp_webframework import sfp_webframework
 
 class TestModuleWebFramework(unittest.TestCase):
     """
-    Test modules.sfp_strangeheaders
+    Test modules.sfp_webframework
     """
 
     default_options = {
@@ -37,7 +37,7 @@ class TestModuleWebFramework(unittest.TestCase):
     }
 
     def test_opts(self):
-        module = sfp_strangeheaders()
+        module = sfp_webframework()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
@@ -46,15 +46,15 @@ class TestModuleWebFramework(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_strangeheaders()
+        module = sfp_webframework()
         module.setup(sf, dict())
 
     def test_watchedEvents_should_return_list(self):
-        module = sfp_strangeheaders()
+        module = sfp_webframework()
         self.assertIsInstance(module.watchedEvents(), list)
 
     def test_producedEvents_should_return_list(self):
-        module = sfp_strangeheaders()
+        module = sfp_webframework()
         self.assertIsInstance(module.producedEvents(), list)
 
     def test_handleEvent(self):
@@ -63,7 +63,7 @@ class TestModuleWebFramework(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_strangeheaders()
+        module = sfp_webframework()
         module.setup(sf, dict())
 
         target_value = 'example target value'
