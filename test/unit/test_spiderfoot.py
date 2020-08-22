@@ -37,7 +37,7 @@ class TestSpiderFoot(unittest.TestCase):
    
     test_tlds = "// ===BEGIN ICANN DOMAINS===\n\ncom\nnet\norg\n\n// // ===END ICANN DOMAINS===\n"
 
-    def test_init_argument_invalid_options_should_raise(self):
+    def test_init_argument_options_of_invalid_type_should_raise_TypeError(self):
         """
         Test __init__(self, options):
         """
@@ -47,37 +47,37 @@ class TestSpiderFoot(unittest.TestCase):
                 with self.assertRaises(TypeError) as cm:
                     sf = SpiderFoot(invalid_type)
 
-    def test_init_no_options(self):
+    def test_init_argument_options_with_empty_dict(self):
         """
         Test __init__(self, options):
         """
         sf = SpiderFoot(dict())
         self.assertIsInstance(sf, SpiderFoot)
 
-    def test_init(self):
+    def test_init_argument_options_with_default_options(self):
         """
         Test __init__(self, options):
         """
         sf = SpiderFoot(self.default_options)
         self.assertIsInstance(sf, SpiderFoot)
 
-    def test_update_socket(self):
-        """
-        Test updateSocket(self, sock)
-        """
+    def test_attribute_dbh(self):
         sf = SpiderFoot(dict())
 
-        sf.updateSocket('new socket')
+        sf.dbh = 'new handle'
+        self.assertEqual('new handle', sf.dbh)
+
+    def test_attribute_scanId(self):
+        sf = SpiderFoot(dict())
+
+        sf.scanId = 'new guid'
+        self.assertEqual('new guid', sf.scanId)
+
+    def test_attribute_socksProxy(self):
+        sf = SpiderFoot(dict())
+
+        sf.socksProxy = 'new socket'
         self.assertEqual('new socket', sf.socksProxy)
-
-    def test_revert_socket(self):
-        """
-        Test revertSocket(self)
-        """
-        sf = SpiderFoot(dict())
-
-        sf.revertSocket()
-        self.assertEqual(None, sf.socksProxy)
 
     def test_refresh_tor_ident_should_return_none(self):
         """
@@ -150,31 +150,13 @@ class TestSpiderFoot(unittest.TestCase):
         json = sf.buildGraphJson('', '')
         self.assertIsInstance(json, str)
 
-    def test_set_dbh(self):
+    def test_genScanInstanceId_should_return_a_string(self):
         """
-        Test setDbh(self, handle)
-        """
-        sf = SpiderFoot(dict())
-
-        sf.setDbh('new handle')
-        self.assertEqual('new handle', sf.dbh)
-
-    def test_set_guid(self):
-        """
-        Test setGUID(self, uid)
+        Test genScanInstanceId(self)
         """
         sf = SpiderFoot(dict())
 
-        sf.setGUID('new guid')
-        self.assertEqual('new guid', sf.GUID)
-
-    def test_gen_scan_instance_guid_should_return_a_string(self):
-        """
-        Test genScanInstanceGUID(self)
-        """
-        sf = SpiderFoot(dict())
-
-        scan_instance_id = sf.genScanInstanceGUID()
+        scan_instance_id = sf.genScanInstanceId()
         self.assertIsInstance(scan_instance_id, str)
 
     def test_dblog_invalid_dbh_should_raise(self):
