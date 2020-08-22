@@ -42,7 +42,8 @@ class sfp_accounts(SpiderFootPlugin):
         "ignorenamedict": "Don't bother looking up names that are just stand-alone first names (too many false positives).",
         "ignoreworddict": "Don't bother looking up names that appear in the dictionary.",
         "musthavename": "The username must be mentioned on the social media page to consider it valid (helps avoid false positives).",
-        "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts."
+        "userfromemail": "Extract usernames from e-mail addresses at all? If disabled this can reduce false positives for common usernames but for highly unique usernames it would result in missed accounts.",
+        "_maxthreads": "Maximum threads"
     }
 
     results = None

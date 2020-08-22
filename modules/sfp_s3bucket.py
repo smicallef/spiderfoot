@@ -40,7 +40,8 @@ class sfp_s3bucket(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         "endpoints": "Different S3 endpoints to check where buckets may exist, as per http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region",
-        "suffixes": "List of suffixes to append to domains tried as bucket names"
+        "suffixes": "List of suffixes to append to domains tried as bucket names",
+        "_maxthreads": "Maximum threads"
     }
 
     results = None

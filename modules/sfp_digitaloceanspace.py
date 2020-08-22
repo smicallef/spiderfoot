@@ -40,7 +40,8 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         "endpoints": "Different Digital Ocean locations to check where spaces may exist.",
-        "suffixes": "List of suffixes to append to domains tried as space names"
+        "suffixes": "List of suffixes to append to domains tried as space names",
+        "_maxthreads": "Maximum threads"
     }
 
     results = None
