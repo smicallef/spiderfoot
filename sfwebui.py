@@ -450,7 +450,7 @@ class SpiderFootWebUi:
             scantarget = scantarget.lower()
 
         # Start running a new scan
-        scanId = sf.genScanInstanceGUID()
+        scanId = sf.genScanInstanceId()
         try:
             p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True
@@ -501,7 +501,7 @@ class SpiderFootWebUi:
                 return self.error("Invalid target type. Could not recognize it as a human name, IP address, IP subnet, ASN, domain name or host name.")
 
             # Start running a new scan
-            scanId = sf.genScanInstanceGUID()
+            scanId = sf.genScanInstanceId()
             try:
                 p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
                 p.daemon = True
@@ -1075,7 +1075,7 @@ class SpiderFootWebUi:
             scantarget = scantarget.lower()
 
         # Start running a new scan
-        scanId = sf.genScanInstanceGUID()
+        scanId = sf.genScanInstanceId()
         try:
             p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True

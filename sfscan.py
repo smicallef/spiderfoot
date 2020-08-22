@@ -101,7 +101,7 @@ class SpiderFootScanner():
         self.__moduleList = moduleList
 
         self.__sf = SpiderFoot(self.__config)
-        self.__sf.setDbh(self.__dbh)
+        self.__sf.dbh = self.__dbh
 
         # Create a unique ID for this scan in the back-end DB.
         if not isinstance(scanId, str):
@@ -110,9 +110,9 @@ class SpiderFootScanner():
         if scanId:
             self.__scanId = scanId
         else:
-            self.__scanId = self.__sf.genScanInstanceGUID()
+            self.__scanId = self.__sf.genScanInstanceId()
 
-        self.__sf.setGUID(self.__scanId)
+        self.__sf.scanId = self.__scanId
         self.__dbh.scanInstanceCreate(self.__scanId, self.__scanName, self.__targetValue)
 
         # Create our target
@@ -155,9 +155,9 @@ class SpiderFootScanner():
 
             self.__sf.debug(f"SOCKS: {socksAddr}:{socksPort} ({socksUsername}:{socksPassword})")
 
-            self.__sf.updateSocket(proxy)
+            self.__sf.socksProxy = proxy
         else:
-            self.__sf.revertSocket()
+            self.__sf.socksProxy = None
 
         # Override the default DNS server
         if self.__config['_dnsserver']:
