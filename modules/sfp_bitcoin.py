@@ -81,7 +81,7 @@ class sfp_bitcoin(SpiderFootPlugin):
         self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         # thanks to https://stackoverflow.com/questions/21683680/regex-to-match-bitcoin-addresses
-        matches = re.findall("[\s:=\>]([13][a-km-zA-HJ-NP-Z1-9]{25,34})", eventData)
+        matches = re.findall(r"[\s:=\>]([13][a-km-zA-HJ-NP-Z1-9]{25,34})", eventData)
         for m in matches:
             self.sf.debug("Bitcoin potential match: " + m)
             if self.check_bc(m):

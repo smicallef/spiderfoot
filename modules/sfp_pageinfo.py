@@ -24,7 +24,7 @@ regexps = dict({
     'URL_PASSWORD': list(['<input.*type=[\"\']*password']),
     'URL_UPLOAD': list(['type=[\"\']*file']),
     'URL_JAVA_APPLET': list(['<applet ']),
-    'URL_FLASH': list(['\.swf[ \'\"]'])
+    'URL_FLASH': list([r'\.swf[ \'\"]'])
 })
 
 
