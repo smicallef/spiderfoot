@@ -5,6 +5,12 @@ python:
 
 cache: pip
 
+before_install:
+  - python --version
+  - pip install -U pip
+  - pip install -U pytest
+  - pip install codecov
+
 install:
   - pip install -r requirements_test.txt
 
@@ -12,4 +18,4 @@ script:
   - python -m pytest --durations=5 --cov-report term --cov=. test/
 
 after_success:
-  - codecov
+  - bash <(curl -s https://codecov.io/bash)
