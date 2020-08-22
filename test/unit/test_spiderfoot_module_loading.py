@@ -63,6 +63,8 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
                 sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":", 5)[4]
                 sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
                 sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
+                sfModules[modName]['meta'] = sfModules[modName]['object'].meta
+
                 if hasattr(sfModules[modName]['object'], 'opts'):
                     sfModules[modName]['opts'] = sfModules[modName]['object'].opts
                 if hasattr(sfModules[modName]['object'], 'optdescs'):
@@ -70,7 +72,7 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
 
         self.assertTrue(len(sfModules.keys()))
 
-        valid_categories = ["Footprint", "Passive", "Investigate"]
+        valid_use_cases = ["Footprint", "Passive", "Investigate"]
 
         for module in sfModules:
             m = sfModules[module]
@@ -85,6 +87,8 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             self.assertIsInstance(m.get('provides'), list)
             self.assertTrue(m.get('consumes'))
             self.assertIsInstance(m.get('consumes'), list)
+            self.assertTrue(m.get('meta'))
+            self.assertIsInstance(m.get('meta'), dict)
 
             # skip non-conforming modules
             if module in [
@@ -96,7 +100,13 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
                 continue
 
             for cat in m.get('cats'):
-                self.assertIn(cat, valid_categories)
+                self.assertIn(cat, valid_use_cases)
+
+            for cat in m.get('meta').get('useCases'):
+                self.assertIn(cat, valid_use_cases)
+
+            self.assertTrue(m.get('meta').get('name'))
+            self.assertTrue(m.get('meta').get('summary'))
 
             # check len(options) == len(option descriptions)
             if m.get('opts'):
