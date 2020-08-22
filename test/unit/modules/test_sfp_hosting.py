@@ -57,7 +57,6 @@ class TestModuleHosting(unittest.TestCase):
         module = sfp_hosting()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo - test fails due to self.opts['_useragent'] = None")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)

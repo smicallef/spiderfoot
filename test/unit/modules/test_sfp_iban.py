@@ -73,9 +73,17 @@ class TestModuleIban(unittest.TestCase):
 
         event_type = 'ROOT'
         event_data = 'example data'
-        event_module = ''
+        event_module = 'sfp_test_module'
         source_event = ''
+        source_event = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        event_type = 'TARGET_WEB_CONTENT'
+        event_data = 'example data'
+        event_module = 'sfp_test_module'
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
         result = module.handleEvent(evt)
+        self.assertIsNone(result)
+
+        self.assertEqual('TBD', 'TBD')
 
