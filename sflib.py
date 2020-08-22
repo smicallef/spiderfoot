@@ -41,10 +41,9 @@ from datetime import datetime
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy
 import io
-
+import urllib3
 
 # For hiding the SSL warnings coming from the requests lib
-import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -52,28 +51,26 @@ class SpiderFoot:
     """SpiderFoot
 
     Attributes:
-        dbh: TBD
-        GUID: TBD
-        savedSock: TBD
-        socksProxy: TBD
+        dbh (SpiderFootDb): database handle
+        scanId (str): scan ID this instance of SpiderFoot is being used in
+        socksProxy (str): SOCKS proxy
+        opts (dict): configuration options
     """
  
-    dbh = None
-    GUID = None
-    savedsock = socket
-    socksProxy = None
+    _dbh = None
+    _scanId = None
+    _socksProxy = None
+    opts = dict()
 
-    def __init__(self, options, handle=None):
+    def __init__(self, options):
         """Initialize SpiderFoot object.
 
         Args:
             options (dict): dictionary of configuration options.
-            handle (str): a handle to something. will be supplied if the module
-            is being used within the SpiderFoot GUI, in which case all feedback
-            should be fed back
         """
+        if not isinstance(options, dict):
+            raise TypeError("options is %s; expected dict()" % type(options))
 
-        self.handle = handle
         self.opts = deepcopy(options)
 
         # This is ugly but we don't want any fetches to fail - we expect
@@ -85,30 +82,40 @@ class SpiderFoot:
             res.nameservers = [self.opts['_dnsserver']]
             dns.resolver.override_system_resolver(res)
 
-    def updateSocket(self, socksProxy):
-        """Update socket.
+    @property
+    def dbh(self):
+        return self._dbh
+
+    @property
+    def scanId(self):
+        return self._scanId
+
+    @property
+    def socksProxy(self):
+        return self._socksProxy
+
+    @dbh.setter
+    def dbh(self, dbh):
+        """Called usually some time after instantiation
+        to set up a database handle and scan ID, used
+        for logging events to the database about a scan.
+        """
+        self._dbh = dbh
+
+    @scanId.setter
+    def scanId(self, scanId):
+        """Set the scan ID this instance of SpiderFoot is being used in."""
+        self._scanId = scanId
+
+    @socksProxy.setter
+    def socksProxy(self, socksProxy):
+        """SOCKS proxy
 
         Bit of a hack to support SOCKS because of the loading order of
         modules. sfscan will call this to update the socket reference
         to the SOCKS one.
-
-        Args:
-            socksProxy (str): TBD
-
-        Returns:
-            None
         """
-
-        self.socksProxy = socksProxy
-
-    def revertSocket(self):
-        """Revert socket.
-
-        Returns:
-            None
-        """
-
-        self.socksProxy = None
+        self._socksProxy = socksProxy
 
     def refreshTorIdent(self):
         """Tell TOR to re-circuit.
@@ -363,22 +370,11 @@ class SpiderFoot:
 
         return json.dumps(ret)
 
-    def setDbh(self, handle):
-        """Called usually some time after instantiation
-        to set up a database handle and scan GUID, used
-        for logging events to the database about a scan.
-        """
-        self.dbh = handle
-
-    def setGUID(self, uid):
-        """Set the GUID this instance of SpiderFoot is being used in."""
-        self.GUID = uid
-
-    def genScanInstanceGUID(self):
+    def genScanInstanceId(self):
         """Generate an globally unique ID for this scan.
 
         Returns:
-            str: scan instance unique GUID
+            str: scan instance unique ID
         """
 
         return str(uuid.uuid4()).split("-")[0].upper()
@@ -399,7 +395,7 @@ class SpiderFoot:
             self.error("No database handle. Could not log event to database: %s" % message, True)
             return False
 
-        return self.dbh.scanLogEvent(self.GUID, level, message, component)
+        return self.dbh.scanLogEvent(self.scanId, level, message, component)
 
     def error(self, message, exception=True):
         """Print an error message and optionally also raise an exception.

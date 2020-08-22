@@ -18,12 +18,12 @@ class sfp_names(SpiderFootPlugin):
     """Human Name Extractor:Footprint,Passive:Content Analysis:errorprone:Attempt to identify human names in fetched content."""
 
     meta = {
-		'name': "Human Name Extractor",
-		'summary': "Attempt to identify human names in fetched content.",
-		'flags': [ "errorprone" ],
-		'useCases': [ "Footprint", "Passive" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Human Name Extractor",
+        'summary': "Attempt to identify human names in fetched content.",
+        'flags': [ "errorprone" ],
+        'useCases': [ "Footprint", "Passive" ],
+        'categories': [ "Content Analysis" ]
+    }
 
     # Default options
     opts = {
@@ -114,7 +114,7 @@ class sfp_names(SpiderFootPlugin):
                 return None
 
         # Stage 1: Find things that look (very vaguely) like names
-        rx = re.compile("([A-Z][a-z�������������]+)\s+.?.?\s?([A-Z][�������������a-zA-Z\'\-]+)")
+        rx = re.compile(r"([A-Z][a-z�������������]+)\s+.?.?\s?([A-Z][�������������a-zA-Z\'\-]+)")
         m = re.findall(rx, eventData)
         for r in m:
             # Start off each match as 0 points.

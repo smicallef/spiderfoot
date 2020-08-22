@@ -18,12 +18,12 @@ class sfp_hashes(SpiderFootPlugin):
     """Hash Extractor:Footprint,Investigate,Passive:Content Analysis::Identify MD5 and SHA hashes in web content, files and more."""
 
     meta = {
-		'name': "Hash Extractor",
-		'summary': "Identify MD5 and SHA hashes in web content, files and more.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Hash Extractor",
+        'summary': "Identify MD5 and SHA hashes in web content, files and more.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Content Analysis" ]
+    }
 
     # Default options
     opts = {

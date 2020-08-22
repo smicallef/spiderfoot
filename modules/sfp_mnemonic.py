@@ -39,7 +39,7 @@ class sfp_mnemonic(SpiderFootPlugin):
                                 "Our expert team of security consultants, product specialists, "
                                 "threat researchers, incident responders and ethical hackers, combined "
                                 "with our Argus security platform ensures we stay ahead of "
-                                "advanced cyberattacks and protect our customers from evolving threats.\n",
+                                "advanced cyberattacks and protect our customers from evolving threats.",
         }
     }
 

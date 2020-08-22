@@ -54,7 +54,7 @@ class sfp_alienvault(SpiderFootPlugin):
                                "and share threat data. You can integrate community-generated OTX threat data directly "
                                "into your AlienVault and third-party security products, so that your threat detection defenses "
                                "are always up to date with the latest threat intelligence. "
-                               "Today, 100,000 participants in 140 countries contribute over 19 million threat indicators daily.\n"
+                               "Today, 100,000 participants in 140 countries contribute over 19 million threat indicators daily."
         }
     }
 

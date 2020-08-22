@@ -57,7 +57,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
                                 "spammers, and abusive activity on the internet.\n"
                                 "Our mission is to help make Web safer by providing a central blacklist for" 
                                 "webmasters, system administrators, and other interested parties to"
-                                "report and find IP addresses that have been associated with malicious activity online.\n"
+                                "report and find IP addresses that have been associated with malicious activity online."
         }
     }
 

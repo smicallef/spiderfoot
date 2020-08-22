@@ -20,11 +20,11 @@ class sfp_emailformat(SpiderFootPlugin):
     """EmailFormat:Footprint,Investigate,Passive:Search Engines::Look up e-mail addresses on email-format.com."""
 
     meta = {
-		'name': "EmailFormat",
-		'summary': "Look up e-mail addresses on email-format.com.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "EmailFormat",
+        'summary': "Look up e-mail addresses on email-format.com.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://www.email-format.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -35,9 +35,9 @@ class sfp_emailformat(SpiderFootPlugin):
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://www.email-format.com/",
             'logo': "https://www.google.com/s2/favicons?domain=https://www.email-format.com/",
-            'description': "Save time and energy - find the email address formats in use at thousands of companies.\n",
+            'description': "Save time and energy - find the email address formats in use at thousands of companies.",
         }
-	}
+    }
 
     results = None
 

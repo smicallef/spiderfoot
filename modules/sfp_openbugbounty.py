@@ -37,7 +37,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
                                 "Once notified, the website owner and the researcher are in direct contact to "
                                 "remediate the vulnerability and coordinate its disclosure. "
                                 "At this and at any later stages, we never act as an intermediary between "
-                                "website owners and security researchers.\n",
+                                "website owners and security researchers.",
         }
     }
     # Default options

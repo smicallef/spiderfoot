@@ -42,7 +42,7 @@ class sfp_spur(SpiderFootPlugin):
             'description': "We expose VPNs, residential proxies, botnets, anonymization behavior, geo-fraud, and more. "
                                 "Anonymous infrastructure has changed; it is time the security industry caught up.\n"
                                 "Identify commercial and private VPN exit points along with the name of the service. "
-                                "We expose over 80 different commercial providers.\n",
+                                "We expose over 80 different commercial providers.",
         }
     }
 

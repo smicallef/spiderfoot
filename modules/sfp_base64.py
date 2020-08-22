@@ -17,14 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_base64(SpiderFootPlugin):
     """Base64 Decoder:Investigate,Passive:Content Analysis::Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information."""
-    
+
     meta = {
-		'name': "Base64 Decoder",
-		'summary': "Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Base64 Decoder",
+        'summary': "Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Content Analysis" ]
+    }
 
     # Default options
     opts = {
@@ -61,7 +61,7 @@ class sfp_base64(SpiderFootPlugin):
 
         self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
-        pat = re.compile("([A-Za-z0-9+\/]+\=\=|[A-Za-z0-9+\/]+\=)")
+        pat = re.compile(r"([A-Za-z0-9+\/]+\=\=|[A-Za-z0-9+\/]+\=)")
         m = re.findall(pat, eventData)
         for match in m:
             if self.checkForStop():

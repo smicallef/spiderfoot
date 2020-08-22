@@ -57,7 +57,7 @@ class sfp_isc(SpiderFootPlugin):
                                 "These devices feed the DShield database where human volunteers as well as machines pour through "
                                 "the data looking for abnormal trends and behavior. "
                                 "The resulting analysis is posted to the ISC's main web page where it can be automatically retrieved "
-                                "by simple scripts or can be viewed in near real time by any Internet user.\n",
+                                "by simple scripts or can be viewed in near real time by any Internet user.",
         }
     }
 

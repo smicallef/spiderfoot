@@ -22,11 +22,11 @@ class sfp_flickr(SpiderFootPlugin):
     """Flickr:Footprint,Investigate,Passive:Social Media::Search Flickr for domains, URLs and emails related to the specified domain."""
 
     meta = {
-		'name': "Flickr",
-		'summary': "Search Flickr for domains, URLs and emails related to the specified domain.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Social Media" ],
+        'name': "Flickr",
+        'summary': "Search Flickr for domains, URLs and emails related to the specified domain.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Social Media" ],
         'dataSource': {
             'website': "https://www.flickr.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -44,9 +44,9 @@ class sfp_flickr(SpiderFootPlugin):
                                 "Practically all the features on Flickr's various platforms -- web, mobile and desktop -- "
                                 "are accompanied by a longstanding API program. "
                                 "Since 2005, developers have collaborated on top of Flickr's APIs to build fun, creative, "
-                                "and gorgeous experiences around photos that extend beyond Flickr.\n",
+                                "and gorgeous experiences around photos that extend beyond Flickr.",
         }
-	}
+    }
 
     # Default options
     opts = {

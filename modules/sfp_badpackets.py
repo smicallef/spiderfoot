@@ -20,11 +20,11 @@ class sfp_badpackets(SpiderFootPlugin):
     """Bad Packets:Investigate,Passive:Reputation Systems:apikey:Obtain information about any malicious activities involving IP addresses found"""
 
     meta = {
-		'name': "Bad Packets",
-		'summary': "Obtain information about any malicious activities involving IP addresses found",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "Bad Packets",
+        'summary': "Obtain information about any malicious activities involving IP addresses found",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://badpackets.net",
             'model': "COMMERCIAL_ONLY",
@@ -43,9 +43,9 @@ class sfp_badpackets(SpiderFootPlugin):
                                 "and detecting malicious activity. Our team of experienced security professionals conducts "
                                 "comprehensive and ethical research to ensure our data is of the highest quality and accuracy.\n"
                                 "Constant aggregation and analysis of relevant data allows us to empower our partners with "
-                                "actionable information to proactively defend against emerging security threats.\n.",
+                                "actionable information to proactively defend against emerging security threats.",
         }
-	}
+    }
 
     opts = {
         'api_key': '',

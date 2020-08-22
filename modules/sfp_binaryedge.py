@@ -19,10 +19,10 @@ class sfp_binaryedge(SpiderFootPlugin):
     """BinaryEdge:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from BinaryEdge.io's Internet scanning systems about breaches, vulerabilities, torrents and passive DNS."""
 	
     meta = {
-		'name': "BinaryEdge",
-		'summary': "Obtain information from BinaryEdge.io's Internet scanning systems about breaches, vulerabilities, torrents and passive DNS.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'name': "BinaryEdge",
+        'summary': "Obtain information from BinaryEdge.io's Internet scanning systems about breaches, vulerabilities, torrents and passive DNS.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
         'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://www.binaryedge.io/",
@@ -44,9 +44,9 @@ class sfp_binaryedge(SpiderFootPlugin):
                                 "and reports that show the exposure of what is connected to the Internet.\n"
                                 "We have built a distributed platform of scanners and honeypots, to acquire, classify and correlate different types of data.\n"
                                 "We use all of these datapoints to match those digital assets to an organization, "
-                                "allowing us to provide a global, up-to-date, view of organizations known and unknown assets.\n",
+                                "allowing us to provide a global, up-to-date, view of organizations known and unknown assets.",
         }
-	}
+    }
 
     # Default options
     opts = {

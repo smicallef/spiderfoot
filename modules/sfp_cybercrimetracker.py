@@ -30,11 +30,11 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
     """cybercrime-tracker.net:Investigate,Passive:Reputation Systems::Check if a host/domain or IP is malicious according to cybercrime-tracker.net."""
 
     meta = {
-		'name': "cybercrime-tracker.net",
-		'summary': "Check if a host/domain or IP is malicious according to cybercrime-tracker.net.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "cybercrime-tracker.net",
+        'summary': "Check if a host/domain or IP is malicious according to cybercrime-tracker.net.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "http://cybercrime-tracker.net/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -45,9 +45,9 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
             'favIcon': "http://cybercrime-tracker.net/favicon.ico",
             'logo': "http://cybercrime-tracker.net/favicon.ico",
             'description': "CyberCrime is a C&C panel tracker, in other words, "
-                                "it lists the administration interfaces of certain in-the-wild botnets.\n.",
+                                "it lists the administration interfaces of certain in-the-wild botnets.",
         }
-	}
+    }
 
     # Default options
     opts = {

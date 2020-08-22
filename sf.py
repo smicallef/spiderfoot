@@ -344,7 +344,7 @@ if __name__ == '__main__':
 
         # Start running a new scan
         scanName = target
-        scanId = sf.genScanInstanceGUID()
+        scanId = sf.genScanInstanceId()
         try:
             p = mp.Process(target=SpiderFootScanner, args=(scanName, scanId, target, targetType, modlist, cfg))
             p.daemon = True

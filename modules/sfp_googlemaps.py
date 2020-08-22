@@ -19,11 +19,11 @@ class sfp_googlemaps(SpiderFootPlugin):
     """Google Maps:Footprint,Investigate,Passive:Real World:apikey:Identifies potential physical addresses and latitude/longitude coordinates."""
 
     meta = {
-		'name': "Google Maps",
-		'summary': "Identifies potential physical addresses and latitude/longitude coordinates.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Real World" ],
+        'name': "Google Maps",
+        'summary': "Identifies potential physical addresses and latitude/longitude coordinates.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Real World" ],
         'dataSource': {
             'website': "https://cloud.google.com/maps-platform/",
             'model': "FREE_AUTH_LIMITED",
@@ -43,11 +43,11 @@ class sfp_googlemaps(SpiderFootPlugin):
             'favIcon': "https://www.gstatic.com/devrel-devsite/prod/v2210deb8920cd4a55bd580441aa58e7853afc04b39a9d9ac4198e1cd7fbe04ef/cloud/images/favicons/onecloud/favicon.ico",
             'logo': "https://www.gstatic.com/devrel-devsite/prod/v2210deb8920cd4a55bd580441aa58e7853afc04b39a9d9ac4198e1cd7fbe04ef/cloud/images/cloud-logo.svg",
             'description': "Explore where real-world insights and immersive location experiences can take your business.\n"
-                               "Build with reliable, comprehensive data for over 200 countries and territories.\n"
-                               "has been done here. If line breaks are needed for breaking up\n"
-                               "Scale confidently, backed by our infrastructure.\n.",
+                                "Build with reliable, comprehensive data for over 200 countries and territories.\n"
+                                "has been done here. If line breaks are needed for breaking up\n"
+                                "Scale confidently, backed by our infrastructure.",
         }
-	}
+    }
 
     # Default options
     opts = {

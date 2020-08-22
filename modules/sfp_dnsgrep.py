@@ -24,11 +24,11 @@ class sfp_dnsgrep(SpiderFootPlugin):
     """DNSGrep:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API."""
 
     meta = {
-		'name': "DNSGrep",
-		'summary': "Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Passive DNS" ],
+        'name': "DNSGrep",
+        'summary': "Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Passive DNS" ],
         'dataSource': {
             'website': "https://opendata.rapid7.com/",
             'model': "FREE_AUTH_UNLIMITED",
@@ -47,9 +47,9 @@ class sfp_dnsgrep(SpiderFootPlugin):
             'logo': "https://www.rapid7.com/includes/img/Rapid7_logo.svg",
             'description': "Offering researchers and community members open access to data from Project Sonar, "
                                 "which conducts internet-wide surveys to gain insights into global exposure "
-                                "to common vulnerabilities.\n",
+                                "to common vulnerabilities.",
         }
-	}
+    }
 
     # Default options
     opts = {

@@ -38,7 +38,7 @@ class sfp_quad9(SpiderFootPlugin):
                                 "to those malicious domains when your system attempts to contact them.\n"
                                 "When you use Quad9, attackers and malware cannot leverage the known malicious domains to control your systems, "
                                 "and their ability to steal your data or cause harm will be hindered. "
-                                "Quad9 is an effective and easy way to add an additional layer of security to your infrastructure for free. \n",
+                                "Quad9 is an effective and easy way to add an additional layer of security to your infrastructure for free.",
         }
     }
     

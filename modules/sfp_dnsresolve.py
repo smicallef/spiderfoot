@@ -20,12 +20,12 @@ class sfp_dnsresolve(SpiderFootPlugin):
     """DNS Resolver:Footprint,Investigate,Passive:DNS::Resolves Hosts and IP Addresses identified, also extracted from raw content."""
 
     meta = {
-		'name': "DNS Resolver",
-		'summary': "Resolves Hosts and IP Addresses identified, also extracted from raw content.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "DNS" ]
-	}
+        'name': "DNS Resolver",
+        'summary': "Resolves Hosts and IP Addresses identified, also extracted from raw content.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "DNS" ]
+    }
 
     # Default options
     opts = {
@@ -173,7 +173,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 if offset < 0:
                     continue
 
-                pat = re.compile("[^a-z0-9\-\.]([a-z0-9\-\.]*\." + name + ")", re.DOTALL|re.MULTILINE)
+                pat = re.compile(r"[^a-z0-9\-\.]([a-z0-9\-\.]*\." + name + ")", re.DOTALL|re.MULTILINE)
                 while offset >= 0:
                     # If the target was found at the beginning of the content, skip past it
                     if offset == 0:

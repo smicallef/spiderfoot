@@ -21,12 +21,12 @@ class sfp_tldsearch(SpiderFootPlugin):
     """TLD Searcher:Footprint:DNS:slow:Search all Internet TLDs for domains with the same name as the target (this can be very slow.)"""
 
     meta = {
-		'name': "TLD Searcher",
-		'summary': "Search all Internet TLDs for domains with the same name as the target (this can be very slow.)",
-		'flags': [ "slow" ],
-		'useCases': [ "Footprint" ],
-		'categories': [ "DNS" ]
-	}
+        'name': "TLD Searcher",
+        'summary': "Search all Internet TLDs for domains with the same name as the target (this can be very slow.)",
+        'flags': [ "slow" ],
+        'useCases': [ "Footprint" ],
+        'categories': [ "DNS" ]
+    }
 
     # Default options
     opts = {
@@ -38,7 +38,8 @@ class sfp_tldsearch(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'activeonly': "Only report domains that have content (try to fetch the page)?",
-        "skipwildcards": "Skip TLDs and sub-TLDs that have wildcard DNS."
+        "skipwildcards": "Skip TLDs and sub-TLDs that have wildcard DNS.",
+        "_maxthreads": "Maximum threads"
     }
 
     # Internal results tracking

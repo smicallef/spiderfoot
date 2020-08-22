@@ -21,12 +21,12 @@ class sfp_crossref(SpiderFootPlugin):
     """Cross-Referencer:Footprint:Crawling and Scanning::Identify whether other domains are associated ('Affiliates') of the target."""
 
     meta = {
-		'name': "Cross-Referencer",
-		'summary': "Identify whether other domains are associated ('Affiliates') of the target.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint" ],
-		'categories': [ "Crawling and Scanning" ]
-	}
+        'name': "Cross-Referencer",
+        'summary': "Identify whether other domains are associated ('Affiliates') of the target.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint" ],
+        'categories': [ "Crawling and Scanning" ]
+    }
 
     # Default options
     opts = {

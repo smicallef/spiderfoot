@@ -20,11 +20,11 @@ class sfp_crt(SpiderFootPlugin):
     """Certificate Transparency:Footprint,Investigate,Passive:Search Engines::Gather hostnames from historical certificates in crt.sh."""
 
     meta = {
-		'name': "Certificate Transparency",
-		'summary': "Gather hostnames from historical certificates in crt.sh.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "Certificate Transparency",
+        'summary': "Gather hostnames from historical certificates in crt.sh.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://crt.sh/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -35,9 +35,9 @@ class sfp_crt(SpiderFootPlugin):
             'favIcon': "https://crt.sh/sectigo_s.png",
             'logo': "https://crt.sh/sectigo_s.png",
             'description': "Enter an Identity (Domain Name, Organization Name, etc), "
-                                "a Certificate Fingerprint (SHA-1 or SHA-256) or a crt.sh ID\n",
+                                "a Certificate Fingerprint (SHA-1 or SHA-256) or a crt.sh ID",
         }
-	}
+    }
 
     opts = {
         'verify': True,

@@ -21,11 +21,11 @@ class sfp_commoncrawl(SpiderFootPlugin):
     """CommonCrawl:Footprint,Passive:Search Engines::Searches for URLs found through CommonCrawl.org."""
 
     meta = {
-		'name': "CommonCrawl",
-		'summary': "Searches for URLs found through CommonCrawl.org.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "CommonCrawl",
+        'summary': "Searches for URLs found through CommonCrawl.org.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "http://commoncrawl.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -37,11 +37,11 @@ class sfp_commoncrawl(SpiderFootPlugin):
             'favIcon': "https://commoncrawl.org/wp-content/themes/commoncrawl/img/favicon.png",
             'logo': "https://commoncrawl.org/wp-content/themes/commoncrawl/img/favicon.png",
             'description': "We build and maintain an open repository of web crawl data that can be accessed and analyzed by anyone.\n"
-                               "Everyone should have the opportunity to indulge their curiosities, analyze the world and pursue brilliant ideas. "
-                               "Small startups or even individuals can now access high quality crawl data that was previously "
-                               "only available to large search engine corporations. \n.",
+                                "Everyone should have the opportunity to indulge their curiosities, analyze the world and pursue brilliant ideas. "
+                                "Small startups or even individuals can now access high quality crawl data that was previously "
+                                "only available to large search engine corporations.",
         }
-	}
+    }
 
     # Default options
     opts = {

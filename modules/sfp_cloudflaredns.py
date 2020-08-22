@@ -19,11 +19,11 @@ class sfp_cloudflaredns(SpiderFootPlugin):
     """CloudFlare Malware DNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by CloudFlare Malware-blocking DNS"""
 
     meta = {
-		'name': "CloudFlare Malware DNS",
-		'summary': "Check if a host would be blocked by CloudFlare Malware-blocking DNS",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "CloudFlare Malware DNS",
+        'summary': "Check if a host would be blocked by CloudFlare Malware-blocking DNS",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://www.cloudflare.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -35,9 +35,9 @@ class sfp_cloudflaredns(SpiderFootPlugin):
             'description': "1.1.1.1 for Families is the easiest way to add a layer of protection to "
                                 "your home network and protect it from malware and adult content. "
                                 "1.1.1.1 for Families leverages Cloudflare’s global network to ensure "
-                                "that it is fast and secure around the world. \n.",
+                                "that it is fast and secure around the world.",
         }
-	}
+    }
 
     # Default options
     opts = {

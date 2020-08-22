@@ -19,16 +19,16 @@ class sfp_azureblobstorage(SpiderFootPlugin):
     """Azure Blob Finder:Footprint,Passive:Crawling and Scanning::Search for potential Azure blobs associated with the target and attempt to list their contents."""
     
     meta = {
-		'name': "Azure Blob Finder",
-		'summary': "Search for potential Azure blobs associated with the target and attempt to list their contents.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Passive" ],
-		'categories': [ "Crawling and Scanning" ],
+        'name': "Azure Blob Finder",
+        'summary': "Search for potential Azure blobs associated with the target and attempt to list their contents.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Passive" ],
+        'categories': [ "Crawling and Scanning" ],
         'dataSource': {
             'website': "https://azure.microsoft.com/en-in/services/storage/blobs/",
             'model': "FREE_NOAUTH_UNLIMITED"
         }
-	}
+    }
 
     # Default options
     opts = {
@@ -38,7 +38,8 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "suffixes": "List of suffixes to append to domains tried as blob storage names"
+        "suffixes": "List of suffixes to append to domains tried as blob storage names",
+        "_maxthreads": "Maximum threads"
     }
 
     results = None

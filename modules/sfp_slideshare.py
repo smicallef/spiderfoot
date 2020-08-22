@@ -35,7 +35,7 @@ class sfp_slideshare(SpiderFootPlugin):
             'logo': "https://public.slidesharecdn.com/images/logo/linkedin-ss/SS_Logo_White_Large.png?6d1f7a78a6",
             'description': "LinkedIn SlideShare is an American hosting service for professional content including "
                                 "presentations, infographics, documents, and videos. "
-                                "Users can upload files privately or publicly in PowerPoint, Word, PDF, or OpenDocument format\n",
+                                "Users can upload files privately or publicly in PowerPoint, Word, PDF, or OpenDocument format.",
         }
     }
 

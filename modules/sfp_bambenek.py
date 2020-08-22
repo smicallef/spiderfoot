@@ -36,11 +36,11 @@ class sfp_bambenek(SpiderFootPlugin):
     """Bambenek C&C List:Investigate,Passive:Reputation Systems::Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists."""
 
     meta = {
-		'name': "Bambenek C&C List",
-		'summary': "Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.",
-		'flags': [ "" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "Bambenek C&C List",
+        'summary': "Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.",
+        'flags': [ "" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "http://www.bambenekconsulting.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -56,9 +56,9 @@ class sfp_bambenek(SpiderFootPlugin):
                                 "Every day, there is another story about another company having their banking accounts drained, "
                                 "someone having their identity stolen, or critical infrastructure being taken offline by hostile entities. "
                                 "Led by IT security expert, John Bambenek, we have the resources to bring to your business so "
-                                "you can be sure your organization and your customers’ data is safe.\n",    
+                                "you can be sure your organization and your customers’ data is safe.",    
         }
-	}
+    }
 
     # Default options
     opts = {

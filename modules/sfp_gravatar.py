@@ -20,11 +20,11 @@ class sfp_gravatar(SpiderFootPlugin):
     """Gravatar:Footprint,Investigate,Passive:Social Media::Retrieve user information from Gravatar API."""
 
     meta = {
-		'name': "Gravatar",
-		'summary': "Retrieve user information from Gravatar API.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Social Media" ],
+        'name': "Gravatar",
+        'summary': "Retrieve user information from Gravatar API.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Social Media" ],
             'dataSource': {
             'website': "https://secure.gravatar.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -36,9 +36,9 @@ class sfp_gravatar(SpiderFootPlugin):
             'description': "Your Gravatar is an image that follows you from site to site "
                                 "appearing beside your name when you do things like comment or post on a blog.\n"
                                 "A Gravatar is a Globally Recognized Avatar. You upload it and create your profile just once, "
-                                "and then when you participate in any Gravatar-enabled site, your Gravatar image will automatically follow you there.\n",
+                                "and then when you participate in any Gravatar-enabled site, your Gravatar image will automatically follow you there.",
         }
-	}
+    }
 
     # Default options
     opts = {

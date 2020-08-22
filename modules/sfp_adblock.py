@@ -41,7 +41,7 @@ class sfp_adblock(SpiderFootPlugin):
                                 "Blocking these annoyances means pages load faster.\n"
                                 "With Adblock Plus avoiding tracking and malware is easy."
                                 "Blocking intrusive ads reduces the risk of \"malvertising\" infections."
-                                "Blocking tracking stops companies following your online activity.\n"
+                                "Blocking tracking stops companies following your online activity."
         }
     }
 

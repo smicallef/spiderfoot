@@ -21,11 +21,11 @@ class sfp_circllu(SpiderFootPlugin):
     """CIRCL.LU:Investigate,Passive:Reputation Systems:apikey:Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases."""
 
     meta = {
-		'name': "CIRCL.LU",
-		'summary': "Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Investigate", "Passive" ],
-		'categories': [ "Reputation Systems" ],
+        'name': "CIRCL.LU",
+        'summary': "Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Investigate", "Passive" ],
+        'categories': [ "Reputation Systems" ],
         'dataSource': {
             'website': "https://www.circl.lu/",
             'model': "FREE_AUTH_UNLIMITED",
@@ -47,9 +47,9 @@ class sfp_circllu(SpiderFootPlugin):
                                 "CIRCL provides a reliable and trusted point of contact for any users, companies and organizations "
                                 "based in Luxembourg, for the handling of attacks and incidents. "
                                 "Its team of experts acts like a fire brigade, with the ability to react promptly and "
-                                "efficiently whenever threats are suspected, detected or incidents occur.\n",
+                                "efficiently whenever threats are suspected, detected or incidents occur.",
         }
-	}
+    }
 
     # Default options
     opts = {

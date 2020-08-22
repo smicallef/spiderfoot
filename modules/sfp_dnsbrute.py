@@ -20,12 +20,12 @@ class sfp_dnsbrute(SpiderFootPlugin):
     """DNS Brute-forcer:Footprint,Investigate:DNS::Attempts to identify hostnames through brute-forcing common names and iterations."""
 
     meta = {
-		'name': "DNS Brute-forcer",
-		'summary': "Attempts to identify hostnames through brute-forcing common names and iterations.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate" ],
-		'categories': [ "DNS" ]
-	}
+        'name': "DNS Brute-forcer",
+        'summary': "Attempts to identify hostnames through brute-forcing common names and iterations.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate" ],
+        'categories': [ "DNS" ]
+    }
 
     # Default options
     opts = {
@@ -45,7 +45,8 @@ class sfp_dnsbrute(SpiderFootPlugin):
         'commons': "Try a list of about 750 common hostnames/sub-domains.",
         'top10000': "Try a further 10,000 common hostnames/sub-domains. Will make the scan much slower.",
         'numbersuffix': "For any host found, try appending 1, 01, 001, -1, -01, -001, 2, 02, etc. (up to 10)",
-        'numbersuffixlimit': "Limit using the number suffixes for hosts that have already been resolved? If disabled this will significantly extend the duration of scans."
+        'numbersuffixlimit': "Limit using the number suffixes for hosts that have already been resolved? If disabled this will significantly extend the duration of scans.",
+        "_maxthreads": "Maximum threads"
     }
 
     events = None

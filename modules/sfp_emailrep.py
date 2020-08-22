@@ -18,11 +18,11 @@ class sfp_emailrep(SpiderFootPlugin):
     """EmailRep:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailRep.io for email address reputation."""
 
     meta = {
-		'name': "EmailRep",
-		'summary': "Search EmailRep.io for email address reputation.",
-		'flags': [ "apikey" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Search Engines" ],
+        'name': "EmailRep",
+        'summary': "Search EmailRep.io for email address reputation.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://emailrep.io/",
             'model': "FREE_AUTH_LIMITED",
@@ -37,12 +37,12 @@ class sfp_emailrep(SpiderFootPlugin):
             'favIcon': "https://emailrep.io/assets/img/favicon.png",
             'logo': "https://emailrep.io/assets/img/logo-light.png",
             'description': "Illuminate the \"reputation\" behind an email address.\n"
-                               "EmailRep uses hundreds of factors like domain age, traffic rankings, "
-                               "presence on social media sites, professional networking sites, personal connections, "
-                               "public records, deliverability, data breaches, dark web credential leaks, "
-                               "phishing emails, threat actor emails, and more to answer these types of questions.\n",
+                                "EmailRep uses hundreds of factors like domain age, traffic rankings, "
+                                "presence on social media sites, professional networking sites, personal connections, "
+                                "public records, deliverability, data breaches, dark web credential leaks, "
+                                "phishing emails, threat actor emails, and more to answer these types of questions.",
         }
-	}
+    }
 	
 
     opts = {

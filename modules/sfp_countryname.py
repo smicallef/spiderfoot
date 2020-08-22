@@ -21,12 +21,12 @@ class sfp_countryname(SpiderFootPlugin):
     """Country Name Extractor:Footprint,Investigate,Passive:Content Analysis::Identify country names in any obtained data."""
 
     meta = {
-		'name': "Country Name Extractor",
-		'summary': "Identify country names in any obtained data.",
-		'flags': [ "" ],
-		'useCases': [ "Footprint", "Investigate", "Passive" ],
-		'categories': [ "Content Analysis" ]
-	}
+        'name': "Country Name Extractor",
+        'summary': "Identify country names in any obtained data.",
+        'flags': [ "" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Content Analysis" ]
+    }
 
     # Default options
     opts = {
@@ -242,7 +242,7 @@ class sfp_countryname(SpiderFootPlugin):
             # Look for country name in source data
             # Spaces are not included since New Jersey and others
             # will get interpreted as Jersey, etc.
-            matchCountries = re.findall("[,'\"\:\=\[\(\[\n\t\r\.] ?" + countryName + "[,'\"\:\=\[\(\[\n\t\r\.]", srcData, re.IGNORECASE)
+            matchCountries = re.findall(r"[,'\"\:\=\[\(\[\n\t\r\.] ?" + countryName + "[,'\"\:\=\[\(\[\n\t\r\.]", srcData, re.IGNORECASE)
 
             if len(matchCountries) > 0:
                 # Get country name from first index of list

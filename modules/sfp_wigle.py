@@ -41,7 +41,7 @@ class sfp_wigle(SpiderFootPlugin):
             'logo': "https://wigle.net/images/planet-bubble.png",
             'description': "We consolidate location and information of wireless networks world-wide to a central database, "
                                 "and have user-friendly desktop and web applications that can map, "
-                                "query and update the database via the web.\n",
+                                "query and update the database via the web.",
         }
     }
 
