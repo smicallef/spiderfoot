@@ -90,13 +90,8 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             self.assertTrue(m.get('meta'))
             self.assertIsInstance(m.get('meta'), dict)
 
-            # skip non-conforming modules
-            if module in [
-                "sfp__stor_db", "sfp__stor_stdout",
-                "sfp_googleobjectstorage", "sfp_digitaloceanspace",
-                "sfp_tldsearch", "sfp_azureblobstorage", "sfp_s3bucket",
-                "sfp_accounts", "sfp_dnsbrute"
-            ]:
+            # skip debugging and output modules
+            if module in ["sfp__stor_db", "sfp__stor_stdout"]:
                 continue
 
             for cat in m.get('cats'):

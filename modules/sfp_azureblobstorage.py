@@ -38,7 +38,8 @@ class sfp_azureblobstorage(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        "suffixes": "List of suffixes to append to domains tried as blob storage names"
+        "suffixes": "List of suffixes to append to domains tried as blob storage names",
+        "_maxthreads": "Maximum threads"
     }
 
     results = None
