@@ -37,38 +37,26 @@ class TestSpiderFoot(unittest.TestCase):
    
     test_tlds = "// ===BEGIN ICANN DOMAINS===\n\ncom\nnet\norg\n\n// // ===END ICANN DOMAINS===\n"
 
-    @unittest.skip("todo")
-    def test_init_invalid_opts_should_raise(self):
+    def test_init_argument_invalid_options_should_raise(self):
         """
-        Test __init__(self, options, handle=None):
+        Test __init__(self, options):
         """
-        invalid_types = [None, "", list()]
+        invalid_types = [None, "", list(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
                     sf = SpiderFoot(invalid_type)
 
-    @unittest.skip("todo")
-    def test_init_invalid_handle_should_raise(self):
-        """
-        Test __init__(self, options, handle=None):
-        """
-        invalid_types = [None, "", list(), dict()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
-                    sf = SpiderFoot(dict(), invalid_type)
-
     def test_init_no_options(self):
         """
-        Test __init__(self, options, handle=None):
+        Test __init__(self, options):
         """
         sf = SpiderFoot(dict())
         self.assertIsInstance(sf, SpiderFoot)
 
     def test_init(self):
         """
-        Test __init__(self, options, handle=None):
+        Test __init__(self, options):
         """
         sf = SpiderFoot(self.default_options)
         self.assertIsInstance(sf, SpiderFoot)
