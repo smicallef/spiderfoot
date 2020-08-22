@@ -5,7 +5,7 @@
 #
 # Authors:     <bcoles@gmail.com>
 #
-# Created:     2020-07-04
+# Created:     2020-06-20
 # Copyright:   (c) bcoles 2020
 # Licence:     GPL
 # -------------------------------------------------------------------------------
@@ -17,6 +17,14 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_jsonwhoisio(SpiderFootPlugin):
     """JsonWHOIS.io:Footprint,Investigate,Passive:Search Engines:apikey:Search JsonWHOIS.io for WHOIS records associated with a domain."""
+
+    meta = {
+        'name': "JsonWHOIS.io",
+        'summary': "Search JsonWHOIS.io for WHOIS records associated with a domain.",
+        'flags': [ "apikey" ],
+        'useCases': [ "Footprint", "Investigate", "Passive" ],
+        'categories': [ "Search Engines" ]
+    }
 
     # Default options
     opts = {
