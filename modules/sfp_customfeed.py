@@ -82,26 +82,6 @@ class sfp_customfeed(SpiderFootPlugin):
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_COHOST"]
 
-    # Check the regexps to see whether the content indicates maliciousness
-    def contentMalicious(self, content, goodregex, badregex):
-        # First, check for the bad indicators
-        if len(badregex) > 0:
-            for rx in badregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be bad against bad regex: " + rx)
-                    return True
-
-        # Finally, check for good indicators
-        if len(goodregex) > 0:
-            for rx in goodregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be good againt good regex: " + rx)
-                    return False
-
-        # If nothing was matched, reply None
-        self.sf.debug("Neither good nor bad, unknown.")
-        return None
-
     # Look up 'list' type resources
     def resourceList(self, id, target, targetType):
         targetDom = ''
@@ -211,8 +191,8 @@ class sfp_customfeed(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None
