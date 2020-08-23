@@ -183,7 +183,7 @@ class sfp_binaryedge(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['binaryedge_api_key'] == "":
             self.sf.error("You enabled sfp_binaryedge but did not set an API key!", False)
@@ -192,7 +192,7 @@ class sfp_binaryedge(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True

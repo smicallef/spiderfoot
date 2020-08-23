@@ -141,7 +141,7 @@ class sfp_flickr(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            self.sf.debug(f"Skipping {eventData} as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked")
             return None
 
         self.results[eventData] = True

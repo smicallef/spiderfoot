@@ -291,7 +291,7 @@ class sfp_countryname(SpiderFootPlugin):
         
         evttype = "COUNTRY_NAME"
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Generate event data hash
         eventDataHash = self.sf.hashstring(eventData)

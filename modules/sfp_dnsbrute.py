@@ -147,7 +147,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         eventDataHash = self.sf.hashstring(eventData)
         parentEvent = event
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_dnsbrute":
             return None

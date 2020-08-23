@@ -168,7 +168,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if not self.portlist:
             self.sf.error('No ports specified in port list', False)

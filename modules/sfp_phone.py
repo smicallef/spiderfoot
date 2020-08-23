@@ -63,7 +63,7 @@ class sfp_phone(SpiderFootPlugin):
         else:
             self.results[sourceData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ['TARGET_WEB_CONTENT', 'DOMAIN_WHOIS', 'NETBLOCK_WHOIS']:
             # Make potential phone numbers more friendly to parse
