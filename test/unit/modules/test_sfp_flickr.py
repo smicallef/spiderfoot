@@ -3,6 +3,7 @@ from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
 import unittest
 from modules.sfp_flickr import sfp_flickr
 
+
 class TestModuleflickr(unittest.TestCase):
     """
     Test modules.sfp_flickr
@@ -10,8 +11,8 @@ class TestModuleflickr(unittest.TestCase):
 
     default_options = {
       '_debug': False,  # Debug
-      '__logging': True, # Logging in general
-      '__outputfilter': None, # Event types to filter from modules' output
+      '__logging': True,  # Logging in general
+      '__outputfilter': None,  # Event types to filter from modules' output
       '__blocknotif': False,  # Block notifications
       '_fatalerrors': False,
       '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
@@ -81,3 +82,4 @@ class TestModuleflickr(unittest.TestCase):
 
         result = module.handleEvent(evt)
 
+        self.assertIsNone(result)

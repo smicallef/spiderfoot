@@ -3,6 +3,7 @@ from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
 import unittest
 from modules.sfp_dnsresolve import sfp_dnsresolve
 
+
 class TestModuleDnsResolve(unittest.TestCase):
     """
     Test modules.sfp_dnsresolve
@@ -10,8 +11,8 @@ class TestModuleDnsResolve(unittest.TestCase):
 
     default_options = {
       '_debug': False,  # Debug
-      '__logging': True, # Logging in general
-      '__outputfilter': None, # Event types to filter from modules' output
+      '__logging': True,  # Logging in general
+      '__outputfilter': None,  # Event types to filter from modules' output
       '__blocknotif': False,  # Block notifications
       '_fatalerrors': False,
       '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
@@ -79,6 +80,8 @@ class TestModuleDnsResolve(unittest.TestCase):
 
         result = module.handleEvent(evt)
 
+        self.assertIsNone(result)
+
     def test_enrichTarget_should_return_SpiderFootTarget(self):
         """
         Test enrichTarget(self, target)
@@ -121,7 +124,7 @@ class TestModuleDnsResolve(unittest.TestCase):
 
         result = module.processDomain('www.example.local', parent_event, None, None)
 
-        self.assertIsNone(result, None)
+        self.assertIsNone(result)
 
     @unittest.skip("todo - test fails due to m._priority = None")
     def test_processHost_should_return_SpiderFootEvent(self):
@@ -148,3 +151,4 @@ class TestModuleDnsResolve(unittest.TestCase):
 
         self.assertIsInstance(result, SpiderFootEvent)
 
+        self.assertIsNone(result)
