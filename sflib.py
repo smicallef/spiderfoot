@@ -16,6 +16,7 @@ from stem.control import Controller
 import inspect
 import hashlib
 import html
+import io
 import urllib.request, urllib.parse, urllib.error
 import json
 import re
@@ -27,21 +28,18 @@ import ssl
 import sys
 import time
 import netaddr
-import urllib.request, urllib.error, urllib.parse
-import threading
 import traceback
 import OpenSSL
 import uuid
 import cryptography
 import dns.resolver
+import urllib3
 from publicsuffixlist import PublicSuffixList
 from networkx import nx
 from networkx.readwrite.gexf import GEXFWriter
 from datetime import datetime
 from bs4 import BeautifulSoup, SoupStrainer
 from copy import deepcopy
-import io
-import urllib3
 
 # For hiding the SSL warnings coming from the requests lib
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -56,7 +54,7 @@ class SpiderFoot:
         socksProxy (str): SOCKS proxy
         opts (dict): configuration options
     """
- 
+
     _dbh = None
     _scanId = None
     _socksProxy = None
@@ -175,9 +173,9 @@ class SpiderFoot:
 
                 f.close()
                 return ret
-            except BaseException as b:
+            except BaseException as e:
                 if fatal:
-                    self.error("Unable to open option file, " + fname + ".")
+                    self.error(f"Unable to open option file, {fname}.")
                 else:
                     return None
 
@@ -245,15 +243,15 @@ class SpiderFoot:
             for [parent, id] in parents[entity]:
                 if parent in entities:
                     if entity != parent:
-                        #print("Adding entity parent: " + parent)
+                        # print("Adding entity parent: " + parent)
                         mapping.add((entity, parent))
                 else:
                     ppids = list()
-                    #print("Checking " + parent + " for entityship.")
+                    # print("Checking " + parent + " for entityship.")
                     next_parents = get_next_parent_entities(parent, ppids)
                     for next_parent in next_parents:
                         if entity != next_parent:
-                            #print("Adding next entity parent: " + next_parent)
+                            # print("Adding next entity parent: " + next_parent)
                             mapping.add((entity, next_parent))
         return mapping
 
@@ -293,7 +291,7 @@ class SpiderFoot:
                 if dst in root:
                     col = ["255", "0", "0"]
                 node = graph.add_node(dst)
-                graph.node[dst]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
+                graph.node[dst]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
@@ -301,7 +299,7 @@ class SpiderFoot:
                 if src in root:
                     col = ["255", "0", "0"]
                 graph.add_node(src)
-                graph.node[src]['viz'] = {'color': { 'r': col[0], 'g': col[1], 'b': col[2] } }
+                graph.node[src]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
                 nodelist[src] = ncounter
 
             graph.add_edge(src, dst)
@@ -336,36 +334,47 @@ class SpiderFoot:
             # Leave out this special case
             if dst == "ROOT" or src == "ROOT":
                 continue
+
             if dst not in nodelist:
                 ncounter = ncounter + 1
+
                 if dst in root:
                     col = "#f00"
-                ret['nodes'].append({'id': str(ncounter),
-                                    'label': str(dst),
-                                    'x': random.SystemRandom().randint(1, 1000),
-                                    'y': random.SystemRandom().randint(1, 1000),
-                                    'size': "1",
-                                    'color': col
+
+                ret['nodes'].append({
+                    'id': str(ncounter),
+                    'label': str(dst),
+                    'x': random.SystemRandom().randint(1, 1000),
+                    'y': random.SystemRandom().randint(1, 1000),
+                    'size': "1",
+                    'color': col
                 })
+
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
+                ncounter = ncounter + 1
+
                 if src in root:
                     col = "#f00"
-                ncounter = ncounter + 1
-                ret['nodes'].append({'id': str(ncounter),
-                                    'label': str(src),
-                                    'x': random.SystemRandom().randint(1, 1000),
-                                    'y': random.SystemRandom().randint(1, 1000),
-                                    'size': "1",
-                                    'color': col
+
+                ret['nodes'].append({
+                    'id': str(ncounter),
+                    'label': str(src),
+                    'x': random.SystemRandom().randint(1, 1000),
+                    'y': random.SystemRandom().randint(1, 1000),
+                    'size': "1",
+                    'color': col
                 })
+
                 nodelist[src] = ncounter
 
             ecounter = ecounter + 1
-            ret['edges'].append({'id': str(ecounter),
-                                'source': str(nodelist[src]),
-                                'target': str(nodelist[dst])
+
+            ret['edges'].append({
+                'id': str(ecounter),
+                'source': str(nodelist[src]),
+                'target': str(nodelist[dst])
             })
 
         return json.dumps(ret)
@@ -810,7 +819,7 @@ class SpiderFoot:
         # Parse the target and set the targetType
         for rxpair in regexToType:
             rx = list(rxpair.keys())[0]
-            if re.match(rx, target, re.IGNORECASE|re.UNICODE):
+            if re.match(rx, target, re.IGNORECASE | re.UNICODE):
                 targetType = list(rxpair.values())[0]
                 break
         return targetType
@@ -1147,7 +1156,7 @@ class SpiderFoot:
         ps = PublicSuffixList(tldList, only_icann=True, accept_unknown=False)
         sfx = ps.privatesuffix(hostname)
         return sfx == hostname
-    
+
     def validIP(self, address):
         """Check if the provided string is a valid IPv4 address.
 
@@ -1264,8 +1273,8 @@ class SpiderFoot:
         """
 
         chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
+                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
         for c in cmd:
             if c.lower() not in chars:
                 return False
@@ -1290,14 +1299,14 @@ class SpiderFoot:
 
         wd = dict()
 
-        dicts = [ "english", "german", "french", "spanish" ]
+        dicts = ["english", "german", "french", "spanish"]
 
         for d in dicts:
             try:
                 with io.open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r', encoding='utf8', errors='ignore') as wdct:
                     dlines = wdct.readlines()
             except BaseException as e:
-                self.debug("Could not read dictionary: " + str(e))
+                self.debug(f"Could not read dictionary: {e}")
                 continue
 
             for w in dlines:
@@ -1315,7 +1324,7 @@ class SpiderFoot:
 
         wd = dict()
 
-        dicts = [ "names" ]
+        dicts = ["names"]
 
         for d in dicts:
             try:
@@ -1331,7 +1340,6 @@ class SpiderFoot:
                 wd[w.split('/')[0]] = True
 
         return list(wd.keys())
-
 
     def dataParentChildToTree(self, data):
         """Converts a dictionary of k -> array to a nested
@@ -1500,7 +1508,7 @@ class SpiderFoot:
         t = target.targetType
         v = target.targetValue
 
-        if t in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
+        if t in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             r = self.resolveIP(v)
             if r:
                 ret.extend(r)
@@ -1625,7 +1633,7 @@ class SpiderFoot:
                 emails.add(match)
 
         return list(emails)
-    
+
     def parseCreditCards(self, data):
         """Find all credit card numbers with the supplied content.
 
@@ -1644,13 +1652,13 @@ class SpiderFoot:
         if not isinstance(data, str):
             return list()
 
-        creditCards = set() 
+        creditCards = set()
 
-        # Remove whitespace from data. 
-        # Credit cards might contain spaces between them 
+        # Remove whitespace from data.
+        # Credit cards might contain spaces between them
         # which will cause regex mismatch
         data = data.replace(" ", "")
-        
+
         # Extract all numbers with lengths ranging from 13 - 19 digits
         matches = re.findall(r"[0-9]{13,19}", data)
 
@@ -1680,7 +1688,7 @@ class SpiderFoot:
             else:
                 self.debug("Skipped invalid credit card number: " + match)
         return list(creditCards)
-        
+
     def parseIBANNumbers(self, data):
         """Find all International Bank Account Numbers (IBANs) within the supplied content.
 
@@ -1703,30 +1711,30 @@ class SpiderFoot:
 
         # Dictionary of country codes and their respective IBAN lengths
         ibanCountryLengths = {
-            "AL" : 28, "AD" : 24, "AT" : 20, "AZ" : 28,
-            "ME" : 22, "BH" : 22, "BY" : 28, "BE" : 16,
-            "BA" : 20, "BR" : 29, "BG" : 22, "CR" : 22,
-            "HR" : 21, "CY" : 28, "CZ" : 24, "DK" : 18,
-            "DO" : 28, "EG" : 29, "SV" : 28, "FO" : 18,
-            "FI" : 18, "FR" : 27, "GE" : 22, "DE" : 22,
-            "GI" : 23, "GR" : 27, "GL" : 18, "GT" : 28,
-            "VA" : 22, "HU" : 28, "IS" : 26, "IQ" : 23,
-            "IE" : 22, "IL" : 23, "JO" : 30, "KZ" : 20,
-            "XK" : 20, "KW" : 30, "LV" : 21, "LB" : 28,
-            "LI" : 21, "LT" : 20, "LU" : 20, "MT" : 31,
-            "MR" : 27, "MU" : 30, "MD" : 24, "MC" : 27,
-            "DZ" : 24, "AO" : 25, "BJ" : 28, "VG" : 24,
-            "BF" : 27, "BI" : 16, "CM" : 27, "CV" : 25,
-            "CG" : 27, "EE" : 20, "GA" : 27, "GG" : 22,
-            "IR" : 26, "IM" : 22, "IT" : 27, "CI" : 28,
-            "JE" : 22, "MK" : 19, "MG" : 27, "ML" : 28,
-            "MZ" : 25, "NL" : 18, "NO" : 15, "PK" : 24,
-            "PS" : 29, "PL" : 28, "PT" : 25, "QA" : 29,
-            "RO" : 24, "LC" : 32, "SM" : 27, "ST" : 25,
-            "SA" : 24, "SN" : 28, "RS" : 22, "SC" : 31,
-            "SK" : 24, "SI" : 19, "ES" : 24, "CH" : 21,
-            "TL" : 23, "TN" : 24, "TR" : 26, "UA" : 29,
-            "AE" : 23, "GB" : 22, "SE" : 24
+            "AL": 28, "AD": 24, "AT": 20, "AZ": 28,
+            "ME": 22, "BH": 22, "BY": 28, "BE": 16,
+            "BA": 20, "BR": 29, "BG": 22, "CR": 22,
+            "HR": 21, "CY": 28, "CZ": 24, "DK": 18,
+            "DO": 28, "EG": 29, "SV": 28, "FO": 18,
+            "FI": 18, "FR": 27, "GE": 22, "DE": 22,
+            "GI": 23, "GR": 27, "GL": 18, "GT": 28,
+            "VA": 22, "HU": 28, "IS": 26, "IQ": 23,
+            "IE": 22, "IL": 23, "JO": 30, "KZ": 20,
+            "XK": 20, "KW": 30, "LV": 21, "LB": 28,
+            "LI": 21, "LT": 20, "LU": 20, "MT": 31,
+            "MR": 27, "MU": 30, "MD": 24, "MC": 27,
+            "DZ": 24, "AO": 25, "BJ": 28, "VG": 24,
+            "BF": 27, "BI": 16, "CM": 27, "CV": 25,
+            "CG": 27, "EE": 20, "GA": 27, "GG": 22,
+            "IR": 26, "IM": 22, "IT": 27, "CI": 28,
+            "JE": 22, "MK": 19, "MG": 27, "ML": 28,
+            "MZ": 25, "NL": 18, "NO": 15, "PK": 24,
+            "PS": 29, "PL": 28, "PT": 25, "QA": 29,
+            "RO": 24, "LC": 32, "SM": 27, "ST": 25,
+            "SA": 24, "SN": 28, "RS": 22, "SC": 31,
+            "SK": 24, "SI": 19, "ES": 24, "CH": 21,
+            "TL": 23, "TN": 24, "TR": 26, "UA": 29,
+            "AE": 23, "GB": 22, "SE": 24
         }
 
         # Normalize input data to remove whitespace
@@ -1736,7 +1744,7 @@ class SpiderFoot:
         # and starting with two characters
         matches = re.findall("[A-Za-z]{2}[A-Za-z0-9]{13,30}", data)
 
-        for match in matches:  
+        for match in matches:
             iban = match.upper()
 
             countryCode = iban[0:2]
@@ -1744,7 +1752,7 @@ class SpiderFoot:
             if countryCode not in ibanCountryLengths.keys():
                 self.debug("Skipped invalid IBAN (invalid country code): %s" % iban)
                 continue
-            
+
             if len(iban) != ibanCountryLengths[countryCode]:
                 self.debug("Skipped invalid IBAN (invalid length): %s" % iban)
                 continue
@@ -1830,7 +1838,7 @@ class SpiderFoot:
             if ret['expiry'] <= now:
                 ret['expired'] = True
         except BaseException as e:
-            self.error("Error processing date in certificate: " + str(e) , False)
+            self.error(f"Error processing date in certificate: {e}", False)
             ret['certerror'] = True
             return ret
 
@@ -1952,8 +1960,7 @@ class SpiderFoot:
 
         try:
             for t in list(tags.keys()):
-                for lnk in BeautifulSoup(data, "lxml",
-                    parse_only=SoupStrainer(t)).find_all(t):
+                for lnk in BeautifulSoup(data, "lxml", parse_only=SoupStrainer(t)).find_all(t):
                     if lnk.has_attr(tags[t]):
                         urlsRel.append(lnk[tags[t]])
         except BaseException as e:
@@ -1973,10 +1980,10 @@ class SpiderFoot:
 
             # Don't include stuff likely part of some dynamically built incomplete
             # URL found in Javascript code (character is part of some logic)
-            if link[len(link) - 1] == '.' or link[0] == '+' or \
-                            'javascript:' in linkl or '()' in link:
+            if link[len(link) - 1] == '.' or link[0] == '+' or 'javascript:' in linkl or '()' in link:
                 self.debug('unlikely link: ' + link)
                 continue
+
             # Filter in-page links
             if re.match('.*#.[^/]+', link):
                 self.debug('in-page link: ' + link)
@@ -2068,8 +2075,28 @@ class SpiderFoot:
 
         proxies = dict()
         if self.opts['_socks1type']:
-            neverProxyNames = [ self.opts['_socks2addr'] ]
-            neverProxySubnets = [ "192.168.", "127.", "10." ]
+            neverProxyNames = [self.opts['_socks2addr']]
+            neverProxySubnets = [
+                "127."
+                "10.",
+                "192.168.",
+                "172.16.",
+                "172.17.",
+                "172.18.",
+                "172.19.",
+                "172.20.",
+                "172.21.",
+                "172.22.",
+                "172.23.",
+                "172.24.",
+                "172.25.",
+                "172.26.",
+                "172.27.",
+                "172.28.",
+                "172.29.",
+                "172.30.",
+                "172.31."
+            ]
             host = self.urlFQDN(url)
 
             # Completely on or off?
@@ -2118,12 +2145,15 @@ class SpiderFoot:
 
             if sizeLimit or headOnly:
                 if not noLog:
-                    self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
-                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
-                          str(timeout) + "]")
+                    self.info(f"Fetching (HEAD only): {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
 
-                hdr = self.getSession().head(url, headers=header, proxies=proxies,
-                                    verify=verify, timeout=timeout)
+                hdr = self.getSession().head(
+                    url,
+                    headers=header,
+                    proxies=proxies,
+                    verify=verify,
+                    timeout=timeout
+                )
                 size = int(hdr.headers.get('content-length', 0))
                 newloc = hdr.headers.get('location', url).strip()
 
@@ -2141,12 +2171,15 @@ class SpiderFoot:
 
                 if result['realurl'] != url:
                     if not noLog:
-                        self.info("Fetching (HEAD only): " + self.removeUrlCreds(url) + \
-                            " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
-                            str(timeout) + "]")
+                        self.info(f"Fetching (HEAD only): {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
 
-                    hdr = self.getSession().head(result['realurl'], headers=header, proxies=proxies,
-                                        verify=verify, timeout=timeout)
+                    hdr = self.getSession().head(
+                        result['realurl'],
+                        headers=header,
+                        proxies=proxies,
+                        verify=verify,
+                        timeout=timeout
+                    )
                     size = int(hdr.headers.get('content-length', 0))
                     result['realurl'] = hdr.headers.get('location', result['realurl'])
                     result['code'] = str(hdr.status_code)
@@ -2156,21 +2189,32 @@ class SpiderFoot:
 
             if not noLog:
                 if cookies is None:
-                    self.info("Fetching: " + self.removeUrlCreds(url) + " [user-agent: " + \
-                          header['User-Agent'] + "] [timeout: " + str(timeout) + "]")
+                    self.info(f"Fetching: {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
                 else:
-                    self.info("Fetching (incl. cookies): " + self.removeUrlCreds(url) + \
-                          " [user-agent: " + header['User-Agent'] + "] [timeout: " + \
-                          str(timeout) + "]")
+                    self.info(f"Fetching (incl. cookies): {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
 
             try:
                 if postData:
-                    res = self.getSession().post(url, data=postData, headers=header, proxies=proxies,
-                                        allow_redirects=True, cookies=cookies,
-                                        timeout=timeout, verify=verify)
+                    res = self.getSession().post(
+                        url,
+                        data=postData,
+                        headers=header,
+                        proxies=proxies,
+                        allow_redirects=True,
+                        cookies=cookies,
+                        timeout=timeout,
+                        verify=verify
+                    )
                 else:
-                    res = self.getSession().get(url, headers=header, proxies=proxies, allow_redirects=True,
-                                       cookies=cookies, timeout=timeout, verify=verify)
+                    res = self.getSession().get(
+                        url,
+                        headers=header,
+                        proxies=proxies,
+                        allow_redirects=True,
+                        cookies=cookies,
+                        timeout=timeout,
+                        verify=verify
+                    )
             except requests.exceptions.RequestException:
                 raise Exception('Failed to connect to %s' % url) from None
 
@@ -2234,7 +2278,7 @@ class SpiderFoot:
         m = mod.__name__
         atime = time.time()
         t = str(atime - btime)
-        self.info("Fetched data: " + str(len(result['content'] or '')) + \
+        self.info("Fetched data: " + str(len(result['content'] or '')) +
                   " (" + self.removeUrlCreds(url) + "), took " + t + "s")
         return result
 
@@ -2421,7 +2465,7 @@ class SpiderFootPlugin(object):
     _priority = 1
     # Error state of the module
     errorState = False
-    
+
     def __init__(self):
         """Not really needed in most cases."""
         pass
@@ -2542,13 +2586,16 @@ class SpiderFootPlugin(object):
         if self.__outputFilter__:
             # Be strict about what events to pass on, unless they are
             # the ROOT event or the event type of the target.
-            if eventName != 'ROOT' and eventName != self.getTarget().targetType \
-                and eventName not in self.__outputFilter__:
-                return None
+            if eventName != 'ROOT' and eventName != self.getTarget().targetType:
+                if eventName not in self.__outputFilter__:
+                    return None
 
         storeOnly = False  # Under some conditions, only store and don't notify
 
-        if sfEvent.data is None or (type(sfEvent.data) is str and len(sfEvent.data) == 0):
+        if sfEvent.data is None:
+            return None
+
+        if type(sfEvent.data) is str and len(sfEvent.data) == 0:
             return None
 
         if self.checkForStop():
@@ -2571,8 +2618,7 @@ class SpiderFootPlugin(object):
         prevEvent = sfEvent.sourceEvent
         while prevEvent is not None:
             if prevEvent.sourceEvent is not None:
-                if prevEvent.sourceEvent.eventType == sfEvent.eventType and \
-                                prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
+                if prevEvent.sourceEvent.eventType == sfEvent.eventType and prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
                     storeOnly = True
                     break
             prevEvent = prevEvent.sourceEvent
@@ -2715,7 +2761,7 @@ class SpiderFootTarget(object):
     def targetType(self, targetType):
         if not isinstance(targetType, str):
             raise TypeError(f"targetType is {type(targetType)}; expected str()")
- 
+
         if targetType not in self._validTypes:
             raise ValueError(f"targetType value is {targetType}; expected {self._validTypes}")
 
@@ -2760,7 +2806,7 @@ class SpiderFootTarget(object):
 
         if value is None:
             return
-            
+
         if {'type': typeName, 'value': value} in self.targetAliases:
             return None
 
@@ -2851,7 +2897,7 @@ class SpiderFootTarget(object):
 
         # We can't really say anything about names, username or phone numbers,
         # so everything matches
-        if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME" ]:
+        if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME"]:
             return True
 
         if netaddr.valid_ipv4(value):
@@ -2862,9 +2908,8 @@ class SpiderFootTarget(object):
             if self.targetType == "NETBLOCK_OWNER":
                 if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
                     return True
-            if self.targetType in [ "IP_ADDRESS", "IPV6_ADDRESS" ]:
-                if netaddr.IPAddress(value) in \
-                        netaddr.IPNetwork(netaddr.IPAddress(self.targetValue)):
+            if self.targetType in ["IP_ADDRESS", "IPV6_ADDRESS"]:
+                if netaddr.IPAddress(value) in netaddr.IPNetwork(netaddr.IPAddress(self.targetValue)):
                     return True
         else:
             for name in self.getNames():
@@ -3025,7 +3070,7 @@ class SpiderFootEvent(object):
             TypeError: confidence type was invalid
             ValueError: confidence value was invalid
         """
- 
+
         if not isinstance(eventType, str):
             raise TypeError(f"eventType is {type(eventType)}; expected str()")
 
@@ -3044,7 +3089,7 @@ class SpiderFootEvent(object):
             TypeError: confidence type was invalid
             ValueError: confidence value was invalid
         """
- 
+
         if not isinstance(confidence, int):
             raise TypeError(f"confidence is {type(confidence)}; expected int()")
 
@@ -3063,7 +3108,7 @@ class SpiderFootEvent(object):
             TypeError: visibility type was invalid
             ValueError: visibility value was invalid
         """
- 
+
         if not isinstance(visibility, int):
             raise TypeError(f"visibility is {type(visibility)}; expected int()")
 
@@ -3082,7 +3127,7 @@ class SpiderFootEvent(object):
             TypeError: risk type was invalid
             ValueError: risk value was invalid
         """
- 
+
         if not isinstance(risk, int):
             raise TypeError(f"risk is {type(risk)}; expected int()")
 
@@ -3098,7 +3143,7 @@ class SpiderFootEvent(object):
             TypeError: module type was invalid
             ValueError: module value was invalid
         """
- 
+
         if not isinstance(module, str):
             raise TypeError(f"module is {type(module )}; expected str()")
 
@@ -3115,7 +3160,7 @@ class SpiderFootEvent(object):
             TypeError: data type was invalid
             ValueError: data value was invalid
         """
- 
+
         if not isinstance(data, str):
             raise TypeError(f"data is {type(data)}; expected str()")
 
@@ -3130,7 +3175,7 @@ class SpiderFootEvent(object):
         Raises:
             TypeError: sourceEvent type was invalid
         """
- 
+
         # "ROOT" is a special "hash" reserved for elements with no parent,
         # such as targets provided via the web UI or CLI.
         if self.eventType == "ROOT":
