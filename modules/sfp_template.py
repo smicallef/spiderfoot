@@ -10,7 +10,9 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+import json
+from netaddr import IPNetwork
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_template(SpiderFootPlugin):
     # The below docstring is going away in 3.3, in favor of the module descriptor dictionary further below.
@@ -268,7 +270,7 @@ class sfp_template(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from SHODAN.", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
             return None
 
         return info
@@ -318,9 +320,12 @@ class sfp_template(SpiderFootPlugin):
                                   str(self.opts['maxnetblock']))
                     return None
 
+
         # When handling netblocks/subnets, assuming the user set
         # netblocklookup/subnetlookup to True, we need to expand it
         # to the IPs for looking up.
+        qrylist = list()
+
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))
