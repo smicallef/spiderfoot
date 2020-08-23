@@ -25,7 +25,7 @@ from os.path import expanduser
 
 try:
     import readline
-except:
+except ImportError:
     import pyreadline as readline
 
 
@@ -527,7 +527,7 @@ class SpiderFootCli(cmd.Cmd):
             return
         j = json.loads(d)
         if j[0] == "ERROR":
-            self.edprint("Error running your query: " + j[1])
+            self.edprint(f"Error running your query: {j[1]}")
             return
         self.send_output(d, line)
 
@@ -541,15 +541,14 @@ class SpiderFootCli(cmd.Cmd):
 
         s = json.loads(d)
         if s[0] == "SUCCESS":
-            self.dprint("Server " + self.ownopts['cli.server_baseurl'] + " responding.")
+            self.dprint(f"Server {self.ownopts['cli.server_baseurl']} responding.")
             self.do_modules("", cacheonly=True)
             self.do_types("", cacheonly=True)
         else:
-            self.dprint("Something odd happened: " + str(d))
+            self.dprint(f"Something odd happened: {d}")
 
         if s[1] != self.version:
-            self.edprint("Server and CLI version are not the same (" + s[1] + \
-                         " / " + self.version + "). This could lead to unpredictable results!")
+            self.edprint(f"Server and CLI version are not the same ({s[1]} / {self.version}). This could lead to unpredictable results!")
 
     # List all SpiderFoot modules.
     def do_modules(self, line, cacheonly=False):
@@ -558,11 +557,13 @@ class SpiderFootCli(cmd.Cmd):
         d = self.request(self.ownopts['cli.server_baseurl'] + "/modules")
         if not d:
             return
+
         if cacheonly:
             j = json.loads(d)
             for m in j:
                 self.modules.append(m['name'])
             return
+
         self.send_output(d, line, titles={"name": "Module name",
                                           "descr": "Description"})
 
@@ -911,7 +912,7 @@ class SpiderFootCli(cmd.Cmd):
         c = self.myparseline(line)
         try:
             id = c[0][0]
-        except BaseException as e:
+        except BaseException:
             self.edprint("Invalid syntax.")
             return
 
@@ -1017,12 +1018,11 @@ class SpiderFootCli(cmd.Cmd):
         c = self.myparseline(line)
         try:
             id = c[0][0]
-        except BaseException as e:
+        except BaseException:
             self.edprint("Invalid syntax.")
             return
 
-        d = self.request(self.ownopts['cli.server_baseurl'] + \
-                         "/scandelete?confirm=1&raw=1&id=" + id)
+        d = self.request(self.ownopts['cli.server_baseurl'] + f"/scandelete?confirm=1&raw=1&id={id}")
         if not d:
             return
 
@@ -1079,7 +1079,7 @@ class SpiderFootCli(cmd.Cmd):
         if len(c[0]) > 2:
             try:
                 val = c[0][2]
-            except BaseException as e:
+            except BaseException:
                 self.edprint("Invalid syntax.")
                 return
 
@@ -1269,7 +1269,7 @@ if __name__ == "__main__":
             s.ownopts['cli.password'] = pf.readlines()[0].strip('\n')
             pf.close()
         except BaseException as e:
-            print("Unable to open " + args.P + ":" + " (" + str(e) + ")")
+            print(f"Unable to open {args.P}: ({e})")
             sys.exit(-1)
     if args.i:
         s.ownopts['cli.ssl_verify'] = False
@@ -1289,6 +1289,8 @@ if __name__ == "__main__":
         try:
             s.ownopts['cli.history_file'] = expanduser("~") + "/.spiderfoot_history"
         except BaseException as e:
+            s.dprint(f"Failed to set 'cli.history_file': {e}")
+            s.dprint("Using '.spiderfoot_history' in working directory")
             s.ownopts['cli.history_file'] = ".spiderfoot_history"
     if args.o:
         s.ownopts['cli.spool'] = True
@@ -1312,12 +1314,11 @@ if __name__ == "__main__":
  /        \\  |_> >  / /_/ \\  ___/|  | \\/     \\(  <_> |  <_> )  |  \n\
 /_______  /   __/|__\\____ |\\___  >__|  \\___  / \\____/ \\____/|__|  \n\
         \\/|__|           \\/    \\/          \\/                     \n\
-                Open Source Intelligence Automation.", plain=True,
-                color=bcolors.GREYBLUE)
+                Open Source Intelligence Automation.", plain=True, color=bcolors.GREYBLUE)
         s.dprint("\
                by Steve Micallef | @spiderfoot\n", plain=True,
                  color=bcolors.GREYBLUE_DARK)
-        s.dprint("Version " + s.version + ".")
+        s.dprint(f"Version {s.version}.")
         if args.b:
             sys.exit(0)
 
@@ -1330,7 +1331,7 @@ if __name__ == "__main__":
             for line in f.readlines():
                 readline.add_history(line.strip())
             s.dprint("Loaded previous command history.")
-        except BaseException as e:
+        except BaseException:
             pass
 
     try:
