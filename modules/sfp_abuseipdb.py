@@ -11,8 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import re
-
-import json
+from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
