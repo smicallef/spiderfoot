@@ -126,7 +126,7 @@ class sfp_scylla(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         position = 0
         max_pages = int(self.opts['max_pages'])

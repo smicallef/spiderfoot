@@ -73,7 +73,7 @@ class sfp_iban(SpiderFootPlugin):
             return None
 
         # event was received.
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Extract IBAN Card numbers
         ibanNumbers = self.sf.parseIBANNumbers(eventData)

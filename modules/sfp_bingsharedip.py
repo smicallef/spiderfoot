@@ -94,7 +94,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "" and self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_bingsharedip but did not set a Bing API key!", False)
@@ -103,7 +103,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         # Ignore IP addresses from myself as they are just for creating

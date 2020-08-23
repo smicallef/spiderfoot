@@ -66,7 +66,7 @@ class sfp_crossref(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # The SIMILARDOMAIN and CO_HOSTED_SITE events supply domains,
         # not URLs. Assume HTTP.

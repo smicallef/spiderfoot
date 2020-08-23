@@ -139,7 +139,7 @@ class sfp_circllu(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Ignore messages from myself
         if srcModuleName == "sfp_circllu":
@@ -153,7 +153,7 @@ class sfp_circllu(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True

@@ -266,7 +266,7 @@ class sfp_spider(SpiderFootPlugin):
         eventData = event.data
         spiderTarget = None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.urlEvents:
             self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")

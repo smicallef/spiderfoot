@@ -71,7 +71,7 @@ class sfp_names(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # If the source event is web content, check if the source URL was javascript
         # or CSS, in which case optionally ignore it.

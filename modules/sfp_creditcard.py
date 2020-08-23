@@ -72,7 +72,7 @@ class sfp_creditcard(SpiderFootPlugin):
             return None
 
         # event was received.
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Extract Credit Card numbers
         creditCards = self.sf.parseCreditCards(eventData)

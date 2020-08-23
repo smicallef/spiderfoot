@@ -74,7 +74,7 @@ class sfp_pgp(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Get e-mail addresses on this domain
         if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:

@@ -118,7 +118,7 @@ class sfp_censys(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['censys_api_key_uid'] == "" or self.opts['censys_api_key_secret'] == "":
             self.sf.error("You enabled sfp_censys but did not set an API uid/secret!", False)
@@ -127,7 +127,7 @@ class sfp_censys(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         self.results[eventData] = True
@@ -144,7 +144,7 @@ class sfp_censys(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            if eventName in ["IP_ADDRESS", "NETLBLOCK_OWNER"]:
+            if eventName in ["IP_ADDRESS", "NETBLOCK_OWNER"]:
                 qtype = "ip"
             else:
                 qtype = "host"

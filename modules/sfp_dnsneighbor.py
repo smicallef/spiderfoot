@@ -70,7 +70,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         addrs = None
         parentEvent = event
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
             return None

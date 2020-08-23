@@ -166,7 +166,7 @@ class sfp_spyse(SpiderFootPlugin):
     # Query domains using domain as MX server
     # https://spyse.com/v3/data/apidocs#/Domain%20related%20information/get_domains_using_as_mx
     # Note: currently unused
-    def queryDomainsAsMX(self, qry, page=1):
+    def queryDomainsAsMX(self, qry, currentOffset):
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'limit': self.limit, 
@@ -270,7 +270,7 @@ class sfp_spyse(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Query cohosts
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:

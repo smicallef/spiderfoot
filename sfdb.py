@@ -16,6 +16,7 @@ import time
 import threading
 from sflib import SpiderFoot, SpiderFootEvent
 
+
 class SpiderFootDb:
     """SpiderFoot database
 
@@ -291,7 +292,7 @@ class SpiderFootDb:
         # a custom function to do so..
         def __dbregex__(qry, data):
             try:
-                rx = re.compile(qry, re.IGNORECASE|re.DOTALL)
+                rx = re.compile(qry, re.IGNORECASE | re.DOTALL)
                 ret = rx.match(data)
             except BaseException as e:
                 return False
@@ -319,7 +320,7 @@ class SpiderFootDb:
                     except BaseException as e:
                         continue
                 self.conn.commit()
-                #self.conn.close()
+                # self.conn.close()
 
     #
     # Back-end database operations
@@ -397,7 +398,7 @@ class SpiderFootDb:
             raise ValueError(f"No valid search criteria provided; expected: {', '.join(valid_criteria)}")
 
         if len(criteria) == 1:
-            raise ValueError(f"Only one search criteria provided; expected at least two")
+            raise ValueError("Only one search criteria provided; expected at least two")
 
         qvars = list()
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
@@ -434,8 +435,6 @@ class SpiderFootDb:
 
         with self.dbhLock:
             try:
-                #print(qry)
-                #print(str(qvars))
                 self.dbh.execute(qry, qvars)
                 return self.dbh.fetchall()
             except sqlite3.Error as e:
@@ -473,7 +472,7 @@ class SpiderFootDb:
 
         Raises:
             IOError: database I/O failed
- 
+
         Todo:
             Do something smarter to handle database locks
         """
@@ -502,8 +501,8 @@ class SpiderFootDb:
                 self.conn.commit()
             except sqlite3.Error as e:
                 if "locked" in e.args[0] or "thread" in e.args[0]:
-                    #print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
-                    #self.sf.fatal(f"Unable to log event in DB due to lock: {e.args[0]}")
+                    # print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
+                    # self.sf.fatal(f"Unable to log event in DB due to lock: {e.args[0]}")
                     pass
                 else:
                     raise IOError(f"Unable to log scan event in DB: {e.args[0]}")
@@ -697,7 +696,7 @@ class SpiderFootDb:
 
         if not isinstance(eventType, str):
             raise TypeError(f"eventType is {type(eventType)}; expected str()")
- 
+
         qry = "SELECT ROUND(c.generated) AS generated, c.data, \
             s.data as 'source_data', \
             c.module, c.type, c.confidence, c.visibility, c.risk, c.hash, \
@@ -747,7 +746,7 @@ class SpiderFootDb:
 
         if not isinstance(eventType, str):
             raise TypeError(f"eventType is {type(eventType)}; expected str()")
- 
+
         qry = "SELECT DISTINCT data, type, COUNT(*) FROM tbl_scan_results \
             WHERE scan_instance_id = ?"
         qvars = [instanceId]
@@ -940,7 +939,7 @@ class SpiderFootDb:
             raise TypeError(f"optMap is {type(optMap)}; expected dict()")
         if not optMap:
             raise ValueError("optMap is empty")
- 
+
         qry = "REPLACE INTO tbl_config (scope, opt, val) VALUES (?, ?, ?)"
 
         with self.dbhLock:
@@ -974,7 +973,7 @@ class SpiderFootDb:
         """
 
         qry = "SELECT scope, opt, val FROM tbl_config"
-        
+
         retval = dict()
 
         with self.dbhLock:
@@ -1029,7 +1028,7 @@ class SpiderFootDb:
             raise TypeError(f"optMap is {type(optMap)}; expected dict()")
         if not optMap:
             raise ValueError("optMap is empty")
- 
+
         qry = "REPLACE INTO tbl_scan_config \
                 (scan_instance_id, component, opt, val) VALUES (?, ?, ?, ?)"
 
@@ -1458,7 +1457,7 @@ class SpiderFootDb:
 
         while keepGoing:
             nextSet = self.scanElementChildrenDirect(instanceId, nextIds)
-            if nextSet == None or len(nextSet) == 0:
+            if nextSet is None or len(nextSet) == 0:
                 keepGoing = False
                 break
 

@@ -11,14 +11,12 @@
 # -------------------------------------------------------------------------------
 
 import re
-
-import json
+from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'AbuseIPDB': {
         'id': 'abuseipdbip',
-        'type': 'list',
         'checks': ['ip'],
         'url': 'https://api.abuseipdb.com/api/v2/blacklist?confidenceMinimum={0}&plaintext=1'
     }
@@ -106,34 +104,12 @@ class sfp_abuseipdb(SpiderFootPlugin):
         return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR",
                 "MALICIOUS_SUBNET", "MALICIOUS_NETBLOCK"]
 
-    # Check the regexps to see whether the content indicates maliciousness
-    def contentMalicious(self, content, goodregex, badregex):
-        # First, check for the bad indicators
-        if len(badregex) > 0:
-            for rx in badregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be bad against bad regex: " + rx)
-                    return True
-
-        # Finally, check for good indicators
-        if len(goodregex) > 0:
-            for rx in goodregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be good againt good regex: " + rx)
-                    return False
-
-        # If nothing was matched, reply None
-        self.sf.debug("Neither good nor bad, unknown.")
-        return None
-
     def lookupItem(self, resourceId, itemType, target):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" +
-                              itemType + ") with: " + cid)
-                if malchecks[check]['type'] == "list":
-                    return self.resourceList(cid, target, itemType)
+                self.sf.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
+                return self.resourceList(cid, target, itemType)
         return None
 
     # Look up 'list' type resources
@@ -147,7 +123,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
-            if id == cid and malchecks[check]['type'] == "list":
+            if id == cid:
                 data = dict()
                 url = malchecks[check]['url'].format(self.opts['confidenceminimum'])
                 hdr = {
@@ -188,8 +164,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(ip + " found within netblock/subnet " + target + " in " + check)
                                 return url
                         except Exception as e:
                             self.sf.debug("Error encountered parsing: " + str(e))
@@ -225,13 +200,13 @@ class sfp_abuseipdb(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + ", already checked.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):

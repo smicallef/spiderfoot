@@ -14,10 +14,10 @@ import time
 import sys
 import socket
 import dns.resolver
-import random
 from copy import deepcopy
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, SpiderFootPlugin
+
 
 class SpiderFootScanner():
     """SpiderFootScanner object.
@@ -337,9 +337,9 @@ class SpiderFootScanner():
                 self.__setStatus("FINISHED", None, time.time() * 1000)
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.__sf.error("Unhandled exception (" + e.__class__.__name__ + ") " + \
-                             "encountered during scan. Please report this as a bug: " + \
-                             repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
+            self.__sf.error("Unhandled exception (" + e.__class__.__name__ + ") " +
+                            "encountered during scan. Please report this as a bug: " +
+                            repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
             self.__sf.status("Scan [" + self.__scanId + "] failed: " + str(e))
             self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
 
