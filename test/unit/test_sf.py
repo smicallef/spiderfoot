@@ -70,7 +70,6 @@ class TestSf(unittest.TestCase):
         self.assertEqual(b"", err)
         self.assertEqual(255, code)
 
-    @unittest.skip("todo")
     def test_run_scan_with_invalid_module_should_run_scan_and_exit(self):
         module = "invalid module"
         out, err, code = self.execute([sys.executable, "sf.py", "-m", module, "-s", "spiderfoot.net"])
