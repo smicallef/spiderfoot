@@ -14,7 +14,6 @@
 import json
 import math
 import time
-import re
 import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

@@ -11,8 +11,6 @@
 # -------------------------------------------------------------------------------
 
 from subprocess import Popen, PIPE
-import io
-import json
 import os.path
 from netaddr import IPNetwork
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

@@ -11,7 +11,6 @@
 
 import json
 import time
-import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_hashes(SpiderFootPlugin):

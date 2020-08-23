@@ -15,8 +15,6 @@
 # -------------------------------------------------------------------------------
 
 import json
-import re
-import socket
 import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
