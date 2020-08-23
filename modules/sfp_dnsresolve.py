@@ -163,7 +163,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             # We get literal \n from RAW_RIR_DATA in cases where JSON responses
             # have been str()'d, breaking interpretation of hostnames.
             if eventName == 'RAW_RIR_DATA':
-                data = data.replace('\\n', '\n')
+                data = re.sub(r'(\\x[0-f]{2}|\\n|\\r)', '\n', data)
 
             for name in self.getTarget().getNames():
                 if self.checkForStop():
