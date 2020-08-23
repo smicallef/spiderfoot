@@ -18,7 +18,6 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 malchecks = {
    'botvrij.eu Domain Blocklist': {
         'id': '_botvrij',
-        'type': 'list',
         'checks': ['domain'],
         'url': 'https://www.botvrij.eu/data/blocklist/blocklist_full.csv',
         'regex': '{0},.*'
@@ -81,44 +80,6 @@ class sfp_botvrij(SpiderFootPlugin):
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_AFFILIATE_INTERNET_NAME",
                 "MALICIOUS_COHOST"]
 
-    # Check the regexps to see whether the content indicates maliciousness
-    def contentMalicious(self, content, goodregex, badregex):
-        # First, check for the bad indicators
-        if len(badregex) > 0:
-            for rx in badregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be bad against bad regex: " + rx)
-                    return True
-
-        # Finally, check for good indicators
-        if len(goodregex) > 0:
-            for rx in goodregex:
-                if re.match(rx, content, re.IGNORECASE | re.DOTALL):
-                    self.sf.debug("Found to be good againt good regex: " + rx)
-                    return False
-
-        # If nothing was matched, reply None
-        self.sf.debug("Neither good nor bad, unknown.")
-        return None
-
-    # Look up 'query' type sources
-    def resourceQuery(self, id, target, targetType):
-        self.sf.debug("Querying " + id + " for maliciousness of " + target)
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if id == cid and malchecks[check]['type'] == "query":
-                url = str(malchecks[check]['url'])
-                res = self.sf.fetchUrl(url.format(target), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-                if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target), False)
-                    return None
-                if self.contentMalicious(res['content'],
-                                         malchecks[check]['goodregex'],
-                                         malchecks[check]['badregex']):
-                    return url.format(target)
-
-        return None
-
     # Look up 'list' type resources
     def resourceList(self, id, target, targetType):
         targetDom = ''
@@ -130,7 +91,7 @@ class sfp_botvrij(SpiderFootPlugin):
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
-            if id == cid and malchecks[check]['type'] == "list":
+            if id == cid:
                 data = dict()
                 url = malchecks[check]['url']
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
@@ -203,12 +164,8 @@ class sfp_botvrij(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" +
-                              itemType + ") with: " + cid)
-                if malchecks[check]['type'] == "query":
-                    return self.resourceQuery(cid, target, itemType)
-                if malchecks[check]['type'] == "list":
-                    return self.resourceList(cid, target, itemType)
+                self.sf.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
+                return self.resourceList(cid, target, itemType)
 
         return None
 
@@ -223,8 +180,8 @@ class sfp_botvrij(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + ", already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
             return None
