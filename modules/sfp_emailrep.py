@@ -130,7 +130,7 @@ class sfp_emailrep(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == '':
             self.sf.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.", False)

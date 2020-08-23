@@ -108,7 +108,7 @@ class sfp_archiveorg(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "INTERESTING_FILE" and not self.opts['intfiles']:
             return None

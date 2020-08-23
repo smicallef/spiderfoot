@@ -209,7 +209,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName not in ["IP_ADDRESS", "DOMAIN_NAME"]:
             return None

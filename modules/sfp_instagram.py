@@ -88,7 +88,7 @@ class sfp_instagram(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Parse profile URL
         try:

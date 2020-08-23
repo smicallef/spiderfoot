@@ -215,7 +215,7 @@ class sfp_hackertarget(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_hackertarget" and eventName == "IP_ADDRESS":
             self.sf.debug("Ignoring " + eventName + ", from self.")
@@ -223,7 +223,7 @@ class sfp_hackertarget(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         if eventName == 'NETBLOCK_OWNER':

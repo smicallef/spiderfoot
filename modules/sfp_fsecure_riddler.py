@@ -167,14 +167,14 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == 'sfp_fsecure_riddler':
             self.sf.debug("Ignoring " + eventData + ", from self.")
             return None
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         if self.opts['username'] == '' or self.opts['password'] == '':

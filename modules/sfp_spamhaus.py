@@ -159,7 +159,7 @@ class sfp_spamhaus(SpiderFootPlugin):
         parentEvent = event
         addrlist = list()
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return None

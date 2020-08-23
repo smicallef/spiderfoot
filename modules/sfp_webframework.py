@@ -80,7 +80,7 @@ class sfp_webframework(SpiderFootPlugin):
         if srcModuleName != "sfp_spider":
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventSource not in self.results:
             self.results[eventSource] = list()

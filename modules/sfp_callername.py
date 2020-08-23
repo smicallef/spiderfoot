@@ -83,7 +83,7 @@ class sfp_callername(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Only US numbers are supported (+1)
         if not eventData.startswith('+1'):

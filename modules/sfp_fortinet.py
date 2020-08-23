@@ -143,10 +143,10 @@ class sfp_fortinet(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + ", already checked.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         self.results[eventData] = True

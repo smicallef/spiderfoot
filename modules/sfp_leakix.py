@@ -129,7 +129,7 @@ class sfp_leakix(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ["IP_ADDRESS"]:
             data = self.queryHost(eventData)

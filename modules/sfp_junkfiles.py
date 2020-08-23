@@ -88,7 +88,7 @@ class sfp_junkfiles(SpiderFootPlugin):
         eventData = event.data
         host = self.sf.urlBaseUrl(eventData)
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return None
