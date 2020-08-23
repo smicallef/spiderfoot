@@ -12,7 +12,6 @@
 # -------------------------------------------------------------------------------
 
 from subprocess import Popen, PIPE
-import io
 import json
 import os.path
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent

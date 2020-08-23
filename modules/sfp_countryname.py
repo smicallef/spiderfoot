@@ -12,7 +12,6 @@
 # -------------------------------------------------------------------------------
 
 import re
-import json
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 import phonenumbers
 from phonenumbers.phonenumberutil import region_code_for_country_code

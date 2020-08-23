@@ -11,7 +11,6 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-import re
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

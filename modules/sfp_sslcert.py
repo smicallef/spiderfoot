@@ -10,7 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import time
 from urllib.parse import urlparse
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 

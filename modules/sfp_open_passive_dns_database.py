@@ -11,7 +11,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import re
 import time
 import urllib.request, urllib.parse, urllib.error

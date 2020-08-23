@@ -16,7 +16,6 @@ import PyPDF2
 import docx
 import pptx
 import exifread
-import lxml
 import io
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
