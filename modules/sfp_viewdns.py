@@ -21,7 +21,26 @@ class sfp_viewdns(SpiderFootPlugin):
         'summary': "Reverse Whois lookups using ViewDNS.info.",
         'flags': [ "apikey" ],
         'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ]
+        'categories': [ "Search Engines" ],
+        'dataSource': {
+            'website': "https://viewdns.info/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://viewdns.info/api/docs",
+                "https://viewdns.info/api/"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://viewdns.info/api",
+                "Select a plan",
+                "Register an account",
+                "Navigate to viewdns.info/api/dashboard/",
+                "The API key is listed under 'API Key'"
+            ],
+            'favIcon': "https://viewdns.info/apple-touch-icon.png",
+            'logo': "https://viewdns.info/images/viewdns_logo.gif",
+            'description': "The ViewDNS.info API allows webmasters to integrate the tools provided by ViewDNS.info "
+                                "into their own sites in a simple and effective manner.",
+        }
     }
 
     # Default options
