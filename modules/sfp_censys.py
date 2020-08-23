@@ -144,7 +144,7 @@ class sfp_censys(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            if eventName in ["IP_ADDRESS", "NETLBLOCK_OWNER"]:
+            if eventName in ["IP_ADDRESS", "NETBLOCK_OWNER"]:
                 qtype = "ip"
             else:
                 qtype = "host"
