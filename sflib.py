@@ -17,7 +17,6 @@ import inspect
 import hashlib
 import html
 import io
-import urllib.request, urllib.parse, urllib.error
 import json
 import re
 import os
@@ -33,6 +32,9 @@ import OpenSSL
 import uuid
 import cryptography
 import dns.resolver
+import urllib.request
+import urllib.parse
+import urllib.error
 import urllib3
 from publicsuffixlist import PublicSuffixList
 from networkx import nx
@@ -175,7 +177,7 @@ class SpiderFoot:
                 return ret
             except BaseException as e:
                 if fatal:
-                    self.error(f"Unable to open option file, {fname}.")
+                    self.error(f"Unable to open option file, {fname}: {e}")
                 else:
                     return None
 
@@ -290,7 +292,6 @@ class SpiderFoot:
                 ncounter = ncounter + 1
                 if dst in root:
                     col = ["255", "0", "0"]
-                node = graph.add_node(dst)
                 graph.node[dst]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
                 nodelist[dst] = ncounter
 
@@ -688,19 +689,18 @@ class SpiderFoot:
             for opt in opts['__modules__'][mod]['opts']:
                 if opt.startswith('_') and filterSystem:
                     continue
+                mod_opt = opts['__modules__'][mod]['opts'][opt]
 
-                if type(opts['__modules__'][mod]['opts'][opt]) is int or \
-                                type(opts['__modules__'][mod]['opts'][opt]) is str:
-                    storeopts[mod + ":" + opt] = opts['__modules__'][mod]['opts'][opt]
+                if type(mod_opt) is int or type(mod_opt) is str:
+                    storeopts[mod + ":" + opt] = mod_opt
 
-                if type(opts['__modules__'][mod]['opts'][opt]) is bool:
-                    if opts['__modules__'][mod]['opts'][opt]:
+                if type(mod_opt) is bool:
+                    if mod_opt:
                         storeopts[mod + ":" + opt] = 1
                     else:
                         storeopts[mod + ":" + opt] = 0
-                if type(opts['__modules__'][mod]['opts'][opt]) is list:
-                    storeopts[mod + ":" + opt] = ','.join(str(x) \
-                                                          for x in opts['__modules__'][mod]['opts'][opt])
+                if type(mod_opt) is list:
+                    storeopts[mod + ":" + opt] = ','.join(str(x) for x in mod_opt)
 
         return storeopts
 
@@ -1130,7 +1130,7 @@ class SpiderFoot:
 
         ps = PublicSuffixList(tldList, only_icann=True, accept_unknown=False)
         sfx = ps.privatesuffix(hostname)
-        return sfx != None
+        return sfx is not None
 
     def isDomain(self, hostname, tldList):
         """Check if the provided hostname string is a valid domain name.
@@ -1926,13 +1926,16 @@ class SpiderFoot:
 
         Args:
             url (str): TBD
-            data: TBD
+            data (str): data to examine for links
             domains: TBD
         """
-
         returnLinks = dict()
 
-        if data is None or len(data) == 0:
+        if not isinstance(data, str):
+            self.debug("parseLinks() data is %s; expected str()" % type(data))
+            return returnLinks
+
+        if not data:
             self.debug("parseLinks() called with no data to parse.")
             return returnLinks
 
@@ -1953,7 +1956,7 @@ class SpiderFoot:
             proto = url.split(":")[0]
         except BaseException:
             proto = "http"
-        if proto == None:
+        if proto is None:
             proto = "http"
 
         urlsRel = []
@@ -2239,7 +2242,7 @@ class SpiderFoot:
                 try:
                     newurl = result['headers']['refresh'].split(";url=")[1]
                 except BaseException as e:
-                    self.debug("Refresh header found but was not parsable: " + result['headers']['refresh'])
+                    self.debug(f"Refresh header '{result['headers']['refresh']}' found but not parsable: {e}")
                     return result
                 self.debug("Refresh header found, re-directing to " + self.removeUrlCreds(newurl))
                 return self.fetchUrl(newurl, fatal, cookies, timeout,
@@ -2253,33 +2256,32 @@ class SpiderFoot:
             else:
                 try:
                     result['content'] = res.content.decode("utf-8")
-                except UnicodeDecodeError as e:
+                except UnicodeDecodeError:
                     result['content'] = res.content.decode("ascii")
             if fatal:
                 try:
                     res.raise_for_status()
-                except requests.exceptions.HTTPError as h:
-                    self.fatal('URL could not be fetched (' + str(res.status_code) + ' / ' + res.content + ')')
+                except requests.exceptions.HTTPError:
+                    self.fatal(f"URL could not be fetched ({res.status_code}) / {res.content})")
 
-        except BaseException as x:
+        except BaseException as e:
             if not noLog:
+                # TODO: why another except block?
                 try:
-                    self.error("Unexpected exception (" + str(x) + ") occurred fetching: " + url, False)
+                    self.error(f"Unexpected exception ({e}) occurred fetching URL: {url}", False)
                     self.error(traceback.format_exc(), False)
                 except BaseException as f:
+                    # TODO: why is this exception ignored?
+                    self.debug(f"Ignoring exception: {f}")
                     return result
             result['content'] = None
-            result['status'] = str(x)
+            result['status'] = str(e)
             if fatal:
-                self.fatal('URL could not be fetched (' + str(x) + ')')
+                self.fatal(f"URL could not be fetched ({e})")
 
-        frm = inspect.stack()[1]
-        mod = inspect.getmodule(frm[0])
-        m = mod.__name__
         atime = time.time()
         t = str(atime - btime)
-        self.info("Fetched data: " + str(len(result['content'] or '')) +
-                  " (" + self.removeUrlCreds(url) + "), took " + t + "s")
+        self.info(f"Fetched {self.removeUrlCreds(url)} ({len(result['content'] or '')} bytes in {t}s)")
         return result
 
     def checkDnsWildcard(self, target):
@@ -3220,4 +3222,3 @@ class SpiderFootEvent(object):
     def getHash(self):
         """Required for SpiderFoot HX compatibility of modules"""
         return self.hash
-
