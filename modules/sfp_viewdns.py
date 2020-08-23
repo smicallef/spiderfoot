@@ -33,7 +33,8 @@ class sfp_viewdns(SpiderFootPlugin):
                 "Visit https://viewdns.info/api",
                 "Select a plan",
                 "Register an account",
-                "The API key will be sent to the registered email id"
+                "Navigate to viewdns.info/api/dashboard/",
+                "The API key is listed under 'API Key'"
             ],
             'favIcon': "https://viewdns.info/apple-touch-icon.png",
             'logo': "https://viewdns.info/images/viewdns_logo.gif",
