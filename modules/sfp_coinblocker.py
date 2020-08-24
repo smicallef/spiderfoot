@@ -174,7 +174,7 @@ class sfp_coinblocker(SpiderFootPlugin):
                             return url
                 else:
                     try:
-                    # Check for the domain and the hostname
+                        # Check for the domain and the hostname
                         rxDom = str(malchecks[check]['regex']).format(targetDom)
                         rxTgt = str(malchecks[check]['regex']).format(target)
                         for line in data['content'].split('\n'):
