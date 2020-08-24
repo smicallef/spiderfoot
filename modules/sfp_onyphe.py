@@ -136,11 +136,7 @@ class sfp_onyphe(SpiderFootPlugin):
         # Go through other pages if user has paid plan
         try:
             current_page = int(info["page"])
-            if (
-                self.opts["paid_plan"]
-                and info.get("page")
-                and int(info.get("max_page")) > current_page
-            ):
+            if (self.opts["paid_plan"] and info.get("page") and int(info.get("max_page")) > current_page):
                 page = current_page + 1
 
                 if page > self.opts["max_page"]:

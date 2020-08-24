@@ -43,7 +43,6 @@ class sfp_emailrep(SpiderFootPlugin):
                                 "phishing emails, threat actor emails, and more to answer these types of questions.",
         }
     }
-	
 
     opts = {
         'api_key': '',

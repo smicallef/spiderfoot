@@ -235,4 +235,3 @@ class sfp_grep_app(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
 # End of sfp_grep_app class
-
