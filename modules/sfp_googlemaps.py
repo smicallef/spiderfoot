@@ -118,11 +118,10 @@ class sfp_googlemaps(SpiderFootPlugin):
             if eventName in ["PHYSICAL_ADDRESS", "DOMAIN_NAME"] and \
                srcModuleName != "sfp_googlemaps":
                 if 'geometry' in data:
-                        lat = str(data['geometry']['location']['lat'])
-                        lng = str(data['geometry']['location']['lng'])
-                        evt = SpiderFootEvent("PHYSICAL_COORDINATES", lat + "," + lng, 
-                                              self.__name__, event)
-                        self.notifyListeners(evt)
+                    lat = str(data['geometry']['location']['lat'])
+                    lng = str(data['geometry']['location']['lng'])
+                    evt = SpiderFootEvent("PHYSICAL_COORDINATES", lat + "," + lng, self.__name__, event)
+                    self.notifyListeners(evt)
 
             if 'formatted_address' in data:
                 evt = SpiderFootEvent("PHYSICAL_ADDRESS", data['formatted_address'], 

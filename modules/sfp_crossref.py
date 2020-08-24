@@ -142,3 +142,4 @@ class sfp_crossref(SpiderFootPlugin):
             evt2.moduleDataSource = event.moduleDataSource
             self.notifyListeners(evt2)
 
+# End of sfp_crossref class

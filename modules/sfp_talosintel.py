@@ -243,13 +243,13 @@ class sfp_talosintel(SpiderFootPlugin):
             url = self.lookupItem(cid, typeId, eventData)
 
             if self.checkForStop():
-               return None
+                return None
 
             # Notify other modules of what you've found
             if url is not None:
-               text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
-               evt = SpiderFootEvent(evtType, text, self.__name__, event)
-               self.notifyListeners(evt)
+                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                evt = SpiderFootEvent(evtType, text, self.__name__, event)
+                self.notifyListeners(evt)
 
         return None
 

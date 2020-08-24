@@ -149,8 +149,8 @@ class sfp_sslcert(SpiderFootPlugin):
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(domain):
-                    self.sf.debug("Host " + domain + " could not be resolved")
-                    evt_type += '_UNRESOLVED'
+                self.sf.debug(f"Host {domain} could not be resolved")
+                evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
             self.notifyListeners(evt)

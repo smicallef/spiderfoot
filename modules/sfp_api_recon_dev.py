@@ -17,7 +17,7 @@ from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 
 class sfp_api_recon_dev(SpiderFootPlugin):
     """api.recon.dev:Footprint,Investigate,Passive:Passive DNS::Search api.recon.dev for subdomains."""
-	
+
     meta = { 
         'name': "api.recon.dev",
         'summary': "Search api.recon.dev for subdomains.",
@@ -61,7 +61,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
         res = self.sf.fetchUrl(
-            'https://api.recon.dev/search?' +  urllib.parse.urlencode(params),
+            'https://api.recon.dev/search?' + urllib.parse.urlencode(params),
             headers=headers,
             timeout=30,
             useragent=self.opts['_useragent']

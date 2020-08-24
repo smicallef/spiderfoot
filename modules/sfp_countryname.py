@@ -306,12 +306,12 @@ class sfp_countryname(SpiderFootPlugin):
         # Process the event data based on incoming event type
         if eventName == "PHONE_NUMBER":
             countryNames.append(self.detectCountryFromPhone(eventData))
-        elif eventName == "DOMAIN_NAME" or (eventName == "AFFILIATE_DOMAIN_NAME" and self.opts["affiliate"]) or(eventName == "CO_HOSTED_SITE_DOMAIN" and self.opts["cohosted"]) or  (eventName == "SIMILARDOMAIN" and self.opts["similardomain"]):
+        elif eventName == "DOMAIN_NAME" or (eventName == "AFFILIATE_DOMAIN_NAME" and self.opts["affiliate"]) or(eventName == "CO_HOSTED_SITE_DOMAIN" and self.opts["cohosted"]) or (eventName == "SIMILARDOMAIN" and self.opts["similardomain"]):
             countryNames.append(self.detectCountryFromTLD(eventData))
         elif eventName == "IBAN_NUMBER":
             countryNames.append(self.detectCountryFromIBAN(eventData))
         elif eventName in ["DOMAIN_WHOIS", "GEOINFO", "PHYSICAL_ADDRESS"] or (eventName == "AFFILIATE_DOMAIN_WHOIS" and self.opts["affiliate"]) or (eventName == "CO_HOSTED_SITE_DOMAIN_WHOIS" and self.opts["cohosted"]):
-            tempDataList =  self.detectCountryFromData(eventData)
+            tempDataList = self.detectCountryFromData(eventData)
             if tempDataList is None:
                 countryNames.append(None)
             else:

@@ -271,11 +271,11 @@ class sfp_abusech(SpiderFootPlugin):
             cid = malchecks[check]['id']
 
             if eventName in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
-               typeId = 'ip'
-               if eventName == 'IP_ADDRESS':
-                   evtType = 'MALICIOUS_IPADDR'
-               else:
-                   evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+                typeId = 'ip'
+                if eventName == 'IP_ADDRESS':
+                    evtType = 'MALICIOUS_IPADDR'
+                else:
+                    evtType = 'MALICIOUS_AFFILIATE_IPADDR'
 
             if eventName in ['BGP_AS_OWNER', 'BGP_AS_MEMBER']:
                 typeId = 'asn'
@@ -285,11 +285,11 @@ class sfp_abusech(SpiderFootPlugin):
                              'AFFILIATE_INTERNET_NAME']:
                 typeId = 'domain'
                 if eventName == "INTERNET_NAME":
-                   evtType = "MALICIOUS_INTERNET_NAME"
+                    evtType = "MALICIOUS_INTERNET_NAME"
                 if eventName == 'AFFILIATE_INTERNET_NAME':
-                   evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
+                    evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
                 if eventName == 'CO_HOSTED_SITE':
-                   evtType = 'MALICIOUS_COHOST'
+                    evtType = 'MALICIOUS_COHOST'
 
             if eventName == 'NETBLOCK_OWNER':
                 typeId = 'netblock'
