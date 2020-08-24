@@ -54,11 +54,9 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=print-statement,
-        parameter-unpacking,
+disable=parameter-unpacking,
         unpacking-in-except,
         old-raise-syntax,
-        backtick,
         long-suffix,
         old-ne-operator,
         old-octal-literal,
@@ -129,7 +127,6 @@ disable=print-statement,
         dict-keys-not-iterating,
         dict-values-not-iterating,
         deprecated-operator-function,
-        deprecated-urllib-function,
         xreadlines-attribute,
         deprecated-sys-function,
         exception-escape,
@@ -183,14 +180,14 @@ never-returning-functions=optparse.Values,sys.exit
 [BASIC]
 
 # Naming style matching correct argument names
-argument-naming-style=snake_case
+argument-naming-style=camelCase
 
 # Regular expression matching correct argument names. Overrides argument-
 # naming-style
 #argument-rgx=
 
 # Naming style matching correct attribute names
-attr-naming-style=snake_case
+attr-naming-style=camelCase
 
 # Regular expression matching correct attribute names. Overrides attr-naming-
 # style
@@ -229,7 +226,7 @@ const-naming-style=UPPER_CASE
 docstring-min-length=-1
 
 # Naming style matching correct function names
-function-naming-style=snake_case
+function-naming-style=camelCase
 
 # Regular expression matching correct function names. Overrides function-
 # naming-style
@@ -240,9 +237,7 @@ good-names=i,
            j,
            k,
            e,
-           ex,
            sf,
-           Run,
            _
 
 # Include a hint for the correct naming format with invalid-name
@@ -256,14 +251,14 @@ inlinevar-naming-style=any
 #inlinevar-rgx=
 
 # Naming style matching correct method names
-method-naming-style=snake_case
+method-naming-style=camelCase
 
 # Regular expression matching correct method names. Overrides method-naming-
 # style
 #method-rgx=
 
 # Naming style matching correct module names
-module-naming-style=snake_case
+module-naming-style=camelCase
 
 # Regular expression matching correct module names. Overrides module-naming-
 # style
@@ -282,7 +277,7 @@ no-docstring-rgx=^_
 property-classes=abc.abstractproperty
 
 # Naming style matching correct variable names
-variable-naming-style=snake_case
+variable-naming-style=camelCase
 
 # Regular expression matching correct variable names. Overrides variable-
 # naming-style
@@ -347,7 +342,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=120
 
 # Maximum number of lines in a module
 max-module-lines=1000
