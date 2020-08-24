@@ -2,39 +2,40 @@
 from sflib import SpiderFoot, SpiderFootTarget
 import unittest
 
+
 class TestSpiderFoot(unittest.TestCase):
     """
     Test SpiderFoot
     """
 
     default_options = {
-      '_debug': False,  # Debug
-      '__logging': True, # Logging in general
-      '__outputfilter': None, # Event types to filter from modules' output
-      '__blocknotif': False,  # Block notifications
-      '_fatalerrors': False,
-      '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
-      '_dnsserver': '',  # Override the default resolver
-      '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
-      '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
-      '_internettlds_cache': 72,
-      '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-      '__version__': '3.2-DEV',
-      '__database': 'spiderfoot.test.db',  # note: test database file
-      '__webaddr': '127.0.0.1',
-      '__webport': 5001,
-      '__docroot': '',  # don't put trailing /
-      '__modules__': None,  # List of modules. Will be set after start-up.
-      '_socks1type': '',
-      '_socks2addr': '',
-      '_socks3port': '',
-      '_socks4user': '',
-      '_socks5pwd': '',
-      '_socks6dns': True,
-      '_torctlport': 9051,
-      '__logstdout': False
+        '_debug': False,  # Debug
+        '__logging': True,  # Logging in general
+        '__outputfilter': None,  # Event types to filter from modules' output
+        '__blocknotif': False,  # Block notifications
+        '_fatalerrors': False,
+        '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
+        '_dnsserver': '',  # Override the default resolver
+        '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
+        '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
+        '_internettlds_cache': 72,
+        '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
+        '__version__': '3.2-DEV',
+        '__database': 'spiderfoot.test.db',  # note: test database file
+        '__webaddr': '127.0.0.1',
+        '__webport': 5001,
+        '__docroot': '',  # don't put trailing /
+        '__modules__': None,  # List of modules. Will be set after start-up.
+        '_socks1type': '',
+        '_socks2addr': '',
+        '_socks3port': '',
+        '_socks4user': '',
+        '_socks5pwd': '',
+        '_socks6dns': True,
+        '_torctlport': 9051,
+        '__logstdout': False
     }
-   
+
     test_tlds = "// ===BEGIN ICANN DOMAINS===\n\ncom\nnet\norg\n\n// // ===END ICANN DOMAINS===\n"
 
     def test_init_argument_options_of_invalid_type_should_raise_TypeError(self):
@@ -45,7 +46,7 @@ class TestSpiderFoot(unittest.TestCase):
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
-                    sf = SpiderFoot(invalid_type)
+                    SpiderFoot(invalid_type)
 
     def test_init_argument_options_with_empty_dict(self):
         """
@@ -166,7 +167,7 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(self.default_options)
 
         with self.assertRaises(BaseException) as cm:
-            dblog = sf._dblog(None, None, None)
+            sf._dblog(None, None, None)
 
     def test_error(self):
         """
@@ -264,7 +265,9 @@ class TestSpiderFoot(unittest.TestCase):
 
         label = 'test-cache-label'
         data = 'test-cache-data'
-        cache_put = sf.cachePut(label, data)
+
+        sf.cachePut(label, data)
+
         cache_get = sf.cacheGet(label, sf.opts.get('cacheperiod', 0))
         self.assertIsInstance(cache_get, str)
         self.assertEqual(data, cache_get)
@@ -276,7 +279,7 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(dict())
 
         with self.assertRaises(TypeError) as cm:
-            config = sf.configSerialize(None, None)
+            sf.configSerialize(None, None)
 
     def test_config_serialize_should_return_a_dict(self):
         """
@@ -294,7 +297,7 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(dict())
 
         with self.assertRaises(TypeError) as cm:
-            config = sf.configUnserialize(None, dict(), None)
+            sf.configUnserialize(None, dict(), None)
 
     def test_config_unserialize_invalid_reference_point_should_raise(self):
         """
@@ -303,7 +306,7 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(dict())
 
         with self.assertRaises(TypeError) as cm:
-            config = sf.configUnserialize(dict(), None, None)
+            sf.configUnserialize(dict(), None, None)
 
     def test_config_unserialize_should_return_a_dict(self):
         """
@@ -425,7 +428,7 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(dict())
 
         base_dir = sf.urlBaseDir('http://localhost.local/path?param=value#fragment')
-        self.assertIsInstance( base_dir, str)
+        self.assertIsInstance(base_dir, str)
         self.assertEqual('http://localhost.local/', base_dir)
 
     def test_url_base_url_should_return_a_string(self):
@@ -957,7 +960,6 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(hashes, list)
         self.assertIn("e17cff4eb3e8fbe6ca3b83fb47532dba", hashes)
 
-    #@unittest.skip("todo")
     def test_parse_credit_cards_should_return_a_list(self):
         """
         Test parseCreditCards(self, data)
@@ -1118,6 +1120,8 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(self.default_options)
         pem = sf.sslDerToPem(None)
 
+        self.assertEqual(pem, None)
+
         self.assertEqual('TBD', 'TBD')
 
     def test_ssl_der_to_pem_invalid_cert_should_return_none(self):
@@ -1130,7 +1134,7 @@ class TestSpiderFoot(unittest.TestCase):
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
-                    pem = sf.sslDerToPem(invalid_type)
+                    sf.sslDerToPem(invalid_type)
 
     def test_parse_cert_should_return_a_dict(self):
         """
@@ -1281,6 +1285,8 @@ class TestSpiderFoot(unittest.TestCase):
         sf = SpiderFoot(self.default_options)
 
         data = sf.fetchUrl(None)
+        self.assertEqual(data, None)
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -1340,6 +1346,6 @@ class TestSpiderFoot(unittest.TestCase):
         sf.bingIterate(None, None)
         self.assertEqual('TBD', 'TBD')
 
+
 if __name__ == '__main__':
     unittest.main()
-
