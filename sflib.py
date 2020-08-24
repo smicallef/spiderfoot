@@ -2411,11 +2411,7 @@ class SpiderFoot:
             self.error("the key 'content' in the bing API response doesn't contain valid json.", exception=False)
             return None
 
-        if (
-            "webPages" in response_json
-            and "value" in response_json["webPages"]
-            and "webSearchUrl" in response_json["webPages"]
-        ):
+        if ("webPages" in response_json and "value" in response_json["webPages"] and "webSearchUrl" in response_json["webPages"]):
             results = {
                 "urls": [result["url"] for result in response_json["webPages"]["value"]],
                 "webSearchUrl": response_json["webPages"]["webSearchUrl"],
@@ -2648,8 +2644,7 @@ class SpiderFootPlugin(object):
                 listener.handleEvent(sfEvent)
             except BaseException as e:
                 with open(os.path.join(SpiderFoot.dataPath(), "sferror.log"), "a") as f:
-                    f.write("[" + time.ctime() + "]: Module (" + listener.__module__ +
-                            ") encountered an error: " + str(e) + "\n")
+                    f.write(f"[{time.ctime()}]: Module ({listener.__module__}) encountered an error: {e}\n")
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
 
