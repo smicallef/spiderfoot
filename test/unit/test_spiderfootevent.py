@@ -2,6 +2,7 @@
 from sflib import SpiderFootEvent
 import unittest
 
+
 class TestSpiderFootEvent(unittest.TestCase):
     """
     Test SpiderFootEvent
@@ -46,12 +47,12 @@ class TestSpiderFootEvent(unittest.TestCase):
         source_event = SpiderFootEvent(event_type, event_data, module, source_event)
 
         module = 'example module'
- 
+
         invalid_types = [None, list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
-                    evt = SpiderFootEvent(invalid_type, event_data, module, source_event)
+                    SpiderFootEvent(invalid_type, event_data, module, source_event)
 
     def test_init_argument_eventType_with_empty_value_should_raise_ValueError(self):
         event_type = 'ROOT'
@@ -64,7 +65,7 @@ class TestSpiderFootEvent(unittest.TestCase):
         module = 'example module'
 
         with self.assertRaises(ValueError) as cm:
-            evt = SpiderFootEvent(event_type, event_data, module, source_event)
+            SpiderFootEvent(event_type, event_data, module, source_event)
 
     def test_init_argument_data_of_invalid_type_should_raise_TypeError(self):
         """
@@ -78,7 +79,7 @@ class TestSpiderFootEvent(unittest.TestCase):
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
-                    evt = SpiderFootEvent(event_type, invalid_type, module, source_event)
+                    SpiderFootEvent(event_type, invalid_type, module, source_event)
 
     def test_init_argument_data_with_empty_value_should_raise_ValueError(self):
         event_type = 'ROOT'
@@ -92,7 +93,7 @@ class TestSpiderFootEvent(unittest.TestCase):
         module = 'example module'
 
         with self.assertRaises(ValueError) as cm:
-            evt = SpiderFootEvent(event_type, event_data, module, source_event)
+            SpiderFootEvent(event_type, event_data, module, source_event)
 
     def test_init_argument_module_of_invalid_type_should_raise_TypeError(self):
         """
@@ -108,7 +109,7 @@ class TestSpiderFootEvent(unittest.TestCase):
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
-                    evt = SpiderFootEvent(event_type, event_data, invalid_type, source_event)
+                    SpiderFootEvent(event_type, event_data, invalid_type, source_event)
 
     def test_init_argument_module_with_empty_value_should_raise_ValueError(self):
         event_type = 'ROOT'
@@ -122,7 +123,7 @@ class TestSpiderFootEvent(unittest.TestCase):
         module = ''
 
         with self.assertRaises(ValueError) as cm:
-            evt = SpiderFootEvent(event_type, event_data, module, source_event)
+            SpiderFootEvent(event_type, event_data, module, source_event)
 
     def test_init_argument_sourceEvent_of_invalid_type_should_raise_TypeError(self):
         """
@@ -131,7 +132,6 @@ class TestSpiderFootEvent(unittest.TestCase):
         event_type = 'ROOT'
         event_data = 'example event data'
         module = ''
-        source_event = SpiderFootEvent(event_type, event_data, module, "ROOT")
 
         event_type = 'example non-root event type'
         module = 'example module'
@@ -139,85 +139,79 @@ class TestSpiderFootEvent(unittest.TestCase):
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
-                    evt = SpiderFootEvent(event_type, event_data, module, invalid_type)
+                    SpiderFootEvent(event_type, event_data, module, invalid_type)
 
     def test_init_argument_confidence_of_invalid_type_should_raise_TypeError(self):
         event_type = 'ROOT'
         event_data = 'example event data'
         module = ''
         source_event = ''
-        evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         invalid_types = [None, "", list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
-                    evt = SpiderFootEvent(event_type, event_data, module, source_event, confidence=invalid_type)
+                    SpiderFootEvent(event_type, event_data, module, source_event, confidence=invalid_type)
 
     def test_init_argument_confidence_invalid_value_should_raise_ValueError(self):
         event_type = 'ROOT'
         event_data = 'example event data'
         module = ''
         source_event = ''
-        evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         invalid_values = [-1, 101]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
                 with self.assertRaises(ValueError) as cm:
-                    evt = SpiderFootEvent(event_type, event_data, module, source_event, confidence=invalid_value)
+                    SpiderFootEvent(event_type, event_data, module, source_event, confidence=invalid_value)
 
     def test_init_argument_visibility_of_invalid_type_should_raise_TypeError(self):
         event_type = 'ROOT'
         event_data = 'example event data'
         module = ''
         source_event = ''
-        evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         invalid_types = [None, "", list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
-                    evt = SpiderFootEvent(event_type, event_data, module, source_event, visibility=invalid_type)
+                    SpiderFootEvent(event_type, event_data, module, source_event, visibility=invalid_type)
 
     def test_init_argument_visibility_invalid_value_should_raise_ValueError(self):
         event_type = 'ROOT'
         event_data = 'example event data'
         module = ''
         source_event = ''
-        evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         invalid_values = [-1, 101]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
                 with self.assertRaises(ValueError) as cm:
-                    evt = SpiderFootEvent(event_type, event_data, module, source_event, visibility=invalid_value)
+                    SpiderFootEvent(event_type, event_data, module, source_event, visibility=invalid_value)
 
     def test_init_argument_risk_of_invalid_type_should_raise_TypeError(self):
         event_type = 'ROOT'
         event_data = 'example event data'
         module = ''
         source_event = ''
-        evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         invalid_types = [None, "", list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError) as cm:
-                    evt = SpiderFootEvent(event_type, event_data, module, source_event, risk=invalid_type)
+                    SpiderFootEvent(event_type, event_data, module, source_event, risk=invalid_type)
 
     def test_init_argument_risk_invalid_value_should_raise_ValueError(self):
         event_type = 'ROOT'
         event_data = 'example event data'
         module = ''
         source_event = ''
-        evt = SpiderFootEvent(event_type, event_data, module, source_event)
 
         invalid_values = [-1, 101]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
                 with self.assertRaises(ValueError) as cm:
-                    evt = SpiderFootEvent(event_type, event_data, module, source_event, risk=invalid_value)
+                    SpiderFootEvent(event_type, event_data, module, source_event, risk=invalid_value)
 
     def test_confidence_attribute_should_return_confidence_as_integer(self):
         event_type = 'ROOT'
@@ -355,6 +349,6 @@ class TestSpiderFootEvent(unittest.TestCase):
 
         self.assertIsInstance(evt_hash, str)
 
+
 if __name__ == '__main__':
     unittest.main()
-

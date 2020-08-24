@@ -1,7 +1,8 @@
 # test_spiderfoot_module_loading.py
-from sflib import SpiderFoot, SpiderFootTarget
+from sflib import SpiderFoot
 import unittest
 import os
+
 
 class TestSpiderFootModuleLoading(unittest.TestCase):
     """
@@ -10,8 +11,8 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
 
     default_options = {
       '_debug': False,  # Debug
-      '__logging': True, # Logging in general
-      '__outputfilter': None, # Event types to filter from modules' output
+      '__logging': True,  # Logging in general
+      '__outputfilter': None,  # Event types to filter from modules' output
       '__blocknotif': False,  # Block notifications
       '_fatalerrors': False,
       '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
@@ -35,7 +36,7 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
       '_torctlport': 9051,
       '__logstdout': False
     }
-   
+
     def test_module_loading(self):
         """
         Test module loading
@@ -80,10 +81,10 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             self.assertTrue(m.get('object'))
             self.assertTrue(m.get('name'))
             self.assertTrue(m.get('cats'))
-            #self.assertTrue(m.get('group'))
+            # self.assertTrue(m.get('group'))
             self.assertTrue(m.get('labels'))
             self.assertTrue(m.get('descr'))
-            #self.assertTrue(m.get('provides'))
+            # self.assertTrue(m.get('provides'))
             self.assertIsInstance(m.get('provides'), list)
             self.assertTrue(m.get('consumes'))
             self.assertIsInstance(m.get('consumes'), list)
@@ -106,4 +107,3 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             # check len(options) == len(option descriptions)
             if m.get('opts'):
                 self.assertEqual("%s opts: %s" % (module, len(m.get('opts').keys())), "%s opts: %s" % (module, len(m.get('optdescs').keys())))
-
