@@ -13,8 +13,8 @@ import traceback
 import time
 import sys
 import socket
-import dns.resolver
 from copy import deepcopy
+import dns.resolver
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, SpiderFootPlugin
 
@@ -131,7 +131,8 @@ class SpiderFootScanner():
 
         # If a SOCKS server was specified, set it up
         if self.__config['_socks1type']:
-            socksDns = self.__config['_socks6dns']
+            # TODO: review why socksDns is unused
+            # socksDns = self.__config['_socks6dns']
             socksAddr = self.__config['_socks2addr']
             socksPort = int(self.__config['_socks3port'])
             socksUsername = self.__config['_socks4user'] or ''
@@ -213,7 +214,17 @@ class SpiderFootScanner():
         if not isinstance(status, str):
             raise TypeError(f"status is {type(status)}; expected str()")
 
-        if status not in ["INITIALIZING", "STARTING", "STARTED", "RUNNING", "ABORT-REQUESTED", "ABORTED", "ABORTING", "FINISHED", "ERROR-FAILED"]:
+        if status not in [
+            "INITIALIZING",
+            "STARTING",
+            "STARTED",
+            "RUNNING",
+            "ABORT-REQUESTED",
+            "ABORTED",
+            "ABORTING",
+            "FINISHED",
+            "ERROR-FAILED"
+        ]:
             raise ValueError(f"Invalid scan status {status}")
 
         self.__status = status
