@@ -13,6 +13,8 @@
 
 from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
 import json
+from datetime import datetime
+import time
 
 
 class sfp_onyphe(SpiderFootPlugin):
@@ -52,11 +54,15 @@ class sfp_onyphe(SpiderFootPlugin):
         "api_key": "",
         "paid_plan": False,
         "max_page": 10,
+        "verify": True,
+        "age_limit_days": 30,
     }
     optdescs = {
         "api_key": "Onyphe access token.",
         "paid_plan": "Are you using paid plan? Paid plan has pagination enabled",
         "max_page": "Maximum number of pages to iterate through. Onyphe has a maximum of 1000 pages (10,000 results). Only matters for paid plans",
+        "verify": "Verify identified domains still resolve to the associated specified IP address.",
+        "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
     }
 
     results = None
@@ -81,6 +87,9 @@ class sfp_onyphe(SpiderFootPlugin):
             "LEAKSITE_CONTENT",
             "VULNERABILITY",
             "RAW_RIR_DATA",
+            "INTERNET_NAME",
+            "INTERNET_NAME_UNRESOLVED",
+            "PHYSICAL_COORDINATES",
         ]
 
     def query(self, endpoint, ip, page=1):
@@ -157,6 +166,56 @@ class sfp_onyphe(SpiderFootPlugin):
 
         return retarr
 
+    def emitLocationEvent(self, location, eventData, event):
+        if location is None:
+            return
+        self.sf.info(f"Found location for {eventData}: {location}")
+
+        evt = SpiderFootEvent("PHYSICAL_COORDINATES", location, self.__name__, event)
+        self.notifyListeners(evt)
+
+    def emitDomainData(self, response, eventData, event):
+        domains = set()
+        if response.get("domain") is not None:
+            domains.add(response["domain"])
+
+        if response.get("subdomains") is not None and isinstance(
+            response["subdomains"], list
+        ):
+            for subDomain in response["subdomains"]:
+                domains.add(subDomain)
+
+        for domain in domains:
+            if self.opts["verify"] and not self.sf.resolveHost(domain):
+                self.sf.debug(f"Host {domain} could not be resolved for {eventData}")
+                evt = SpiderFootEvent(
+                    "INTERNET_NAME_UNRESOLVED", domain, self.__name__, event
+                )
+                self.notifyListeners(evt)
+            else:
+                evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
+                self.notifyListeners(evt)
+
+    def isFreshEnough(self, result):
+        limit = self.opts["age_limit_days"]
+        if limit <= 0:
+            return True
+
+        timestamp = result.get("@timestamp")
+        if timestamp is None:
+            self.sf.debug("Record doesn't have timestamp defined")
+            return False
+
+        last_dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+        last_ts = int(time.mktime(last_dt.timetuple()))
+        age_limit_ts = int(time.time()) - (86400 * limit)
+
+        if last_ts < age_limit_ts:
+            self.sf.debug("Record found but too old, skipping.")
+            return False
+
+        return True
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -193,14 +252,13 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in geoLocData["results"]:
+                    if not self.isFreshEnough(result):
+                        continue
+
                     location = ", ".join(
                         [
                             _f
-                            for _f in [
-                                result.get("city"),
-                                result.get("country"),
-                                f"Location: {result.get('location')}",
-                            ]
+                            for _f in [result.get("city"), result.get("country"),]
                             if _f
                         ]
                     )
@@ -208,6 +266,10 @@ class sfp_onyphe(SpiderFootPlugin):
 
                     evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                     self.notifyListeners(evt)
+
+                    self.emitLocationEvent(result.get("location"), eventData, event)
+
+                    self.emitDomainData(result, eventData, event)
 
         pastriesDataArr = self.query("pastries", eventData)
 
@@ -222,6 +284,9 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in pastriesData["results"]:
+                    if not self.isFreshEnough(result):
+                        continue
+
                     evt = SpiderFootEvent(
                         "LEAKSITE_CONTENT", result.get("content"), self.__name__, event
                     )
@@ -240,6 +305,9 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in threatListData["results"]:
+                    if not self.isFreshEnough(result):
+                        continue
+
                     evt = SpiderFootEvent(
                         "MALICIOUS_IPADDR",
                         result.get("threatlist"),
@@ -261,6 +329,9 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in vulnerabilityData["results"]:
+                    if not self.isFreshEnough(result):
+                        continue
+
                     if result.get("cve") is not None:
                         evt = SpiderFootEvent(
                             "VULNERABILITY",
