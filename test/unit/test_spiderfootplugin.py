@@ -103,7 +103,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         invalid_types = [None, "", list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     sfp.setTarget(invalid_type)
 
     def test_set_dbh(self):
@@ -148,7 +148,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         """
         sfp = SpiderFootPlugin()
 
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             sfp.getScanId()
 
     def test_get_target_should_return_a_string(self):
@@ -170,7 +170,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         """
         sfp = SpiderFootPlugin()
 
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             sfp.getTarget()
 
     def test_register_listener(self):
@@ -234,7 +234,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         invalid_types = [None, "", list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     sfp.notifyListeners(None)
 
     def test_check_for_stop(self):
