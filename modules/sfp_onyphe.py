@@ -136,7 +136,11 @@ class sfp_onyphe(SpiderFootPlugin):
         # Go through other pages if user has paid plan
         try:
             current_page = int(info["page"])
-            if (self.opts["paid_plan"] and info.get("page") and int(info.get("max_page")) > current_page):
+            if (
+                self.opts["paid_plan"]
+                and info.get("page")
+                and int(info.get("max_page")) > current_page
+            ):
                 page = current_page + 1
 
                 if page > self.opts["max_page"]:
@@ -212,6 +216,14 @@ class sfp_onyphe(SpiderFootPlugin):
 
         return True
 
+    def isDuplicate(self, data):
+        if data in self.results:
+            self.sf.debug(f"Skipping {data} as already mapped.")
+            return True
+
+        self.results[data] = True
+        return False
+
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -260,6 +272,9 @@ class sfp_onyphe(SpiderFootPlugin):
                     )
                     self.sf.info("Found GeoIP for " + eventData + ": " + location)
 
+                    if self.isDuplicate(location):
+                        continue
+
                     evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                     self.notifyListeners(evt)
 
@@ -280,7 +295,9 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in pastriesData["results"]:
-                    if not self.isFreshEnough(result):
+                    if self.isDuplicate(
+                        result.get("content")
+                    ) or not self.isFreshEnough(result):
                         continue
 
                     evt = SpiderFootEvent(
@@ -301,7 +318,9 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in threatListData["results"]:
-                    if not self.isFreshEnough(result):
+                    if self.isDuplicate(
+                        result.get("threatlist")
+                    ) or not self.isFreshEnough(result):
                         continue
 
                     evt = SpiderFootEvent(
@@ -329,11 +348,11 @@ class sfp_onyphe(SpiderFootPlugin):
                         continue
 
                     if result.get("cve") is not None:
+                        cveData = ", ".join([cve for cve in result["cve"] if cve])
+                        if self.isDuplicate(cveData):
+                            continue
                         evt = SpiderFootEvent(
-                            "VULNERABILITY",
-                            ", ".join([cve for cve in result["cve"] if cve]),
-                            self.__name__,
-                            event,
+                            "VULNERABILITY", cveData, self.__name__, event,
                         )
                         self.notifyListeners(evt)
 
