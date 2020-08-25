@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_hosting(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_hosting(SpiderFootPlugin):
     meta = {
         'name': "Hosting Provider Identifier",
         'summary': "Find out if any IP addresses identified fall within known 3rd party hosting ranges, e.g. Amazon, Azure, etc.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -73,7 +73,7 @@ class sfp_hosting(SpiderFootPlugin):
                 continue
             try:
                 [start, end, title, url] = line.split(",")
-            except BaseException as e:
+            except BaseException:
                 continue
 
             try:

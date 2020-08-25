@@ -13,7 +13,7 @@
 from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'abuse.ch Zeus Tracker (Domain)': {
@@ -58,8 +58,8 @@ class sfp_abusech(SpiderFootPlugin):
         'name': "abuse.ch",
         'summary': "Check if a host/domain, IP or netblock is malicious according to abuse.ch.",
         'flags': [],
-        'useCases': [ "Passive", "Investigate" ],
-        'categories': [ "Reputation Systems" ],
+        'useCases': ["Passive", "Investigate"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://www.abuse.ch",
             'model': "FREE_AUTH_UNLIMITED",
@@ -184,8 +184,7 @@ class sfp_abusech(SpiderFootPlugin):
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}",
-                                                               "(\d+\.\d+\.\d+\.\d+)")
+                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
                         self.sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):

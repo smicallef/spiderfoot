@@ -14,7 +14,7 @@ import datetime
 import re
 import urllib.request, urllib.parse, urllib.error
 from html.parser import HTMLParser
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_wikipediaedits(SpiderFootPlugin):
     """Wikipedia Edits:Footprint,Investigate,Passive:Secondary Networks::Identify edits to Wikipedia articles made from a given IP address or username."""
@@ -22,9 +22,9 @@ class sfp_wikipediaedits(SpiderFootPlugin):
     meta = {
         'name': "Wikipedia Edits",
         'summary': "Identify edits to Wikipedia articles made from a given IP address or username.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Secondary Networks" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Secondary Networks"],
         'dataSource': {
             'website': "https://www.wikipedia.org/",
             'model': "FREE_NOAUTH_UNLIMITED",

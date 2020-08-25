@@ -13,7 +13,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_apility(SpiderFootPlugin):
     """Apility:Footprint,Investigate,Passive:Reputation Systems:apikey:Search Apility API for IP address and domain reputation."""
@@ -21,9 +21,9 @@ class sfp_apility(SpiderFootPlugin):
     meta = { 
         'name': "Apility",
         'summary': "Search Apility API for IP address and domain reputation.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ]
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Reputation Systems"]
     }
 
     # Default options
@@ -151,7 +151,7 @@ class sfp_apility(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data

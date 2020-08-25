@@ -20,9 +20,9 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
     meta = {
         'name': "DNS Common SRV",
         'summary': "Attempts to identify hostnames through common SRV.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "DNS" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["DNS"]
     }
 
     # Default options
@@ -33,44 +33,46 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
     events = None
 
-    commonsrv = [ # LDAP/Kerberos, used for Active Directory
-                  # https://technet.microsoft.com/en-us/library/cc961719.aspx
-                 '_ldap._tcp',
-                 '_gc._msdcs',
-                 '_ldap._tcp.pdc._msdcs',
-                 '_ldap._tcp.gc._msdcs',
-                 '_kerberos._tcp.dc._msdcs',
-                 '_kerberos._tcp',
-                 '_kerberos._udp',
-                 '_kerberos-master._tcp',
-                 '_kerberos-master._udp',
-                 '_kpasswd._tcp',
-                 '_kpasswd._udp',
-                 '_ntp._udp',
+    commonsrv = [
+        # LDAP/Kerberos, used for Active Directory
+        # https://technet.microsoft.com/en-us/library/cc961719.aspx
+        '_ldap._tcp',
+        '_gc._msdcs',
+        '_ldap._tcp.pdc._msdcs',
+        '_ldap._tcp.gc._msdcs',
+        '_kerberos._tcp.dc._msdcs',
+        '_kerberos._tcp',
+        '_kerberos._udp',
+        '_kerberos-master._tcp',
+        '_kerberos-master._udp',
+        '_kpasswd._tcp',
+        '_kpasswd._udp',
+        '_ntp._udp',
 
-                 # SIP
-                 '_sip._tcp',
-                 '_sip._udp',
-                 '_sip._tls',
-                 '_sips._tcp',
+        # SIP
+        '_sip._tcp',
+        '_sip._udp',
+        '_sip._tls',
+        '_sips._tcp',
 
-                 # STUN
-                 # https://tools.ietf.org/html/rfc5389
-                 '_stun._tcp',
-                 '_stun._udp',
-                 '_stuns._tcp',
+        # STUN
+        # https://tools.ietf.org/html/rfc5389
+        '_stun._tcp',
+        '_stun._udp',
+        '_stuns._tcp',
 
-                 # TURN
-                 # https://tools.ietf.org/html/rfc5928
-                 '_turn._tcp',
-                 '_turn._udp',
-                 '_turns._tcp',
+        # TURN
+        # https://tools.ietf.org/html/rfc5928
+        '_turn._tcp',
+        '_turn._udp',
+        '_turns._tcp',
 
-                 # XMPP
-                 # http://xmpp.org/rfcs/rfc6120.html
-                 '_jabber._tcp',
-                 '_xmpp-client._tcp',
-                 '_xmpp-server._tcp']
+        # XMPP
+        # http://xmpp.org/rfcs/rfc6120.html
+        '_jabber._tcp',
+        '_xmpp-client._tcp',
+        '_xmpp-server._tcp'
+    ]
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -129,7 +131,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
             try:
                 answers = res.query(name, 'SRV')
-            except BaseException as e:
+            except BaseException:
                 answers = []
 
             for a in answers:

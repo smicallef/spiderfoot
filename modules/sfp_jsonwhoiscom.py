@@ -13,7 +13,7 @@
 import json
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_jsonwhoiscom(SpiderFootPlugin):
     """JsonWHOIS.com:Footprint,Investigate,Passive:Search Engines:apikey:Search JsonWHOIS.com for WHOIS records associated with a domain."""
@@ -21,9 +21,9 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
     meta = {
         'name': "JsonWHOIS.com",
         'summary': "Search JsonWHOIS.com for WHOIS records associated with a domain.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://jsonwhois.com",
             'model': "FREE_AUTH_LIMITED",
@@ -86,8 +86,8 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
         headers = {
-            "Accept" : "application/json",
-            "Authorization" : "Token token=" + self.opts["api_key"]
+            "Accept": "application/json",
+            "Authorization": "Token token=" + self.opts["api_key"]
         }
         
         res = self.sf.fetchUrl(
@@ -139,7 +139,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data

@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_cleantalk(SpiderFootPlugin):
     """CleanTalk Spam List:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is on CleanTalk.org's spam IP list."""
@@ -19,9 +19,9 @@ class sfp_cleantalk(SpiderFootPlugin):
     meta = {
         'name': "CleanTalk Spam List",
         'summary': "Check if a netblock or IP address is on CleanTalk.org's spam IP list.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://cleantalk.org",
             'model': "FREE_NOAUTH_UNLIMITED",

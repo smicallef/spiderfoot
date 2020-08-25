@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsneighbor(SpiderFootPlugin):
     """DNS Look-aside:Footprint,Investigate:DNS::Attempt to reverse-resolve the IP addresses next to your target to see if they are related."""
@@ -20,9 +20,9 @@ class sfp_dnsneighbor(SpiderFootPlugin):
     meta = {
         'name': "DNS Look-aside",
         'summary': "Attempt to reverse-resolve the IP addresses next to your target to see if they are related.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "DNS" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["DNS"]
     }
 
     # Default options
@@ -79,15 +79,15 @@ class sfp_dnsneighbor(SpiderFootPlugin):
 
         try:
             ip = IPAddress(eventData)
-        except BaseException as e:
-            self.sf.error("Invalid IP address received: " + eventData, False)
+        except BaseException:
+            self.sf.error(f"Invalid IP address received: {eventData}", False)
             return None
 
         try:
             minip = IPAddress(int(ip) - self.opts['lookasidecount'])
             maxip = IPAddress(int(ip) + self.opts['lookasidecount'])
-        except BaseException as e:
-            self.sf.error("Received an invalid IP address: " + eventData, False)
+        except BaseException:
+            self.sf.error(f"Received an invalid IP address: {eventData}", False)
             return None
 
         self.sf.debug("Lookaside max: " + str(maxip) + ", min: " + str(minip))

@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_hashes(SpiderFootPlugin):
     """Hash Extractor:Footprint,Investigate,Passive:Content Analysis::Identify MD5 and SHA hashes in web content, files and more."""
@@ -19,9 +19,9 @@ class sfp_hashes(SpiderFootPlugin):
     meta = {
         'name': "Hash Extractor",
         'summary': "Identify MD5 and SHA hashes in web content, files and more.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -60,7 +60,6 @@ class sfp_hashes(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         hashes = self.sf.parseHashes(eventData)
-        myres = list()
         for hashtup in hashes:
             hashalgo, hashval = hashtup
 

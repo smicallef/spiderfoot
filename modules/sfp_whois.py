@@ -14,7 +14,7 @@
 import whois
 import ipwhois
 from netaddr import IPAddress
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_whois(SpiderFootPlugin):
     """Whois:Footprint,Investigate,Passive:Public Registries::Perform a WHOIS look-up on domain names and owned netblocks."""
@@ -22,9 +22,9 @@ class sfp_whois(SpiderFootPlugin):
     meta = {
         'name': "Whois",
         'summary': "Perform a WHOIS look-up on domain names and owned netblocks.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Public Registries" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Public Registries"]
     }
 
     # Default options
@@ -47,7 +47,7 @@ class sfp_whois(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["DOMAIN_NAME", "DOMAIN_NAME_PARENT", "NETBLOCK_OWNER",
-                "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN_NAME", "SIMILARDOMAIN" ]
+                "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN_NAME", "SIMILARDOMAIN"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events

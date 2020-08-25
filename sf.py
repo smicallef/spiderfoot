@@ -139,7 +139,7 @@ if __name__ == '__main__':
             (addr, port) = args.l.split(":")
             sfConfig['__webaddr'] = addr
             sfConfig['__webport'] = int(port)
-        except BaseException as e:
+        except BaseException:
             print("Invalid ip:port format.")
             sys.exit(-1)
     else:

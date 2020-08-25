@@ -13,7 +13,7 @@
 import re
 
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_callername(SpiderFootPlugin):
     """CallerName:Footprint,Investigate,Passive:Real World::Lookup US phone number location and reputation information."""
@@ -21,9 +21,9 @@ class sfp_callername(SpiderFootPlugin):
     meta = {
         'name': "CallerName",
         'summary': "Lookup US phone number location and reputation information.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Real World" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Real World"],
         'dataSource': {
             'website': "http://callername.com/",
             'model': "FREE_NOAUTH_UNLIMITED",

@@ -13,7 +13,7 @@
 import json
 import time
 import urllib
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_api_recon_dev(SpiderFootPlugin):
     """api.recon.dev:Footprint,Investigate,Passive:Passive DNS::Search api.recon.dev for subdomains."""
@@ -21,9 +21,9 @@ class sfp_api_recon_dev(SpiderFootPlugin):
     meta = { 
         'name': "api.recon.dev",
         'summary': "Search api.recon.dev for subdomains.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"]
     }
 
     opts = {
@@ -55,7 +55,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
 
     def queryDomain(self, qry):
         headers = {
-            "Accept" : "application/json"
+            "Accept": "application/json"
         }
         params = {
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
@@ -90,7 +90,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         # returns list of results; 'null' when no results; or dict when there's an error

@@ -14,7 +14,7 @@
 import datetime
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spyonweb(SpiderFootPlugin):
     """SpyOnWeb:Footprint,Investigate,Passive:Passive DNS:apikey:Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code."""
@@ -22,9 +22,9 @@ class sfp_spyonweb(SpiderFootPlugin):
     meta = {
         'name': "SpyOnWeb",
         'summary': "Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"],
         'dataSource': {
             'website': "http://spyonweb.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -105,7 +105,7 @@ class sfp_spyonweb(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         status = data.get('status')
@@ -212,7 +212,7 @@ class sfp_spyonweb(SpiderFootPlugin):
         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
 
         # Find Google AdSense IDs and Google Analytics IDs for the specified domain
-        if eventName in [ 'INTERNET_NAME', 'DOMAIN_NAME' ]:
+        if eventName in ['INTERNET_NAME', 'DOMAIN_NAME']:
             data = self.querySummary(eventData, limit=self.opts['limit'])
 
             if data is None:
@@ -234,7 +234,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
         # Find affiliate domains for the specified Google AdSense ID or Google Analytics ID
-        if eventName in [ 'WEB_ANALYTICS_ID' ]:
+        if eventName in ['WEB_ANALYTICS_ID']:
             try:
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
@@ -270,14 +270,14 @@ class sfp_spyonweb(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
         # Find co-hosts on the same IP address
-        if eventName in [ 'IP_ADDRESS' ]:
+        if eventName in ['IP_ADDRESS']:
             data = self.queryIP(eventData, limit=self.opts['limit'])
 
             if data is None:
                 self.sf.info("No data found for " + eventData)
                 return None
 
-            cohostcount = 0
+            self.cohostcount = 0
 
             for co in list(data.keys()):
                 last_seen = int(datetime.datetime.strptime(data[co], '%Y-%m-%d').strftime('%s')) * 1000

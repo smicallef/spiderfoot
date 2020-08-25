@@ -12,7 +12,7 @@
 import json
 import time
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_builtwith(SpiderFootPlugin):
     """BuiltWith:Footprint,Investigate,Passive:Search Engines:apikey:Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more."""
@@ -20,9 +20,9 @@ class sfp_builtwith(SpiderFootPlugin):
     meta = {
         'name': "BuiltWith",
         'summary': "Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://builtwith.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -80,21 +80,18 @@ class sfp_builtwith(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME" ]
+        return ["DOMAIN_NAME"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
-                 "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME", 
-                 "CO_HOSTED_SITE", "IP_ADDRESS", "WEB_ANALYTICS_ID" ]
+        return ["INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
+                "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME", 
+                "CO_HOSTED_SITE", "IP_ADDRESS", "WEB_ANALYTICS_ID"]
 
     def queryRelationships(self, t):
-        ret = None
+        url = f"https://api.builtwith.com/rv1/api.json?LOOKUP={t}&KEY={self.opts['api_key']}"
 
-        url = "https://api.builtwith.com/rv1/api.json?LOOKUP=" + t + "&KEY=" + self.opts['api_key']
-
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-            useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         if res['code'] == "404":
             return None
@@ -103,20 +100,15 @@ class sfp_builtwith(SpiderFootPlugin):
             return None
 
         try:
-            ret = json.loads(res['content'])['Relationships']
+            return json.loads(res['content'])['Relationships']
         except Exception as e:
-            self.sf.error("Error processing JSON response from builtwith.com: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from builtwith.com: {e}", False)
             return None
-
-        return ret
 
     def queryDomainInfo(self, t):
-        ret = None
+        url = f"https://api.builtwith.com/rv1/api.json?LOOKUP={t}&KEY={self.opts['api_key']}"
 
-        url = "https://api.builtwith.com/v11/api.json?LOOKUP=" + t + "&KEY=" + self.opts['api_key']
-
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-            useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         if res['code'] == "404":
             return None
@@ -125,12 +117,10 @@ class sfp_builtwith(SpiderFootPlugin):
             return None
 
         try:
-            ret = json.loads(res['content'])['Results'][0]
+            return json.loads(res['content'])['Results'][0]
         except Exception as e:
-            self.sf.error("Error processing JSON response from builtwith.com: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from builtwith.com: {e}", False)
             return None
-
-        return ret
 
     # Handle events sent to this module
     def handleEvent(self, event):

@@ -12,7 +12,7 @@
 import re
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_psbdmp(SpiderFootPlugin):
     """Psbdmp:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains."""
@@ -20,9 +20,9 @@ class sfp_psbdmp(SpiderFootPlugin):
     meta = {
         'name': "Psbdmp",
         'summary': "Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://psbdmp.cc/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -81,8 +81,7 @@ class sfp_psbdmp(SpiderFootPlugin):
         else:
             url = "https://psbdmp.cc/api/search/domain/" + qry
 
-        res = self.sf.fetchUrl(url, timeout=15,
-            useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=15, useragent="SpiderFoot")
 
         if res['code'] == "403" or res['content'] is None:
             self.sf.info("Unable to fetch data from psbdmp.cc right now.")
@@ -137,13 +136,13 @@ class sfp_psbdmp(SpiderFootPlugin):
                 continue
 
             # Sometimes pastes search results false positives
-            if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                         "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+            if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
+                         r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                 continue
 
             try:
                 startIndex = res['content'].index(eventData)
-            except BaseException as e:
+            except BaseException:
                 self.sf.debug("String not found in pastes content.")
                 continue
 

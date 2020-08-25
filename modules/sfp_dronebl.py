@@ -13,7 +13,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_dronebl(SpiderFootPlugin):
@@ -22,9 +22,9 @@ class sfp_dronebl(SpiderFootPlugin):
     meta = {
         'name': "DroneBL",
         'summary': "Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://dronebl.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -157,7 +157,6 @@ class sfp_dronebl(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         parentEvent = event
-        addrlist = list()
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 

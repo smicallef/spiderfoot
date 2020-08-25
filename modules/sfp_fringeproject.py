@@ -15,7 +15,7 @@ import re
 
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_fringeproject(SpiderFootPlugin):
     """Fringe Project:Investigate,Footprint,Passive:Search Engines::Obtain network information from Fringe Project API."""
@@ -23,9 +23,9 @@ class sfp_fringeproject(SpiderFootPlugin):
     meta = {
         'name': "Fringe Project",
         'summary': "Obtain network information from Fringe Project API.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Footprint", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Footprint", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://fringeproject.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -160,7 +160,7 @@ class sfp_fringeproject(SpiderFootPlugin):
             for tag in tags:
                 try:
                     port = re.findall(r'^port:([0-9]+)', tag)
-                except BaseException as e:
+                except BaseException:
                     self.sf.debug("Didn't get sane data from FringeProject.")
                     continue
 

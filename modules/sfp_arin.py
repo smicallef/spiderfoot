@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_arin(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_arin(SpiderFootPlugin):
     meta = { 
         'name': "ARIN",
         'summary': "Queries ARIN registry for contact information.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Public Registries" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Public Registries"],
         'dataSource': {
             'website': "https://www.arin.net/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -80,7 +80,7 @@ class sfp_arin(SpiderFootPlugin):
         if url in self.memCache:
             res = self.memCache[url]
         else:
-            head = { "Accept": "application/json" }
+            head = {"Accept": "application/json"}
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'], headers=head)
             if res['content'] is not None:
@@ -92,7 +92,6 @@ class sfp_arin(SpiderFootPlugin):
 
     # Owner information about an AS
     def query(self, qtype, value):
-        ownerinfo = dict()
         url = "https://whois.arin.net/rest/"
 
         if qtype == "domain":

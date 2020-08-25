@@ -13,7 +13,7 @@
 from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'CoinBlocker IP List': {
@@ -36,9 +36,9 @@ class sfp_coinblocker(SpiderFootPlugin):
     meta = {
         'name': "CoinBlocker Lists",
         'summary': "Check if a host/domain or IP appears on CoinBlocker lists.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -138,8 +138,7 @@ class sfp_coinblocker(SpiderFootPlugin):
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}",
-                                                               "(\d+\.\d+\.\d+\.\d+)")
+                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
                         self.sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):

@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_cinsscore(SpiderFootPlugin):
     """CINS Army List:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is malicious according to cinsscore.com's Army List."""
@@ -19,9 +19,9 @@ class sfp_cinsscore(SpiderFootPlugin):
     meta = {
         'name': "CINS Army List",
         'summary': "Check if a netblock or IP address is malicious according to cinsscore.com's Army List.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ]
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"]
     }
 
     # Default options

@@ -13,7 +13,7 @@
 
 import threading
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_azureblobstorage(SpiderFootPlugin):
     """Azure Blob Finder:Footprint,Passive:Crawling and Scanning::Search for potential Azure blobs associated with the target and attempt to list their contents."""
@@ -21,9 +21,9 @@ class sfp_azureblobstorage(SpiderFootPlugin):
     meta = {
         'name': "Azure Blob Finder",
         'summary': "Search for potential Azure blobs associated with the target and attempt to list their contents.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Crawling and Scanning" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Crawling and Scanning"],
         'dataSource': {
             'website': "https://azure.microsoft.com/en-in/services/storage/blobs/",
             'model': "FREE_NOAUTH_UNLIMITED"
@@ -72,7 +72,6 @@ class sfp_azureblobstorage(SpiderFootPlugin):
                 self.s3results[url] = True
 
     def threadSites(self, siteList):
-        ret = list()
         self.s3results = dict()
         running = True
         i = 0
@@ -145,7 +144,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
                 self.notifyListeners(evt)
             return None
 
-        targets = [ eventData.replace('.', '') ]
+        targets = [eventData.replace('.', '')]
         kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
         if kw:
             targets.append(kw)

@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 from urllib.parse import urlparse
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sslcert(SpiderFootPlugin):
@@ -20,9 +20,9 @@ class sfp_sslcert(SpiderFootPlugin):
     meta = {
         'name': "SSL Certificate Analyzer",
         'summary': "Gather information about SSL certificates used by the target's HTTPS sites.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Crawling and Scanning" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Crawling and Scanning"]
     }
 
     # Default options
@@ -91,7 +91,7 @@ class sfp_sslcert(SpiderFootPlugin):
                 if u.port:
                     port = u.port
                 fqdn = self.sf.urlFQDN(eventData.lower())
-            except BaseException as e:
+            except BaseException:
                 self.sf.debug("Couldn't parse URL: " + eventData)
                 return None
         else:

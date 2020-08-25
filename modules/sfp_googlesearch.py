@@ -10,7 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlesearch(SpiderFootPlugin):
@@ -19,9 +19,9 @@ class sfp_googlesearch(SpiderFootPlugin):
     meta = {
         'name': "Google",
         'summary': "Obtain information from the Google Custom Search API to identify sub-domains and links.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://developers.google.com/custom-search",
             'model': "FREE_AUTH_LIMITED",

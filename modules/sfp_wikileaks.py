@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import datetime
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_wikileaks(SpiderFootPlugin):
@@ -20,9 +20,9 @@ class sfp_wikileaks(SpiderFootPlugin):
     meta = {
         'name': "Wikileaks",
         'summary': "Search Wikileaks for mentions of domain names and e-mail addresses.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://wikileaks.org/",
             'model': "FREE_NOAUTH_UNLIMITED",

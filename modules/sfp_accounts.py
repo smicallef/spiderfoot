@@ -16,7 +16,7 @@ import threading
 from queue import Queue, Empty as QueueEmpty
 import json
 import random
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_accounts(SpiderFootPlugin):
     """Account Finder:Footprint,Passive:Social Media:slow:Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc."""
@@ -24,8 +24,8 @@ class sfp_accounts(SpiderFootPlugin):
     meta = {
         'name': "Account Finder",
         'summary': "Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc.",
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Social Media" ]
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Social Media"]
     }
 
     # Default options
@@ -85,7 +85,7 @@ class sfp_accounts(SpiderFootPlugin):
         try:
             self.sites = [site for site in json.loads(content)['sites'] if site['valid']]
         except BaseException as e:
-            self.sf.error("Unable to parse social media accounts list.", False)
+            self.sf.error(f"Unable to parse social media accounts list: {e}", False)
             self.errorState = True
             return None
 
@@ -150,8 +150,8 @@ class sfp_accounts(SpiderFootPlugin):
                     site = queue.get(timeout=0.1)
                     try:
                         self.checkSite(username, site)
-                    except Exception as ex:
-                        self.sf.debug(f'thread {threading.current_thread().name} exception {ex}')
+                    except Exception as e:
+                        self.sf.debug(f'thread {threading.current_thread().name} exception {e}')
             except QueueEmpty:
                 return
 
@@ -240,7 +240,7 @@ class sfp_accounts(SpiderFootPlugin):
             self.distrustedChecked = True
 
         if eventName == "HUMAN_NAME":
-            names = [ eventData.lower().replace(" ", ""), eventData.lower().replace(" ", ".") ]
+            names = [eventData.lower().replace(" ", ""), eventData.lower().replace(" ", ".")]
             for name in names:
                 users.append(name)
 
@@ -259,7 +259,6 @@ class sfp_accounts(SpiderFootPlugin):
             users.append(eventData)
 
         for user in users:
-            adduser = True
             if user in self.opts['_genericusers'].split(","):
                 self.sf.debug(user + " is a generic account name, skipping.")
                 continue

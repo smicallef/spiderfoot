@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 import urllib.request, urllib.parse, urllib.error
 import json
 
@@ -21,9 +21,9 @@ class sfp_snov(SpiderFootPlugin):
     meta = {
         'name': "Snov",
         'summary': "Gather available email IDs from identified domains",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://snov.io/",
             'model': "FREE_AUTH_LIMITED",
@@ -127,7 +127,7 @@ class sfp_snov(SpiderFootPlugin):
         }
 
         headers = {
-            'Accept' : "application/json",
+            'Accept': "application/json",
         }
 
         res = self.sf.fetchUrl(

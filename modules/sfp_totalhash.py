@@ -12,7 +12,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'TotalHash.com Database': {
@@ -31,9 +31,9 @@ class sfp_totalhash(SpiderFootPlugin):
     meta = {
         'name': "TotalHash.com",
         'summary': "Check if a host/domain or IP is malicious according to TotalHash.com.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://totalhash.cymru.com/",
             'model': "FREE_NOAUTH_UNLIMITED",

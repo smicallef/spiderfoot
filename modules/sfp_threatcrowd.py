@@ -12,7 +12,7 @@
 
 import json
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_threatcrowd(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_threatcrowd(SpiderFootPlugin):
     meta = {
         'name': "ThreatCrowd",
         'summary': "Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://www.threatcrowd.org",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -110,7 +110,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from ThreatCrowd.", False)
+            self.sf.error(f"Error processing JSON response from ThreatCrowd: {e}", False)
             self.errorState = True
             return None
 

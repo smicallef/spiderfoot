@@ -11,7 +11,7 @@
 
 import json
 import base64
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_clearbit(SpiderFootPlugin):
     """Clearbit:Footprint,Investigate,Passive:Search Engines:apikey:Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com."""
@@ -19,9 +19,9 @@ class sfp_clearbit(SpiderFootPlugin):
     meta = {
         'name': "Clearbit",
         'summary': "Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://clearbit.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -77,12 +77,12 @@ class sfp_clearbit(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "EMAILADDR" ]
+        return ["EMAILADDR"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "RAW_RIR_DATA", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
-                 "AFFILIATE_INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC" ]
+        return ["RAW_RIR_DATA", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
+                 "AFFILIATE_INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC"]
 
     def query(self, t):
         ret = None
@@ -97,19 +97,16 @@ class sfp_clearbit(SpiderFootPlugin):
             'Authorization': "Basic " + token.decode('utf-8')
         }
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-            useragent="SpiderFoot", headers=headers)
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
 
         if res['code'] != "200":
-            self.sf.error("Return code indicates no results or potential API key failure or exceeded limits.",
-                       False)
+            self.sf.error("Return code indicates no results or potential API key failure or exceeded limits.", False)
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from clearbit.io: " + \
-                          str(e), False)
+            self.sf.error(f"Error processing JSON response from clearbit.io: {e}", False)
             return None
 
         return ret

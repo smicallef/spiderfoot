@@ -15,7 +15,7 @@ import json
 import math
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_grep_app(SpiderFootPlugin):
     """grep.app:Footprint,Investigate,Passive:Search Engines::Search grep.app API for links and emails related to the specified domain."""
@@ -23,9 +23,9 @@ class sfp_grep_app(SpiderFootPlugin):
     meta = {
         'name': "grep.app",
         'summary': "Search grep.app API for links and emails related to the specified domain.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://grep.app/",
             'model': "FREE_NOAUTH_UNLIMITED",

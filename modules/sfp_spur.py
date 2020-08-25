@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 from netaddr import IPNetwork
 import json
 
@@ -21,9 +21,9 @@ class sfp_spur(SpiderFootPlugin):
     meta = {
         'name': "spur.us",
         'summary': "Obtain information about any malicious activities involving IP addresses found",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://spur.us/",
             'model': "COMMERCIAL ONLY",
@@ -78,13 +78,23 @@ class sfp_spur(SpiderFootPlugin):
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_OWNER", "NETBLOCK_MEMBER",
-            "AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "NETBLOCK_OWNER",
+            "NETBLOCK_MEMBER",
+            "AFFILIATE_IPADDR"
+        ]
 
     # What events this module produces
     def producedEvents(self):
-        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
-            "GEO_INFO", "COMPANY_NAME", "MALICIOUS_AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "MALICIOUS_IPADDR",
+            "RAW_RIR_DATA",
+            "GEO_INFO",
+            "COMPANY_NAME",
+            "MALICIOUS_AFFILIATE_IPADDR"
+        ]
     
     # Check whether the IP Address is malicious using spur.us API
     # https://spur.us/app/docs
@@ -143,29 +153,28 @@ class sfp_spur(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
 
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxnetblock']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxnetblock']))
+                return None
         
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxsubnet']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxsubnet']))
+                return None
                     
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -250,7 +259,7 @@ class sfp_spur(SpiderFootPlugin):
             if vpnOperatorsExists:
                 vpnOperatorNames = vpnOperators.get('operators')
 
-                maliciousIPDesc = "spur.us [ " + str(addr) + " ]\n"
+                maliciousIPDesc = "spur.us [" + str(addr) + "]\n"
                 maliciousIPDesc += "VPN Operators : "
 
                 for operatorNameDict in vpnOperatorNames:

@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_bingsharedip(SpiderFootPlugin):
@@ -20,9 +20,9 @@ class sfp_bingsharedip(SpiderFootPlugin):
     meta = {
         'name': "Bing (Shared IPs)",
         'summary': "Search Bing for hosts sharing the same IP.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://www.bing.com/",
             'model': "FREE_AUTH_LIMITED",

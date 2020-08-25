@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_blockchain(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_blockchain(SpiderFootPlugin):
     meta = {
         'name': "Blockchain",
         'summary': "Queries blockchain.info to find the balance of identified bitcoin wallet addresses.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Public Registries" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Public Registries"],
         'dataSource': {
             'website': "https://www.blockchain.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -90,7 +90,7 @@ class sfp_blockchain(SpiderFootPlugin):
             data = json.loads(res['content'])
             balance = float(data[eventData]['final_balance']) / 100000000
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         evt = SpiderFootEvent("BITCOIN_BALANCE", str(balance) + " BTC", self.__name__, event)
