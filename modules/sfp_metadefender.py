@@ -12,7 +12,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_metadefender(SpiderFootPlugin):
     """MetaDefender:Footprint,Investigate,Passive:Reputation Systems:apikey:Search MetaDefender API for IP address and domain IP reputation."""
@@ -20,9 +20,9 @@ class sfp_metadefender(SpiderFootPlugin):
     meta = {
         'name': "MetaDefender",
         'summary': "Search MetaDefender API for IP address and domain IP reputation.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ]
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Reputation Systems"]
     }
 
     # Default options
@@ -114,7 +114,7 @@ class sfp_metadefender(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data

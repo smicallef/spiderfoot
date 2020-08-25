@@ -14,7 +14,7 @@
 import json
 import time
 import datetime
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_intelx(SpiderFootPlugin):
@@ -23,9 +23,9 @@ class sfp_intelx(SpiderFootPlugin):
     meta = {
         'name': "IntelligenceX",
         'summary': "Obtain information from IntelligenceX about identified IP addresses, domains, e-mail addresses and phone numbers.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://intelx.io/",
             'model': "FREE_AUTH_LIMITED",
@@ -252,15 +252,15 @@ class sfp_intelx(SpiderFootPlugin):
                 try:
                     val = rec['selectorvalueh']
                     evt = None
-                    if rec['selectortype'] == 1: #Email
+                    if rec['selectortype'] == 1:  # Email
                         evt = "EMAILADDR"
                         if val.split("@")[0] in self.opts['_genericusers'].split(","):
                             evt = "EMAILADDR_GENERIC"
-                    if rec['selectortype'] == 2: #Domain
+                    if rec['selectortype'] == 2:  # Domain
                         evt = "INTERNET_NAME"
                         if val == eventData:
                             continue
-                    if rec['selectortype'] == 3: #URL
+                    if rec['selectortype'] == 3:  # URL
                         evt = "LINKED_URL_INTERNAL"
 
                     if not val or not evt:

@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 import urllib.request, urllib.parse, urllib.error
 import json
 import re
@@ -22,9 +22,9 @@ class sfp_keybase(SpiderFootPlugin):
     meta = {
         'name': "Keybase",
         'summary': "Obtain additional information about target username",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Public Registries" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Public Registries"],
         'dataSource': {
             'website': "https://keybase.io/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -62,9 +62,11 @@ class sfp_keybase(SpiderFootPlugin):
         return ["USERNAME", "LINKED_URL_EXTERNAL"]
 
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "SOCIAL_MEDIA", "USERNAME",
+        return [
+            "RAW_RIR_DATA", "SOCIAL_MEDIA", "USERNAME",
             "HUMAN_NAME", "GEOINFO", "BITCOIN_ADDRESS", 
-            "PGP_KEY"]
+            "PGP_KEY"
+        ]
 
     def queryUsername(self, qry):
 
@@ -73,7 +75,7 @@ class sfp_keybase(SpiderFootPlugin):
         }
 
         headers = {
-            'Accept' : "application/json"
+            'Accept': "application/json"
         }
 
         res = self.sf.fetchUrl(
@@ -129,7 +131,7 @@ class sfp_keybase(SpiderFootPlugin):
 
         # Extract username if a Keybase link is received 
         if eventName == "LINKED_URL_EXTERNAL":
-            linkRegex = "^https?://keybase.io\/[A-Za-z0-9\-_\.]+"  
+            linkRegex = r"^https?://keybase.io\/[A-Za-z0-9\-_\.]+"
             links = re.findall(linkRegex, eventData)
 
             if len(links) == 0:
@@ -229,9 +231,8 @@ class sfp_keybase(SpiderFootPlugin):
                     evt = SpiderFootEvent("BITCOIN_ADDRESS", btcAddress, self.__name__, event)
                     self.notifyListeners(evt)
 
-        
         # Extract PGP Keys
-        pgpRegex = "-----BEGIN\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----(.*?)-----END\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----"
+        pgpRegex = r"-----BEGIN\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----(.*?)-----END\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----"
 
         pgpKeys = re.findall(pgpRegex, str(content))
         

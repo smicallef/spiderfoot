@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import dns.resolver
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_yandexdns(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_yandexdns(SpiderFootPlugin):
     meta = {
         'name': "Yandex DNS",
         'summary': "Check if a host would be blocked by Yandex DNS",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://yandex.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -70,13 +70,13 @@ class sfp_yandexdns(SpiderFootPlugin):
     # https://dns.yandex.com/advanced/
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
-        res.nameservers = [ "77.88.8.88", "77.88.8.2" ]
+        res.nameservers = ["77.88.8.88", "77.88.8.2"]
 
         try:
             addrs = res.query(qaddr)
-            self.sf.debug("Addresses returned: " + str(addrs))
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + qaddr)
+            self.sf.debug(f"Addresses returned: {addrs}")
+        except BaseException:
+            self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
         if addrs:
@@ -103,8 +103,8 @@ class sfp_yandexdns(SpiderFootPlugin):
         try:
             if self.sf.resolveHost(eventData):
                 resolved = True
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + eventData)
+        except BaseException:
+            self.sf.debug(f"Unable to resolve {eventData}")
             return None
 
         if not resolved:

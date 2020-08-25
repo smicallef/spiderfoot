@@ -15,7 +15,7 @@ import base64
 from datetime import datetime
 import time
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_fraudguard(SpiderFootPlugin):
     """Fraudguard:Investigate,Passive:Reputation Systems:apikey:Obtain threat information from Fraudguard.io"""
@@ -23,9 +23,9 @@ class sfp_fraudguard(SpiderFootPlugin):
     meta = {
         'name': "Fraudguard",
         'summary': "Obtain threat information from Fraudguard.io",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://fraudguard.io/",
             'model': "FREE_AUTH_LIMITED",
@@ -89,7 +89,7 @@ class sfp_fraudguard(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return [ "GEOINFO", "MALICIOUS_IPADDR", "MALICIOUS_NETBLOCK" ]
+        return ["GEOINFO", "MALICIOUS_IPADDR", "MALICIOUS_NETBLOCK"]
 
     def query(self, qry):
         fraudguard_url = "https://api.fraudguard.io/ip/" + qry
@@ -104,10 +104,10 @@ class sfp_fraudguard(SpiderFootPlugin):
             'Authorization': "Basic " + token.decode('utf-8')
         }
 
-        res = self.sf.fetchUrl(fraudguard_url , timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(fraudguard_url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers)
 
-        if res['code'] in [ "400", "429", "500", "403" ]:
+        if res['code'] in ["400", "429", "500", "403"]:
             self.sf.error("Fraudguard.io API key seems to have been rejected or you have exceeded usage limits for the month.", False)
             self.errorState = True
             return None
@@ -119,7 +119,7 @@ class sfp_fraudguard(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from Fraudguard.io.", False)
+            self.sf.error(f"Error processing JSON response from Fraudguard.io: {e}", False)
             return None
 
         #print str(info)

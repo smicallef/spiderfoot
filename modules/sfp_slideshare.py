@@ -11,7 +11,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_slideshare(SpiderFootPlugin):
     """SlideShare:Footprint,Investigate,Passive:Social Media::Gather name and location from SlideShare profiles."""
@@ -19,9 +19,9 @@ class sfp_slideshare(SpiderFootPlugin):
     meta = {
         'name': "SlideShare",
         'summary': "Gather name and location from SlideShare profiles.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Social Media" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Social Media"],
         'dataSource': {
             'website': "https://www.slideshare.net",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -57,15 +57,15 @@ class sfp_slideshare(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "SOCIAL_MEDIA" ]
+        return ["SOCIAL_MEDIA"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "RAW_RIR_DATA", "GEOINFO" ]
+        return ["RAW_RIR_DATA", "GEOINFO"]
 
     # Extract meta property contents from HTML
     def extractMeta(self, meta_property, html):
-        return re.findall(r'<meta property="' + meta_property + '"\s+content="(.+)" />', html)
+        return re.findall(r'<meta property="' + meta_property + r'"\s+content="(.+)" />', html)
 
     # Handle events sent to this module
     def handleEvent(self, event):

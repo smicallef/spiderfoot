@@ -12,17 +12,17 @@
 import json
 import datetime
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_wigle(SpiderFootPlugin):
-    """Wigle.net:Footprint,Investigate,Passive:Secondary Networks:apikey:Query wigle.net to identify nearby WiFi access points."""
+    """WiGLE:Footprint,Investigate,Passive:Secondary Networks:apikey:Query WiGLE to identify nearby WiFi access points."""
 
     meta = {
-        'name': "Wigle.net",
-        'summary': "Query wigle.net to identify nearby WiFi access points.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Secondary Networks" ],
+        'name': "WiGLE",
+        'summary': "Query WiGLE to identify nearby WiFi access points.",
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Secondary Networks"],
         'dataSource': {
             'website': "https://wigle.net/",
             'model': "FREE_AUTH_UNLIMITED",
@@ -107,7 +107,7 @@ class sfp_wigle(SpiderFootPlugin):
                 return None
             return info['results'][0]['boundingbox']
         except Exception as e:
-            self.sf.error("Error processing JSON response from Wigle.net: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from Wigle.net: {e}", False)
             return None
 
     def getnetworks(self, coords):
@@ -144,7 +144,7 @@ class sfp_wigle(SpiderFootPlugin):
                     ret.append(r['ssid'] + " (Net ID: " + r['netid'] + ")")
             return ret
         except Exception as e:
-            self.sf.error("Error processing JSON response from Wigle.net: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from WiGLE: {e}", False)
             return None
 
 

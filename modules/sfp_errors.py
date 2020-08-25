@@ -12,17 +12,17 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 # Taken from Google Dorks on exploit-db.com
 regexps = dict({
     "PHP Error": ["PHP pase error", "PHP warning", "PHP error",
                   "unexpected T_VARIABLE", "warning: failed opening", "include_path="],
     "Generic Error": ["Internal Server Error", "Incorrect syntax"],
-    "Oracle Error": ["ORA-\d+", "TNS:.?no listen"],
+    "Oracle Error": [r"ORA-\d+", "TNS:.?no listen"],
     "ASP Error": ["NET_SessionId"],
-    "MySQL Error": ["mysql_query\(", "mysql_connect\("],
-    "ODBC Error": ["\[ODBC SQL"]
+    "MySQL Error": [r"mysql_query\(", r"mysql_connect\("],
+    "ODBC Error": [r"\[ODBC SQL"]
 
 })
 
@@ -32,9 +32,9 @@ class sfp_errors(SpiderFootPlugin):
     meta = {
         'name': "Error String Extractor",
         'summary': "Identify common error messages in content like SQL errors, etc.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options

@@ -13,7 +13,7 @@
 import re
 
 import urllib.request, urllib.error, urllib.parse
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 sites = {
     # Search string to use, domain name the profile will sit on within
@@ -21,22 +21,22 @@ sites = {
     "Facebook": [
         "\"{name}\"+site:facebook.com",
         [
-            '[ \'"](https?://[a-z\.]*facebook.[a-z\.]+/[^/"\'<> ]+/?)[\'" ]',
-            '(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/"\'<> ]+/?)',
+            r'[ \'"](https?://[a-z\.]*facebook.[a-z\.]+/[^/"\'<> ]+/?)[\'"]',
+            r'(https?%3a%2f%2f[a-z\.]*facebook.[a-z\.]+%2f[^\/"\'<> ]+/?)',
         ],
     ],
     "Google+": [
         "\"{name}\"+site:plus.google.com",
         [
-            '[ \'"](https?://plus.google.[a-z\.]+/\d+[^"\'<>\/ ]+)[\'" ]',
-            '(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/"\'<> ]+)',
+            r'[ \'"](https?://plus.google.[a-z\.]+/\d+[^"\'<>\/ ]+)[\'"]',
+            r'(https?%3a%2f%2fplus.google.[a-z\.]+%2f\d+[^\/"\'<> ]+)',
         ],
     ],
     "LinkedIn": [
         "\"{name}\"+site:linkedin.com",
         [
-            '["\' ](https?://[a-z\.]*linkedin.[a-z\.]+/[^\?"\'<> ]+)[\'" ]',
-            '(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\?"\'<> ]+)',
+            r'["\' ](https?://[a-z\.]*linkedin.[a-z\.]+/[^\?"\'<> ]+)[\'"]',
+            r'(https?%3a%2f%2f[a-z\.]*linkedin.[a-z\.]+%2f[^\?"\'<> ]+)',
         ],
     ],
 }
@@ -48,9 +48,9 @@ class sfp_socialprofiles(SpiderFootPlugin):
     meta = {
         'name': "Social Media Profile Finder",
         'summary': "Tries to discover the social media profiles for human names identified.",
-        'flags': [ "slow", "apikey" ],
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Social Media" ]
+        'flags': ["slow", "apikey"],
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Social Media"]
     }
 
     # Default options
@@ -219,7 +219,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                             found = False
                             for kw in self.keywords:
                                 if re.search(
-                                    "[^a-zA-Z\-\_]" + kw + "[^a-zA-Z\-\_]",
+                                    r"[^a-zA-Z\-\_]" + kw + r"[^a-zA-Z\-\_]",
                                     pres["content"],
                                     re.IGNORECASE,
                                 ):

@@ -12,14 +12,14 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'Internet Storm Center': {
         'id': '_isc',
         'checks': ['ip'],
         'url': 'https://isc.sans.edu/api/ip/{0}',
-        'badregex': ['.*<attacks>\d+</attacks>.*'],
+        'badregex': [r'.*<attacks>\d+</attacks>.*'],
         'goodregex': []
     }
 }
@@ -31,9 +31,9 @@ class sfp_isc(SpiderFootPlugin):
     meta = {
         'name': "Internet Storm Center",
         'summary': "Check if an IP is malicious according to SANS ISC.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://isc.sans.edu",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -87,7 +87,7 @@ class sfp_isc(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR" ]
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events

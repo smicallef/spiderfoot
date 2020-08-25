@@ -12,7 +12,7 @@
 
 from netaddr import IPAddress, IPNetwork
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_greensnow(SpiderFootPlugin):
     """Greensnow:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is malicious according to greensnow.co."""
@@ -20,9 +20,9 @@ class sfp_greensnow(SpiderFootPlugin):
     meta = {
         'name': "Greensnow",
         'summary': "Check if a netblock or IP address is malicious according to greensnow.co.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://greensnow.co/",
             'model': "FREE_NOAUTH_UNLIMITED",

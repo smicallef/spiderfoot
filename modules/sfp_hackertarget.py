@@ -16,7 +16,7 @@ import re
 import json
 
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_hackertarget(SpiderFootPlugin):
@@ -25,9 +25,9 @@ class sfp_hackertarget(SpiderFootPlugin):
     meta = {
         'name': "HackerTarget",
         'summary': "Search HackerTarget.com for hosts sharing the same IP.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"],
         'dataSource': {
             'website': "https://hackertarget.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -247,7 +247,7 @@ class sfp_hackertarget(SpiderFootPlugin):
 
             # Try and pull out individual records
             for row in records:
-                pat = re.compile("^(\S+)\.?\s+\d+\s+IN\s+[AC].*", re.IGNORECASE | re.DOTALL)
+                pat = re.compile(r"^(\S+)\.?\s+\d+\s+IN\s+[AC].*", re.IGNORECASE | re.DOTALL)
                 grps = re.findall(pat, row)
 
                 if len(grps) == 0:

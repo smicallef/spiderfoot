@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_ipstack(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_ipstack(SpiderFootPlugin):
     meta = {
         'name': "ipstack",
         'summary': "Identifies the physical location of IP addresses identified using ipstack.com.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Real World" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Real World"],
         'dataSource': {
             'website': "https://ipstack.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -108,7 +108,7 @@ class sfp_ipstack(SpiderFootPlugin):
                 self.errorState = True
                 return None
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if hostip.get('country_name', None) != None:

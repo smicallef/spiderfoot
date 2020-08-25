@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_honeypot(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_honeypot(SpiderFootPlugin):
     meta = {
         'name': "Honeypot Checker",
         'summary': "Query the projecthoneypot.org database for entries.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://www.projecthoneypot.org/",
             'model': "FREE_AUTH_UNLIMITED",
@@ -177,7 +177,6 @@ class sfp_honeypot(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         parentEvent = event
-        addrlist = list()
 
         if self.errorState:
             return None

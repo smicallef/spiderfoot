@@ -10,7 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 import random
 
 class sfp_junkfiles(SpiderFootPlugin):
@@ -19,9 +19,9 @@ class sfp_junkfiles(SpiderFootPlugin):
     meta = {
         'name': "Junk File Finder",
         'summary': "Looks for old/temporary and other similar files.",
-        'flags': [ "slow", "errorprone", "invasive" ],
-        'useCases': [ "Footprint" ],
-        'categories': [ "Crawling and Scanning" ]
+        'flags': ["slow", "errorprone", "invasive"],
+        'useCases': ["Footprint"],
+        'categories': ["Crawling and Scanning"]
     }
 
     # Default options

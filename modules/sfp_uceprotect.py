@@ -13,7 +13,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_uceprotect(SpiderFootPlugin):
@@ -22,9 +22,9 @@ class sfp_uceprotect(SpiderFootPlugin):
     meta = {
         'name': "UCEPROTECT",
         'summary': "Query the UCEPROTECT databases for open relays, open proxies, vulnerable servers, etc.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "http://www.uceprotect.net/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -144,7 +144,6 @@ class sfp_uceprotect(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         parentEvent = event
-        addrlist = list()
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 

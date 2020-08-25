@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_webserver(SpiderFootPlugin):
     """Web Server Identifier:Footprint,Investigate,Passive:Content Analysis::Obtain web server banners to identify versions of web servers being used."""
@@ -20,9 +20,9 @@ class sfp_webserver(SpiderFootPlugin):
     meta = {
         'name': "Web Server Identifier",
         'summary': "Obtain web server banners to identify versions of web servers being used.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -71,7 +71,7 @@ class sfp_webserver(SpiderFootPlugin):
             jdata = json.loads(eventData)
             if jdata == None:
                 return None
-        except BaseException as e:
+        except BaseException:
             self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
             return None
 
@@ -115,7 +115,7 @@ class sfp_webserver(SpiderFootPlugin):
             return None
 
         tech = None
-        if 'set-cookie'in jdata and 'PHPSESS' in jdata['set-cookie']:
+        if 'set-cookie' in jdata and 'PHPSESS' in jdata['set-cookie']:
             tech = "PHP"
 
         if 'set-cookie' in jdata and 'JSESSIONID' in jdata['set-cookie']:

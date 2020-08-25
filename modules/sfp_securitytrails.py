@@ -12,7 +12,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_securitytrails(SpiderFootPlugin):
     """SecurityTrails:Investigate,Passive:Search Engines:apikey:Obtain Passive DNS and other information from SecurityTrails"""
@@ -20,9 +20,9 @@ class sfp_securitytrails(SpiderFootPlugin):
     meta = {
         'name': "SecurityTrails",
         'summary': "Obtain Passive DNS and other information from SecurityTrails",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://securitytrails.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -111,7 +111,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=headers,
                                postData=request)
 
-        if res['code'] in [ "400", "429", "500", "403" ]:
+        if res['code'] in ["400", "429", "500", "403"]:
             self.sf.error("SecurityTrails API key seems to have been rejected or you have exceeded usage limits for the month.", False)
             self.errorState = True
             return None
@@ -166,7 +166,7 @@ class sfp_securitytrails(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName in [ "IP_ADDRESS", "IPV6_ADDRESS", "NETLBLOCK_OWNER"]:
+        if eventName in ["IP_ADDRESS", "IPV6_ADDRESS", "NETLBLOCK_OWNER"]:
             ip = eventData
             rec = self.query(ip, "ipv4")
             myres = list()
@@ -200,7 +200,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                         self.notifyListeners(e)
                         self.cohostcount += 1
 
-        if eventName in [ "EMAILADDR"]:
+        if eventName in ["EMAILADDR"]:
             email = eventData
             rec = self.query(email, "whois_email")
             myres = list()

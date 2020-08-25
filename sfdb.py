@@ -294,7 +294,7 @@ class SpiderFootDb:
             try:
                 rx = re.compile(qry, re.IGNORECASE | re.DOTALL)
                 ret = rx.match(data)
-            except BaseException as e:
+            except BaseException:
                 return False
             return ret is not None
 
@@ -317,7 +317,7 @@ class SpiderFootDb:
                     try:
                         self.dbh.execute(qry)
                         self.conn.commit()
-                    except BaseException as e:
+                    except BaseException:
                         continue
                 self.conn.commit()
                 # self.conn.close()

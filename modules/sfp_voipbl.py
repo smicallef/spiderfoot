@@ -13,14 +13,14 @@
 from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'VOIPBL Publicly Accessible PBX List': {
         'id': '_voipbl',
         'checks': ['ip', 'netblock'],
         'url': 'http://www.voipbl.org/update',
-        'regex': '{0}\/'
+        'regex': r'{0}\/'
     }
 }
 
@@ -31,9 +31,9 @@ class sfp_voipbl(SpiderFootPlugin):
     meta = {
         'name': "VoIPBL OpenPBX IPs",
         'summary': "Check if an IP or netblock is an open PBX according to VoIPBL OpenPBX IPs.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "http://www.voipbl.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -123,8 +123,7 @@ class sfp_voipbl(SpiderFootPlugin):
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}",
-                                                               "(\d+\.\d+\.\d+\.\d+)")
+                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
                         self.sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):

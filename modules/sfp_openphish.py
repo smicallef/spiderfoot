@@ -13,14 +13,14 @@
 from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'OpenPhish': {
         'id': '_openphish',
         'checks': ['domain'],
         'url': 'https://www.openphish.com/feed.txt',
-        'regex': '\w+://(.*\.)?[^a-zA-Z0-9]?{0}.*'
+        'regex': r'\w+://(.*\.)?[^a-zA-Z0-9]?{0}.*'
     }
 }
 
@@ -31,9 +31,9 @@ class sfp_openphish(SpiderFootPlugin):
     meta = {
         'name': "OpenPhish",
         'summary': "Check if a host/domain is malicious according to OpenPhish.com.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://openphish.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -121,8 +121,7 @@ class sfp_openphish(SpiderFootPlugin):
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}",
-                                                               "(\d+\.\d+\.\d+\.\d+)")
+                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
                         self.sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):
@@ -140,11 +139,10 @@ class sfp_openphish(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
+                            self.sf.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None

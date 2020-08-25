@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_viewdns(SpiderFootPlugin):
     """ViewDNS.info:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using ViewDNS.info."""
@@ -19,9 +19,9 @@ class sfp_viewdns(SpiderFootPlugin):
     meta = {
         'name': "ViewDNS.info",
         'summary': "Reverse Whois lookups using ViewDNS.info.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://viewdns.info/",
             'model': "FREE_AUTH_LIMITED",
@@ -108,7 +108,7 @@ class sfp_viewdns(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
-        if res['code'] in [ "400", "429", "500", "403" ]:
+        if res['code'] in ["400", "429", "500", "403"]:
             self.sf.error("ViewDNS.info API key seems to have been rejected or you have exceeded usage limits.", False)
             self.errorState = True
             return None
@@ -196,7 +196,7 @@ class sfp_viewdns(SpiderFootPlugin):
                         myres.append(h.lower())
                     else:
                         continue
-                    if h.lower() in [ "demo1.com", "demo2.com", "demo3.com", "demo4.com", "demo5.com" ]:
+                    if h.lower() in ["demo1.com", "demo2.com", "demo3.com", "demo4.com", "demo5.com"]:
                         continue
                     if eventName == "EMAILADDR":
                         e = SpiderFootEvent("AFFILIATE_INTERNET_NAME", h, self.__name__, event)

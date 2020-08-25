@@ -13,7 +13,7 @@
 from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'cybercrime-tracker.net Malicious Submissions': {
@@ -31,9 +31,9 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
     meta = {
         'name': "cybercrime-tracker.net",
         'summary': "Check if a host/domain or IP is malicious according to cybercrime-tracker.net.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "http://cybercrime-tracker.net/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -122,8 +122,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}",
-                                                               "(\d+\.\d+\.\d+\.\d+)")
+                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
                         self.sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):

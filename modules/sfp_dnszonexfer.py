@@ -14,7 +14,7 @@ import re
 
 import dns.query
 import dns.zone
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnszonexfer(SpiderFootPlugin):
     """DNS Zone Transfer:Footprint,Investigate:DNS::Attempts to perform a full DNS zone transfer."""
@@ -22,9 +22,9 @@ class sfp_dnszonexfer(SpiderFootPlugin):
     meta = {
         'name': "DNS Zone Transfer",
         'summary': "Attempts to perform a full DNS zone transfer.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "DNS" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["DNS"]
     }
 
     # Default options
@@ -61,7 +61,6 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         eventDataHash = self.sf.hashstring(eventData)
-        addrs = None
         parentEvent = event
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
@@ -114,7 +113,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
 
                 # Try and pull out individual records
                 for row in ret:
-                    pat = re.compile("^(\S+)\.?\s+\d+\s+IN\s+[AC].*", re.IGNORECASE | re.DOTALL)
+                    pat = re.compile(r"^(\S+)\.?\s+\d+\s+IN\s+[AC].*", re.IGNORECASE | re.DOTALL)
                     grps = re.findall(pat, row)
                     if len(grps) > 0:
                         for strdata in grps:

@@ -10,7 +10,7 @@
 #-------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_iknowwhatyoudownload(SpiderFootPlugin):
     """Iknowwhatyoudownload.com:Footprint,Investigate,Passive:Secondary Networks:apikey:Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent."""
@@ -18,9 +18,9 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
     meta = {
         'name': "Iknowwhatyoudownload.com",
         'summary': "Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Secondary Networks" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Secondary Networks"],
         'dataSource': {
             'website': "https://iknowwhatyoudownload.com/en/peer/",
             'model': "FREE_AUTH_LIMITED",
@@ -91,8 +91,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         url = base + qry + "&days=" + str(self.opts['daysback'])
         url += "&key=" + self.opts['api_key']
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-            useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         if res['code'] in ["403", "500"]:
             self.sf.info("Unable to fetch data from iknowwhatyoudownload.com right now.")

@@ -14,7 +14,7 @@
 import re
 
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_onionsearchengine(SpiderFootPlugin):
     """Onionsearchengine.com:Footprint,Investigate:Search Engines::Search Tor onionsearchengine.com for mentions of the target domain."""
@@ -22,9 +22,9 @@ class sfp_onionsearchengine(SpiderFootPlugin):
     meta = {
         'name': "Onionsearchengine.com",
         'summary': "Search Tor onionsearchengine.com for mentions of the target domain.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://as.onionsearchengine.com",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -44,7 +44,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         'timeout': 10,
         'max_pages': 20,
         'fetchlinks': True,
-        'blacklist': [ '.*://relate.*' ],
+        'blacklist': ['.*://relate.*'],
         'fullnames': True
     }
 
@@ -78,7 +78,6 @@ class sfp_onionsearchengine(SpiderFootPlugin):
 
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
@@ -128,7 +127,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                                   self.__name__, event)
             self.notifyListeners(evt)
 
-            links = re.findall("url\.php\?u=(.[^\"\']+)[\"\']",
+            links = re.findall(r"url\.php\?u=(.[^\"\']+)[\"\']",
                                data['content'], re.IGNORECASE | re.DOTALL)
 
             for link in links:
@@ -177,7 +176,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                 try:
                     startIndex = res['content'].index(eventData) - 120
                     endIndex = startIndex + len(eventData) + 240
-                except BaseException as e:
+                except BaseException:
                     self.sf.debug('String "' + eventData + '" not found in content.')
                     continue
 

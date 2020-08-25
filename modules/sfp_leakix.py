@@ -12,7 +12,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_leakix(SpiderFootPlugin):
     """LeakIX:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Search LeakIX for host data leaks, open ports, software and geoip."""
@@ -20,9 +20,9 @@ class sfp_leakix(SpiderFootPlugin):
     meta = {
         'name': "LeakIX",
         'summary': "Search LeakIX for host data leaks, open ports, software and geoip.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://leakix.net/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -73,7 +73,7 @@ class sfp_leakix(SpiderFootPlugin):
     # https://leakix.net/api-documentation
     def queryHost(self, qry):
         headers = {
-            "Accept" : "application/json"
+            "Accept": "application/json"
         }
         res = self.sf.fetchUrl(
           'https://leakix.net/host/' + qry,
@@ -110,7 +110,7 @@ class sfp_leakix(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data
