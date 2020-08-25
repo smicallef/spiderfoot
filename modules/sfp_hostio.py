@@ -44,18 +44,10 @@ class sfp_hostio(SpiderFootPlugin):
 
     opts = {
         "api_key": "",
-        "checkcohosts": True,
-        "checkaffiliates": True,
-        "maxcohost": 100,
-        "verify": True,
     }
 
     optdescs = {
         "api_key": "Host.io API Key.",
-        "checkcohosts": "Check co-hosted sites?",
-        "checkaffiliates": "Check affiliates?",
-        "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
-        "verify": "Verify that any hostnames found on the target domain still resolve?",
     }
 
     errorState = False
@@ -69,8 +61,6 @@ class sfp_hostio(SpiderFootPlugin):
 
     def watchedEvents(self):
         return [
-            "AFFILIATE_DOMAIN_NAME",
-            "CO_HOSTED_SITE_DOMAIN",
             "DOMAIN_NAME",
         ]
 
@@ -78,7 +68,11 @@ class sfp_hostio(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "IP_ADDRESS",
-            "COUNTRY_NAME"
+            "COUNTRY_NAME",
+            "RAW_RIR_DATA",
+            "EMAILADDR",
+            "WEB_ANALYTICS_ID",
+            "WEBSERVER_TECHNOLOGY",
         ]
 
     # When querying third parties, it's best to have a dedicated function
@@ -105,7 +99,7 @@ class sfp_hostio(SpiderFootPlugin):
             timeout=self.opts["_fetchtimeout"],
             useragent="SpiderFoot",
         )
-        if res["code"] != '200':
+        if res["code"] != "200":
             self.handle_error_response(qry, res)
             return None
 
@@ -120,15 +114,6 @@ class sfp_hostio(SpiderFootPlugin):
             return None
 
         return info
-
-    def is_my_event(self, event):
-        if event.eventType == 'COHOSTED_SITE_DOMAIN':
-            if not self.opts["checkcohosts"]:
-                return False
-        elif event.eventType == "AFFILIATE_DOMAIN_NAME":
-            if not self.opts["checkaffiliates"]:
-                return False
-        return True
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -148,9 +133,6 @@ class sfp_hostio(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        if not self.is_my_event(event):
-            return None
-
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData} as already mapped.")
             return None
@@ -162,18 +144,40 @@ class sfp_hostio(SpiderFootPlugin):
             return None
 
         ipinfo = data.get("ipinfo")
-        if ipinfo is None:
-            self.sf.error(f"No 'ipinfo' key present in response", False)
-            return None
+        if ipinfo and isinstance(ipinfo, dict):
+            for address, ip_data in data["ipinfo"].items():
+                evt = SpiderFootEvent("IP_ADDRESS", address, self.__name__, event)
+                self.notifyListeners(evt)
 
-        for address, ip_data in data["ipinfo"].items():
-            evt = SpiderFootEvent('IP_ADDRESS', address, self.__name__, event)
-            self.notifyListeners(evt)
+                country = ip_data.get("country")
+                if country is not None:
+                    country_evt = SpiderFootEvent(
+                        "COUNTRY_NAME", country, self.__name__, evt
+                    )
+                    self.notifyListeners(country_evt)
 
-            country = ip_data.get("country")
-            if country is not None:
-                country_evt = SpiderFootEvent("COUNTRY_NAME", country, self.__name__, evt)
-                self.notifyListeners(country_evt)
+        related = data.get("related")
+        if related and isinstance(related, dict):
+            email_section = related.get("email")
+            if email_section and isinstance(email_section, list):
+                for email_data in email_section:
+                    if isinstance(email_data, dict):
+                        value = email_data["value"]
+                        if value and isinstance(value, str):
+                            evt = SpiderFootEvent("EMAILADDR", value, self.__name__, event)
+                            self.notifyListeners(evt)
+
+        web = data.get("web")
+        if web and isinstance(web, dict):
+            server = web.get("server")
+            if server and isinstance(server, str):
+                evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", server, self.__name__, event)
+                self.notifyListeners(evt)
+
+            google_analytics = web.get("googleanalytics")
+            if google_analytics and isinstance(google_analytics, str):
+                evt = SpiderFootEvent("WEB_ANALYTICS_ID", google_analytics, self.__name__, event)
+                self.notifyListeners(evt)
 
         evt = SpiderFootEvent("RAW_RIR_DATA", json.dumps(data), self.__name__, event)
         self.notifyListeners(evt)
