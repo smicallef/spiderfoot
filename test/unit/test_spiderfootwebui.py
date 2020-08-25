@@ -330,10 +330,10 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         Test __init__(self, config)
         """
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             SpiderFootWebUi(None)
 
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             SpiderFootWebUi(dict())
 
     @unittest.skip("todo")
@@ -381,7 +381,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         invalid_types = [None, "", dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     sfwebui.cleanUserInput(invalid_type)
 
     def test_search_base_should_return_a_list(self):

@@ -45,7 +45,7 @@ class TestSpiderFoot(unittest.TestCase):
         invalid_types = [None, "", list(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     SpiderFoot(invalid_type)
 
     def test_init_argument_options_with_empty_dict(self):
@@ -166,7 +166,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        with self.assertRaises(BaseException) as cm:
+        with self.assertRaises(BaseException):
             sf._dblog(None, None, None)
 
     def test_error(self):
@@ -178,7 +178,7 @@ class TestSpiderFoot(unittest.TestCase):
         sf.error(None, exception=False)
         self.assertEqual('TBD', 'TBD')
 
-        with self.assertRaises(BaseException) as cm:
+        with self.assertRaises(BaseException):
             sf.error(None, exception=True)
 
     def test_fatal_should_exit(self):
@@ -278,7 +278,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(dict())
 
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             sf.configSerialize(None, None)
 
     def test_config_serialize_should_return_a_dict(self):
@@ -296,7 +296,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(dict())
 
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             sf.configUnserialize(None, dict(), None)
 
     def test_config_unserialize_invalid_reference_point_should_raise(self):
@@ -305,7 +305,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(dict())
 
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             sf.configUnserialize(dict(), None, None)
 
     def test_config_unserialize_should_return_a_dict(self):
@@ -1133,7 +1133,7 @@ class TestSpiderFoot(unittest.TestCase):
         invalid_types = [None, "", list()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     sf.sslDerToPem(invalid_type)
 
     def test_parse_cert_should_return_a_dict(self):
