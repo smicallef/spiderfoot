@@ -17,14 +17,14 @@ class TestSpiderFootTarget(unittest.TestCase):
         """
         Test __init__(self, targetValue, typeName)
         """
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             SpiderFootTarget(None, 'IP_ADDRESS')
 
     def test_init_unsupported_target_type_should_raise(self):
         """
         Test __init__(self, targetValue, typeName)
         """
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             SpiderFootTarget('example target value', 'example target type')
 
     def test_init_supported_target_types(self):

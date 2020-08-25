@@ -14,7 +14,7 @@ import json
 import urllib.request, urllib.parse, urllib.error
 import time
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_shodan(SpiderFootPlugin):
@@ -23,9 +23,9 @@ class sfp_shodan(SpiderFootPlugin):
     meta = {
         'name': "SHODAN",
         'summary': "Obtain information from SHODAN about identified IP addresses.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
             'dataSource': {
             'website': "https://www.shodan.io/",
             'model': "FREE_AUTH_LIMITED",
@@ -97,7 +97,7 @@ class sfp_shodan(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from SHODAN.", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
             return None
 
         return info
@@ -114,7 +114,7 @@ class sfp_shodan(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from SHODAN.", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
             return None
 
         return info
@@ -135,7 +135,7 @@ class sfp_shodan(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from SHODAN.", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
             return None
 
         return info

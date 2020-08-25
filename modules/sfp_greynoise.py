@@ -14,7 +14,7 @@ import json
 from datetime import datetime
 import time
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_greynoise(SpiderFootPlugin):
     """Greynoise:Investigate,Passive:Reputation Systems:apikey:Obtain information from Greynoise.io's Enterprise API."""
@@ -22,9 +22,9 @@ class sfp_greynoise(SpiderFootPlugin):
     meta = {
         'name': "Greynoise",
         'summary': "Obtain information from Greynoise.io's Enterprise API.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://greynoise.io/",
             'model': "FREE_AUTH_LIMITED",
@@ -97,17 +97,15 @@ class sfp_greynoise(SpiderFootPlugin):
         return ["MALICIOUS_IPADDR", "MALICIOUS_ASN", "MALICIOUS_SUBNET",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
                 "COMPANY_NAME", "GEOINFO", "BGP_AS_MEMBER", "OPERATING_SYSTEM",
-                "RAW_RIR_DATA" ]
+                "RAW_RIR_DATA"]
 
     def queryIP(self, qry):
-        ret = None
-
-        header = { "key": self.opts['api_key'] }
+        header = {"key": self.opts['api_key']}
         url = "https://enterprise.api.greynoise.io/v2/experimental/gnql?query=" + qry
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=header)
 
-        if res['code'] not in [ "200" ]:
+        if res['code'] not in ["200"]:
             self.sf.error("Greynoise API key seems to have been rejected or you have exceeded usage limits.", False)
             self.errorState = True
             return None
@@ -115,7 +113,7 @@ class sfp_greynoise(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from Greynoise.", False)
+            self.sf.error(f"Error processing JSON response from Greynoise: {e}", False)
             return None
 
         return info

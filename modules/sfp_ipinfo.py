@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_ipinfo(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_ipinfo(SpiderFootPlugin):
     meta = {
         'name': "IPInfo.io",
         'summary': "Identifies the physical location of IP addresses identified using ipinfo.io.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Real World" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Real World"],
         'dataSource': {
             'website': "https://ipinfo.io",
             'model': "FREE_AUTH_LIMITED",
@@ -95,7 +95,7 @@ class sfp_ipinfo(SpiderFootPlugin):
         try:
             result = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return result

@@ -13,7 +13,7 @@
 from subprocess import Popen, PIPE
 import os.path
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_nmap(SpiderFootPlugin):
     """Tool - Nmap:Footprint,Investigate:Crawling and Scanning:tool,slow,invasive:Identify what Operating System might be used."""
@@ -21,9 +21,9 @@ class sfp_tool_nmap(SpiderFootPlugin):
     meta = {
         'name': "Tool - Nmap",
         'summary': "Identify what Operating System might be used.",
-        'flags': [ "tool", "slow", "invasive" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Crawling and Scanning" ],
+        'flags': ["tool", "slow", "invasive"],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Crawling and Scanning"],
         'toolDetails': {
             'name': "Nmap",
             'description': "Nmap (\"Network Mapper\") is a free and open source utility for network discovery and security auditing.\n"
@@ -165,8 +165,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
                     if "OS details:" in line:
                         junk, opsys = line.split(": ")
                 if opsys:
-                    evt = SpiderFootEvent("OPERATING_SYSTEM", opsys,
-                                           self.__name__, event)
+                    evt = SpiderFootEvent("OPERATING_SYSTEM", opsys, self.__name__, event)
                     self.notifyListeners(evt)
             except BaseException as e:
                 self.sf.error("Couldn't parse the output of Nmap: " + str(e), False)
@@ -183,16 +182,14 @@ class sfp_tool_nmap(SpiderFootPlugin):
                         junk, opsys = line.split(": ")
 
                     if opsys and currentIp:
-                        ipevent = SpiderFootEvent("IP_ADDRESS", currentIp,
-                                               self.__name__, event)
+                        ipevent = SpiderFootEvent("IP_ADDRESS", currentIp, self.__name__, event)
                         self.notifyListeners(ipevent)
 
-                        evt = SpiderFootEvent("OPERATING_SYSTEM", opsys,
-                                               self.__name__, ipevent)
+                        evt = SpiderFootEvent("OPERATING_SYSTEM", opsys, self.__name__, ipevent)
                         self.notifyListeners(evt)
                         currentIp = None
             except BaseException as e:
-                self.sf.error("Couldn't parse the output of Nmap: " + str(e), False)
+                self.sf.error(f"Couldn't parse the output of Nmap: {e}", False)
                 return None
 
 # End of sfp_tool_nmap class

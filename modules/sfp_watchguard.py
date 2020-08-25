@@ -12,12 +12,12 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'Watchguard Reputation Authority Lookup': {
         'id': '_watchguard',
-        'checks': [ 'ip' ],
+        'checks': ['ip'],
         'url': 'http://reputationauthority.org/lookup?ip={0}',
         'badregex': ['.*>[6-9][0-9]/100 </td>.*', '.*>100/100 </td>.*'],
         'goodregex': []
@@ -31,9 +31,9 @@ class sfp_watchguard(SpiderFootPlugin):
     meta = {
         'name': "Watchguard",
         'summary': "Check if an IP is malicious according to Watchguard's reputationauthority.org.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "http://reputationauthority.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -82,7 +82,7 @@ class sfp_watchguard(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR" ]
+        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):

@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_botscout(SpiderFootPlugin):
@@ -20,9 +20,9 @@ class sfp_botscout(SpiderFootPlugin):
     meta = {
         'name': "BotScout",
         'summary': "Searches botscout.com's database of spam-bot IPs and e-mail addresses.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Passive", "Investigate" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Passive", "Investigate"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "http://botscout.com/",
             'model': "FREE_NOAUTH_LIMITED",

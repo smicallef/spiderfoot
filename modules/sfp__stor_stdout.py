@@ -10,7 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFootPlugin
 import json
 
 
@@ -27,7 +27,7 @@ class sfp__stor_stdout(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "_format": "tab", # tab, csv, json
+        "_format": "tab",  # tab, csv, json
         "_requested": [],
         "_showonlyrequested": False,
         "_stripnewline": False,

@@ -12,12 +12,12 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'Fortiguard Threat Lookup': {
         'id': '_fortiguard',
-        'checks': [ 'ip' ],
+        'checks': ['ip'],
         'url': 'https://fortiguard.com/search?q={0}&engine=8',
         'badregex': ['.*Your signature is blacklisted.*'],
         'goodregex': ['.*Your signature is not blacklisted.*']
@@ -31,9 +31,9 @@ class sfp_fortinet(SpiderFootPlugin):
     meta = {
         'name': "Fortiguard.com",
         'summary': "Check if an IP is malicious according to Fortiguard.com.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://fortiguard.com/",
             'model': "FREE_NOAUTH_UNLIMITED",

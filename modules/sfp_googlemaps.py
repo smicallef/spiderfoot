@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlemaps(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_googlemaps(SpiderFootPlugin):
     meta = {
         'name': "Google Maps",
         'summary': "Identifies potential physical addresses and latitude/longitude coordinates.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Real World" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Real World"],
         'dataSource': {
             'website': "https://cloud.google.com/maps-platform/",
             'model': "FREE_AUTH_LIMITED",

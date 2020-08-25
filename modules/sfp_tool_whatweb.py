@@ -14,7 +14,7 @@
 from subprocess import Popen, PIPE
 import json
 import os.path
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_whatweb(SpiderFootPlugin):
     """Tool - WhatWeb:Footprint,Investigate:Content Analysis:tool:Identify what software is in use on the specified website."""
@@ -22,9 +22,9 @@ class sfp_tool_whatweb(SpiderFootPlugin):
     meta = {
         'name': "Tool - WhatWeb",
         'summary': "Identify what software is in use on the specified website.",
-        'flags': [ "tool" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Content Analysis" ],
+        'flags': ["tool"],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Content Analysis"],
         'toolDetails': {
             'name': "WhatWeb",
             'description': "WhatWeb identifies websites. Its goal is to answer the question, \"What is that Website?\". "

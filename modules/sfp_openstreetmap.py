@@ -15,7 +15,7 @@ import re
 import json
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_openstreetmap(SpiderFootPlugin):
     """OpenStreetMap:Footprint,Investigate,Passive:Real World::Retrieves latitude/longitude coordinates for physical addresses from OpenStreetMap API."""
@@ -23,9 +23,9 @@ class sfp_openstreetmap(SpiderFootPlugin):
     meta = {
         'name': "OpenStreetMap",
         'summary': "Retrieves latitude/longitude coordinates for physical addresses from OpenStreetMap API.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Real World" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Real World"],
         'dataSource': {
             'website': "https://www.openstreetmap.org/",
             'model': "FREE_NOAUTH_UNLIMITED",

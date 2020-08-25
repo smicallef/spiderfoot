@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin
+from sflib import SpiderFootPlugin
 
 
 class sfp__stor_db(SpiderFootPlugin):

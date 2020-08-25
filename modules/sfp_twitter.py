@@ -11,7 +11,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_twitter(SpiderFootPlugin):
     """Twitter:Footprint,Investigate,Passive:Social Media::Gather name and location from Twitter profiles."""
@@ -19,9 +19,9 @@ class sfp_twitter(SpiderFootPlugin):
     meta = {
         'name': "Twitter",
         'summary': "Gather name and location from Twitter profiles.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Social Media" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Social Media"],
         'dataSource': {
             'website': "https://twitter.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -52,11 +52,11 @@ class sfp_twitter(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "SOCIAL_MEDIA" ]
+        return ["SOCIAL_MEDIA"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "RAW_RIR_DATA", "GEOINFO" ]
+        return ["RAW_RIR_DATA", "GEOINFO"]
 
     # Handle events sent to this module
     def handleEvent(self, event):

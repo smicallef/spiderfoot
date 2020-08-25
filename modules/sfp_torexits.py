@@ -13,14 +13,14 @@
 from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'TOR Exist List': {
         'id': '_torexits',
         'checks': ['ip', 'netblock'],
         'url': 'https://check.torproject.org/exit-addresses',
-        'regex': '^ExitAddress\s+{0}\s+'
+        'regex': r'^ExitAddress\s+{0}\s+'
     }
 }
 
@@ -31,9 +31,9 @@ class sfp_torexits(SpiderFootPlugin):
     meta = {
         'name': "TOR Exit Nodes",
         'summary': "Check if an IP or netblock appears on the torproject.org exit node list.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Secondary Networks" ]
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Secondary Networks"]
     }
 
     # Default options
@@ -111,8 +111,7 @@ class sfp_torexits(SpiderFootPlugin):
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}",
-                                                               "(\d+\.\d+\.\d+\.\d+)")
+                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
                         self.sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):

@@ -14,7 +14,7 @@
 import json
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_emailcrawlr(SpiderFootPlugin):
     """EmailCrawlr:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailCrawlr for email addresses and phone numbers associated with a domain."""
@@ -22,9 +22,9 @@ class sfp_emailcrawlr(SpiderFootPlugin):
     meta = {
         'name': "EmailCrawlr",
         'summary': "Search EmailCrawlr for email addresses and phone numbers associated with a domain.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://emailcrawlr.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -87,8 +87,8 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
         headers = {
-            'Accept' : "application/json",
-            'x-api-key' : self.opts['api_key']
+            'Accept': "application/json",
+            'x-api-key': self.opts['api_key']
         }
         
         res = self.sf.fetchUrl(
@@ -135,7 +135,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data

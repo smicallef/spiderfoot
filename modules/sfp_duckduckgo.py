@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_duckduckgo(SpiderFootPlugin):
     """DuckDuckGo:Footprint,Investigate,Passive:Search Engines::Query DuckDuckGo's API for descriptive information about your target."""
@@ -19,9 +19,9 @@ class sfp_duckduckgo(SpiderFootPlugin):
     meta = {
         'name': "DuckDuckGo",
         'summary': "Query DuckDuckGo's API for descriptive information about your target.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://duckduckgo.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -72,7 +72,6 @@ class sfp_duckduckgo(SpiderFootPlugin):
 
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if self.opts['affiliatedomains'] and "AFFILIATE_" in eventName:
@@ -97,6 +96,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except BaseException as e:
+            self.sf.error(f"Error processing JSON response from DuckDuckGo: {e}", False)
             return None
 
         if ret['Heading'] == "":

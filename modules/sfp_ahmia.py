@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 import re
 
 
@@ -21,8 +21,8 @@ class sfp_ahmia(SpiderFootPlugin):
     meta = {
         'name': "Ahmia",
         'summary': "Search Tor 'Ahmia' search engine for mentions of the target domain.",
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Search Engines" ],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://ahmia.fi/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -80,7 +80,6 @@ class sfp_ahmia(SpiderFootPlugin):
 
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
@@ -105,8 +104,7 @@ class sfp_ahmia(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            links = re.findall("redirect_url=(.[^\"]+)\"",
-                             data['content'], re.IGNORECASE | re.DOTALL)
+            links = re.findall("redirect_url=(.[^\"]+)\"", data['content'], re.IGNORECASE | re.DOTALL)
 
             reported = False
             for link in links:
@@ -137,7 +135,7 @@ class sfp_ahmia(SpiderFootPlugin):
                             try:
                                 startIndex = res['content'].index(eventData) - 120
                                 endIndex = startIndex + len(eventData) + 240
-                            except BaseException as e:
+                            except BaseException:
                                 self.sf.debug("String not found in content.")
                                 continue
 

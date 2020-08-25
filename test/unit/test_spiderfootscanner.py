@@ -69,7 +69,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         invalid_types = [None, list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     SpiderFootScanner(invalid_type, scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, self.default_options, start=False)
 
     def test_init_argument_scanName_as_empty_string_should_raise_ValueError(self):
@@ -79,7 +79,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         scan_id = str(uuid.uuid4())
         module_list = ['sfp__stor_db']
 
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             SpiderFootScanner("", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, self.default_options, start=False)
 
     def test_init_argument_scanId_of_invalid_type_should_raise_TypeError(self):
@@ -91,7 +91,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         invalid_types = [None, list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     SpiderFootScanner("example scan name", invalid_type, "spiderfoot.net", "IP_ADDRESS", module_list, self.default_options, start=False)
 
     def test_init_argument_scanId_as_empty_string_should_raise_ValueError(self):
@@ -101,7 +101,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         scan_id = ""
         module_list = ['sfp__stor_db']
 
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, self.default_options, start=False)
 
     def test_init_argument_targetValue_of_invalid_type_should_raise_TypeError(self):
@@ -114,7 +114,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         invalid_types = [None, list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     SpiderFootScanner("example scan name", scan_id, invalid_type, "IP_ADDRESS", module_list, self.default_options, start=False)
 
     def test_init_argument_targetValue_as_empty_string_should_raise_ValueError(self):
@@ -124,7 +124,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         scan_id = str(uuid.uuid4())
         module_list = ['sfp__stor_db']
 
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             SpiderFootScanner("example scan name", scan_id, "", "IP_ADDRESS", module_list, self.default_options, start=False)
 
     def test_init_argument_targetType_of_invalid_type_should_raise_TypeError(self):
@@ -137,7 +137,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         invalid_types = [None, list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", invalid_type, module_list, self.default_options, start=False)
 
     def test_init_argument_targetType_as_empty_string_should_raise_ValueError(self):
@@ -148,7 +148,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         module_list = ['sfp__stor_db']
 
         target_type = ""
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", target_type, module_list, self.default_options, start=False)
 
     def test_init_argument_moduleList_of_invalid_type_should_raise_TypeError(self):
@@ -160,7 +160,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         invalid_types = [None, "", dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", invalid_type, self.default_options, start=False)
 
     def test_init_argument_moduleList_as_empty_list_should_raise_ValueError(self):
@@ -170,7 +170,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         scan_id = str(uuid.uuid4())
         module_list = list()
 
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, dict(), start=False)
 
     def test_init_argument_globalOpts_of_invalid_type_should_raise_TypeError(self):
@@ -183,7 +183,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         invalid_types = [None, "", list(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, invalid_type, start=False)
 
     def test_init_argument_globalOpts_as_empty_dict_should_raise_ValueError(self):
@@ -193,7 +193,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         scan_id = str(uuid.uuid4())
         module_list = ['sfp__stor_db']
 
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, dict(), start=False)
 
     def test_attribute_scanId_should_return_scan_id_as_a_string(self):

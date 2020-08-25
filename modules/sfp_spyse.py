@@ -15,7 +15,7 @@
 import json
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spyse(SpiderFootPlugin):
     """Spyse:Footprint,Investigate,Passive:Passive DNS:apikey:SpiderFoot plug-in to search Spyse API for IP address and domain information."""
@@ -23,9 +23,9 @@ class sfp_spyse(SpiderFootPlugin):
     meta = {
         'name': "Spyse",
         'summary': "SpiderFoot plug-in to search Spyse API for IP address and domain information.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"],
         'dataSource': {
             'website': "https://spyse.com",
             'model': "FREE_AUTH_LIMITED",
@@ -102,8 +102,8 @@ class sfp_spyse(SpiderFootPlugin):
             'offset': currentOffset
         }
         headers = {
-            'Accept' : "application/json",
-            'Authorization' : "Bearer " + self.opts['api_key']
+            'Accept': "application/json",
+            'Authorization': "Bearer " + self.opts['api_key']
         }
         
         res = self.sf.fetchUrl(
@@ -126,8 +126,8 @@ class sfp_spyse(SpiderFootPlugin):
             'offset': currentOffset
         }
         headers = {
-            'Accept' : "application/json",
-            'Authorization' : "Bearer " + self.opts['api_key']
+            'Accept': "application/json",
+            'Authorization': "Bearer " + self.opts['api_key']
         }
         res = self.sf.fetchUrl(
           'https://api.spyse.com/v3/data/ip/port?' + urllib.parse.urlencode(params),
@@ -149,8 +149,8 @@ class sfp_spyse(SpiderFootPlugin):
             'offset': currentOffset
         }
         headers = {
-            'Accept' : "application/json",
-            'Authorization' : "Bearer " + self.opts['api_key']
+            'Accept': "application/json",
+            'Authorization': "Bearer " + self.opts['api_key']
         }
         res = self.sf.fetchUrl(
           'https://api.spyse.com/v3/data/ip/domain?' + urllib.parse.urlencode(params),
@@ -174,8 +174,8 @@ class sfp_spyse(SpiderFootPlugin):
         }
 
         headers = {
-            'Accept' : "application/json",
-            'Authorization' : "Bearer " + self.opts['api_key']
+            'Accept': "application/json",
+            'Authorization': "Bearer " + self.opts['api_key']
         }
 
         res = self.sf.fetchUrl(
@@ -224,7 +224,7 @@ class sfp_spyse(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if data.get('message'):

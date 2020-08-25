@@ -11,7 +11,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_haveibeenpwned(SpiderFootPlugin):
     """HaveIBeenPwned:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches."""
@@ -19,9 +19,9 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
     meta = {
         'name': "HaveIBeenPwned",
         'summary': "Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://haveibeenpwned.com/",
             'model': "COMMERCIAL_ONLY",
@@ -74,12 +74,12 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
     def query(self, qry):
         ret = None
         if self.opts['api_key']:
-            v = "3"
+            version = "3"
         else:
-            v = "2"
+            version = "2"
 
-        url = "https://haveibeenpwned.com/api/v" + v + "/breachedaccount/" + qry
-        hdrs = { "Accept": "application/vnd.haveibeenpwned.v" + v + "+json" }
+        url = f"https://haveibeenpwned.com/api/v{version}/breachedaccount/{qry}"
+        hdrs = {"Accept": f"application/vnd.haveibeenpwned.v{version}+json"}
         retry = 0
 
         if self.opts['api_key']:
@@ -110,7 +110,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from HaveIBeenPwned?: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}", False)
             return None
 
         return ret
@@ -144,7 +144,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 else:
                     site = n["Name"]
             except BaseException as e:
-                self.sf.debug("Unable to parse result from HaveIBeenPwned?")
+                self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
                 continue
 
             evt = eventName + "_COMPROMISED"

@@ -62,13 +62,13 @@ class sfp_template(SpiderFootPlugin):
         #   - errorprone: Might generate high false positives
         #   - invasive: Interrogates the target, might be intensive
         #   - tool: Runs an external tool to collect data
-        'flags': [ "slow", "apikey"],
+        'flags': ["slow", "apikey"],
 
         # Use cases: The use case(s) this module should be included in, options are Footprint, Investigate and Passive.
         #   - Passive means the user's scan target is not contacted at all
         #   - Footprint means that this module is useful when understanding the target's footprint on the Internet
         #   - Investigate means that this module is useful when investigating the danger/risk of a target
-        'useCases': [ "Passive" ],
+        'useCases': ["Passive"],
 
         # Categories: The categories this module belongs in, describing how it operates. Only the first category is 
         # used for now.
@@ -83,7 +83,7 @@ class sfp_template(SpiderFootPlugin):
         #   - Search Engines: Searches public search engines with data about the whole Internet
         #   - Secondary Networks: Queries information about participation on secondary networks, like Bitcoin
         #   - Social Media: Searches social media data sources
-        'categories': [ "Social Media" ],
+        'categories': ["Social Media"],
 
         # For tool modules, have some basic information about the tool.
         'toolDetails': {

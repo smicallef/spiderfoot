@@ -15,7 +15,7 @@ import base64
 from datetime import datetime
 import time
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_censys(SpiderFootPlugin):
     """Censys:Investigate,Passive:Search Engines:apikey:Obtain information from Censys.io"""
@@ -23,9 +23,9 @@ class sfp_censys(SpiderFootPlugin):
     meta = {
         'name': "Censys",
         'summary': "Obtain information from Censys.io",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ]
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Search Engines"]
     }
 
     # Default options
@@ -91,7 +91,7 @@ class sfp_censys(SpiderFootPlugin):
         # API rate limit: 0.4 actions/second (120.0 per 5 minute interval)
         time.sleep(self.opts['delay'])
 
-        if res['code'] in [ "400", "429", "500", "403" ]:
+        if res['code'] in ["400", "429", "500", "403"]:
             self.sf.error("Censys.io API key seems to have been rejected or you have exceeded usage limits for the month.", False)
             self.errorState = True
             return None
@@ -103,7 +103,7 @@ class sfp_censys(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from Censys.io.", False)
+            self.sf.error(f"Error processing JSON response from Censys.io: {e}", False)
             return None
 
         #print(str(info))

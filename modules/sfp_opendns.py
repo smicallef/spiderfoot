@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import dns.resolver
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_opendns(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_opendns(SpiderFootPlugin):
     meta = {
         'name': "OpenDNS",
         'summary': "Check if a host would be blocked by OpenDNS DNS",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://www.opendns.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -71,13 +71,13 @@ class sfp_opendns(SpiderFootPlugin):
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
-        res.nameservers = [ "208.67.222.222", "208.67.220.220" ]
+        res.nameservers = ["208.67.222.222", "208.67.220.220"]
 
         try:
             addrs = res.query(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + qaddr)
+        except BaseException:
+            self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
         if addrs:
@@ -103,7 +103,7 @@ class sfp_opendns(SpiderFootPlugin):
         try:
             if self.sf.resolveHost(eventData):
                 resolved = True
-        except BaseException as e:
+        except BaseException:
             return None
 
         if resolved:

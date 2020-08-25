@@ -14,7 +14,7 @@ import json
 from datetime import datetime
 import time
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_alienvault(SpiderFootPlugin):
     """AlienVault OTX:Investigate,Passive:Reputation Systems:apikey:Obtain information from AlienVault Open Threat Exchange (OTX)"""
@@ -22,9 +22,9 @@ class sfp_alienvault(SpiderFootPlugin):
     meta = {
         'name': "AlienVault OTX",
         'summary': "Obtain information from AlienVault Open Threat Exchange (OTX)",
-        'flags': [ "apikey"],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://otx.alienvault.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -105,10 +105,9 @@ class sfp_alienvault(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK" ]
+        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK"]
 
     def query(self, qry, querytype):
-        ret = None
         targettype = "hostname"
 
         if ":" in qry:
@@ -141,11 +140,10 @@ class sfp_alienvault(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from AlienVault OTX.", False)
+            self.sf.error(f"Error processing JSON response from AlienVault OTX: {e}", False)
             return None
 
         return info
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -221,7 +219,7 @@ class sfp_alienvault(SpiderFootPlugin):
                             if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
-                        except BaseException as e:
+                        except BaseException:
                             self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
                         e = SpiderFootEvent(evtType, host, self.__name__, event)
                         self.notifyListeners(e)
@@ -258,7 +256,7 @@ class sfp_alienvault(SpiderFootPlugin):
                             if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
-                        except BaseException as e:
+                        except BaseException:
                             self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
 
                     # For netblocks, we need to create the IP address event so that

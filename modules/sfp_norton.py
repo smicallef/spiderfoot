@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import dns.resolver
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_norton(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_norton(SpiderFootPlugin):
     meta = {
         'name': "Norton ConnectSafe",
         'summary': "Check if a host would be blocked by Norton ConnectSafe DNS",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ]
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"]
     }
 
     # Default options
@@ -56,13 +56,13 @@ class sfp_norton(SpiderFootPlugin):
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
-        res.nameservers = [ "199.85.126.20", "199.85.127.20" ]
+        res.nameservers = ["199.85.126.20", "199.85.127.20"]
 
         try:
             addrs = res.query(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + qaddr)
+        except BaseException:
+            self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
         if addrs:
@@ -88,7 +88,7 @@ class sfp_norton(SpiderFootPlugin):
         try:
             if self.sf.resolveHost(eventData):
                 resolved = True
-        except BaseException as e:
+        except BaseException:
             return None
 
         if resolved:

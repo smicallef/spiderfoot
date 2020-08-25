@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_whoxy(SpiderFootPlugin):
     """Whoxy:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using Whoxy.com."""
@@ -19,9 +19,9 @@ class sfp_whoxy(SpiderFootPlugin):
     meta = {
         'name': "Whoxy",
         'summary': "Reverse Whois lookups using Whoxy.com.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://www.whoxy.com/",
             'model': "COMMERCIAL_ONLY",
@@ -89,7 +89,7 @@ class sfp_whoxy(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
-        if res['code'] in [ "400", "429", "500", "403" ]:
+        if res['code'] in ["400", "429", "500", "403"]:
             self.sf.error("Whoxy API key seems to have been rejected or you have exceeded usage limits.", False)
             self.errorState = True
             return None

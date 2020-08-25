@@ -12,7 +12,7 @@
 
 import json
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_urlscan(SpiderFootPlugin):
     """URLScan.io:Footprint,Investigate,Passive:Search Engines::Search URLScan.io cache for domain information."""
@@ -20,9 +20,9 @@ class sfp_urlscan(SpiderFootPlugin):
     meta = {
         'name': "URLScan.io",
         'summary': "Search URLScan.io cache for domain information.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://urlscan.io/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -91,7 +91,7 @@ class sfp_urlscan(SpiderFootPlugin):
         try:
             result = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return result

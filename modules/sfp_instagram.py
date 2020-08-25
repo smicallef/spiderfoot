@@ -12,7 +12,7 @@
 import json
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_instagram(SpiderFootPlugin):
     """Instagram:Footprint,Investigate,Passive:Social Media::Gather information from Instagram profiles."""
@@ -20,9 +20,9 @@ class sfp_instagram(SpiderFootPlugin):
     meta = {
         'name': "Instagram",
         'summary': "Gather information from Instagram profiles.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Social Media" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Social Media"],
         'dataSource': {
             'website': "https://www.instagram.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -55,11 +55,11 @@ class sfp_instagram(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'SOCIAL_MEDIA' ]
+        return ['SOCIAL_MEDIA']
 
     # What events this module produces
     def producedEvents(self):
-        return [ 'RAW_RIR_DATA' ]
+        return ['RAW_RIR_DATA']
 
     # Extract profile JSON from HTML
     def extractJson(self, html):

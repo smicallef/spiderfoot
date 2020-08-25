@@ -14,7 +14,7 @@
 import re
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_commoncrawl(SpiderFootPlugin):
@@ -23,9 +23,9 @@ class sfp_commoncrawl(SpiderFootPlugin):
     meta = {
         'name': "CommonCrawl",
         'summary': "Searches for URLs found through CommonCrawl.org.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "http://commoncrawl.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -74,7 +74,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
             res = self.sf.fetchUrl(url, timeout=60,
                                    useragent="SpiderFoot")
 
-            if res['code'] in [ "400", "401", "402", "403", "404" ]:
+            if res['code'] in ["400", "401", "402", "403", "404"]:
                 self.sf.error("CommonCrawl search doesn't seem to be available.", False)
                 self.errorState = True
                 return None
@@ -93,7 +93,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=60,
                                useragent="SpiderFoot")
 
-        if res['code'] in [ "400", "401", "402", "403", "404" ]:
+        if res['code'] in ["400", "401", "402", "403", "404"]:
             self.sf.error("CommonCrawl index collection doesn't seem to be available.", False)
             self.errorState = True
             return list()
@@ -103,8 +103,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
             self.errorState = True
             return list()
 
-        indexes = re.findall(".*(CC-MAIN-\d+-\d+).*", res['content'])
-        highest = 0
+        indexes = re.findall(r".*(CC-MAIN-\d+-\d+).*", res['content'])
         indexlist = dict()
         for m in indexes:
             ms = m.replace("CC-MAIN-", "").replace("-", "")

@@ -12,7 +12,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_emailrep(SpiderFootPlugin):
     """EmailRep:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailRep.io for email address reputation."""
@@ -20,9 +20,9 @@ class sfp_emailrep(SpiderFootPlugin):
     meta = {
         'name': "EmailRep",
         'summary': "Search EmailRep.io for email address reputation.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://emailrep.io/",
             'model': "FREE_AUTH_LIMITED",

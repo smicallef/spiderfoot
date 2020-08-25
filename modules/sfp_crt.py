@@ -13,7 +13,7 @@
 
 import json
 import urllib.parse
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_crt(SpiderFootPlugin):
@@ -22,9 +22,9 @@ class sfp_crt(SpiderFootPlugin):
     meta = {
         'name': "Certificate Transparency",
         'summary': "Gather hostnames from historical certificates in crt.sh.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://crt.sh/",
             'model': "FREE_NOAUTH_UNLIMITED",

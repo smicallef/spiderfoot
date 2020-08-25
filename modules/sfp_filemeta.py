@@ -17,7 +17,7 @@ import docx
 import pptx
 import exifread
 import io
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_filemeta(SpiderFootPlugin):
@@ -26,9 +26,9 @@ class sfp_filemeta(SpiderFootPlugin):
     meta = {
         'name': "File Metadata Extractor",
         'summary': "Extracts meta data from documents and images.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options

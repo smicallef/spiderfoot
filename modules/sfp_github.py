@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_github(SpiderFootPlugin):
     """Github:Footprint,Passive:Social Media::Identify associated public code repositories on Github."""
@@ -20,9 +20,9 @@ class sfp_github(SpiderFootPlugin):
     meta = {
         'name': "Github",
         'summary': "Identify associated public code repositories on Github.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Social Media" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Social Media"],
         'dataSource': {
             'website': "https://github.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -38,12 +38,12 @@ class sfp_github(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'namesonly':    True
+        'namesonly': True
     }
 
     # Option descriptions
     optdescs = {
-        'namesonly':    "Match repositories by name only, not by their descriptions. Helps reduce false positives."
+        'namesonly': "Match repositories by name only, not by their descriptions. Helps reduce false positives."
     }
 
     def setup(self, sfc, userOpts=dict()):
@@ -85,7 +85,6 @@ class sfp_github(SpiderFootPlugin):
 
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if eventData in self.results:
@@ -111,7 +110,7 @@ class sfp_github(SpiderFootPlugin):
             try:
                 bits = url.split("/")
                 name = bits[len(bits)-1]
-            except BaseException as e:
+            except BaseException:
                 self.sf.debug("Couldn't get a username out of " + url)
                 return None
 
@@ -123,7 +122,7 @@ class sfp_github(SpiderFootPlugin):
             try:
                 json_data = json.loads(res['content'])
             except BaseException as e:
-                self.sf.debug("Error processing JSON response.")
+                self.sf.debug(f"Error processing JSON response: {e}")
                 return None
 
             if not json_data.get('login'):
@@ -161,6 +160,7 @@ class sfp_github(SpiderFootPlugin):
 
         self.sf.debug("Looking at " + name)
         failed = False
+
         # Get all the repositories based on direct matches with the
         # name identified
         url = "https://api.github.com/search/repositories?q=" + name
@@ -174,11 +174,11 @@ class sfp_github(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except BaseException as e:
+            self.sf.debug(f"Error processing JSON response from GitHub: {e}", False)
             ret = None
 
-        if ret == None:
-            self.sf.error("Unable to process empty response from Github for: " + \
-                          name, False)
+        if ret is None:
+            self.sf.error(f"Unable to process empty response from Github for: {name}", False)
             failed = True
 
         if not failed:
@@ -211,12 +211,10 @@ class sfp_github(SpiderFootPlugin):
             try:
                 ret = json.loads(res['content'])
                 if ret == None:
-                    self.sf.error("Unable to process empty response from Github for: " + \
-                                  name, False)
+                    self.sf.error(f"Unable to process empty response from Github for: {name}", False)
                     failed = True
-            except BaseException as e:
-                self.sf.error("Unable to process invalid response from Github for: " + \
-                              name, False)
+            except BaseException:
+                self.sf.error(f"Unable to process invalid response from Github for: {name}", False)
                 failed = True
 
         if not failed:
@@ -242,7 +240,7 @@ class sfp_github(SpiderFootPlugin):
                 try:
                     repret = json.loads(res['content'])
                 except BaseException as e:
-                    self.sf.error("Invalid JSON returned from Github.", False)
+                    self.sf.error(f"Invalid JSON returned from Github: {e}", False)
                     continue
 
                 if repret == None:

@@ -13,7 +13,7 @@
 import re
 from netaddr import IPAddress, IPNetwork
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
     'multiproxy.org Open Proxies': {
@@ -31,9 +31,9 @@ class sfp_multiproxy(SpiderFootPlugin):
     meta = {
         'name': "multiproxy.org Open Proxies",
         'summary': "Check if an IP is an open proxy according to multiproxy.org' open proxy list.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Secondary Networks" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Secondary Networks"],
         'dataSource': {
             'website': "https://multiproxy.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -123,8 +123,7 @@ class sfp_multiproxy(SpiderFootPlugin):
                     # build a list of IP.
                     # Cycle through each IP and check if it's in the netblock.
                     if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}",
-                                                               "(\d+\.\d+\.\d+\.\d+)")
+                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
                         pat = re.compile(rx, re.IGNORECASE)
                         self.sf.debug("New regex for " + check + ": " + rx)
                         for line in data['content'].split('\n'):

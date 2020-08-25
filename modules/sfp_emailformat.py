@@ -13,7 +13,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_emailformat(SpiderFootPlugin):
@@ -22,9 +22,9 @@ class sfp_emailformat(SpiderFootPlugin):
     meta = {
         'name': "EmailFormat",
         'summary': "Look up e-mail addresses on email-format.com.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://www.email-format.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -94,7 +94,7 @@ class sfp_emailformat(SpiderFootPlugin):
                 continue
 
             # Skip masked emails
-            if re.match("^[0-9a-f]{8}\.[0-9]{7}@", email):
+            if re.match(r"^[0-9a-f]{8}\.[0-9]{7}@", email):
                 self.sf.debug("Skipped address: " + email)
                 continue
 

@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 # Standard headers, taken from http://en.wikipedia.org/wiki/List_of_HTTP_header_fields
 headers = ["access-control-allow-origin", "accept-ranges", "age", "allow", "cache-control",
@@ -30,9 +30,9 @@ class sfp_strangeheaders(SpiderFootPlugin):
     meta = {
         'name': "Strange Header Identifier",
         'summary': "Obtain non-standard HTTP headers returned by web servers.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -80,7 +80,7 @@ class sfp_strangeheaders(SpiderFootPlugin):
             jdata = json.loads(eventData)
             if jdata == None:
                 return None
-        except BaseException as e:
+        except BaseException:
             self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
             return None
 

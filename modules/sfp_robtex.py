@@ -13,7 +13,7 @@
 import json
 import time
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_robtex(SpiderFootPlugin):
@@ -22,9 +22,9 @@ class sfp_robtex(SpiderFootPlugin):
     meta = {
         'name': "Robtex",
         'summary': "Search Robtex.com for hosts sharing the same IP.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"],
         'dataSource': {
             'website': "https://www.robtex.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -85,7 +85,7 @@ class sfp_robtex(SpiderFootPlugin):
 
     # Don't notify me about events from myself
     def watchOpts(self):
-        return [ 'noself' ]
+        return ['noself']
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -137,16 +137,13 @@ class sfp_robtex(SpiderFootPlugin):
             qrylist.append(eventData)
             self.results[eventData] = True
 
-        myres = list()
-
         for ip in qrylist:
             if self.checkForStop():
                 return None
 
             retry = 0
             while retry < 2:
-                res = self.sf.fetchUrl("https://freeapi.robtex.com/ipquery/" + ip,
-                                   timeout=self.opts['_fetchtimeout'])
+                res = self.sf.fetchUrl("https://freeapi.robtex.com/ipquery/" + ip, timeout=self.opts['_fetchtimeout'])
                 if res['code'] == "200":
                     break
                 if res['code'] == "404":
@@ -164,7 +161,7 @@ class sfp_robtex(SpiderFootPlugin):
             try:
                 data = json.loads(res['content'])
             except BaseException as e:
-                self.sf.error("Error parsing JSON from robtex API.", False)
+                self.sf.error(f"Error parsing JSON from Robtex API: {e}", False)
                 return None
 
             pas = data.get('pas')
