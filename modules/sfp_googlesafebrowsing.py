@@ -16,10 +16,10 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlesafebrowsing(SpiderFootPlugin):
-    """GoogleSafeBrowsing:Investigate,Passive:Reputation Systems:apikey:Check if the URL is included on any of the Safe Browsing lists"""
+    """Google SafeBrowsing:Investigate,Passive:Reputation Systems:apikey:Check if the URL is included on any of the Safe Browsing lists"""
 
     meta = {
-        "name": "GoogleSafeBrowsing",
+        "name": "Google SafeBrowsing",
         "summary": "Check if the URL is included on any of the Safe Browsing lists.",
         "flags": ["slow", "apikey"],
         "useCases": ["Passive", "Investigate"],
@@ -214,7 +214,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         evt = SpiderFootEvent(
-            evtType, "GoogleSafeBrowsing [" + eventData + "]", self.__name__, event
+            evtType, "Google SafeBrowsing [" + eventData + "]", self.__name__, event
         )
         self.notifyListeners(evt)
 
