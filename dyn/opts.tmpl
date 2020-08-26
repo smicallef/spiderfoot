@@ -110,6 +110,7 @@
               <td>${optdesc}
                 % if "api_key" in opt:
                     <%
+                        import re
                         instructions = ""
                         if "dataSource" in opts['__modules__'][mod]['meta']:
                             instructions = "<div><b>Website:</b> <a href='" + opts['__modules__'][mod]['meta']['dataSource']['website'] + "' target=_new>" + opts['__modules__'][mod]['meta']['dataSource']['website'] + "</a><br>"
@@ -119,6 +120,8 @@
                             if "apiKeyInstructions" in opts['__modules__'][mod]['meta']['dataSource']:
                                 for step in opts['__modules__'][mod]['meta']['dataSource']['apiKeyInstructions']:
                                     n += 1
+                                    if "https://" in step or "http://" in step:
+                                        step = re.sub(r'.*(https?://.[^ ]+).*', '<a target=_new href=\'\\1\'>\\1</a>', step)
                                     instructions += str(n) + ". " + step + "<br>"
 
                             instructions += "</div>"
