@@ -143,11 +143,13 @@ class sfp_hostio(SpiderFootPlugin):
             self.sf.error(f"No data received for {event.data}", False)
             return None
 
+        found = False
         ipinfo = data.get("ipinfo")
         if ipinfo and isinstance(ipinfo, dict):
             for address, ip_data in data["ipinfo"].items():
                 evt = SpiderFootEvent("IP_ADDRESS", address, self.__name__, event)
                 self.notifyListeners(evt)
+                fonud = True
 
                 country = ip_data.get("country")
                 if country is not None:
@@ -155,6 +157,7 @@ class sfp_hostio(SpiderFootPlugin):
                         "COUNTRY_NAME", country, self.__name__, evt
                     )
                     self.notifyListeners(country_evt)
+                    found = True
 
         related = data.get("related")
         if related and isinstance(related, dict):
@@ -166,6 +169,7 @@ class sfp_hostio(SpiderFootPlugin):
                         if value and isinstance(value, str):
                             evt = SpiderFootEvent("EMAILADDR", value, self.__name__, event)
                             self.notifyListeners(evt)
+                            found = True
 
         web = data.get("web")
         if web and isinstance(web, dict):
@@ -173,11 +177,14 @@ class sfp_hostio(SpiderFootPlugin):
             if server and isinstance(server, str):
                 evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", server, self.__name__, event)
                 self.notifyListeners(evt)
+                found = True
 
             google_analytics = web.get("googleanalytics")
             if google_analytics and isinstance(google_analytics, str):
                 evt = SpiderFootEvent("WEB_ANALYTICS_ID", google_analytics, self.__name__, event)
                 self.notifyListeners(evt)
+                found = True
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", json.dumps(data), self.__name__, event)
-        self.notifyListeners(evt)
+        if found:
+            evt = SpiderFootEvent("RAW_RIR_DATA", json.dumps(data), self.__name__, event)
+            self.notifyListeners(evt)
