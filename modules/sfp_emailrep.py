@@ -12,7 +12,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_emailrep(SpiderFootPlugin):
     """EmailRep:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailRep.io for email address reputation."""
@@ -20,9 +20,9 @@ class sfp_emailrep(SpiderFootPlugin):
     meta = {
         'name': "EmailRep",
         'summary': "Search EmailRep.io for email address reputation.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://emailrep.io/",
             'model': "FREE_AUTH_LIMITED",
@@ -43,7 +43,6 @@ class sfp_emailrep(SpiderFootPlugin):
                                 "phishing emails, threat actor emails, and more to answer these types of questions.",
         }
     }
-	
 
     opts = {
         'api_key': '',
@@ -130,7 +129,7 @@ class sfp_emailrep(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == '':
             self.sf.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.", False)

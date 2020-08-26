@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import datetime
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_wikileaks(SpiderFootPlugin):
@@ -20,9 +20,9 @@ class sfp_wikileaks(SpiderFootPlugin):
     meta = {
         'name': "Wikileaks",
         'summary': "Search Wikileaks for mentions of domain names and e-mail addresses.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://wikileaks.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -76,11 +76,11 @@ class sfp_wikileaks(SpiderFootPlugin):
         eventData = event.data
         self.currentEventSrc = event
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True

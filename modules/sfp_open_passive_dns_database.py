@@ -11,11 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import re
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_open_passive_dns_database(SpiderFootPlugin):
     """Open Passive DNS Database:Footprint,Investigate,Passive:Passive DNS::Obtain passive DNS information from pdns.daloo.de Open passive DNS database."""
@@ -23,9 +22,9 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
     meta = {
         'name': "Open Passive DNS Database",
         'summary': "Obtain passive DNS information from pdns.daloo.de Open passive DNS database.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"],
         'dataSource': {
             'website': "http://pdns.daloo.de/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -74,7 +73,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
     # Query the Open Passive DNS Database for a domain
     def query(self, qry):
         params = {
-            "alike": 1, # alike is required to find subdomains
+            "alike": 1,  # alike is required to find subdomains
             "q": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
 
@@ -130,12 +129,12 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
             return None
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 

@@ -13,7 +13,7 @@
 import json
 import urllib.request, urllib.parse, urllib.error
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_whatcms(SpiderFootPlugin):
     """WhatCMS:Footprint,Investigate,Passive:Content Analysis:apikey,slow:Check web technology using WhatCMS.org API."""
@@ -21,9 +21,9 @@ class sfp_whatcms(SpiderFootPlugin):
     meta = {
         'name': "WhatCMS",
         'summary': "Check web technology using WhatCMS.org API.",
-        'flags': [ "apikey", "slow" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Content Analysis" ]
+        'flags': ["apikey", "slow"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -188,7 +188,7 @@ class sfp_whatcms(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.queryCmsTechnology(eventData)
 

@@ -2,6 +2,7 @@
 from sflib import SpiderFootTarget
 import unittest
 
+
 class TestSpiderFootTarget(unittest.TestCase):
     """
     Test SpiderFootTarget
@@ -16,15 +17,15 @@ class TestSpiderFootTarget(unittest.TestCase):
         """
         Test __init__(self, targetValue, typeName)
         """
-        with self.assertRaises(TypeError) as cm:
-            target = SpiderFootTarget(None, 'IP_ADDRESS')
+        with self.assertRaises(TypeError):
+            SpiderFootTarget(None, 'IP_ADDRESS')
 
     def test_init_unsupported_target_type_should_raise(self):
         """
         Test __init__(self, targetValue, typeName)
         """
-        with self.assertRaises(ValueError) as cm:
-            target = SpiderFootTarget('example target value', 'example target type')
+        with self.assertRaises(ValueError):
+            SpiderFootTarget('example target value', 'example target type')
 
     def test_init_supported_target_types(self):
         """
@@ -47,7 +48,7 @@ class TestSpiderFootTarget(unittest.TestCase):
         target_type = 'IP_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
-        set_alias = target.setAlias(None, None)
+        target.setAlias(None, None)
         self.assertEqual('TBD', 'TBD')
 
     def test_target_type_attribute_should_return_a_string(self):
@@ -126,6 +127,6 @@ class TestSpiderFootTarget(unittest.TestCase):
         matches = target.matches(None)
         self.assertEqual(bool, type(matches))
 
+
 if __name__ == '__main__':
     unittest.main()
-

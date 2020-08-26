@@ -12,9 +12,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import time
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_subdomain_takeover(SpiderFootPlugin):
     """Subdomain Takeover:Footprint,Investigate:Crawling and Scanning::Check if affiliated subdomains are vulnerable to takeover."""
@@ -22,9 +21,9 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
     meta = {
         'name': "Subdomain Takeover",
         'summary': "Check if affiliated subdomains are vulnerable to takeover.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Crawling and Scanning" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Crawling and Scanning"]
     }
 
     # Default options
@@ -64,7 +63,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
         try:
             self.fingerprints = json.loads(content)
         except Exception as e:
-            self.sf.error("Unable to parse subdomain takeover fingerprints list.", False)
+            self.sf.error(f"Unable to parse subdomain takeover fingerprints list: {e}", False)
             self.errorState = True
             return None
 
@@ -90,7 +89,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "AFFILIATE_INTERNET_NAME":
             for data in self.fingerprints:

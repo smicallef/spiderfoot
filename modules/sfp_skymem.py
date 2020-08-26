@@ -13,7 +13,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_skymem(SpiderFootPlugin):
@@ -22,9 +22,9 @@ class sfp_skymem(SpiderFootPlugin):
     meta = {
         'name': "Skymem",
         'summary': "Look up e-mail addresses on Skymem.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "http://www.skymem.info/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -76,7 +76,7 @@ class sfp_skymem(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Get e-mail addresses on this domain
         res = self.sf.fetchUrl("http://www.skymem.info/srch?q=" + eventData, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
@@ -138,7 +138,7 @@ class sfp_skymem(SpiderFootPlugin):
 
             # Check if we're on the last page of results
             max_page = 0
-            pages = re.findall(r'/domain/' + domain_id + '\?p=(\d+)', res['content'])
+            pages = re.findall(r'/domain/' + domain_id + r'\?p=(\d+)', res['content'])
             for p in pages:
                 if int(p) >= max_page:
                     max_page = int(p)

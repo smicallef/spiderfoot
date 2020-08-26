@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import dns.resolver
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_cleanbrowsing(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
     meta = {
         'name': "Cleanbrowsing.org",
         'summary': "Check if a host would be blocked by Cleanbrowsing.org DNS",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://cleanbrowsing.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -76,13 +76,13 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
-        res.nameservers = [ "185.228.168.168", "185.228.168.169" ]
+        res.nameservers = ["185.228.168.168", "185.228.168.169"]
 
         try:
             addrs = res.query(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + qaddr)
+        except BaseException:
+            self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
         if addrs:
@@ -97,7 +97,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
         parentEvent = event
         resolved = False
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return None
@@ -108,7 +108,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
         try:
             if self.sf.resolveHost(eventData):
                 resolved = True
-        except BaseException as e:
+        except BaseException:
             return None
 
         if resolved:

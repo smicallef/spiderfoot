@@ -11,7 +11,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_myspace(SpiderFootPlugin):
     """MySpace:Footprint,Investigate,Passive:Social Media::Gather username and location from MySpace.com profiles."""
@@ -19,9 +19,9 @@ class sfp_myspace(SpiderFootPlugin):
     meta = {
         'name': "MySpace",
         'summary': "Gather username and location from MySpace.com profiles.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Social Media" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Social Media"],
         'dataSource': {
             'website': "https://myspace.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -58,11 +58,11 @@ class sfp_myspace(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "EMAILADDR", "SOCIAL_MEDIA" ]
+        return ["EMAILADDR", "SOCIAL_MEDIA"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "SOCIAL_MEDIA", "GEOINFO" ]
+        return ["SOCIAL_MEDIA", "GEOINFO"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -75,7 +75,7 @@ class sfp_myspace(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Search by email address
         if eventName == "EMAILADDR":
@@ -100,8 +100,8 @@ class sfp_myspace(SpiderFootPlugin):
 
             # Check for email address as name, at the risk of missed results.
             try:
-                matches = re.findall('<a href=\"\/([a-zA-Z0-9_]+)\".*[\&; :\"\#\*\(\"\'\;\,\>\.\?\!]+' + email + '[\&; :\"\#\*\)\"\'\;\,\<\.\?\!]+', profile, re.IGNORECASE)
-            except BaseException as e:
+                matches = re.findall(r'<a href=\"\/([a-zA-Z0-9_]+)\".*[\&; :\"\#\*\(\"\'\;\,\>\.\?\!]+' + email + r'[\&; :\"\#\*\)\"\'\;\,\<\.\?\!]+', profile, re.IGNORECASE)
+            except BaseException:
                 self.sf.debug("Malformed e-mail address, skipping.")
                 return None
 

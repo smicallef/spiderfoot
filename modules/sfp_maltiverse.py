@@ -11,10 +11,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 from netaddr import IPNetwork
 import json
 from datetime import datetime
+
 
 class sfp_maltiverse(SpiderFootPlugin):
     """Maltiverse:Investigate,Passive:Reputation Systems::Obtain information about any malicious activities involving IP addresses"""
@@ -22,9 +23,9 @@ class sfp_maltiverse(SpiderFootPlugin):
     meta = {
         'name': "Maltiverse",
         'summary': "Obtain information about any malicious activities involving IP addresses",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://maltiverse.com",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -35,8 +36,8 @@ class sfp_maltiverse(SpiderFootPlugin):
             'favIcon': "https://maltiverse.com/favicon.ico",
             'logo': "https://maltiverse.com/assets/images/logo/logo.png",
             'description': "The Open IOC Search Engine.\n"
-                                "Enhance your SIEM or Firewall and crosscheck your event data with "
-                                "top quality Threat Intelligence information to highlight what requires action.",
+                           "Enhance your SIEM or Firewall and crosscheck your event data with "
+                           "top quality Threat Intelligence information to highlight what requires action.",
         }
     }
 
@@ -60,7 +61,7 @@ class sfp_maltiverse(SpiderFootPlugin):
     }
 
     results = None
-    errorState = False  
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -68,33 +69,33 @@ class sfp_maltiverse(SpiderFootPlugin):
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-        
+
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):
         return ["IP_ADDRESS", "NETBLOCK_OWNER", "NETBLOCK_MEMBER",
-            "AFFILIATE_IPADDR"]
+                "AFFILIATE_IPADDR"]
 
     # What events this module produces
     def producedEvents(self):
         return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
-            "MALICIOUS_AFFILIATE_IPADDR"]
+                "MALICIOUS_AFFILIATE_IPADDR"]
 
     # Check whether the IP Address is malicious using Maltiverse API
     # https://app.swaggerhub.com/apis-docs/maltiverse/api/1.0.0-oas3#/IPv4/getIP
     def queryIPAddress(self, qry):
 
         headers = {
-            'Accept' : "application/json",
+            'Accept': "application/json",
         }
 
         res = self.sf.fetchUrl(
-          'https://api.maltiverse.com/ip/' + str(qry),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://api.maltiverse.com/ip/' + str(qry),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
-        
+
         if res['code'] == "400":
             self.sf.error("Bad request. " + qry + " is not a valid IP Address", False)
             return None
@@ -109,51 +110,50 @@ class sfp_maltiverse(SpiderFootPlugin):
 
         try:
             # Maltiverse returns \\n instead of \n in the response
-            data =  str(res['content']).replace("\\n"," ")
-            return json.loads(data) 
-        except:
-            self.sf.error("Ill formatted data received as JSON response", False)
+            data = str(res['content']).replace("\\n", " ")
+            return json.loads(data)
+        except BaseException:
+            self.sf.error("Incorrectly formatted data received as JSON response", False)
             return None
-         
+
     # Handle events sent to this module
     def handleEvent(self, event):
-        
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        
+
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
-                
+
+        self.results[eventData] = True
+
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxnetblock']))
-                    return None
-        
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxnetblock']))
+                return None
+
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxsubnet']))
-                    return None
-                    
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxsubnet']))
+                return None
+
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
@@ -169,27 +169,27 @@ class sfp_maltiverse(SpiderFootPlugin):
 
             if self.checkForStop():
                 return None
-            
+
             data = self.queryIPAddress(addr)
 
             if data is None:
                 break
-            
+
             maliciousIP = data.get('ip_addr')
-        
+
             if maliciousIP is None:
                 continue
 
             if addr != maliciousIP:
                 self.sf.error("Reported address doesn't match requested, skipping", False)
                 continue
-            
+
             blacklistedRecords = data.get('blacklist')
 
             if blacklistedRecords is None or len(blacklistedRecords) == 0:
                 self.sf.debug("No blacklist information found for IP")
                 continue
-            
+
             # Data is reported about the IP Address
             if eventName.startswith("NETBLOCK_"):
                 ipEvt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
@@ -201,8 +201,8 @@ class sfp_maltiverse(SpiderFootPlugin):
             else:
                 evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
                 self.notifyListeners(evt)
-            
-            maliciousIPDesc = "Maltiverse [" + str(maliciousIP) + " ]\n"
+
+            maliciousIPDesc = f"Maltiverse [{maliciousIP}]\n"
 
             for blacklistedRecord in blacklistedRecords:
                 lastSeen = blacklistedRecord.get('last_seen')
@@ -211,25 +211,25 @@ class sfp_maltiverse(SpiderFootPlugin):
 
                 try:
                     lastSeenDate = datetime.strptime(str(lastSeen), "%Y-%m-%d %H:%M:%S")
-                except:
+                except BaseException:
                     self.sf.error("Invalid date in JSON response, skipping", False)
                     continue
-                                
+
                 today = datetime.now()
-                
+
                 difference = (today - lastSeenDate).days
-                
+
                 if difference > int(self.opts["age_limit_days"]):
                     self.sf.debug("Record found is older than age limit, skipping")
                     continue
-                
+
                 maliciousIPDesc += " - DESCRIPTION : " + str(blacklistedRecord.get("description")) + "\n"
-                            
+
             maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)
 
             if maliciousIPDescHash in self.results:
                 continue
-            
+
             self.results[maliciousIPDescHash] = True
 
             if eventName.startswith("NETBLOCK_"):
@@ -238,7 +238,7 @@ class sfp_maltiverse(SpiderFootPlugin):
                 evt = SpiderFootEvent("MALICIOUS_AFFILIATE_IPADDR", maliciousIPDesc, self.__name__, event)
             else:
                 evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
-            
+
             self.notifyListeners(evt)
 
         return None

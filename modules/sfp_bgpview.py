@@ -12,7 +12,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_bgpview(SpiderFootPlugin):
     """BGPView:Investigate,Footprint,Passive:Search Engines::Obtain network information from BGPView API."""
@@ -20,9 +20,9 @@ class sfp_bgpview(SpiderFootPlugin):
     meta = {
         'name': "BGPView",
         'summary': "Obtain network information from BGPView API.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Footprint", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Footprint", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://bgpview.io/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -151,10 +151,10 @@ class sfp_bgpview(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         self.results[eventData] = True

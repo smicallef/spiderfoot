@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_bingsharedip(SpiderFootPlugin):
@@ -20,9 +20,9 @@ class sfp_bingsharedip(SpiderFootPlugin):
     meta = {
         'name': "Bing (Shared IPs)",
         'summary': "Search Bing for hosts sharing the same IP.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://www.bing.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -94,7 +94,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "" and self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_bingsharedip but did not set a Bing API key!", False)
@@ -103,7 +103,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         # Ignore IP addresses from myself as they are just for creating

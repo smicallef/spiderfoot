@@ -12,7 +12,7 @@
 
 import json
 import base64
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_riskiq(SpiderFootPlugin):
     """RiskIQ:Investigate,Passive:Reputation Systems:apikey:Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases."""
@@ -20,9 +20,9 @@ class sfp_riskiq(SpiderFootPlugin):
     meta = {
         'name': "RiskIQ",
         'summary': "Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://community.riskiq.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -127,7 +127,7 @@ class sfp_riskiq(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=headers,
                                postData=post)
 
-        if res['code'] in [ "400", "429", "500", "403" ]:
+        if res['code'] in ["400", "429", "500", "403"]:
             self.sf.error("RiskIQ access seems to have been rejected or you have exceeded usage limits.", False)
             self.errorState = True
             return None
@@ -142,7 +142,7 @@ class sfp_riskiq(SpiderFootPlugin):
                 self.sf.info("No RiskIQ info found for " + qry)
                 return None
         except BaseException as e:
-            self.sf.error("Invalid JSON returned by RiskIQ.", False)
+            self.sf.error(f"Invalid JSON returned by RiskIQ: {e}", False)
             return None
 
         return ret['results']
@@ -157,7 +157,7 @@ class sfp_riskiq(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Ignore messages from myself
         if srcModuleName == "sfp_riskiq":
@@ -171,12 +171,12 @@ class sfp_riskiq(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True
 
-        if eventName in [ 'DOMAIN_NAME' ]:
+        if eventName in ['DOMAIN_NAME']:
             ret = self.query(eventData, "PSSL")
             if not ret:
                 self.sf.info("No RiskIQ passive SSL data found for " + eventData)
@@ -220,7 +220,7 @@ class sfp_riskiq(SpiderFootPlugin):
 
             return None
 
-        if eventName in [ 'IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME' ]:
+        if eventName in ['IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME']:
             ret = self.query(eventData, "PDNS")
             if not ret:
                 self.sf.info("No RiskIQ passive DNS data found for " + eventData)
@@ -237,7 +237,7 @@ class sfp_riskiq(SpiderFootPlugin):
                         # We found a co-host
                         cohosts.append(r['focusPoint'])
 
-            if eventName in [ "INTERNET_NAME", "DOMAIN_NAME" ]:
+            if eventName in ["INTERNET_NAME", "DOMAIN_NAME"]:
                 # Record could be an A/CNAME of this entity, or something pointing to it
                 for r in ret:
                     if r['focusPoint'].endswith("."):

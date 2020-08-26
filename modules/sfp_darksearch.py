@@ -14,7 +14,7 @@
 import json
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_darksearch(SpiderFootPlugin):
     """Darksearch:Footprint,Investigate:Search Engines::Search the Darksearch.io Tor search engine for mentions of the target domain."""
@@ -22,9 +22,9 @@ class sfp_darksearch(SpiderFootPlugin):
     meta = {
         'name': "Darksearch",
         'summary': "Search the Darksearch.io Tor search engine for mentions of the target domain.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://darksearch.io/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -111,7 +111,7 @@ class sfp_darksearch(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         page = 1
         pages = self.opts['max_pages']
@@ -181,7 +181,7 @@ class sfp_darksearch(SpiderFootPlugin):
                     try:
                         startIndex = res['content'].index(eventData) - 120
                         endIndex = startIndex + len(eventData) + 240
-                    except BaseException as e:
+                    except BaseException:
                         self.sf.debug("String not found in content.")
                         continue
 

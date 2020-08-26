@@ -13,7 +13,7 @@ import json
 import time
 import base64
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_scylla(SpiderFootPlugin):
     """Scylla:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Gather breach data from Scylla API."""
@@ -21,9 +21,9 @@ class sfp_scylla(SpiderFootPlugin):
     meta = {
         'name': "Scylla",
         'summary': "Gather breach data from Scylla API.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://scylla.sh/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -47,8 +47,8 @@ class sfp_scylla(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'pause':     "Number of seconds to pause between fetches.",
-        'per_page':  "Maximum number of results per page.",
+        'pause': "Number of seconds to pause between fetches.",
+        'per_page': "Maximum number of results per page.",
         'max_pages': "Maximum number of pages of results to fetch."
     }
 
@@ -65,11 +65,11 @@ class sfp_scylla(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'DOMAIN_NAME' ]
+        return ['DOMAIN_NAME']
 
     # What events this module produces
     def producedEvents(self):
-        return [ 'EMAILADDR_COMPROMISED', 'PASSWORD_COMPROMISED', 'HASH_COMPROMISED', 'RAW_RIR_DATA' ]
+        return ['EMAILADDR_COMPROMISED', 'PASSWORD_COMPROMISED', 'HASH_COMPROMISED', 'RAW_RIR_DATA']
 
     # Query Scylla API
     def query(self, qry, per_page=20, start=0):
@@ -126,7 +126,7 @@ class sfp_scylla(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         position = 0
         max_pages = int(self.opts['max_pages'])

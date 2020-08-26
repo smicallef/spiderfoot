@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 from netaddr import IPNetwork
 import urllib.request, urllib.parse, urllib.error
 import json
@@ -22,9 +22,9 @@ class sfp_phishstats(SpiderFootPlugin):
     meta = {
         'name': "PhishStats",
         'summary': "Determine if an IP Address is malicious",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://phishstats.info/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -67,13 +67,21 @@ class sfp_phishstats(SpiderFootPlugin):
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_OWNER", "NETBLOCK_MEMBER",
-            "AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "NETBLOCK_OWNER",
+            "NETBLOCK_MEMBER",
+            "AFFILIATE_IPADDR"
+        ]
 
     # What events this module produces
     def producedEvents(self):
-        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
-            "MALICIOUS_AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "MALICIOUS_IPADDR",
+            "RAW_RIR_DATA",
+            "MALICIOUS_AFFILIATE_IPADDR"
+        ]
 
     # Check whether the IP Address is malicious using Phishstats API
     # https://phishstats.info/
@@ -84,7 +92,7 @@ class sfp_phishstats(SpiderFootPlugin):
         }
 
         headers = {
-            'Accept' : "application/json",
+            'Accept': "application/json",
         }
 
         res = self.sf.fetchUrl(
@@ -114,11 +122,11 @@ class sfp_phishstats(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True
@@ -126,22 +134,22 @@ class sfp_phishstats(SpiderFootPlugin):
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxnetblock']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxnetblock']))
+                return None
         
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxsubnet']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxsubnet']))
+                return None
                     
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):

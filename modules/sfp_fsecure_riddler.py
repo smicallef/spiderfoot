@@ -12,7 +12,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_fsecure_riddler(SpiderFootPlugin):
     """F-Secure Riddler.io:Investigate,Footprint,Passive:Search Engines:apikey:Obtain network information from F-Secure Riddler.io API."""
@@ -20,9 +20,9 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
     meta = {
         'name': "F-Secure Riddler.io",
         'summary': "Obtain network information from F-Secure Riddler.io API.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Footprint", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Footprint", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://riddler.io/",
             'model': "PRIVATE_ONLY",
@@ -139,7 +139,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
 
         time.sleep(1)
 
-        if res['code'] in [ "400", "401", "402", "403" ]:
+        if res['code'] in ["400", "401", "402", "403"]:
             self.sf.error('Unexpected HTTP response code: ' + res['code'], False)
             self.errorState = True
             return None
@@ -167,14 +167,14 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == 'sfp_fsecure_riddler':
             self.sf.debug("Ignoring " + eventData + ", from self.")
             return None
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         if self.opts['username'] == '' or self.opts['password'] == '':

@@ -14,7 +14,7 @@
 import json
 import hashlib
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_gravatar(SpiderFootPlugin):
     """Gravatar:Footprint,Investigate,Passive:Social Media::Retrieve user information from Gravatar API."""
@@ -22,9 +22,9 @@ class sfp_gravatar(SpiderFootPlugin):
     meta = {
         'name': "Gravatar",
         'summary': "Retrieve user information from Gravatar API.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Social Media" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Social Media"],
             'dataSource': {
             'website': "https://secure.gravatar.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -74,7 +74,7 @@ class sfp_gravatar(SpiderFootPlugin):
     # https://secure.gravatar.com/site/implement/
     # https://secure.gravatar.com/site/implement/profiles/
     def query(self, qry):
-        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest() # nosec
+        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # nosec
         output = 'json'
 
         res = self.sf.fetchUrl("https://secure.gravatar.com/" + email_hash + '.' + output,
@@ -112,7 +112,7 @@ class sfp_gravatar(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 

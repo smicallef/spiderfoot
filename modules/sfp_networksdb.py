@@ -14,7 +14,7 @@
 import json
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_networksdb(SpiderFootPlugin):
     """NetworksDB:Footprint,Investigate,Passive:Passive DNS:apikey:Search NetworksDB.io API for IP address and domain information."""
@@ -22,9 +22,9 @@ class sfp_networksdb(SpiderFootPlugin):
     meta = {
         'name': "NetworksDB",
         'summary': "Search NetworksDB.io API for IP address and domain information.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"],
         'dataSource': {
             'website': "https://networksdb.io/",
             'model': "FREE_AUTH_LIMITED",
@@ -233,7 +233,7 @@ class sfp_networksdb(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from NetworksDB.", False)
+            self.sf.error(f"Error processing JSON response from NetworksDB: {e}", False)
             return None
 
         if data.get('warning'):
@@ -263,7 +263,7 @@ class sfp_networksdb(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             data = self.queryIpInfo(eventData)

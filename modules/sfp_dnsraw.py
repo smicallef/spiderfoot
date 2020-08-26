@@ -16,7 +16,7 @@ import re
 import dns.resolver
 import dns.query
 import dns.rdatatype
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsraw(SpiderFootPlugin):
     """DNS Raw Records:Footprint,Investigate,Passive:DNS::Retrieves raw DNS records such as MX, TXT and others."""
@@ -24,9 +24,9 @@ class sfp_dnsraw(SpiderFootPlugin):
     meta = {
         'name': "DNS Raw Records",
         'summary': "Retrieves raw DNS records such as MX, TXT and others.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "DNS" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["DNS"]
     }
 
     # Default options
@@ -71,7 +71,7 @@ class sfp_dnsraw(SpiderFootPlugin):
         eventDataHash = self.sf.hashstring(eventData)
         parentEvent = event
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
             self.sf.debug("Skipping duplicate event for " + eventData)

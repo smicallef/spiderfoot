@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_opencorporates(SpiderFootPlugin):
     """OpenCorporates:Passive,Footprint,Investigate:Search Engines::Look up company information from OpenCorporates."""
@@ -20,9 +20,9 @@ class sfp_opencorporates(SpiderFootPlugin):
     meta = {
         'name': "OpenCorporates",
         'summary': "Look up company information from OpenCorporates.",
-        'flags': [ "" ],
-        'useCases': [ "Passive", "Footprint", "Investigate" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Passive", "Footprint", "Investigate"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://opencorporates.com",
             'model': "FREE_NOAUTH_LIMITED",
@@ -62,11 +62,11 @@ class sfp_opencorporates(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "COMPANY_NAME" ]
+        return ["COMPANY_NAME"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "COMPANY_NAME", "PHYSICAL_ADDRESS", "RAW_RIR_DATA" ]
+        return ["COMPANY_NAME", "PHYSICAL_ADDRESS", "RAW_RIR_DATA"]
 
     # Search for company name
     # https://api.opencorporates.com/documentation/API-Reference
@@ -182,12 +182,12 @@ class sfp_opencorporates(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Search for the company
         res = self.searchCompany(eventData + "*")

@@ -15,7 +15,7 @@
 import phonenumbers
 from phonenumbers import carrier
 #from phonenumbers import geocoder
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_phone(SpiderFootPlugin):
     """Phone Number Extractor:Passive,Footprint,Investigate:Content Analysis::Identify phone numbers in scraped webpages."""
@@ -23,9 +23,9 @@ class sfp_phone(SpiderFootPlugin):
     meta = {
         'name': "Phone Number Extractor",
         'summary': "Identify phone numbers in scraped webpages.",
-        'flags': [ "" ],
-        'useCases': [ "Passive", "Footprint", "Investigate" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Passive", "Footprint", "Investigate"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -63,15 +63,14 @@ class sfp_phone(SpiderFootPlugin):
         else:
             self.results[sourceData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ['TARGET_WEB_CONTENT', 'DOMAIN_WHOIS', 'NETBLOCK_WHOIS']:
             # Make potential phone numbers more friendly to parse
             content = eventData.replace('.', '-')
 
             for match in phonenumbers.PhoneNumberMatcher(content, region=None):
-                n = phonenumbers.format_number(match.number,
-                                           phonenumbers.PhoneNumberFormat.E164)
+                n = phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.E164)
                 evt = SpiderFootEvent("PHONE_NUMBER", n, self.__name__, event)
                 if event.moduleDataSource:
                     evt.moduleDataSource = event.moduleDataSource

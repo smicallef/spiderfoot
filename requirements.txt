@@ -15,8 +15,7 @@ pygexf>=0.2.2
 PyPDF2>=1.26.0
 stem>=1.7.1
 python-whois>=0.7.1
-future
-secure
+secure>=0.2.1
 pyOpenSSL>=17.5.0
 python-docx>=0.8.10
 python-pptx>=0.6.18

@@ -13,7 +13,7 @@
 
 import threading
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_s3bucket(SpiderFootPlugin):
     """Amazon S3 Bucket Finder:Footprint,Passive:Crawling and Scanning::Search for potential Amazon S3 buckets associated with the target and attempt to list their contents."""
@@ -21,9 +21,9 @@ class sfp_s3bucket(SpiderFootPlugin):
     meta = {
         'name': "Amazon S3 Bucket Finder",
         'summary': "Search for potential Amazon S3 buckets associated with the target and attempt to list their contents.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Crawling and Scanning" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Crawling and Scanning"],
         'dataSource': {
             'website': "https://aws.amazon.com/s3/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -70,7 +70,7 @@ class sfp_s3bucket(SpiderFootPlugin):
     def checkSite(self, url):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
-        if res['code'] not in [ "301", "302", "200" ] and \
+        if res['code'] not in ["301", "302", "200"] and \
             (res['content'] is None or "NoSuchBucket" in res['content']):
             self.sf.debug("Not a valid bucket: " + url)
         else:
@@ -82,7 +82,6 @@ class sfp_s3bucket(SpiderFootPlugin):
                     self.s3results[url] = 0
 
     def threadSites(self, siteList):
-        ret = list()
         self.s3results = dict()
         running = True
         i = 0
@@ -147,7 +146,7 @@ class sfp_s3bucket(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_EXTERNAL":
             if ".amazonaws.com" in eventData:
@@ -156,7 +155,7 @@ class sfp_s3bucket(SpiderFootPlugin):
                 self.notifyListeners(evt)
             return None
 
-        targets = [ eventData.replace('.', '') ]
+        targets = [eventData.replace('.', '')]
         kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
         if kw:
             targets.append(kw)

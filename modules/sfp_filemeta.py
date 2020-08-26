@@ -16,9 +16,8 @@ import PyPDF2
 import docx
 import pptx
 import exifread
-import lxml
 import io
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_filemeta(SpiderFootPlugin):
@@ -27,9 +26,9 @@ class sfp_filemeta(SpiderFootPlugin):
     meta = {
         'name': "File Metadata Extractor",
         'summary': "Extracts meta data from documents and images.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -70,7 +69,7 @@ class sfp_filemeta(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return None

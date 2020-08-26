@@ -11,7 +11,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_openbugbounty(SpiderFootPlugin):
     """Open Bug Bounty:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed."""
@@ -19,9 +19,9 @@ class sfp_openbugbounty(SpiderFootPlugin):
     meta = {
         'name': "Open Bug Bounty",
         'summary': "Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://www.openbugbounty.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -102,11 +102,11 @@ class sfp_openbugbounty(SpiderFootPlugin):
         eventData = event.data
         data = list()
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True

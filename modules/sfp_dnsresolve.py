@@ -14,7 +14,8 @@
 import re
 import urllib
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
+
 
 class sfp_dnsresolve(SpiderFootPlugin):
     """DNS Resolver:Footprint,Investigate,Passive:DNS::Resolves Hosts and IP Addresses identified, also extracted from raw content."""
@@ -22,9 +23,9 @@ class sfp_dnsresolve(SpiderFootPlugin):
     meta = {
         'name': "DNS Resolver",
         'summary': "Resolves Hosts and IP Addresses identified, also extracted from raw content.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "DNS" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["DNS"]
     }
 
     # Default options
@@ -80,9 +81,9 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 # If the target was a hostname/sub-domain, we can
                 # add the domain as an alias for the target. But
                 # not if the target was an IP or subnet.
-                #if target.targetType == "INTERNET_NAME":
-                #    dom = self.sf.hostDomain(host, self.opts['_internettlds'])
-                #    target.setAlias(dom, "INTERNET_NAME")
+                # if target.targetType == "INTERNET_NAME":
+                #     dom = self.sf.hostDomain(host, self.opts['_internettlds'])
+                #     target.setAlias(dom, "INTERNET_NAME")
 
         self.sf.info("Aliases identified: " + str(target.targetAliases))
 
@@ -112,7 +113,6 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 "DOMAIN_NAME_PARENT", "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN_NAME",
                 "INTERNET_NAME_UNRESOLVED"]
 
-
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -123,10 +123,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
         parentEvent = event
 
         # Don't be recursive for names
-        if srcModuleName in [ "sfp_dnsresolve" ] and "_NAME" in eventName:
+        if srcModuleName in ["sfp_dnsresolve"] and "_NAME" in eventName:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
             self.sf.debug("Skipping duplicate event.")
@@ -156,14 +156,14 @@ class sfp_dnsresolve(SpiderFootPlugin):
             return None
 
         # Search for IPs/hosts in raw data
-        if eventName not in [ "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", 
-                              "NETBLOCK_OWNER", "IP_ADDRESS", "IPV6_ADDRESS",
-                              "INTERNET_NAME", "AFFILIATE_IPADDR"]:
+        if eventName not in ["CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME",
+                             "NETBLOCK_OWNER", "IP_ADDRESS", "IPV6_ADDRESS",
+                             "INTERNET_NAME", "AFFILIATE_IPADDR"]:
             data = urllib.parse.unquote(eventData).lower()
             # We get literal \n from RAW_RIR_DATA in cases where JSON responses
             # have been str()'d, breaking interpretation of hostnames.
             if eventName == 'RAW_RIR_DATA':
-                data = data.replace('\\n', '\n')
+                data = re.sub(r'(\\x[0-f]{2}|\\n|\\r)', '\n', data)
 
             for name in self.getTarget().getNames():
                 if self.checkForStop():
@@ -173,7 +173,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 if offset < 0:
                     continue
 
-                pat = re.compile(r"[^a-z0-9\-\.]([a-z0-9\-\.]*\." + name + ")", re.DOTALL|re.MULTILINE)
+                pat = re.compile(r"[^a-z0-9\-\.]([a-z0-9\-\.]*\." + name + ")", re.DOTALL | re.MULTILINE)
                 while offset >= 0:
                     # If the target was found at the beginning of the content, skip past it
                     if offset == 0:
@@ -297,7 +297,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if self.getTarget().matches(host):
                 affil = False
             # If the IP the host resolves to is in our
-            # list of aliases, 
+            # list of aliases,
             if not self.sf.validIP(host):
                 hostips = self.sf.resolveHost(host)
                 if hostips:
@@ -323,8 +323,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if htype.endswith("INTERNET_NAME"):
             resolved = self.sf.resolveHost(host)
             if htype == "INTERNET_NAME" and not resolved:
-                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, 
-                                      self.__name__, parentEvent)
+                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, parentEvent)
                 self.notifyListeners(evt)
                 return None
 
@@ -333,7 +332,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         # Report the host
         # Commented this out since CNAMEs weren't being reported.
-        #if host != parentEvent.data and htype != parentEvent.eventType:
+        # TODO: review CNAME handling
+        # if host != parentEvent.data and htype != parentEvent.eventType:
         if host != parentEvent.data:
             evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
             self.notifyListeners(evt)

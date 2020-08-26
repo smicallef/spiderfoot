@@ -11,8 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_email(SpiderFootPlugin):
     """E-Mail Address Extractor:Footprint,Investigate,Passive:Content Analysis::Identify e-mail addresses in any obtained data."""
@@ -20,8 +19,8 @@ class sfp_email(SpiderFootPlugin):
     meta = {
         'name': "E-Mail Address Extractor",
         'summary': "Identify e-mail addresses in any obtained data.",
-        'useCases': [ "Passive", "Investigate", "Footprint" ],
-        'categories': [ "Content Analysis" ]
+        'useCases': ["Passive", "Investigate", "Footprint"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -60,7 +59,7 @@ class sfp_email(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         emails = self.sf.parseEmails(eventData)
         myres = list()

@@ -15,7 +15,7 @@ from datetime import datetime
 import time
 from netaddr import IPNetwork
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pulsedive(SpiderFootPlugin):
     """Pulsedive:Investigate,Passive:Reputation Systems:apikey:Obtain information from Pulsedive's API."""
@@ -23,9 +23,9 @@ class sfp_pulsedive(SpiderFootPlugin):
     meta = {
         'name': "Pulsedive",
         'summary': "Obtain information from Pulsedive's API.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://pulsedive.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -119,7 +119,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from Pulsedive.", False)
+            self.sf.error(f"Error processing JSON response from Pulsedive: {e}", False)
             return None
 
         return info
@@ -133,7 +133,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_pulsedive but did not set an API key!", False)
@@ -142,7 +142,7 @@ class sfp_pulsedive(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         self.results[eventData] = True
@@ -226,7 +226,7 @@ class sfp_pulsedive(SpiderFootPlugin):
                     if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
                         self.sf.debug("Record found but too old, skipping.")
                         continue
-                except BaseException as e:
+                except BaseException:
                     self.sf.debug("Couldn't parse date from Pulsedive so assuming it's OK.")
                 e = SpiderFootEvent(evtType, descr, self.__name__, event)
                 self.notifyListeners(e)

@@ -15,7 +15,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_crossref(SpiderFootPlugin):
     """Cross-Referencer:Footprint:Crawling and Scanning::Identify whether other domains are associated ('Affiliates') of the target."""
@@ -23,9 +23,9 @@ class sfp_crossref(SpiderFootPlugin):
     meta = {
         'name': "Cross-Referencer",
         'summary': "Identify whether other domains are associated ('Affiliates') of the target.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint" ],
-        'categories': [ "Crawling and Scanning" ]
+        'flags': [""],
+        'useCases': ["Footprint"],
+        'categories': ["Crawling and Scanning"]
     }
 
     # Default options
@@ -66,7 +66,7 @@ class sfp_crossref(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # The SIMILARDOMAIN and CO_HOSTED_SITE events supply domains,
         # not URLs. Assume HTTP.
@@ -97,7 +97,7 @@ class sfp_crossref(SpiderFootPlugin):
         matched = False
         for name in self.getTarget().getNames():
             # Search for mentions of our host/domain in the external site's data
-            pat = re.compile("([\.\'\/\"\ ]" + name + "[\.\'\/\"\ ])", re.IGNORECASE)
+            pat = re.compile(r"([\.\'\/\"\ ]" + name + r"[\.\'\/\"\ ])", re.IGNORECASE)
             matches = re.findall(pat, res['content'])
 
             if len(matches) > 0:
@@ -122,7 +122,7 @@ class sfp_crossref(SpiderFootPlugin):
                                        verify=False)
                 if res['content'] is not None:
                     for name in self.getTarget().getNames():
-                        pat = re.compile("([\.\'\/\"\ ]" + name + "[\'\/\"\ ])",
+                        pat = re.compile(r"([\.\'\/\"\ ]" + name + r"[\'\/\"\ ])",
                                          re.IGNORECASE)
                         matches = re.findall(pat, res['content'])
 
@@ -142,3 +142,4 @@ class sfp_crossref(SpiderFootPlugin):
             evt2.moduleDataSource = event.moduleDataSource
             self.notifyListeners(evt2)
 
+# End of sfp_crossref class

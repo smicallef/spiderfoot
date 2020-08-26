@@ -10,9 +10,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import time
 from urllib.parse import urlparse
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sslcert(SpiderFootPlugin):
@@ -21,9 +20,9 @@ class sfp_sslcert(SpiderFootPlugin):
     meta = {
         'name': "SSL Certificate Analyzer",
         'summary': "Gather information about SSL certificates used by the target's HTTPS sites.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Crawling and Scanning" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Crawling and Scanning"]
     }
 
     # Default options
@@ -79,7 +78,7 @@ class sfp_sslcert(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_INTERNAL":
             if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
@@ -92,7 +91,7 @@ class sfp_sslcert(SpiderFootPlugin):
                 if u.port:
                     port = u.port
                 fqdn = self.sf.urlFQDN(eventData.lower())
-            except BaseException as e:
+            except BaseException:
                 self.sf.debug("Couldn't parse URL: " + eventData)
                 return None
         else:
@@ -150,8 +149,8 @@ class sfp_sslcert(SpiderFootPlugin):
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(domain):
-                    self.sf.debug("Host " + domain + " could not be resolved")
-                    evt_type += '_UNRESOLVED'
+                self.sf.debug(f"Host {domain} could not be resolved")
+                evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)
             self.notifyListeners(evt)

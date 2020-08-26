@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import adblockparser
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_adblock(SpiderFootPlugin):
@@ -21,8 +21,8 @@ class sfp_adblock(SpiderFootPlugin):
     meta = {
         'name': "AdBlock Check",
         'summary': "Check if linked pages would be blocked by AdBlock Plus.",
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://adblockplus.org/",
             'model': "FREE_AUTH_LIMITED",
@@ -83,7 +83,7 @@ class sfp_adblock(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return None

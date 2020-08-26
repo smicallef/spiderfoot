@@ -6,13 +6,14 @@ import cherrypy
 from cherrypy.test import helper
 import os
 
+
 class TestSpiderFootWebUiRoutes(helper.CPWebCase):
     @staticmethod
     def setup_server():
         default_config = {
             '_debug': False,  # Debug
-            '__logging': True, # Logging in general
-            '__outputfilter': None, # Event types to filter from modules' output
+            '__logging': True,  # Logging in general
+            '__outputfilter': None,  # Event types to filter from modules' output
             '__blocknotif': False,  # Block notifications
             '_fatalerrors': False,
             '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
@@ -79,7 +80,7 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
         cherrypy.tree.mount(SpiderFootWebUi(default_config), default_config['__docroot'], config=conf)
 
     def test_invalid_page_returns_404(self):
-        data = self.getPage("/doesnotexist")
+        self.getPage("/doesnotexist")
         self.assertStatus('404 Not Found')
 
     def test_static_returns_200(self):
@@ -292,47 +293,48 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
 
         self.assertEqual('TBD', 'TBD')
 
+
 class TestSpiderFootWebUi(unittest.TestCase):
     """
     Test SpiderFootWebUi
     """
     default_options = {
-      '_debug': False,
-      '__logging': True,
-      '__outputfilter': None,
-      '__blocknotif': False,
-      '_fatalerrors': False,
-      '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',
-      '_dnsserver': '',
-      '_fetchtimeout': 5,
-      '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
-      '_internettlds_cache': 72,
-      '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-      '__version__': '3.2-DEV',
-      '__database': 'spiderfoot.test.db',  # note: test database file
-      '__webaddr': '127.0.0.1',
-      '__webport': 5001,
-      '__docroot': '',
-      '__modules__': None,
-      '_socks1type': '',
-      '_socks2addr': '',
-      '_socks3port': '',
-      '_socks4user': '',
-      '_socks5pwd': '',
-      '_socks6dns': True,
-      '_torctlport': 9051,
-      '__logstdout': False
+        '_debug': False,
+        '__logging': True,
+        '__outputfilter': None,
+        '__blocknotif': False,
+        '_fatalerrors': False,
+        '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',
+        '_dnsserver': '',
+        '_fetchtimeout': 5,
+        '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
+        '_internettlds_cache': 72,
+        '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
+        '__version__': '3.2-DEV',
+        '__database': 'spiderfoot.test.db',  # note: test database file
+        '__webaddr': '127.0.0.1',
+        '__webport': 5001,
+        '__docroot': '',
+        '__modules__': None,
+        '_socks1type': '',
+        '_socks2addr': '',
+        '_socks3port': '',
+        '_socks4user': '',
+        '_socks5pwd': '',
+        '_socks6dns': True,
+        '_torctlport': 9051,
+        '__logstdout': False
     }
 
     def test_init_no_options_should_raise(self):
         """
         Test __init__(self, config)
         """
-        with self.assertRaises(TypeError) as cm:
-            sfwebui = SpiderFootWebUi(None)
+        with self.assertRaises(TypeError):
+            SpiderFootWebUi(None)
 
-        with self.assertRaises(ValueError) as cm:
-            sfwebui = SpiderFootWebUi(dict())
+        with self.assertRaises(ValueError):
+            SpiderFootWebUi(dict())
 
     @unittest.skip("todo")
     def test_init(self):
@@ -341,7 +343,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         sfwebui = SpiderFootWebUi(self.default_options)
         self.assertIsInstance(sfwebui, SpiderFootWebUi)
- 
+
     @unittest.skip("todo")
     def test_error_page(self):
         """
@@ -379,8 +381,8 @@ class TestSpiderFootWebUi(unittest.TestCase):
         invalid_types = [None, "", dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
-                    clean_user_input = sfwebui.cleanUserInput(invalid_type)
+                with self.assertRaises(TypeError):
+                    sfwebui.cleanUserInput(invalid_type)
 
     def test_search_base_should_return_a_list(self):
         """
@@ -771,6 +773,6 @@ class TestSpiderFootWebUi(unittest.TestCase):
         scan_element_type_discovery = sfwebui.scanelementtypediscovery(None, None)
         self.assertIsInstance(scan_element_type_discovery, str)
 
+
 if __name__ == '__main__':
     unittest.main()
-

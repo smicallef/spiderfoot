@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 from netaddr import IPNetwork
 import json
 
@@ -21,9 +21,9 @@ class sfp_spur(SpiderFootPlugin):
     meta = {
         'name': "spur.us",
         'summary': "Obtain information about any malicious activities involving IP addresses found",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://spur.us/",
             'model': "COMMERCIAL ONLY",
@@ -78,13 +78,23 @@ class sfp_spur(SpiderFootPlugin):
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_OWNER", "NETBLOCK_MEMBER",
-            "AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "NETBLOCK_OWNER",
+            "NETBLOCK_MEMBER",
+            "AFFILIATE_IPADDR"
+        ]
 
     # What events this module produces
     def producedEvents(self):
-        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
-            "GEO_INFO", "COMPANY_NAME", "MALICIOUS_AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "MALICIOUS_IPADDR",
+            "RAW_RIR_DATA",
+            "GEO_INFO",
+            "COMPANY_NAME",
+            "MALICIOUS_AFFILIATE_IPADDR"
+        ]
     
     # Check whether the IP Address is malicious using spur.us API
     # https://spur.us/app/docs
@@ -130,7 +140,7 @@ class sfp_spur(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
@@ -141,31 +151,30 @@ class sfp_spur(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
 
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxnetblock']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxnetblock']))
+                return None
         
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxsubnet']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                self.sf.debug("Network size bigger than permitted: " +
+                              str(IPNetwork(eventData).prefixlen) + " > " +
+                              str(self.opts['maxsubnet']))
+                return None
                     
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -190,11 +199,10 @@ class sfp_spur(SpiderFootPlugin):
                 
             data = json.loads(content)
             
+            # For netblocks, create the event for the IP address to link to later
             if eventName.startswith("NETBLOCK_"):
                 ipEvt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
-                self.notifyListeners(evt)
-
-            if eventName.startswith("NETBLOCK_"):
+                self.notifyListeners(ipEvt)
                 evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, ipEvt)
                 self.notifyListeners(evt)
             else:
@@ -251,7 +259,7 @@ class sfp_spur(SpiderFootPlugin):
             if vpnOperatorsExists:
                 vpnOperatorNames = vpnOperators.get('operators')
 
-                maliciousIPDesc = "spur.us [ " + str(addr) + " ]\n"
+                maliciousIPDesc = "spur.us [" + str(addr) + "]\n"
                 maliciousIPDesc += "VPN Operators : "
 
                 for operatorNameDict in vpnOperatorNames:

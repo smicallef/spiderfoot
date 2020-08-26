@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import dns.resolver
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_cloudflaredns(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_cloudflaredns(SpiderFootPlugin):
     meta = {
         'name': "CloudFlare Malware DNS",
         'summary': "Check if a host would be blocked by CloudFlare Malware-blocking DNS",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://www.cloudflare.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -69,13 +69,13 @@ class sfp_cloudflaredns(SpiderFootPlugin):
 
     def queryAddr(self, qaddr):
         res = dns.resolver.Resolver()
-        res.nameservers = [ "1.1.1.2", "1.0.0.2" ]
+        res.nameservers = ["1.1.1.2", "1.0.0.2"]
 
         try:
             addrs = res.query(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
-        except BaseException as e:
-            self.sf.debug("Unable to resolve " + qaddr)
+        except BaseException:
+            self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
         if addrs:
@@ -95,7 +95,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         parentEvent = event
         resolved = False
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return None
@@ -106,7 +106,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         try:
             if self.sf.resolveHost(eventData):
                 resolved = True
-        except BaseException as e:
+        except BaseException:
             return None
 
         if resolved:

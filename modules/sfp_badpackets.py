@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 from netaddr import IPNetwork
 import urllib.request, urllib.parse, urllib.error
 import json
@@ -22,9 +22,9 @@ class sfp_badpackets(SpiderFootPlugin):
     meta = {
         'name': "Bad Packets",
         'summary': "Obtain information about any malicious activities involving IP addresses found",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://badpackets.net",
             'model': "COMMERCIAL_ONLY",
@@ -140,7 +140,7 @@ class sfp_badpackets(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from Bad Packets.", False)
+            self.sf.error(f"Error processing JSON response from Bad Packets: {e}", False)
             return None
 
         return data
@@ -154,7 +154,7 @@ class sfp_badpackets(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
@@ -165,30 +165,26 @@ class sfp_badpackets(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxnetblock']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {self.opts['maxnetblock']}")
+                return None
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                str(IPNetwork(eventData).prefixlen) + " > " +
-                                str(self.opts['maxsubnet']))
-                    return None
+
+            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {self.opts['maxsubnet']}")
+                return None
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -246,7 +242,7 @@ class sfp_badpackets(SpiderFootPlugin):
                             continue
 
                         if maliciousIP:
-                            maliciousIPDesc = "Bad Packets [ " + str(maliciousIP) + " ]\n"
+                            maliciousIPDesc = "Bad Packets [" + str(maliciousIP) + "]\n"
 
                             try:
                                 category = record.get('tags')[0].get('category')

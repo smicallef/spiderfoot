@@ -14,7 +14,7 @@ import datetime
 import re
 import urllib.request, urllib.parse, urllib.error
 from html.parser import HTMLParser
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_wikipediaedits(SpiderFootPlugin):
     """Wikipedia Edits:Footprint,Investigate,Passive:Secondary Networks::Identify edits to Wikipedia articles made from a given IP address or username."""
@@ -22,9 +22,9 @@ class sfp_wikipediaedits(SpiderFootPlugin):
     meta = {
         'name': "Wikipedia Edits",
         'summary': "Identify edits to Wikipedia articles made from a given IP address or username.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Secondary Networks" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Secondary Networks"],
         'dataSource': {
             'website': "https://www.wikipedia.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -120,11 +120,11 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         self.results[eventData] = True

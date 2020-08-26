@@ -13,18 +13,18 @@
 
 import datetime
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_archiveorg(SpiderFootPlugin):
     """Archive.org:Footprint,Passive:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
-	
+
     meta = { 
         'name': "Archive.org",
         'summary': "Identifies historic versions of interesting files/pages from the Wayback Machine.",
-        'flags': [ "slow" ],
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["slow"],
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://archive.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -108,7 +108,7 @@ class sfp_archiveorg(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "INTERESTING_FILE" and not self.opts['intfiles']:
             return None
@@ -150,11 +150,11 @@ class sfp_archiveorg(SpiderFootPlugin):
             try:
                 ret = json.loads(res['content'])
             except BaseException as e:
+                self.sf.debug(f"Error processing JSON response: {e}")
                 ret = None
 
             if ret == None:
-                self.sf.error("Unable to process empty response from archive.org: " + \
-                              eventData, False)
+                self.sf.error("Unable to process empty response from archive.org: {eventData}", False)
                 continue
 
             if len(ret['archived_snapshots']) < 1:

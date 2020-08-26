@@ -12,7 +12,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_hybrid_analysis(SpiderFootPlugin):
     """Hybrid Analysis:Footprint,Investigate,Passive:Reputation Systems:apikey:Search Hybrid Analysis for domains and URLs related to the target."""
@@ -20,9 +20,9 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
     meta = {
         'name': "Hybrid Analysis",
         'summary': "Search Hybrid Analysis for domains and URLs related to the target.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "www.hybrid-analysis.com",
             'model': "FREE_AUTH_UNLIMITED",
@@ -144,7 +144,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             "hash": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
         headers = {
-            "Accept" : "application/json",
+            "Accept": "application/json",
             'api-key': self.opts['api_key']
         }
         res = self.sf.fetchUrl(
@@ -187,7 +187,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data
@@ -209,7 +209,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName not in ["IP_ADDRESS", "DOMAIN_NAME"]:
             return None

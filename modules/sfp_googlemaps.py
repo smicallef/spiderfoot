@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlemaps(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_googlemaps(SpiderFootPlugin):
     meta = {
         'name': "Google Maps",
         'summary': "Identifies potential physical addresses and latitude/longitude coordinates.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Real World" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Real World"],
         'dataSource': {
             'website': "https://cloud.google.com/maps-platform/",
             'model': "FREE_AUTH_LIMITED",
@@ -86,7 +86,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_googlemaps but did not set an API key!", False)
@@ -95,7 +95,7 @@ class sfp_googlemaps(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True
@@ -118,11 +118,10 @@ class sfp_googlemaps(SpiderFootPlugin):
             if eventName in ["PHYSICAL_ADDRESS", "DOMAIN_NAME"] and \
                srcModuleName != "sfp_googlemaps":
                 if 'geometry' in data:
-                        lat = str(data['geometry']['location']['lat'])
-                        lng = str(data['geometry']['location']['lng'])
-                        evt = SpiderFootEvent("PHYSICAL_COORDINATES", lat + "," + lng, 
-                                              self.__name__, event)
-                        self.notifyListeners(evt)
+                    lat = str(data['geometry']['location']['lat'])
+                    lng = str(data['geometry']['location']['lng'])
+                    evt = SpiderFootEvent("PHYSICAL_COORDINATES", lat + "," + lng, self.__name__, event)
+                    self.notifyListeners(evt)
 
             if 'formatted_address' in data:
                 evt = SpiderFootEvent("PHYSICAL_ADDRESS", data['formatted_address'], 

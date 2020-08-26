@@ -13,17 +13,17 @@
 import json
 import time
 import urllib
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_api_recon_dev(SpiderFootPlugin):
     """api.recon.dev:Footprint,Investigate,Passive:Passive DNS::Search api.recon.dev for subdomains."""
-	
+
     meta = { 
         'name': "api.recon.dev",
         'summary': "Search api.recon.dev for subdomains.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"]
     }
 
     opts = {
@@ -55,13 +55,13 @@ class sfp_api_recon_dev(SpiderFootPlugin):
 
     def queryDomain(self, qry):
         headers = {
-            "Accept" : "application/json"
+            "Accept": "application/json"
         }
         params = {
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
         res = self.sf.fetchUrl(
-            'https://api.recon.dev/search?' +  urllib.parse.urlencode(params),
+            'https://api.recon.dev/search?' + urllib.parse.urlencode(params),
             headers=headers,
             timeout=30,
             useragent=self.opts['_useragent']
@@ -90,7 +90,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         # returns list of results; 'null' when no results; or dict when there's an error
@@ -117,7 +117,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName not in ["DOMAIN_NAME"]:
             return None

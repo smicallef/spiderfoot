@@ -5,6 +5,7 @@ import io
 import sys
 import subprocess
 
+
 class TestSpiderFootCli(unittest.TestCase):
     """
     Test TestSpiderFootCli
@@ -28,10 +29,10 @@ class TestSpiderFootCli(unittest.TestCase):
     def execute(self, command):
         proc = subprocess.Popen(
            command,
-           stdout = subprocess.PIPE,
-           stderr = subprocess.PIPE,
+           stdout=subprocess.PIPE,
+           stderr=subprocess.PIPE,
         )
-        out,err = proc.communicate()
+        out, err = proc.communicate()
         return out, err, proc.returncode
 
     def test_help_arg_should_print_help_and_exit(self):
@@ -102,9 +103,11 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         default = sfcli.complete_default("", "-t -m", None, None)
+        self.assertIsInstance(default, list)
         self.assertEqual('TBD', 'TBD')
 
         default = sfcli.complete_default("", "-m -t", None, None)
+        self.assertIsInstance(default, list)
         self.assertEqual('TBD', 'TBD')
 
     def test_complete_default_invalid_text_should_return_a_string(self):
@@ -181,7 +184,7 @@ class TestSpiderFootCli(unittest.TestCase):
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
-    def test_precmd_should_print_line(self):
+    def test_precmd_should_print_line_to_history_file(self):
         """
         Test precmd(self, line)
         """
@@ -189,11 +192,22 @@ class TestSpiderFootCli(unittest.TestCase):
 
         line = "example line"
 
-        io_output = io.StringIO()
-        sys.stdout = io_output
         precmd = sfcli.precmd(line)
-        sys.stdout = sys.__stdout__
-        output = io_output.getvalue()
+
+        self.assertEqual(line, precmd)
+
+        self.assertEqual('TBD', 'TBD')
+
+    @unittest.skip("todo")
+    def test_precmd_should_print_line_to_spool_file(self):
+        """
+        Test precmd(self, line)
+        """
+        sfcli = SpiderFootCli()
+
+        line = "example line"
+
+        precmd = sfcli.precmd(line)
 
         self.assertEqual(line, precmd)
 
@@ -211,8 +225,6 @@ class TestSpiderFootCli(unittest.TestCase):
         precmd = sfcli.precmd(line)
 
         self.assertEqual(line, precmd)
-
-        self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
     def test_ddprint(self):
@@ -302,7 +314,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         parsed_line = sfcli.myparseline("")
- 
+
         self.assertEqual(len(parsed_line), 2)
         self.assertIsInstance(parsed_line, list)
         self.assertIsInstance(parsed_line[0], list)
@@ -313,7 +325,7 @@ class TestSpiderFootCli(unittest.TestCase):
         Test send_output(self, data, cmd, titles=None, total=True, raw=False)
         """
         sfcli = SpiderFootCli()
- 
+
         io_output = io.StringIO()
         sys.stdout = io_output
         sfcli.send_output("{}", "", raw=True)
@@ -331,7 +343,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_query(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -341,7 +353,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_ping(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -351,7 +363,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_modules(None, None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -361,7 +373,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_types(None, None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -371,7 +383,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_load(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -381,7 +393,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_scaninfo(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -391,7 +403,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_scans(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -401,7 +413,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_data(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -411,7 +423,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_export(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -421,7 +433,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_logs(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -431,7 +443,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_start(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -441,7 +453,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_stop(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -451,7 +463,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_search(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -461,7 +473,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_find(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -471,7 +483,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_summary(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -481,7 +493,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_delete(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     def test_print_topic(self):
@@ -498,7 +510,7 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertIn("Command", output)
         self.assertIn("Description", output)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
@@ -508,7 +520,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         sfcli = SpiderFootCli()
         sfcli.do_set(None)
- 
+
         self.assertEqual('TBD', 'TBD')
 
     def test_do_shell(self):
@@ -536,7 +548,7 @@ class TestSpiderFootCli(unittest.TestCase):
         sfcli.do_clear(None)
         sys.stderr = sys.__stderr__
         output = io_output.getvalue()
- 
+
         self.assertEqual("\x1b[2J\x1b[H", output)
 
     def test_do_exit(self):
@@ -555,6 +567,6 @@ class TestSpiderFootCli(unittest.TestCase):
         do_eof = sfcli.do_EOF(None)
         self.assertTrue(do_eof)
 
+
 if __name__ == '__main__':
     unittest.main()
-

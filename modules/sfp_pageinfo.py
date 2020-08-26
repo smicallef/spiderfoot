@@ -14,7 +14,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 # Indentify pages that use Javascript libs, handle passwords, have forms,
 # permit file uploads and more to come.
@@ -34,9 +34,9 @@ class sfp_pageinfo(SpiderFootPlugin):
     meta = {
         'name': "Page Information",
         'summary': "Obtain information about web pages (do they take passwords, do they contain forms, etc.)",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -78,7 +78,7 @@ class sfp_pageinfo(SpiderFootPlugin):
         eventData = event.data
         eventSource = event.actualSource
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # We aren't interested in describing pages that are not hosted on
         # our base domain.

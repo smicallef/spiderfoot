@@ -13,7 +13,7 @@
 import json
 import urllib.request, urllib.parse, urllib.error
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_numverify(SpiderFootPlugin):
     """numverify:Footprint,Investigate,Passive:Real World:apikey:Lookup phone number location and carrier information from numverify.com."""
@@ -21,9 +21,9 @@ class sfp_numverify(SpiderFootPlugin):
     meta = {
         'name': "numverify",
         'summary': "Lookup phone number location and carrier information from numverify.com.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Real World" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Real World"],
         'dataSource': {
             'website': "http://numverify.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -85,7 +85,7 @@ class sfp_numverify(SpiderFootPlugin):
         params = {
             'number': number.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'country_code': '',
-            'format': '0', # set to "1" for prettified debug output
+            'format': '0',  # set to "1" for prettified debug output
             'access_key': self.opts['api_key']
         }
 
@@ -146,7 +146,7 @@ class sfp_numverify(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 

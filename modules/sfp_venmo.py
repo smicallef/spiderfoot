@@ -11,7 +11,7 @@
 
 import json
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_venmo(SpiderFootPlugin):
     """Venmo:Footprint,Investigate,Passive:Social Media::Gather user information from Venmo API."""
@@ -19,9 +19,9 @@ class sfp_venmo(SpiderFootPlugin):
     meta = {
         'name': "Venmo",
         'summary': "Gather user information from Venmo API.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Social Media" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Social Media"],
         'dataSource': {
             'website': "https://venmo.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -51,11 +51,11 @@ class sfp_venmo(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ 'USERNAME' ]
+        return ['USERNAME']
 
     # What events this module produces
     def producedEvents(self):
-        return [ 'RAW_RIR_DATA' ]
+        return ['RAW_RIR_DATA']
 
     # Query Venmo API
     def query(self, qry):
@@ -94,7 +94,7 @@ class sfp_venmo(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 

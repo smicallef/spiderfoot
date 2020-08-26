@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_botscout(SpiderFootPlugin):
@@ -20,9 +20,9 @@ class sfp_botscout(SpiderFootPlugin):
     meta = {
         'name': "BotScout",
         'summary': "Searches botscout.com's database of spam-bot IPs and e-mail addresses.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Passive", "Investigate" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Passive", "Investigate"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "http://botscout.com/",
             'model': "FREE_NOAUTH_LIMITED",
@@ -84,7 +84,7 @@ class sfp_botscout(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_botscout but did not set an API key!", False)

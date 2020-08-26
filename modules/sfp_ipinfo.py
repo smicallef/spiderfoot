@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_ipinfo(SpiderFootPlugin):
@@ -21,9 +21,9 @@ class sfp_ipinfo(SpiderFootPlugin):
     meta = {
         'name': "IPInfo.io",
         'summary': "Identifies the physical location of IP addresses identified using ipinfo.io.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Real World" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Real World"],
         'dataSource': {
             'website': "https://ipinfo.io",
             'model': "FREE_AUTH_LIMITED",
@@ -95,7 +95,7 @@ class sfp_ipinfo(SpiderFootPlugin):
         try:
             result = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return result
@@ -109,7 +109,7 @@ class sfp_ipinfo(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_ipinfo but did not set an API key!", False)
@@ -118,7 +118,7 @@ class sfp_ipinfo(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         self.results[eventData] = True

@@ -14,7 +14,7 @@
 import random
 import threading
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsbrute(SpiderFootPlugin):
     """DNS Brute-forcer:Footprint,Investigate:DNS::Attempts to identify hostnames through brute-forcing common names and iterations."""
@@ -22,9 +22,9 @@ class sfp_dnsbrute(SpiderFootPlugin):
     meta = {
         'name': "DNS Brute-forcer",
         'summary': "Attempts to identify hostnames through brute-forcing common names and iterations.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "DNS" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["DNS"]
     }
 
     # Default options
@@ -98,7 +98,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             if addrs:
                 with self.lock:
                     self.hostResults[name] = True
-        except BaseException as e:
+        except BaseException:
             with self.lock:
                 self.hostResults[name] = False
 
@@ -145,9 +145,8 @@ class sfp_dnsbrute(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
         eventDataHash = self.sf.hashstring(eventData)
-        parentEvent = event
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_dnsbrute":
             return None

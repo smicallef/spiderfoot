@@ -13,7 +13,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_pastebin(SpiderFootPlugin):
@@ -22,9 +22,9 @@ class sfp_pastebin(SpiderFootPlugin):
     meta = {
         'name': "PasteBin",
         'summary': "PasteBin scraping (via Google) to identify related content.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://pastebin.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -86,8 +86,6 @@ class sfp_pastebin(SpiderFootPlugin):
         return ["LEAKSITE_CONTENT", "LEAKSITE_URL"]
 
     def handleEvent(self, event):
-        eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if self.errorState:
@@ -104,7 +102,6 @@ class sfp_pastebin(SpiderFootPlugin):
             self.results[eventData] = True
 
         for dom in list(self.domains.keys()):
-            links = list()
             target = self.domains[dom]
             res = self.sf.googleIterate(
                 searchString="+site:{target_site} \"{search_keyword}\"".format(
@@ -148,13 +145,13 @@ class sfp_pastebin(SpiderFootPlugin):
                     continue
 
                 # Sometimes pastes search results false positives
-                if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                                "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
+                                r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                     continue
 
                 try:
                     startIndex = res['content'].index(eventData)
-                except BaseException as e:
+                except BaseException:
                     self.sf.debug("String not found in pastes content.")
                     continue
 

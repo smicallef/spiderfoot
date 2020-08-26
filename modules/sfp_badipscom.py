@@ -10,17 +10,17 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_badipscom(SpiderFootPlugin):
     """badips.com:Investigate,Passive:Reputation Systems::Check if an IP address is malicious according to BadIPs.com."""
-	
+
     meta = {
         'name': "badips.com",
         'summary': "Check if an IP address is malicious according to BadIPs.com.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://www.badips.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -103,10 +103,10 @@ class sfp_badipscom(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + ", already checked.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         if self.errorState:

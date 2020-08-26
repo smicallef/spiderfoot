@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 import re
 
 
@@ -21,9 +21,9 @@ class sfp_onioncity(SpiderFootPlugin):
     meta = {
         'name': "Onion.link",
         'summary': "Search Tor 'Onion City' search engine for mentions of the target domain.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Search Engines" ]
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Search Engines"]
     }
 
     # Default options
@@ -76,7 +76,7 @@ class sfp_onioncity(SpiderFootPlugin):
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_onioncity but did not set a Google API key!", False)
@@ -117,7 +117,7 @@ class sfp_onioncity(SpiderFootPlugin):
             timeout=self.opts["_fetchtimeout"],
             useragent=self.opts["_useragent"],
         )
-        if response['code'] in [ "200", "201", "202" ]:
+        if response['code'] in ["200", "201", "202"]:
             evt = SpiderFootEvent(
                 "RAW_RIR_DATA", response["content"], self.__name__, event
             )
@@ -146,8 +146,8 @@ class sfp_onioncity(SpiderFootPlugin):
                     continue
 
                 # Sometimes onion city search results false positives
-                if re.search("[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                                "[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
+                                r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                     self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
                     continue
 
@@ -157,7 +157,7 @@ class sfp_onioncity(SpiderFootPlugin):
                 try:
                     startIndex = res['content'].index(eventData) - 120
                     endIndex = startIndex + len(eventData) + 240
-                except BaseException as e:
+                except BaseException:
                     self.sf.debug("String not found in content.")
                     continue
 

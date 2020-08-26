@@ -11,50 +11,50 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 nearchars = {
- 'a': [ '4', 's' ],
- 'b': [ 'v', 'n' ],
- 'c': [ 'x', 'v' ],
- 'd': [ 's', 'f' ],
- 'e': [ 'w', 'r' ],
- 'f': [ 'd', 'g' ],
- 'g': [ 'f', 'h' ],
- 'h': [ 'g', 'j', 'n' ],
- 'i': [ 'o', 'u', '1' ],
- 'j': [ 'k', 'h', 'i' ],
- 'k': [ 'l', 'j' ],
- 'l': [ 'i', '1', 'k' ],
- 'm': [ 'n' ],
- 'n': [ 'm' ],
- 'o': [ 'p', 'i', '0' ],
- 'p': [ 'o', 'q' ],
- 'r': [ 't', 'e' ],
- 's': [ 'a', 'd', '5' ],
- 't': [ '7', 'y', 'z', 'r' ],
- 'u': [ 'v', 'i', 'y', 'z' ],
- 'v': [ 'u', 'c', 'b' ],
- 'w': [ 'v', 'vv', 'q', 'e' ],
- 'x': [ 'z', 'y', 'c' ],
- 'y': [ 'z', 'x' ],
- 'z': [ 'y', 'x' ],
- '0': [ 'o' ],
- '1': [ 'l' ],
- '2': [ '5' ],
- '3': [ 'e' ],
- '4': [ 'a' ],
- '5': [ 's' ],
- '6': [ 'b' ],
- '7': [ 't' ],
- '8': [ 'b' ],
+ 'a': ['4', 's'],
+ 'b': ['v', 'n'],
+ 'c': ['x', 'v'],
+ 'd': ['s', 'f'],
+ 'e': ['w', 'r'],
+ 'f': ['d', 'g'],
+ 'g': ['f', 'h'],
+ 'h': ['g', 'j', 'n'],
+ 'i': ['o', 'u', '1'],
+ 'j': ['k', 'h', 'i'],
+ 'k': ['l', 'j'],
+ 'l': ['i', '1', 'k'],
+ 'm': ['n'],
+ 'n': ['m'],
+ 'o': ['p', 'i', '0'],
+ 'p': ['o', 'q'],
+ 'r': ['t', 'e'],
+ 's': ['a', 'd', '5'],
+ 't': ['7', 'y', 'z', 'r'],
+ 'u': ['v', 'i', 'y', 'z'],
+ 'v': ['u', 'c', 'b'],
+ 'w': ['v', 'vv', 'q', 'e'],
+ 'x': ['z', 'y', 'c'],
+ 'y': ['z', 'x'],
+ 'z': ['y', 'x'],
+ '0': ['o'],
+ '1': ['l'],
+ '2': ['5'],
+ '3': ['e'],
+ '4': ['a'],
+ '5': ['s'],
+ '6': ['b'],
+ '7': ['t'],
+ '8': ['b'],
  '9': []
 }
 
 pairs = {
- 'oo': [ '00' ],
- 'll': [ 'l1l', 'l1l', '111', '11' ],
- '11': [ 'll', 'lll', 'l1l', '1l1' ]
+ 'oo': ['00'],
+ 'll': ['l1l', 'l1l', '111', '11'],
+ '11': ['ll', 'lll', 'l1l', '1l1']
 }
 
 # These are all string builders, {0} = the domain keyword, {1} = the page number
@@ -64,9 +64,9 @@ class sfp_similar(SpiderFootPlugin):
     meta = {
         'name': "Similar Domain Finder",
         'summary': "Search various sources to identify similar looking domain names, for instance squatted domains.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "DNS" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["DNS"]
     }
 
     # Default options
@@ -100,8 +100,6 @@ class sfp_similar(SpiderFootPlugin):
 
     # Search for similar sounding domains
     def handleEvent(self, event):
-        eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
         domlist = list()
 
@@ -160,7 +158,7 @@ class sfp_similar(SpiderFootPlugin):
                     self.sf.debug("Resolved " + d + tld)
                     evt = SpiderFootEvent("SIMILARDOMAIN", d + tld, self.__name__, event)
                     self.notifyListeners(evt)
-            except BaseException as e:
+            except BaseException:
                 continue
 
         return None

@@ -15,7 +15,7 @@ from subprocess import Popen, PIPE
 import io
 import json
 import os.path
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_cmseek(SpiderFootPlugin):
     """Tool - CMSeeK:Footprint,Investigate:Content Analysis:tool:Identify what Content Management System (CMS) might be used."""
@@ -23,9 +23,9 @@ class sfp_tool_cmseek(SpiderFootPlugin):
     meta = {
         'name': "Tool - CMSeeK",
         'summary': "Identify what Content Management System (CMS) might be used.",
-        'flags': [ "tool" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Content Analysis" ],
+        'flags': ["tool"],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Content Analysis"],
         'toolDetails': {
             'name': "CMSeeK",
             'description': "CMSeek is a tool that is used to extract Content Management System(CMS) details of a website.",
@@ -74,7 +74,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return None

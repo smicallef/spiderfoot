@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_iban(SpiderFootPlugin):
     """IBAN Number Extractor:Footprint,Investigate,Passive:Content Analysis::Identify IBAN Numbers in any data"""
@@ -19,9 +19,9 @@ class sfp_iban(SpiderFootPlugin):
     meta = {
         'name': "IBAN Number Extractor",
         'summary': "Identify IBAN Numbers in any data",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options.
@@ -73,7 +73,7 @@ class sfp_iban(SpiderFootPlugin):
             return None
 
         # event was received.
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Extract IBAN Card numbers
         ibanNumbers = self.sf.parseIBANNumbers(eventData)

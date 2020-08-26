@@ -14,7 +14,7 @@
 import json
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_mnemonic(SpiderFootPlugin):
     """Mnemonic PassiveDNS:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from PassiveDNS.mnemonic.no."""
@@ -22,9 +22,9 @@ class sfp_mnemonic(SpiderFootPlugin):
     meta = {
         'name': "Mnemonic PassiveDNS",
         'summary': "Obtain Passive DNS information from PassiveDNS.mnemonic.no.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"],
         'dataSource': {
             'website': "https://www.mnemonic.no",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -109,7 +109,7 @@ class sfp_mnemonic(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         # Check the response is ok
@@ -156,18 +156,18 @@ class sfp_mnemonic(SpiderFootPlugin):
             return None
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         position = 0
         max_pages = int(self.opts['max_pages'])
         per_page = int(self.opts['per_page'])
         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
-        cohostcount = 0
+        self.cohostcount = 0
         cohosts = list()
 
         while position < (per_page * max_pages):
@@ -193,11 +193,11 @@ class sfp_mnemonic(SpiderFootPlugin):
                     self.sf.debug("Record found too old, skipping.")
                     continue
 
-                if eventName in [ 'IP_ADDRESS' ]:
+                if eventName in ['IP_ADDRESS']:
                     if r['rrtype'] == 'a':
                         cohosts.append(r['query'])
 
-                if eventName in [ 'INTERNET_NAME', 'DOMAIN_NAME' ]:
+                if eventName in ['INTERNET_NAME', 'DOMAIN_NAME']:
 
                     # Ignore PTR records
                     if r['rrtype'] == 'ptr':

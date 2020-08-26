@@ -12,7 +12,7 @@
 
 import json
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_citadel(SpiderFootPlugin):
     """Leak-Lookup:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Searches Leak-Lookup.com's database of breaches."""
@@ -20,9 +20,9 @@ class sfp_citadel(SpiderFootPlugin):
     meta = {
         'name': "Leak-Lookup",
         'summary': "Searches Leak-Lookup.com's database of breaches.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://leak-lookup.com/",
             'model': "FREE_AUTH_UNLIMITED",
@@ -119,14 +119,14 @@ class sfp_citadel(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return None
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already searched.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
 
         self.results[eventData] = True
@@ -140,7 +140,7 @@ class sfp_citadel(SpiderFootPlugin):
         message = data.get('message')
 
         if error == 'true':
-            self.sf.error("Error encountered processing {}: {}".format( eventData, message ), False)
+            self.sf.error(f"Error encountered processing {eventData}: {message}")
             if "MISSING API" in message:
                 self.errorState = True
                 return None
@@ -150,8 +150,8 @@ class sfp_citadel(SpiderFootPlugin):
             return None
 
         for site in message:
-            self.sf.info("Found Leak-Lookup entry for {}: {}".format( eventData, site ) )
-            evt = SpiderFootEvent( "EMAILADDR_COMPROMISED", "{} [{}]".format( eventData, site ), self.__name__, event )
+            self.sf.info(f"Found Leak-Lookup entry for {eventData}: {site}")
+            evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [{site}]", self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_citadel class

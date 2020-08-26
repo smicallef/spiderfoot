@@ -12,7 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_neutrinoapi(SpiderFootPlugin):
     """NeutrinoAPI:Footprint,Investigate,Passive:Reputation Systems:apikey:Search NeutrinoAPI for IP address info and check IP reputation."""
@@ -20,9 +20,9 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     meta = {
         'name': "NeutrinoAPI",
         'summary': "Search NeutrinoAPI for IP address info and check IP reputation.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://www.neutrinoapi.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -82,36 +82,48 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # Query the phone-validate REST API
     # https://www.neutrinoapi.com/api/phone-validate/
     def queryPhoneValidate(self, qry):
-        res = self.sf.fetchUrl('https://neutrinoapi.com/phone-validate',
-            postData={"output-format": "json", "number": qry, "user-id":  self.opts['user_id'], "api-key": self.opts['api_key']},
-            timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(
+            'https://neutrinoapi.com/phone-validate',
+            postData={"output-format": "json", "number": qry, "user-id": self.opts['user_id'], "api-key": self.opts['api_key']},
+            timeout=self.opts['timeout'],
+            useragent=self.opts['_useragent']
+        )
 
         return self.parseApiResponse(res)
 
     # Query the ip-info REST API
     # https://www.neutrinoapi.com/api/ip-info/
     def queryIpInfo(self, qry):
-        res = self.sf.fetchUrl("https://neutrinoapi.com/ip-info",
-            postData={"output-format": "json", "ip": qry, "user-id":  self.opts['user_id'], "api-key": self.opts['api_key']},
-            timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(
+            "https://neutrinoapi.com/ip-info",
+            postData={"output-format": "json", "ip": qry, "user-id": self.opts['user_id'], "api-key": self.opts['api_key']},
+            timeout=self.opts['timeout'],
+            useragent=self.opts['_useragent']
+        )
 
         return self.parseApiResponse(res)
 
     # Query the ip-blocklist REST API
     # https://www.neutrinoapi.com/api/ip-blocklist/
     def queryIpBlocklist(self, qry):
-        res = self.sf.fetchUrl("https://neutrinoapi.com/ip-blocklist",
-            postData={"output-format": "json", "ip": qry, "user-id":  self.opts['user_id'], "api-key": self.opts['api_key']},
-            timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(
+            "https://neutrinoapi.com/ip-blocklist",
+            postData={"output-format": "json", "ip": qry, "user-id": self.opts['user_id'], "api-key": self.opts['api_key']},
+            timeout=self.opts['timeout'],
+            useragent=self.opts['_useragent']
+        )
 
         return self.parseApiResponse(res)
 
     # Query the host-reputation REST API
     # https://www.neutrinoapi.com/api/host-reputation/
     def queryHostReputation(self, qry):
-        res = self.sf.fetchUrl("https://neutrinoapi.com/host-reputation",
-            postData={"output-format": "json", "host": qry, "user-id":  self.opts['user_id'], "api-key": self.opts['api_key']},
-            timeout=self.opts['timeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(
+            "https://neutrinoapi.com/host-reputation",
+            postData={"output-format": "json", "host": qry, "user-id": self.opts['user_id'], "api-key": self.opts['api_key']},
+            timeout=self.opts['timeout'],
+            useragent=self.opts['_useragent']
+        )
 
         return self.parseApiResponse(res)
 
@@ -128,7 +140,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response.")
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if res['code'] == "400":
@@ -167,7 +179,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == 'PHONE_NUMBER':
             data = self.queryPhoneValidate(eventData)

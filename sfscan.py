@@ -13,11 +13,11 @@ import traceback
 import time
 import sys
 import socket
-import dns.resolver
-import random
 from copy import deepcopy
+import dns.resolver
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, SpiderFootPlugin
+
 
 class SpiderFootScanner():
     """SpiderFootScanner object.
@@ -131,7 +131,8 @@ class SpiderFootScanner():
 
         # If a SOCKS server was specified, set it up
         if self.__config['_socks1type']:
-            socksDns = self.__config['_socks6dns']
+            # TODO: review why socksDns is unused
+            # socksDns = self.__config['_socks6dns']
             socksAddr = self.__config['_socks2addr']
             socksPort = int(self.__config['_socks3port'])
             socksUsername = self.__config['_socks4user'] or ''
@@ -213,7 +214,17 @@ class SpiderFootScanner():
         if not isinstance(status, str):
             raise TypeError(f"status is {type(status)}; expected str()")
 
-        if status not in ["INITIALIZING", "STARTING", "STARTED", "RUNNING", "ABORT-REQUESTED", "ABORTED", "ABORTING", "FINISHED", "ERROR-FAILED"]:
+        if status not in [
+            "INITIALIZING",
+            "STARTING",
+            "STARTED",
+            "RUNNING",
+            "ABORT-REQUESTED",
+            "ABORTED",
+            "ABORTING",
+            "FINISHED",
+            "ERROR-FAILED"
+        ]:
             raise ValueError(f"Invalid scan status {status}")
 
         self.__status = status
@@ -337,9 +348,9 @@ class SpiderFootScanner():
                 self.__setStatus("FINISHED", None, time.time() * 1000)
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.__sf.error("Unhandled exception (" + e.__class__.__name__ + ") " + \
-                             "encountered during scan. Please report this as a bug: " + \
-                             repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
+            self.__sf.error("Unhandled exception (" + e.__class__.__name__ + ") " +
+                            "encountered during scan. Please report this as a bug: " +
+                            repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
             self.__sf.status("Scan [" + self.__scanId + "] failed: " + str(e))
             self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
 

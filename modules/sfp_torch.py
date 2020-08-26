@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 import re
 
 
@@ -21,9 +21,9 @@ class sfp_torch(SpiderFootPlugin):
     meta = {
         'name': "TORCH",
         'summary': "Search Tor 'TORCH' search engine for mentions of the target domain.",
-        'flags': [ "errorprone" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Search Engines" ]
+        'flags': ["errorprone"],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Search Engines"]
     }
 
     # Default options
@@ -62,7 +62,6 @@ class sfp_torch(SpiderFootPlugin):
 
     def handleEvent(self, event):
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
@@ -71,24 +70,26 @@ class sfp_torch(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
-        else:
-            self.results[eventData] = True
 
-        formpage = self.sf.fetchUrl("http://xmh57jrzrnw6insl.onion",
-                                useragent=self.opts['_useragent'],
-                                timeout=self.opts['_fetchtimeout'])
+        self.results[eventData] = True
+
+        formpage = self.sf.fetchUrl(
+            "http://xmh57jrzrnw6insl.onion",
+            useragent=self.opts['_useragent'],
+            timeout=self.opts['_fetchtimeout']
+        )
 
         if not formpage['content']:
             self.sf.info("Couldn't connect to TORCH, check that you have TOR enabled.")
             return None
-        else:
-            # Need the form ID to submit later for the search
-            m = re.findall("\<form method=\"get\" action=\"/(\S+)/search.cgi\"\>",
-                           formpage['content'], re.IGNORECASE | re.DOTALL)
-            if not m:
-                return None
 
-            formid = m[0]
+        # Need the form ID to submit later for the search
+        m = re.findall(r"\<form method=\"get\" action=\"/(\S+)/search.cgi\"\>",
+                       formpage['content'], re.IGNORECASE | re.DOTALL)
+        if not m:
+            return None
+
+        formid = m[0]
 
         pagecontent = ""
         pagecount = 0
@@ -119,7 +120,7 @@ class sfp_torch(SpiderFootPlugin):
                                       self.__name__, event)
                 self.notifyListeners(evt)
 
-                links = re.findall("\<DT\>\d+.\s+<a href=\"(.*?)\"\s+TARGET=\"_blank\"\>",
+                links = re.findall(r"\<DT\>\d+.\s+<a href=\"(.*?)\"\s+TARGET=\"_blank\"\>",
                                    data['content'], re.IGNORECASE | re.DOTALL)
 
                 for link in links:
@@ -149,7 +150,7 @@ class sfp_torch(SpiderFootPlugin):
                                 try:
                                     startIndex = res['content'].index(eventData) - 120
                                     endIndex = startIndex + len(eventData) + 240
-                                except BaseException as e:
+                                except BaseException:
                                     self.sf.debug("String not found in content.")
                                     continue
 

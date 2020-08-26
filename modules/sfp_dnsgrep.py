@@ -15,10 +15,8 @@
 # -------------------------------------------------------------------------------
 
 import json
-import re
-import socket
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsgrep(SpiderFootPlugin):
     """DNSGrep:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API."""
@@ -26,9 +24,9 @@ class sfp_dnsgrep(SpiderFootPlugin):
     meta = {
         'name': "DNSGrep",
         'summary': "Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Passive DNS" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Passive DNS"],
         'dataSource': {
             'website': "https://opendata.rapid7.com/",
             'model': "FREE_AUTH_UNLIMITED",
@@ -101,7 +99,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from DNSGrep.", False)
+            self.sf.error(f"Error processing JSON response from DNSGrep: {e}", False)
             return None
 
         return data
@@ -116,7 +114,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
             return None
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         data = self.query(eventData)
 

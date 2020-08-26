@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import string
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_binstring(SpiderFootPlugin):
     """Binary String Extractor:Footprint:Content Analysis:errorprone:Attempt to identify strings in binary content."""
@@ -19,9 +19,9 @@ class sfp_binstring(SpiderFootPlugin):
     meta = {
         'name': "Binary String Extractor",
         'summary': "Attempt to identify strings in binary content.",
-        'flags': [ "errorprone" ],
-        'useCases': [ "Footprint" ],
-        'categories': [ "Content Analysis" ]
+        'flags': ["errorprone"],
+        'useCases': ["Footprint"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options
@@ -31,8 +31,8 @@ class sfp_binstring(SpiderFootPlugin):
         'maxfilesize': 1000000,
         'usedict': True,
         'fileexts': ['png', 'gif', 'jpg', 'jpeg', 'tiff', 'tif',
-                    'ico', 'flv', 'mp4', 'mp3', 'avi', 'mpg',
-                    'mpeg', 'dat', 'mov', 'swf', 'exe', 'bin'],
+                     'ico', 'flv', 'mp4', 'mp3', 'avi', 'mpg',
+                     'mpeg', 'dat', 'mov', 'swf', 'exe', 'bin'],
         'filterchars': '#}{|%^&*()=+,;[]~'
     }
 
@@ -120,7 +120,7 @@ class sfp_binstring(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return None

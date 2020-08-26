@@ -11,7 +11,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_h1nobbdde(SpiderFootPlugin):
     """HackerOne (Unofficial):Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed."""
@@ -19,9 +19,9 @@ class sfp_h1nobbdde(SpiderFootPlugin):
     meta = {
         'name': "HackerOne (Unofficial)",
         'summary': "Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "http://www.nobbd.de/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -68,7 +68,6 @@ class sfp_h1nobbdde(SpiderFootPlugin):
     # Query h1.nobbd.de
     def queryOBB(self, qry):
         ret = list()
-        base = "http://www.h1.nobbd.de"
         url = "http://h1.nobbd.de/search.php?q=" + qry
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
 
@@ -93,10 +92,10 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         eventData = event.data
         data = list()
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True

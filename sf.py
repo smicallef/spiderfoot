@@ -37,8 +37,8 @@ from sfscan import SpiderFootScanner
 # be overridden from saved configuration settings stored in the DB.
 sfConfig = {
     '_debug': False,  # Debug
-    '__logging': True, # Logging in general
-    '__outputfilter': None, # Event types to filter from modules' output
+    '__logging': True,  # Logging in general
+    '__outputfilter': None,  # Event types to filter from modules' output
     '__blocknotif': False,  # Block notifications
     '_fatalerrors': False,
     '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
@@ -85,12 +85,14 @@ sfOptdescs = {
 scanId = None
 dbh = None
 
+
 def handle_abort(signal, frame):
     """handle interrupt and abort scan."""
     print("[*] Aborting...")
     if scanId and dbh:
         dbh.scanInstanceSet(scanId, None, None, "ABORTED")
     sys.exit(-1)
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 0:
@@ -137,7 +139,7 @@ if __name__ == '__main__':
             (addr, port) = args.l.split(":")
             sfConfig['__webaddr'] = addr
             sfConfig['__webport'] = int(port)
-        except BaseException as e:
+        except BaseException:
             print("Invalid ip:port format.")
             sys.exit(-1)
     else:
@@ -358,7 +360,7 @@ if __name__ == '__main__':
             if args.D:
                 delim = args.D
             else:
-                if args.o in [ "tab", None ]:
+                if args.o in ["tab", None]:
                     delim = "\t"
 
                 if args.o == "csv":
@@ -380,7 +382,7 @@ if __name__ == '__main__':
             if not info:
                 time.sleep(1)
                 continue
-            if info[5] in [ "ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED" ]:
+            if info[5] in ["ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED"]:
                 if sfConfig['__logging']:
                     print("[*] Scan completed with status " + info[5])
                 if args.o == "json":
@@ -451,11 +453,11 @@ if __name__ == '__main__':
             print("Warning: passwd file contains no passwords. Authentication disabled.")
             print("********************************************************************")
     else:
-            print("")
-            print("********************************************************************")
-            print("Please consider adding authentication to protect this instance!")
-            print("Refer to https://www.spiderfoot.net/documentation/#security.")
-            print("********************************************************************")
+        print("")
+        print("********************************************************************")
+        print("Please consider adding authentication to protect this instance!")
+        print("Refer to https://www.spiderfoot.net/documentation/#security.")
+        print("********************************************************************")
 
     key_path = sf.dataPath() + '/spiderfoot.key'
     crt_path = sf.dataPath() + '/spiderfoot.crt'

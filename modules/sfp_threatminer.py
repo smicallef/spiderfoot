@@ -14,7 +14,7 @@ import json
 from datetime import datetime
 import time
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_threatminer(SpiderFootPlugin):
     """ThreatMiner:Footprint,Investigate,Passive:Search Engines::Obtain information from ThreatMiner's database for passive DNS and threat intelligence."""
@@ -22,9 +22,9 @@ class sfp_threatminer(SpiderFootPlugin):
     meta = {
         'name': "ThreatMiner",
         'summary': "Obtain information from ThreatMiner's database for passive DNS and threat intelligence.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://www.threatminer.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -119,7 +119,7 @@ class sfp_threatminer(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from ThreatMiner.", False)
+            self.sf.error(f"Error processing JSON response from ThreatMiner: {e}", False)
             return None
 
         return info
@@ -130,11 +130,11 @@ class sfp_threatminer(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True

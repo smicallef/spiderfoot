@@ -10,7 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 import random
 
 class sfp_junkfiles(SpiderFootPlugin):
@@ -19,9 +19,9 @@ class sfp_junkfiles(SpiderFootPlugin):
     meta = {
         'name': "Junk File Finder",
         'summary': "Looks for old/temporary and other similar files.",
-        'flags': [ "slow", "errorprone", "invasive" ],
-        'useCases': [ "Footprint" ],
-        'categories': [ "Crawling and Scanning" ]
+        'flags': ["slow", "errorprone", "invasive"],
+        'useCases': ["Footprint"],
+        'categories': ["Crawling and Scanning"]
     }
 
     # Default options
@@ -88,7 +88,7 @@ class sfp_junkfiles(SpiderFootPlugin):
         eventData = event.data
         host = self.sf.urlBaseUrl(eventData)
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             return None

@@ -12,7 +12,7 @@
 import json
 import time
 from datetime import datetime
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_fullcontact(SpiderFootPlugin):
     """FullContact:Footprint,Investigate,Passive:Search Engines:apikey:Gather domain and e-mail information from fullcontact.com."""
@@ -20,9 +20,9 @@ class sfp_fullcontact(SpiderFootPlugin):
     meta = {
         'name': "FullContact",
         'summary': "Gather domain and e-mail information from fullcontact.com.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://www.fullcontact.com",
             'model': "FREE_AUTH_LIMITED",
@@ -83,12 +83,12 @@ class sfp_fullcontact(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DOMAIN_NAME", "EMAILADDR" ]
+        return ["DOMAIN_NAME", "EMAILADDR"]
 
     # What events this module produces
     def producedEvents(self):
-        return [ "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
-                 "PHONE_NUMBER", "GEOINFO", "PHYSICAL_ADDRESS" ]
+        return ["EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
+                 "PHONE_NUMBER", "GEOINFO", "PHYSICAL_ADDRESS"]
 
     def query(self, url, data, failcount=0):
         header = "Bearer " + self.opts['api_key']
@@ -98,7 +98,7 @@ class sfp_fullcontact(SpiderFootPlugin):
                                useragent="SpiderFoot", postData=json.dumps(data),
                                headers={"Authorization": header})
 
-        if res['code'] in [ "401", "400" ]:
+        if res['code'] in ["401", "400"]:
             self.sf.error("API key rejected by fullcontact.com", False)
             self.errorState = True
             return None
@@ -161,11 +161,11 @@ class sfp_fullcontact(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True

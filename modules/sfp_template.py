@@ -10,7 +10,9 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+import json
+from netaddr import IPNetwork
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_template(SpiderFootPlugin):
     # The below docstring is going away in 3.3, in favor of the module descriptor dictionary further below.
@@ -60,13 +62,13 @@ class sfp_template(SpiderFootPlugin):
         #   - errorprone: Might generate high false positives
         #   - invasive: Interrogates the target, might be intensive
         #   - tool: Runs an external tool to collect data
-        'flags': [ "slow", "apikey"],
+        'flags': ["slow", "apikey"],
 
         # Use cases: The use case(s) this module should be included in, options are Footprint, Investigate and Passive.
         #   - Passive means the user's scan target is not contacted at all
         #   - Footprint means that this module is useful when understanding the target's footprint on the Internet
         #   - Investigate means that this module is useful when investigating the danger/risk of a target
-        'useCases': [ "Passive" ],
+        'useCases': ["Passive"],
 
         # Categories: The categories this module belongs in, describing how it operates. Only the first category is 
         # used for now.
@@ -81,7 +83,7 @@ class sfp_template(SpiderFootPlugin):
         #   - Search Engines: Searches public search engines with data about the whole Internet
         #   - Secondary Networks: Queries information about participation on secondary networks, like Bitcoin
         #   - Social Media: Searches social media data sources
-        'categories': [ "Social Media" ],
+        'categories': ["Social Media"],
 
         # For tool modules, have some basic information about the tool.
         'toolDetails': {
@@ -268,7 +270,7 @@ class sfp_template(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from SHODAN.", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
             return None
 
         return info
@@ -289,7 +291,7 @@ class sfp_template(SpiderFootPlugin):
 
         # Log this before complaining about a missing API key so we know the
         # event was received.
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
@@ -300,7 +302,7 @@ class sfp_template(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             # If eventData might be something large, set the key to a hash
@@ -318,9 +320,12 @@ class sfp_template(SpiderFootPlugin):
                                   str(self.opts['maxnetblock']))
                     return None
 
+
         # When handling netblocks/subnets, assuming the user set
         # netblocklookup/subnetlookup to True, we need to expand it
         # to the IPs for looking up.
+        qrylist = list()
+
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))

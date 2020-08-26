@@ -13,7 +13,7 @@
 
 import re
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_zoneh(SpiderFootPlugin):
@@ -22,9 +22,9 @@ class sfp_zoneh(SpiderFootPlugin):
     meta = {
         'name': "Zone-H Defacement Check",
         'summary': "Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed.",
-        'flags': [ "" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Leaks, Dumps and Breaches" ],
+        'flags': [""],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://zone-h.org/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -88,7 +88,7 @@ class sfp_zoneh(SpiderFootPlugin):
                 "DEFACED_COHOST", "DEFACED_AFFILIATE_IPADDR"]
 
     def lookupItem(self, target, content):
-        grps = re.findall("<title><\!\[CDATA\[(.[^\]]*)\]\]></title>\s+<link><\!\[CDATA\[(.[^\]]*)\]\]></link>", content)
+        grps = re.findall(r"<title><\!\[CDATA\[(.[^\]]*)\]\]></title>\s+<link><\!\[CDATA\[(.[^\]]*)\]\]></link>", content)
         for m in grps:
             if target in m[0]:
                 self.sf.info("Found zoneh site: " + m[0])
@@ -102,13 +102,13 @@ class sfp_zoneh(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return None
 
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + ", already checked.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True

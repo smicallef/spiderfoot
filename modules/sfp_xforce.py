@@ -16,7 +16,7 @@ import base64
 from datetime import datetime
 import time
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_xforce(SpiderFootPlugin):
     """XForce Exchange:Investigate,Passive:Reputation Systems:apikey:Obtain information from IBM X-Force Exchange"""
@@ -24,9 +24,9 @@ class sfp_xforce(SpiderFootPlugin):
     meta = {
         'name': "XForce Exchange",
         'summary': "Obtain information from IBM X-Force Exchange",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://exchange.xforce.ibmcloud.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -110,8 +110,6 @@ class sfp_xforce(SpiderFootPlugin):
                 "CO_HOSTED_SITE"]
 
     def query(self, qry, querytype):
-        ret = None
-
         if querytype not in ["ipr/malware", "ipr/history", "resolve"]:
             querytype = "ipr/malware"
 
@@ -176,7 +174,7 @@ class sfp_xforce(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from X-Force Exchange.", False)
+            self.sf.error(f"Error processing JSON response from X-Force Exchange: {e}", False)
             return None
 
         return info
@@ -192,7 +190,7 @@ class sfp_xforce(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['xforce_api_key'] == "" or self.opts['xforce_api_key_password'] == "":
             self.sf.error("You enabled sfp_xforce but did not set an API key/password!", False)
@@ -201,7 +199,7 @@ class sfp_xforce(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True
@@ -287,7 +285,6 @@ class sfp_xforce(SpiderFootPlugin):
                 if len(rec_history) > 0:
                     self.sf.debug("Found history results in XForce")
                     for result in rec_history:
-                        reasonDescription = result.get("reasonDescription", "")
                         created = result.get("created", None)
                         # 2014-11-06T10:45:00.000Z
                         if not created:
@@ -316,7 +313,7 @@ class sfp_xforce(SpiderFootPlugin):
                         self.notifyListeners(e)
 
             # ipr/malware doesn't support hostnames
-            if eventName in [ "CO_HOSTED_SITE", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME" ]:
+            if eventName in ["CO_HOSTED_SITE", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME"]:
                 continue
 
             rec = self.query(addr, "ipr/malware")
@@ -325,7 +322,6 @@ class sfp_xforce(SpiderFootPlugin):
                 if len(rec_malware) > 0:
                     self.sf.debug("Found malware results in XForce")
                     for result in rec_malware:
-                        count = result.get("count", "")
                         origin = result.get("origin", "")
                         domain = result.get("domain", "")
                         uri = result.get("uri", "")

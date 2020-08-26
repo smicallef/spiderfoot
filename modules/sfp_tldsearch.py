@@ -15,7 +15,7 @@ import random
 import threading
 import time
 import dns.resolver
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tldsearch(SpiderFootPlugin):
     """TLD Searcher:Footprint:DNS:slow:Search all Internet TLDs for domains with the same name as the target (this can be very slow.)"""
@@ -23,9 +23,9 @@ class sfp_tldsearch(SpiderFootPlugin):
     meta = {
         'name': "TLD Searcher",
         'summary': "Search all Internet TLDs for domains with the same name as the target (this can be very slow.)",
-        'flags': [ "slow" ],
-        'useCases': [ "Footprint" ],
-        'categories': [ "DNS" ]
+        'flags': ["slow"],
+        'useCases': ["Footprint"],
+        'categories': ["DNS"]
     }
 
     # Default options
@@ -87,7 +87,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             else:
                 with self.lock:
                     self.tldResults[target] = True
-        except BaseException as e:
+        except BaseException:
             with self.lock:
                 self.tldResults[target] = False
 
@@ -146,8 +146,6 @@ class sfp_tldsearch(SpiderFootPlugin):
 
     # Search for similar sounding domains
     def handleEvent(self, event):
-        eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         if eventData in self.results:

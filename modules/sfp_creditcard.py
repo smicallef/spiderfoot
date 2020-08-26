@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_creditcard(SpiderFootPlugin):
     """Credit Card Number Extractor:Footprint,Investigate,Passive:Content Analysis::Identify Credit Card Numbers in any data"""
@@ -19,9 +19,9 @@ class sfp_creditcard(SpiderFootPlugin):
     meta = {
         'name': "Credit Card Number Extractor",
         'summary': "Identify Credit Card Numbers in any data",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Content Analysis" ]
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Content Analysis"]
     }
 
     # Default options.
@@ -55,7 +55,7 @@ class sfp_creditcard(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return [ "DARKNET_MENTION_CONTENT", "LEAKSITE_CONTENT" ]
+        return ["DARKNET_MENTION_CONTENT", "LEAKSITE_CONTENT"]
 
     # What events this module produces
     def producedEvents(self):
@@ -72,7 +72,7 @@ class sfp_creditcard(SpiderFootPlugin):
             return None
 
         # event was received.
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Extract Credit Card numbers
         creditCards = self.sf.parseCreditCards(eventData)

@@ -13,7 +13,7 @@
 
 import threading
 import time
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_digitaloceanspace(SpiderFootPlugin):
     """Digital Ocean Space Finder:Footprint,Passive:Crawling and Scanning::Search for potential Digital Ocean Spaces associated with the target and attempt to list their contents."""
@@ -21,9 +21,9 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
     meta = {
         'name': "Digital Ocean Space Finder",
         'summary': "Search for potential Digital Ocean Spaces associated with the target and attempt to list their contents.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Passive" ],
-        'categories': [ "Crawling and Scanning" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Passive"],
+        'categories': ["Crawling and Scanning"],
         'dataSource': {
             'website': "https://www.digitalocean.com/products/spaces/",
             'model': "FREE_NOAUTH_UNLIMITED"
@@ -70,7 +70,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
     def checkSite(self, url):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
-        if res['code'] not in [ "301", "302", "200" ] and \
+        if res['code'] not in ["301", "302", "200"] and \
             (res['content'] is None or "NoSuchBucket" in res['content']):
             self.sf.debug("Not a valid bucket: " + url)
         else:
@@ -82,7 +82,6 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
                     self.s3results[url] = 0
 
     def threadSites(self, siteList):
-        ret = list()
         self.s3results = dict()
         running = True
         i = 0
@@ -147,7 +146,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "LINKED_URL_EXTERNAL":
             if ".digitaloceanspaces.com" in eventData:
@@ -156,7 +155,7 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
                 self.notifyListeners(evt)
             return None
 
-        targets = [ eventData.replace('.', '') ]
+        targets = [eventData.replace('.', '')]
         kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
         if kw:
             targets.append(kw)

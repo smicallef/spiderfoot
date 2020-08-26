@@ -13,7 +13,7 @@
 import json
 import time
 from netaddr import IPNetwork
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_virustotal(SpiderFootPlugin):
@@ -22,9 +22,9 @@ class sfp_virustotal(SpiderFootPlugin):
     meta = {
         'name': "VirusTotal",
         'summary': "Obtain information from VirusTotal about identified IP addresses.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Investigate", "Passive" ],
-        'categories': [ "Reputation Systems" ],
+        'flags': ["apikey"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://www.virustotal.com/",
             'model': "FREE_AUTH_LIMITED",
@@ -123,7 +123,7 @@ class sfp_virustotal(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from VirusTotal.", False)
+            self.sf.error(f"Error processing JSON response from VirusTotal: {e}", False)
             self.errorState = True
             return None
 
@@ -138,7 +138,7 @@ class sfp_virustotal(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_virustotal but did not set an API key!", False)
@@ -147,7 +147,7 @@ class sfp_virustotal(SpiderFootPlugin):
 
         # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already mapped.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
         else:
             self.results[eventData] = True
@@ -226,7 +226,7 @@ class sfp_virustotal(SpiderFootPlugin):
             # Treat siblings as affiliates if they are of the original target, otherwise
             # they are additional hosts within the target.
             if 'domain_siblings' in info:
-                if eventName in [ "IP_ADDRESS", "INTERNET_NAME"]:
+                if eventName in ["IP_ADDRESS", "INTERNET_NAME"]:
                     for s in info['domain_siblings']:
                         if self.getTarget().matches(s):
                             if s not in self.results:

@@ -1,8 +1,8 @@
 # test_spiderfootplugin.py
-import sflib
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFootPlugin, SpiderFootEvent, SpiderFootTarget
 from sfdb import SpiderFootDb
 import unittest
+
 
 class TestSpiderFootPlugin(unittest.TestCase):
     """
@@ -10,31 +10,31 @@ class TestSpiderFootPlugin(unittest.TestCase):
     """
 
     default_options = {
-      '_debug': False,  # Debug
-      '__logging': True, # Logging in general
-      '__outputfilter': None, # Event types to filter from modules' output
-      '__blocknotif': False,  # Block notifications
-      '_fatalerrors': False,
-      '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
-      '_dnsserver': '',  # Override the default resolver
-      '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
-      '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
-      '_internettlds_cache': 72,
-      '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-      '__version__': '3.2-DEV',
-      '__database': 'spiderfoot.test.db',  # note: test database file
-      '__webaddr': '127.0.0.1',
-      '__webport': 5001,
-      '__docroot': '',  # don't put trailing /
-      '__modules__': None,  # List of modules. Will be set after start-up.
-      '_socks1type': '',
-      '_socks2addr': '',
-      '_socks3port': '',
-      '_socks4user': '',
-      '_socks5pwd': '',
-      '_socks6dns': True,
-      '_torctlport': 9051,
-      '__logstdout': False
+        '_debug': False,  # Debug
+        '__logging': True,  # Logging in general
+        '__outputfilter': None,  # Event types to filter from modules' output
+        '__blocknotif': False,  # Block notifications
+        '_fatalerrors': False,
+        '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
+        '_dnsserver': '',  # Override the default resolver
+        '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
+        '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
+        '_internettlds_cache': 72,
+        '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
+        '__version__': '3.2-DEV',
+        '__database': 'spiderfoot.test.db',  # note: test database file
+        '__webaddr': '127.0.0.1',
+        '__webport': 5001,
+        '__docroot': '',  # don't put trailing /
+        '__modules__': None,  # List of modules. Will be set after start-up.
+        '_socks1type': '',
+        '_socks2addr': '',
+        '_socks3port': '',
+        '_socks4user': '',
+        '_socks5pwd': '',
+        '_socks6dns': True,
+        '_torctlport': 9051,
+        '__logstdout': False
     }
 
     def test_init(self):
@@ -103,7 +103,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         invalid_types = [None, "", list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     sfp.setTarget(invalid_type)
 
     def test_set_dbh(self):
@@ -148,8 +148,8 @@ class TestSpiderFootPlugin(unittest.TestCase):
         """
         sfp = SpiderFootPlugin()
 
-        with self.assertRaises(TypeError) as cm:
-            scan_id = sfp.getScanId()
+        with self.assertRaises(TypeError):
+            sfp.getScanId()
 
     def test_get_target_should_return_a_string(self):
         """
@@ -170,8 +170,8 @@ class TestSpiderFootPlugin(unittest.TestCase):
         """
         sfp = SpiderFootPlugin()
 
-        with self.assertRaises(TypeError) as cm:
-            get_target = sfp.getTarget()
+        with self.assertRaises(TypeError):
+            sfp.getTarget()
 
     def test_register_listener(self):
         """
@@ -219,7 +219,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         event_type = 'ROOT'
         event_data = 'test data'
         module = 'test module'
-        source_event = None #SpiderFootEvent("ROOT", '', '', "ROOT")
+        source_event = None
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
         sfp.notifyListeners(evt)
 
@@ -234,7 +234,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         invalid_types = [None, "", list(), dict()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError) as cm:
+                with self.assertRaises(TypeError):
                     sfp.notifyListeners(None)
 
     def test_check_for_stop(self):
@@ -297,6 +297,6 @@ class TestSpiderFootPlugin(unittest.TestCase):
 
         sfp.start()
 
+
 if __name__ == '__main__':
     unittest.main()
-

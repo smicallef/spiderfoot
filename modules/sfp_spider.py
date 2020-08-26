@@ -13,7 +13,7 @@
 
 import time
 import json
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spider(SpiderFootPlugin):
     """Web Spider:Footprint,Investigate:Crawling and Scanning:slow:Spidering of web-pages to extract content for searching."""
@@ -21,9 +21,9 @@ class sfp_spider(SpiderFootPlugin):
     meta = {
         'name': "Web Spider",
         'summary': "Spidering of web-pages to extract content for searching.",
-        'flags': [ "slow" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "Crawling and Scanning" ]
+        'flags': ["slow"],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["Crawling and Scanning"]
     }
 
     # Default options
@@ -250,7 +250,7 @@ class sfp_spider(SpiderFootPlugin):
 
     # Don't notify me about events from myself
     def watchOpts(self):
-        return [ 'noself' ]
+        return ['noself']
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -266,7 +266,7 @@ class sfp_spider(SpiderFootPlugin):
         eventData = event.data
         spiderTarget = None
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.urlEvents:
             self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")

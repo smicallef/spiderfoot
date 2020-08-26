@@ -1,8 +1,8 @@
 # test_sf.py
 import unittest
-import io
 import sys
 import subprocess
+
 
 class TestSf(unittest.TestCase):
     """
@@ -34,10 +34,10 @@ class TestSf(unittest.TestCase):
     def execute(self, command):
         proc = subprocess.Popen(
            command,
-           stdout = subprocess.PIPE,
-           stderr = subprocess.PIPE,
+           stdout=subprocess.PIPE,
+           stderr=subprocess.PIPE,
         )
-        out,err = proc.communicate()
+        out, err = proc.communicate()
         return out, err, proc.returncode
 
     def test_help_arg_should_print_help_and_exit(self):
@@ -70,7 +70,7 @@ class TestSf(unittest.TestCase):
         self.assertEqual(b"", err)
         self.assertEqual(255, code)
 
-    @unittest.skip("todo")
+    @unittest.skip("todo - output parsing fails on Python3.8")
     def test_run_scan_with_invalid_module_should_run_scan_and_exit(self):
         module = "invalid module"
         out, err, code = self.execute([sys.executable, "sf.py", "-m", module, "-s", "spiderfoot.net"])
@@ -94,6 +94,6 @@ class TestSf(unittest.TestCase):
             with self.subTest(module=module):
                 self.assertIn(module.encode(), out)
 
+
 if __name__ == '__main__':
     unittest.main()
-

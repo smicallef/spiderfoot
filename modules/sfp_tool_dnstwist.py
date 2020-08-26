@@ -14,7 +14,7 @@
 from subprocess import Popen, PIPE
 import json
 import os.path
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_dnstwist(SpiderFootPlugin):
     """Tool - DNSTwist:Footprint,Investigate:DNS:tool:Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation."""
@@ -22,9 +22,9 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
     meta = {
         'name': "Tool - DNSTwist",
         'summary': "Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation.",
-        'flags': [ "tool" ],
-        'useCases': [ "Footprint", "Investigate" ],
-        'categories': [ "DNS" ],
+        'flags': ["tool"],
+        'useCases': ["Footprint", "Investigate"],
+        'categories': ["DNS"],
         'toolDetails': {
             'name': "DNSTwist",
             'description': "See what sort of trouble users can get in trying to type your domain name. "
@@ -76,7 +76,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
             return None

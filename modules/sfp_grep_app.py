@@ -14,9 +14,8 @@
 import json
 import math
 import time
-import re
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_grep_app(SpiderFootPlugin):
     """grep.app:Footprint,Investigate,Passive:Search Engines::Search grep.app API for links and emails related to the specified domain."""
@@ -24,9 +23,9 @@ class sfp_grep_app(SpiderFootPlugin):
     meta = {
         'name': "grep.app",
         'summary': "Search grep.app API for links and emails related to the specified domain.",
-        'flags': [ "" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ],
+        'flags': [""],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://grep.app/",
             'model': "FREE_NOAUTH_UNLIMITED",
@@ -103,7 +102,7 @@ class sfp_grep_app(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == 'sfp_grep_app':
             self.sf.debug("Ignoring " + eventData + ", from self.")
@@ -236,4 +235,3 @@ class sfp_grep_app(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
 # End of sfp_grep_app class
-
