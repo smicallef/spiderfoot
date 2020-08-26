@@ -103,7 +103,7 @@ class sfp_names(SpiderFootPlugin):
                 self.notifyListeners(evt)
                 return None
 
-        # For RAW_RIR_DATA, there are only specific modules we 
+        # For RAW_RIR_DATA, there are only specific modules we
         # expect to see RELEVANT names within.
         if eventName == "RAW_RIR_DATA":
             if srcModuleName not in ["sfp_arin", "sfp_builtwith", "sfp_clearbit",

@@ -129,8 +129,7 @@ class sfp_torexits(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(ip + " found within netblock/subnet " + target + " in " + check)
                                 return url
                         except Exception as e:
                             self.sf.debug("Error encountered parsing: " + str(e))

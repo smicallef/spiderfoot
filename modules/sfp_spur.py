@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_spur
-# Purpose:      Spiderfoot plugin to search spur.us API for any 
+# Purpose:      Spiderfoot plugin to search spur.us API for any
 #               malicious activity by the target
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
@@ -66,7 +66,7 @@ class sfp_spur(SpiderFootPlugin):
     }
 
     results = None
-    errorState = False  
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -95,7 +95,7 @@ class sfp_spur(SpiderFootPlugin):
             "COMPANY_NAME",
             "MALICIOUS_AFFILIATE_IPADDR"
         ]
-    
+
     # Check whether the IP Address is malicious using spur.us API
     # https://spur.us/app/docs
     def queryIPAddress(self, ipAddr):
@@ -118,7 +118,7 @@ class sfp_spur(SpiderFootPlugin):
             self.sf.error("Invalid credentials. Please check API Token", False)
             self.errorState = True
             return None
-        
+
         if code == '404':
             self.sf.debug("IP Address not found.")
             return None
@@ -126,17 +126,16 @@ class sfp_spur(SpiderFootPlugin):
         if not code == '200':
             self.sf.error("Unable to fetch data from spur.us", False)
             return None
-        
+
         content = res.get('content')
 
         return content
 
     def handleEvent(self, event):
-        
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        
+
         if self.errorState:
             return None
 
@@ -161,21 +160,21 @@ class sfp_spur(SpiderFootPlugin):
                 return None
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxnetblock']))
+                self.sf.debug("Network size bigger than permitted: "
+                              + str(IPNetwork(eventData).prefixlen) + " > "
+                              + str(self.opts['maxnetblock']))
                 return None
-        
+
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxsubnet']))
+                self.sf.debug("Network size bigger than permitted: "
+                              + str(IPNetwork(eventData).prefixlen) + " > "
+                              + str(self.opts['maxsubnet']))
                 return None
-                    
+
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
@@ -186,19 +185,19 @@ class sfp_spur(SpiderFootPlugin):
             if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
                 return None
             qrylist.append(eventData)
-        
+
         for addr in qrylist:
 
             if self.checkForStop():
                 return None
-            
+
             content = self.queryIPAddress(addr)
 
             if content is None:
                 continue
-                
+
             data = json.loads(content)
-            
+
             # For netblocks, create the event for the IP address to link to later
             if eventName.startswith("NETBLOCK_"):
                 ipEvt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
@@ -219,13 +218,13 @@ class sfp_spur(SpiderFootPlugin):
                 geoInfo = ""
                 if city:
                     geoInfo += city + ", "
-                
+
                 if state:
                     geoInfo += state + ", "
-                
+
                 if country:
                     geoInfo += country
-                
+
                 if eventName.startswith("NETBLOCK_"):
                     evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, ipEvt)
                     self.notifyListeners(evt)
@@ -235,11 +234,11 @@ class sfp_spur(SpiderFootPlugin):
                 else:
                     evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, event)
                     self.notifyListeners(evt)
-            
+
             asData = data.get('as')
 
             if asData:
-                orgName = asData.get('organization')  
+                orgName = asData.get('organization')
 
                 if orgName:
                     if eventName.startswith("NETBLOCK_"):
@@ -251,9 +250,9 @@ class sfp_spur(SpiderFootPlugin):
                     else:
                         evt = SpiderFootEvent("COMPANY_NAME", orgName, self.__name__, event)
                         self.notifyListeners(evt)
-            
+
             vpnOperators = data.get('vpnOperators')
-            
+
             vpnOperatorsExists = vpnOperators.get('exists')
 
             if vpnOperatorsExists:
@@ -279,7 +278,7 @@ class sfp_spur(SpiderFootPlugin):
                 else:
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
                     self.notifyListeners(evt)
-        
+
         return None
 
 # End of sfp_spur class

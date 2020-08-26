@@ -145,9 +145,9 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
                     return None
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -155,9 +155,9 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxsubnet']))
                     return None
 
         qrylist = list()
@@ -198,8 +198,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 infourl = "<SFURL>" + info.get('permalink') + "</SFURL>"
 
                 # Notify other modules of what you've found
-                e = SpiderFootEvent(evt, "ThreatCrowd [" + addr + "]\n" +
-                                    infourl, self.__name__, event)
+                e = SpiderFootEvent(evt, "ThreatCrowd [" + addr + "]\n" + infourl, self.__name__, event)
                 self.notifyListeners(e)
 
 # End of sfp_threatcrowd class

@@ -80,14 +80,14 @@ class sfp_creditcard(SpiderFootPlugin):
         myres = list()
         for creditCard in creditCards:
             evttype = "CREDIT_CARD_NUMBER"
-            
+
             self.sf.info("Found credit card number : " + creditCard)
 
             if creditCard in myres:
                 self.sf.debug("Already found from this source")
                 continue
             myres.append(creditCard)
-            
+
             evt = SpiderFootEvent(evttype, creditCard, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource

@@ -93,10 +93,10 @@ class sfp_ipstack(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
 
-        res = self.sf.fetchUrl("http://api.ipstack.com/" + eventData + "?access_key="  + self.opts['api_key'],
+        self.results[eventData] = True
+
+        res = self.sf.fetchUrl("http://api.ipstack.com/" + eventData + "?access_key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] is None:
             self.sf.info("No GeoIP info found for " + eventData)
@@ -111,11 +111,10 @@ class sfp_ipstack(SpiderFootPlugin):
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
-        if hostip.get('country_name', None) != None:
-            self.sf.info("Found GeoIP for " + eventData + ": " + hostip['country_name'])
-            countrycity = hostip['country_name']
-
-            evt = SpiderFootEvent("GEOINFO", countrycity, self.__name__, event)
+        geoinfo = hostip.get('country_name')
+        if geoinfo:
+            self.sf.info(f"Found GeoIP for {eventData}: {geoinfo}")
+            evt = SpiderFootEvent("GEOINFO", geoinfo, self.__name__, event)
             self.notifyListeners(evt)
 
         return None

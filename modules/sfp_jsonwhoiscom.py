@@ -89,7 +89,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
             "Accept": "application/json",
             "Authorization": "Token token=" + self.opts["api_key"]
         }
-        
+
         res = self.sf.fetchUrl(
           "https://jsonwhois.com/api/v1/whois?%s" % urllib.parse.urlencode(params),
           headers=headers,

@@ -202,5 +202,5 @@ class sfp_fraudguard(SpiderFootPlugin):
                     dat = rec['threat'] + " (risk level: " + rec['risk_level'] + ") [" + eventData + "]"
                     e = SpiderFootEvent("MALICIOUS_" + rtype, dat, self.__name__, pevent)
                     self.notifyListeners(e)
-    
+
 # End of sfp_fraudguard class

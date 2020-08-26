@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------------------
 # Name:         sfp_keybase
 # Purpose:      Spiderfoot plugin to query KeyBase API
-#               to gather additional information about username 
+#               to gather additional information about username
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
@@ -64,7 +64,7 @@ class sfp_keybase(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "RAW_RIR_DATA", "SOCIAL_MEDIA", "USERNAME",
-            "HUMAN_NAME", "GEOINFO", "BITCOIN_ADDRESS", 
+            "HUMAN_NAME", "GEOINFO", "BITCOIN_ADDRESS",
             "PGP_KEY"
         ]
 
@@ -85,11 +85,11 @@ class sfp_keybase(SpiderFootPlugin):
           useragent=self.opts['_useragent']
         )
 
-        # In this case, it will always be 200 if keybase is queried 
+        # In this case, it will always be 200 if keybase is queried
         # The actual response codes are stored in status tag of the response
         if not res['code'] == '200':
             return None
-        
+
         content = json.loads(res['content'])
 
         status = content.get('status')
@@ -99,7 +99,7 @@ class sfp_keybase(SpiderFootPlugin):
         code = status.get('code')
         if code is None:
             return None
-        
+
         try:
             if not int(code) == 0:
                 return None
@@ -129,7 +129,7 @@ class sfp_keybase(SpiderFootPlugin):
 
         userName = eventData
 
-        # Extract username if a Keybase link is received 
+        # Extract username if a Keybase link is received
         if eventName == "LINKED_URL_EXTERNAL":
             linkRegex = r"^https?://keybase.io\/[A-Za-z0-9\-_\.]+"
             links = re.findall(linkRegex, eventData)
@@ -143,7 +143,7 @@ class sfp_keybase(SpiderFootPlugin):
             if userName in self.results:
                 self.sf.debug(f"Skipping {userName}, already checked.")
                 return None
-                
+
             self.results[userName] = True
 
         content = self.queryUsername(userName)
@@ -151,14 +151,14 @@ class sfp_keybase(SpiderFootPlugin):
         if content is None:
             self.sf.debug("No data found for username")
             return None
-        
+
         evt = SpiderFootEvent("RAW_RIR_DATA", str(content), self.__name__, event)
-        self.notifyListeners(evt) 
+        self.notifyListeners(evt)
 
         if eventName == "LINKED_URL_EXTERNAL":
             evt = SpiderFootEvent("USERNAME", userName, self.__name__, event)
-            self.notifyListeners(evt)    
-        
+            self.notifyListeners(evt)
+
         # Contains all data about the target username
         try:
             them = content.get('them')[0]
@@ -182,20 +182,20 @@ class sfp_keybase(SpiderFootPlugin):
             if not userName == responseUserName:
                 self.sf.error("Username does not match received response, skipping", False)
                 return None
-        
+
         if profile:
             # Get and report full name of user
             fullName = profile.get('full_name')
             if fullName:
                 evt = SpiderFootEvent("HUMAN_NAME", fullName, self.__name__, event)
                 self.notifyListeners(evt)
-            
+
             # Get and report location of user
             location = profile.get('location')
             if location:
                 evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                 self.notifyListeners(evt)
-            
+
         # Extract social media information
         proofsSummary = them.get('proofs_summary')
 
@@ -212,8 +212,8 @@ class sfp_keybase(SpiderFootPlugin):
 
                         evt = SpiderFootEvent("SOCIAL_MEDIA", socialMedia, self.__name__, event)
                         self.notifyListeners(evt)
-        
-        # Get cryptocurrency addresses 
+
+        # Get cryptocurrency addresses
         cryptoAddresses = them.get('cryptocurrency_addresses')
 
         # Extract and report bitcoin addresses if any
@@ -235,7 +235,7 @@ class sfp_keybase(SpiderFootPlugin):
         pgpRegex = r"-----BEGIN\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----(.*?)-----END\s*PGP\s*(?:PUBLIC?)\s*KEY\s*BLOCK-----"
 
         pgpKeys = re.findall(pgpRegex, str(content))
-        
+
         for pgpKey in pgpKeys:
 
             if len(pgpKey) < 300:

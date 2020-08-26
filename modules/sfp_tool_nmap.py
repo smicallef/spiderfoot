@@ -95,8 +95,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
                     return None
 
         except BaseException as e:
-            self.sf.error("Strange netblock identified, unable to parse: " +
-                          eventData + " (" + str(e) + ")", False)
+            self.sf.error("Strange netblock identified, unable to parse: " + eventData + " (" + str(e) + ")", False)
             return None
 
         # Don't look up stuff twice, check IP == IP here

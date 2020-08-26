@@ -70,7 +70,7 @@ class sfp_template(SpiderFootPlugin):
         #   - Investigate means that this module is useful when investigating the danger/risk of a target
         'useCases': ["Passive"],
 
-        # Categories: The categories this module belongs in, describing how it operates. Only the first category is 
+        # Categories: The categories this module belongs in, describing how it operates. Only the first category is
         # used for now.
         #   - Content Analysis: Analyses content found
         #   - Crawling and Scanning: Performs crawling or scanning of the target
@@ -100,7 +100,7 @@ class sfp_template(SpiderFootPlugin):
             # The repo where the code of the tool lives.
             'repository': 'https://github.com/author/tool'
         },
-        
+
         # Information about the data source (if any) this module queries for data. For modules
         # that purley parse data from other modules (e.g. sfp_email), this may be omitted.
         'dataSource': {
@@ -108,7 +108,7 @@ class sfp_template(SpiderFootPlugin):
             'website': "https://www.datasource.com",
 
             # The subscription model for this data source.
-            # - FREE_NOAUTH_UNLIMITED: Completely free, no need to obtain an API key and no limits 
+            # - FREE_NOAUTH_UNLIMITED: Completely free, no need to obtain an API key and no limits
             #                          imposed beyond throttling.
             # - FREE_NOAUTH_LIMITED:   Completely free, no need to obtain an API key however limits
             #                          are imposed and you need to register/pay to exceed them.
@@ -213,7 +213,7 @@ class sfp_template(SpiderFootPlugin):
         self.sf = sfc
         # self.tempStorage() basically returns a dict(), but we use self.tempStorage()
         # instead since on SpiderFoot HX, different mechanisms are used to persist
-        # data for load distribution, avoiding excess memory consumption and fault 
+        # data for load distribution, avoiding excess memory consumption and fault
         # tolerance. This keeps modules transparently compatible with both versions.
         self.results = self.tempStorage()
 
@@ -250,9 +250,8 @@ class sfp_template(SpiderFootPlugin):
         # from global config), and the user agent is SpiderFoot so that the
         # provider knows the request comes from the tool. Many third parties
         # request that, so best to just be consistent anyway.
-        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
-                               "?key=" + self.opts['api_key'],
-                               timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry + "?key=" + self.opts['api_key'],
+                               timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
         # Report when unexpected things happen:
@@ -315,9 +314,9 @@ class sfp_template(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
                     return None
 
 
@@ -380,7 +379,7 @@ class sfp_template(SpiderFootPlugin):
                 return None
 
             # In some cases, you want to override the data source for the event
-            # you're producing to be the data source of the event that you've 
+            # you're producing to be the data source of the event that you've
             # received. This is needed, for example, when the module is purely
             # extracting data from a received event, so the data source is not
             # actually this module, but the data source of the received event
