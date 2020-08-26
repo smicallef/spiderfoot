@@ -25,7 +25,29 @@ class sfp_censys(SpiderFootPlugin):
         'summary': "Obtain information from Censys.io",
         'flags': ["apikey"],
         'useCases': ["Investigate", "Passive"],
-        'categories': ["Search Engines"]
+        'categories': ["Search Engines"],
+        'dataSource': {
+            'website': "https://censys.io/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://censys.io/api",
+                "https://censys.io/product",
+                "https://censys.io/ipv4"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://censys.io/",
+                "Register a free account",
+                "Navigate to https://censys.io/account",
+                "Click on 'API'",
+                "The API key combination is listed under 'API ID' and 'Secret'"
+            ],
+            'favIcon': "https://censys.io/assets/favicon.png",
+            'logo': "https://censys.io/assets/logo.png",
+            'description': "Discover exposures and other common entry points for attackers.\n"
+                               "Censys scans the entire internet constantly, including obscure ports. "
+                               "We use a combination of banner grabs and deep protocol handshakes "
+                               "to provide industry-leading visibility and an accurate depiction of what is live on the internet.",
+        }
     }
 
     # Default options
