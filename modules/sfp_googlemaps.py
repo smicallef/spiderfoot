@@ -31,12 +31,12 @@ class sfp_googlemaps(SpiderFootPlugin):
                 "https://developers.google.com/maps/documentation/?_ga=2.135220017.1220421370.1587340370-900596925.1587340370"
             ],
             'apiKeyInstructions': [
-                "Visit cloud.google.com/maps-platform/",
+                "Visit https://cloud.google.com/maps-platform/",
                 "Register a free Google account",
                 "Click on 'Get Started'",
                 "Click on 'API'",
                 "Select the type of API",
-                "Navigate to console.cloud.google.com/apis/credentials",
+                "Navigate to https://console.cloud.google.com/apis/credentials",
                 "Click on 'Credentials'",
                 "The API Key will be listed under 'API Keys'"
             ],

@@ -35,9 +35,9 @@ class sfp_xforce(SpiderFootPlugin):
                 "https://exchange.xforce.ibmcloud.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit exchange.xforce.ibmcloud.com",
+                "Visit https://exchange.xforce.ibmcloud.com",
                 "Register a free account",
-                "Navigate to exchange.xforce.ibmcloud.com/settings",
+                "Navigate to https://exchange.xforce.ibmcloud.com/settings",
                 "Click on 'API Access'",
                 "Provide an API name, and click 'Generate'",
                 "The API key combination is listed under 'API Key' and 'API Password'"

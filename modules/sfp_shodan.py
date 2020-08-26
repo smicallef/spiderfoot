@@ -34,9 +34,9 @@ class sfp_shodan(SpiderFootPlugin):
                 "https://developer.shodan.io/apps"
             ],
             'apiKeyInstructions': [
-                "Visit shodan.io",
+                "Visit https://shodan.io",
                 "Register a free account",
-                "Navigate to account.shodan.io/",
+                "Navigate to https://account.shodan.io/",
                 "The API key is listed under 'API Key'"
             ],
             'favIcon': "https://static.shodan.io/shodan/img/favicon.png",

@@ -33,7 +33,7 @@ class sfp_pastebin(SpiderFootPlugin):
                 "https://pastebin.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit developers.google.com/custom-search/v1/introduction",
+                "Visit https://developers.google.com/custom-search/v1/introduction",
                 "Register a free Google account",
                 "Click on 'Get A Key'",
                 "Connect a Project",

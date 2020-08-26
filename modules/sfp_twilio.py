@@ -31,9 +31,9 @@ class sfp_twilio(SpiderFootPlugin):
                 "https://www.twilio.com/blog/what-does-twilio-do"
             ],
             'apiKeyInstructions': [
-                "Visit www.twilio.com",
+                "Visit https://www.twilio.com",
                 "Register a free account",
-                "Navigate to www.twilio.com/console",
+                "Navigate to https://www.twilio.com/console",
                 "The API key combination is listed under 'Account SID' and 'Auth Token'"
             ],
             'favIcon': "https://www.datasource.com/favicon.ico",

@@ -33,9 +33,9 @@ class sfp_spyse(SpiderFootPlugin):
                 "https://spyse.com/tools/api"
             ],
             'apiKeyInstructions': [
-                "Visit spyse.com",
+                "Visit https://spyse.com",
                 "Register a free account",
-                "Navigate to spyse.com/user",
+                "Navigate to https://spyse.com/user",
                 "The API key is listed under 'API token'"
             ],
             'favIcon': "https://spyse.com/favicon/favicon-32x32.png",

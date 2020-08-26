@@ -32,7 +32,7 @@ class sfp_networksdb(SpiderFootPlugin):
                 "https://networksdb.io/api/docs"
             ],
             'apiKeyInstructions': [
-                "Visit networksdb.io/api/order/free",
+                "Visit https://networksdb.io/api/order/free",
                 "Register a free account",
                 "Click on 'Generate a Free API Key'",
                 "The API key is listed under 'API Key: Free plan'"

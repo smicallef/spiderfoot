@@ -33,9 +33,9 @@ class sfp_honeypot(SpiderFootPlugin):
                 "https://www.projecthoneypot.org/faq.php"
             ],
             'apiKeyInstructions': [
-                "Visit www.projecthoneypot.org",
+                "Visit https://www.projecthoneypot.org",
                 "Sign up for a free account",
-                "Navigate to www.projecthoneypot.org/httpbl_configure.php'",
+                "Navigate to https://www.projecthoneypot.org/httpbl_configure.php'",
                 "Request for an API key",
                 "The API key is listed under 'Your http:BL Access Key'"
             ],

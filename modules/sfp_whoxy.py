@@ -31,7 +31,7 @@ class sfp_whoxy(SpiderFootPlugin):
                 "https://www.whoxy.com/free-whois-api/"
             ],
             'apiKeyInstructions': [
-                "Visit www.whoxy.com/pricing.php",
+                "Visit https://www.whoxy.com/pricing.php",
                 "Select a plan and register an account",
                 "Pay for the plan",
                 "The API key will be presented upon payment"

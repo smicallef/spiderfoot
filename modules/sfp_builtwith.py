@@ -33,9 +33,9 @@ class sfp_builtwith(SpiderFootPlugin):
                 "https://builtwith.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit api.builtwith.com/free-api",
+                "Visit https://api.builtwith.com/free-api",
                 "Register a free account",
-                "Navigate to api.builtwith.com/free-api",
+                "Navigate to https://api.builtwith.com/free-api",
                 "The API key is listed under 'Your API Key'"
             ],
             'favIcon': "https://d28rh9vvmrd65v.cloudfront.net/favicon.ico",

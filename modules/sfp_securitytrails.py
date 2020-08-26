@@ -31,9 +31,9 @@ class sfp_securitytrails(SpiderFootPlugin):
                 "https://docs.securitytrails.com/reference#general"
             ],
             'apiKeyInstructions': [
-                "Visit securitytrails.com",
+                "Visit https://securitytrails.com",
                 "Register a free account",
-                "Navigate to securitytrails.com/app/account/credentials",
+                "Navigate to https://securitytrails.com/app/account/credentials",
                 "The API key is listed under 'API Key'"
             ],
             'favIcon': "https://securitytrails.com/user/themes/lego/favicon/apple-touch-icon.png",

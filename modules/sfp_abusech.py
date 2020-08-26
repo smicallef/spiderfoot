@@ -77,9 +77,9 @@ class sfp_abusech(SpiderFootPlugin):
                 "The API key is listed under 'Your API Key'",
                 "Visit https://igotphished.abuse.ch/api/",
                 "Request an API key from the email listed under 'Submit data to I Got Phished'",
-                "Visit urlhaus.abuse.ch/api/",
-                "Login using a Twitter Account at urlhaus.abuse.ch/login/",
-                "Navigate to urlhaus.abuse.ch/api/#account",
+                "Visit https://urlhaus.abuse.ch/api/",
+                "Login using a Twitter Account at https://urlhaus.abuse.ch/login/",
+                "Navigate to https://urlhaus.abuse.ch/api/#account",
                 "The API Key is listed under 'API-Key'"
             ],
             'favIcon': "https://abuse.ch/favicon.ico",

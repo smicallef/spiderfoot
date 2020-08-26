@@ -35,9 +35,9 @@ class sfp_intelx(SpiderFootPlugin):
                 "https://github.com/IntelligenceX/SDK"
             ],
             'apiKeyInstructions': [
-                "Visit intelx.io/",
+                "Visit https://intelx.io/",
                 "Register a free account",
-                "Navigate to intelx.io/account?tab=developer",
+                "Navigate to https://intelx.io/account?tab=developer",
                 "The API key is listed under 'Your API details'"
             ],
             'favIcon': "https://intelx.io/favicon/favicon-32x32.png",

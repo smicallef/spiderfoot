@@ -33,7 +33,7 @@ class sfp_wigle(SpiderFootPlugin):
             'apiKeyInstructions': [
                 "Visit https://wigle.net/",
                 "Register a free account",
-                "Navigate to wigle.net/account",
+                "Navigate to https://wigle.net/account",
                 "Click on 'Show my token'",
                 "The API key is listed under 'API Token'"
             ],

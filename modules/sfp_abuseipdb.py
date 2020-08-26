@@ -43,10 +43,10 @@ class sfp_abuseipdb(SpiderFootPlugin):
                 "https://www.abuseipdb.com/categories"
             ],
             'apiKeyInstructions': [
-                "Visit www.abuseipdb.com/pricing",
+                "Visit https://www.abuseipdb.com/pricing",
                 "Select the plan required",
                 "Register a new account with an email",
-                "Navigate to www.abuseipdb.com/account/api",
+                "Navigate to https://www.abuseipdb.com/account/api",
                 "The API Key is listed under 'Keys'"
             ],
             'favIcon': "https://www.abuseipdb.com/favicon.ico",

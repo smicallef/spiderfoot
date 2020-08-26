@@ -32,9 +32,9 @@ class sfp_numverify(SpiderFootPlugin):
                 "https://numverify.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit numverify.com",
+                "Visit https://numverify.com",
                 "Sign up for a free account",
-                "Navigate to numverify.com/dashboard",
+                "Navigate to https://numverify.com/dashboard",
                 "The API key is listed under 'Your API Access Key'"
             ],
             'favIcon': "https://numverify.com/images/icons/numverify_shortcut_icon.ico",

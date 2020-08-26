@@ -31,7 +31,7 @@ class sfp_citadel(SpiderFootPlugin):
                 "https://leak-lookup.com/databases"
             ],
             'apiKeyInstructions': [
-                "Visit leak-lookup.com",
+                "Visit https://leak-lookup.com",
                 "Register an account",
                 "Login to your account",
                 "Click on 'Account'",

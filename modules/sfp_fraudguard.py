@@ -34,9 +34,9 @@ class sfp_fraudguard(SpiderFootPlugin):
                 "https://faq.fraudguard.io/"
             ],
             'apiKeyInstructions': [
-                "Visit app.fraudguard.io/register",
+                "Visit https://app.fraudguard.io/register",
                 "Register a free account",
-                "Navigate to app.fraudguard.io/keys",
+                "Navigate to https://app.fraudguard.io/keys",
                 "The API key combination is listed under Username and Password"
             ],
             'favIcon': "https://fraudguard.io/img/favicon.ico",

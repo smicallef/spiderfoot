@@ -37,9 +37,9 @@ class sfp_alienvault(SpiderFootPlugin):
                 "https://otx.alienvault.com/browse/"
             ],
             'apiKeyInstructions': [
-                "Visit otx.alienvault.com/",
+                "Visit https://otx.alienvault.com/",
                 "Sign up for a free account",
-                "Navigate to otx.alienvault.com/settings",
+                "Navigate to https://otx.alienvault.com/settings",
                 "The API key is listed under 'OTX Key'"
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://otx.alienvault.com/",
