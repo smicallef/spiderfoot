@@ -33,7 +33,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             'apiKeyInstructions': [
                 "Visit https://www.hybrid-analysis.com/signup",
                 "Register a free account",
-                "Navigate to www.hybrid-analysis.com/my-account?tab=%23api-key-tab",
+                "Navigate to https://www.hybrid-analysis.com/my-account?tab=%23api-key-tab",
                 "Create an API Key",
                 "The API key is listed under 'API Key'"
             ],
@@ -139,7 +139,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         Query hash
         https://www.hybrid-analysis.com/docs/api/v2
         """
- 
+
         params = {
             "hash": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
@@ -247,7 +247,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         urls = []
         domains = []
- 
+
         for hash in hashes:
             results = self.queryHash(hash)
 
@@ -276,7 +276,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         for url in set(urls):
             host = self.sf.urlFQDN(url.lower())
-    
+
             if not self.getTarget().matches(host, includeChildren=True, includeParents=True):
                 continue
 

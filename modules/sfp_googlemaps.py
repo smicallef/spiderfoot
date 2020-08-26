@@ -31,12 +31,12 @@ class sfp_googlemaps(SpiderFootPlugin):
                 "https://developers.google.com/maps/documentation/?_ga=2.135220017.1220421370.1587340370-900596925.1587340370"
             ],
             'apiKeyInstructions': [
-                "Visit cloud.google.com/maps-platform/",
+                "Visit https://cloud.google.com/maps-platform/",
                 "Register a free Google account",
                 "Click on 'Get Started'",
                 "Click on 'API'",
                 "Select the type of API",
-                "Navigate to console.cloud.google.com/apis/credentials",
+                "Navigate to https://console.cloud.google.com/apis/credentials",
                 "Click on 'Credentials'",
                 "The API Key will be listed under 'API Keys'"
             ],
@@ -101,14 +101,14 @@ class sfp_googlemaps(SpiderFootPlugin):
             self.results[eventData] = True
 
         res = self.sf.fetchUrl("https://maps.googleapis.com/maps/api/geocode/json?address=" + \
-                               eventData + "&key=" + self.opts['api_key'], 
-                               timeout=self.opts['_fetchtimeout'], 
+                               eventData + "&key=" + self.opts['api_key'],
+                               timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
         if res['content'] is None:
             self.sf.info("No location info found for " + eventData)
             return None
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], 
+        evt = SpiderFootEvent("RAW_RIR_DATA", res['content'],
                               self.__name__, event)
         self.notifyListeners(evt)
 
@@ -124,7 +124,7 @@ class sfp_googlemaps(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
             if 'formatted_address' in data:
-                evt = SpiderFootEvent("PHYSICAL_ADDRESS", data['formatted_address'], 
+                evt = SpiderFootEvent("PHYSICAL_ADDRESS", data['formatted_address'],
                                       self.__name__, event)
                 self.notifyListeners(evt)
         except Exception as e:

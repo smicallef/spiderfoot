@@ -35,9 +35,9 @@ class sfp_xforce(SpiderFootPlugin):
                 "https://exchange.xforce.ibmcloud.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit exchange.xforce.ibmcloud.com",
+                "Visit https://exchange.xforce.ibmcloud.com",
                 "Register a free account",
-                "Navigate to exchange.xforce.ibmcloud.com/settings",
+                "Navigate to https://exchange.xforce.ibmcloud.com/settings",
                 "Click on 'API Access'",
                 "Provide an API name, and click 'Generate'",
                 "The API key combination is listed under 'API Key' and 'API Password'"
@@ -209,9 +209,9 @@ class sfp_xforce(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
                     return None
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -219,9 +219,9 @@ class sfp_xforce(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxsubnet']))
                     return None
 
         if eventName.startswith('AFFILIATE_') and not self.opts.get('checkaffiliates', False):
@@ -305,10 +305,7 @@ class sfp_xforce(SpiderFootPlugin):
                         if cats is not None:
                             for cat in cats:
                                 cats_description = cats_description + cat + " "
-                        entry = reason + infield_sep + \
-                                    str(score) + infield_sep + \
-                                    created  + infield_sep + \
-                                    cats_description
+                        entry = f"{reason}{infield_sep}{score}{infield_sep}{created}{infield_sep}{cats_description}"
                         e = SpiderFootEvent(evtType, entry, self.__name__, event)
                         self.notifyListeners(e)
 

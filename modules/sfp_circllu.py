@@ -36,7 +36,7 @@ class sfp_circllu(SpiderFootPlugin):
                 "https://www.circl.lu/projects"
             ],
             'apiKeyInstructions': [
-                "Visit www.circl.lu/contact/",
+                "Visit https://www.circl.lu/contact/",
                 "Contact with email or phone to request access for API",
                 "The API access will be provided once approved"
             ],

@@ -30,7 +30,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
                 "https://www.neutrinoapi.com/api/phone-validate/"
             ],
             'apiKeyInstructions': [
-                "Visit www.neutrinoapi.com/",
+                "Visit https://www.neutrinoapi.com/",
                 "Sign up for a free account",
                 "Click on 'My Account'",
                 "The API key is listed under 'Master Key'"

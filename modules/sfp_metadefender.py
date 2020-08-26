@@ -22,7 +22,25 @@ class sfp_metadefender(SpiderFootPlugin):
         'summary': "Search MetaDefender API for IP address and domain IP reputation.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Reputation Systems"]
+        'categories': ["Reputation Systems"],
+        'dataSource': {
+            'website': "https://metadefender.opswat.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://onlinehelp.opswat.com/mdcloud/"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://metadefender.opswat.com/",
+                "Register a free account",
+                "Navigate to https://metadefender.opswat.com/account",
+                "The API key is listed under 'API key'"
+            ],
+            'favIcon': "https://mcl-cdn.opswat.com/1.40.3-729f31db/city/icons/icon-48x48.png?v=61be50566cce944a710aaa90ba6bbb8d",
+            'logo': "https://mcl-cdn.opswat.com/1.40.3-729f31db/city/icons/icon-48x48.png?v=61be50566cce944a710aaa90ba6bbb8d",
+            'description': "File Analysis - Analyzing binaries with 30+ anti-malware engines.\n"
+                               "Heuristic analysis to detect more unknown and targeted attacks.\n"
+                               "Binary vulnerability data assessment, IP/Domain reputation, Threat Intelligence Feeds",
+        }
     }
 
     # Default options

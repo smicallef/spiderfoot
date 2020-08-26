@@ -97,7 +97,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
             f":find?key={self.opts['api_key']}"
         )
         payload = {
-            "client": {"clientId": "SpiderFoot", "clientVersion": "3.2",},
+            "client": {"clientId": "SpiderFoot", "clientVersion": "3.2"},
             "threatInfo": {
                 "threatTypes": [
                     "THREAT_TYPE_UNSPECIFIED",

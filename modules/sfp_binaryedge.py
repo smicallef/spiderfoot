@@ -32,7 +32,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                 "https://www.binaryedge.io/data.html"
             ],
             'apiKeyInstructions': [
-                "Visit www.binaryedge.io/pricing.html",
+                "Visit https://www.binaryedge.io/pricing.html",
                 "Select a plan",
                 "Sign up with new account",
                 "Go to Account",

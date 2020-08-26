@@ -34,9 +34,9 @@ class sfp_fullcontact(SpiderFootPlugin):
                 "https://www.fullcontact.com/faq/"
             ],
             'apiKeyInstructions': [
-                "Visit fullcontact.com",
+                "Visit https://fullcontact.com",
                 "Register a free account",
-                "Navigate to dashboard.fullcontact.com",
+                "Navigate to https://dashboard.fullcontact.com",
                 "Click on 'Get an API Key'",
                 "Verify your account using your contact number",
                 "The API Key will be listed under 'Your API Keys'"

@@ -16,7 +16,7 @@ import json
 
 class sfp_twilio(SpiderFootPlugin):
     """Twilio:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio."""
-        
+
     meta = {
         'name': "Twilio",
         'summary': "Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio.",
@@ -31,9 +31,9 @@ class sfp_twilio(SpiderFootPlugin):
                 "https://www.twilio.com/blog/what-does-twilio-do"
             ],
             'apiKeyInstructions': [
-                "Visit www.twilio.com",
+                "Visit https://www.twilio.com",
                 "Register a free account",
-                "Navigate to www.twilio.com/console",
+                "Navigate to https://www.twilio.com/console",
                 "The API key combination is listed under 'Account SID' and 'Auth Token'"
             ],
             'favIcon': "https://www.datasource.com/favicon.ico",
@@ -73,8 +73,8 @@ class sfp_twilio(SpiderFootPlugin):
 
     # When querying third parties, it's best to have a dedicated function
     # to do so and avoid putting it in handleEvent()
-    def queryPhoneNumber(self, phoneNumber):   
-        
+    def queryPhoneNumber(self, phoneNumber):
+
         token = (base64.b64encode(self.opts['api_key_account_sid'].encode('utf8') + ":".encode('utf-8') + self.opts['api_key_auth_token'].encode('utf-8'))).decode('utf-8')
 
         headers = {
@@ -92,11 +92,11 @@ class sfp_twilio(SpiderFootPlugin):
         if res['code'] == '400':
             self.sf.error("Bad request.", False)
             return None
-        
+
         if res['code'] == '404':
             self.sf.debug("Phone number not found.")
             return None
-        
+
         if res['code'] == '429':
             self.sf.error("API usage limit reached.", False)
             return None
@@ -137,23 +137,23 @@ class sfp_twilio(SpiderFootPlugin):
             self.results[eventData] = True
 
         content = self.queryPhoneNumber(eventData)
-        
+
         if content is None:
             return None
-        
+
         data = json.loads(content)
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
-        
+
         callerName = data.get('caller_name')
         if callerName:
             callerName = callerName.get('caller_name')
-        
+
         if callerName:
             evt = SpiderFootEvent("COMPANY_NAME", callerName, self.__name__, event)
-            self.notifyListeners(evt)   
+            self.notifyListeners(evt)
 
         return None
-        
+
 # End of sfp_twilio class

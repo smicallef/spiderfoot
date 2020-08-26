@@ -34,9 +34,9 @@ class sfp_shodan(SpiderFootPlugin):
                 "https://developer.shodan.io/apps"
             ],
             'apiKeyInstructions': [
-                "Visit shodan.io",
+                "Visit https://shodan.io",
                 "Register a free account",
-                "Navigate to account.shodan.io/",
+                "Navigate to https://account.shodan.io/",
                 "The API key is listed under 'API Key'"
             ],
             'favIcon': "https://static.shodan.io/shodan/img/favicon.png",
@@ -167,7 +167,7 @@ class sfp_shodan(SpiderFootPlugin):
             hosts = self.searchHosts(eventData)
             if hosts is None:
                 return None
-            
+
             evt = SpiderFootEvent("RAW_RIR_DATA", str(hosts), self.__name__, event)
             self.notifyListeners(evt)
 

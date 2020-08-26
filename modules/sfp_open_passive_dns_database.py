@@ -217,7 +217,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
                 if self.opts['verify'] and not self.sf.validateIP(query, answer):
                     self.sf.debug("Host " + query + " no longer resolves to " + answer)
                     continue
- 
+
                 evt = SpiderFootEvent("IPV6_ADDRESS", answer, self.__name__, event)
                 self.notifyListeners(evt)
 

@@ -30,7 +30,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
                 "https://iknowwhatyoudownload.com/en/peer/"
             ],
             'apiKeyInstructions': [
-                "Visit iknowwhatyoudownload.com/en/api/",
+                "Visit https://iknowwhatyoudownload.com/en/api/",
                 "Request Demo Key with email id",
                 "The API key will be sent to your email"
             ],

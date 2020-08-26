@@ -35,9 +35,9 @@ class sfp_intelx(SpiderFootPlugin):
                 "https://github.com/IntelligenceX/SDK"
             ],
             'apiKeyInstructions': [
-                "Visit intelx.io/",
+                "Visit https://intelx.io/",
                 "Register a free account",
-                "Navigate to intelx.io/account?tab=developer",
+                "Navigate to https://intelx.io/account?tab=developer",
                 "The API key is listed under 'Your API details'"
             ],
             'favIcon': "https://intelx.io/favicon/favicon-32x32.png",
@@ -102,7 +102,7 @@ class sfp_intelx(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["LEAKSITE_URL", "DARKNET_MENTION_URL", 
+        return ["LEAKSITE_URL", "DARKNET_MENTION_URL",
                 "INTERNET_NAME", "DOMAIN_NAME",
                 "EMAILADDR", "EMAILADDR_GENERIC"]
 
@@ -125,10 +125,10 @@ class sfp_intelx(SpiderFootPlugin):
             "sort": 4,
             "media": 0,
             "terminate": []
-        } 
+        }
 
-        url = 'https://' + self.opts['base_url']  + '/' + qtype + '/search'
-        res = self.sf.fetchUrl(url, postData=json.dumps(payload), 
+        url = 'https://' + self.opts['base_url'] + '/' + qtype + '/search'
+        res = self.sf.fetchUrl(url, postData=json.dumps(payload),
                                headers=headers, timeout=self.opts['_fetchtimeout'])
 
         if res['content'] is None:
@@ -173,7 +173,7 @@ class sfp_intelx(SpiderFootPlugin):
                     break
 
                 time.sleep(1)
-                
+
         return retdata
 
     # Handle events sent to this module
@@ -234,7 +234,7 @@ class sfp_intelx(SpiderFootPlugin):
                 except BaseException as e:
                     self.sf.error("Error processing content from IntelX: " + str(e), False)
                     continue
-                    
+
                 # Notify other modules of what you've found
                 e = SpiderFootEvent(evt, val, self.__name__, event)
                 self.notifyListeners(e)
@@ -277,7 +277,7 @@ class sfp_intelx(SpiderFootPlugin):
                 if evt == "INTERNET_NAME" and self.sf.isDomain(val, self.opts['_internettlds']):
                     e = SpiderFootEvent("DOMAIN_NAME", val, self.__name__, event)
                     self.notifyListeners(e)
-            
+
 
 
 

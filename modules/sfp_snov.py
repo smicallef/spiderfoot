@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_snov
-# Purpose:      Spiderfoot plugin to search Snov.IO API for emails 
+# Purpose:      Spiderfoot plugin to search Snov.IO API for emails
 #               associated to target domain
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
@@ -31,9 +31,9 @@ class sfp_snov(SpiderFootPlugin):
                 "https://snov.io/api"
             ],
             'apiKeyInstructions': [
-                "Visit snov.io",
+                "Visit https://snov.io",
                 "Register a free account",
-                "Navigate to app.snov.io/api-setting",
+                "Navigate to https://app.snov.io/api-setting",
                 "The API key combination is listed under 'API User ID' and 'API Secret'"
             ],
             'favIcon': "https://snov.io/img/favicon/favicon-96x96.png",
@@ -56,7 +56,7 @@ class sfp_snov(SpiderFootPlugin):
     }
 
     results = None
-    errorState = False  
+    errorState = False
 
     # More than 100 per response is not supported by Snov API
     limit = 100
@@ -67,7 +67,7 @@ class sfp_snov(SpiderFootPlugin):
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-        
+
 
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
@@ -77,7 +77,7 @@ class sfp_snov(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["EMAILADDR", "EMAILADDR_GENERIC"]
-    
+
     # Get Authentication token from Snov.IO API
     def queryAccessToken(self):
         params = {
@@ -89,7 +89,7 @@ class sfp_snov(SpiderFootPlugin):
         headers = {
             'Accept': "application/json",
         }
-        
+
         res = self.sf.fetchUrl(
             'https://api.snov.io/v1/oauth/access_token?' + urllib.parse.urlencode(params),
             headers=headers,
@@ -99,23 +99,23 @@ class sfp_snov(SpiderFootPlugin):
 
         if not res['code'] == '200':
             self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
-            self.errorState = True 
+            self.errorState = True
             return None
         try:
             # Extract access token from response
             content = res.get('content')
             accessToken = json.loads(content).get('access_token')
-            
+
             if accessToken is None:
                 self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
                 return None
 
             return str(accessToken)
-        except Exception: 
+        except Exception:
             self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
             self.errorState = True
             return None
-        
+
     # Fetch email addresses related to target domain
     def queryDomainName(self, qry, accessToken, currentOffset):
         params = {
@@ -148,7 +148,7 @@ class sfp_snov(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        
+
         if self.errorState:
             return None
 
@@ -192,12 +192,12 @@ class sfp_snov(SpiderFootPlugin):
             except:
                 self.sf.debug("No email address found for target domain")
                 break
-            
+
             evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
 
             records = data.get('emails')
-            
+
             if records:
                 for record in records:
                     if record:
@@ -217,7 +217,7 @@ class sfp_snov(SpiderFootPlugin):
                             evt = SpiderFootEvent(evttype, email, self.__name__, event)
                             self.notifyListeners(evt)
 
-            # Determine whether the next offset can have data or not 
+            # Determine whether the next offset can have data or not
             if len(records) < self.limit:
                 nextPageHasData = False
             currentOffset += self.limit

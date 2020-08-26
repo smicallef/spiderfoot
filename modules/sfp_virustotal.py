@@ -32,7 +32,7 @@ class sfp_virustotal(SpiderFootPlugin):
                 "https://developers.virustotal.com/v3.0/reference"
             ],
             'apiKeyInstructions': [
-                "Visit www.virustotal.com/",
+                "Visit https://www.virustotal.com/",
                 "Register a free account",
                 "Click on your profile",
                 "Click on API Key",
@@ -163,9 +163,9 @@ class sfp_virustotal(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
                     return None
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -173,9 +173,9 @@ class sfp_virustotal(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxsubnet']))
                     return None
 
         qrylist = list()
@@ -219,8 +219,7 @@ class sfp_virustotal(SpiderFootPlugin):
                           addr + "/information/</SFURL>"
 
                 # Notify other modules of what you've found
-                e = SpiderFootEvent(evt, "VirusTotal [" + addr + "]\n" +
-                                    infourl, self.__name__, event)
+                e = SpiderFootEvent(evt, "VirusTotal [" + addr + "]\n" + infourl, self.__name__, event)
                 self.notifyListeners(e)
 
             # Treat siblings as affiliates if they are of the original target, otherwise

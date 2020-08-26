@@ -33,9 +33,9 @@ class sfp_pulsedive(SpiderFootPlugin):
                 "https://pulsedive.com/api/"
             ],
             'apiKeyInstructions': [
-                "Visit pulsedive.com",
+                "Visit https://pulsedive.com",
                 "Register a free account",
-                "Navigate to pulsedive.com/account",
+                "Navigate to https://pulsedive.com/account",
                 "The API key is listed under 'Your API Key'"
             ],
             'favIcon': "https://pulsedive.com/favicon.ico?v=3.9.72",

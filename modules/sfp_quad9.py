@@ -41,7 +41,7 @@ class sfp_quad9(SpiderFootPlugin):
                                 "Quad9 is an effective and easy way to add an additional layer of security to your infrastructure for free.",
         }
     }
-    
+
     # Default options
     opts = {
     }

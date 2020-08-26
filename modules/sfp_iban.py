@@ -81,14 +81,14 @@ class sfp_iban(SpiderFootPlugin):
         myres = list()
         for ibanNumber in ibanNumbers:
             evttype = "IBAN_NUMBER"
-            
+
             self.sf.info("Found IBAN number : " + ibanNumber)
 
             if ibanNumber in myres:
                 self.sf.debug("Already found from this source")
                 continue
             myres.append(ibanNumber)
-            
+
             evt = SpiderFootEvent(evttype, ibanNumber, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource

@@ -29,9 +29,9 @@ class sfp_clearbit(SpiderFootPlugin):
                 "https://clearbit.com/docs"
             ],
             'apiKeyInstructions': [
-                "Visit clearbit.com",
+                "Visit https://clearbit.com",
                 "Register account for a Free Trial",
-                "Navigate to dashboard.clearbit.com/api",
+                "Navigate to https://dashboard.clearbit.com/api",
                 "The API key is listed under 'Your API Key'"
             ],
             'favIcon': "https://clearbit.com/assets/site/logo.png",
