@@ -23,7 +23,25 @@ class sfp_apility(SpiderFootPlugin):
         'summary': "Search Apility API for IP address and domain reputation.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Reputation Systems"]
+        'categories': ["Reputation Systems"],
+        'dataSource': {
+            'website': "https://auth0.com/signals",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://auth0.com/signals/docs/"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://auth0.com",
+                "Register a free account",
+                "Navigate to https://manage.auth0.com/dashboard/",
+                "Click on 'API'",
+                "The API key is listed under 'Auth0 Management API'"
+            ],
+            'favIcon': "https://cdn.auth0.com/styleguide/components/1.0.8/media/logos/img/favicon.png",
+            'logo': "https://auth0.com/signals/docs/images/signals-docs-logo.svg",
+            'description': "Malicious login traffic is detected with Auth0’s Anomaly Detection engine. "
+                                "This helps protect our customers from automated attacks, such as credential stuffing.",
+        }
     }
 
     # Default options
