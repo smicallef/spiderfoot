@@ -32,9 +32,9 @@ class sfp_emailcrawlr(SpiderFootPlugin):
                 "https://emailcrawlr.com/docs"
             ],
             'apiKeyInstructions': [
-                "Visit emailcrawlr.com",
+                "Visit https://emailcrawlr.com",
                 "Sign up for free account",
-                "Navigate to emailcrawlr.com/dashboard",
+                "Navigate to https://emailcrawlr.com/dashboard",
                 "The API key is listed under 'API Key'"
             ],
             'favIcon': "https://emailcrawlr.com/assets/fav-165eaa698b0dc774f0b250fadb2b41266e4c70dfbd7fb5fd4413e4bdecfd229d.png",

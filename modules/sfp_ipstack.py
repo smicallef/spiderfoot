@@ -32,7 +32,7 @@ class sfp_ipstack(SpiderFootPlugin):
                 "https://ipstack.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit ipstack.com/product",
+                "Visit https://ipstack.com/product",
                 "Click on 'Get Free API Key'",
                 "Click on 'Dashboard'",
                 "The API key is listed under 'Your API Access Key'"

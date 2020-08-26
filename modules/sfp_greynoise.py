@@ -34,9 +34,9 @@ class sfp_greynoise(SpiderFootPlugin):
                 "https://greynoise.io/faq"
             ],
             'apiKeyInstructions': [
-                "Visit greynoise.io/start",
+                "Visit https://greynoise.io/start",
                 "Sign up for a free account",
-                "Navigate to viz.greynoise.io/account",
+                "Navigate to https://viz.greynoise.io/account",
                 "The API key is listed under 'API Key'"
             ],
             'favIcon': "https://images.squarespace-cdn.com/content/v1/59c94f7de5dd5bc27643cfec/1515180784460-Q9F9GZ2FAIS3RY2UTGWN/ke17ZwdGBToddI8pDm48kFHWzgSH27ZAa1xr1ZK0Wg-oCXeSvxnTEQmG4uwOsdIceAoHiyRoc52GMN5_2H8Wp5iYt049DnwfYKhjLn0DeccIKHlHqVEMKuKBm52PGcc4mK60CANOrFfnj5Qv8IlCgw/favicon.ico?format=",

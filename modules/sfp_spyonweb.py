@@ -33,7 +33,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                 "https://api.spyonweb.com/"
             ],
             'apiKeyInstructions': [
-                "Visit api.spyonweb.com",
+                "Visit https://api.spyonweb.com",
                 "Sign up for a free account",
                 "Click on 'Dashboard'",
                 "The API key is listed under 'Access Token'"

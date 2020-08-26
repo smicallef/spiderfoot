@@ -29,7 +29,7 @@ class sfp_hunter(SpiderFootPlugin):
                 "https://hunter.io/api"
             ],
             'apiKeyInstructions': [
-                "Visit hunter.io/",
+                "Visit https://hunter.io/",
                 "Sign up for a free account",
                 "Click on 'Account Settings'",
                 "Click on 'API'",

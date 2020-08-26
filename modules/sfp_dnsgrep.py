@@ -35,9 +35,9 @@ class sfp_dnsgrep(SpiderFootPlugin):
                 "https://www.rapid7.com/about/research"
             ],
             'apiKeyInstructions': [
-                "Visit opendata.rapid7.com/apihelp/",
+                "Visit https://opendata.rapid7.com/apihelp/",
                 "Submit form requesting for access",
-                "After getting access, navigate to insight.rapid7.com/platform#/apiKeyManagement",
+                "After getting access, navigate to https://insight.rapid7.com/platform#/apiKeyManagement",
                 "Create an User Key",
                 "The API key will be listed after creation"
             ],

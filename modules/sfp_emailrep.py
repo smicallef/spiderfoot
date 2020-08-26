@@ -30,7 +30,7 @@ class sfp_emailrep(SpiderFootPlugin):
                 "https://docs.emailrep.io/"
             ],
             'apiKeyInstructions': [
-                "Visit emailrep.io/free",
+                "Visit https://emailrep.io/free",
                 "Request a free API Key",
                 "The API key will be sent to registered email account on approval"
             ],

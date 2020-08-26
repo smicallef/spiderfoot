@@ -31,10 +31,10 @@ class sfp_spur(SpiderFootPlugin):
                 "https://spur.us/api"
             ],
             'apiKeyInstructions': [
-                "Visit spur.us",
+                "Visit https://spur.us",
                 "Register an account",
                 "Pay for a subscription",
-                "Navigate to spur.us/app/context/tokens",
+                "Navigate to https://spur.us/app/context/tokens",
                 "The API key is listed under 'Token'"
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://spur.us",

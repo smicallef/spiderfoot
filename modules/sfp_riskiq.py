@@ -32,9 +32,9 @@ class sfp_riskiq(SpiderFootPlugin):
                 "https://api.riskiq.net/api/concepts.html"
             ],
             'apiKeyInstructions': [
-                "Visit community.riskiq.com/home",
+                "Visit https://community.riskiq.com/home",
                 "Register a free account",
-                "Navigate to community.riskiq.com/settings",
+                "Navigate to https://community.riskiq.com/settings",
                 "Click on 'Show' beside 'User'",
                 "The API Key combination will be under 'Key' and 'Secret'"
             ],

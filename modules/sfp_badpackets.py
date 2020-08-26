@@ -32,7 +32,7 @@ class sfp_badpackets(SpiderFootPlugin):
                 "https://docs.badpackets.net/"
             ],
             'apiKeyInstructions': [
-                "Visit badpackets.net/pricing/",
+                "Visit https://badpackets.net/pricing/",
                 "Select a monthly plan",
                 "Fill out the contact form",
                 "BadPackets will reach out to you with your API key"

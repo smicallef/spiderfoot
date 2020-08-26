@@ -31,9 +31,9 @@ class sfp_ipinfo(SpiderFootPlugin):
                 "https://ipinfo.io/developers"
             ],
             'apiKeyInstructions': [
-                "Visit ipinfo.io/",
+                "Visit https://ipinfo.io/",
                 "Sign up for a free account",
-                "Navigate to ipinfo.io/account",
+                "Navigate to https://ipinfo.io/account",
                 "The API key is listed above 'is your access token'"
             ],
             'favIcon': "https://ipinfo.io/static/favicon-96x96.png?v3",

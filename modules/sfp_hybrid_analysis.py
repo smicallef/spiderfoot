@@ -33,7 +33,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             'apiKeyInstructions': [
                 "Visit https://www.hybrid-analysis.com/signup",
                 "Register a free account",
-                "Navigate to www.hybrid-analysis.com/my-account?tab=%23api-key-tab",
+                "Navigate to https://www.hybrid-analysis.com/my-account?tab=%23api-key-tab",
                 "Create an API Key",
                 "The API key is listed under 'API Key'"
             ],

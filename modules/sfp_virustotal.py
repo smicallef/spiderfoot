@@ -32,7 +32,7 @@ class sfp_virustotal(SpiderFootPlugin):
                 "https://developers.virustotal.com/v3.0/reference"
             ],
             'apiKeyInstructions': [
-                "Visit www.virustotal.com/",
+                "Visit https://www.virustotal.com/",
                 "Register a free account",
                 "Click on your profile",
                 "Click on API Key",

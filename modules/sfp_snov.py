@@ -31,9 +31,9 @@ class sfp_snov(SpiderFootPlugin):
                 "https://snov.io/api"
             ],
             'apiKeyInstructions': [
-                "Visit snov.io",
+                "Visit https://snov.io",
                 "Register a free account",
-                "Navigate to app.snov.io/api-setting",
+                "Navigate to https://app.snov.io/api-setting",
                 "The API key combination is listed under 'API User ID' and 'API Secret'"
             ],
             'favIcon': "https://snov.io/img/favicon/favicon-96x96.png",
