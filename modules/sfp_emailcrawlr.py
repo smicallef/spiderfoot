@@ -90,7 +90,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             'Accept': "application/json",
             'x-api-key': self.opts['api_key']
         }
-        
+
         res = self.sf.fetchUrl(
           "https://api.emailcrawlr.com/v2/domain?%s" % urllib.parse.urlencode(params),
           headers=headers,

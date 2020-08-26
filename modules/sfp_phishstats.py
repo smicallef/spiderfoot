@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------------------
 # Name:         sfp_phishstats
 # Purpose:      Spiderfoot plugin to search PhishStats API
-#               to determine if an IP is malicious 
+#               to determine if an IP is malicious
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
@@ -55,7 +55,7 @@ class sfp_phishstats(SpiderFootPlugin):
     }
 
     results = None
-    errorState = False  
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -63,7 +63,7 @@ class sfp_phishstats(SpiderFootPlugin):
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-        
+
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):
@@ -111,14 +111,13 @@ class sfp_phishstats(SpiderFootPlugin):
         except:
             self.sf.error("Ill formatted data received as JSON response", False)
             return None
-         
+
     # Handle events sent to this module
     def handleEvent(self, event):
-        
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        
+
         if self.errorState:
             return None
 
@@ -128,29 +127,29 @@ class sfp_phishstats(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
-                
+
+        self.results[eventData] = True
+
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return None
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxnetblock']))
+                self.sf.debug("Network size bigger than permitted: "
+                              + str(IPNetwork(eventData).prefixlen) + " > "
+                              + str(self.opts['maxnetblock']))
                 return None
-        
+
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return None
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxsubnet']))
+                self.sf.debug("Network size bigger than permitted: "
+                              + str(IPNetwork(eventData).prefixlen) + " > "
+                              + str(self.opts['maxsubnet']))
                 return None
-                    
+
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
             for ipaddr in IPNetwork(eventData):
@@ -161,23 +160,23 @@ class sfp_phishstats(SpiderFootPlugin):
             if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
                 return None
             qrylist.append(eventData)
-        
+
         for addr in qrylist:
 
             if self.checkForStop():
                 return None
-            
+
             data = self.queryIPAddress(addr)
 
             if data is None:
                 break
-            
+
             try:
                 maliciousIP = data[0].get('ip')
             except:
                 # If ArrayIndex is out of bounds then data doesn't exist
                 continue
-        
+
             if maliciousIP is None:
                 continue
 
@@ -197,7 +196,7 @@ class sfp_phishstats(SpiderFootPlugin):
                 evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
                 self.notifyListeners(evt)
 
-            maliciousIPDesc = "Phishstats [" + str(maliciousIP) + "]\n"
+            maliciousIPDesc = f"Phishstats [{maliciousIP}]\n"
 
             maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)
             if maliciousIPDescHash in self.results:
@@ -210,7 +209,7 @@ class sfp_phishstats(SpiderFootPlugin):
                 evt = SpiderFootEvent("MALICIOUS_AFFILIATE_IPADDR", maliciousIPDesc, self.__name__, event)
             else:
                 evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
-            
+
             self.notifyListeners(evt)
 
         return None

@@ -167,7 +167,7 @@ class sfp_shodan(SpiderFootPlugin):
             hosts = self.searchHosts(eventData)
             if hosts is None:
                 return None
-            
+
             evt = SpiderFootEvent("RAW_RIR_DATA", str(hosts), self.__name__, event)
             self.notifyListeners(evt)
 

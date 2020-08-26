@@ -341,17 +341,17 @@ class SpiderFootScanner():
                     break
 
             if aborted:
-                self.__sf.status("Scan [" + self.__scanId + "] aborted.")
+                self.__sf.status(f"Scan [{self.__scanId}] aborted.")
                 self.__setStatus("ABORTED", None, time.time() * 1000)
             else:
-                self.__sf.status("Scan [" + self.__scanId + "] completed.")
+                self.__sf.status(f"Scan [{self.__scanId}] completed.")
                 self.__setStatus("FINISHED", None, time.time() * 1000)
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.__sf.error("Unhandled exception (" + e.__class__.__name__ + ") " +
-                            "encountered during scan. Please report this as a bug: " +
-                            repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
-            self.__sf.status("Scan [" + self.__scanId + "] failed: " + str(e))
+            self.__sf.error(f"Unhandled exception ({e.__class__.__name__}) encountered during scan."
+                            + "Please report this as a bug: "
+                            + repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
+            self.__sf.status(f"Scan [{self.__scanId}] failed: {e}")
             self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
 
         self.__dbh.close()

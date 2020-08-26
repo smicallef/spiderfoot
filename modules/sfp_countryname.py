@@ -321,10 +321,10 @@ class sfp_countryname(SpiderFootPlugin):
             "UK": "United Kingdom"
         }
         return abbvCountryCodes
-    
+
     # Getter method for dictionary of codes not associated with any country
     def getNonCountryCodesDict(self):
-        
+
         # List of TLD not associated with any country
         nonCountryCodes = ["COM", "NET", "ORG", "GOV", "MIL"]
 
@@ -334,11 +334,11 @@ class sfp_countryname(SpiderFootPlugin):
         nonCountryCodesDict = dict()
 
         # Set default country name for all keys
-        for nonCountryCode in nonCountryCodes: 
+        for nonCountryCode in nonCountryCodes:
             nonCountryCodesDict[nonCountryCode] = defaultCountryCode
-        
+
         return nonCountryCodesDict
-    
+
     # Detect name of country from phone number 
     def detectCountryFromPhone(self, srcPhoneNumber):
 

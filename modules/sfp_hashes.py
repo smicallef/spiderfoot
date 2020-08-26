@@ -42,7 +42,7 @@ class sfp_hashes(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["TARGET_WEB_CONTENT", "BASE64_DATA",
-                "LEAKSITE_CONTENT", "RAW_DNS_RECORDS", 
+                "LEAKSITE_CONTENT", "RAW_DNS_RECORDS",
                 "RAW_FILE_META_DATA"]
 
     # What events this module produces
