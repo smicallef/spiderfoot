@@ -216,19 +216,12 @@ class sfp_onyphe(SpiderFootPlugin):
 
         return True
 
-    def isDuplicate(self, data):
-        if data in self.results:
-            self.sf.debug(f"Skipping {data} as already mapped.")
-            return True
-
-        self.results[data] = True
-        return False
-
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        sentData = set()
 
         if self.errorState:
             return None
@@ -266,19 +259,34 @@ class sfp_onyphe(SpiderFootPlugin):
                     location = ", ".join(
                         [
                             _f
-                            for _f in [result.get("city"), result.get("country"),]
+                            for _f in [
+                                result.get("city"),
+                                result.get("country"),
+                            ]
                             if _f
                         ]
                     )
                     self.sf.info("Found GeoIP for " + eventData + ": " + location)
 
-                    if self.isDuplicate(location):
+                    if location in sentData:
+                        self.sf.debug(f"Skipping {location}, already sent")
                         continue
+
+                    sentData.add(location)
 
                     evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                     self.notifyListeners(evt)
 
-                    self.emitLocationEvent(result.get("location"), eventData, event)
+                    coordinates = result.get("location")
+                    if coordinates is None:
+                        continue
+
+                    if coordinates in sentData:
+                        self.sf.debug(f"Skipping {coordinates}, already sent")
+                        continue
+                    sentData.add(coordinates)
+
+                    self.emitLocationEvent(coordinates, eventData, event)
 
                     self.emitDomainData(result, eventData, event)
 
@@ -295,13 +303,20 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in pastriesData["results"]:
-                    if self.isDuplicate(
-                        result.get("content")
-                    ) or not self.isFreshEnough(result):
+                    pastry = result.get("content")
+                    if pastry is None:
+                        continue
+
+                    if pastry in sentData:
+                        self.sf.debug(f"Skipping {pastry}, already sent")
+                        continue
+                    sentData.add(pastry)
+
+                    if not self.isFreshEnough(result):
                         continue
 
                     evt = SpiderFootEvent(
-                        "LEAKSITE_CONTENT", result.get("content"), self.__name__, event
+                        "LEAKSITE_CONTENT", pastry, self.__name__, event
                     )
                     self.notifyListeners(evt)
 
@@ -318,9 +333,17 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in threatListData["results"]:
-                    if self.isDuplicate(
-                        result.get("threatlist")
-                    ) or not self.isFreshEnough(result):
+                    threatList = result.get("threatlist")
+
+                    if threatList is None:
+                        continue
+
+                    if threatList in sentData:
+                        self.sf.debug(f"Skipping {threatList}, already sent")
+                        continue
+                    sentData.add(threatList)
+
+                    if not self.isFreshEnough(result):
                         continue
 
                     evt = SpiderFootEvent(
@@ -344,17 +367,28 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in vulnerabilityData["results"]:
+                    cves = result.get("cve")
+
+                    if cves is None:
+                        continue
+
+                    cveData = ", ".join([cve for cve in cves if cve])
+
+                    if cveData in sentData:
+                        self.sf.debug(f"Skipping {cveData}, already sent")
+                        continue
+                    sentData.add(cveData)
+
                     if not self.isFreshEnough(result):
                         continue
 
-                    if result.get("cve") is not None:
-                        cveData = ", ".join([cve for cve in result["cve"] if cve])
-                        if self.isDuplicate(cveData):
-                            continue
-                        evt = SpiderFootEvent(
-                            "VULNERABILITY", cveData, self.__name__, event,
-                        )
-                        self.notifyListeners(evt)
+                    evt = SpiderFootEvent(
+                        "VULNERABILITY",
+                        cveData,
+                        self.__name__,
+                        event,
+                    )
+                    self.notifyListeners(evt)
 
 
 # End of sfp_onyphe class
