@@ -24,17 +24,10 @@ class sfp_whoisology(SpiderFootPlugin):
         'categories': [ "Search Engines" ],
         'dataSource': {
             'website': "https://whoisology.com/",
-            'model': "COMMERCIAL_ONLY",
+            'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
                 "https://whoisology.com/whois-database-download",
                 "https://whoisology.com/tutorial"
-            ],
-            'apiKeyInstructions': [
-                "Visit https://whoisology.com/",
-                "Register a free account",
-                "Navigate to https://whoisology.com/account",
-                "Click on API Access",
-                "Pay for Access and receive the API Key"
             ],
             'favIcon': "https://whoisology.com/img/w-logo.png",
             'logo': "https://whoisology.com/assets/images/il1.gif",
