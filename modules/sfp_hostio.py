@@ -73,6 +73,9 @@ class sfp_hostio(SpiderFootPlugin):
             "EMAILADDR",
             "WEB_ANALYTICS_ID",
             "WEBSERVER_TECHNOLOGY",
+            "PHYSICAL_COORDINATES",
+            "DESCRIPTION_ABSTRACT",
+            "GEOINFO",
         ]
 
     # When querying third parties, it's best to have a dedicated function
@@ -149,7 +152,7 @@ class sfp_hostio(SpiderFootPlugin):
             for address, ip_data in data["ipinfo"].items():
                 evt = SpiderFootEvent("IP_ADDRESS", address, self.__name__, event)
                 self.notifyListeners(evt)
-                fonud = True
+                found = True
 
                 country = ip_data.get("country")
                 if country is not None:
@@ -159,6 +162,23 @@ class sfp_hostio(SpiderFootPlugin):
                     self.notifyListeners(country_evt)
                     found = True
 
+                loc = ip_data.get("loc")
+                if loc and isinstance(loc, str):
+                    loc_evt = SpiderFootEvent(
+                        "PHYSICAL_COORDINATES", loc, self.__name__, evt
+                    )
+                    self.notifyListeners(loc_evt)
+                    found = True
+
+                geo_info = ', '.join(filter(None, (ip_data.get(k) for k in ("city", "region", "country"))))
+                if geo_info:
+                    geo_info_evt = SpiderFootEvent(
+                        "GEOINFO", geo_info, self.__name__, evt
+                    )
+                    self.notifyListeners(geo_info_evt)
+                    found = True
+
+
         related = data.get("related")
         if related and isinstance(related, dict):
             email_section = related.get("email")
@@ -167,7 +187,9 @@ class sfp_hostio(SpiderFootPlugin):
                     if isinstance(email_data, dict):
                         value = email_data["value"]
                         if value and isinstance(value, str):
-                            evt = SpiderFootEvent("EMAILADDR", value, self.__name__, event)
+                            evt = SpiderFootEvent(
+                                "EMAILADDR", value, self.__name__, event
+                            )
                             self.notifyListeners(evt)
                             found = True
 
@@ -175,16 +197,30 @@ class sfp_hostio(SpiderFootPlugin):
         if web and isinstance(web, dict):
             server = web.get("server")
             if server and isinstance(server, str):
-                evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", server, self.__name__, event)
+                evt = SpiderFootEvent(
+                    "WEBSERVER_TECHNOLOGY", server, self.__name__, event
+                )
                 self.notifyListeners(evt)
                 found = True
 
             google_analytics = web.get("googleanalytics")
             if google_analytics and isinstance(google_analytics, str):
-                evt = SpiderFootEvent("WEB_ANALYTICS_ID", google_analytics, self.__name__, event)
+                evt = SpiderFootEvent(
+                    "WEB_ANALYTICS_ID", google_analytics, self.__name__, event
+                )
+                self.notifyListeners(evt)
+                found = True
+
+            title = web.get("title")
+            if title and isinstance(title, str):
+                evt = SpiderFootEvent(
+                    "DESCRIPTION_ABSTRACT", title, self.__name__, event
+                )
                 self.notifyListeners(evt)
                 found = True
 
         if found:
-            evt = SpiderFootEvent("RAW_RIR_DATA", json.dumps(data), self.__name__, event)
+            evt = SpiderFootEvent(
+                "RAW_RIR_DATA", json.dumps(data), self.__name__, event
+            )
             self.notifyListeners(evt)
