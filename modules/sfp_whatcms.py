@@ -23,7 +23,24 @@ class sfp_whatcms(SpiderFootPlugin):
         'summary': "Check web technology using WhatCMS.org API.",
         'flags': ["apikey", "slow"],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Content Analysis"]
+        'categories': ["Content Analysis"],
+        'dataSource': {
+            'website': "https://whatcms.org/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://whatcms.org/API",
+                "https://whatcms.org/Documentation"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://whatcms.org/API",
+                "Register a free account",
+                "Navigate to https://whatcms.org/APIKey",
+                "The API key is listed under 'Your API Key'"
+            ],
+            'favIcon': "https://whatcms.org/themes/what_bootstrap4/favicon.ico",
+            'logo': "https://whatcms.org/themes/what_bootstrap4/favicon.ico",
+            'description': "Detect what CMS a site is using.",
+        }
     }
 
     # Default options
