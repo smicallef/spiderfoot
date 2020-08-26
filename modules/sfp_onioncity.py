@@ -23,7 +23,14 @@ class sfp_onioncity(SpiderFootPlugin):
         'summary': "Search Tor 'Onion City' search engine for mentions of the target domain.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate"],
-        'categories': ["Search Engines"]
+        'categories': ["Search Engines"],
+        'dataSource': {
+            'website': "https://onion.link/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://onion.link",
+            'logo': "https://onion.link/images/OC.png",
+            'description': "Enabling search and global access to Tor's onionsites.",
+        }
     }
 
     # Default options
