@@ -15,11 +15,11 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_hostio(SpiderFootPlugin):
-    """Host.io Query Module:Passive:Passive DNS:apikey:Obtain DNS information from host.io source."""
+    """Host.io:Passive:Passive DNS:apikey:Obtain information about domain names from host.io."""
 
     meta = {
-        "name": "Host.io Query Module",
-        "summary": "Obtain DNS information from host.io source.",
+        "name": "Host.io",
+        "summary": "Obtain information about domain names from host.io.",
         "flags": ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Passive DNS"],
