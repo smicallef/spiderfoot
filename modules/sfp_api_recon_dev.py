@@ -18,7 +18,7 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 class sfp_api_recon_dev(SpiderFootPlugin):
     """api.recon.dev:Footprint,Investigate,Passive:Passive DNS::Search api.recon.dev for subdomains."""
 
-    meta = { 
+    meta = {
         'name': "api.recon.dev",
         'summary': "Search api.recon.dev for subdomains.",
         'flags': [""],
@@ -142,13 +142,13 @@ class sfp_api_recon_dev(SpiderFootPlugin):
         for domain in set(domains):
             if self.checkForStop():
                 return None
-            
+
             if domain in self.results:
                 continue
 
             if not self.getTarget().matches(domain, includeChildren=True, includeParents=True):
                 continue
-        
+
             if self.opts['verify'] and not self.sf.resolveHost(domain):
                 self.sf.debug("Host %s could not be resolved" % domain)
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
@@ -156,7 +156,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
             else:
                 evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
                 self.notifyListeners(evt)
-            
+
         return None
 
 # End of sfp_api_recon_dev class

@@ -18,7 +18,7 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 class sfp_arin(SpiderFootPlugin):
     """ARIN:Footprint,Investigate,Passive:Public Registries::Queries ARIN registry for contact information."""
 
-    meta = { 
+    meta = {
         'name': "ARIN",
         'summary': "Queries ARIN registry for contact information.",
         'flags': [""],

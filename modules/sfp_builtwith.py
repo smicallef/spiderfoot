@@ -85,7 +85,7 @@ class sfp_builtwith(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
-                "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME", 
+                "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME",
                 "CO_HOSTED_SITE", "IP_ADDRESS", "WEB_ANALYTICS_ID"]
 
     def queryRelationships(self, t):
@@ -244,7 +244,7 @@ class sfp_builtwith(SpiderFootPlugin):
                             evttype = "INTERNET_NAME"
                         else:
                             evttype = "CO_HOSTED_SITE"
-    
+
                     # Create the name/co-host
                     e = SpiderFootEvent(evttype, val, self.__name__, event)
                     self.notifyListeners(e)

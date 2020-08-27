@@ -76,14 +76,15 @@ class sfp_h1nobbdde(SpiderFootPlugin):
             return None
 
         try:
-            rx = re.compile("<a class=\"title\" href=.(.[^\"]+).*?title=.(.[^\"\']+)", re.IGNORECASE|re.DOTALL)
+            rx = re.compile("<a class=\"title\" href=.(.[^\"]+).*?title=.(.[^\"\']+)", re.IGNORECASE | re.DOTALL)
             for m in rx.findall(res['content']):
                 # Report it
                 if qry in m[1]:
                     ret.append(m[1] + "\n<SFURL>" + m[0] + "</SFURL>")
         except Exception as e:
-            self.sf.error("Error processing response from h1.nobbd.de: " + str(e), False)
+            self.sf.error(f"Error processing response from h1.nobbd.de: {e}", False)
             return None
+
         return ret
 
     def handleEvent(self, event):
@@ -97,8 +98,8 @@ class sfp_h1nobbdde(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         obb = self.queryOBB(eventData)
         if obb:

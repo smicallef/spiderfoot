@@ -339,7 +339,7 @@ class sfp_countryname(SpiderFootPlugin):
 
         return nonCountryCodesDict
 
-    # Detect name of country from phone number 
+    # Detect name of country from phone number
     def detectCountryFromPhone(self, srcPhoneNumber):
 
         # Get dictionary of country codes and country names
@@ -358,18 +358,18 @@ class sfp_countryname(SpiderFootPlugin):
             self.sf.debug("Skipped invalid phone number: " + srcPhoneNumber)
             return None
 
-    
+
     # Detect name of country from TLD of domain name
     def detectCountryFromTLD(self, srcDomain):
-        
+
         # Get dictionary of TLD country codes and country names
         tldCountryCodes = self.getCountryCodeDict()
-        
+
         # Get dictionary of non country TLD codes
         tldNonCountryCodes = self.getNonCountryCodesDict()
 
-        # Split domain into parts by '.' 
-        # Country TLDs are reserved 
+        # Split domain into parts by '.'
+        # Country TLDs are reserved
         domainParts = srcDomain.split(".")
 
         # Search for country TLD in the domain parts - reversed
@@ -391,22 +391,22 @@ class sfp_countryname(SpiderFootPlugin):
         # Get dictionary of country codes and country names
         tldCountryCodes = self.getCountryCodeDict()
         try:
-            # Get country code from IBAN 
+            # Get country code from IBAN
             countryCode = srcIBAN[0:2].upper()
             return tldCountryCodes[countryCode]
         except:
             # No country name is found in the IBAN
             return None
-    
+
     # Detect name of country from whois lookup, Geo Info, Physical Address data
     def detectCountryFromData(self, srcData):
-        
+
         # Get dictionary of country codes and  country names
         abbvCountryCodes = self.getCountryCodeDict()
         countries = list()
 
         # Look for countrycodes and country in source data
-        for countryName in abbvCountryCodes.values(): 
+        for countryName in abbvCountryCodes.values():
 
             # Look for country name in source data
             # Spaces are not included since New Jersey and others
@@ -440,7 +440,7 @@ class sfp_countryname(SpiderFootPlugin):
             return countries
 
         return None
-            
+
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["IBAN_NUMBER", "PHONE_NUMBER", "AFFILIATE_DOMAIN_NAME",
@@ -457,7 +457,7 @@ class sfp_countryname(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        
+
         evttype = "COUNTRY_NAME"
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
@@ -467,8 +467,8 @@ class sfp_countryname(SpiderFootPlugin):
         # Do not parse duplicate incoming data
         if eventDataHash in self.results:
             self.sf.debug("Already found from this source")
-            return None 
-        
+            return None
+
         self.results[eventDataHash] = True
 
         countryNames = list()
@@ -486,7 +486,7 @@ class sfp_countryname(SpiderFootPlugin):
                 countryNames.append(None)
             else:
                 countryNames.extend(tempDataList)
-        
+
         # Check if countryNames is empty
         if len(countryNames) == 0:
             return None
@@ -506,5 +506,5 @@ class sfp_countryname(SpiderFootPlugin):
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
         return None
-        
+
 # End of sfp_countryname class

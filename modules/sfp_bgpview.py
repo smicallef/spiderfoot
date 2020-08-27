@@ -35,7 +35,7 @@ class sfp_bgpview(SpiderFootPlugin):
             'description': "BGPView is a simple API allowing consumers to view all sort of analytics data about the current state and structure of the internet.",
         }
     }
-    
+
     opts = {
     }
 

@@ -51,9 +51,9 @@ class sfp_abuseipdb(SpiderFootPlugin):
             ],
             'favIcon': "https://www.abuseipdb.com/favicon.ico",
             'logo': "https://www.abuseipdb.com/img/abuseipdb.png.pagespeed.ce.CI8T6WsXU7.png",
-            'description': "AbuseIPDB is a project dedicated to helping combat the spread of hackers," 
+            'description': "AbuseIPDB is a project dedicated to helping combat the spread of hackers,"
                                 "spammers, and abusive activity on the internet.\n"
-                                "Our mission is to help make Web safer by providing a central blacklist for" 
+                                "Our mission is to help make Web safer by providing a central blacklist for"
                                 "webmasters, system administrators, and other interested parties to"
                                 "report and find IP addresses that have been associated with malicious activity online."
         }
@@ -130,7 +130,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
                     'Key': self.opts['api_key'],
                     'Accept': "text/plain"
                 }
-                data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+                data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                         useragent=self.opts['_useragent'], headers=hdr)
                 if data['content'] is None:
                     self.sf.error("Unable to fetch " + url, False)
