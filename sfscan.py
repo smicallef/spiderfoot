@@ -16,7 +16,8 @@ import socket
 from copy import deepcopy
 import dns.resolver
 from sfdb import SpiderFootDb
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, SpiderFootPlugin
+from sflib import ComparableTuple, SpiderFoot, SpiderFootEvent, SpiderFootTarget, SpiderFootPlugin
+from queue import PriorityQueue
 
 
 class SpiderFootScanner():
@@ -102,6 +103,7 @@ class SpiderFootScanner():
 
         self.__sf = SpiderFoot(self.__config)
         self.__sf.dbh = self.__dbh
+        self.queue = PriorityQueue()
 
         # Create a unique ID for this scan in the back-end DB.
         if not isinstance(scanId, str):
@@ -230,6 +232,16 @@ class SpiderFootScanner():
         self.__status = status
         self.__dbh.scanInstanceSet(self.__scanId, started, ended, status)
 
+    def enqueue(self, model, sfevent, priority=1):
+        self.queue.put(ComparableTuple(priority, [model, sfevent]))
+
+    def iterateBFS(self):
+        while not self.queue.empty():
+            current = self.queue.get().get_data()
+            # print(current[1].getDepth())
+            current[0].set_current_event(current[1])
+            current[0].handleEvent(current[1])
+
     def __startScan(self):
         """Start running a scan."""
 
@@ -290,6 +302,7 @@ class SpiderFootScanner():
             for module in list(self.__moduleInstances.values()):
                 # Register the target with the module
                 module.setTarget(self.__target)
+                module.set_pointer_to_scanner(self)
 
                 for listenerModule in list(self.__moduleInstances.values()):
                     # Careful not to register twice or you will get duplicate events
@@ -298,8 +311,12 @@ class SpiderFootScanner():
                     # Note the absence of a check for whether a module can register
                     # to itself. That is intentional because some modules will
                     # act on their own notifications (e.g. sfp_dns)!
+                    # if listenerModule.watchedEvents() is not None:
+                    #     module.registerListener(listenerModule)
                     if listenerModule.watchedEvents() is not None:
-                        module.registerListener(listenerModule)
+                        for listen_to_event in listenerModule.watchedEvents():
+                            if listen_to_event in module.producedEvents() or listen_to_event == '*':
+                                module.registerListener(listenerModule)
 
             # Now we are ready to roll..
             self.__setStatus("RUNNING")
@@ -309,6 +326,7 @@ class SpiderFootScanner():
             psMod.__name__ = "SpiderFoot UI"
             psMod.setTarget(self.__target)
             psMod.setDbh(self.__dbh)
+            psMod.set_pointer_to_scanner(self)
             psMod.clearListeners()
             for mod in list(self.__moduleInstances.values()):
                 if mod.watchedEvents() is not None:
@@ -320,6 +338,7 @@ class SpiderFootScanner():
             firstEvent = SpiderFootEvent(self.__targetType, self.__targetValue,
                                          "SpiderFoot UI", rootEvent)
             psMod.notifyListeners(firstEvent)
+            self.iterateBFS()
 
             # Special case.. check if an INTERNET_NAME is also a domain
             if self.__targetType == 'INTERNET_NAME':
@@ -327,6 +346,7 @@ class SpiderFootScanner():
                     firstEvent = SpiderFootEvent('DOMAIN_NAME', self.__targetValue,
                                                  "SpiderFoot UI", rootEvent)
                     psMod.notifyListeners(firstEvent)
+            self.iterateBFS()
 
             # If in interactive mode, loop through this shared global variable
             # waiting for inputs, and process them until my status is set to

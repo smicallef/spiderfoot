@@ -308,7 +308,7 @@ class SpiderFoot:
                 ncounter = ncounter + 1
                 if dst in root:
                     col = ["255", "0", "0"]
-                graph.node[dst]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
+                # graph.node[dst]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
@@ -316,7 +316,7 @@ class SpiderFoot:
                 if src in root:
                     col = ["255", "0", "0"]
                 graph.add_node(src)
-                graph.node[src]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
+                # graph.node[src]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
                 nodelist[src] = ncounter
 
             graph.add_edge(src, dst)
@@ -2435,6 +2435,17 @@ class SpiderFoot:
 
         return None
 
+class ComparableTuple:
+    def __init__(self, priority, data):
+        self.priority = priority
+        self.data = data
+
+    def __lt__(self, other):
+        return self.priority < other.priority
+
+    def get_data(self):
+        return self.data
+
 
 class SpiderFootPlugin():
     """SpiderFootPlugin module object
@@ -2483,7 +2494,10 @@ class SpiderFootPlugin():
 
     def __init__(self):
         """Not really needed in most cases."""
-        pass
+        self.scanner_pointer = None
+
+    def set_pointer_to_scanner(self, scanner_pointer):
+        self.scanner_pointer = scanner_pointer
 
     def _updateSocket(self, socksProxy):
         """Hack to override module's use of socket, replacing it with
@@ -2638,7 +2652,7 @@ class SpiderFootPlugin():
                     break
             prevEvent = prevEvent.sourceEvent
 
-        self._listenerModules.sort(key=lambda m: m._priority)
+        # self._listenerModules.sort(key=lambda m: m._priority)
 
         for listener in self._listenerModules:
             if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
@@ -2647,7 +2661,9 @@ class SpiderFootPlugin():
             if storeOnly and "__stor" not in listener.__module__:
                 continue
 
-            listener._currentEvent = sfEvent
+            # TODO: Replacing this set operation, in a new method
+            #  listener._currentEvent = sfEvent
+            listener.set_current_event(sfEvent)
 
             # Check if we've been asked to stop in the meantime, so that
             # notifications stop triggering module activity.
@@ -2658,12 +2674,16 @@ class SpiderFootPlugin():
                 if isinstance(sfEvent.data, bytes):
                     sfEvent.data = sfEvent.data.decode('utf-8', 'ignore')
 
-                listener.handleEvent(sfEvent)
+                # listener.handleEvent(sfEvent)
+                self.scanner_pointer.enqueue(listener, sfEvent, priority=sfEvent.getDepth())
             except BaseException as e:
                 with open(os.path.join(SpiderFoot.dataPath(), "sferror.log"), "a") as f:
                     f.write(f"[{time.ctime()}]: Module ({listener.__module__}) encountered an error: {e}\n")
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+
+    def set_current_event(self, event_to_set):
+        self._currentEvent = event_to_set
 
     def checkForStop(self):
         """For modules to use to check for when they should give back control.
@@ -3007,6 +3027,11 @@ class SpiderFootEvent():
         self.risk = risk
         self.sourceEvent = sourceEvent
         self.__id = f"{self.eventType}{self.generated}{self.module}{random.SystemRandom().randint(0, 99999999)}"
+        self._depth = None
+        if sourceEvent is None or isinstance(sourceEvent, str) or sourceEvent._depth is None:
+            self._depth = 0
+        else:
+            self._depth = sourceEvent._depth + 1
 
     @property
     def generated(self):
@@ -3243,3 +3268,6 @@ class SpiderFootEvent():
     def getHash(self):
         """Required for SpiderFoot HX compatibility of modules"""
         return self.hash
+
+    def getDepth(self):
+        return self._depth
