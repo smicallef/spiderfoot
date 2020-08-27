@@ -16,16 +16,6 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-    'abuse.ch Zeus Tracker (Domain)': {
-        'id': 'abusezeusdomain',
-        'checks': ['domain'],
-        'url': 'https://zeustracker.abuse.ch/blocklist.php?download=baddomains'
-    },
-    'abuse.ch Zeus Tracker (IP)': {
-        'id': 'abusezeusip',
-        'checks': ['ip', 'netblock'],
-        'url': 'https://zeustracker.abuse.ch/blocklist.php?download=badips'
-    },
     'abuse.ch Feodo Tracker (IP)': {
         'id': 'abusefeodoip',
         'checks': ['ip', 'netblock'],
@@ -40,14 +30,8 @@ malchecks = {
     'abuse.ch URLhaus (Domain)': {
         'id': 'abuseurlhaus',
         'checks': ['domain'],
-        'url': 'https://urlhaus.abuse.ch/downloads/csv/',
+        'url': 'https://urlhaus.abuse.ch/downloads/csv_recent/',
         'regex': '.*//{0}/.*'
-    },
-    'abuse.ch Ransomware Blocklist (Domain)': {
-        'id': 'abuseransomdom',
-        'checks': ['domain'],
-        'url': 'https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt',
-        'regex': '^{0}$'
     }
 }
 
@@ -94,13 +78,9 @@ class sfp_abusech(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'abusezeusdomain': True,
-        'abusezeusip': True,
-        'abusefeododomain': True,
         'abusefeodoip': True,
         'abusesslblip': True,
         'abuseurlhaus': True,
-        'abuseransomdom': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18,
@@ -110,13 +90,9 @@ class sfp_abusech(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'abusezeusdomain': "Enable abuse.ch Zeus domain check?",
-        'abusezeusip': "Enable abuse.ch Zeus IP check?",
-        'abusefeododomain': "Enable abuse.ch Feodo domain check?",
         'abusefeodoip': "Enable abuse.ch Feodo IP check?",
         'abusesslblip': "Enable abuse.ch SSL Backlist IP check?",
         'abuseurlhaus': "Enable abuse.ch URLhaus check?",
-        'abuseransomdom': "Enable abuse.ch Ransom Domains check?",
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
