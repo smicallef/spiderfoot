@@ -144,11 +144,10 @@ class sfp_talosintel(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet "
-                                              + target + " in " + check)
+                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
+                            self.sf.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -167,7 +166,7 @@ class sfp_talosintel(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                                     re.match(rxTgt, line, re.IGNORECASE):
-                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                                self.sf.debug(f"{target}/{targetDom} found in {check} list.")
                                 return url
                     except BaseException as e:
                         self.sf.debug("Error encountered parsing 2: " + str(e))
@@ -179,7 +178,7 @@ class sfp_talosintel(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
+                self.sf.debug(f"Checking maliciousness of {target} ({itemType}) with: {cid}")
                 return self.resourceList(cid, target, itemType)
 
         return None

@@ -19,7 +19,7 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 class sfp_archiveorg(SpiderFootPlugin):
     """Archive.org:Footprint,Passive:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
 
-    meta = { 
+    meta = {
         'name': "Archive.org",
         'summary': "Identifies historic versions of interesting files/pages from the Wayback Machine.",
         'flags': ["slow"],
@@ -44,7 +44,7 @@ class sfp_archiveorg(SpiderFootPlugin):
                                "Today we have 20+ years of web history accessible through the Wayback Machine and we work with 625+ library and "
                                "other partners through our Archive-It program to identify important web pages.",
         }
-    
+
     }
 
     # Default options

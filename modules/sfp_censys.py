@@ -86,7 +86,7 @@ class sfp_censys(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["BGP_AS_MEMBER", "TCP_PORT_OPEN", "OPERATING_SYSTEM", 
+        return ["BGP_AS_MEMBER", "TCP_PORT_OPEN", "OPERATING_SYSTEM",
                 "WEBSERVER_HTTPHEADERS", "NETBLOCK_MEMBER", "GEOINFO",
                 'RAW_RIR_DATA']
 
@@ -97,7 +97,7 @@ class sfp_censys(SpiderFootPlugin):
             querytype = "ipv4/{0}"
         if querytype == "host":
             querytype = "websites/{0}"
-        
+
         secret = self.opts['censys_api_key_uid'] + ':' + self.opts['censys_api_key_secret']
         b64_val = base64.b64encode(secret.encode('utf-8'))
 
@@ -242,5 +242,5 @@ class sfp_censys(SpiderFootPlugin):
                         self.notifyListeners(e)
             except BaseException as e:
                 self.sf.error("Error encountered processing record for " + eventData + " (" + str(e) + ")", False)
-        
+
 # End of sfp_censys class

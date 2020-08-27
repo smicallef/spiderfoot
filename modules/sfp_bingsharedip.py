@@ -153,13 +153,11 @@ class sfp_bingsharedip(SpiderFootPlugin):
                     if not self.opts["cohostsamedomain"]:
                         if self.getTarget().matches(site, includeParents=True):
                             self.sf.debug(
-                                "Skipping "
-                                + site
-                                + " because it is on the same domain."
+                                f"Skipping {site} because it is on the same domain."
                             )
                             continue
                     if self.opts["verify"] and not self.sf.validateIP(site, ip):
-                        self.sf.debug("Host " + site + " no longer resolves to " + ip)
+                        self.sf.debug(f"Host {site} no longer resolves to {ip}")
                         continue
                     # Create an IP Address event stemming from the netblock as the
                     # link to the co-host.

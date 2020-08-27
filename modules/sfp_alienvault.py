@@ -18,7 +18,7 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_alienvault(SpiderFootPlugin):
     """AlienVault OTX:Investigate,Passive:Reputation Systems:apikey:Obtain information from AlienVault Open Threat Exchange (OTX)"""
-        
+
     meta = {
         'name': "AlienVault OTX",
         'summary': "Obtain information from AlienVault Open Threat Exchange (OTX)",
@@ -100,7 +100,7 @@ class sfp_alienvault(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", 
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
                 "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
@@ -125,7 +125,7 @@ class sfp_alienvault(SpiderFootPlugin):
             'Accept': 'application/json',
             'X-OTX-API-KEY': self.opts['api_key']
         }
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] == "403":

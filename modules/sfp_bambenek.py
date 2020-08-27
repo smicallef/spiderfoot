@@ -54,7 +54,7 @@ class sfp_bambenek(SpiderFootPlugin):
                                 "Every day, there is another story about another company having their banking accounts drained, "
                                 "someone having their identity stolen, or critical infrastructure being taken offline by hostile entities. "
                                 "Led by IT security expert, John Bambenek, we have the resources to bring to your business so "
-                                "you can be sure your organization and your customers’ data is safe.",    
+                                "you can be sure your organization and your customers’ data is safe.",
         }
     }
 
