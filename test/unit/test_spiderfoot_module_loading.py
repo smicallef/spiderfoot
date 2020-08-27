@@ -58,6 +58,7 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
                 mod = __import__('modules.' + modName, globals(), locals(), [modName])
                 sfModules[modName]['object'] = getattr(mod, modName)()
                 sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":", 5)[0]
+                sfModules[modName]['meta'] = sfModules[modName]['object'].meta
                 sfModules[modName]['cats'] = sfModules[modName]['object'].__doc__.split(":", 5)[1].split(",")
                 sfModules[modName]['group'] = sfModules[modName]['object'].__doc__.split(":", 5)[2]
                 sfModules[modName]['labels'] = sfModules[modName]['object'].__doc__.split(":", 5)[3].split(",")
@@ -80,6 +81,7 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
 
             self.assertTrue(m.get('object'))
             self.assertTrue(m.get('name'))
+            self.assertTrue(m.get('meta'))
             self.assertTrue(m.get('cats'))
             # self.assertTrue(m.get('group'))
             self.assertTrue(m.get('labels'))
