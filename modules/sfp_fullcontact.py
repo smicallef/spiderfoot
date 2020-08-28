@@ -125,7 +125,7 @@ class sfp_fullcontact(SpiderFootPlugin):
                     self.sf.debug("Fullcontact.co record found but too old.")
                     return None
         except Exception as e:
-            self.sf.error("Error processing JSON response from fullcontact.com: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from fullcontact.com: {e}", False)
             return None
 
         return ret

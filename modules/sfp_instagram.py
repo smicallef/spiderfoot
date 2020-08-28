@@ -72,7 +72,7 @@ class sfp_instagram(SpiderFootPlugin):
         try:
             data = json.loads(json_data[0])
         except BaseException as e:
-            self.sf.debug('Error processing JSON response: ' + str(e))
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data

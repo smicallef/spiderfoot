@@ -101,7 +101,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except BaseException as e:
-            self.sf.debug("Error processing JSON response from F-Secure Riddler: " + str(e))
+            self.sf.debug(f"Error processing JSON response from F-Secure Riddler: {e}")
             return None
 
         try:
@@ -130,7 +130,6 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             'Content-Type': 'application/json',
         }
 
-
         res = self.sf.fetchUrl('https://riddler.io/api/search',
                                postData=json.dumps(params),
                                headers=headers,
@@ -150,7 +149,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except BaseException as e:
-            self.sf.debug("Error processing JSON response from F-Secure Riddler: " + str(e))
+            self.sf.debug(f"Error processing JSON response from F-Secure Riddler: {e}")
             return None
 
         if not data:

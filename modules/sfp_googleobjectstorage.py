@@ -68,9 +68,8 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
     def checkSite(self, url):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
-        if res['code'] not in ["301", "302", "200"] and \
-            (res['content'] is None or "NoSuchBucket" in res['content']):
-            self.sf.debug("Not a valid bucket: " + url)
+        if res['code'] not in ["301", "302", "200"] and (res['content'] is None or "NoSuchBucket" in res['content']):
+            self.sf.debug(f"Not a valid bucket: {url}")
         else:
             if "ListBucketResult" in res['content']:
                 with self.lock:
@@ -118,7 +117,7 @@ class sfp_googleobjectstorage(SpiderFootPlugin):
         for site in sites:
             if i >= self.opts['_maxthreads']:
                 data = self.threadSites(siteList)
-                if data == None:
+                if data is None:
                     return res
 
                 for ret in list(data.keys()):

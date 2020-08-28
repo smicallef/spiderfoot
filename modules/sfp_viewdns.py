@@ -136,7 +136,7 @@ class sfp_viewdns(SpiderFootPlugin):
                 # We are at the last or only page
                 self.accum.extend(r.get(responsekey, []))
         except Exception as e:
-            self.sf.error("Error processing JSON response from ViewDNS.info: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from ViewDNS.info: {e}", False)
             return None
 
     # Handle events sent to this module

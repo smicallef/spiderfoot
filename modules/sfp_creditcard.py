@@ -26,7 +26,6 @@ class sfp_creditcard(SpiderFootPlugin):
 
     # Default options.
     opts = {
-         # Options specific to this module
     }
 
     # Option descriptions.

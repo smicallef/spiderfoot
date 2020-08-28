@@ -80,8 +80,6 @@ class sfp_whoisology(SpiderFootPlugin):
 
     # Search Whoisology
     def query(self, qry, querytype):
-        info = None
-
         url = "https://whoisology.com/api?auth=" + self.opts['api_key'] + "&request=flat"
         url += "&field=" + querytype + "&value=" + qry + "&level=Registrant|Admin|Tec|Billing|Other"
 
@@ -94,22 +92,22 @@ class sfp_whoisology(SpiderFootPlugin):
             return None
 
         if res['content'] is None:
-            self.sf.info("No Whoisology info found for " + qry)
+            self.sf.info(f"No Whoisology info found for {qry}")
             return None
 
         try:
             info = json.loads(res['content'])
-            if info.get("domains") == None:
+            if info.get("domains") is None:
                 self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"), False)
                 return None
 
             if len(info.get("domains", [])) == 0:
-                self.sf.debug("No data found in Whoisology for " + qry)
+                self.sf.debug(f"No data found in Whoisology for {qry}")
                 return None
-            else:
-                return info.get('domains')
+
+            return info.get('domains')
         except Exception as e:
-            self.sf.error("Error processing JSON response from Whoisology: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from Whoisology: {e}", False)
             return None
 
     # Handle events sent to this module

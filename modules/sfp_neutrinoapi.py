@@ -198,7 +198,6 @@ class sfp_neutrinoapi(SpiderFootPlugin):
                     evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
                     self.notifyListeners(evt)
 
-
         if eventName == 'IP_ADDRESS':
             data = self.queryIpInfo(eventData)
 

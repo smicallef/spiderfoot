@@ -143,17 +143,17 @@ class sfp_archiveorg(SpiderFootPlugin):
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
-            if res['content'] == None:
-                self.sf.error("Unable to fetch " + url, False)
+            if res['content'] is None:
+                self.sf.error(f"Unable to fetch {url}", False)
                 continue
 
             try:
                 ret = json.loads(res['content'])
             except BaseException as e:
-                self.sf.debug(f"Error processing JSON response: {e}")
+                self.sf.debug(f"Error processing JSON response from Archive.org: {e}")
                 ret = None
 
-            if ret == None:
+            if not ret:
                 self.sf.error("Unable to process empty response from archive.org: {eventData}", False)
                 continue
 

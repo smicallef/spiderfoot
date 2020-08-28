@@ -68,7 +68,6 @@ class sfp_snov(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
     def watchedEvents(self):

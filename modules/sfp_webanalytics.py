@@ -235,7 +235,6 @@ class sfp_webanalytics(SpiderFootPlugin):
                 evt.moduleDataSource = datasource
                 self.notifyListeners(evt)
 
-
             # TeamViewer SSO Verification
             # https://community.teamviewer.com/t5/Knowledge-Base/Single-Sign-On-SSO/ta-p/30784
             matches = re.findall(r'teamviewer-sso-verification=([a-f0-9]{32})$', eventData.strip(), re.IGNORECASE)

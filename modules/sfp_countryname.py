@@ -47,6 +47,7 @@ class sfp_countryname(SpiderFootPlugin):
     }
 
     results = None
+
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
@@ -358,7 +359,6 @@ class sfp_countryname(SpiderFootPlugin):
             self.sf.debug("Skipped invalid phone number: " + srcPhoneNumber)
             return None
 
-
     # Detect name of country from TLD of domain name
     def detectCountryFromTLD(self, srcDomain):
 
@@ -495,9 +495,10 @@ class sfp_countryname(SpiderFootPlugin):
         countryNames = set(countryNames)
 
         for countryName in countryNames:
-            if countryName == '' or countryName == None:
+            if not countryName:
                 continue
-            self.sf.debug("Found country name: " + countryName)
+
+            self.sf.debug(f"Found country name: {countryName}")
 
             evt = SpiderFootEvent(evttype, countryName, self.__name__, event)
             if event.moduleDataSource:

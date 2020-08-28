@@ -86,17 +86,24 @@ class sfp_wigle(SpiderFootPlugin):
         return ["WIFI_ACCESS_POINT"]
 
     def getcoords(self, qry):
-        url = "https://api.wigle.net/api/v2/network/geocode?" + \
-              urllib.parse.urlencode({'addresscode': qry.encode('utf-8', errors='replace')})
+        params = {
+            'addresscode': qry.encode('utf-8', errors='replace')
+        }
         hdrs = {
-                    "Accept": "application/json",
-                    "Authorization": "Basic " + self.opts['api_key_encoded']
-               }
+            "Accept": "application/json",
+            "Authorization": "Basic " + self.opts['api_key_encoded']
+        }
 
-        res = self.sf.fetchUrl(url, timeout=30,
-                               useragent="SpiderFoot", headers=hdrs)
+        res = self.sf.fetchUrl(
+            "https://api.wigle.net/api/v2/network/geocode?" + urllib.parse.urlencode(params),
+            timeout=30,
+            useragent="SpiderFoot",
+            headers=hdrs
+        )
+
         if res['code'] == "404" or not res['content']:
             return None
+
         if "too many queries" in res['content']:
             self.sf.error("Wigle.net query limit reached for the day.", False)
             return None
@@ -111,25 +118,37 @@ class sfp_wigle(SpiderFootPlugin):
             return None
 
     def getnetworks(self, coords):
-        url = "https://api.wigle.net/api/v2/network/search?onlymine=false&" + \
-              "latrange1=" + str(coords[0]) + "&latrange2=" + str(coords[1]) + \
-              "&longrange1=" + str(coords[2]) + "&longrange2=" + str(coords[3]) + \
-              "&freenet=false&paynet=false&variance=" + self.opts['variance']
+        params = {
+            'onlymine': 'false',
+            'latrange1': str(coords[0]),
+            'latrange2': str(coords[1]),
+            'longrange1': str(coords[2]),
+            'longrange2': str(coords[3]),
+            'freenet': 'false',
+            'paynet': 'false',
+            'variance': self.opts['variance']
+        }
 
         if self.opts['days_limit'] != "0":
             dt = datetime.datetime.now() - datetime.timedelta(days=int(self.opts['days_limit']))
             date_calc = dt.strftime("%Y%m%d")
-            url += "&lastupdt=" + date_calc
+            params['lastupdt'] = date_calc
 
         hdrs = {
-                    "Accept": "application/json",
-                    "Authorization": "Basic " + self.opts['api_key_encoded']
-               }
+            "Accept": "application/json",
+            "Authorization": "Basic " + self.opts['api_key_encoded']
+        }
 
-        res = self.sf.fetchUrl(url, timeout=30,
-                               useragent="SpiderFoot", headers=hdrs)
+        res = self.sf.fetchUrl(
+            "https://api.wigle.net/api/v2/network/search?" + urllib.parse.urlencode(params),
+            timeout=30,
+            useragent="SpiderFoot",
+            headers=hdrs
+        )
+
         if res['code'] == "404" or not res['content']:
             return None
+
         if "too many queries" in res['content']:
             self.sf.error("Wigle.net query limit reached for the day.", False)
             return None
@@ -137,16 +156,18 @@ class sfp_wigle(SpiderFootPlugin):
         ret = list()
         try:
             info = json.loads(res['content'])
+
             if len(info.get('results', [])) == 0:
                 return None
+
             for r in info['results']:
                 if None not in [r['ssid'], r['netid']]:
                     ret.append(r['ssid'] + " (Net ID: " + r['netid'] + ")")
+
             return ret
         except Exception as e:
             self.sf.error(f"Error processing JSON response from WiGLE: {e}", False)
             return None
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -168,8 +189,8 @@ class sfp_wigle(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         coords = self.getcoords(eventData)
         if not coords:

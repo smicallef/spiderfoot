@@ -82,7 +82,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data

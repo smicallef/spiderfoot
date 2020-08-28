@@ -26,7 +26,6 @@ class sfp_iban(SpiderFootPlugin):
 
     # Default options.
     opts = {
-         # Options specific to this module
     }
 
     # Option descriptions.

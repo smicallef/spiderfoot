@@ -137,10 +137,9 @@ class sfp_honeypot(SpiderFootPlugin):
         eventName = parentEvent.eventType
 
         try:
-            lookup = self.opts['api_key'] + "." + \
-                     self.reverseAddr(qaddr) + ".dnsbl.httpbl.org"
+            lookup = self.opts['api_key'] + f".{self.reverseAddr(qaddr)}.dnsbl.httpbl.org"
 
-            self.sf.debug("Checking Honeypot: " + lookup)
+            self.sf.debug(f"Checking Honeypot: {lookup}")
             addrs = self.sf.resolveHost(lookup)
             if not addrs:
                 return None

@@ -103,7 +103,7 @@ class sfp_ipstack(SpiderFootPlugin):
 
         try:
             hostip = json.loads(res['content'])
-            if 'success' in hostip and hostip['success'] == False:
+            if 'success' in hostip and hostip['success'] is False:
                 self.sf.error("Invalid ipstack.com API key or usage limits exceeded.", False)
                 self.errorState = True
                 return None

@@ -86,10 +86,10 @@ class sfp_wikipediaedits(SpiderFootPlugin):
             params["month"] = dt.strftime("%m")
 
         res = self.sf.fetchUrl(
-                "https://en.wikipedia.org/w/api.php?%s" % urllib.parse.urlencode(params),
-                timeout=self.opts['_fetchtimeout'],
-                useragent="SpiderFoot"
-                )
+            "https://en.wikipedia.org/w/api.php?%s" % urllib.parse.urlencode(params),
+            timeout=self.opts['_fetchtimeout'],
+            useragent="SpiderFoot"
+        )
 
         if res['code'] in ["404", "403", "500"]:
             return None

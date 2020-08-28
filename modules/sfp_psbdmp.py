@@ -90,18 +90,18 @@ class sfp_psbdmp(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from psbdmp.cc: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from psbdmp.cc: {e}", False)
             return None
 
         ids = list()
-        if 'count' in ret:
-            if ret['count'] > 0:
-                for d in ret['data']:
-                    ids.append("https://pastebin.com/" + d['id'])
-            else:
-                return None
-        else:
+        if 'count' not in ret:
             return None
+
+        if ret['count'] <= 0:
+            return None
+
+        for d in ret['data']:
+            ids.append("https://pastebin.com/" + d['id'])
 
         return ids
 
@@ -121,7 +121,7 @@ class sfp_psbdmp(SpiderFootPlugin):
             self.results[eventData] = True
 
         data = self.query(eventData)
-        if data == None:
+        if data is None:
             return None
 
         for n in data:

@@ -86,7 +86,6 @@ class sfp_multiproxy(SpiderFootPlugin):
     def watchedEvents(self):
         return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
 
-
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.

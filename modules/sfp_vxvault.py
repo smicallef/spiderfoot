@@ -16,12 +16,12 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-   'VXVault Malicious URL List': {
+    'VXVault Malicious URL List': {
         'id': '_vxvault',
         'checks': ['ip', 'domain'],
         'url': 'http://vxvault.net/URL_List.php',
         'regex': r'.*\/{0}/.*'
-    }
+     }
 }
 
 
