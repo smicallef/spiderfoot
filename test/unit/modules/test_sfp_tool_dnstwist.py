@@ -37,7 +37,6 @@ class TestModuletool_dnstwist(unittest.TestCase):
       '__logstdout': False
     }
 
-    @unittest.skip("todo")
     def test_opts(self):
         module = sfp_tool_dnstwist()
         self.assertEqual(len(module.opts), len(module.optdescs))
@@ -59,7 +58,6 @@ class TestModuletool_dnstwist(unittest.TestCase):
         module = sfp_tool_dnstwist()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)

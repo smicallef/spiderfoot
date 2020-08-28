@@ -37,7 +37,6 @@ class TestModuleinstagram(unittest.TestCase):
       '__logstdout': False
     }
 
-    @unittest.skip("todo")
     def test_opts(self):
         module = sfp_instagram()
         self.assertEqual(len(module.opts), len(module.optdescs))
@@ -59,7 +58,6 @@ class TestModuleinstagram(unittest.TestCase):
         module = sfp_instagram()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)

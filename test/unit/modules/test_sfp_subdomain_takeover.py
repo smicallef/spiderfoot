@@ -37,7 +37,6 @@ class TestModulesubdomain_takeover(unittest.TestCase):
       '__logstdout': False
     }
 
-    @unittest.skip("todo")
     def test_opts(self):
         module = sfp_subdomain_takeover()
         self.assertEqual(len(module.opts), len(module.optdescs))
@@ -59,7 +58,6 @@ class TestModulesubdomain_takeover(unittest.TestCase):
         module = sfp_subdomain_takeover()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)
