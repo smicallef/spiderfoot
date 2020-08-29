@@ -225,6 +225,8 @@ class SpiderFoot:
         Returns:
             set: TBD
         """
+        if not data:
+            return set()
 
         mapping = set()
         entities = dict()
