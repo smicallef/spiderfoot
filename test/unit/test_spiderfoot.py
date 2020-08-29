@@ -1034,6 +1034,38 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(cards, list)
         self.assertIn("4111111111111111", cards)
 
+    def test_getCountryCodeDict_should_return_a_dict(self):
+        """
+        Test getCountryCodeDict(self)
+        """
+        sf = SpiderFoot(dict())
+
+        country_code_dict = sf.getCountryCodeDict()
+        self.assertIsInstance(country_code_dict, dict)
+
+    def test_countryNameFromCountryCode_argument_countryCode_should_return_country_as_a_string(self):
+        """
+        Test countryNameFromCountryCode(self, countryCode)
+        """
+        sf = SpiderFoot(dict())
+
+        country_name = sf.countryNameFromCountryCode('US')
+        self.assertIsInstance(country_name, str)
+        self.assertEqual(country_name, "United States")
+
+    def test_countryNameFromTld_argument_tld_should_return_country_as_a_string(self):
+        """
+        Test countryNameFromTld(self, tld)
+        """
+        sf = SpiderFoot(dict())
+
+        tlds = ['com', 'net', 'org', 'gov', 'mil']
+        for tld in tlds:
+            with self.subTest(tld=tld):
+                country_name = sf.countryNameFromTld(tld)
+                self.assertIsInstance(country_name, str)
+                self.assertEqual(country_name, "United States")
+
     def test_parse_iban_numbers_should_return_a_list(self):
         """
         Test parseIBANNumbers(self, data)
