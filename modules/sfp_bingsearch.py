@@ -131,6 +131,4 @@ class sfp_bingsearch(SpiderFootPlugin):
             )
             self.notifyListeners(evt)
 
-
-
 # End of sfp_bingsearch class

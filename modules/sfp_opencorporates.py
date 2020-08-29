@@ -92,7 +92,7 @@ class sfp_opencorporates(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if 'results' not in data:
@@ -122,14 +122,13 @@ class sfp_opencorporates(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if 'results' not in data:
             return None
 
         return data['results']
-
 
     # Extract company address, previous names, and officer names
     def extractCompanyDetails(self, company, sevt):

@@ -70,8 +70,7 @@ class sfp_s3bucket(SpiderFootPlugin):
     def checkSite(self, url):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
-        if res['code'] not in ["301", "302", "200"] and \
-            (res['content'] is None or "NoSuchBucket" in res['content']):
+        if res['code'] not in ["301", "302", "200"] and (res['content'] is None or "NoSuchBucket" in res['content']):
             self.sf.debug("Not a valid bucket: " + url)
         else:
             if "ListBucketResult" in res['content']:
@@ -120,13 +119,13 @@ class sfp_s3bucket(SpiderFootPlugin):
         for site in sites:
             if i >= self.opts['_maxthreads']:
                 data = self.threadSites(siteList)
-                if data == None:
+                if data is None:
                     return res
 
                 for ret in list(data.keys()):
                     if data[ret]:
                         # bucket:filecount
-                        res.append(ret + ":" + str(data[ret]))
+                        res.append(f"{ret}:{data[ret]}")
                 i = 0
                 siteList = list()
 

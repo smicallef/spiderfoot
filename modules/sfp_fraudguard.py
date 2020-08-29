@@ -122,9 +122,7 @@ class sfp_fraudguard(SpiderFootPlugin):
             self.sf.error(f"Error processing JSON response from Fraudguard.io: {e}", False)
             return None
 
-        #print str(info)
         return info
-
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -146,18 +144,17 @@ class sfp_fraudguard(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
-                    return None
+            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
+                self.sf.debug("Network size bigger than permitted: "
+                              + str(IPNetwork(eventData).prefixlen) + " > "
+                              + str(self.opts['maxnetblock']))
+                return None
 
         qrylist = list()
         rtype = ""

@@ -82,15 +82,15 @@ class sfp_wikileaks(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if self.opts['external']:
             external = "True"
         else:
             external = ""
 
-        if self.opts['daysback'] != None and self.opts['daysback'] != 0:
+        if self.opts['daysback'] is not None and self.opts['daysback'] != 0:
             newDate = datetime.datetime.now() - datetime.timedelta(days=int(self.opts['daysback']))
             maxDate = newDate.strftime("%Y-%m-%d")
         else:
@@ -100,6 +100,7 @@ class sfp_wikileaks(SpiderFootPlugin):
         wlurl = "https://search.wikileaks.org/?query=%22" + qdata + "%22" + \
               "&released_date_start=" + maxDate + "&include_external_sources=" + \
               external + "&new_search=True&order_by=most_relevant#results"
+
         res = self.sf.fetchUrl(wlurl)
         if res['content'] is None:
             self.sf.error("Unable to fetch Wikileaks content.", False)

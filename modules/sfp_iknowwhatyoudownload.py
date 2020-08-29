@@ -87,8 +87,8 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         ret = None
         retdata = None
 
-        base = "https://api.antitor.com/history/peer/?ip="
-        url = base + qry + "&days=" + str(self.opts['daysback'])
+        url = "https://api.antitor.com/history/peer/?ip="
+        url += qry + "&days=" + str(self.opts['daysback'])
         url += "&key=" + self.opts['api_key']
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
@@ -100,7 +100,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from iknowwhatyoudownload.com: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from iknowwhatyoudownload.com: {e}", False)
             return None
 
         if 'error' in ret:
@@ -109,16 +109,15 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
                 self.sf.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.", False)
                 return None
 
-        if 'contents' in ret:
-            if len(ret['contents']) > 0:
-                retdata = "<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip=" + qry + "</SFURL>\n"
-                for d in ret['contents']:
-                    retdata += d['torrent']['name'] + \
-                               " (" + d.get("endDate", "Date unknown") + ")\n"
-            else:
-                return None
-        else:
+        if 'contents' not in ret:
             return None
+
+        if not len(ret['contents']):
+            return None
+
+        retdata = "<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip=" + qry + "</SFURL>\n"
+        for d in ret['contents']:
+            retdata += d['torrent']['name'] + " (" + d.get("endDate", "Date unknown") + ")\n"
 
         return retdata
 
@@ -142,14 +141,15 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         data = self.query(eventData)
-        if data == None:
+
+        if not data:
             return None
-        else:
-            e = SpiderFootEvent("MALICIOUS_IPADDR", data, self.__name__, event)
-            self.notifyListeners(e)
+
+        e = SpiderFootEvent("MALICIOUS_IPADDR", data, self.__name__, event)
+        self.notifyListeners(e)
 
 # End of sfp_iknowwhatyoudownload class

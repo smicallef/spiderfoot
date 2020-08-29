@@ -60,8 +60,8 @@ class sfp_webserver(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
         if eventSource in self.results:
             return None
-        else:
-            self.results[eventSource] = True
+
+        self.results[eventSource] = True
 
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
             self.sf.debug("Not collecting web server information for external sites.")
@@ -69,7 +69,7 @@ class sfp_webserver(SpiderFootPlugin):
 
         try:
             jdata = json.loads(eventData)
-            if jdata == None:
+            if jdata is None:
                 return None
         except BaseException:
             self.sf.error("Received HTTP headers from another module in an unexpected format.", False)

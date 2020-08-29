@@ -81,13 +81,11 @@ class sfp_fortinet(SpiderFootPlugin):
     def watchedEvents(self):
         return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
 
-
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
         return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
-
 
     # Check the regexps to see whether the content indicates maliciousness
     def contentMalicious(self, content, goodregex, badregex):

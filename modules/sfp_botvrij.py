@@ -16,7 +16,7 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 malchecks = {
-   'botvrij.eu Domain Blocklist': {
+    'botvrij.eu Domain Blocklist': {
         'id': '_botvrij',
         'checks': ['domain'],
         'url': 'https://www.botvrij.eu/data/blocklist/blocklist_full.csv',

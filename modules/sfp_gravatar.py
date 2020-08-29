@@ -92,7 +92,7 @@ class sfp_gravatar(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except BaseException as e:
-            self.sf.debug('Error processing JSON response: ' + str(e))
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if data.get('entry') is None or len(data.get('entry')) == 0:
@@ -181,7 +181,6 @@ class sfp_gravatar(SpiderFootPlugin):
                     evt = SpiderFootEvent("USERNAME", v, self.__name__, event)
                     self.notifyListeners(evt)
                     self.reportedUsers[v] = True
-
 
         if data.get('accounts') is not None:
             for account in data.get('accounts'):

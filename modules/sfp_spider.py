@@ -218,14 +218,14 @@ class sfp_spider(SpiderFootPlugin):
                         sendcontent = False
 
         if sendcontent:
-            if httpresult['content'] != None:
+            if httpresult['content'] is not None:
                 event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
                                         self.__name__, parentEvent)
                 event.actualSource = url
                 self.notifyListeners(event)
 
         hdr = httpresult['headers']
-        if hdr != None:
+        if hdr is not None:
             event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", json.dumps(hdr, ensure_ascii=False),
                                     self.__name__, parentEvent)
             event.actualSource = url

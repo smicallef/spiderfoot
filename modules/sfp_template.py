@@ -319,7 +319,6 @@ class sfp_template(SpiderFootPlugin):
                                   + str(self.opts['maxnetblock']))
                     return None
 
-
         # When handling netblocks/subnets, assuming the user set
         # netblocklookup/subnetlookup to True, we need to expand it
         # to the IPs for looking up.

@@ -160,7 +160,7 @@ class sfp_hunter(SpiderFootPlugin):
                 self.notifyListeners(e)
 
                 if 'first_name' in email and 'last_name' in email:
-                    if email['first_name'] != None and email['last_name'] != None:
+                    if email['first_name'] is not None and email['last_name'] is not None:
                         n = email['first_name'] + " " + email['last_name']
                         e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n,
                                             self.__name__, event)
@@ -170,7 +170,7 @@ class sfp_hunter(SpiderFootPlugin):
                 return None
 
             data = self.query(eventData, rescount, 10)
-            if data == None:
+            if data is None:
                 return None
             if "data" not in data:
                 return None

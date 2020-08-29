@@ -78,7 +78,7 @@ class sfp_strangeheaders(SpiderFootPlugin):
 
         try:
             jdata = json.loads(eventData)
-            if jdata == None:
+            if jdata is None:
                 return None
         except BaseException:
             self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
