@@ -130,8 +130,7 @@ class TestSpiderFoot(unittest.TestCase):
         opt_data = sf.optValueToData([], fatal=False, splitLines=True)
         self.assertEqual(None, opt_data)
 
-    @unittest.skip("todo")
-    def test_build_graph_data_should_return_a_set(self):
+    def test_buildGraphData_should_return_a_set(self):
         """
         Test buildGraphData(self, data, flt=list())
         """
@@ -143,8 +142,9 @@ class TestSpiderFoot(unittest.TestCase):
         graph_data = sf.buildGraphData(None, None)
         self.assertIsInstance(graph_data, set)
 
-    @unittest.skip("todo")
-    def test_build_graph_gexf_should_return_bytes(self):
+        self.assertEqual('TBD', 'TBD')
+
+    def test_buildGraphGexf_should_return_bytes(self):
         """
         Test buildGraphGexf(self, root, title, data, flt=[])
         """
@@ -156,7 +156,8 @@ class TestSpiderFoot(unittest.TestCase):
         gexf = sf.buildGraphGexf('', '', '')
         self.assertIsInstance(gexf, bytes)
 
-    @unittest.skip("todo")
+        self.assertEqual('TBD', 'TBD')
+
     def test_build_graph_json_should_return_a_string(self):
         """
         Test buildGraphJson(self, root, data, flt=list())
@@ -168,6 +169,8 @@ class TestSpiderFoot(unittest.TestCase):
 
         json = sf.buildGraphJson('', '')
         self.assertIsInstance(json, str)
+
+        self.assertEqual('TBD', 'TBD')
 
     def test_genScanInstanceId_should_return_a_string(self):
         """
@@ -851,13 +854,13 @@ class TestSpiderFoot(unittest.TestCase):
         dict_names = sf.dictnames()
         self.assertIsInstance(dict_names, list)
 
-    def test_data_parent_child_to_tree_should_return_dict(self):
+    def test_dataParentChildToTree_should_return_dict(self):
         """
         Test dataParentChildToTree(self, data)
         """
         sf = SpiderFoot(self.default_options)
 
-        invalid_types = [None, "", list()]
+        invalid_types = [None, "", list(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 tree = sf.dataParentChildToTree(invalid_type)
@@ -961,6 +964,11 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(resolve_targets, list)
         self.assertIn('1.1.1.1', resolve_targets)
 
+        target = SpiderFootTarget("127.0.0.1/32", "NETBLOCK_OWNER")
+        resolve_targets = sf.resolveTargets(target, False)
+        self.assertIsInstance(resolve_targets, list)
+        self.assertIn('127.0.0.1', resolve_targets)
+
     @unittest.skip("todo")
     def test_safe_socket(self):
         """
@@ -1001,22 +1009,36 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(robots_txt, list)
         self.assertIn("/disallowed/path", robots_txt)
 
-    @unittest.skip("todo")
-    def test_parse_hashes_should_return_a_list(self):
+    def test_parseHashes_should_return_a_list(self):
         """
         Test parseHashes(self, data)
         """
         sf = SpiderFoot(self.default_options)
 
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 hashes = sf.parseHashes(invalid_type)
                 self.assertIsInstance(hashes, list)
 
-        hashes = sf.parseHashes("spiderfoote17cff4eb3e8fbe6ca3b83fb47532dbaspiderfoot")
+    def test_parseHashes_argument_data_should_return_hahes(self):
+        """
+        Test parseHashes(self, data)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        md5_hash = "e17cff4eb3e8fbe6ca3b83fb47532dba"
+        sha1_hash = "f81efbe70f8116fcf3dc4e9b37725dcb949719f5"
+        sha256_hash = "7cd444af3d8de9e195b1f1cb55e7b7d9409dcd4648247c853a2f64b7578dc9b7"
+        sha512_hash = "a55a2fe120d7d7d6e2ba930e6c56faa30b9d24a3178a0aff1d89312a89d61d8a9d5b7743e3af6b1a318d99974a1145ed76f85aa8c6574074dfb347613ccd3249"
+
+        hashes = sf.parseHashes(f"spiderfoot{md5_hash}spiderfoot{sha1_hash}spiderfoot{sha256_hash}spiderfoot{sha512_hash}spiderfoot")
+
         self.assertIsInstance(hashes, list)
-        self.assertIn("e17cff4eb3e8fbe6ca3b83fb47532dba", hashes)
+        self.assertIn(("MD5", md5_hash), hashes)
+        self.assertIn(("SHA1", sha1_hash), hashes)
+        self.assertIn(("SHA256", sha256_hash), hashes)
+        self.assertIn(("SHA512", sha512_hash), hashes)
 
     def test_parse_credit_cards_should_return_a_list(self):
         """
