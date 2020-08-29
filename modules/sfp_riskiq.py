@@ -15,7 +15,6 @@ import base64
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_riskiq(SpiderFootPlugin):
-    """RiskIQ:Investigate,Passive:Reputation Systems:apikey:Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases."""
 
     meta = {
         'name': "RiskIQ",

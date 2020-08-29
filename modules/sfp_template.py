@@ -15,40 +15,8 @@ from netaddr import IPNetwork
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_template(SpiderFootPlugin):
-    # The below docstring is going away in 3.3, in favor of the module descriptor dictionary further below.
-    #
-    # Format of the below must be, in order, separated by ':'
-    #
-    # Module name: A very short but human readable name for the module.
-    # Use cases: The use case(s) this module should be included in, options are Footprint, Investigate and Passive.
-    #   - Passive means the user's scan target is not contacted at all
-    #   - Footprint means that this module is useful when understanding the target's footprint on the Internet
-    #   - Investigate means that this module is useful when investigating the danger/risk of a target
-    # Category: The category this module belongs in, describing how it operates. Only one category is permitted.
-    #   - Content Analysis: Analyses content found
-    #   - Crawling and Scanning: Performs crawling or scanning of the target
-    #   - DNS: Queries DNS
-    #   - Leaks, Dumps and Breaches: Queries data dumps and breaches
-    #   - Passive DNS: Analyses passive DNS sources
-    #   - Public Registries: Queries open/public registries of information
-    #   - Real World: Queries sources about the real world (addresses, names, etc.)
-    #   - Reputation Systems: Queries systems that describe the reptuation of other systems
-    #   - Search Engines: Searches public search engines with data about the whole Internet
-    #   - Secondary Networks: Queries information about participation on secondary networks, like Bitcoin
-    #   - Social Media: Searches social media data sources
-    # Flags: Attributes about this module:
-    #   - apikey: Needs an API key to function
-    #   - slow: Can be slow to find information
-    #   - errorprone: Might generate high false positives
-    #   - invasive: Interrogates the target, might be intensive
-    #   - tool: Runs an external tool to collect data
-    # Description: A sentence briefly describing the module.
-    #
-    """Template Module:Footprint,Investigate,Passive:Search Engines:apikey:Obtain open port from SomeDataSource about identified IP addresses."""
-
     # The module descriptor dictionary contains all the meta data about a module necessary
     # for users to understand...
-
     meta = {
         # Module name: A very short but human readable name for the module.
         'name': "Template Module",

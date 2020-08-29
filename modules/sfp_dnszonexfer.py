@@ -17,7 +17,6 @@ import dns.zone
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnszonexfer(SpiderFootPlugin):
-    """DNS Zone Transfer:Footprint,Investigate:DNS::Attempts to perform a full DNS zone transfer."""
 
     meta = {
         'name': "DNS Zone Transfer",

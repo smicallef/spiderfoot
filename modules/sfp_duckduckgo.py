@@ -14,7 +14,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_duckduckgo(SpiderFootPlugin):
-    """DuckDuckGo:Footprint,Investigate,Passive:Search Engines::Query DuckDuckGo's API for descriptive information about your target."""
 
     meta = {
         'name': "DuckDuckGo",

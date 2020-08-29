@@ -16,7 +16,6 @@ import urllib
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_api_recon_dev(SpiderFootPlugin):
-    """api.recon.dev:Footprint,Investigate,Passive:Passive DNS::Search api.recon.dev for subdomains."""
 
     meta = {
         'name': "api.recon.dev",

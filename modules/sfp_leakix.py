@@ -15,7 +15,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_leakix(SpiderFootPlugin):
-    """LeakIX:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Search LeakIX for host data leaks, open ports, software and geoip."""
 
     meta = {
         'name': "LeakIX",

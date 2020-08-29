@@ -17,7 +17,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_spamcop(SpiderFootPlugin):
-    """SpamCop:Investigate,Passive:Reputation Systems::Query various spamcop databases for open relays, open proxies, vulnerable servers, etc."""
 
     meta = {
         'name': "SpamCop",

@@ -14,7 +14,6 @@
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_email(SpiderFootPlugin):
-    """E-Mail Address Extractor:Footprint,Investigate,Passive:Content Analysis::Identify e-mail addresses in any obtained data."""
 
     meta = {
         'name': "E-Mail Address Extractor",

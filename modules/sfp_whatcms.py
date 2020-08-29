@@ -16,7 +16,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_whatcms(SpiderFootPlugin):
-    """WhatCMS:Footprint,Investigate,Passive:Content Analysis:apikey,slow:Check web technology using WhatCMS.org API."""
 
     meta = {
         'name': "WhatCMS",

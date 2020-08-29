@@ -17,7 +17,6 @@ from netaddr import IPAddress
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_whois(SpiderFootPlugin):
-    """Whois:Footprint,Investigate,Passive:Public Registries::Perform a WHOIS look-up on domain names and owned netblocks."""
 
     meta = {
         'name': "Whois",

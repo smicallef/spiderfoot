@@ -14,7 +14,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_haveibeenpwned(SpiderFootPlugin):
-    """HaveIBeenPwned:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches."""
 
     meta = {
         'name': "HaveIBeenPwned",

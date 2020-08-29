@@ -16,7 +16,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_azureblobstorage(SpiderFootPlugin):
-    """Azure Blob Finder:Footprint,Passive:Crawling and Scanning::Search for potential Azure blobs associated with the target and attempt to list their contents."""
 
     meta = {
         'name': "Azure Blob Finder",

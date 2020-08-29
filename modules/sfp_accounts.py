@@ -19,7 +19,6 @@ import random
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_accounts(SpiderFootPlugin):
-    """Account Finder:Footprint,Passive:Social Media:slow:Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc."""
 
     meta = {
         'name': "Account Finder",

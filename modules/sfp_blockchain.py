@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_blockchain(SpiderFootPlugin):
-    """Blockchain:Footprint,Investigate,Passive:Public Registries::Queries blockchain.info to find the balance of identified bitcoin wallet addresses."""
 
     meta = {
         'name': "Blockchain",

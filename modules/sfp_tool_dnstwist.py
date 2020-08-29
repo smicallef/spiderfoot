@@ -17,7 +17,6 @@ import os.path
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_dnstwist(SpiderFootPlugin):
-    """Tool - DNSTwist:Footprint,Investigate:DNS:tool:Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation."""
 
     meta = {
         'name': "Tool - DNSTwist",

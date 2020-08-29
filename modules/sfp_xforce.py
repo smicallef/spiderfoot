@@ -19,7 +19,6 @@ from netaddr import IPNetwork
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_xforce(SpiderFootPlugin):
-    """XForce Exchange:Investigate,Passive:Reputation Systems:apikey:Obtain information from IBM X-Force Exchange"""
 
     meta = {
         'name': "XForce Exchange",

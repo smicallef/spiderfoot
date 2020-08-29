@@ -15,7 +15,6 @@ from sflib import SpiderFootPlugin
 
 
 class sfp__stor_db(SpiderFootPlugin):
-    """Storage::::Stores scan results into the back-end SpiderFoot database. You will need this."""
 
     meta = {
         'name': "Storage",

@@ -14,7 +14,6 @@ from netaddr import IPAddress, IPNetwork
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_emergingthreats(SpiderFootPlugin):
-    """Emerging Threats:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to emergingthreats.net."""
 
     meta = {
         'name': "Emerging Threats",

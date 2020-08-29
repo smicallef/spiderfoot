@@ -18,7 +18,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_grep_app(SpiderFootPlugin):
-    """grep.app:Footprint,Investigate,Passive:Search Engines::Search grep.app API for links and emails related to the specified domain."""
 
     meta = {
         'name': "grep.app",

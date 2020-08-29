@@ -15,7 +15,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_securitytrails(SpiderFootPlugin):
-    """SecurityTrails:Investigate,Passive:Search Engines:apikey:Obtain Passive DNS and other information from SecurityTrails"""
 
     meta = {
         'name': "SecurityTrails",

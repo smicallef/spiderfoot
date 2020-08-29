@@ -16,7 +16,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_callername(SpiderFootPlugin):
-    """CallerName:Footprint,Investigate,Passive:Real World::Lookup US phone number location and reputation information."""
 
     meta = {
         'name': "CallerName",

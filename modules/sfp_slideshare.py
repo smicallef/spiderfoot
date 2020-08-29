@@ -14,7 +14,6 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_slideshare(SpiderFootPlugin):
-    """SlideShare:Footprint,Investigate,Passive:Social Media::Gather name and location from SlideShare profiles."""
 
     meta = {
         'name': "SlideShare",

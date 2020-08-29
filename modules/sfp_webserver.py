@@ -15,7 +15,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_webserver(SpiderFootPlugin):
-    """Web Server Identifier:Footprint,Investigate,Passive:Content Analysis::Obtain web server banners to identify versions of web servers being used."""
 
     meta = {
         'name': "Web Server Identifier",

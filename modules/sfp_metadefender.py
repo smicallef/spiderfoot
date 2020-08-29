@@ -15,7 +15,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_metadefender(SpiderFootPlugin):
-    """MetaDefender:Footprint,Investigate,Passive:Reputation Systems:apikey:Search MetaDefender API for IP address and domain IP reputation."""
 
     meta = {
         'name': "MetaDefender",

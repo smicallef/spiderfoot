@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_norton(SpiderFootPlugin):
-    """Norton ConnectSafe:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Norton ConnectSafe DNS"""
 
     meta = {
         'name': "Norton ConnectSafe",

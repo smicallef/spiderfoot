@@ -15,7 +15,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_github(SpiderFootPlugin):
-    """Github:Footprint,Passive:Social Media::Identify associated public code repositories on Github."""
 
     meta = {
         'name': "Github",

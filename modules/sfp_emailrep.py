@@ -15,7 +15,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_emailrep(SpiderFootPlugin):
-    """EmailRep:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailRep.io for email address reputation."""
 
     meta = {
         'name': "EmailRep",

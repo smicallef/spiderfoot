@@ -14,7 +14,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_venmo(SpiderFootPlugin):
-    """Venmo:Footprint,Investigate,Passive:Social Media::Gather user information from Venmo API."""
 
     meta = {
         'name': "Venmo",

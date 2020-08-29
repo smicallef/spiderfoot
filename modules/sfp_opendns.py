@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_opendns(SpiderFootPlugin):
-    """OpenDNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by OpenDNS DNS"""
 
     meta = {
         'name': "OpenDNS",

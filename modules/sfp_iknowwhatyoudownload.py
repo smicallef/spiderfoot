@@ -13,7 +13,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_iknowwhatyoudownload(SpiderFootPlugin):
-    """Iknowwhatyoudownload.com:Footprint,Investigate,Passive:Secondary Networks:apikey:Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent."""
 
     meta = {
         'name': "Iknowwhatyoudownload.com",

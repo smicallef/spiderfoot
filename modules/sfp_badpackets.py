@@ -17,7 +17,6 @@ import urllib.request, urllib.parse, urllib.error
 import json
 
 class sfp_badpackets(SpiderFootPlugin):
-    """Bad Packets:Investigate,Passive:Reputation Systems:apikey:Obtain information about any malicious activities involving IP addresses found"""
 
     meta = {
         'name': "Bad Packets",

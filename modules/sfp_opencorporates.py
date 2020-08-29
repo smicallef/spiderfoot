@@ -15,7 +15,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_opencorporates(SpiderFootPlugin):
-    """OpenCorporates:Passive,Footprint,Investigate:Search Engines::Look up company information from OpenCorporates."""
 
     meta = {
         'name': "OpenCorporates",

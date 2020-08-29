@@ -17,7 +17,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_virustotal(SpiderFootPlugin):
-    """VirusTotal:Investigate,Passive:Reputation Systems:apikey:Obtain information from VirusTotal about identified IP addresses."""
 
     meta = {
         'name': "VirusTotal",

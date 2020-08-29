@@ -14,7 +14,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_viewdns(SpiderFootPlugin):
-    """ViewDNS.info:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using ViewDNS.info."""
 
     meta = {
         'name': "ViewDNS.info",

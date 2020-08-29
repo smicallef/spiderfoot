@@ -16,7 +16,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_scylla(SpiderFootPlugin):
-    """Scylla:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Gather breach data from Scylla API."""
 
     meta = {
         'name': "Scylla",

@@ -16,7 +16,6 @@ from netaddr import IPNetwork
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_binaryedge(SpiderFootPlugin):
-    """BinaryEdge:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from BinaryEdge.io's Internet scanning systems about breaches, vulerabilities, torrents and passive DNS."""
 
     meta = {
         'name': "BinaryEdge",

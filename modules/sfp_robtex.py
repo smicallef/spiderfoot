@@ -17,7 +17,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_robtex(SpiderFootPlugin):
-    """Robtex:Footprint,Investigate,Passive:Passive DNS::Search Robtex.com for hosts sharing the same IP."""
 
     meta = {
         'name': "Robtex",

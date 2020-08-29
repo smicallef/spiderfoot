@@ -18,7 +18,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spyse(SpiderFootPlugin):
-    """Spyse:Footprint,Investigate,Passive:Passive DNS:apikey:SpiderFoot plug-in to search Spyse API for IP address and domain information."""
 
     meta = {
         'name': "Spyse",

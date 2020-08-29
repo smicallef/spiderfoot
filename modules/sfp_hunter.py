@@ -14,7 +14,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_hunter(SpiderFootPlugin):
-    """Hunter.io:Footprint,Investigate,Passive:Search Engines:apikey:Check for e-mail addresses and names on hunter.io."""
 
     meta = {
         'name': "Hunter.io",

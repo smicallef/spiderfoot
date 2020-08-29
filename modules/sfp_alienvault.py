@@ -17,7 +17,6 @@ from netaddr import IPNetwork
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_alienvault(SpiderFootPlugin):
-    """AlienVault OTX:Investigate,Passive:Reputation Systems:apikey:Obtain information from AlienVault Open Threat Exchange (OTX)"""
 
     meta = {
         'name': "AlienVault OTX",

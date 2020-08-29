@@ -18,7 +18,6 @@ import time
 
 
 class sfp_onyphe(SpiderFootPlugin):
-    """Onyphe:Footprint,Investigate,Passive:Reputation Systems:apikey:Check Onyphe data (threat list, geo-location, pastries, vulnerabilities)  about a given IP."""
 
     meta = {
         "name": "Onyphe",

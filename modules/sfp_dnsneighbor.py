@@ -15,7 +15,6 @@ from netaddr import IPAddress
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsneighbor(SpiderFootPlugin):
-    """DNS Look-aside:Footprint,Investigate:DNS::Attempt to reverse-resolve the IP addresses next to your target to see if they are related."""
 
     meta = {
         'name': "DNS Look-aside",

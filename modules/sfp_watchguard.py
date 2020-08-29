@@ -26,7 +26,6 @@ malchecks = {
 
 
 class sfp_watchguard(SpiderFootPlugin):
-    """Watchguard:Investigate,Passive:Reputation Systems::Check if an IP is malicious according to Watchguard's reputationauthority.org."""
 
     meta = {
         'name': "Watchguard",

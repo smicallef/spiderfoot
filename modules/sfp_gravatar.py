@@ -17,7 +17,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_gravatar(SpiderFootPlugin):
-    """Gravatar:Footprint,Investigate,Passive:Social Media::Retrieve user information from Gravatar API."""
 
     meta = {
         'name': "Gravatar",

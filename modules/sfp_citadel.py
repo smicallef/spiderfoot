@@ -15,7 +15,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_citadel(SpiderFootPlugin):
-    """Leak-Lookup:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Searches Leak-Lookup.com's database of breaches."""
 
     meta = {
         'name': "Leak-Lookup",

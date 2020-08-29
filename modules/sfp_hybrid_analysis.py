@@ -15,7 +15,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_hybrid_analysis(SpiderFootPlugin):
-    """Hybrid Analysis:Footprint,Investigate,Passive:Reputation Systems:apikey:Search Hybrid Analysis for domains and URLs related to the target."""
 
     meta = {
         'name': "Hybrid Analysis",

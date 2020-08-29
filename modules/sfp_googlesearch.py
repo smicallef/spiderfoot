@@ -14,7 +14,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlesearch(SpiderFootPlugin):
-    """Google:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from the Google Custom Search API to identify sub-domains and links."""
 
     meta = {
         'name': "Google",

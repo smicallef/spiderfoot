@@ -17,7 +17,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_darksearch(SpiderFootPlugin):
-    """Darksearch:Footprint,Investigate:Search Engines::Search the Darksearch.io Tor search engine for mentions of the target domain."""
 
     meta = {
         'name': "Darksearch",

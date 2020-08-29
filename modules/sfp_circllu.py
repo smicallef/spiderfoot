@@ -18,7 +18,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_circllu(SpiderFootPlugin):
-    """CIRCL.LU:Investigate,Passive:Reputation Systems:apikey:Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases."""
 
     meta = {
         'name': "CIRCL.LU",

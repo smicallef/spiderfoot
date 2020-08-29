@@ -17,7 +17,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spyonweb(SpiderFootPlugin):
-    """SpyOnWeb:Footprint,Investigate,Passive:Passive DNS:apikey:Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code."""
 
     meta = {
         'name': "SpyOnWeb",

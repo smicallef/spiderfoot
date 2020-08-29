@@ -15,7 +15,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_neutrinoapi(SpiderFootPlugin):
-    """NeutrinoAPI:Footprint,Investigate,Passive:Reputation Systems:apikey:Search NeutrinoAPI for IP address info and check IP reputation."""
 
     meta = {
         'name': "NeutrinoAPI",

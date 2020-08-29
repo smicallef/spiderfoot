@@ -16,7 +16,6 @@ import urllib.request, urllib.parse, urllib.error
 import json
 
 class sfp_snov(SpiderFootPlugin):
-    """Snov:Footprint,Investigate,Passive:Search Engines:apikey:Gather available email IDs from identified domains"""
 
     meta = {
         'name': "Snov",

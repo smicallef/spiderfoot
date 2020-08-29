@@ -19,7 +19,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsgrep(SpiderFootPlugin):
-    """DNSGrep:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API."""
 
     meta = {
         'name': "DNSGrep",

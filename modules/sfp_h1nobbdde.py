@@ -14,7 +14,6 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_h1nobbdde(SpiderFootPlugin):
-    """HackerOne (Unofficial):Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed."""
 
     meta = {
         'name': "HackerOne (Unofficial)",

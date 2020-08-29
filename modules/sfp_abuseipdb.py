@@ -23,7 +23,6 @@ malchecks = {
 }
 
 class sfp_abuseipdb(SpiderFootPlugin):
-    """AbuseIPDB:Investigate,Passive:Reputation Systems:apikey:Check if an IP address is malicious according to AbuseIPDB.com."""
 
     meta = {
         'name': "AbuseIPDB",

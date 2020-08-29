@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_cleanbrowsing(SpiderFootPlugin):
-    """Cleanbrowsing.org:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Cleanbrowsing.org DNS"""
 
     meta = {
         'name': "Cleanbrowsing.org",

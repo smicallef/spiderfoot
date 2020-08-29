@@ -17,7 +17,6 @@ import json
 import re
 
 class sfp_keybase(SpiderFootPlugin):
-    """Keybase:Footprint,Investigate,Passive:Public Registries::Obtain additional information about target username"""
 
     meta = {
         'name': "Keybase",

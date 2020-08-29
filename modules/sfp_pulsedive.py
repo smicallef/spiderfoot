@@ -18,7 +18,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pulsedive(SpiderFootPlugin):
-    """Pulsedive:Investigate,Passive:Reputation Systems:apikey:Obtain information from Pulsedive's API."""
 
     meta = {
         'name': "Pulsedive",

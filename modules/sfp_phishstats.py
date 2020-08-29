@@ -17,7 +17,6 @@ import urllib.request, urllib.parse, urllib.error
 import json
 
 class sfp_phishstats(SpiderFootPlugin):
-    """PhishStats:Investigate,Passive:Reputation Systems::Determine if an IP Address is malicious"""
 
     meta = {
         'name': "PhishStats",

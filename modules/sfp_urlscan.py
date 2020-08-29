@@ -15,7 +15,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_urlscan(SpiderFootPlugin):
-    """URLScan.io:Footprint,Investigate,Passive:Search Engines::Search URLScan.io cache for domain information."""
 
     meta = {
         'name': "URLScan.io",

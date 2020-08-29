@@ -16,7 +16,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_s3bucket(SpiderFootPlugin):
-    """Amazon S3 Bucket Finder:Footprint,Passive:Crawling and Scanning::Search for potential Amazon S3 buckets associated with the target and attempt to list their contents."""
 
     meta = {
         'name': "Amazon S3 Bucket Finder",

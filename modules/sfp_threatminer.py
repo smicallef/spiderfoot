@@ -17,7 +17,6 @@ from netaddr import IPNetwork
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_threatminer(SpiderFootPlugin):
-    """ThreatMiner:Footprint,Investigate,Passive:Search Engines::Obtain information from ThreatMiner's database for passive DNS and threat intelligence."""
 
     meta = {
         'name': "ThreatMiner",

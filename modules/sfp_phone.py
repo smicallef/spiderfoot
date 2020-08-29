@@ -18,7 +18,6 @@ from phonenumbers import carrier
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_phone(SpiderFootPlugin):
-    """Phone Number Extractor:Passive,Footprint,Investigate:Content Analysis::Identify phone numbers in scraped webpages."""
 
     meta = {
         'name': "Phone Number Extractor",

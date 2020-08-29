@@ -17,7 +17,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_dronebl(SpiderFootPlugin):
-    """DroneBL:Investigate,Passive:Reputation Systems::Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc."""
 
     meta = {
         'name': "DroneBL",

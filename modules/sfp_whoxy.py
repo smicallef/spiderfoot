@@ -14,7 +14,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_whoxy(SpiderFootPlugin):
-    """Whoxy:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using Whoxy.com."""
 
     meta = {
         'name': "Whoxy",

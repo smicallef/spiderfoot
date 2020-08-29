@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_ipstack(SpiderFootPlugin):
-    """ipstack:Footprint,Investigate,Passive:Real World:apikey:Identifies the physical location of IP addresses identified using ipstack.com."""
 
     meta = {
         'name': "ipstack",
