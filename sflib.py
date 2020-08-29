@@ -2470,7 +2470,7 @@ class SpiderFootPlugin():
     __sfdb__ = None
     # ID of the scan the module is running against
     __scanId__ = None
-    # (Unused) tracking of data sources
+    # (only used in SpiderFoot HX) tracking of data sources
     __dataSource__ = None
     # If set, events not matching this list are dropped
     __outputFilter__ = None
@@ -3188,7 +3188,7 @@ class SpiderFootEvent():
             raise TypeError(f"data is {type(data)}; expected str()")
 
         if not data:
-            raise ValueError("data is empty")
+            raise ValueError(f"data is empty: '{str(data)}'")
 
         self._data = data
 

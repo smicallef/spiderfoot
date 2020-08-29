@@ -16,10 +16,10 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_subdomain_takeover(SpiderFootPlugin):
-    """Subdomain Takeover:Footprint,Investigate:Crawling and Scanning::Check if affiliated subdomains are vulnerable to takeover."""
+    """Subdomain Takeover Checker:Footprint,Investigate:Crawling and Scanning::Check if affiliated subdomains are vulnerable to takeover."""
 
     meta = {
-        'name': "Subdomain Takeover",
+        'name': "Subdomain Takeover Checker",
         'summary': "Check if affiliated subdomains are vulnerable to takeover.",
         'flags': [""],
         'useCases': ["Footprint", "Investigate"],

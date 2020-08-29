@@ -60,7 +60,6 @@ class sfp_darksearch(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "Darksearch"
         self.results = self.tempStorage()
         self.errorState = False
 

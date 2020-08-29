@@ -181,15 +181,16 @@ class sfp_github(SpiderFootPlugin):
             self.sf.error(f"Unable to fetch {url}", False)
             failed = True
 
-        try:
-            ret = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug(f"Error processing JSON response from GitHub: {e}", False)
-            ret = None
+        if not failed:
+            try:
+                ret = json.loads(res['content'])
+            except BaseException as e:
+                self.sf.debug(f"Error processing JSON response from GitHub: {e}")
+                ret = None
 
-        if ret is None:
-            self.sf.error(f"Unable to process empty response from Github for: {username}", False)
-            failed = True
+            if ret is None:
+                self.sf.error(f"Unable to process empty response from Github for: {username}", False)
+                failed = True
 
         if not failed:
             if ret.get('total_count', "0") == "0" or len(ret['items']) == 0:

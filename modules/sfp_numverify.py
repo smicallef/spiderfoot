@@ -62,7 +62,6 @@ class sfp_numverify(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "numverify"
         self.results = self.tempStorage()
         self.errorState = False
 
@@ -157,14 +156,14 @@ class sfp_numverify(SpiderFootPlugin):
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
-        if data.get('country_code') is not None:
+        if data.get('country_code'):
             location = ', '.join([_f for _f in [data.get('location'), data.get('country_code')] if _f])
             evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(evt)
         else:
             self.sf.debug("No location information found for " + eventData)
 
-        if data.get('carrier') is not None:
+        if data.get('carrier'):
             evt = SpiderFootEvent("PROVIDER_TELCO", data.get('carrier'), self.__name__, event)
             self.notifyListeners(evt)
         else:

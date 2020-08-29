@@ -30,14 +30,15 @@ class sfp_circllu(SpiderFootPlugin):
             'website': "https://www.circl.lu/",
             'model': "FREE_AUTH_UNLIMITED",
             'references': [
-                "https://www.circl.lu/services/training/",
+                "https://www.circl.lu/services/passive-dns/",
+                "https://www.circl.lu/services/passive-ssl/",
                 "https://www.circl.lu/services/",
                 "https://www.circl.lu/pub/",
                 "https://www.circl.lu/projects"
             ],
             'apiKeyInstructions': [
                 "Visit https://www.circl.lu/contact/",
-                "Contact with email or phone to request access for API",
+                "Contact with email or phone to request access for Passive DNS and Passive SSL API services",
                 "The API access will be provided once approved"
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://www.circl.lu/",

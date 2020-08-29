@@ -49,7 +49,6 @@ class sfp_skymem(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "Skymem"
         self.results = self.tempStorage()
 
         for opt in list(userOpts.keys()):
