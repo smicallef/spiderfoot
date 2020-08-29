@@ -36,6 +36,24 @@ class TestSpiderFoot(unittest.TestCase):
         '__logstdout': False
     }
 
+    default_modules = [
+        "sfp_binstring",
+        "sfp_company",
+        "sfp_cookie",
+        "sfp_countryname",
+        "sfp_creditcard",
+        "sfp_email",
+        "sfp_errors",
+        "sfp_ethereum",
+        "sfp_filemeta",
+        "sfp_hashes",
+        "sfp_iban",
+        "sfp_names",
+        "sfp_pageinfo",
+        "sfp_phone",
+        "sfp_webanalytics"
+    ]
+
     test_tlds = "// ===BEGIN ICANN DOMAINS===\n\ncom\nnet\norg\n\n// // ===END ICANN DOMAINS===\n"
 
     def test_init_argument_options_of_invalid_type_should_raise_TypeError(self):
@@ -375,7 +393,18 @@ class TestSpiderFoot(unittest.TestCase):
         target_type = sf.targetType('""')
         self.assertEqual(None, target_type)
 
-    def test_modules_producing(self):
+    def test_modulesProducing_argument_events_should_return_a_list(self):
+        """
+        Test modulesProducing(self, events)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        events = ['IP_ADDRESS', 'DOMAIN_NAME', 'INTERNET_NAME']
+
+        modules_producing = sf.modulesProducing(events)
+        self.assertIsInstance(modules_producing, list)
+
+    def test_modulesProducing_argument_events_with_empty_value_should_return_a_list(self):
         """
         Test modulesProducing(self, events)
         """
@@ -384,7 +413,18 @@ class TestSpiderFoot(unittest.TestCase):
         modules_producing = sf.modulesProducing(list())
         self.assertIsInstance(modules_producing, list)
 
-    def test_modules_consuming(self):
+    def test_modulesConsuming_argument_events_should_return_a_list(self):
+        """
+        Test modulesConsuming(self, events)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        events = ['IP_ADDRESS', 'DOMAIN_NAME', 'INTERNET_NAME']
+
+        modules_consuming = sf.modulesConsuming(events)
+        self.assertIsInstance(modules_consuming, list)
+
+    def test_modulesConsuming_argument_events_with_empty_value_should_return_a_list(self):
         """
         Test modulesConsuming(self, events)
         """
@@ -393,22 +433,40 @@ class TestSpiderFoot(unittest.TestCase):
         modules_consuming = sf.modulesConsuming(list())
         self.assertIsInstance(modules_consuming, list)
 
-    def test_events_from_modules(self):
+    def test_eventsFromModules_argument_modules_with_empty_value_should_return_a_list(self):
         """
         Test eventsFromModules(self, modules)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
         events_from_modules = sf.eventsFromModules(list())
         self.assertIsInstance(events_from_modules, list)
 
-    def test_events_to_modules(self):
+    def test_eventsFromModules_argument_modules_should_return_events(self):
+        """
+        Test eventsFromModules(self, modules)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        events_from_modules = sf.eventsFromModules(self.default_modules)
+        self.assertIsInstance(events_from_modules, list)
+
+    def test_eventsToModules_argument_modules_with_empty_value_should_return_a_list(self):
         """
         Test eventsToModules(self, modules)
         """
-        sf = SpiderFoot(dict())
+        sf = SpiderFoot(self.default_options)
 
         events_to_modules = sf.eventsToModules(list())
+        self.assertIsInstance(events_to_modules, list)
+
+    def test_eventsToModules_argument_modules_should_return_events(self):
+        """
+        Test eventsToModules(self, modules)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        events_to_modules = sf.eventsToModules(self.default_modules)
         self.assertIsInstance(events_to_modules, list)
 
     def test_url_relative_to_absolute_should_return_a_string(self):

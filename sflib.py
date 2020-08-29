@@ -707,18 +707,20 @@ class SpiderFoot:
             for opt in opts['__modules__'][mod]['opts']:
                 if opt.startswith('_') and filterSystem:
                     continue
-                mod_opt = opts['__modules__'][mod]['opts'][opt]
 
-                if isinstance(mod_opt, (int, str)):
-                    storeopts[mod + ":" + opt] = mod_opt
+                mod_opt = f"{mod}:{opt}"
+                mod_opt_val = opts['__modules__'][mod]['opts'][opt]
 
-                if isinstance(mod_opt, bool):
-                    if mod_opt:
-                        storeopts[mod + ":" + opt] = 1
+                if isinstance(mod_opt_val, (int, str)):
+                    storeopts[mod_opt] = mod_opt_val
+
+                if isinstance(mod_opt_val, bool):
+                    if mod_opt_val:
+                        storeopts[mod_opt] = 1
                     else:
-                        storeopts[mod + ":" + opt] = 0
-                if isinstance(mod_opt, list):
-                    storeopts[mod + ":" + opt] = ','.join(str(x) for x in mod_opt)
+                        storeopts[mod_opt] = 0
+                if isinstance(mod_opt_val, list):
+                    storeopts[mod_opt] = ','.join(str(x) for x in mod_opt_val)
 
         return storeopts
 
@@ -855,17 +857,25 @@ class SpiderFoot:
         if not events:
             return modlist
 
-        for mod in list(self.opts['__modules__'].keys()):
-            if self.opts['__modules__'][mod]['provides'] is None:
+        loaded_modules = self.opts.get('__modules__')
+
+        if not loaded_modules:
+            return modlist
+
+        for mod in list(loaded_modules.keys()):
+            provides = loaded_modules[mod].get('provides')
+
+            if not provides:
                 continue
 
-            for evtype in self.opts['__modules__'][mod]['provides']:
-                if evtype in events and mod not in modlist:
-                    modlist.append(mod)
-                if "*" in events and mod not in modlist:
+            if "*" in events:
+                modlist.append(mod)
+
+            for evtype in provides:
+                if evtype in events:
                     modlist.append(mod)
 
-        return modlist
+        return list(set(modlist))
 
     def modulesConsuming(self, events):
         """Return an array of modules that consume the list of types supplied.
@@ -881,18 +891,26 @@ class SpiderFoot:
         if not events:
             return modlist
 
-        for mod in list(self.opts['__modules__'].keys()):
-            if self.opts['__modules__'][mod]['consumes'] is None:
+        loaded_modules = self.opts.get('__modules__')
+
+        if not loaded_modules:
+            return modlist
+
+        for mod in list(loaded_modules.keys()):
+            consumes = loaded_modules[mod].get('consumes')
+
+            if not consumes:
                 continue
 
-            if "*" in self.opts['__modules__'][mod]['consumes'] and mod not in modlist:
+            if "*" in consumes:
                 modlist.append(mod)
+                continue
 
-            for evtype in self.opts['__modules__'][mod]['consumes']:
-                if evtype in events and mod not in modlist:
+            for evtype in consumes:
+                if evtype in events:
                     modlist.append(mod)
 
-        return modlist
+        return list(set(modlist))
 
     def eventsFromModules(self, modules):
         """Return an array of types that are produced by the list of modules supplied.
@@ -908,10 +926,16 @@ class SpiderFoot:
         if not modules:
             return evtlist
 
+        loaded_modules = self.opts.get('__modules__')
+
+        if not loaded_modules:
+            return evtlist
+
         for mod in modules:
-            if mod in list(self.opts['__modules__'].keys()):
-                if self.opts['__modules__'][mod]['provides'] is not None:
-                    for evt in self.opts['__modules__'][mod]['provides']:
+            if mod in list(loaded_modules.keys()):
+                provides = loaded_modules[mod].get('provides')
+                if provides:
+                    for evt in provides:
                         evtlist.append(evt)
 
         return evtlist
@@ -930,10 +954,16 @@ class SpiderFoot:
         if not modules:
             return evtlist
 
+        loaded_modules = self.opts.get('__modules__')
+
+        if not loaded_modules:
+            return evtlist
+
         for mod in modules:
-            if mod in list(self.opts['__modules__'].keys()):
-                if self.opts['__modules__'][mod]['consumes'] is not None:
-                    for evt in self.opts['__modules__'][mod]['consumes']:
+            if mod in list(loaded_modules.keys()):
+                consumes = loaded_modules[mod].get('consumes')
+                if consumes:
+                    for evt in consumes:
                         evtlist.append(evt)
 
         return evtlist
