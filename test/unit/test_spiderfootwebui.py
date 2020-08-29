@@ -67,7 +67,6 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
                 if hasattr(sfModules[modName]['object'], 'optdescs'):
                     sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
 
-
         default_config['__modules__'] = sfModules
 
         conf = {
