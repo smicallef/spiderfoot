@@ -750,6 +750,34 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(valid_ip_network, bool)
         self.assertTrue(valid_ip_network)
 
+    def test_isPublicIpAddress_should_return_a_boolean(self):
+        """
+        Test isPublicIpAddress(self, ip)
+        """
+        sf = SpiderFoot(dict())
+
+        self.assertTrue(sf.isPublicIpAddress('1.1.1.1'))
+
+        ips = [
+            'invalid ip address',
+            '0.0.0.0',
+            '127.0.0.1',
+            '10.1.1.1',
+            '172.16.1.1',
+            '192.168.1.1',
+            '255.240.0.0',
+            '172.31.255.255',
+            '224.0.1.0',
+            '255.255.255.255',
+            '169.254.0.1',
+            '253.0.0.1',
+            '::1',
+            'ff00::1',
+        ]
+        for ip in ips:
+            with self.subTest(ip=ip):
+                self.assertFalse(sf.isPublicIpAddress(ip))
+
     def test_valid_email_should_return_a_boolean(self):
         """
         Test validEmail(self, email)

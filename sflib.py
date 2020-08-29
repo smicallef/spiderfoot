@@ -1254,6 +1254,33 @@ class SpiderFoot:
         except BaseException:
             return False
 
+    def isPublicIpAddress(self, ip):
+        """Check if an IP address is public.
+
+        Args:
+            ip (str): IP address
+
+        Returns:
+            bool: IP address is public
+        """
+        if not isinstance(ip, (str, netaddr.IPAddress)):
+            return False
+        if not self.validIP(ip) and not self.validIP6(ip):
+            return False
+
+        if not netaddr.IPAddress(ip).is_unicast():
+            return False
+
+        if netaddr.IPAddress(ip).is_loopback():
+            return False
+        if netaddr.IPAddress(ip).is_reserved():
+            return False
+        if netaddr.IPAddress(ip).is_multicast():
+            return False
+        if netaddr.IPAddress(ip).is_private():
+            return False
+        return True
+
     def normalizeDNS(self, res):
         """Clean DNS results to be a simple list
 
