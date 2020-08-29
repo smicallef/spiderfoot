@@ -37,7 +37,6 @@ class TestModulepsbdmp(unittest.TestCase):
       '__logstdout': False
     }
 
-    @unittest.skip("todo")
     def test_opts(self):
         module = sfp_psbdmp()
         self.assertEqual(len(module.opts), len(module.optdescs))
