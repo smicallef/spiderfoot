@@ -222,7 +222,7 @@ class sfp_grep_app(SpiderFootPlugin):
                 return None
 
             if self.opts['dns_resolve'] and not self.sf.resolveHost(host):
-                self.sf.debug("Host " + host + " could not be resolved")
+                self.sf.debug(f"Host {host} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
                 self.notifyListeners(evt)
                 continue
