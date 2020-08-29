@@ -721,13 +721,25 @@
             });
         }
 
-        if ("${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "STARTED" || "${status}" == "UNKNOWN" || "${status}" == "INITIALIZING") {
+        if ("${status}" == "CREATED" || "${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "STARTED" || "${status}" == "UNKNOWN" || "${status}" == "INITIALIZING") {
             scanSummaryView("${id}");
         } else {
             browseEventList("${id}");
         }
 
-        setInterval(function() {
+        var refreshSummaryInterval;
+
+        refreshSummary = function() {
+            var status = document.getElementById("scanstatusbadge").innerHTML;
+
+            if (status == "ERROR-FAILED" || status == "FINISHED" || status == "ABORTED") {
+                console.log("Scan is " + status);
+                clearInterval(refreshSummaryInterval);
+                return;
+            }
+
+            console.log("Scan is " + status + ". Refreshing scan summary ...");
+
             for (var i = 0; i < dataloaders.length; i++) {
                 if (!loadersrunning) {
                     loadersrunning = true;
@@ -735,7 +747,9 @@
                     loadersrunning = false;
                 }
             }
-        }, 5000);
+        }
+
+        refreshSummaryInterval = setInterval(refreshSummary, 5000);
 
     </script>
 <iframe class="hidden" id='exportframe'>
