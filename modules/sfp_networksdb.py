@@ -17,7 +17,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_networksdb(SpiderFootPlugin):
-    """NetworksDB:Footprint,Investigate,Passive:Passive DNS:apikey:Search NetworksDB.io API for IP address and domain information."""
 
     meta = {
         'name': "NetworksDB",

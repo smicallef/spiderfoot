@@ -15,7 +15,6 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_names(SpiderFootPlugin):
-    """Human Name Extractor:Footprint,Passive:Content Analysis:errorprone:Attempt to identify human names in fetched content."""
 
     meta = {
         'name': "Human Name Extractor",

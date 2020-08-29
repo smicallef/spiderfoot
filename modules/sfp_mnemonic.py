@@ -17,7 +17,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_mnemonic(SpiderFootPlugin):
-    """Mnemonic PassiveDNS:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from PassiveDNS.mnemonic.no."""
 
     meta = {
         'name': "Mnemonic PassiveDNS",

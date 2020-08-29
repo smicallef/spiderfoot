@@ -26,7 +26,6 @@ malchecks = {
 
 
 class sfp_openphish(SpiderFootPlugin):
-    """OpenPhish:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to OpenPhish.com."""
 
     meta = {
         'name': "OpenPhish",

@@ -15,7 +15,6 @@ from datetime import datetime
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_fullcontact(SpiderFootPlugin):
-    """FullContact:Footprint,Investigate,Passive:Search Engines:apikey:Gather domain and e-mail information from fullcontact.com."""
 
     meta = {
         'name': "FullContact",

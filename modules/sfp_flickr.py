@@ -21,7 +21,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_flickr(SpiderFootPlugin):
-    """Flickr:Footprint,Investigate,Passive:Social Media::Search Flickr for domains, URLs and emails related to the specified domain."""
 
     meta = {
         'name': "Flickr",

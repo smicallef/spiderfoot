@@ -16,7 +16,6 @@ from netaddr import IPNetwork
 import json
 
 class sfp_spur(SpiderFootPlugin):
-    """spur.us:Investigate,Passive:Reputation Systems:apikey:Obtain information about any malicious activities involving IP addresses found"""
 
     meta = {
         'name': "spur.us",

@@ -25,7 +25,6 @@ malchecks = {
 
 
 class sfp_blocklistde(SpiderFootPlugin):
-    """blocklist.de:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to blocklist.de."""
 
     meta = {
         'name': "blocklist.de",

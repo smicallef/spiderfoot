@@ -25,7 +25,6 @@ malchecks = {
 }
 
 class sfp_customfeed(SpiderFootPlugin):
-    """Custom Threat Feed:Investigate,Passive:Reputation Systems::Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed."""
 
     meta = {
         'name': "Custom Threat Feed",

@@ -17,7 +17,6 @@ import os.path
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_whatweb(SpiderFootPlugin):
-    """Tool - WhatWeb:Footprint,Investigate:Content Analysis:tool:Identify what software is in use on the specified website."""
 
     meta = {
         'name': "Tool - WhatWeb",

@@ -18,7 +18,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_intelx(SpiderFootPlugin):
-    """IntelligenceX:Investigate,Passive:Search Engines:apikey:Obtain information from IntelligenceX about identified IP addresses, domains, e-mail addresses and phone numbers."""
 
     meta = {
         'name': "IntelligenceX",

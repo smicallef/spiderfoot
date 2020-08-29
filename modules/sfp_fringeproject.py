@@ -18,7 +18,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_fringeproject(SpiderFootPlugin):
-    """Fringe Project:Investigate,Footprint,Passive:Search Engines::Obtain network information from Fringe Project API."""
 
     meta = {
         'name': "Fringe Project",

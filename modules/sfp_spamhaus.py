@@ -17,7 +17,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_spamhaus(SpiderFootPlugin):
-    """Spamhaus:Investigate,Passive:Reputation Systems::Query the Spamhaus databases for open relays, open proxies, vulnerable servers, etc."""
 
     meta = {
         'name': "Spamhaus",

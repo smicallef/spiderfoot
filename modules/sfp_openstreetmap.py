@@ -18,7 +18,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_openstreetmap(SpiderFootPlugin):
-    """OpenStreetMap:Footprint,Investigate,Passive:Real World::Retrieves latitude/longitude coordinates for physical addresses from OpenStreetMap API."""
 
     meta = {
         'name': "OpenStreetMap",

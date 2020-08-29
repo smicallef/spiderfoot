@@ -15,7 +15,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sslcert(SpiderFootPlugin):
-    """SSL Certificate Analyzer:Footprint,Investigate:Crawling and Scanning::Gather information about SSL certificates used by the target's HTTPS sites."""
 
     meta = {
         'name': "SSL Certificate Analyzer",

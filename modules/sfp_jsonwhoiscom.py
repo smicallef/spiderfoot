@@ -16,7 +16,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_jsonwhoiscom(SpiderFootPlugin):
-    """JsonWHOIS.com:Footprint,Investigate,Passive:Search Engines:apikey:Search JsonWHOIS.com for WHOIS records associated with a domain."""
 
     meta = {
         'name': "JsonWHOIS.com",

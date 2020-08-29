@@ -19,7 +19,6 @@ import dns.rdatatype
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsraw(SpiderFootPlugin):
-    """DNS Raw Records:Footprint,Investigate,Passive:DNS::Retrieves raw DNS records such as MX, TXT and others."""
 
     meta = {
         'name': "DNS Raw Records",

@@ -16,7 +16,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_spider(SpiderFootPlugin):
-    """Web Spider:Footprint,Investigate:Crawling and Scanning:slow:Spidering of web-pages to extract content for searching."""
 
     meta = {
         'name': "Web Spider",

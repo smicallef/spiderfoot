@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlemaps(SpiderFootPlugin):
-    """Google Maps:Footprint,Investigate,Passive:Real World:apikey:Identifies potential physical addresses and latitude/longitude coordinates."""
 
     meta = {
         'name': "Google Maps",

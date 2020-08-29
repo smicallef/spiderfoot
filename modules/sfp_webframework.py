@@ -27,7 +27,6 @@ regexps = dict({
 })
 
 class sfp_webframework(SpiderFootPlugin):
-    """Web Framework Identifier:Footprint,Passive:Content Analysis::Identify the usage of popular web frameworks like jQuery, YUI and others."""
 
     meta = {
         'name': "Web Framework Identifier",

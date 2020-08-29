@@ -14,7 +14,6 @@ import string
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_binstring(SpiderFootPlugin):
-    """Binary String Extractor:Footprint:Content Analysis:errorprone:Attempt to identify strings in binary content."""
 
     meta = {
         'name': "Binary String Extractor",

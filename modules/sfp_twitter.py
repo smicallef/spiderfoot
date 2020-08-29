@@ -14,7 +14,6 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_twitter(SpiderFootPlugin):
-    """Twitter:Footprint,Investigate,Passive:Social Media::Gather name and location from Twitter profiles."""
 
     meta = {
         'name': "Twitter",

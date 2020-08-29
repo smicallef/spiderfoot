@@ -15,7 +15,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_wigle(SpiderFootPlugin):
-    """WiGLE:Footprint,Investigate,Passive:Secondary Networks:apikey:Query WiGLE to identify nearby WiFi access points."""
 
     meta = {
         'name': "WiGLE",

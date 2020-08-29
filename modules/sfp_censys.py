@@ -18,7 +18,6 @@ from netaddr import IPNetwork
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_censys(SpiderFootPlugin):
-    """Censys:Investigate,Passive:Search Engines:apikey:Obtain information from Censys.io"""
 
     meta = {
         'name': "Censys",

@@ -17,7 +17,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_emailcrawlr(SpiderFootPlugin):
-    """EmailCrawlr:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailCrawlr for email addresses and phone numbers associated with a domain."""
 
     meta = {
         'name': "EmailCrawlr",

@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_googlesafebrowsing(SpiderFootPlugin):
-    """Google SafeBrowsing:Investigate,Passive:Reputation Systems:apikey:Check if the URL is included on any of the Safe Browsing lists"""
 
     meta = {
         "name": "Google SafeBrowsing",

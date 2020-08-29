@@ -52,14 +52,16 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
                 sfModules[modName] = dict()
                 mod = __import__('modules.' + modName, globals(), locals(), [modName])
                 sfModules[modName]['object'] = getattr(mod, modName)()
-                sfModules[modName]['name'] = sfModules[modName]['object'].__doc__.split(":", 5)[0]
-                sfModules[modName]['meta'] = sfModules[modName]['object'].meta
-                sfModules[modName]['cats'] = sfModules[modName]['object'].__doc__.split(":", 5)[1].split(",")
-                sfModules[modName]['group'] = sfModules[modName]['object'].__doc__.split(":", 5)[2]
-                sfModules[modName]['labels'] = sfModules[modName]['object'].__doc__.split(":", 5)[3].split(",")
-                sfModules[modName]['descr'] = sfModules[modName]['object'].__doc__.split(":", 5)[4]
+                sfModules[modName]['name'] = sfModules[modName]['object'].meta['name']
+                sfModules[modName]['cats'] = sfModules[modName]['object'].meta.get('categories', list())
+                sfModules[modName]['group'] = sfModules[modName]['object'].meta.get('useCases', list())
+                if len(sfModules[modName]['cats']) > 1:
+                    raise ValueError(f"Module {modName} has multiple categories defined but only one is supported.")
+                sfModules[modName]['labels'] = sfModules[modName]['object'].meta.get('flags', list())
+                sfModules[modName]['descr'] = sfModules[modName]['object'].meta['summary']
                 sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
                 sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
+                sfModules[modName]['meta'] = sfModules[modName]['object'].meta
                 if hasattr(sfModules[modName]['object'], 'opts'):
                     sfModules[modName]['opts'] = sfModules[modName]['object'].opts
                 if hasattr(sfModules[modName]['object'], 'optdescs'):

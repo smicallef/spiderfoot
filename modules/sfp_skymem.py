@@ -17,7 +17,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_skymem(SpiderFootPlugin):
-    """Skymem:Footprint,Investigate,Passive:Search Engines::Look up e-mail addresses on Skymem."""
 
     meta = {
         'name': "Skymem",

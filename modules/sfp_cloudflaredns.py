@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_cloudflaredns(SpiderFootPlugin):
-    """CloudFlare Malware DNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by CloudFlare Malware-blocking DNS"""
 
     meta = {
         'name': "CloudFlare Malware DNS",

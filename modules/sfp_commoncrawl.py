@@ -18,7 +18,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_commoncrawl(SpiderFootPlugin):
-    """CommonCrawl:Footprint,Passive:Search Engines::Searches for URLs found through CommonCrawl.org."""
 
     meta = {
         'name': "CommonCrawl",

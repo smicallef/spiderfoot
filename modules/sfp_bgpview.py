@@ -15,7 +15,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_bgpview(SpiderFootPlugin):
-    """BGPView:Investigate,Footprint,Passive:Search Engines::Obtain network information from BGPView API."""
 
     meta = {
         'name': "BGPView",

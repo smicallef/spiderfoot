@@ -15,7 +15,6 @@ import base64
 import json
 
 class sfp_twilio(SpiderFootPlugin):
-    """Twilio:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio."""
 
     meta = {
         'name': "Twilio",

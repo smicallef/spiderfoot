@@ -31,7 +31,6 @@ malchecks = {
 }
 
 class sfp_coinblocker(SpiderFootPlugin):
-    """CoinBlocker Lists:Investigate,Passive:Reputation Systems::Check if a host/domain or IP appears on CoinBlocker lists."""
 
     meta = {
         'name': "CoinBlocker Lists",

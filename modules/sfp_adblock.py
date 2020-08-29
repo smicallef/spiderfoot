@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_adblock(SpiderFootPlugin):
-    """AdBlock Check:Investigate,Passive:Reputation Systems::Check if linked pages would be blocked by AdBlock Plus."""
 
     meta = {
         'name': "AdBlock Check",

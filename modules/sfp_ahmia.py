@@ -16,7 +16,6 @@ import re
 
 
 class sfp_ahmia(SpiderFootPlugin):
-    """Ahmia:Footprint,Investigate:Search Engines::Search Tor 'Ahmia' search engine for mentions of the target domain."""
 
     meta = {
         'name': "Ahmia",

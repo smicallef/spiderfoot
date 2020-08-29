@@ -17,7 +17,6 @@ import urllib.request, urllib.parse, urllib.error
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_open_passive_dns_database(SpiderFootPlugin):
-    """Open Passive DNS Database:Footprint,Investigate,Passive:Passive DNS::Obtain passive DNS information from pdns.daloo.de Open passive DNS database."""
 
     meta = {
         'name': "Open Passive DNS Database",

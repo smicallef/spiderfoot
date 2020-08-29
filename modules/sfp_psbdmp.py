@@ -15,7 +15,6 @@ import json
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_psbdmp(SpiderFootPlugin):
-    """Psbdmp:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains."""
 
     meta = {
         'name': "Psbdmp",

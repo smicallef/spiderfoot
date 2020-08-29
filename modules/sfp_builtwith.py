@@ -15,7 +15,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_builtwith(SpiderFootPlugin):
-    """BuiltWith:Footprint,Investigate,Passive:Search Engines:apikey:Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more."""
 
     meta = {
         'name': "BuiltWith",

@@ -17,7 +17,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_pastebin(SpiderFootPlugin):
-    """PasteBin:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:PasteBin scraping (via Google) to identify related content."""
 
     meta = {
         'name': "PasteBin",

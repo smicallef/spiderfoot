@@ -16,7 +16,6 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_ethereum(SpiderFootPlugin):
-    """Ethereum Address Extractor:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
 
     meta = {
         'name': "Ethereum Address Extractor",

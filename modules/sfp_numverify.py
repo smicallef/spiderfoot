@@ -16,7 +16,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_numverify(SpiderFootPlugin):
-    """numverify:Footprint,Investigate,Passive:Real World:apikey:Lookup phone number location and carrier information from numverify.com."""
 
     meta = {
         'name': "numverify",

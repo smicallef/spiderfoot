@@ -13,7 +13,6 @@
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_badipscom(SpiderFootPlugin):
-    """badips.com:Investigate,Passive:Reputation Systems::Check if an IP address is malicious according to BadIPs.com."""
 
     meta = {
         'name': "badips.com",

@@ -26,7 +26,6 @@ malchecks = {
 
 
 class sfp_phishtank(SpiderFootPlugin):
-    """PhishTank:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to PhishTank."""
 
     meta = {
         'name': "PhishTank",

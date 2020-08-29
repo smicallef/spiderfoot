@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_comodo(SpiderFootPlugin):
-    """Comodo:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Comodo DNS"""
 
     meta = {
         'name': "Comodo",

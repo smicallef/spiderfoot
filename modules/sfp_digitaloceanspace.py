@@ -16,7 +16,6 @@ import time
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_digitaloceanspace(SpiderFootPlugin):
-    """Digital Ocean Space Finder:Footprint,Passive:Crawling and Scanning::Search for potential Digital Ocean Spaces associated with the target and attempt to list their contents."""
 
     meta = {
         'name': "Digital Ocean Space Finder",

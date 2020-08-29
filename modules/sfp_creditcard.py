@@ -14,7 +14,6 @@
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_creditcard(SpiderFootPlugin):
-    """Credit Card Number Extractor:Footprint,Investigate,Passive:Content Analysis::Identify Credit Card Numbers in any data"""
 
     meta = {
         'name': "Credit Card Number Extractor",

@@ -18,7 +18,6 @@ import dns.resolver
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tldsearch(SpiderFootPlugin):
-    """TLD Searcher:Footprint:DNS:slow:Search all Internet TLDs for domains with the same name as the target (this can be very slow.)"""
 
     meta = {
         'name': "TLD Searcher",

@@ -18,7 +18,6 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_crossref(SpiderFootPlugin):
-    """Cross-Referencer:Footprint:Crawling and Scanning::Identify whether other domains are associated ('Affiliates') of the target."""
 
     meta = {
         'name': "Cross-Referencer",

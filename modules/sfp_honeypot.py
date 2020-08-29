@@ -16,7 +16,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_honeypot(SpiderFootPlugin):
-    """Honeypot Checker:Investigate,Passive:Reputation Systems:apikey:Query the projecthoneypot.org database for entries."""
 
     meta = {
         'name': "Honeypot Checker",

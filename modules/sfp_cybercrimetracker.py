@@ -26,7 +26,6 @@ malchecks = {
 
 
 class sfp_cybercrimetracker(SpiderFootPlugin):
-    """cybercrime-tracker.net:Investigate,Passive:Reputation Systems::Check if a host/domain or IP is malicious according to cybercrime-tracker.net."""
 
     meta = {
         'name': "cybercrime-tracker.net",

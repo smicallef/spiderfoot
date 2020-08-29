@@ -17,7 +17,6 @@ import phonenumbers
 from phonenumbers.phonenumberutil import region_code_for_country_code
 
 class sfp_countryname(SpiderFootPlugin):
-    """Country Name Extractor:Footprint,Investigate,Passive:Content Analysis::Identify country names in any obtained data."""
 
     meta = {
         'name': "Country Name Extractor",

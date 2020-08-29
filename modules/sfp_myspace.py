@@ -14,7 +14,6 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_myspace(SpiderFootPlugin):
-    """MySpace:Footprint,Investigate,Passive:Social Media::Gather username and location from MySpace.com profiles."""
 
     meta = {
         'name': "MySpace",

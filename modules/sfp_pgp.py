@@ -16,7 +16,6 @@ import re
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_pgp(SpiderFootPlugin):
-    """PGP Key Servers:Footprint,Investigate,Passive:Public Registries::Look up e-mail addresses in PGP public key servers."""
 
     meta = {
         'name': "PGP Key Servers",

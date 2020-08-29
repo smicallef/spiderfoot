@@ -25,7 +25,6 @@ malchecks = {
 
 
 class sfp_talosintel(SpiderFootPlugin):
-    """Talos Intelligence:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to talosintelligence.com."""
 
     meta = {
         'name': "Talos Intelligence",

@@ -16,7 +16,6 @@ from netaddr import IPNetwork
 from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_tool_nmap(SpiderFootPlugin):
-    """Tool - Nmap:Footprint,Investigate:Crawling and Scanning:tool,slow,invasive:Identify what Operating System might be used."""
 
     meta = {
         'name': "Tool - Nmap",
