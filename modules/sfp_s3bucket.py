@@ -69,13 +69,21 @@ class sfp_s3bucket(SpiderFootPlugin):
     def checkSite(self, url):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
-        if res['code'] not in ["301", "302", "200"] and (res['content'] is None or "NoSuchBucket" in res['content']):
-            self.sf.debug("Not a valid bucket: " + url)
-        else:
+        if not res['content']:
+            return None
+
+        if "NoSuchBucket" in res['content']:
+            self.sf.debug(f"Not a valid bucket: {url}")
+            return None
+
+        # Bucket found
+        if res['code'] in ["301", "302", "200"]:
+            # Bucket has files
             if "ListBucketResult" in res['content']:
                 with self.lock:
                     self.s3results[url] = res['content'].count("<Key>")
             else:
+                # Bucket has no files
                 with self.lock:
                     self.s3results[url] = 0
 
