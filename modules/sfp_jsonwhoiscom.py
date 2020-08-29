@@ -221,7 +221,8 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
                 phone = phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "").replace(".", "")
                 phones.append(phone)
 
-            location = ', '.join([_f for _f in [contact.get('address'), contact.get('city'), contact.get('state'), contact.get('zip'), contact.get('country_code')] if _f])
+            country = self.sf.countryNameFromCountryCode(contact.get('country_code'))
+            location = ', '.join([_f for _f in [contact.get('address'), contact.get('city'), contact.get('state'), contact.get('zip'), country] if _f])
             if location:
                 locations.append(location)
 

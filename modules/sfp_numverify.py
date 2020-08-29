@@ -157,7 +157,8 @@ class sfp_numverify(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         if data.get('country_code'):
-            location = ', '.join([_f for _f in [data.get('location'), data.get('country_code')] if _f])
+            country = self.sf.countryNameFromCountryCode(data.get('country_code'))
+            location = ', '.join([_f for _f in [data.get('location'), country] if _f])
             evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(evt)
         else:
