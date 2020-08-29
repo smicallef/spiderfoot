@@ -235,18 +235,18 @@ class sfp_spyse(SpiderFootPlugin):
     # Report extra data in the record
     def reportExtraData(self, record, event):
         operatingSystem = record.get('operation_system')
-        if operatingSystem is not None:
-            evt = SpiderFootEvent('OPERATING_SYSTEM', str(operatingSystem), self.__name__, event)
+        if operatingSystem:
+            evt = SpiderFootEvent('OPERATING_SYSTEM', operatingSystem, self.__name__, event)
             self.notifyListeners(evt)
 
         webServer = record.get('product')
-        if webServer is not None:
-            evt = SpiderFootEvent('WEBSERVER_BANNER', str(webServer), self.__name__, event)
+        if webServer:
+            evt = SpiderFootEvent('WEBSERVER_BANNER', webServer, self.__name__, event)
             self.notifyListeners(evt)
 
         httpHeaders = record.get('http_headers')
-        if httpHeaders is not None:
-            evt = SpiderFootEvent('WEBSERVER_HTTPHEADERS', str(httpHeaders), self.__name__, event)
+        if httpHeaders:
+            evt = SpiderFootEvent('WEBSERVER_HTTPHEADERS', httpHeaders, self.__name__, event)
             self.notifyListeners(evt)
 
     # Handle events sent to this module

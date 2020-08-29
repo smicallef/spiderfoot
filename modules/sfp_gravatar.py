@@ -53,7 +53,6 @@ class sfp_gravatar(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = 'Gravatar'
         self.results = self.tempStorage()
         self.reportedUsers = self.tempStorage()
 

@@ -47,7 +47,6 @@ class sfp_pgp(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "PGP Key Servers"
         self.results = self.tempStorage()
 
         for opt in list(userOpts.keys()):
