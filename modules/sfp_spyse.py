@@ -421,7 +421,7 @@ class sfp_spyse(SpiderFootPlugin):
                     continue
 
                 if self.opts['verify'] and not self.sf.resolveHost(domain):
-                    self.sf.debug("Host " + domain + " could not be resolved")
+                    self.sf.debug(f"Host {domain} could not be resolved")
                     evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
                     self.notifyListeners(evt)
                 else:

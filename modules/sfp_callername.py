@@ -96,7 +96,7 @@ class sfp_callername(SpiderFootPlugin):
             return None
 
         # Query CallerName.com for the specified phone number
-        url = 'https://callername.com/' + number
+        url = f"https://callername.com/{number}"
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
         time.sleep(1)
@@ -128,7 +128,7 @@ class sfp_callername(SpiderFootPlugin):
             bad_votes = int(rep_bad_match[0])
 
             if bad_votes > good_votes:
-                text = "CallerName [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"CallerName [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent('MALICIOUS_PHONE_NUMBER', text, self.__name__, event)
                 self.notifyListeners(evt)
 
