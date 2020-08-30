@@ -76,9 +76,9 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
 
         valid_use_cases = ["Footprint", "Passive", "Investigate"]
         valid_categories = ["Content Analysis", "Crawling and Scanning", "DNS",
-                             "Leaks, Dumps and Breaches", "Passive DNS",
-                             "Public Registries", "Real World", "Reputation Systems",
-                             "Search Engines", "Secondary Networks", "Social Media"]
+                            "Leaks, Dumps and Breaches", "Passive DNS",
+                            "Public Registries", "Real World", "Reputation Systems",
+                            "Search Engines", "Secondary Networks", "Social Media"]
 
         for module in sfModules:
             m = sfModules[module]

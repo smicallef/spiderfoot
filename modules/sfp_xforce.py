@@ -301,9 +301,12 @@ class sfp_xforce(SpiderFootPlugin):
                         if int(score) < 2:
                             self.sf.debug("Non-malicious results, skipping.")
                             continue
+
                         if cats is not None:
                             for cat in cats:
                                 cats_description = cats_description + cat + " "
+
+                        # TODO: use join with infield_sep as delimeter
                         entry = f"{reason}{infield_sep}{score}{infield_sep}{created}{infield_sep}{cats_description}"
                         e = SpiderFootEvent(evtType, entry, self.__name__, event)
                         self.notifyListeners(e)
@@ -326,29 +329,29 @@ class sfp_xforce(SpiderFootPlugin):
                         firstseen = result.get("first", "")
                         family = result.get("family", None)
                         family_description = ""
+
                         if family is not None:
                             for f in family:
                                 family_description = family_description + f + " "
-                        entry = origin + infield_sep + \
-                                    family_description + infield_sep + \
-                                    md5 + infield_sep + \
-                                    domain + infield_sep + \
-                                    uri + infield_sep + \
-                                    firstseen + infield_sep + \
-                                    lastseen
+
+                        # TODO: use join with infield_sep as delimeter
+                        entry = f"{origin}{infield_sep}{family_description}{infield_sep}{md5}{infield_sep}{domain}{infield_sep}{uri}{infield_sep}{firstseen}{infield_sep}{lastseen}"
 
                         last = rec.get("last", None)
+
                         if not last:
                             continue
+
                         last_dt = datetime.strptime(last, '%Y-%m-%dT%H:%M:%S.000Z')
                         last_ts = int(time.mktime(last_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                         host = rec['value']
+
                         if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
                             self.sf.debug("Record found but too old, skipping.")
                             continue
-                        else:
-                            e = SpiderFootEvent(evtType, entry, self.__name__, event)
-                            self.notifyListeners(e)
+
+                        e = SpiderFootEvent(evtType, entry, self.__name__, event)
+                        self.notifyListeners(e)
 
 # End of sfp_xforce class
