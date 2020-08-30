@@ -1414,8 +1414,7 @@ class TestSpiderFoot(unittest.TestCase):
         new_url = sf.removeUrlCreds(url)
         self.assertNotIn("secret", new_url)
 
-    @unittest.skip("todo")
-    def test_fetch_url(self):
+    def test_fetchUrl_argument_url_should_return_http_response_as_dict(self):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
@@ -1424,13 +1423,12 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        data = sf.fetchUrl(None)
-        self.assertEqual(data, None)
+        res = sf.fetchUrl("https://spiderfoot.net/")
+        self.assertIsInstance(res, dict)
+        self.assertEqual(res['code'], "200")
+        self.assertNotEqual(res['content'], None)
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
-    def test_fetch_url_invalid_url_should_return_none(self):
+    def test_fetchUrl_argument_headOnly_should_return_http_response_as_dict(self):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
@@ -1439,7 +1437,21 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        invalid_types = [None, "", list(), dict()]
+        res = sf.fetchUrl("https://spiderfoot.net/", headOnly=True)
+        self.assertIsInstance(res, dict)
+        self.assertEqual(res['code'], "301")
+        self.assertEqual(res['content'], None)
+
+    def test_fetchUrl_argument_url_invalid_type_should_return_none(self):
+        """
+        Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
+                 useragent="SpiderFoot", headers=None, noLog=False,
+                 postData=None, dontMangle=False, sizeLimit=None,
+                 headOnly=False, verify=False)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        invalid_types = [None, "", list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 res = sf.fetchUrl(invalid_type)

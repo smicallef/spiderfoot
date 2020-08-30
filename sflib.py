@@ -2455,6 +2455,9 @@ class SpiderFoot:
                  headOnly=False, verify=True):
         """Fetch a URL, return the response object."""
 
+        if not url:
+            return None
+
         result = {
             'code': None,
             'status': None,
@@ -2462,9 +2465,6 @@ class SpiderFoot:
             'headers': None,
             'realurl': url
         }
-
-        if url is None:
-            return None
 
         url = url.strip()
 
