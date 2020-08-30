@@ -56,7 +56,7 @@ SpiderFoot's 185+ modules feed each other in a publisher/subscriber model to ens
 - [Check for susceptibility to sub-domain hijacking](https://asciinema.org/a/344377)
 - DNS zone transfers
 - [Threat intelligence and Blacklist queries](https://asciinema.org/a/295949)
-- API integraiton with [SHODAN](https://asciinema.org/a/127601), [HaveIBeenPwned](https://asciinema.org/a/128731), [GreyNoise](https://asciinema.org/a/295943), AlienVault, SecurityTrails, etc.
+- API integration with [SHODAN](https://asciinema.org/a/127601), [HaveIBeenPwned](https://asciinema.org/a/128731), [GreyNoise](https://asciinema.org/a/295943), AlienVault, SecurityTrails, etc.
 - [Social media account enumeration](https://asciinema.org/a/295923)
 - [S3/Azure/Digitalocean bucket enumeration/scraping](https://asciinema.org/a/295941)
 - IP geo-location
@@ -77,7 +77,7 @@ To install and run SpiderFoot, you need at least Python 3.6 and a number of Pyth
 $ wget https://github.com/smicallef/spiderfoot/archive/v3.1.tar.gz
 $ tar zxvf v3.1.tar.gz
 $ cd spiderfoot
-$ pip3 install -r requirements.txt
+~/spiderfoot$ pip3 install -r requirements.txt
 ~/spiderfoot$ python3 ./sf.py -l 127.0.0.1:5001
 ```
 
