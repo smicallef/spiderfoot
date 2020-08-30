@@ -61,7 +61,7 @@ class sfp_template(SpiderFootPlugin):
             # Descriptive text about the tool
             'description': "Detailed descriptive text about the tool",
 
-            # The website for the tool. In many cases this will also be the
+            # The website URL for the tool. In many cases this will also be the
             # repo, but no harm in duplicating it.
             'website': 'https://tool.org',
 
@@ -72,7 +72,7 @@ class sfp_template(SpiderFootPlugin):
         # Information about the data source (if any) this module queries for data. For modules
         # that purley parse data from other modules (e.g. sfp_email), this may be omitted.
         'dataSource': {
-            # The primary website for the data source.
+            # The primary website URL for the data source.
             'website': "https://www.datasource.com",
 
             # The subscription model for this data source.
@@ -94,9 +94,10 @@ class sfp_template(SpiderFootPlugin):
             ],
 
             # If an API key is optional or required, information on how to obtain the API key.
-            # Each array element is a step.
+            # Each array element is a step. Ensure URLs are full URLs so they can be linked
+            # automatically in the UI.
             'apiKeyInstructions': [
-                "Visit www.datasource.com",
+                "Visit https://www.datasource.com",
                 "Register a free account",
                 "Click on 'Account Settings'",
                 "Click on 'Developer'",

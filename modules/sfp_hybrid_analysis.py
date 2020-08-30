@@ -23,7 +23,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
-            'website': "www.hybrid-analysis.com",
+            'website': "https://www.hybrid-analysis.com",
             'model': "FREE_AUTH_UNLIMITED",
             'references': [
                 "https://www.hybrid-analysis.com/knowledge-base",
