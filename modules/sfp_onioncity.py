@@ -144,8 +144,8 @@ class sfp_onioncity(SpiderFootPlugin):
             torlink = link.replace(".onion.link", ".onion")
             if self.opts['fetchlinks']:
                 res = self.sf.fetchUrl(torlink, timeout=self.opts['_fetchtimeout'],
-                                        useragent=self.opts['_useragent'],
-                                        verify=False)
+                                       useragent=self.opts['_useragent'],
+                                       verify=False)
 
                 if res['content'] is None:
                     self.sf.debug("Ignoring " + link + " as no data returned")
@@ -153,7 +153,7 @@ class sfp_onioncity(SpiderFootPlugin):
 
                 # Sometimes onion city search results false positives
                 if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                                r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                             r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                     self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
                     continue
 
@@ -169,7 +169,7 @@ class sfp_onioncity(SpiderFootPlugin):
 
                 data = res['content'][startIndex:endIndex]
                 evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + data + "...",
-                                        self.__name__, evt)
+                                      self.__name__, evt)
                 self.notifyListeners(evt)
             else:
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", torlink, self.__name__, event)

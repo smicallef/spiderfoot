@@ -130,7 +130,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
                 f = io.open(resultpath + "/" + eventData + "/cms.json", encoding='utf-8')
                 j = json.loads(f.read())
                 evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", j['cms_name'],
-                                       self.__name__, event)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
             except BaseException as e:
                 self.sf.error("Couldn't parse the JSON output of CMSeeK: " + str(e), False)

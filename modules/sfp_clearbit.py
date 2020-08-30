@@ -81,7 +81,7 @@ class sfp_clearbit(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["RAW_RIR_DATA", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
-                 "AFFILIATE_INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC"]
+                "AFFILIATE_INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC"]
 
     def query(self, t):
         ret = None

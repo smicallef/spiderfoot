@@ -137,7 +137,7 @@ class sfp_pastebin(SpiderFootPlugin):
                     return None
 
                 res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
-                                        useragent=self.opts['_useragent'])
+                                       useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
                     self.sf.debug("Ignoring " + link + " as no data returned")
@@ -145,7 +145,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
                 # Sometimes pastes search results false positives
                 if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                                r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                             r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                     continue
 
                 try:

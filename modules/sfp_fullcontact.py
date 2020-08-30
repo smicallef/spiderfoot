@@ -87,7 +87,7 @@ class sfp_fullcontact(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
-                 "PHONE_NUMBER", "GEOINFO", "PHYSICAL_ADDRESS"]
+                "PHONE_NUMBER", "GEOINFO", "PHYSICAL_ADDRESS"]
 
     def query(self, url, data, failcount=0):
         header = "Bearer " + self.opts['api_key']

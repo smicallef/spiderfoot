@@ -104,8 +104,7 @@ class sfp_accounts(SpiderFootPlugin):
             return None
 
         url = site['check_uri'].format(account=name)
-        retname = site['name'] + " (Category: " + site['category'] + ")\n<SFURL>" + \
-                url + "</SFURL>"
+        retname = f"{site['name']} (Category: {site['category']})\n<SFURL>{url}</SFURL>"
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'], noLog=True, verify=False)
