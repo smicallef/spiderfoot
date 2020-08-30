@@ -102,10 +102,10 @@ class sfp_badpackets(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://api.badpackets.net/v1/query?' + urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://api.badpackets.net/v1/query?' + urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         return self.parseAPIResponse(res)

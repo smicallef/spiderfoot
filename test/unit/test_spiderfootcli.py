@@ -28,9 +28,9 @@ class TestSpiderFootCli(unittest.TestCase):
 
     def execute(self, command):
         proc = subprocess.Popen(
-           command,
-           stdout=subprocess.PIPE,
-           stderr=subprocess.PIPE,
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         out, err = proc.communicate()
         return out, err, proc.returncode

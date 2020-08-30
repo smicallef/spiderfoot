@@ -90,10 +90,10 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          "https://jsonwhois.com/api/v1/whois?%s" % urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            "https://jsonwhois.com/api/v1/whois?%s" % urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])

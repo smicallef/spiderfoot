@@ -95,10 +95,10 @@ class sfp_phishstats(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://phishstats.info:2096/api/phishing?' + urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://phishstats.info:2096/api/phishing?' + urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         if not res['code'] == "200":
