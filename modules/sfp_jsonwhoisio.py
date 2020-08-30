@@ -13,17 +13,16 @@
 import json
 import time
 import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_jsonwhoisio(SpiderFootPlugin):
     """JsonWHOIS.io:Footprint,Investigate,Passive:Search Engines:apikey:Search JsonWHOIS.io for WHOIS records associated with a domain."""
-
     meta = {
         'name': "JsonWHOIS.io",
         'summary': "Search JsonWHOIS.io for WHOIS records associated with a domain.",
-        'flags': [ "apikey" ],
-        'useCases': [ "Footprint", "Investigate", "Passive" ],
-        'categories': [ "Search Engines" ]
+        'flags': ["apikey"],
+        'useCases': ["Footprint", "Investigate", "Passive"],
+        'categories': ["Search Engines"]
     }
 
     # Default options
@@ -64,19 +63,19 @@ class sfp_jsonwhoisio(SpiderFootPlugin):
         """Query domain WHOIS
         https://jsonwhois.io/docs
         """
-        params = {
-            "key" : self.opts["api_key"],
+        params = urllib.parse.urlencode({
+            "key": self.opts["api_key"],
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
-        }
+        })
         headers = {
-            "Accept" : "application/json",
+            "Accept": "application/json",
         }
-        
+
         res = self.sf.fetchUrl(
-          "https://api.jsonwhois.io/whois/domain?%s" % urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            f"https://api.jsonwhois.io/whois/domain?{params}",
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])
@@ -87,19 +86,19 @@ class sfp_jsonwhoisio(SpiderFootPlugin):
         """Query domain availability
         https://jsonwhois.io/docs
         """
-        params = {
-            "key" : self.opts["api_key"],
+        params = urllib.parse.urlencode({
+            "key": self.opts["api_key"],
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
-        }
+        })
         headers = {
-            "Accept" : "application/json",
+            "Accept": "application/json",
         }
-        
+
         res = self.sf.fetchUrl(
-          "https://api.jsonwhois.io/availability?%s" % urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            f"https://api.jsonwhois.io/availability?{params}",
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])
