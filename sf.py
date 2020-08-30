@@ -14,7 +14,7 @@
 import sys
 
 if sys.version_info < (3, 6):
-    print("SpiderFoot 3.1+ requires Python 3.6 or higher.")
+    print("SpiderFoot 3.2+ requires Python 3.6 or higher.")
     sys.exit(-1)
 
 import os
@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
     # Legacy way to run the server
     args = None
-    p = argparse.ArgumentParser(description='SpiderFoot 3.1: Open Source Intelligence Automation.')
+    p = argparse.ArgumentParser(description='SpiderFoot 3.2: Open Source Intelligence Automation.')
     p.add_argument("-d", "--debug", action='store_true', help="Enable debug output.")
     p.add_argument("-l", metavar="IP:port", help="IP and port to listen on.")
     p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")
