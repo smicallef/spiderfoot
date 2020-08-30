@@ -284,7 +284,7 @@ class sfp_spyse(SpiderFootPlugin):
 
     # Report extra data in the record
     def reportExtraData(self, record, event):
-        # TODO: review, is this key meant to be 'operating_system' ?
+        # Note: 'operation_system' is the correct key (not 'operating_system')
         operatingSystem = record.get('operation_system')
         if operatingSystem:
             evt = SpiderFootEvent('OPERATING_SYSTEM', operatingSystem, self.__name__, event)
