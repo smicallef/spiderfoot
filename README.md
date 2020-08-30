@@ -189,7 +189,7 @@ Host.io|Obtain information about domain names from host.io.|[https://host.io](ht
 Hosting Provider Identifier|Find out if any IP addresses identified fall within known 3rd party hosting ranges, e.g. Amazon, Azure, etc.|
 Human Name Extractor|Attempt to identify human names in fetched content.|
 Hunter.io|Check for e-mail addresses and names on hunter.io.|[https://hunter.io/](https://hunter.io/)
-Hybrid Analysis|Search Hybrid Analysis for domains and URLs related to the target.|[www.hybrid-analysis.com](www.hybrid-analysis.com)
+Hybrid Analysis|Search Hybrid Analysis for domains and URLs related to the target.|[https://www.hybrid-analysis.com](https://www.hybrid-analysis.com)
 IBAN Number Extractor|Identify IBAN Numbers in any data|
 Iknowwhatyoudownload.com|Check iknowwhatyoudownload.com for IP addresses that have been using BitTorrent.|[https://iknowwhatyoudownload.com/en/peer/](https://iknowwhatyoudownload.com/en/peer/)
 Instagram|Gather information from Instagram profiles.|[https://www.instagram.com/](https://www.instagram.com/)
