@@ -13,7 +13,7 @@ before_install:
   - python -m pip install --upgrade pip
 
 install:
-  - python -m pip install codecov pytest pytest-flake8 -r requirements_test.txt
+  - python -m pip install codecov -r requirements_test.txt
 
 script:
   - python -m pytest --flake8 --durations=5 --cov-report term --cov=. .
