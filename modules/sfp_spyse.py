@@ -92,9 +92,19 @@ class sfp_spyse(SpiderFootPlugin):
                 "RAW_RIR_DATA", "TCP_PORT_OPEN", "OPERATING_SYSTEM",
                 "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS"]
 
-    # Query Subdomains
-    # https://spyse.com/v3/data/tools/api#/domain/subdomain
     def querySubdomains(self, qry, currentOffset):
+        """Query subdomains of domain
+
+        https://spyse.com/v3/data/tools/api#/domain/subdomain
+
+        Args:
+            qry (str): domain name
+            currentOffset (int): start from this search result offset
+
+        Returns:
+            dict: JSON formatted results
+        """
+
         params = {
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'limit': self.limit,
@@ -106,19 +116,29 @@ class sfp_spyse(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://api.spyse.com/v3/data/domain/subdomain?' + urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://api.spyse.com/v3/data/domain/subdomain?' + urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])
 
         return self.parseAPIResponse(res)
 
-    # Query IP port lookup
-    # https://spyse.com/v3/data/tools/api#/ip/port_by_ip
     def queryIPPort(self, qry, currentOffset):
+        """Query IP port lookup
+
+        https://spyse.com/v3/data/tools/api#/ip/port_by_ip
+
+        Args:
+            qry (str): IP address
+            currentOffset (int): start from this search result offset
+
+        Returns:
+            dict: JSON formatted results
+        """
+
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'limit': self.limit,
@@ -129,19 +149,29 @@ class sfp_spyse(SpiderFootPlugin):
             'Authorization': "Bearer " + self.opts['api_key']
         }
         res = self.sf.fetchUrl(
-          'https://api.spyse.com/v3/data/ip/port?' + urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://api.spyse.com/v3/data/ip/port?' + urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])
 
         return self.parseAPIResponse(res)
 
-    # Query domains on IP
-    # https://spyse.com/v3/data/tools/api#/ip/domain_by_ip
     def queryDomainsOnIP(self, qry, currentOffset):
+        """Query domains on IP
+
+        https://spyse.com/v3/data/tools/api#/ip/domain_by_ip
+
+        Args:
+            qry (str): IP address
+            currentOffset (int): start from this search result offset
+
+        Returns:
+            dict: JSON formatted results
+        """
+
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'limit': self.limit,
@@ -152,20 +182,32 @@ class sfp_spyse(SpiderFootPlugin):
             'Authorization': "Bearer " + self.opts['api_key']
         }
         res = self.sf.fetchUrl(
-          'https://api.spyse.com/v3/data/ip/domain?' + urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://api.spyse.com/v3/data/ip/domain?' + urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])
 
         return self.parseAPIResponse(res)
 
-    # Query domains using domain as MX server
-    # https://spyse.com/v3/data/apidocs#/Domain%20related%20information/get_domains_using_as_mx
-    # Note: currently unused
     def queryDomainsAsMX(self, qry, currentOffset):
+        """Query domains using domain as MX server
+
+        https://spyse.com/v3/data/apidocs#/Domain%20related%20information/get_domains_using_as_mx
+
+        Note:
+            currently unused
+
+        Args:
+            qry (str): IP address
+            currentOffset (int): start from this search result offset
+
+        Returns:
+            dict: JSON formatted results
+        """
+
         params = {
             'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'limit': self.limit,
@@ -178,19 +220,28 @@ class sfp_spyse(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://api.spyse.com/v3/data/ip/mx?' + urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://api.spyse.com/v3/data/ip/mx?' + urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])
 
         return self.parseAPIResponse(res)
 
-    # Parse API response
-    # https://spyse.com/v3/data/apidocs
     def parseAPIResponse(self, res):
+        """Parse API response
+
+        https://spyse.com/v3/data/apidocs
+
+        Args:
+            res: TBD
+
+        Returns:
+            dict: JSON formatted results
+        """
+
         if res['code'] == '400':
             self.sf.error("Malformed request", False)
             return None
@@ -233,6 +284,7 @@ class sfp_spyse(SpiderFootPlugin):
 
     # Report extra data in the record
     def reportExtraData(self, record, event):
+        # TODO: review, is this key meant to be 'operating_system' ?
         operatingSystem = record.get('operation_system')
         if operatingSystem:
             evt = SpiderFootEvent('OPERATING_SYSTEM', operatingSystem, self.__name__, event)

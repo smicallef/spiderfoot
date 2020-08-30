@@ -105,10 +105,10 @@ class sfp_spur(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://api.spur.us/v1/context/' + ipAddr,
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://api.spur.us/v1/context/' + ipAddr,
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         code = res.get('code')

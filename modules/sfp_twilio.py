@@ -82,10 +82,10 @@ class sfp_twilio(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://lookups.twilio.com/v1/PhoneNumbers/' + phoneNumber + "?Type=caller-name",
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            f"https://lookups.twilio.com/v1/PhoneNumbers/{phoneNumber}?Type=caller-name",
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         if res['code'] == '400':

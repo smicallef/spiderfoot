@@ -75,10 +75,10 @@ class sfp_leakix(SpiderFootPlugin):
             "Accept": "application/json"
         }
         res = self.sf.fetchUrl(
-          'https://leakix.net/host/' + qry,
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://leakix.net/host/' + qry,
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])

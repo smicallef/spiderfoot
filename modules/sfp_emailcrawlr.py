@@ -91,10 +91,10 @@ class sfp_emailcrawlr(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          "https://api.emailcrawlr.com/v2/domain?%s" % urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            "https://api.emailcrawlr.com/v2/domain?%s" % urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])

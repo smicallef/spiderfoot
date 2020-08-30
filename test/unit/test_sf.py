@@ -10,32 +10,32 @@ class TestSf(unittest.TestCase):
     """
 
     default_types = [
-      ""
+        ""
     ]
 
     default_modules = [
-      "sfp_binstring",
-      "sfp_company",
-      "sfp_cookie",
-      "sfp_countryname",
-      "sfp_creditcard",
-      "sfp_email",
-      "sfp_errors",
-      "sfp_ethereum",
-      "sfp_filemeta",
-      "sfp_hashes",
-      "sfp_iban",
-      "sfp_names",
-      "sfp_pageinfo",
-      "sfp_phone",
-      "sfp_webanalytics"
+        "sfp_binstring",
+        "sfp_company",
+        "sfp_cookie",
+        "sfp_countryname",
+        "sfp_creditcard",
+        "sfp_email",
+        "sfp_errors",
+        "sfp_ethereum",
+        "sfp_filemeta",
+        "sfp_hashes",
+        "sfp_iban",
+        "sfp_names",
+        "sfp_pageinfo",
+        "sfp_phone",
+        "sfp_webanalytics"
     ]
 
     def execute(self, command):
         proc = subprocess.Popen(
-           command,
-           stdout=subprocess.PIPE,
-           stderr=subprocess.PIPE,
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         out, err = proc.communicate()
         return out, err, proc.returncode

@@ -21,7 +21,7 @@ malchecks = {
         'checks': ['ip', 'domain'],
         'url': 'http://vxvault.net/URL_List.php',
         'regex': r'.*\/{0}/.*'
-     }
+    }
 }
 
 

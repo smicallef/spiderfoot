@@ -78,10 +78,10 @@ class sfp_keybase(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://keybase.io/_/api/1.0/user/lookup.json?' + urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://keybase.io/_/api/1.0/user/lookup.json?' + urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         # In this case, it will always be 200 if keybase is queried
