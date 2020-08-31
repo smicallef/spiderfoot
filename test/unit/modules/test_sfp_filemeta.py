@@ -1,5 +1,6 @@
 # test_sfp_filemeta.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_filemeta import sfp_filemeta
 

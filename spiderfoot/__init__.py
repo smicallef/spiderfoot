@@ -1,0 +1,1 @@
+from .target import SpiderFootTarget

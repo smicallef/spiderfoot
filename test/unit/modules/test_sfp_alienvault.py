@@ -1,5 +1,6 @@
 # test_sfp_alienvault.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_alienvault import sfp_alienvault
 

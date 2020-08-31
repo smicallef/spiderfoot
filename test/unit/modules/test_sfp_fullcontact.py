@@ -1,5 +1,6 @@
 # test_sfp_fullcontact.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_fullcontact import sfp_fullcontact
 
