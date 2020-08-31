@@ -1,5 +1,6 @@
 # test_sfp_numverify.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_numverify import sfp_numverify
 

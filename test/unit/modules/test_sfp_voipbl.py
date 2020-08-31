@@ -1,5 +1,6 @@
 # test_sfp_voipbl.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_voipbl import sfp_voipbl
 

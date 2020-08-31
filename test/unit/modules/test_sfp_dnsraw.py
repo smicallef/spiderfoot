@@ -1,5 +1,6 @@
 # test_sfp_dnsraw.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_dnsraw import sfp_dnsraw
 

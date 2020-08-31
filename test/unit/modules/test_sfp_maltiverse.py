@@ -1,5 +1,6 @@
 # test_sfp_maltiverse.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_maltiverse import sfp_maltiverse
 

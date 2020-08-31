@@ -1,5 +1,6 @@
 # test_sfp_open_passive_dns_database.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_open_passive_dns_database import sfp_open_passive_dns_database
 

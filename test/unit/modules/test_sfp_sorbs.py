@@ -1,5 +1,6 @@
 # test_sfp_sorbs.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_sorbs import sfp_sorbs
 

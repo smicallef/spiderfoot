@@ -1,5 +1,6 @@
 # test_sfp_accounts.py
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget
+from sflib import SpiderFoot, SpiderFootEvent
+from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_accounts import sfp_accounts
 
