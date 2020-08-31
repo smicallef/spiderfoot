@@ -12,7 +12,8 @@
 # -------------------------------------------------------------------------------
 
 import dns.resolver
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_comodo(SpiderFootPlugin):

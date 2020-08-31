@@ -11,7 +11,8 @@
 # -------------------------------------------------------------------------------
 
 from urllib.parse import urlparse
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_sslcert(SpiderFootPlugin):

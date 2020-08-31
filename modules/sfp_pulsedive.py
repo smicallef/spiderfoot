@@ -11,11 +11,16 @@
 # -------------------------------------------------------------------------------
 
 import json
-from datetime import datetime
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import datetime
+
 from netaddr import IPNetwork
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_pulsedive(SpiderFootPlugin):
 

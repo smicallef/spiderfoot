@@ -11,8 +11,10 @@
 # -------------------------------------------------------------------------------
 
 import re
+
 from netaddr import IPAddress, IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'AbuseIPDB': {

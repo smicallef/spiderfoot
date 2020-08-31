@@ -9,23 +9,26 @@
 # Copyright:    (c) Steve Micallef 2012
 # License:      GPL
 # -----------------------------------------------------------------
-import json
-import cherrypy
-import html
 import csv
-import time
-import random
+import html
+import json
 import multiprocessing as mp
-from secure import SecureHeaders
-from cherrypy import _cperror
-from operator import itemgetter
+import random
+import time
 from copy import deepcopy
+from io import StringIO
+from operator import itemgetter
+
+import cherrypy
+from cherrypy import _cperror
 from mako.lookup import TemplateLookup
 from mako.template import Template
+from secure import SecureHeaders
+
 from sfdb import SpiderFootDb
 from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
-from io import StringIO
+
 mp.set_start_method("spawn", force=True)
 
 

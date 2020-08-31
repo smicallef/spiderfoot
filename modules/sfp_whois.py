@@ -11,10 +11,12 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import whois
 import ipwhois
+import whois
 from netaddr import IPAddress
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_whois(SpiderFootPlugin):
 

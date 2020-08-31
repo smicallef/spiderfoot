@@ -10,9 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
 import base64
 import json
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_twilio(SpiderFootPlugin):
 

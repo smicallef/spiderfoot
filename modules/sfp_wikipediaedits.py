@@ -12,9 +12,13 @@
 
 import datetime
 import re
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 from html.parser import HTMLParser
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_wikipediaedits(SpiderFootPlugin):
 

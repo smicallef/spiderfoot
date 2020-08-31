@@ -13,7 +13,9 @@
 
 import threading
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_s3bucket(SpiderFootPlugin):
 

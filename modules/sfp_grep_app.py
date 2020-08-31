@@ -14,8 +14,12 @@
 import json
 import math
 import time
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_grep_app(SpiderFootPlugin):
 

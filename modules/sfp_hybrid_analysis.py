@@ -12,7 +12,9 @@
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_hybrid_analysis(SpiderFootPlugin):
 

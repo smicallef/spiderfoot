@@ -15,7 +15,9 @@
 import json
 import time
 import urllib
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_crobat_api(SpiderFootPlugin):
 

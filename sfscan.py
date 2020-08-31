@@ -9,14 +9,17 @@
 # Copyright:    (c) Steve Micallef 2013
 # License:      GPL
 # -----------------------------------------------------------------
-import traceback
-import time
-import sys
 import socket
+import sys
+import time
+import traceback
 from copy import deepcopy
+
 import dns.resolver
+
 from sfdb import SpiderFootDb
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, SpiderFootPlugin
+from sflib import (SpiderFoot, SpiderFootEvent, SpiderFootPlugin,
+                   SpiderFootTarget)
 
 
 class SpiderFootScanner():

@@ -11,10 +11,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
 import json
-from datetime import datetime
 import time
+from datetime import datetime
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_onyphe(SpiderFootPlugin):

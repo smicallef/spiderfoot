@@ -11,10 +11,15 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
-from netaddr import IPNetwork
-import urllib.request, urllib.parse, urllib.error
 import json
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from netaddr import IPNetwork
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_badpackets(SpiderFootPlugin):
 

@@ -10,10 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import sqlite3
 import re
-import time
+import sqlite3
 import threading
+import time
+
 from sflib import SpiderFoot, SpiderFootEvent
 
 
