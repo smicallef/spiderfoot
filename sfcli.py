@@ -11,17 +11,18 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import sys
+import argparse
+import cmd
+import codecs
+import json
 import os
 import re
-import json
-import requests
 import shlex
-import codecs
+import sys
 import time
-import cmd
-import argparse
 from os.path import expanduser
+
+import requests
 
 try:
     import readline

@@ -11,8 +11,9 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
 import re
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_onioncity(SpiderFootPlugin):

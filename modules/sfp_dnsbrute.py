@@ -14,7 +14,9 @@
 import random
 import threading
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_dnsbrute(SpiderFootPlugin):
 

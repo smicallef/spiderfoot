@@ -11,10 +11,12 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from subprocess import Popen, PIPE
 import json
 import os.path
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from subprocess import PIPE, Popen
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_tool_dnstwist(SpiderFootPlugin):
 

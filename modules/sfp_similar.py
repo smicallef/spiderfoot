@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 nearchars = {
     'a': ['4', 's'],

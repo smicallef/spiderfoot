@@ -13,7 +13,8 @@
 
 import json
 import urllib.parse
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_crt(SpiderFootPlugin):

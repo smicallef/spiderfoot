@@ -11,8 +11,11 @@
 # -------------------------------------------------------------------------------
 
 import json
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_template(SpiderFootPlugin):
     # The module descriptor dictionary contains all the meta data about a module necessary

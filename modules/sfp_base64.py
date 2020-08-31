@@ -12,7 +12,7 @@
 import base64
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_base64(SpiderFootPlugin):

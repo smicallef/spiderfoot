@@ -11,9 +11,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import time
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import time
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_spider(SpiderFootPlugin):
 

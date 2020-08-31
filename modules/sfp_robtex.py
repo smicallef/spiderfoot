@@ -12,8 +12,10 @@
 
 import json
 import time
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_robtex(SpiderFootPlugin):

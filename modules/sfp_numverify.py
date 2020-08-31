@@ -11,9 +11,13 @@
 #-------------------------------------------------------------------------------
 
 import json
-import urllib.request, urllib.parse, urllib.error
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_numverify(SpiderFootPlugin):
 

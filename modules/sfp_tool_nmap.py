@@ -10,10 +10,13 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from subprocess import Popen, PIPE
 import os.path
+from subprocess import PIPE, Popen
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_tool_nmap(SpiderFootPlugin):
 

@@ -11,7 +11,8 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_bingsharedip(SpiderFootPlugin):

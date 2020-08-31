@@ -10,10 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from netaddr import IPAddress, IPNetwork
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'CoinBlocker IP List': {

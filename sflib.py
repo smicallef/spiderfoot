@@ -11,37 +11,38 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from stem import Signal
-from stem.control import Controller
-import inspect
 import hashlib
 import html
+import inspect
 import io
 import json
-import re
 import os
 import random
-import requests
+import re
 import socket
 import ssl
 import sys
 import time
-import netaddr
 import traceback
-import OpenSSL
+import urllib.error
+import urllib.parse
+import urllib.request
 import uuid
+from copy import deepcopy
+from datetime import datetime
+
 import cryptography
 import dns.resolver
-import urllib.request
-import urllib.parse
-import urllib.error
+import netaddr
+import OpenSSL
+import requests
 import urllib3
-from publicsuffixlist import PublicSuffixList
+from bs4 import BeautifulSoup, SoupStrainer
 from networkx import nx
 from networkx.readwrite.gexf import GEXFWriter
-from datetime import datetime
-from bs4 import BeautifulSoup, SoupStrainer
-from copy import deepcopy
+from publicsuffixlist import PublicSuffixList
+from stem import Signal
+from stem.control import Controller
 
 # For hiding the SSL warnings coming from the requests lib
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

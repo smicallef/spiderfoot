@@ -12,9 +12,12 @@
 # -------------------------------------------------------------------------------
 
 import re
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
 import phonenumbers
 from phonenumbers.phonenumberutil import region_code_for_country_code
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_countryname(SpiderFootPlugin):
 

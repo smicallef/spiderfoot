@@ -12,7 +12,7 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 regexps = dict({
     "LinkedIn (Individual)": list(['.*linkedin.com/in/([a-zA-Z0-9_]+$)']),

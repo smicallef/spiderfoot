@@ -10,7 +10,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_badipscom(SpiderFootPlugin):
 

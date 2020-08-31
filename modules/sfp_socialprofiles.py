@@ -11,9 +11,11 @@
 # -------------------------------------------------------------------------------
 
 import re
+import urllib.error
+import urllib.parse
+import urllib.request
 
-import urllib.request, urllib.error, urllib.parse
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 sites = {
     # Search string to use, domain name the profile will sit on within

@@ -10,9 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import base64
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import json
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_riskiq(SpiderFootPlugin):
 

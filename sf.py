@@ -17,20 +17,22 @@ if sys.version_info < (3, 6):
     print("SpiderFoot 3.3+ requires Python 3.6 or higher.")
     sys.exit(-1)
 
+import argparse
+import multiprocessing as mp
 import os
 import os.path
+import random
 import signal
 import time
-import argparse
 from copy import deepcopy
+
 import cherrypy
-import random
-import multiprocessing as mp
 from cherrypy.lib import auth_digest
-from sflib import SpiderFoot
+
 from sfdb import SpiderFootDb
-from sfwebui import SpiderFootWebUi
+from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
+from sfwebui import SpiderFootWebUi
 
 # 'Global' configuration options
 # These can be overriden on a per-module basis, and some will

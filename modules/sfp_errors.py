@@ -12,7 +12,7 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 # Taken from Google Dorks on exploit-db.com
 regexps = dict({

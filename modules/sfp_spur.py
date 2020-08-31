@@ -11,9 +11,12 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
-from netaddr import IPNetwork
 import json
+
+from netaddr import IPNetwork
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_spur(SpiderFootPlugin):
 

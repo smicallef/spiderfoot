@@ -14,8 +14,10 @@
 
 import phonenumbers
 from phonenumbers import carrier
+
 #from phonenumbers import geocoder
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_phone(SpiderFootPlugin):
 

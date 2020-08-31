@@ -11,9 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import re
+
+from sflib import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_ripe(SpiderFootPlugin):
