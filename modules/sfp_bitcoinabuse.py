@@ -123,7 +123,7 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
                 if isinstance(count, int):
                     if count > 0:
                         evt = SpiderFootEvent(
-                            "MALICIOUS_BITCOIN_ADDRESS", rec["address"], self.__name__, event
+                            "MALICIOUS_BITCOIN_ADDRESS", f"BitcoinAbuse[{rec['address']}]", self.__name__, event
                         )
                         self.notifyListeners(evt)
 
