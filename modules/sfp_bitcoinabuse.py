@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_bitcoinabuse
-# Purpose:      Example module to use for new modules.
+# Purpose:      Check bitcoin address agains bitcoinabuse.com database
 #
 # Author:      Leo Trubach <leotrubach@gmail.com>
 #
@@ -119,13 +119,16 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
 
         if eventName == "BITCOIN_ADDRESS":
             rec = self.query(eventData)
-            if rec["count"] != 0:
-                evt = SpiderFootEvent(
-                    "MALICIOUS_BITCOIN_ADDRESS", rec["address"], self.__name__, event
-                )
-                self.notifyListeners(evt)
+            if isinstance(rec, dict):
+                count = rec.get("count")
+                if isinstance(count, int):
+                    if count != 0:
+                        evt = SpiderFootEvent(
+                            "MALICIOUS_BITCOIN_ADDRESS", rec["address"], self.__name__, event
+                        )
+                        self.notifyListeners(evt)
 
-                rirevt = SpiderFootEvent(
-                    "RAW_RIR_DATA", json.dumps(rec), self.__name__, event
-                )
-                self.notifyListeners(rirevt)
+                        rirevt = SpiderFootEvent(
+                            "RAW_RIR_DATA", json.dumps(rec), self.__name__, event
+                        )
+                        self.notifyListeners(rirevt)
