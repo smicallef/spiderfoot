@@ -14,7 +14,7 @@
 import sys
 
 if sys.version_info < (3, 6):
-    print("SpiderFoot 3.3+ requires Python 3.6 or higher.")
+    print("SpiderFoot requires Python 3.6 or higher.")
     sys.exit(-1)
 
 import argparse
@@ -98,12 +98,12 @@ def handle_abort(signal, frame):
 
 if __name__ == '__main__':
     if len(sys.argv) == 0:
-        print("SpiderFoot 3.x now requires -l <ip>:<port> to start the web server.")
+        print("SpiderFoot requires -l <ip>:<port> to start the web server.")
         sys.exit(-1)
 
     if len(sys.argv) > 1:
         if not sys.argv[1].startswith("-"):
-            print("SpiderFoot 3.x now requires -l <ip>:<port> to start the web server.")
+            print("SpiderFoot requires -l <ip>:<port> to start the web server.")
             sys.exit(-1)
 
     # Legacy way to run the server
@@ -149,12 +149,18 @@ if __name__ == '__main__':
 
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
-    # Go through each module in the modules directory with a .py extension
+
+    # Load each module in the modules directory with a .py extension
     mod_dir = sft.myPath() + '/modules/'
+
+    if not os.path.isdir(mod_dir):
+        print(f"Modules directory does not exist: {mod_dir}")
+        sys.exit(-1)
+
     for filename in os.listdir(mod_dir):
         if filename.startswith("sfp_") and filename.endswith(".py"):
             # Skip the module template and debugging modules
-            if filename == "sfp_template.py" or filename == 'sfp_stor_print.py':
+            if filename in ('sfp_template.py', 'sfp_stor_print.py'):
                 continue
             modName = filename.split('.')[0]
 
@@ -181,8 +187,8 @@ if __name__ == '__main__':
                 print(f"Failed to load {modName}: {e}")
                 sys.exit(-1)
 
-    if len(list(sfModules.keys())) < 1:
-        print("No modules found in modules directory: %s" % mod_dir)
+    if not sfModules:
+        print(f"No modules found in modules directory: {mod_dir}")
         sys.exit(-1)
 
     # Add module info to sfConfig so it can be used by the UI
@@ -241,9 +247,9 @@ if __name__ == '__main__':
         # Usernames and names - quoted on the commandline - won't have quotes,
         # so add them.
         if " " in target:
-            target = "\"" + target + "\""
-        if "." not in target and not target.startswith("+") and "\"" not in target:
-            target = "\"" + target + "\""
+            target = f"\"{target}\""
+        if "." not in target and not target.startswith("+") and '"' not in target:
+            target = f"\"{target}\""
         targetType = sf.targetType(target)
 
         if not targetType:
@@ -291,27 +297,28 @@ if __name__ == '__main__':
         for r in typedata:
             types[r[1]] = r[0]
 
-        sfConfig['__modules__']['sfp__stor_stdout']['opts']['_eventtypes'] = types
+        sfp__stor_stdout_opts = sfConfig['__modules__']['sfp__stor_stdout']['opts']
+        sfp__stor_stdout_opts['_eventtypes'] = types
         if args.f:
             if args.f and not args.t:
                 print("You can only use -f with -t. Use --help for guidance.")
                 sys.exit(-1)
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showonlyrequested'] = True
+            sfp__stor_stdout_opts['_showonlyrequested'] = True
         if args.F:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_requested'] = args.F.split(",")
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showonlyrequested'] = True
+            sfp__stor_stdout_opts['_requested'] = args.F.split(",")
+            sfp__stor_stdout_opts['_showonlyrequested'] = True
         if args.o:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_format'] = args.o
+            sfp__stor_stdout_opts['_format'] = args.o
         if args.t:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_requested'] = args.t.split(",")
+            sfp__stor_stdout_opts['_requested'] = args.t.split(",")
         if args.n:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_stripnewline'] = True
+            sfp__stor_stdout_opts['_stripnewline'] = True
         if args.r:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_showsource'] = True
+            sfp__stor_stdout_opts['_showsource'] = True
         if args.S:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_maxlength'] = args.S
+            sfp__stor_stdout_opts['_maxlength'] = args.S
         if args.D:
-            sfConfig['__modules__']['sfp__stor_stdout']['opts']['_csvdelim'] = args.D
+            sfp__stor_stdout_opts['_csvdelim'] = args.D
         if args.x:
             tmodlist = list()
             modlist = list()
@@ -337,7 +344,7 @@ if __name__ == '__main__':
 
         # Run the scan
         if sfConfig['__logging']:
-            print("[*] Modules enabled (%s): %s" % (len(modlist), ",".join(modlist)))
+            print(f"[*] Modules enabled ({len(modlist)}): {','.join(modlist)}")
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
 
         # Debug mode is a variable that gets stored to the DB, so re-apply it
@@ -361,7 +368,7 @@ if __name__ == '__main__':
             p.daemon = True
             p.start()
         except BaseException as e:
-            print("[-] Scan [%s] failed: %s" % (scanId, e))
+            print(f"[-] Scan [{scanId}] failed: {e}")
             sys.exit(-1)
 
         # If field headers weren't disabled, print them
@@ -377,12 +384,12 @@ if __name__ == '__main__':
 
             if not args.r:
                 if delim != "\t":
-                    print('{0}{1}{2}{3}{4}'.format("Source", delim, "Type", delim, "Data"))
+                    print(delim.join(["Source", "Type", "Data"]))
                 else:
                     print('{0:30}{1}{2:45}{3}{4}'.format("Source", delim, "Type", delim, "Data"))
             else:
                 if delim != "\t":
-                    print('{0}{1}{2}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
+                    print(delim.join(["Source", "Type", "Source Data", "Data"]))
                 else:
                     print('{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
 
