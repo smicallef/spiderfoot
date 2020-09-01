@@ -68,7 +68,6 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
     def watchedEvents(self):
         return ["BITCOIN_ADDRESS"]
 
-    # What events this module produces
     def producedEvents(self):
         return ["MALICIOUS_BITCOIN_ADDRESS"]
 
@@ -107,22 +106,22 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_template but did not set an API key!", False)
+            self.sf.error("You enabled sfp_bitcoinabuse but did not set an API key!", False)
             self.errorState = True
             return None
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == "BITCOIN_ADDRESS":
             rec = self.query(eventData)
             if isinstance(rec, dict):
                 count = rec.get("count")
                 if isinstance(count, int):
-                    if count != 0:
+                    if count > 0:
                         evt = SpiderFootEvent(
                             "MALICIOUS_BITCOIN_ADDRESS", rec["address"], self.__name__, event
                         )
