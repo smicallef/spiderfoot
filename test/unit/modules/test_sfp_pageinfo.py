@@ -1,5 +1,6 @@
 # test_sfp_pageinfo.py
-from sflib import SpiderFoot, SpiderFootEvent
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent
 from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_pageinfo import sfp_pageinfo

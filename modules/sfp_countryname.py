@@ -16,7 +16,8 @@ import re
 import phonenumbers
 from phonenumbers.phonenumberutil import region_code_for_country_code
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 
 class sfp_countryname(SpiderFootPlugin):

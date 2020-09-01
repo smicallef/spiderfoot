@@ -17,7 +17,8 @@ import time
 
 import dns.resolver
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 
 class sfp_tldsearch(SpiderFootPlugin):

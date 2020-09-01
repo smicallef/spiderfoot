@@ -17,7 +17,8 @@ import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 
 class sfp_wikipediaedits(SpiderFootPlugin):

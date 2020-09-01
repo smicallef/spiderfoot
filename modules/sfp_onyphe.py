@@ -15,7 +15,8 @@ import json
 import time
 from datetime import datetime
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 
 class sfp_onyphe(SpiderFootPlugin):

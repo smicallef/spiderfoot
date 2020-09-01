@@ -12,7 +12,8 @@
 
 import re
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 malchecks = {
     'Watchguard Reputation Authority Lookup': {

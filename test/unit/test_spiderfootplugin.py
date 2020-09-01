@@ -1,6 +1,7 @@
 # test_spiderfootplugin.py
-from sflib import SpiderFootPlugin, SpiderFootEvent, SpiderFootTarget
-from sfdb import SpiderFootDb
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootTarget
+from sfdb import SpiderFootDb, SpiderFootEvent
 import unittest
 
 

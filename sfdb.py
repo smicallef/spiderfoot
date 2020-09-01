@@ -15,7 +15,8 @@ import sqlite3
 import threading
 import time
 
-from sflib import SpiderFoot, SpiderFootEvent
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent
 
 
 class SpiderFootDb:

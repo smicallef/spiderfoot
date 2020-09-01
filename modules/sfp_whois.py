@@ -15,7 +15,8 @@ import ipwhois
 import whois
 from netaddr import IPAddress
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 
 class sfp_whois(SpiderFootPlugin):
