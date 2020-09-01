@@ -1,5 +1,5 @@
 # test_spiderfootevent.py
-from sflib import SpiderFootEvent
+from spiderfoot import SpiderFootEvent
 import unittest
 
 

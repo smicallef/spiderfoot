@@ -12,7 +12,8 @@
 
 import string
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 
 class sfp_binstring(SpiderFootPlugin):

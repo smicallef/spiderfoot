@@ -1,5 +1,6 @@
 # test_sfp_ipstack.py
-from sflib import SpiderFoot, SpiderFootEvent
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent
 from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_ipstack import sfp_ipstack

@@ -12,7 +12,8 @@
 
 import re
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 regexps = dict({
     "jQuery": list(['jquery']),  # unlikely false positive

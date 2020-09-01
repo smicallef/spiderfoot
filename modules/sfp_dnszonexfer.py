@@ -15,7 +15,8 @@ import re
 import dns.query
 import dns.zone
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 
 class sfp_dnszonexfer(SpiderFootPlugin):

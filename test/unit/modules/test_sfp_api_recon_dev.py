@@ -1,5 +1,6 @@
 # test_sfp_api_recon_dev.py
-from sflib import SpiderFoot, SpiderFootEvent
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent
 from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp_api_recon_dev import sfp_api_recon_dev

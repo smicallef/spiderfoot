@@ -16,7 +16,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 
 class sfp_snov(SpiderFootPlugin):

@@ -19,7 +19,8 @@ import exifread
 import pptx
 import PyPDF2
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 
 class sfp_filemeta(SpiderFootPlugin):

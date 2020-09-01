@@ -13,7 +13,8 @@
 
 import json
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootEvent
 
 # Standard headers, taken from http://en.wikipedia.org/wiki/List_of_HTTP_header_fields
 headers = ["access-control-allow-origin", "accept-ranges", "age", "allow", "cache-control",

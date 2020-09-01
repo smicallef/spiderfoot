@@ -1,5 +1,6 @@
 # test_sfp__stor_db.py
-from sflib import SpiderFoot, SpiderFootEvent
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent
 from spiderfoot import SpiderFootTarget
 import unittest
 from modules.sfp__stor_db import sfp__stor_db
