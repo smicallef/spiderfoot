@@ -38,6 +38,7 @@
                 });
 
                 if (ids.length == 0) {
+                    sf.log("You need to select at least one scan.");
                     alert("You need to select at least one scan.");
                     return false;
                 }
@@ -49,6 +50,7 @@
                 ids = getSelected();
 
                 if (ids != false) {
+                    sf.log("Stopping scans: " + ids.join(','));
                     window.location.href = docroot + '/stopscanmulti?ids=' + ids.join(',');
                 }
             }
@@ -57,6 +59,7 @@
                 ids = getSelected();
 
                 if (ids != false) {
+                    sf.log("Deleting scans: " + ids.join(','));
                     window.location.href = docroot + '/scandeletemulti?ids=' + ids.join(',');
                 }
             }
@@ -65,6 +68,7 @@
                 ids = getSelected();
 
                 if (ids != false) {
+                    sf.log("Re-running scans: " + ids.join(','));
                     window.location.href = docroot + '/rerunscanmulti?ids=' + ids.join(',');
                 }
             }
@@ -73,6 +77,7 @@
                 ids = getSelected();
 
                 if (!ids) {
+                    sf.log("Error: no scan(s) selected");
                     return;
                 }
 
@@ -80,16 +85,19 @@
                 var efr = document.getElementById('exportframe');
                 switch(type) {
                     case "gexf":
+                        sf.log("Exporting scans as " + type + ": " + ids.join(','));
                         efr.src = docroot + '/scanvizmulti?ids=' + ids.join(',');
                         break;
                     case "csv":
+                        sf.log("Exporting scans as " + type + ": " + ids.join(','));
                         efr.src = docroot + '/scaneventresultexportmulti?ids=' + ids.join(',');
                         break;
                     case "json":
+                        sf.log("Exporting scans as " + type + ": " + ids.join(','));
                         efr.src = docroot + '/scanexportjsonmulti?ids=' + ids.join(',');
                         break;
                     default:
-                        console.log("Invalid export type");
+                        sf.log("Error: Invalid export type: " + type);
                 }
                 $("#loader").fadeOut(500);
             }

@@ -12,7 +12,8 @@
 var sf = {}
 
 sf.genericError = function(message) {
-        alert("Failure: " + message);
+    sf.log(message);
+    alert("Failure: " + message);
 }
 
 sf.replace_sfurltag = function(data) {
@@ -91,4 +92,18 @@ sf.updateTooltips = function() {
             $('[rel=tooltip]').tooltip({container: 'body'});
         }
     });
+}
+
+sf.log = function(message) {
+    if (typeof console == "object" && typeof console.log == "function") {
+      var currentdate = new Date();
+      var pad = function(n){return ("0" + n).slice(-2);}
+      var datetime = currentdate.getFullYear() + "-"
+      + pad(currentdate.getMonth()+1)  + "-"
+      + pad(currentdate.getDate()) + " "
+      + pad(currentdate.getHours()) + ":"
+      + pad(currentdate.getMinutes()) + ":"
+      + pad(currentdate.getSeconds());
+      console.log('[' + datetime + '] ' + message);
+    }
 }
