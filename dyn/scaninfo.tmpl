@@ -661,6 +661,7 @@
             }
 
             if (currentSection == "btn-graph") {
+                sf.log("Loading visualisation for scan: " + instanceId);
                 efr.src = '${docroot}/scanviz?id=' + instanceId + '&gexf=1';
             }
 
@@ -733,12 +734,12 @@
             var status = document.getElementById("scanstatusbadge").innerHTML;
 
             if (status == "ERROR-FAILED" || status == "FINISHED" || status == "ABORTED") {
-                console.log("Scan is " + status);
+                sf.log("Scan is " + status);
                 clearInterval(refreshSummaryInterval);
                 return;
             }
 
-            console.log("Scan is " + status + ". Refreshing scan summary ...");
+            sf.log("Scan is " + status + ". Refreshing scan summary ...");
 
             for (var i = 0; i < dataloaders.length; i++) {
                 if (!loadersrunning) {
