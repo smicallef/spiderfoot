@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import time
@@ -22,6 +23,8 @@ class SpiderFootPlugin():
         errorState (bool): error state of the module
         socksProxy (str): SOCKS proxy
     """
+
+    log = logging.getLogger(__name__)
 
     # Will be set to True by the controller if the user aborts scanning
     _stopScanning = False
@@ -226,12 +229,7 @@ class SpiderFootPlugin():
             try:
                 listener.handleEvent(sfEvent)
             except BaseException as e:
-                from sflib import SpiderFoot
-
-                with open(os.path.join(SpiderFoot.dataPath(), "sferror.log"), "a") as f:
-                    f.write(f"[{time.ctime()}]: Module ({listener.__module__}) encountered an error: {e}\n")
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+                self.log.exception(f"Module ({listener.__module__}) encountered an error: {e}")
 
     def checkForStop(self):
         """For modules to use to check for when they should give back control.

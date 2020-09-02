@@ -15,6 +15,7 @@ import html
 import inspect
 import io
 import json
+import logging
 import os
 import random
 import re
@@ -61,6 +62,7 @@ class SpiderFoot:
     _scanId = None
     _socksProxy = None
     opts = dict()
+    log = logging.getLogger(__name__)
 
     def __init__(self, options):
         """Initialize SpiderFoot object.
@@ -443,12 +445,15 @@ class SpiderFoot:
             print(f"[Error] {message}")
         else:
             self._dblog("ERROR", message)
+
         if self.opts.get('__logstdout'):
             print(f"[Error] {message}")
-        if exception:
-            raise BaseException(f"Internal Error Encountered: {message}")
 
-        return None
+        if exception:
+            self.log.exception(message)
+            raise BaseException(f"Internal Error Encountered: {message}")
+        else:
+            self.log.error(message)
 
     def fatal(self, error):
         """Print an error message and stacktrace then exit.
@@ -464,7 +469,11 @@ class SpiderFoot:
             print('[Fatal] %s' % error)
         else:
             self._dblog("FATAL", error)
+
         print(str(inspect.stack()))
+
+        self.log.critical(error)
+
         sys.exit(-1)
 
     def status(self, message):
@@ -486,6 +495,8 @@ class SpiderFoot:
             self._dblog("STATUS", message)
         if self.opts.get('__logstdout'):
             print("[*] %s" % message)
+
+        self.log.info(message)
 
     def info(self, message):
         """Log and print an info message.
@@ -522,7 +533,8 @@ class SpiderFoot:
             self._dblog("INFO", message, modName)
         if self.opts.get('__logstdout'):
             print("[*] %s" % message)
-        return
+
+        self.log.info(message)
 
     def debug(self, message):
         """Log and print a debug message.
@@ -560,7 +572,8 @@ class SpiderFoot:
             self._dblog("DEBUG", message, modName)
         if self.opts.get('__logstdout'):
             print("[d:%s] %s" % (modName, message))
-        return
+
+        self.log.debug(f"{modName} : {message}")
 
     @staticmethod
     def myPath():

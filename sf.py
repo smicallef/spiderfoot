@@ -18,6 +18,7 @@ if sys.version_info < (3, 6):
     sys.exit(-1)
 
 import argparse
+import logging
 import multiprocessing as mp
 import os
 import os.path
@@ -25,6 +26,7 @@ import random
 import signal
 import time
 from copy import deepcopy
+from logging import handlers
 
 import cherrypy
 from cherrypy.lib import auth_digest
@@ -33,6 +35,24 @@ from sfdb import SpiderFootDb
 from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
 from sfwebui import SpiderFootWebUi
+
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+
+console_handler = logging.StreamHandler(sys.stderr)
+console_handler.setFormatter(log_format)
+log.addHandler(console_handler)
+
+debug_handler = handlers.RotatingFileHandler("spiderfoot.debug.log", maxBytes=(1048576*5), backupCount=7)
+debug_handler.setLevel(logging.DEBUG)
+debug_handler.setFormatter(log_format)
+log.addHandler(debug_handler)
+
+error_handler = handlers.RotatingFileHandler("spiderfoot.error.log", maxBytes=(1048576*5), backupCount=7)
+error_handler.setLevel(logging.WARN)
+error_handler.setFormatter(log_format)
+log.addHandler(error_handler)
 
 # 'Global' configuration options
 # These can be overriden on a per-module basis, and some will
@@ -130,10 +150,13 @@ if __name__ == '__main__':
 
     if args.debug:
         sfConfig['_debug'] = True
+        log.setLevel(logging.DEBUG)
     else:
+        log.setLevel(logging.INFO)
         sfConfig['_debug'] = False
 
     if args.q or args.o == "json":
+        log.setLevel(logging.NOTSET)
         sfConfig['__logging'] = False
 
     if args.l:
