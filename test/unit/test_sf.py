@@ -87,7 +87,6 @@ class TestSf(unittest.TestCase):
     def test_run_scan_with_modules_should_run_scan_and_exit(self):
         out, err, code = self.execute([sys.executable, "sf.py", "-m", ",".join(self.default_modules), "-s", "spiderfoot.net"])
         self.assertIn(b"Scan completed with status FINISHED", out)
-        self.assertEqual(b"", err)
         self.assertEqual(0, code)
 
         for module in self.default_modules:
