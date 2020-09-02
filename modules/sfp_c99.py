@@ -15,8 +15,6 @@ from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_c99(SpiderFootPlugin):
-    """C99:Footprint,Passive,Investigate:Content Analysis:apikey:Obtain data from c99 API which offers various data (geo location, proxy detection, phone lookup, etc)."""
-
     meta = {
         "name": "C99",
         "summary": "This module queries c99 API that offers various data (geo location, proxy detection, phone lookup, etc).",
@@ -31,7 +29,7 @@ class sfp_c99(SpiderFootPlugin):
                 "Visit api.c99.nl",
                 "Press shop in navigation or go to https://api.c99.nl/dashboard/shop",
                 "Press purchase key on option 'C99.NL API KEY' (you can also buy 1 year key if you want)",
-                "You should get your key on your email'",
+                "You will receive your API key by email.",
             ],
             "favIcon": "https://api.c99.nl/favicon.ico",
             "logo": "https://api.c99.nl/assets/images/logo.png",
@@ -43,11 +41,10 @@ class sfp_c99(SpiderFootPlugin):
         },
     }
 
-    opts = {"api_key": "", "response_type": "JSON", "verify": True}
+    opts = {"api_key": "", "verify": True}
 
     optdescs = {
         "api_key": "C99 API Key.",
-        "response_type": "Do you want to query the API with response in Plain text or JSON (write 'Plain' or 'JSON')",
         "verify": "Verify identified domains still resolve to the associated specified IP address.",
     }
 
@@ -78,7 +75,8 @@ class sfp_c99(SpiderFootPlugin):
             "INTERNET_NAME_UNRESOLVED",
             "PROVIDER_TELCO",
             "PHYSICAL_ADDRESS",
-            "PHYSICAL_COORDINATES" "PROVIDER_DNS",
+            "PHYSICAL_COORDINATES",
+            "PROVIDER_DNS",
             "IP_ADDRESS",
             "USERNAME",
             "ACCOUNT_EXTERNAL_OWNED",
@@ -86,156 +84,9 @@ class sfp_c99(SpiderFootPlugin):
             "PROVIDER_HOSTING",
         ]
 
-    def plainPhoneLookupParser(self, data):
-        if "invalid" in data.lower() or "unable" in data.lower():
-            return None
-        lines = data.split("<br>")
-        responseDict = dict(
-            line.strip().split(": ")
-            for line in lines
-            if ": " in line and len(line.strip().split(": ")) == 2
-        )
-        result = {
-            "details": {
-                "country_name": responseDict.get("Country"),
-                "provider": responseDict.get("Provider"),
-                "carrier": responseDict.get("Carrier"),
-                "city": responseDict.get("City"),
-                "region": responseDict.get("Region"),
-            }
-        }
-
-        return result
-
-    def plainSubdomainFinderParser(self, data):
-        if "make sure" in data.lower():
-            return None
-
-        lines = data.split("<br>")
-        result = {}
-        result["subdomains"] = []
-        for line in lines:
-            line = line.strip()
-            if len(line) > 0:
-                result["subdomains"].append({"subdomain": line})
-
-        return result
-
-    def plainDomainHistoryParser(self, data):
-        if "could not find" in data.lower():
-            return None
-
-        result = {}
-        arr = []
-
-        lines = data.split(",")
-        for line in lines:
-            if len(line) == 0:
-                continue
-
-            entry = line.split("] ")
-            if len(entry) != 2:
-                continue
-
-            arr.append({"ip_address": entry[1], "date": entry[0].strip()[1:]})
-
-        result["result"] = arr
-        return result
-
-    def plainIPToSkypeParser(self, data):
-        if "error" in data.lower():
-            return None
-
-        return {"skype": data.strip()}
-
-    def plainIPToDomainsParser(self, data):
-        if "no domains" in data.lower():
-            return None
-
-        lines = data.split("<br>")
-        return {"domains": [line.strip() for line in lines if len(line.strip()) > 0]}
-
-    def plainProxyDetectorParser(self, data):
-        if "invalid" in data.lower():
-            return None
-
-        return {"proxy": not ("no proxy detected" in data.lower())}
-
-    def plainGeoIPParser(self, data):
-        if "not a valid" in data.lower() or "not in the database" in data.lower():
-            return None
-
-        lines = data.split("<br>")
-        responseDict = dict(
-            line.strip().split(": ")
-            for line in lines
-            if ": " in line
-            and len(line.strip().split(": ")) == 2
-            and "unknown" not in line
-        )
-        result = {
-            "hostname": responseDict.get("Hostname"),
-            "records": {
-                "country_name": responseDict.get("Country"),
-                "region": {"name": responseDict.get("Region")},
-                "city": responseDict.get("City"),
-                "continent": {"name": responseDict.get("Continent")},
-                "isp": responseDict.get("ISP"),
-            },
-        }
-
-        return result
-
-    def plainSkypeResolverParser(self, data):
-        if "error" in data.lower():
-            return None
-
-        lines = data.split(",")
-        arr = []
-        for line in lines:
-            line = line.strip()
-            if len(line) == 0:
-                continue
-
-            arr.append(line)
-
-        if len(arr) == 0:
-            return None
-
-        return {"ip": arr[0], "ips": arr}
-
-    def plainFirewallDetectorParser(self, data):
-        if "invalid url" in data.lower() or "no firewall" in data.lower():
-            return None
-
-        return {"result": data}
-
-    def parseResponse(self, response, path):
-        if self.opts["response_type"].lower() == "plain":
-            endpointTypes = {
-                "phonelookup": self.plainPhoneLookupParser,
-                "subdomainfinder": self.plainSubdomainFinderParser,
-                "firewalldetector": self.plainFirewallDetectorParser,
-                "domainhistory": self.plainDomainHistoryParser,
-                "ip2skype": self.plainIPToSkypeParser,
-                "ip2domains": self.plainIPToDomainsParser,
-                "proxydetector": self.plainProxyDetectorParser,
-                "geoip": self.plainGeoIPParser,
-                "skyperesolver": self.plainSkypeResolverParser,
-            }
-            try:
-                return endpointTypes[path](response)
-            except Exception as e:
-                self.errorState = True
-                self.sf.error(f"Error processing response from C99: {e}", False)
-                return None
-
-        return json.loads(response)
-
     def query(self, path, queryParam, queryData):
-        responseType = "" if self.opts["response_type"].lower() == "plain" else "json"
         res = self.sf.fetchUrl(
-            f"https://api.c99.nl/{path}?key={self.opts['api_key']}&{queryParam}={queryData}&{responseType}",
+            f"https://api.c99.nl/{path}?key={self.opts['api_key']}&{queryParam}={queryData}&json",
             timeout=self.opts["_fetchtimeout"],
             useragent="SpiderFoot",
         )
@@ -255,7 +106,7 @@ class sfp_c99(SpiderFootPlugin):
             return None
 
         try:
-            info = self.parseResponse(res["content"], path)
+            info = json.loads(res["content"])
         except Exception as e:
             self.errorState = True
             self.sf.error(f"Error processing response from C99: {e}", False)
@@ -276,7 +127,7 @@ class sfp_c99(SpiderFootPlugin):
         countryName = phoneData.get("country_name")
         region = phoneData.get("region")
 
-        if provider is not None or carrier is not None:
+        if provider or carrier:
             evt = SpiderFootEvent(
                 "PROVIDER_TELCO",
                 f"Provider: {provider}, Carrier: {carrier}",
@@ -285,7 +136,7 @@ class sfp_c99(SpiderFootPlugin):
             )
             self.notifyListeners(evt)
 
-        if city is not None or countryName is not None or region is not None:
+        if city or countryName or region:
             evt = SpiderFootEvent(
                 "PHYSICAL_ADDRESS",
                 f"Country: {countryName}, Region: {region}, City: {city}",
@@ -305,7 +156,7 @@ class sfp_c99(SpiderFootPlugin):
             ip = subDomainElem.get("ip")
             cloudFlare = subDomainElem.get("cloudflare")
 
-            if subDomain is not None:
+            if subDomain:
                 if self.opts["verify"] and not self.sf.resolveHost(subDomain):
                     self.sf.debug(
                         f"Host {subDomain} could not be resolved for {event.data}"
@@ -336,7 +187,7 @@ class sfp_c99(SpiderFootPlugin):
             date = domainHistoryElem.get("date")
             ip = domainHistoryElem.get("ip_address")
 
-            if ip is not None:
+            if ip:
                 evt = SpiderFootEvent(
                     "IP_ADDRESS",
                     f"IP: {ip}, Date: {date}",
@@ -345,12 +196,12 @@ class sfp_c99(SpiderFootPlugin):
                 )
                 self.notifyListeners(evt)
 
-    def emitIPToSkypeData(self, data, event):
+    def emitIpToSkypeData(self, data, event):
         self.emitRawRirData(data, event)
 
         skype = data.get("skype")
 
-        if skype is not None:
+        if skype:
             evt = SpiderFootEvent(
                 "ACCOUNT_EXTERNAL_OWNED",
                 skype,
@@ -367,7 +218,7 @@ class sfp_c99(SpiderFootPlugin):
             )
             self.notifyListeners(evt)
 
-    def emitIPToDomainsData(self, data, event):
+    def emitIpToDomainsData(self, data, event):
         self.emitRawRirData(data, event)
 
         domains = data.get("domains")
@@ -401,7 +252,7 @@ class sfp_c99(SpiderFootPlugin):
         self.emitRawRirData(data, event)
         isProxy = data.get("proxy")
 
-        if isProxy is not None:
+        if isProxy:
             evt = SpiderFootEvent(
                 "WEBSERVER_TECHNOLOGY",
                 f"Server is proxy: {isProxy}",
@@ -414,49 +265,40 @@ class sfp_c99(SpiderFootPlugin):
         self.emitRawRirData(data, event)
 
         hostName = data.get("hostname")
-        if (
-            hostName is not None
-            and self.opts["verify"]
-            and not self.sf.resolveHost(hostName)
-        ):
-            self.sf.debug(f"Host {hostName} could not be resolved for {event.data}")
-            evt = SpiderFootEvent(
-                "INTERNET_NAME_UNRESOLVED",
-                hostName,
-                self.__name__,
-                event,
-            )
-            self.notifyListeners(evt)
-        else:
-            evt = SpiderFootEvent(
-                "INTERNET_NAME",
-                hostName,
-                self.__name__,
-                event,
-            )
-            self.notifyListeners(evt)
+        if hostName:
+            if self.opts["verify"] and not self.sf.resolveHost(hostName):
+                self.sf.debug(f"Host {hostName} could not be resolved for {event.data}")
+                evt = SpiderFootEvent(
+                    "INTERNET_NAME_UNRESOLVED",
+                    hostName,
+                    self.__name__,
+                    event,
+                )
+                self.notifyListeners(evt)
+            else:
+                evt = SpiderFootEvent(
+                    "INTERNET_NAME",
+                    hostName,
+                    self.__name__,
+                    event,
+                )
+                self.notifyListeners(evt)
 
         record = data.get("records")
 
-        if record is not None:
+        if record:
             continent = (
-                record["continent"].get("name")
-                if record.get("continent") is not None
-                else None
+                record["continent"].get("name") if record.get("continent") else None
             )
             country = record.get("country_name")
-            region = (
-                record["region"].get("name")
-                if record.get("region") is not None
-                else None
-            )
+            region = record["region"].get("name") if record.get("region") else None
             city = record.get("city")
             postalCode = record.get("postal_code")
             latitude = record.get("latitude")
             longitude = record.get("longitude")
             provider = record.get("isp")
 
-            if provider is not None:
+            if provider:
                 evt = SpiderFootEvent(
                     "PROVIDER_HOSTING",
                     provider,
@@ -465,7 +307,7 @@ class sfp_c99(SpiderFootPlugin):
                 )
                 self.notifyListeners(evt)
 
-            if latitude is not None and longitude is not None:
+            if latitude and longitude:
                 evt = SpiderFootEvent(
                     "PHYSICAL_COORDINATES",
                     f"{latitude}, {longitude}",
@@ -474,13 +316,7 @@ class sfp_c99(SpiderFootPlugin):
                 )
                 self.notifyListeners(evt)
 
-            if (
-                continent is not None
-                or country is not None
-                or region is not None
-                or city is not None
-                or postalCode is not None
-            ):
+            if continent or country or region or city or postalCode:
                 evt = SpiderFootEvent(
                     "GEOINFO",
                     f"Continent: {continent}, Country: {country}, Region: {region}, City: {city}, Postal code: {postalCode}",
@@ -492,26 +328,26 @@ class sfp_c99(SpiderFootPlugin):
     def emitSkypeResolverData(self, data, event):
         self.emitRawRirData(data, event)
 
-        IP = data.get("ip")
-        IPs = data.get("ips")
+        ip = data.get("ip")
+        ips = data.get("ips")
 
-        if IP is not None and IP not in IPs:
+        if ip and ip not in ips:
             evt = SpiderFootEvent(
                 "IP_ADDRESS",
-                IP,
+                ip,
                 self.__name__,
                 event,
             )
             self.notifyListeners(evt)
 
-        if isinstance(IPs, list):
-            for IPElem in IPs:
+        if isinstance(ips, list):
+            for ipElem in ips:
                 if self.checkForStop():
                     return None
 
                 evt = SpiderFootEvent(
                     "IP_ADDRESS",
-                    IPElem.strip(),
+                    ipElem.strip(),
                     self.__name__,
                     event,
                 )
@@ -521,7 +357,7 @@ class sfp_c99(SpiderFootPlugin):
         self.emitRawRirData(data, event)
         firewall = data.get("result")
 
-        if firewall is not None:
+        if firewall:
             evt = SpiderFootEvent(
                 "WEBSERVER_TECHNOLOGY",
                 f"Firewall detected: {firewall}",
@@ -546,15 +382,6 @@ class sfp_c99(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        if (
-            self.opts["response_type"].lower() != "plain"
-            and self.opts["response_type"].lower() != "json"
-        ):
-            self.sf.info(
-                "You enabled sfp_c99 ,but did not set response type to json or plain! JSON will be used by default"
-            )
-            self.opts["response_type"] = "json"
-
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
@@ -564,9 +391,9 @@ class sfp_c99(SpiderFootPlugin):
 
         if eventName == "PHONE_NUMBER":
             phoneData = self.query("phonelookup", "number", eventData)
-            phoneData = phoneData.get("details") if phoneData is not None else None
+            phoneData = phoneData.get("details") if phoneData else None
 
-            if phoneData is not None:
+            if phoneData:
                 self.emitPhoneData(phoneData, event)
 
         if eventName == "DOMAIN_NAME":
@@ -580,9 +407,7 @@ class sfp_c99(SpiderFootPlugin):
 
             domainHistoryData = self.query("domainhistory", "domain", eventData)
             domainHistoryData = (
-                domainHistoryData.get("result")
-                if domainHistoryData is not None
-                else None
+                domainHistoryData.get("result") if domainHistoryData else None
             )
 
             if isinstance(domainHistoryData, list):
@@ -590,34 +415,34 @@ class sfp_c99(SpiderFootPlugin):
 
             wafDetectorData = self.query("firewalldetector", "url", eventData)
 
-            if wafDetectorData is not None:
+            if wafDetectorData:
                 self.emitWafDetectorData(wafDetectorData, event)
 
         if eventName == "IP_ADDRESS":
-            IPToSkypeData = self.query("ip2skype", "ip", eventData)
+            ipToSkypeData = self.query("ip2skype", "ip", eventData)
 
-            if IPToSkypeData is not None:
-                self.emitIPToSkypeData(IPToSkypeData, event)
+            if ipToSkypeData:
+                self.emitIpToSkypeData(ipToSkypeData, event)
 
-            IPToDomainsData = self.query("ip2domains", "ip", eventData)
+            ipToDomainsData = self.query("ip2domains", "ip", eventData)
 
-            if IPToDomainsData is not None:
-                self.emitIPToDomainsData(IPToDomainsData, event)
+            if ipToDomainsData:
+                self.emitIpToDomainsData(ipToDomainsData, event)
 
             proxyDetectionData = self.query("proxydetector", "ip", eventData)
 
-            if proxyDetectionData is not None:
+            if proxyDetectionData:
                 self.emitProxyDetectionData(proxyDetectionData, event)
 
             geoIPData = self.query("geoip", "host", eventData)
 
-            if geoIPData is not None:
+            if geoIPData:
                 self.emitGeoIPData(geoIPData, event)
 
         if eventName == "USERNAME":
             skypeResolverData = self.query("skyperesolver", "username", eventData)
 
-            if skypeResolverData is not None:
+            if skypeResolverData:
                 self.emitSkypeResolverData(skypeResolverData, event)
 
 
