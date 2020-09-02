@@ -68,7 +68,6 @@ class sfp_hostio(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "IP_ADDRESS",
-            "COUNTRY_NAME",
             "RAW_RIR_DATA",
             "EMAILADDR",
             "WEB_ANALYTICS_ID",
@@ -153,14 +152,6 @@ class sfp_hostio(SpiderFootPlugin):
                 evt = SpiderFootEvent("IP_ADDRESS", address, self.__name__, event)
                 self.notifyListeners(evt)
                 found = True
-
-                country = ip_data.get("country")
-                if country is not None:
-                    country_evt = SpiderFootEvent(
-                        "COUNTRY_NAME", country, self.__name__, evt
-                    )
-                    self.notifyListeners(country_evt)
-                    found = True
 
                 loc = ip_data.get("loc")
                 if loc and isinstance(loc, str):
