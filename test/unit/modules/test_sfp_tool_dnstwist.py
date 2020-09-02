@@ -1,9 +1,9 @@
 # test_sfp_tool_dnstwist.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_tool_dnstwist import sfp_tool_dnstwist
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuletool_dnstwist(unittest.TestCase):

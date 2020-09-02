@@ -1,9 +1,9 @@
 # test_sfp_coinblocker.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_coinblocker import sfp_coinblocker
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulecoinblocker(unittest.TestCase):

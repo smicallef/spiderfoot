@@ -1,9 +1,9 @@
 # test_sfp_neutrinoapi.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_neutrinoapi import sfp_neutrinoapi
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleneutrinoapi(unittest.TestCase):

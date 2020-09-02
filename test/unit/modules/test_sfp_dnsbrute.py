@@ -1,9 +1,9 @@
 # test_sfp_dnsbrute.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_dnsbrute import sfp_dnsbrute
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulednsbrute(unittest.TestCase):

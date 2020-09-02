@@ -1,9 +1,9 @@
 # test_sfp_jsonwhoiscom.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_jsonwhoiscom import sfp_jsonwhoiscom
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulejsonwhoiscom(unittest.TestCase):

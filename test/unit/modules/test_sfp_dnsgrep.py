@@ -1,9 +1,9 @@
 # test_sfp_dnsgrep.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_dnsgrep import sfp_dnsgrep
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulednsgrep(unittest.TestCase):

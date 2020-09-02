@@ -1,9 +1,9 @@
 # test_sfp_securitytrails.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_securitytrails import sfp_securitytrails
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulesecuritytrails(unittest.TestCase):

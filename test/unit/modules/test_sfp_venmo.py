@@ -1,9 +1,9 @@
 # test_sfp_venmo.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_venmo import sfp_venmo
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulevenmo(unittest.TestCase):

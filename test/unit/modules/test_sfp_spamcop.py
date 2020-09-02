@@ -1,9 +1,9 @@
 # test_sfp_spamcop.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_spamcop import sfp_spamcop
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulespamcop(unittest.TestCase):

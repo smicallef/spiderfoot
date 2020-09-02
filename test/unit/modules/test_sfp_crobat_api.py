@@ -1,9 +1,10 @@
 # test_sfp_crobat_api.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_crobat_api import sfp_crobat_api
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
+
 
 class TestModuleCrobat_api(unittest.TestCase):
     """

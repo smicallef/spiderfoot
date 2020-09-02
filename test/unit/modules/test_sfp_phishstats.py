@@ -1,9 +1,9 @@
 # test_sfp_phishstats.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_phishstats import sfp_phishstats
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulephishstats(unittest.TestCase):

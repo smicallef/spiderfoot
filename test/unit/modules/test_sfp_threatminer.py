@@ -1,9 +1,9 @@
 # test_sfp_threatminer.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_threatminer import sfp_threatminer
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulethreatminer(unittest.TestCase):

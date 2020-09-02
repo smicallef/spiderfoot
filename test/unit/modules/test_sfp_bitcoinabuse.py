@@ -1,8 +1,9 @@
 # test_sfp_bitcoinabuse.py
-from sflib import SpiderFoot, SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_bitcoinabuse import sfp_bitcoinabuse
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleBitcoinAbuse(unittest.TestCase):

@@ -1,9 +1,9 @@
 # test_sfp_clearbit.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_clearbit import sfp_clearbit
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleclearbit(unittest.TestCase):

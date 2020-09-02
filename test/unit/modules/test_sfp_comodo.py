@@ -1,9 +1,9 @@
 # test_sfp_comodo.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_comodo import sfp_comodo
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulecomodo(unittest.TestCase):

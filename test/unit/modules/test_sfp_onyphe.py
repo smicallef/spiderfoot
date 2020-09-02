@@ -1,9 +1,9 @@
 # test_sfp_onyphe.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_onyphe import sfp_onyphe
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleOnyphe(unittest.TestCase):

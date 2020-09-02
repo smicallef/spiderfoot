@@ -1,9 +1,9 @@
 # test_sfp_botvrij.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_botvrij import sfp_botvrij
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulebotvrij(unittest.TestCase):

@@ -1,9 +1,9 @@
 # test_sfp_crossref.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_crossref import sfp_crossref
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulecrossref(unittest.TestCase):

@@ -1,9 +1,9 @@
 # test_sfp_junkfiles.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_junkfiles import sfp_junkfiles
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulejunkfiles(unittest.TestCase):

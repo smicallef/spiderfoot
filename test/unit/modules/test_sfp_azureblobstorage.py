@@ -1,9 +1,9 @@
 # test_sfp_azureblobstorage.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_azureblobstorage import sfp_azureblobstorage
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleazureblobstorage(unittest.TestCase):
