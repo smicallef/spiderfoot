@@ -2,7 +2,6 @@
 # -------------------------------------------------------------------------------
 # Name:         sflib
 # Purpose:      Common functions used by SpiderFoot modules.
-#               Also defines the SpiderFootPlugin abstract class for modules.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -43,8 +42,6 @@ from networkx.readwrite.gexf import GEXFWriter
 from publicsuffixlist import PublicSuffixList
 from stem import Signal
 from stem.control import Controller
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 
 # For hiding the SSL warnings coming from the requests lib
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -1580,7 +1577,6 @@ class SpiderFoot:
         Returns:
             list: list of domain names and IP addresses
         """
-
         ret = list()
 
         if not target:
@@ -2501,8 +2497,6 @@ class SpiderFoot:
             proxy = bool(self.opts['_socks1type'])
 
             # Never proxy these system/internal locations
-            # This logic also exists in ext/socks.py and may not be
-            # needed anymore.
             if host in neverProxyNames:
                 proxy = False
             for s in neverProxyNames:
@@ -2513,7 +2507,7 @@ class SpiderFoot:
                     proxy = False
 
             if proxy:
-                self.debug("Using proxy for " + host)
+                self.debug(f"Using proxy for {host}")
                 self.debug("Proxy set to " + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']))
                 proxies = {
                     'http': 'socks5h://' + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']),
@@ -2811,301 +2805,4 @@ class SpiderFoot:
 
         return None
 
-
-class SpiderFootPlugin():
-    """SpiderFootPlugin module object
-
-    Attributes:
-        _stopScanning (bool): Will be set to True by the controller if the user aborts scanning
-        listenerModules (list): Modules that will be notified when this module produces events
-        _currentEvent (SpiderFootEvent): Current event being processed
-        _currentTarget (str): Target currently being acted against
-        _name_: Name of this module, set at startup time
-        __sfdb__: Direct handle to the database - not to be directly used
-                  by modules except the sfp__stor_db module.
-        __scanId__: ID of the scan the module is running against
-        __datasource__: (Unused) tracking of data sources
-        __outputFilter: If set, events not matching this list are dropped
-        _priority (int): Priority, smaller numbers should run first
-        errorState (bool): error state of the module
-        socksProxy (str): SOCKS proxy
-    """
-
-    # Will be set to True by the controller if the user aborts scanning
-    _stopScanning = False
-    # Modules that will be notified when this module produces events
-    _listenerModules = list()
-    # Current event being processed
-    _currentEvent = None
-    # Target currently being acted against
-    _currentTarget = None
-    # Name of this module, set at startup time
-    __name__ = "module_name_not_set!"
-    # Direct handle to the database - not to be directly used
-    # by modules except the sfp__stor_db module.
-    __sfdb__ = None
-    # ID of the scan the module is running against
-    __scanId__ = None
-    # (only used in SpiderFoot HX) tracking of data sources
-    __dataSource__ = None
-    # If set, events not matching this list are dropped
-    __outputFilter__ = None
-    # Priority, smaller numbers should run first
-    _priority = 1
-    # Error state of the module
-    errorState = False
-    # SOCKS proxy
-    socksProxy = None
-
-    def __init__(self):
-        """Not really needed in most cases."""
-        pass
-
-    def _updateSocket(self, socksProxy):
-        """Hack to override module's use of socket, replacing it with
-        one that uses the supplied SOCKS server."""
-        self.socksProxy = socksProxy
-
-    def clearListeners(self):
-        """Used to clear any listener relationships, etc. This is needed because
-        Python seems to cache local variables even between threads."""
-
-        self._listenerModules = list()
-        self._stopScanning = False
-
-    def setup(self, sf, userOpts={}):
-        """Will always be overriden by the implementer."""
-        pass
-
-    def enrichTarget(self, target):
-        """Hardly used, only in special cases where a module can find
-        aliases for a target."""
-        pass
-
-    def setTarget(self, target):
-        """Assigns the current target this module is acting against.
-
-        Args:
-            target (SpiderFootTarget): target
-        """
-        if not isinstance(target, SpiderFootTarget):
-            raise TypeError("target is %s; expected SpiderFootTarget" % type(target))
-
-        self._currentTarget = target
-
-    def setDbh(self, dbh):
-        """Used to set the database handle, which is only to be used
-        by modules in very rare/exceptional cases (e.g. sfp__stor_db)
-
-        Args:
-            dbh (SpiderFootDb): database handle
-        """
-        self.__sfdb__ = dbh
-
-    def setScanId(self, scanId):
-        """Set the scan ID.
-
-        Args:
-            id (str): scan ID
-        """
-        if not isinstance(scanId, str):
-            raise TypeError("scanId is %s; expected str" % type(scanId))
-
-        self.__scanId__ = scanId
-
-    def getScanId(self):
-        """Get the scan ID.
-
-        Returns:
-            str: scan ID
-        """
-        if not self.__scanId__:
-            raise TypeError("Module called getScanId() but no scanId is set.")
-
-        return self.__scanId__
-
-    def getTarget(self):
-        """Gets the current target this module is acting against."""
-        if not self._currentTarget:
-            raise TypeError("Module called getTarget() but no target is set.")
-
-        return self._currentTarget
-
-    def registerListener(self, listener):
-        """Listener modules which will get notified once we have data for them to
-        work with.
-
-        Args:
-            listener: TBD
-        """
-
-        self._listenerModules.append(listener)
-
-    def setOutputFilter(self, types):
-        self.__outputFilter__ = types
-
-    def tempStorage(self):
-        """For future use. Module temporary storage.
-
-        A dictionary used to persist state (in memory) for a module.
-
-        Todo:
-            Move all module state to use this, which then would enable a scan to be paused/resumed.
-
-        Note:
-            Required for SpiderFoot HX compatibility of modules.
-
-        Returns:
-            dict: module temporary state data
-        """
-        return dict()
-
-    def notifyListeners(self, sfEvent):
-        """Call the handleEvent() method of every other plug-in listening for
-        events from this plug-in. Remember that those plug-ins will be called
-        within the same execution context of this thread, not on their own.
-
-        Args:
-            sfEvent (SpiderFootEvent): event
-        """
-
-        if not isinstance(sfEvent, SpiderFootEvent):
-            raise TypeError("sfEvent is %s; expected SpiderFootEvent" % type(sfEvent))
-
-        eventName = sfEvent.eventType
-
-        if self.__outputFilter__:
-            # Be strict about what events to pass on, unless they are
-            # the ROOT event or the event type of the target.
-            if eventName not in ('ROOT', self.getTarget().targetType):
-                if eventName not in self.__outputFilter__:
-                    return None
-
-        storeOnly = False  # Under some conditions, only store and don't notify
-
-        if sfEvent.data is None:
-            return None
-
-        if isinstance(sfEvent.data, str) and len(sfEvent.data) == 0:
-            return None
-
-        if self.checkForStop():
-            return None
-
-        # Look back to ensure the original notification for an element
-        # is what's linked to children. For instance, sfp_dns may find
-        # xyz.abc.com, and then sfp_ripe obtains some raw data for the
-        # same, and then sfp_dns finds xyz.abc.com in there, we should
-        # suppress the notification of that to other modules, as the
-        # original xyz.abc.com notification from sfp_dns will trigger
-        # those modules anyway. This also avoids messy iterations that
-        # traverse many many levels.
-
-        # storeOnly is used in this case so that the source to dest
-        # relationship is made, but no further events are triggered
-        # from dest, as we are already operating on dest's original
-        # notification from one of the upstream events.
-
-        prevEvent = sfEvent.sourceEvent
-        while prevEvent is not None:
-            if prevEvent.sourceEvent is not None:
-                if prevEvent.sourceEvent.eventType == sfEvent.eventType and prevEvent.sourceEvent.data.lower() == sfEvent.data.lower():
-                    storeOnly = True
-                    break
-            prevEvent = prevEvent.sourceEvent
-
-        self._listenerModules.sort(key=lambda m: m._priority)
-
-        for listener in self._listenerModules:
-            if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
-                continue
-
-            if storeOnly and "__stor" not in listener.__module__:
-                continue
-
-            listener._currentEvent = sfEvent
-
-            # Check if we've been asked to stop in the meantime, so that
-            # notifications stop triggering module activity.
-            if self.checkForStop():
-                return None
-
-            try:
-                if isinstance(sfEvent.data, bytes):
-                    sfEvent.data = sfEvent.data.decode('utf-8', 'ignore')
-
-                listener.handleEvent(sfEvent)
-            except BaseException as e:
-                with open(os.path.join(SpiderFoot.dataPath(), "sferror.log"), "a") as f:
-                    f.write(f"[{time.ctime()}]: Module ({listener.__module__}) encountered an error: {e}\n")
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    f.write(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
-
-    def checkForStop(self):
-        """For modules to use to check for when they should give back control.
-
-        Returns:
-            bool
-        """
-        if not self.__scanId__:
-            return False
-
-        scanstatus = self.__sfdb__.scanInstanceGet(self.__scanId__)
-
-        if not scanstatus:
-            return False
-
-        if scanstatus[5] == "ABORT-REQUESTED":
-            return True
-
-        return False
-
-    def watchedEvents(self):
-        """What events is this module interested in for input. The format is a list
-        of event types that are applied to event types that this module wants to
-        be notified of, or * if it wants everything.
-        Will usually be overriden by the implementer, unless it is interested
-        in all events (default behavior).
-
-        Returns:
-            list: list of events this modules watches
-        """
-
-        return ['*']
-
-    def producedEvents(self):
-        """What events this module produces
-        This is to support the end user in selecting modules based on events
-        produced.
-
-        Returns:
-            list: list of events produced by this module
-        """
-
-        return []
-
-    def handleEvent(self, sfEvent):
-        """Handle events to this module.
-        Will usually be overriden by the implementer, unless it doesn't handle any events.
-
-        Args:
-            sfEvent (SpiderFootEvent): event
-
-        Returns:
-            None
-        """
-
-        return None
-
-    def start(self):
-        """Kick off the work (for some modules nothing will happen here, but instead
-        the work will start from the handleEvent() method.
-        Will usually be overriden by the implementer.
-
-        Returns:
-            None
-        """
-
-        return None
-
-# end of SpiderFootPlugin class
+# end of SpiderFoot class

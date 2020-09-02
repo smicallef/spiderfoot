@@ -13,8 +13,7 @@ import json
 import time
 from datetime import datetime
 
-from sflib import SpiderFootPlugin
-from spiderfoot import SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_fullcontact(SpiderFootPlugin):

@@ -1,9 +1,9 @@
 # test_sfp_sslcert.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_sslcert import sfp_sslcert
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulesslcert(unittest.TestCase):

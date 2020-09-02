@@ -1,9 +1,9 @@
 # test_sfp_commoncrawl.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_commoncrawl import sfp_commoncrawl
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulecommoncrawl(unittest.TestCase):

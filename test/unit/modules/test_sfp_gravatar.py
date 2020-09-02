@@ -1,9 +1,9 @@
 # test_sfp_gravatar.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_gravatar import sfp_gravatar
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulegravatar(unittest.TestCase):

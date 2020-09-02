@@ -13,7 +13,7 @@
 import json
 from urllib.parse import urlencode
 
-from sflib import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_bitcoinabuse(SpiderFootPlugin):

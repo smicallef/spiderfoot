@@ -1,9 +1,9 @@
 # test_sfp_fraudguard.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_fraudguard import sfp_fraudguard
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulefraudguard(unittest.TestCase):

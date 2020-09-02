@@ -1,6 +1,7 @@
 # test_spiderfootevent.py
-from spiderfoot import SpiderFootEvent
 import unittest
+
+from spiderfoot import SpiderFootEvent
 
 
 class TestSpiderFootEvent(unittest.TestCase):

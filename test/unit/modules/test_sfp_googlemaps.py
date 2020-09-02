@@ -1,9 +1,9 @@
 # test_sfp_googlemaps.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_googlemaps import sfp_googlemaps
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulegooglemaps(unittest.TestCase):

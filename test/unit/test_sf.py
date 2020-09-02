@@ -1,7 +1,7 @@
 # test_sf.py
-import unittest
-import sys
 import subprocess
+import sys
+import unittest
 
 
 class TestSf(unittest.TestCase):

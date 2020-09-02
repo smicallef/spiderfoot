@@ -1,9 +1,9 @@
 # test_sfp_keybase.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_keybase import sfp_keybase
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulekeybase(unittest.TestCase):

@@ -1,5 +1,6 @@
 import netaddr
 
+
 class SpiderFootTarget():
     """SpiderFoot target.
 

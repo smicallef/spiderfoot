@@ -1,9 +1,9 @@
 # test_sfp_twilio.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_twilio import sfp_twilio
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuletwilio(unittest.TestCase):

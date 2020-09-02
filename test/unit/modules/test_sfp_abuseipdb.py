@@ -1,9 +1,9 @@
 # test_sfp_abuseipdb.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_abuseipdb import sfp_abuseipdb
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleabuseipdb(unittest.TestCase):

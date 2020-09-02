@@ -1,9 +1,9 @@
 # test_sfp_tool_cmseek.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_tool_cmseek import sfp_tool_cmseek
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleCmseek(unittest.TestCase):

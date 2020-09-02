@@ -1,9 +1,9 @@
 # test_sfp_quad9.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_quad9 import sfp_quad9
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulequad9(unittest.TestCase):

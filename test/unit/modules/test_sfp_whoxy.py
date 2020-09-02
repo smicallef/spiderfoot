@@ -1,9 +1,9 @@
 # test_sfp_whoxy.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_whoxy import sfp_whoxy
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulewhoxy(unittest.TestCase):

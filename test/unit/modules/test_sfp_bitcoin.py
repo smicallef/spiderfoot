@@ -1,9 +1,9 @@
 # test_sfp_bitcoin.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_bitcoin import sfp_bitcoin
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleBitcoin(unittest.TestCase):

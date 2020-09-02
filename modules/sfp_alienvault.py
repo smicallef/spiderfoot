@@ -16,8 +16,7 @@ from datetime import datetime
 
 from netaddr import IPNetwork
 
-from sflib import SpiderFootPlugin
-from spiderfoot import SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_alienvault(SpiderFootPlugin):

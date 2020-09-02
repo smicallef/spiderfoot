@@ -1,9 +1,9 @@
 # test_sfp_slideshare.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_slideshare import sfp_slideshare
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleslideshare(unittest.TestCase):

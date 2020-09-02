@@ -1,9 +1,9 @@
 # test_sfp_networksdb.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_networksdb import sfp_networksdb
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulenetworksdb(unittest.TestCase):

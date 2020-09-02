@@ -1,9 +1,9 @@
 # test_sfp_whoisology.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_whoisology import sfp_whoisology
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulewhoisology(unittest.TestCase):

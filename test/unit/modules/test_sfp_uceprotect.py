@@ -1,9 +1,9 @@
 # test_sfp_uceprotect.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_uceprotect import sfp_uceprotect
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleuceprotect(unittest.TestCase):

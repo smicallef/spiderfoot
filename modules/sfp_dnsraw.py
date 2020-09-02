@@ -17,8 +17,7 @@ import dns.query
 import dns.rdatatype
 import dns.resolver
 
-from sflib import SpiderFootPlugin
-from spiderfoot import SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_dnsraw(SpiderFootPlugin):

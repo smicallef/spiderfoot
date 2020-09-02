@@ -1,9 +1,9 @@
 # test_sfp_opencorporates.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_opencorporates import sfp_opencorporates
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleopencorporates(unittest.TestCase):

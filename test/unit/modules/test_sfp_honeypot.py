@@ -1,9 +1,9 @@
 # test_sfp_honeypot.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_honeypot import sfp_honeypot
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulehoneypot(unittest.TestCase):

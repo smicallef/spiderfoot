@@ -1,9 +1,9 @@
 # test_sfp_torexits.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_torexits import sfp_torexits
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuletorexits(unittest.TestCase):

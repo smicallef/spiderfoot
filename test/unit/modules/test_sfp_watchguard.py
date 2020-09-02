@@ -1,9 +1,9 @@
 # test_sfp_watchguard.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_watchguard import sfp_watchguard
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulewatchguard(unittest.TestCase):

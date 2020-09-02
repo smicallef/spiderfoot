@@ -1,9 +1,9 @@
 # test_sfp_darksearch.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_darksearch import sfp_darksearch
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuledarksearch(unittest.TestCase):

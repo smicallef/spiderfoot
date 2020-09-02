@@ -1,8 +1,8 @@
 # test_spiderfootplugin.py
-from sflib import SpiderFootPlugin
-from spiderfoot import SpiderFootTarget
-from sfdb import SpiderFootDb, SpiderFootEvent
 import unittest
+
+from sfdb import SpiderFootDb, SpiderFootEvent
+from spiderfoot import SpiderFootPlugin, SpiderFootTarget
 
 
 class TestSpiderFootPlugin(unittest.TestCase):
@@ -45,7 +45,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
         self.assertIsInstance(sfp, SpiderFootPlugin)
 
-    def test_update_socket(self):
+    def test_updateSocket(self):
         """
         Test _updateSocket(self, sock)
         """
@@ -54,7 +54,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp._updateSocket(None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_clear_listeners(self):
+    def test_clearListeners(self):
         """
         Test clearListeners(self)
         """
@@ -73,7 +73,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.setup(None, None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_enrich_target(self):
+    def test_enrichTargetargument_target_should_enrih_target(self):
         """
         Test enrichTarget(self, target)
         """
@@ -82,7 +82,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.enrichTarget(None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_set_target_should_set_a_target(self):
+    def test_setTarget_should_set_a_target(self):
         """
         Test setTarget(self, target)
         """
@@ -95,19 +95,19 @@ class TestSpiderFootPlugin(unittest.TestCase):
         self.assertIsInstance(get_target, str)
         self.assertEqual("spiderfoot.net", get_target)
 
-    def test_set_target_invalid_target_should_raise(self):
+    def test_setTarget_argument_target_invalid_type_should_raise_TypeError(self):
         """
         Test setTarget(self, target)
         """
         sfp = SpiderFootPlugin()
 
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
                     sfp.setTarget(invalid_type)
 
-    def test_set_dbh(self):
+    def test_set_dbhargument_dbh_should_set_database_handle(self):
         """
         Test setDbh(self, dbh)
         """
@@ -117,7 +117,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.setDbh(sfdb)
         self.assertIsInstance(sfp.__sfdb__, SpiderFootDb)
 
-    def test_set_scan_id_should_set_a_scan_id(self):
+    def test_setScanId_argument_id_should_set_a_scan_id(self):
         """
         Test setScanId(self, id)
         """
@@ -130,7 +130,19 @@ class TestSpiderFootPlugin(unittest.TestCase):
         self.assertIsInstance(get_scan_id, str)
         self.assertEqual(scan_id, get_scan_id)
 
-    def test_get_scan_id_should_return_a_string(self):
+    def test_setScanId_argument_id_invalid_type_should_raise_TypeError(self):
+        """
+        Test setScanId(self, id)
+        """
+        sfp = SpiderFootPlugin()
+
+        invalid_types = [None, list(), dict(), int()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                with self.assertRaises(TypeError):
+                    sfp.setScanId(invalid_type)
+
+    def test_getScanId_should_return_a_string(self):
         """
         Test getScanId(self)
         """
@@ -140,10 +152,10 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.setScanId(scan_id)
 
         get_scan_id = sfp.getScanId()
-        self.assertEqual(str, type(get_scan_id))
+        self.assertIsInstance(get_scan_id, str)
         self.assertEqual(scan_id, get_scan_id)
 
-    def test_get_scan_id_unitialised_scanid_should_raise(self):
+    def test_getScanId_unitialised_scanid_should_raise_TypeError(self):
         """
         Test getScanId(self)
         """
@@ -152,7 +164,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         with self.assertRaises(TypeError):
             sfp.getScanId()
 
-    def test_get_target_should_return_a_string(self):
+    def test_getTarget_should_return_a_string(self):
         """
         Test getTarget(self)
         """
@@ -165,7 +177,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         self.assertIsInstance(get_target, str)
         self.assertEqual("spiderfoot.net", get_target)
 
-    def test_get_target_unitialised_target_should_raise(self):
+    def test_getTarget_unitialised_target_should_raise(self):
         """
         Test getTarget(self)
         """
@@ -183,7 +195,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    def test_set_output_filter_should_set_output_filter(self):
+    def test_setOutputFilter_should_set_output_filter(self):
         """
         Test setOutputFilter(self, types)
         """
@@ -193,16 +205,16 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.setOutputFilter("test filter")
         self.assertEqual(output_filter, sfp.__outputFilter__)
 
-    def test_temp_storage_should_return_a_dict(self):
+    def test_tempStorage_should_return_a_dict(self):
         """
         Test tempStorage(self)
         """
         sfp = SpiderFootPlugin()
 
         temp_storage = sfp.tempStorage()
-        self.assertEqual(dict, type(temp_storage))
+        self.assertIsInstance(temp_storage, dict)
 
-    def test_notify_listeners(self):
+    def test_notifyListeners(self):
         """
         Test notifyListeners(self, sfEvent)
 
@@ -226,19 +238,19 @@ class TestSpiderFootPlugin(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    def test_notify_listeners_invalid_event_should_raise(self):
+    def test_notifyListeners_invalid_event_should_raise_TypeError(self):
         """
         Test notifyListeners(self, sfEvent)
         """
         sfp = SpiderFootPlugin()
 
-        invalid_types = [None, "", list(), dict()]
+        invalid_types = [None, "", list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
                     sfp.notifyListeners(None)
 
-    def test_check_for_stop(self):
+    def test_checkForStop(self):
         """
         Test checkForStop(self)
 
@@ -259,7 +271,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
             returnValue = sfp.checkForStop()
             self.assertEqual(returnValue, expectedReturnValue, status)
 
-    def test_watched_events_should_return_a_list(self):
+    def test_watchedEvents_should_return_a_list(self):
         """
         Test watchedEvents(self)
         """
@@ -268,7 +280,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         watched_events = sfp.watchedEvents()
         self.assertIsInstance(watched_events, list)
 
-    def test_produced_events_should_return_a_list(self):
+    def test_producedEvents_should_return_a_list(self):
         """
         Test producedEvents(self)
         """
@@ -277,7 +289,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         produced_events = sfp.producedEvents()
         self.assertIsInstance(produced_events, list)
 
-    def test_handle_event(self):
+    def test_handleEvent(self):
         """
         Test handleEvent(self, sfEvent)
         """

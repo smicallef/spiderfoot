@@ -1,9 +1,9 @@
 # test_sfp_tldsearch.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_tldsearch import sfp_tldsearch
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuletldsearch(unittest.TestCase):

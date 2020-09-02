@@ -1,9 +1,9 @@
 # test_sfp_emailcrawlr.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_emailcrawlr import sfp_emailcrawlr
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleemailcrawlr(unittest.TestCase):

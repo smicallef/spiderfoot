@@ -1,9 +1,9 @@
 # test_sfp_robtex.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_robtex import sfp_robtex
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulerobtex(unittest.TestCase):

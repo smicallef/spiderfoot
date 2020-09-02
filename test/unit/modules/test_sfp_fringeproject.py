@@ -1,9 +1,9 @@
 # test_sfp_fringeproject.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_fringeproject import sfp_fringeproject
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulefringeproject(unittest.TestCase):

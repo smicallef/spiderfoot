@@ -1,9 +1,9 @@
 # test_sfp_creditcard.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_creditcard import sfp_creditcard
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleCreditCard(unittest.TestCase):

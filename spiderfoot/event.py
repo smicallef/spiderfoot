@@ -2,6 +2,7 @@ import hashlib
 import random
 import time
 
+
 class SpiderFootEvent():
     """SpiderFootEvent object representing identified data and associated meta data.
 

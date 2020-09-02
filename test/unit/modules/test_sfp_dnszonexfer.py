@@ -1,9 +1,9 @@
 # test_sfp_dnszonexfer.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_dnszonexfer import sfp_dnszonexfer
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulednszonexfer(unittest.TestCase):

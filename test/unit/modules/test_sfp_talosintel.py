@@ -1,9 +1,9 @@
 # test_sfp_talosintel.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_talosintel import sfp_talosintel
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuletalosintel(unittest.TestCase):

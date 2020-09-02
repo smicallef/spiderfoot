@@ -1,9 +1,9 @@
 # test_sfp_ethereum.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_ethereum import sfp_ethereum
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleEthereum(unittest.TestCase):

@@ -12,8 +12,7 @@
 import base64
 import json
 
-from sflib import SpiderFootPlugin
-from spiderfoot import SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_clearbit(SpiderFootPlugin):

@@ -1,9 +1,9 @@
 # test_sfp_badpackets.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_badpackets import sfp_badpackets
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulebadpackets(unittest.TestCase):

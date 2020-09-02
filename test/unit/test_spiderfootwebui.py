@@ -1,10 +1,12 @@
 # test_spiderfootwebui.py
-from sfwebui import SpiderFootWebUi
-from sflib import SpiderFoot
+import os
 import unittest
+
 import cherrypy
 from cherrypy.test import helper
-import os
+
+from sflib import SpiderFoot
+from sfwebui import SpiderFootWebUi
 
 
 class TestSpiderFootWebUiRoutes(helper.CPWebCase):

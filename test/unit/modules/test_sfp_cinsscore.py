@@ -1,9 +1,9 @@
 # test_sfp_cinsscore.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_cinsscore import sfp_cinsscore
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulecinsscore(unittest.TestCase):

@@ -15,8 +15,7 @@ import codecs
 import re
 from hashlib import sha256
 
-from sflib import SpiderFootPlugin
-from spiderfoot import SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_bitcoin(SpiderFootPlugin):

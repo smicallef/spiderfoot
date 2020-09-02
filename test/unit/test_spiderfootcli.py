@@ -1,9 +1,10 @@
 # test_spiderfootcli.py
-from sfcli import SpiderFootCli
-import unittest
 import io
-import sys
 import subprocess
+import sys
+import unittest
+
+from sfcli import SpiderFootCli
 
 
 class TestSpiderFootCli(unittest.TestCase):

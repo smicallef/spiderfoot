@@ -12,7 +12,7 @@
 
 import json
 
-from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootPlugin
 
 
 class sfp__stor_stdout(SpiderFootPlugin):

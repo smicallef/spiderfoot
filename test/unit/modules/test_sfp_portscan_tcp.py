@@ -1,9 +1,9 @@
 # test_sfp_portscan_tcp.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_portscan_tcp import sfp_portscan_tcp
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleportscan_tcp(unittest.TestCase):

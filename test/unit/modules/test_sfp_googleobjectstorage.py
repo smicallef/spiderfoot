@@ -1,9 +1,9 @@
 # test_sfp_googleobjectstorage.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_googleobjectstorage import sfp_googleobjectstorage
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulegoogleobjectstorage(unittest.TestCase):
