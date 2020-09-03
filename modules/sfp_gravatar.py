@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        sfp_gravatar
 # Purpose:     SpiderFoot plug-in to search Gravatar API for an email address
 #              and retrieve user information, including username, name, phone
@@ -9,7 +9,7 @@
 # Created:     2019-05-26
 # Copyright:   (c) bcoles 2019
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import hashlib
 import json
@@ -141,14 +141,15 @@ class sfp_gravatar(SpiderFootPlugin):
                     evt = SpiderFootEvent("HUMAN_NAME", name.get('formatted'), self.__name__, event)
                     self.notifyListeners(evt)
 
+        # TODO: re-enable once location validation is implemented
         # location can not be trusted
-        #if data.get('currentLocation') is not None:
-        #    location = data.get('currentLocation')
-        #    if len(location) < 3 or len(location) > 100:
-        #        self.sf.debug("Skipping likely invalid location.")
-        #    else:
-        #        evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
-        #        self.notifyListeners(evt)
+        # if data.get('currentLocation') is not None:
+        #     location = data.get('currentLocation')
+        #     if len(location) < 3 or len(location) > 100:
+        #         self.sf.debug("Skipping likely invalid location.")
+        #     else:
+        #         evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
+        #         self.notifyListeners(evt)
 
         if data.get('phoneNumbers') is not None:
             for number in data.get('phoneNumbers'):

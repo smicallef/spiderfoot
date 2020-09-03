@@ -133,7 +133,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                         accum.extend(info.get('records'))
                     else:
                         accum = info.get('records')
-                    return self.query(qry, querytype, page+1, accum)
+                    return self.query(qry, querytype, page + 1, accum)
                 else:
                     # We are at the last page
                     accum.extend(info.get('records', []))

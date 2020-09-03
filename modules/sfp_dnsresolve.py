@@ -189,7 +189,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                         start = offset - 100
 
                     # Get up to 100 bytes before the name to try and get hostnames
-                    chunkhost = data[start:(offset+start+len(name)+1)]
+                    chunkhost = data[start:(offset + start + len(name) + 1)]
                     try:
                         matches = re.findall(pat, chunkhost)
                         if matches:
@@ -201,7 +201,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                                     m = match
                                 self.processHost(m, parentEvent, False)
                     except Exception as e:
-                        self.sf.error("Error applying regex to data (" + str(e) + ")", False)
+                        self.sf.error(f"Error applying regex to data ({e})", False)
 
                     offset = data.find(name, start + len(chunkhost))
 
@@ -222,7 +222,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if "::" in eventData:
                 return None
 
-            self.sf.debug("Looking up IPs in owned netblock: " + eventData)
+            self.sf.debug(f"Looking up IPs in owned netblock: {eventData}")
             for ip in IPNetwork(eventData):
                 ipaddr = str(ip)
                 if "::" in ipaddr:
@@ -237,8 +237,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
                 addrs = self.sf.resolveIP(ipaddr)
                 if addrs:
-                    self.sf.debug("Found a reversed hostname from " + ipaddr +
-                                  " (" + str(addrs) + ")")
+                    self.sf.debug(f"Found a reversed hostname from {ipaddr} ({addrs})")
                     for addr in addrs:
                         # Generate an event for the IP, then
                         # let the handling by this module take
@@ -376,11 +375,11 @@ class sfp_dnsresolve(SpiderFootPlugin):
         return evt
 
     def processDomain(self, domainName, parentEvent, affil=False, host=None):
-        if domainName not in self.domresults:
-            self.domresults[domainName] = True
-        else:
-            self.sf.debug("Skipping domain, " + domainName + ", already processed.")
+        if domainName in self.domresults:
+            self.sf.debug(f"Skipping domain, {domainName}, already processed.")
             return None
+
+        self.domresults[domainName] = True
 
         if affil:
             domevt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", domainName,

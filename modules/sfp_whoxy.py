@@ -111,7 +111,7 @@ class sfp_whoxy(SpiderFootPlugin):
                         accum.extend(info.get('search_result'))
                     else:
                         accum = info.get('search_result')
-                    return self.query(qry, querytype, page+1, accum)
+                    return self.query(qry, querytype, page + 1, accum)
                 else:
                     # We are at the last page
                     accum.extend(info.get('search_result', []))

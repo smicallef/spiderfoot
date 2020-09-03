@@ -123,8 +123,8 @@ class sfp_pastebin(SpiderFootPlugin):
             new_links = list(set(urls) - set(self.results.keys()))
 
             # Add new links to results
-            for l in new_links:
-                self.results[l] = True
+            for link in new_links:
+                self.results[link] = True
 
             relevant_links = [
                 link for link in new_links if self.sf.urlBaseUrl(link).endswith(target)

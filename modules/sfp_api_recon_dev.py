@@ -22,17 +22,28 @@ class sfp_api_recon_dev(SpiderFootPlugin):
     meta = {
         'name': "api.recon.dev",
         'summary': "Search api.recon.dev for subdomains.",
-        'flags': [""],
+        'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Passive DNS"]
+        'categories': ["Passive DNS"],
+        "dataSource": {
+            "website": "https://api.recon.dev",
+            "references": ["https://recon.dev/api/docs"],
+            "apiKeyInstructions": [
+                "Visit https://recon.dev/",
+                "Register an account",
+                "Visit https://recon.dev/account and use the authentication token provided",
+            ],
+        }
     }
 
     opts = {
+        "api_key": "",
         "verify": True,
         "delay": 1
     }
 
     optdescs = {
+        "api_key": "api.recon.dev API key.",
         "verify": "Verify identified domains still resolve to the associated specified IP address.",
         "delay": "Delay between requests, in seconds."
     }
@@ -55,14 +66,17 @@ class sfp_api_recon_dev(SpiderFootPlugin):
         return ["RAW_RIR_DATA", "INTERNET_NAME"]
 
     def queryDomain(self, qry):
+        """https://recon.dev/api/docs"""
+
         headers = {
             "Accept": "application/json"
         }
-        params = {
+        params = urllib.parse.urlencode({
+            'key': self.opts['api_key'],
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
-        }
+        })
         res = self.sf.fetchUrl(
-            'https://api.recon.dev/search?' + urllib.parse.urlencode(params),
+            f"https://api.recon.dev/api/search?{params}",
             headers=headers,
             timeout=30,
             useragent=self.opts['_useragent']
@@ -76,6 +90,11 @@ class sfp_api_recon_dev(SpiderFootPlugin):
         # Future proofing - api.recon.dev does not implement rate limiting
         if res['code'] == '429':
             self.sf.error("You are being rate-limited by api.recon.dev", False)
+            self.errorState = True
+            return None
+
+        if res['code'] == '500':
+            self.sf.error("Error during request from either an inproper domain/API key or you have used up all your API credits for the month", False)
             self.errorState = True
             return None
 
@@ -120,13 +139,21 @@ class sfp_api_recon_dev(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        if self.opts["api_key"] == "":
+            self.sf.error(
+                f"You enabled {self.__class__.__name__} but did not set an API key!",
+                False,
+            )
+            self.errorState = True
+            return None
+
         if eventName not in ["DOMAIN_NAME"]:
             return None
 
         data = self.queryDomain(eventData)
 
         if data is None:
-            self.sf.debug("No information found for domain " + eventData)
+            self.sf.debug(f"No information found for domain {eventData}")
             return None
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
@@ -151,7 +178,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
                 continue
 
             if self.opts['verify'] and not self.sf.resolveHost(domain):
-                self.sf.debug("Host %s could not be resolved" % domain)
+                self.sf.debug(f"Host {domain} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
                 self.notifyListeners(evt)
             else:

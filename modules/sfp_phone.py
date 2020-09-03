@@ -15,7 +15,7 @@
 import phonenumbers
 from phonenumbers import carrier
 
-#from phonenumbers import geocoder
+# from phonenumbers import geocoder
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -102,17 +102,17 @@ class sfp_phone(SpiderFootPlugin):
             else:
                 self.sf.debug("No carrier information found for " + eventData)
 
-            #try:
-            #    location = geocoder.description_for_number(number, 'en')
-            #except BaseException as e:
-            #    self.sf.debug('Error retrieving phone number location: ' + str(e))
-            #    return None
+            # try:
+            #     location = geocoder.description_for_number(number, 'en')
+            # except BaseException as e:
+            #     self.sf.debug('Error retrieving phone number location: ' + str(e))
+            #     return None
 
-            #if location:
-            #    evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
-            #    self.notifyListeners(evt)
-            #else:
-            #    self.sf.debug("No location information found for " + eventData)
+            # if location:
+            #     evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
+            #     self.notifyListeners(evt)
+            # else:
+            #     self.sf.debug("No location information found for " + eventData)
 
         return None
 

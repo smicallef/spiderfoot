@@ -143,8 +143,8 @@ class sfp_intelx(SpiderFootPlugin):
             return None
 
         if ret.get('status', -1) == 0:
-            #Craft API URL with the id to return results
-            resulturl = url + "/result?id=%s" % str(ret['id'])
+            # Craft API URL with the id to return results
+            resulturl = f"{url}/result?id={ret['id']}"
             limit = 30
             count = 0
             status = 3  # status 3 = No results yet, keep trying. 0 = Success with results
@@ -169,7 +169,7 @@ class sfp_intelx(SpiderFootPlugin):
                 retdata.append(ret)
                 # No more results left
                 if status == 1:
-                    #print data in json format to manipulate as desired
+                    # print data in json format to manipulate as desired
                     break
 
                 time.sleep(1)
@@ -192,12 +192,11 @@ class sfp_intelx(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
             return None
@@ -229,10 +228,10 @@ class sfp_intelx(SpiderFootPlugin):
                         val = rec['name']
 
                     if not val or not evt:
-                        self.sf.debug("Unexpected record, skipping (" + str(rec['bucket'] + ")"))
+                        self.sf.debug(f"Unexpected record, skipping ({rec['bucket']})")
                         continue
                 except BaseException as e:
-                    self.sf.error("Error processing content from IntelX: " + str(e), False)
+                    self.sf.error(f"Error processing content from IntelX: {e}", False)
                     continue
 
                 # Notify other modules of what you've found
@@ -246,7 +245,7 @@ class sfp_intelx(SpiderFootPlugin):
         if data is None:
             return None
 
-        self.sf.info("Found IntelligenceX host and email data for " + eventData)
+        self.sf.info(f"Found IntelligenceX host and email data for {eventData}")
         for info in data:
             for rec in info.get("selectors", dict()):
                 try:
@@ -267,7 +266,7 @@ class sfp_intelx(SpiderFootPlugin):
                         self.sf.debug("Unexpected record, skipping.")
                         continue
                 except BaseException as e:
-                    self.sf.error("Error processing content from IntelX: " + str(e), False)
+                    self.sf.error(f"Error processing content from IntelX: {e}", False)
                     continue
 
                 # Notify other modules of what you've found

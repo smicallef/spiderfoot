@@ -130,7 +130,7 @@ class sfp_censys(SpiderFootPlugin):
             self.sf.error(f"Error processing JSON response from Censys.io: {e}", False)
             return None
 
-        #print(str(info))
+        # print(str(info))
         return info
 
     # Handle events sent to this module

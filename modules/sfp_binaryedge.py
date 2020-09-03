@@ -231,16 +231,16 @@ class sfp_binaryedge(SpiderFootPlugin):
             evtType = "CO_HOSTED_SITE"
             ret = self.query(eventData, "passive")
             if ret is None:
-                self.sf.info("No Passive DNS info for " + eventData)
+                self.sf.info(f"No Passive DNS info for {eventData}")
                 return None
 
             for rec in ret:
-                if "events" not in rec:
+                events = rec.get('events')
+                if not events:
                     continue
 
                 self.sf.debug("Found passive DNS results in BinaryEdge.io")
-                res = rec["events"]
-                for rec in res:
+                for rec in events:
                     host = rec['domain']
                     if host == eventData:
                         continue
@@ -263,45 +263,46 @@ class sfp_binaryedge(SpiderFootPlugin):
                         self.cohostcount += 1
 
         if eventName == "EMAILADDR":
-            evtType = "EMAILADDR_COMPROMISED"
             ret = self.query(eventData, "email")
             if ret is None:
-                self.sf.info("No leak info for " + eventData)
+                self.sf.info(f"No leak info for {eventData}")
                 return None
 
             for rec in ret:
-                if "events" not in rec:
+                events = rec.get('events')
+                if not events:
                     continue
 
                 self.sf.debug("Found compromised account results in BinaryEdge.io")
-                res = rec["events"]
-                for rec in res:
-                    e = SpiderFootEvent(evtType, eventData + " [" + rec + "]", self.__name__, event)
+
+                for leak in events:
+                    e = SpiderFootEvent('EMAILADDR_COMPROMISED', f"{eventData} [{leak}]", self.__name__, event)
                     self.notifyListeners(e)
 
         if eventName == "DOMAIN_NAME":
-            evtType = "INTERNET_NAME"
             ret = self.query(eventData, "subs")
             if ret is None:
                 self.sf.info("No hosts found for " + eventData)
                 return None
 
             for rec in ret:
-                if "events" not in rec:
+                events = rec.get('events')
+                if not events:
                     continue
 
                 self.sf.debug("Found host results in BinaryEdge.io")
-                res = rec["events"]
-                for rec in res:
+                for rec in events:
                     if rec in self.reportedhosts:
                         continue
-                    else:
-                        self.reportedhosts[rec] = True
+
+                    self.reportedhosts[rec] = True
+
                     if self.opts['verify']:
                         if not self.sf.resolveHost(rec):
-                            self.sf.debug("Couldn't resolve " + rec + ", so skipping.")
+                            self.sf.debug(f"Couldn't resolve {rec}, so skipping.")
                             continue
-                    e = SpiderFootEvent(evtType, rec, self.__name__, event)
+
+                    e = SpiderFootEvent('INTERNET_NAME', rec, self.__name__, event)
                     self.notifyListeners(e)
 
         for addr in qrylist:
@@ -311,26 +312,27 @@ class sfp_binaryedge(SpiderFootPlugin):
             if addr in self.checkedips:
                 continue
 
-            evtType = "MALICIOUS_IPADDR"
             ret = self.query(eventData, "torrent")
             if ret is None:
-                self.sf.info("No torrent info for " + eventData)
+                self.sf.info(f"No torrent info for {eventData}")
                 return None
 
             for rec in ret:
-                if "events" not in rec:
+                events = rec.get('events')
+                if not events:
                     continue
 
                 self.sf.debug("Found torrent results in BinaryEdge.io")
-                res = rec["events"]
-                for rec in res:
+                for rec in events:
                     created_ts = rec['origin'].get('ts') / 1000
                     age_limit_ts = int(time.time()) - (86400 * self.opts['torrent_age_limit_days'])
+
                     if self.opts['torrent_age_limit_days'] > 0 and created_ts < age_limit_ts:
                         self.sf.debug("Record found but too old, skipping.")
                         continue
+
                     dat = "Torrent: " + rec.get("torrent", "???").get("name") + " @ " + rec.get('torrent').get("source", "???")
-                    e = SpiderFootEvent(evtType, dat, self.__name__, event)
+                    e = SpiderFootEvent('MALICIOUS_IPADDR', dat, self.__name__, event)
                     self.notifyListeners(e)
 
         for addr in qrylist:
@@ -340,29 +342,32 @@ class sfp_binaryedge(SpiderFootPlugin):
             if addr in self.checkedips:
                 continue
 
-            evtType = "VULNERABILITY"
             ret = self.query(eventData, "vuln")
             if ret is None:
-                self.sf.info("No vulnerability info for " + eventData)
+                self.sf.info(f"No vulnerability info for {eventData}")
                 return None
 
             for rec in ret:
-                if "events" not in rec:
+                events = rec.get('events')
+                if not events:
                     continue
-                if "results" not in rec['events']:
+
+                results = events.get('results')
+                if not results:
                     continue
 
                 self.sf.debug("Found vulnerability results in BinaryEdge.io")
-                res = rec["events"]["results"]
-                for rec in res:
+                for rec in results:
                     created_ts = rec.get('ts') / 1000
                     age_limit_ts = int(time.time()) - (86400 * self.opts['cve_age_limit_days'])
+
                     if self.opts['cve_age_limit_days'] > 0 and created_ts < age_limit_ts:
                         self.sf.debug("Record found but too old, skipping.")
                         continue
+
                     for c in rec['cves']:
                         cve = c['cve']
-                        e = SpiderFootEvent(evtType, cve, self.__name__, event)
+                        e = SpiderFootEvent('VULNERABILITY', cve, self.__name__, event)
                         self.notifyListeners(e)
 
         for addr in qrylist:
@@ -374,35 +379,39 @@ class sfp_binaryedge(SpiderFootPlugin):
 
             ret = self.query(eventData, "ports")
             if ret is None:
-                self.sf.info("No port/banner info for " + eventData)
+                self.sf.info(f"No port/banner info for {eventData}")
                 return None
 
             for rec in ret:
-                if "events" not in rec:
+                events = rec.get('events')
+                if not events:
                     continue
 
                 self.sf.debug("Found port/banner results in BinaryEdge.io")
-                allres = rec["events"]
+
                 ports = list()
-                for res in allres:
+                for res in events:
                     for prec in res['results']:
                         created_ts = prec['origin'].get('ts') / 1000
                         age_limit_ts = int(time.time()) - (86400 * self.opts['port_age_limit_days'])
+
                         if self.opts['port_age_limit_days'] > 0 and created_ts < age_limit_ts:
                             self.sf.debug("Record found but too old, skipping.")
                             continue
 
-                        entity = prec['target']['ip'] + ":" + str(prec['target']['port'])
+                        port = str(prec['target']['port'])
+                        entity = prec['target']['ip'] + ":" + port
                         evttype = "TCP_PORT_OPEN"
                         evtbtype = "TCP_PORT_OPEN_BANNER"
+
                         if prec['target']['protocol'] == "udp":
                             evttype = "UDP_PORT_OPEN"
                             evtbtype = "UDP_PORT_OPEN_INFO"
 
-                        if not evttype+":"+str(prec['target']['port']) in ports:
+                        if f"{evttype}:{port}" not in ports:
                             ev = SpiderFootEvent(evttype, entity, self.__name__, event)
                             self.notifyListeners(ev)
-                            ports.append(evttype+":"+str(prec['target']['port']))
+                            ports.append(f"{evttype}:{port}")
 
                         try:
                             banner = prec['result']['data']['service']['banner']
