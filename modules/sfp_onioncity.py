@@ -114,8 +114,8 @@ class sfp_onioncity(SpiderFootPlugin):
         new_links = list(set(urls) - set(self.results.keys()))
 
         # Add new links to results
-        for l in new_links:
-            self.results[l] = True
+        for link in new_links:
+            self.results[link] = True
 
         # Submit the Google results for analysis
         googlesearch_url = res["webSearchUrl"]
