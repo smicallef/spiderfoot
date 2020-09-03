@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_openbugbounty
 # Purpose:      Query the Open Bug Bounty database to see if our target appears.
 #
@@ -7,7 +7,7 @@
 # Created:     04/10/2015
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 
@@ -88,7 +88,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
             rx = re.compile(".*<div class=.cell1.><a href=.(.*).>(.*" + qry + ").*?</a></div>.*", re.IGNORECASE)
             for m in rx.findall(res['content']):
                 # Report it
-                if m[1] == qry or m[1].endswith("."+qry):
+                if m[1] == qry or m[1].endswith("." + qry):
                     ret.append("From openbugbounty.org: <SFURL>" + base + m[0] + "</SFURL>")
         except Exception as e:
             self.sf.error("Error processing response from openbugbounty.org: " + str(e), False)

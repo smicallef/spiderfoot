@@ -104,7 +104,7 @@ class sfp_filemeta(SpiderFootPlugin):
                 if fileExt.lower() == "pdf":
                     try:
                         raw = io.BytesIO(ret['content'])
-                        #data = metapdf.MetaPdfReader().read_metadata(raw)
+                        # data = metapdf.MetaPdfReader().read_metadata(raw)
                         pdf = PyPDF2.PdfFileReader(raw, strict=False)
                         data = pdf.getDocumentInfo()
                         meta = str(data)

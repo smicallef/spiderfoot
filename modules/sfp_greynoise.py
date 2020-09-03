@@ -59,7 +59,7 @@ class sfp_greynoise(SpiderFootPlugin):
         'maxnetblock': 24,
         'subnetlookup': True,
         'maxsubnet': 24
-        #'asnlookup': True
+        # 'asnlookup': True
     }
 
     # Option descriptions
@@ -70,7 +70,7 @@ class sfp_greynoise(SpiderFootPlugin):
         'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'subnetlookup': "Look up subnets which your target is a part of for blacklisting?",
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
-        #'asnlookup': "Look up ASNs that your target is a member of?"
+        # 'asnlookup': "Look up ASNs that your target is a member of?"
     }
 
     # Be sure to completely clear any class variables in setup()

@@ -133,7 +133,7 @@ class sfp_viewdns(SpiderFootPlugin):
                 if len(r.get(responsekey, list())) == pagesize:
                     self.sf.debug("Looping at ViewDNS page " + str(page))
                     self.accum.extend(r.get(responsekey))
-                    self.query(qry, querytype, page+1)
+                    self.query(qry, querytype, page + 1)
                 # We are at the last or only page
                 self.accum.extend(r.get(responsekey, []))
         except Exception as e:

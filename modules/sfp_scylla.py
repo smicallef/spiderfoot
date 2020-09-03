@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        sfp_scylla
 # Purpose:     Gather breach data from Scylla API.
 #
@@ -7,7 +7,7 @@
 # Created:     2019-09-06
 # Copyright:   (c) bcoles 2019
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import base64
 import json
@@ -153,8 +153,8 @@ class sfp_scylla(SpiderFootPlugin):
 
             position += per_page
 
-            #evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
-            #self.notifyListeners(evt)
+            # evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            # self.notifyListeners(evt)
 
             for result in data:
                 source = result.get('_source')

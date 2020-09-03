@@ -72,7 +72,7 @@ class sfp_base64(SpiderFootPlugin):
 
             # Base64-encoded strings don't look like normal strings
             caps = sum(1 for c in match if c.isupper())
-            if caps < (minlen/4):
+            if caps < (minlen / 4):
                 continue
 
             if type(match) != str:

@@ -154,13 +154,13 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
             if self.errorState:
                 return None
 
-            #first_seen = record[0]
-            #last_seen = record[1]
+            # first_seen = record[0]
+            # last_seen = record[1]
             query_html = record[2]
             answer_type = record[3]
             answer_html = record[4]
-            #ttl = record[5]
-            #count = record[6]
+            # ttl = record[5]
+            # count = record[6]
 
             # Extract queries and answers from HTML, and append all in-scope records to the domains list for parsing
             r = re.findall(r'>(.+?)<', query_html, re.DOTALL)
