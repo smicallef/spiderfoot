@@ -110,7 +110,7 @@ dbh = None
 
 def handle_abort(signal, frame):
     """handle interrupt and abort scan."""
-    print("[*] Aborting...")
+    log.info("Aborting...")
     if scanId and dbh:
         dbh.scanInstanceSet(scanId, None, None, "ABORTED")
     sys.exit(-1)
@@ -165,7 +165,7 @@ if __name__ == '__main__':
             sfConfig['__webaddr'] = addr
             sfConfig['__webport'] = int(port)
         except BaseException:
-            print("Invalid ip:port format.")
+            log.critical("Invalid ip:port format.")
             sys.exit(-1)
     else:
         sfConfig['__logstdout'] = True
@@ -177,7 +177,7 @@ if __name__ == '__main__':
     mod_dir = sft.myPath() + '/modules/'
 
     if not os.path.isdir(mod_dir):
-        print(f"Modules directory does not exist: {mod_dir}")
+        log.critical(f"Modules directory does not exist: {mod_dir}")
         sys.exit(-1)
 
     for filename in os.listdir(mod_dir):
@@ -207,11 +207,11 @@ if __name__ == '__main__':
                 if hasattr(sfModules[modName]['object'], 'optdescs'):
                     sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
             except BaseException as e:
-                print(f"Failed to load {modName}: {e}")
+                log.critical(f"Failed to load {modName}: {e}")
                 sys.exit(-1)
 
     if not sfModules:
-        print(f"No modules found in modules directory: {mod_dir}")
+        log.critical(f"No modules found in modules directory: {mod_dir}")
         sys.exit(-1)
 
     # Add module info to sfConfig so it can be used by the UI
@@ -224,7 +224,7 @@ if __name__ == '__main__':
 
     if not args.l:
         if args.modules:
-            print("Modules available:")
+            log.info("Modules available:")
             for m in sorted(sfModules.keys()):
                 if "__" in m:
                     continue
@@ -232,7 +232,7 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if args.types:
-            print("Types available:")
+            log.info("Types available:")
             typedata = dbh.eventTypes()
             types = dict()
             for r in typedata:
@@ -243,27 +243,27 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if not args.s:
-            print("You must specify a target when running in scan mode. Try --help for guidance.")
+            log.error("You must specify a target when running in scan mode. Try --help for guidance.")
             sys.exit(-1)
 
         if args.x and not args.t:
-            print("-x can only be used with -t. Use --help for guidance.")
+            log.error("-x can only be used with -t. Use --help for guidance.")
             sys.exit(-1)
 
         if args.x and args.m:
-            print("-x can only be used with -t and not with -m. Use --help for guidance.")
+            log.error("-x can only be used with -t and not with -m. Use --help for guidance.")
             sys.exit(-1)
 
         if args.r and (args.o and args.o not in ["tab", "csv"]):
-            print("-r can only be used when your output format is tab or csv.")
+            log.error("-r can only be used when your output format is tab or csv.")
             sys.exit(-1)
 
         if args.H and (args.o and args.o not in ["tab", "csv"]):
-            print("-H can only be used when your output format is tab or csv.")
+            log.error("-H can only be used when your output format is tab or csv.")
             sys.exit(-1)
 
         if args.D and args.o != "csv":
-            print("-D can only be used when using the csv output format.")
+            log.error("-D can only be used when using the csv output format.")
             sys.exit(-1)
 
         target = args.s
@@ -276,14 +276,14 @@ if __name__ == '__main__':
         targetType = sf.targetType(target)
 
         if not targetType:
-            print("[-] Could not determine target type. Invalid target: %s" % target)
+            log.error(f"Could not determine target type. Invalid target: {target}")
             sys.exit(-1)
 
         target = target.strip('"')
 
         modlist = list()
         if not args.t and not args.m:
-            print("WARNING: You didn't specify any modules or types, so all will be enabled.")
+            log.warning("You didn't specify any modules or types, so all will be enabled.")
             for m in list(sfModules.keys()):
                 if "__" in m:
                     continue
@@ -324,7 +324,7 @@ if __name__ == '__main__':
         sfp__stor_stdout_opts['_eventtypes'] = types
         if args.f:
             if args.f and not args.t:
-                print("You can only use -f with -t. Use --help for guidance.")
+                log.error("You can only use -f with -t. Use --help for guidance.")
                 sys.exit(-1)
             sfp__stor_stdout_opts['_showonlyrequested'] = True
         if args.F:
@@ -360,14 +360,14 @@ if __name__ == '__main__':
                         modlist.append(mod)
 
         if len(modlist) == 0:
-            print("Based on your criteria, no modules were enabled.")
+            log.error("Based on your criteria, no modules were enabled.")
             sys.exit(-1)
 
         modlist += ["sfp__stor_db", "sfp__stor_stdout"]
 
         # Run the scan
         if sfConfig['__logging']:
-            print(f"[*] Modules enabled ({len(modlist)}): {','.join(modlist)}")
+            log.info(f"Modules enabled ({len(modlist)}): {','.join(modlist)}")
         cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
 
         # Debug mode is a variable that gets stored to the DB, so re-apply it
@@ -391,7 +391,7 @@ if __name__ == '__main__':
             p.daemon = True
             p.start()
         except BaseException as e:
-            print(f"[-] Scan [{scanId}] failed: {e}")
+            log.error(f"Scan [{scanId}] failed: {e}")
             sys.exit(-1)
 
         # If field headers weren't disabled, print them
@@ -423,7 +423,7 @@ if __name__ == '__main__':
                 continue
             if info[5] in ["ERROR-FAILED", "ABORT-REQUESTED", "ABORTED", "FINISHED"]:
                 if sfConfig['__logging']:
-                    print("[*] Scan completed with status " + info[5])
+                    log.info(f"Scan completed with status {info[5]}")
                 if args.o == "json":
                     print("]")
                 sys.exit(0)
@@ -431,7 +431,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # Start the web server so you can start looking at results
-    print('Starting web server at %s:%s ...' % (sfConfig['__webaddr'], sfConfig['__webport']))
+    log.info('Starting web server at %s:%s ...' % (sfConfig['__webaddr'], sfConfig['__webport']))
 
     cherrypy.config.update({
         'server.socket_host': sfConfig['__webaddr'],
@@ -457,7 +457,7 @@ if __name__ == '__main__':
     passwd_file = sf.dataPath() + '/passwd'
     if os.path.isfile(passwd_file):
         if not os.access(passwd_file, os.R_OK):
-            print("Could not read passwd file. Permission denied.")
+            log.error("Could not read passwd file. Permission denied.")
             sys.exit(-1)
 
         secrets = dict()
@@ -466,20 +466,20 @@ if __name__ == '__main__':
 
         for line in pw.readlines():
             if ':' not in line:
-                print("Incorrect format of passwd file, must be username:password on each line.")
+                log.error("Incorrect format of passwd file, must be username:password on each line.")
                 sys.exit(-1)
 
             u = line.strip().split(":")[0]
             p = ':'.join(line.strip().split(":")[1:])
 
             if not u or not p:
-                print("Incorrect format of passwd file, must be username:password on each line.")
+                log.error("Incorrect format of passwd file, must be username:password on each line.")
                 sys.exit(-1)
 
             secrets[u] = p
 
         if secrets:
-            print("Enabling authentication based on supplied passwd file.")
+            log.info("Enabling authentication based on supplied passwd file.")
             conf['/'] = {
                 'tools.auth_digest.on': True,
                 'tools.auth_digest.realm': sfConfig['__webaddr'],
@@ -487,29 +487,29 @@ if __name__ == '__main__':
                 'tools.auth_digest.key': random.SystemRandom().randint(0, 99999999)
             }
         else:
-            print("")
-            print("********************************************************************")
-            print("Warning: passwd file contains no passwords. Authentication disabled.")
-            print("********************************************************************")
+            warn_msg = "\n********************************************************************\n"
+            warn_msg += "Warning: passwd file contains no passwords. Authentication disabled.\n"
+            warn_msg += "********************************************************************\n"
+            log.warning(warn_msg)
     else:
-        print("")
-        print("********************************************************************")
-        print("Please consider adding authentication to protect this instance!")
-        print("Refer to https://www.spiderfoot.net/documentation/#security.")
-        print("********************************************************************")
+        warn_msg = "\n********************************************************************\n"
+        warn_msg += "Please consider adding authentication to protect this instance!\n"
+        warn_msg += "Refer to https://www.spiderfoot.net/documentation/#security.\n"
+        warn_msg += "********************************************************************\n"
+        log.warning(warn_msg)
 
     key_path = sf.dataPath() + '/spiderfoot.key'
     crt_path = sf.dataPath() + '/spiderfoot.crt'
     if os.path.isfile(key_path) and os.path.isfile(crt_path):
         if not os.access(crt_path, os.R_OK):
-            print("Could not read spiderfoot.crt file. Permission denied.")
+            log.critical("Could not read spiderfoot.crt file. Permission denied.")
             sys.exit(-1)
 
         if not os.access(key_path, os.R_OK):
-            print("Could not read spiderfoot.key file. Permission denied.")
+            log.critical("Could not read spiderfoot.key file. Permission denied.")
             sys.exit(-1)
 
-        print("Enabling SSL based on supplied key and certificate file.")
+        log.info("Enabling SSL based on supplied key and certificate file.")
         cherrypy.server.ssl_module = 'builtin'
         cherrypy.server.ssl_certificate = crt_path
         cherrypy.server.ssl_private_key = key_path
