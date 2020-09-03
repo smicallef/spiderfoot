@@ -214,6 +214,6 @@ class SpiderFootTarget():
                 if includeChildren and value.endswith("." + name):
                     return True
 
-        return None
+        return False
 
 # end of SpiderFootTarget class
