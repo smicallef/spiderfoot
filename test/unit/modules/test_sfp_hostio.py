@@ -1,9 +1,9 @@
 # test_sfp_hostio.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_hostio import sfp_hostio
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulehostio(unittest.TestCase):

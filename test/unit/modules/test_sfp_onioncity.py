@@ -1,9 +1,9 @@
 # test_sfp_onioncity.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_onioncity import sfp_onioncity
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleonioncity(unittest.TestCase):

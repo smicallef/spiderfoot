@@ -1,9 +1,9 @@
 # test_sfp_tool_nmap.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_tool_nmap import sfp_tool_nmap
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuletool_nmap(unittest.TestCase):

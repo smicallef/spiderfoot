@@ -15,8 +15,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from sflib import SpiderFootPlugin
-from spiderfoot import SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_wigle(SpiderFootPlugin):

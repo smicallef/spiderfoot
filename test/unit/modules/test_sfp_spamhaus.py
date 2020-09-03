@@ -1,9 +1,9 @@
 # test_sfp_spamhaus.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_spamhaus import sfp_spamhaus
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulespamhaus(unittest.TestCase):

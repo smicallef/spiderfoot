@@ -1,9 +1,9 @@
 # test_sfp_subdomain_takeover.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_subdomain_takeover import sfp_subdomain_takeover
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulesubdomain_takeover(unittest.TestCase):

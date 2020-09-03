@@ -1,5 +1,6 @@
 import netaddr
 
+
 class SpiderFootTarget():
     """SpiderFoot target.
 
@@ -213,6 +214,6 @@ class SpiderFootTarget():
                 if includeChildren and value.endswith("." + name):
                     return True
 
-        return None
+        return False
 
 # end of SpiderFootTarget class

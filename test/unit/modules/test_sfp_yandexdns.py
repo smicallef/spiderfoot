@@ -1,9 +1,9 @@
 # test_sfp_yandexdns.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_yandexdns import sfp_yandexdns
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleyandexdns(unittest.TestCase):

@@ -1,9 +1,9 @@
 # test_sfp_greynoise.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_greynoise import sfp_greynoise
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulegreynoise(unittest.TestCase):

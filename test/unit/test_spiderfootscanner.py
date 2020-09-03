@@ -1,7 +1,8 @@
 # test_spiderfootscanner.py
-from sfscan import SpiderFootScanner
 import unittest
 import uuid
+
+from sfscan import SpiderFootScanner
 
 
 class TestSpiderFootScanner(unittest.TestCase):

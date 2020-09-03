@@ -1,9 +1,9 @@
 # test_sfp__stor_stdout.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp__stor_stdout import sfp__stor_stdout
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModule_stor_stdout(unittest.TestCase):

@@ -1,9 +1,9 @@
 # test_sfp_pastebin.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_pastebin import sfp_pastebin
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulepastebin(unittest.TestCase):

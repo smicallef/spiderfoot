@@ -1,9 +1,9 @@
 # test_sfp_badipscom.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_badipscom import sfp_badipscom
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulebadipscom(unittest.TestCase):

@@ -14,8 +14,7 @@ import json
 
 from netaddr import IPNetwork
 
-from sflib import SpiderFootPlugin
-from spiderfoot import SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_template(SpiderFootPlugin):
@@ -276,10 +275,9 @@ class sfp_template(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            # If eventData might be something large, set the key to a hash
-            # of the value instead of the value, to avoid memory abuse.
-            self.results[eventData] = True
+        # If eventData might be something large, set the key to a hash
+        # of the value instead of the value, to avoid memory abuse.
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             # Note here an example of handling the netblocklookup option

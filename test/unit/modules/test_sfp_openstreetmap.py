@@ -1,9 +1,9 @@
 # test_sfp_openstreetmap.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_openstreetmap import sfp_openstreetmap
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleopenstreetmap(unittest.TestCase):

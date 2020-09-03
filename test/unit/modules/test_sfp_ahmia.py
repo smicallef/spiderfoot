@@ -1,9 +1,9 @@
 # test_sfp_ahmia.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_ahmia import sfp_ahmia
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleahmia(unittest.TestCase):

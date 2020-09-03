@@ -1,9 +1,9 @@
 # test_sfp_s3bucket.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_s3bucket import sfp_s3bucket
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModules3bucket(unittest.TestCase):

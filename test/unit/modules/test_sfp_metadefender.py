@@ -1,9 +1,9 @@
 # test_sfp_metadefender.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_metadefender import sfp_metadefender
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulemetadefender(unittest.TestCase):

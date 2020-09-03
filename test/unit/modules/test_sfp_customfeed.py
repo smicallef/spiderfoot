@@ -1,9 +1,9 @@
 # test_sfp_customfeed.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_customfeed import sfp_customfeed
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulecustomfeed(unittest.TestCase):

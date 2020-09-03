@@ -1,9 +1,9 @@
 # test_sfp_bgpview.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_bgpview import sfp_bgpview
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulebgpview(unittest.TestCase):

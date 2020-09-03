@@ -15,8 +15,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from sflib import SpiderFootPlugin
-from spiderfoot import SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 sites = {
     # Search string to use, domain name the profile will sit on within

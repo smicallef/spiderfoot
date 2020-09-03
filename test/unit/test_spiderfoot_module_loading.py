@@ -1,7 +1,8 @@
 # test_spiderfoot_module_loading.py
-from sflib import SpiderFoot
-import unittest
 import os
+import unittest
+
+from sflib import SpiderFoot
 
 
 class TestSpiderFootModuleLoading(unittest.TestCase):

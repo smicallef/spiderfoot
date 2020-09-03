@@ -12,6 +12,7 @@
 import csv
 import html
 import json
+import logging
 import multiprocessing as mp
 import random
 import time
@@ -38,6 +39,7 @@ class SpiderFootWebUi:
     config = dict()
     token = None
     docroot = ''
+    log = logging.getLogger(__name__)
 
     def __init__(self, config):
         """Initialize web server
@@ -459,12 +461,12 @@ class SpiderFootWebUi:
             p.daemon = True
             p.start()
         except BaseException as e:
-            print("[-] Scan [%s] failed: %s" % (scanId, e))
-            return self.error("Scan [%s] failed: %s" % (scanId, e))
+            self.log.error(f"[-] Scan [{scanId}] failed: {e}")
+            return self.error(f"[-] Scan [{scanId}] failed: {e}")
 
         # Wait until the scan has initialized
         while dbh.scanInstanceGet(scanId) is None:
-            print("[info] Waiting for the scan to initialize...")
+            self.log.info("Waiting for the scan to initialize...")
             time.sleep(1)
 
         raise cherrypy.HTTPRedirect(f"scaninfo?id={scanId}", status=302)
@@ -510,12 +512,12 @@ class SpiderFootWebUi:
                 p.daemon = True
                 p.start()
             except BaseException as e:
-                print("[-] Scan [%s] failed: %s" % (scanId, e))
-                return self.error("Scan [%s] failed: %s" % (scanId, e))
+                self.log.error(f"[-] Scan [{scanId}] failed: {e}")
+                return self.error(f"[-] Scan [{scanId}] failed: {e}")
 
             # Wait until the scan has initialized
             while dbh.scanInstanceGet(scanId) is None:
-                print("[info] Waiting for the scan to initialize...")
+                self.log.info("Waiting for the scan to initialize...")
                 time.sleep(1)
 
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
@@ -1084,13 +1086,13 @@ class SpiderFootWebUi:
             p.daemon = True
             p.start()
         except BaseException as e:
-            print("[-] Scan [%s] failed: %s" % (scanId, e))
-            return self.error("Scan [%s] failed: %s" % (scanId, e))
+            self.log.error(f"[-] Scan [{scanId}] failed: {e}")
+            return self.error(f"[-] Scan [{scanId}] failed: {e}")
 
         # Wait until the scan has initialized
         # Check the database for the scan status results
         while dbh.scanInstanceGet(scanId) is None:
-            print("[info] Waiting for the scan to initialize...")
+            self.log.info("Waiting for the scan to initialize...")
             time.sleep(1)
 
         if cherrypy.request.headers and 'application/json' in cherrypy.request.headers.get('Accept'):

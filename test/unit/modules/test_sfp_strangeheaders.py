@@ -1,9 +1,9 @@
 # test_sfp_strangeheaders.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_strangeheaders import sfp_strangeheaders
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleStrangeHeaders(unittest.TestCase):

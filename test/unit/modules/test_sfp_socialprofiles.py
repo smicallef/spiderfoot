@@ -1,9 +1,9 @@
 # test_sfp_socialprofiles.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_socialprofiles import sfp_socialprofiles
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulesocialprofiles(unittest.TestCase):

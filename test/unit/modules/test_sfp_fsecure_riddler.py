@@ -1,9 +1,9 @@
 # test_sfp_fsecure_riddler.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_fsecure_riddler import sfp_fsecure_riddler
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulefsecure_riddler(unittest.TestCase):

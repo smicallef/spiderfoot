@@ -1,9 +1,9 @@
 # test_sfp_blockchain.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_blockchain import sfp_blockchain
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleblockchain(unittest.TestCase):

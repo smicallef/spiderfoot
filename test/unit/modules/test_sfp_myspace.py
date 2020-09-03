@@ -1,9 +1,9 @@
 # test_sfp_myspace.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_myspace import sfp_myspace
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulemyspace(unittest.TestCase):

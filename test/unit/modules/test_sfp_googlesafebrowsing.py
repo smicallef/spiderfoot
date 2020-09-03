@@ -1,9 +1,9 @@
 # test_sfp_googlesafebrowsing.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_googlesafebrowsing import sfp_googlesafebrowsing
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulegooglesafebrowsing(unittest.TestCase):

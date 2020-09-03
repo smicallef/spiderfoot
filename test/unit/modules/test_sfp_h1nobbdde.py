@@ -1,9 +1,9 @@
 # test_sfp_h1nobbdde.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_h1nobbdde import sfp_h1nobbdde
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleh1nobbdde(unittest.TestCase):

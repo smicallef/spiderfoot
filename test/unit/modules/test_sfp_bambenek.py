@@ -1,9 +1,9 @@
 # test_sfp_bambenek.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_bambenek import sfp_bambenek
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulebambenek(unittest.TestCase):

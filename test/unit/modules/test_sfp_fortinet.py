@@ -1,9 +1,9 @@
 # test_sfp_fortinet.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_fortinet import sfp_fortinet
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModulefortinet(unittest.TestCase):

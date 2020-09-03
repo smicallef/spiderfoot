@@ -1,9 +1,9 @@
 # test_sfp_ipinfo.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_ipinfo import sfp_ipinfo
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleipinfo(unittest.TestCase):

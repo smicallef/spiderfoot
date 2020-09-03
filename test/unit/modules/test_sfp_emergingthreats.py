@@ -1,9 +1,9 @@
 # test_sfp_emergingthreats.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_emergingthreats import sfp_emergingthreats
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleemergingthreats(unittest.TestCase):

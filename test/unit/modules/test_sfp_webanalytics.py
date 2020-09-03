@@ -1,9 +1,9 @@
 # test_sfp_webanalytics.py
-from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
-from spiderfoot import SpiderFootTarget
 import unittest
+
 from modules.sfp_webanalytics import sfp_webanalytics
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuleWebAnalytics(unittest.TestCase):

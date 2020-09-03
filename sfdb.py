@@ -168,6 +168,7 @@ class SpiderFootDb:
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('LINKED_URL_INTERNAL', 'Linked URL - Internal', 0, 'SUBENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('LINKED_URL_EXTERNAL', 'Linked URL - External', 0, 'SUBENTITY')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_ASN', 'Malicious AS', 0, 'DESCRIPTOR')",
+        "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_BITCOIN_ADDRESS', 'Malicious Bitcoin Address', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_IPADDR', 'Malicious IP Address', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_COHOST', 'Malicious Co-Hosted Site', 0, 'DESCRIPTOR')",
         "INSERT INTO tbl_event_types (event, event_descr, event_raw, event_type) VALUES ('MALICIOUS_EMAILADDR', 'Malicious E-mail Address', 0, 'DESCRIPTOR')",
