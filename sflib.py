@@ -265,15 +265,15 @@ class SpiderFoot:
             for [parent, _id] in parents[entity]:
                 if parent in entities:
                     if entity != parent:
-                        # print("Adding entity parent: " + parent)
+                        # self.log.debug(f"Adding entity parent: {parent}")
                         mapping.add((entity, parent))
                 else:
                     ppids = list()
-                    # print("Checking " + parent + " for entityship.")
+                    # self.log.debug(f"Checking {parent} for entityship.")
                     next_parents = get_next_parent_entities(parent, ppids)
                     for next_parent in next_parents:
                         if entity != next_parent:
-                            # print("Adding next entity parent: " + next_parent)
+                            # self.log.debug("Adding next entity parent: {next_parent}")
                             mapping.add((entity, next_parent))
         return mapping
 
@@ -441,13 +441,8 @@ class SpiderFoot:
         if not self.opts['__logging']:
             return None
 
-        if self.dbh is None:
-            print(f"[Error] {message}")
-        else:
+        if self.dbh:
             self._dblog("ERROR", message)
-
-        if self.opts.get('__logstdout'):
-            print(f"[Error] {message}")
 
         if exception:
             self.log.exception(message)
@@ -465,14 +460,12 @@ class SpiderFoot:
             None
         """
 
-        if self.dbh is None:
-            print('[Fatal] %s' % error)
-        else:
+        if self.dbh:
             self._dblog("FATAL", error)
 
-        print(str(inspect.stack()))
-
         self.log.critical(error)
+
+        print(str(inspect.stack()))
 
         sys.exit(-1)
 
@@ -489,12 +482,8 @@ class SpiderFoot:
         if not self.opts['__logging']:
             return None
 
-        if self.dbh is None:
-            print("[Status] %s" % message)
-        else:
+        if self.dbh:
             self._dblog("STATUS", message)
-        if self.opts.get('__logstdout'):
-            print("[*] %s" % message)
 
         self.log.info(message)
 
@@ -527,14 +516,10 @@ class SpiderFoot:
             else:
                 modName = mod.__name__
 
-        if self.dbh is None:
-            print('[%s] %s' % (modName, message))
-        else:
+        if self.dbh:
             self._dblog("INFO", message, modName)
-        if self.opts.get('__logstdout'):
-            print("[*] %s" % message)
 
-        self.log.info(message)
+        self.log.info(f"{modName} : {message}")
 
     def debug(self, message):
         """Log and print a debug message.
@@ -567,11 +552,7 @@ class SpiderFoot:
                 modName = mod.__name__
 
         if self.dbh is None:
-            print('[%s] %s' % (modName, message))
-        else:
             self._dblog("DEBUG", message, modName)
-        if self.opts.get('__logstdout'):
-            print("[d:%s] %s" % (modName, message))
 
         self.log.debug(f"{modName} : {message}")
 
