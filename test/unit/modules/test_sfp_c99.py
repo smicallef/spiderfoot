@@ -37,7 +37,7 @@ class TestModuleC99(unittest.TestCase):
     }
 
     def test_opts(self):
-        module = sfp_template()
+        module = sfp_c99()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
