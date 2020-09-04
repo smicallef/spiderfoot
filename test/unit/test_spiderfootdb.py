@@ -1,7 +1,7 @@
 # test_spiderfootdb.py
 import unittest
 
-from sfdb import SpiderFootDb, SpiderFootEvent
+from spiderfoot import SpiderFootDb, SpiderFootEvent
 
 
 class TestSpiderFootDb(unittest.TestCase):
