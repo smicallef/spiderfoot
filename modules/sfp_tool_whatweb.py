@@ -113,7 +113,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
                 aggression = 4
             if aggression < 1:
                 aggression = 1
-        except:
+        except BaseException:
             aggression = 1
 
         # Run WhatWeb
@@ -131,7 +131,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             p = Popen(args, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
         except BaseException as e:
-            self.sf.error("Unable to run WhatWeb: " + str(e), False)
+            self.sf.error(f"Unable to run WhatWeb: {e}", False)
             return None
 
         if p.returncode != 0:
@@ -140,13 +140,13 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             return None
 
         if not stdout:
-            self.sf.debug("WhatWeb returned no output for " + eventData)
+            self.sf.debug(f"WhatWeb returned no output for {eventData}")
             return None
 
         try:
             result_json = json.loads(stdout)
         except BaseException as e:
-            self.sf.error("Couldn't parse the JSON output of WhatWeb: " + str(e), False)
+            self.sf.error(f"Couldn't parse the JSON output of WhatWeb: {e}", False)
             return None
 
         if len(result_json) == 0:

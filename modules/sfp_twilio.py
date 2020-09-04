@@ -68,7 +68,6 @@ class sfp_twilio(SpiderFootPlugin):
     def watchedEvents(self):
         return ["PHONE_NUMBER"]
 
-    # What events this module produces
     def producedEvents(self):
         return ["COMPANY_NAME", "RAW_RIR_DATA"]
 
@@ -130,12 +129,11 @@ class sfp_twilio(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         content = self.queryPhoneNumber(eventData)
 

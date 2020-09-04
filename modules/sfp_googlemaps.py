@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import urllib
 import json
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -49,7 +50,6 @@ class sfp_googlemaps(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         "api_key": ""
     }
@@ -67,17 +67,30 @@ class sfp_googlemaps(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ['DOMAIN_NAME', 'PHYSICAL_ADDRESS']
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["PHYSICAL_ADDRESS", "PHYSICAL_COORDINATES", "RAW_RIR_DATA"]
 
-    # Handle events sent to this module
+    def query(self, address):
+        params = urllib.parse.urlencode({
+            'key': self.opts['api_key'],
+            'address': address.encode('raw_unicode_escape').decode("ascii", errors='replace')
+        })
+
+        res = self.sf.fetchUrl(
+            "https://maps.googleapis.com/maps/api/geocode/json?{params}",
+            timeout=self.opts['_fetchtimeout'],
+            useragent=self.opts['_useragent']
+        )
+
+        if res['content'] is None:
+            self.sf.info(f"No location info found for {address}")
+            return None
+
+        return res
+
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -86,50 +99,61 @@ class sfp_googlemaps(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
-
-        if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_googlemaps but did not set an API key!", False)
-            self.errorState = True
-            return None
-
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
 
-        res = self.sf.fetchUrl("https://maps.googleapis.com/maps/api/geocode/json?address=" + \
-                               eventData + "&key=" + self.opts['api_key'],
-                               timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'])
-        if res['content'] is None:
-            self.sf.info("No location info found for " + eventData)
+        self.results[eventData] = True
+
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+
+        if self.opts["api_key"] == "":
+            self.sf.error(
+                f"You enabled {self.__class__.__name__} but did not set an API key!",
+                False,
+            )
+            self.errorState = True
             return None
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", res['content'],
-                              self.__name__, event)
+        res = self.query(eventData)
+
+        if not res:
+            self.sf.debug(f"No information found for {eventData}")
+            return None
+
+        evt = SpiderFootEvent(
+            "RAW_RIR_DATA",
+            res['content'],
+            self.__name__,
+            event
+        )
         self.notifyListeners(evt)
 
         try:
             data = json.loads(res['content'])['results'][0]
-
-            if eventName in ["PHYSICAL_ADDRESS", "DOMAIN_NAME"] and \
-               srcModuleName != "sfp_googlemaps":
-                if 'geometry' in data:
-                    lat = str(data['geometry']['location']['lat'])
-                    lng = str(data['geometry']['location']['lng'])
-                    evt = SpiderFootEvent("PHYSICAL_COORDINATES", lat + "," + lng, self.__name__, event)
-                    self.notifyListeners(evt)
-
-            if 'formatted_address' in data:
-                evt = SpiderFootEvent("PHYSICAL_ADDRESS", data['formatted_address'],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
         except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
+
+        if srcModuleName != "sfp_googlemaps":
+            geometry = data.get('geometry')
+            if geometry:
+                location = data.get('location')
+                if location:
+                    lat = location.get('lat')
+                    lng = location.get('lng')
+                    if lat and lng:
+                        evt = SpiderFootEvent("PHYSICAL_COORDINATES", f"{lat},{lng}", self.__name__, event)
+                        self.notifyListeners(evt)
+
+        if 'formatted_address' in data:
+            evt = SpiderFootEvent(
+                "PHYSICAL_ADDRESS",
+                data['formatted_address'],
+                self.__name__,
+                event
+            )
+            self.notifyListeners(evt)
 
         return None
 

@@ -106,9 +106,4 @@ class sfp_errors(SpiderFootPlugin):
 
         return None
 
-    # If you intend for this module to act on its own (e.g. not solely rely
-    # on events from other modules, then you need to have a start() method
-    # and within that method call self.checkForStop() to see if you've been
-    # politely asked by the controller to stop your activities (user abort.)
-
 # End of sfp_errors class
