@@ -89,13 +89,13 @@ class sfp_filemeta(SpiderFootPlugin):
                                        sizeLimit=10000000,
                                        verify=False)
                 if ret['content'] is None:
-                    self.sf.error("Unable to fetch file for meta analysis: " +
-                                  eventData, False)
+                    self.sf.error("Unable to fetch file for meta analysis: "
+                                  + eventData, False)
                     return None
 
                 if len(ret['content']) < 512:
-                    self.sf.error("Strange content encountered, size of " +
-                                  str(len(ret['content'])), False)
+                    self.sf.error("Strange content encountered, size of "
+                                  + str(len(ret['content'])), False)
                     return None
 
                 meta = None
@@ -110,8 +110,8 @@ class sfp_filemeta(SpiderFootPlugin):
                         meta = str(data)
                         self.sf.debug("Obtained meta data from " + eventData)
                     except BaseException as e:
-                        self.sf.error("Unable to parse meta data from: " +
-                                      eventData + "(" + str(e) + ")", False)
+                        self.sf.error("Unable to parse meta data from: "
+                                      + eventData + "(" + str(e) + ")", False)
                         return None
 
                 if fileExt.lower() in ["docx"]:
@@ -125,8 +125,8 @@ class sfp_filemeta(SpiderFootPlugin):
                         data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
                     except BaseException as e:
-                        self.sf.error("Unable to process file: " +
-                                      eventData + "(" + str(e) + ")", False)
+                        self.sf.error("Unable to process file: "
+                                      + eventData + "(" + str(e) + ")", False)
                         return None
 
                 if fileExt.lower() in ["pptx"]:
@@ -140,8 +140,8 @@ class sfp_filemeta(SpiderFootPlugin):
                         data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
                     except BaseException as e:
-                        self.sf.error("Unable to process file: " +
-                                      eventData + "(" + str(e) + ")", False)
+                        self.sf.error("Unable to process file: "
+                                      + eventData + "(" + str(e) + ")", False)
                         return None
 
                 if fileExt.lower() in ["jpg", "jpeg", "tiff"]:
@@ -152,8 +152,8 @@ class sfp_filemeta(SpiderFootPlugin):
                             continue
                         meta = str(data)
                     except BaseException as e:
-                        self.sf.error("Unable to parse meta data from: " +
-                                      eventData + "(" + str(e) + ")", False)
+                        self.sf.error("Unable to parse meta data from: "
+                                      + eventData + "(" + str(e) + ")", False)
                         return None
 
                 if meta is not None and data is not None:

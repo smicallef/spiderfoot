@@ -68,8 +68,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
     def search(self, target):
         ret = list()
         for index in self.indexBase:
-            url = "https://index.commoncrawl.org/" + index + \
-                  "-index?url=" + target + "/*&output=json"
+            url = f"https://index.commoncrawl.org/{index}-index?url={target}/*&output=json"
             res = self.sf.fetchUrl(url, timeout=60,
                                    useragent="SpiderFoot")
 

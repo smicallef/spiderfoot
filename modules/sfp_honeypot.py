@@ -137,20 +137,19 @@ class sfp_honeypot(SpiderFootPlugin):
         eventName = parentEvent.eventType
 
         try:
-            lookup = self.opts['api_key'] + f".{self.reverseAddr(qaddr)}.dnsbl.httpbl.org"
+            lookup = f"{self.opts['api_key']}.{self.reverseAddr(qaddr)}.dnsbl.httpbl.org"
 
             self.sf.debug(f"Checking Honeypot: {lookup}")
             addrs = self.sf.resolveHost(lookup)
             if not addrs:
                 return None
-            self.sf.debug("Addresses returned: " + str(addrs))
+
+            self.sf.debug(f"Addresses returned: {addrs}")
 
             text = None
             for addr in addrs:
                 text = self.reportIP(addr)
-                if text is None:
-                    continue
-                else:
+                if text is not None:
                     break
 
             if text is not None:
@@ -196,9 +195,9 @@ class sfp_honeypot(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
                     return None
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -206,9 +205,9 @@ class sfp_honeypot(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxsubnet']))
                     return None
 
         if eventName.startswith("NETBLOCK_"):

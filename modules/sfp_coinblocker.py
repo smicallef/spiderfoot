@@ -128,8 +128,7 @@ class sfp_coinblocker(SpiderFootPlugin):
                     if data['content'] is None:
                         self.sf.error("Unable to fetch " + url, False)
                         return None
-                    else:
-                        self.sf.cachePut("sfmal_" + cid, data['content'])
+                    self.sf.cachePut("sfmal_" + cid, data['content'])
 
                 # If we're looking at netblocks
                 if targetType == "netblock":
@@ -156,11 +155,10 @@ class sfp_coinblocker(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
+                            self.sf.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None

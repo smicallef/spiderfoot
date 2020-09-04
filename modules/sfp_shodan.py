@@ -89,8 +89,8 @@ class sfp_shodan(SpiderFootPlugin):
                 'RAW_RIR_DATA', 'GEOINFO', 'VULNERABILITY']
 
     def query(self, qry):
-        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
-                               "?key=" + self.opts['api_key'],
+        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry
+                               + "?key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
         time.sleep(1)
         if res['content'] is None:
@@ -106,8 +106,8 @@ class sfp_shodan(SpiderFootPlugin):
         return info
 
     def searchHosts(self, qry):
-        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?query=hostname:" + qry +
-                               "&key=" + self.opts['api_key'],
+        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?query=hostname:" + qry
+                               + "&key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
         time.sleep(1)
         if res['content'] is None:
@@ -179,8 +179,7 @@ class sfp_shodan(SpiderFootPlugin):
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
             except BaseException as e:
-                self.sf.error("Unable to parse WEB_ANALYTICS_ID: " +
-                              eventData + " (" + str(e) + ")", False)
+                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})", False)
                 return None
 
             if network not in ['Google AdSense', 'Google Analytics', 'Google Site Verification']:
@@ -201,9 +200,9 @@ class sfp_shodan(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
                     return None
 
         qrylist = list()
@@ -235,14 +234,14 @@ class sfp_shodan(SpiderFootPlugin):
 
             if rec.get('os') is not None:
                 # Notify other modules of what you've found
-                evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os') +
-                                      " (" + addr + ")", self.__name__, pevent)
+                evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os')
+                                      + " (" + addr + ")", self.__name__, pevent)
                 self.notifyListeners(evt)
 
             if rec.get('devtype') is not None:
                 # Notify other modules of what you've found
-                evt = SpiderFootEvent("DEVICE_TYPE", rec.get('devtype') +
-                                      " (" + addr + ")", self.__name__, pevent)
+                evt = SpiderFootEvent("DEVICE_TYPE", rec.get('devtype')
+                                      + " (" + addr + ")", self.__name__, pevent)
                 self.notifyListeners(evt)
 
             if rec.get('country_name') is not None:

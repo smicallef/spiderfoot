@@ -99,8 +99,8 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName +
-                      ", from " + srcModuleName)
+        self.sf.debug("Received event, " + eventName
+                      + ", from " + srcModuleName)
 
         if srcModuleName == "sfp_dnscommonsrv":
             self.sf.debug("Ignoring " + eventName + ", from self.")

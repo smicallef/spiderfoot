@@ -156,9 +156,9 @@ class sfp_pulsedive(SpiderFootPlugin):
                 return None
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxnetblock']))
+                self.sf.debug("Network size bigger than permitted: "
+                              + str(IPNetwork(eventData).prefixlen) + " > "
+                              + str(self.opts['maxnetblock']))
                 return None
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -166,9 +166,9 @@ class sfp_pulsedive(SpiderFootPlugin):
                 return None
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxsubnet']))
+                self.sf.debug("Network size bigger than permitted: "
+                              + str(IPNetwork(eventData).prefixlen) + " > "
+                              + str(self.opts['maxsubnet']))
                 return None
 
         qrylist = list()

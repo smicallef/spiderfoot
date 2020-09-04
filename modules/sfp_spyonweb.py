@@ -199,8 +199,8 @@ class sfp_spyonweb(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -216,21 +216,21 @@ class sfp_spyonweb(SpiderFootPlugin):
             data = self.querySummary(eventData, limit=self.opts['limit'])
 
             if data is None:
-                self.sf.info("No data found for " + eventData)
+                self.sf.info(f"No data found for {eventData}")
                 return None
 
             google_adsense = data.get('adsense')
 
             if google_adsense:
                 for r in list(google_adsense.keys()):
-                    evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google AdSense: " + r, self.__name__, event)
+                    evt = SpiderFootEvent("WEB_ANALYTICS_ID", f"Google AdSense: {r}", self.__name__, event)
                     self.notifyListeners(evt)
 
             google_analytics = data.get('analytics')
 
             if google_analytics:
                 for r in list(google_analytics.keys()):
-                    evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google Analytics: " + r, self.__name__, event)
+                    evt = SpiderFootEvent("WEB_ANALYTICS_ID", f"Google Analytics: {r}", self.__name__, event)
                     self.notifyListeners(evt)
 
         # Find affiliate domains for the specified Google AdSense ID or Google Analytics ID
@@ -239,8 +239,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
             except BaseException as e:
-                self.sf.error("Unable to parse WEB_ANALYTICS_ID: " +
-                              eventData + " (" + str(e) + ")", False)
+                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})", False)
                 return None
 
             data = dict()
@@ -287,7 +286,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                     continue
 
                 if self.opts['verify'] and not self.sf.validateIP(co, eventData):
-                    self.sf.debug("Host " + co + " no longer resolves to " + eventData)
+                    self.sf.debug(f"Host {co} no longer resolves to {eventData}")
                     continue
 
                 if not self.opts['cohostsamedomain']:

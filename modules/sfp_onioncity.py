@@ -153,8 +153,8 @@ class sfp_onioncity(SpiderFootPlugin):
                     continue
 
                 # Sometimes onion city search results false positives
-                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                             r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData)
+                             + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                     self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
                     continue
 

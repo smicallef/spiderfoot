@@ -121,8 +121,8 @@ class sfp_myspace(SpiderFootPlugin):
                 network = eventData.split(": ")[0]
                 url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
             except BaseException as e:
-                self.sf.error("Unable to parse SOCIAL_MEDIA: " +
-                              eventData + " (" + str(e) + ")", False)
+                self.sf.error("Unable to parse SOCIAL_MEDIA: "
+                              + eventData + " (" + str(e) + ")", False)
                 return None
 
             if network != "MySpace":

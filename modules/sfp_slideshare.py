@@ -84,8 +84,8 @@ class sfp_slideshare(SpiderFootPlugin):
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
         except BaseException as e:
-            self.sf.error("Unable to parse SOCIAL_MEDIA: " +
-                          eventData + " (" + str(e) + ")", False)
+            self.sf.error("Unable to parse SOCIAL_MEDIA: "
+                          + eventData + " (" + str(e) + ")", False)
             return None
 
         if not network == "SlideShare":

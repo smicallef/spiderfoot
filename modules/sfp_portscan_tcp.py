@@ -194,8 +194,8 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             else:
                 scanIps.append(eventData)
         except BaseException as e:
-            self.sf.error("Strange netblock identified, unable to parse: " +
-                          eventData + " (" + str(e) + ")", False)
+            self.sf.error("Strange netblock identified, unable to parse: "
+                          + eventData + " (" + str(e) + ")", False)
             return None
 
         for ipAddr in scanIps:
