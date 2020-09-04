@@ -1416,6 +1416,27 @@ class TestSpiderFoot(unittest.TestCase):
         new_url = sf.removeUrlCreds(url)
         self.assertNotIn("secret", new_url)
 
+    def test_useProxyForUrl_argument_url_should_return_a_bool(self):
+        """
+        Test useProxyForUrl(self, url)
+        """
+        opts = self.default_options
+
+        proxy_host = 'spiderfoot.net'
+
+        opts['_socks1type'] = '5'
+        opts['_socks2addr'] = proxy_host
+        opts['_socks3port'] = '8080'
+
+        sf = SpiderFoot(opts)
+        self.assertFalse(sf.useProxyForUrl('10.1.1.1'))
+        self.assertFalse(sf.useProxyForUrl('172.16.1.1'))
+        self.assertFalse(sf.useProxyForUrl('192.168.1.1'))
+        self.assertFalse(sf.useProxyForUrl('127.0.0.1'))
+        self.assertFalse(sf.useProxyForUrl('localhost'))
+        self.assertFalse(sf.useProxyForUrl('test.local'))
+        self.assertFalse(sf.useProxyForUrl(proxy_host))
+
     def test_fetchUrl_argument_url_should_return_http_response_as_dict(self):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
