@@ -35,7 +35,7 @@ class sfp_crt(SpiderFootPlugin):
             'favIcon': "https://crt.sh/sectigo_s.png",
             'logo': "https://crt.sh/sectigo_s.png",
             'description': "Enter an Identity (Domain Name, Organization Name, etc), "
-                                "a Certificate Fingerprint (SHA-1 or SHA-256) or a crt.sh ID",
+            "a Certificate Fingerprint (SHA-1 or SHA-256) or a crt.sh ID",
         }
     }
 

@@ -33,8 +33,8 @@ class sfp_yandexdns(SpiderFootPlugin):
             'favIcon': "https://yastatic.net/iconostasis/_/tToKamh-mh5XlViKpgiJRQgjz1Q.png",
             'logo': "https://yastatic.net/iconostasis/_/tToKamh-mh5XlViKpgiJRQgjz1Q.png",
             'description': "Yandex is a technology company that builds intelligent products and services powered by machine learning. "
-                                "Our goal is to help consumers and businesses better navigate the online and offline world. "
-                                "Since 1997, we have delivered world-class, locally relevant search and information services.",
+            "Our goal is to help consumers and businesses better navigate the online and offline world. "
+            "Since 1997, we have delivered world-class, locally relevant search and information services.",
         }
     }
 

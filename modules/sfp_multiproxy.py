@@ -46,11 +46,11 @@ class sfp_multiproxy(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://multiproxy.org/",
             'logo': "https://multiproxy.org/images/mproxy_title.png",
             'description': "MultiProxy is a multifunctional personal proxy server that protects your privacy "
-                                "while on the Internet as well as speeds up your downloads, "
-                                "especially if you are trying to get several files form overseas or from otherwise rather slow server. "
-                                "It can also completely hide your IP address by dynamically connecting to "
-                                "non-transparent anonymizing public proxy servers. "
-                                "You can also test a list of proxy servers and sort them by connection speed and level of anonimity.",
+            "while on the Internet as well as speeds up your downloads, "
+            "especially if you are trying to get several files form overseas or from otherwise rather slow server. "
+            "It can also completely hide your IP address by dynamically connecting to "
+            "non-transparent anonymizing public proxy servers. "
+            "You can also test a list of proxy servers and sort them by connection speed and level of anonimity.",
         }
     }
 

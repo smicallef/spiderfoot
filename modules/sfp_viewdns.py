@@ -40,7 +40,7 @@ class sfp_viewdns(SpiderFootPlugin):
             'favIcon': "https://viewdns.info/apple-touch-icon.png",
             'logo': "https://viewdns.info/images/viewdns_logo.gif",
             'description': "The ViewDNS.info API allows webmasters to integrate the tools provided by ViewDNS.info "
-                                "into their own sites in a simple and effective manner.",
+            "into their own sites in a simple and effective manner.",
         }
     }
 

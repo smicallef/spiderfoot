@@ -42,8 +42,8 @@ class sfp_snov(SpiderFootPlugin):
             'favIcon': "https://snov.io/img/favicon/favicon-96x96.png",
             'logo': "https://cdn.snov.io/img/common/icon-logo.svg?cf6b11aa56fa13f6c94c969282424cfc",
             'description': "Snov.io API allows to get a list of all emails from a particular domain, "
-                                "find email addresses by name and domain, verify emails, add prospects to a list, "
-                                "change a recipient's status and more.",
+            "find email addresses by name and domain, verify emails, add prospects to a list, "
+            "change a recipient's status and more.",
         }
     }
 

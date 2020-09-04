@@ -39,8 +39,8 @@ class sfp_metadefender(SpiderFootPlugin):
             'favIcon': "https://mcl-cdn.opswat.com/1.40.3-729f31db/city/icons/icon-48x48.png?v=61be50566cce944a710aaa90ba6bbb8d",
             'logo': "https://mcl-cdn.opswat.com/1.40.3-729f31db/city/icons/icon-48x48.png?v=61be50566cce944a710aaa90ba6bbb8d",
             'description': "File Analysis - Analyzing binaries with 30+ anti-malware engines.\n"
-                               "Heuristic analysis to detect more unknown and targeted attacks.\n"
-                               "Binary vulnerability data assessment, IP/Domain reputation, Threat Intelligence Feeds",
+            "Heuristic analysis to detect more unknown and targeted attacks.\n"
+            "Binary vulnerability data assessment, IP/Domain reputation, Threat Intelligence Feeds",
         }
     }
 

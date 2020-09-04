@@ -44,11 +44,11 @@ class sfp_circllu(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://www.circl.lu/",
             'logo': "https://www.circl.lu/assets/images/circl-logo.png",
             'description': "The Computer Incident Response Center Luxembourg (CIRCL) is a government-driven initiative "
-                                "designed to gather, review, report and respond to computer security threats and incidents.\n"
-                                "CIRCL provides a reliable and trusted point of contact for any users, companies and organizations "
-                                "based in Luxembourg, for the handling of attacks and incidents. "
-                                "Its team of experts acts like a fire brigade, with the ability to react promptly and "
-                                "efficiently whenever threats are suspected, detected or incidents occur.",
+            "designed to gather, review, report and respond to computer security threats and incidents.\n"
+            "CIRCL provides a reliable and trusted point of contact for any users, companies and organizations "
+            "based in Luxembourg, for the handling of attacks and incidents. "
+            "Its team of experts acts like a fire brigade, with the ability to react promptly and "
+            "efficiently whenever threats are suspected, detected or incidents occur.",
         }
     }
 

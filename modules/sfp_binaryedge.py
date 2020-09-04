@@ -43,10 +43,10 @@ class sfp_binaryedge(SpiderFootPlugin):
             'favIcon': "https://www.binaryedge.io/img/favicon/favicon-32x32.png",
             'logo': "https://www.binaryedge.io/img/logo.png",
             'description': "We scan the entire public internet, create real-time threat intelligence streams, "
-                                "and reports that show the exposure of what is connected to the Internet.\n"
-                                "We have built a distributed platform of scanners and honeypots, to acquire, classify and correlate different types of data.\n"
-                                "We use all of these datapoints to match those digital assets to an organization, "
-                                "allowing us to provide a global, up-to-date, view of organizations known and unknown assets.",
+            "and reports that show the exposure of what is connected to the Internet.\n"
+            "We have built a distributed platform of scanners and honeypots, to acquire, classify and correlate different types of data.\n"
+            "We use all of these datapoints to match those digital assets to an organization, "
+            "allowing us to provide a global, up-to-date, view of organizations known and unknown assets.",
         }
     }
 

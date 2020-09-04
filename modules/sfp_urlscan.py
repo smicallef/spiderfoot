@@ -35,12 +35,12 @@ class sfp_urlscan(SpiderFootPlugin):
             'favIcon': "https://urlscan.io/img/urlscan_256.png",
             'logo': "https://urlscan.io/img/urlscan_256.png",
             'description': "urlscan.io is a service to scan and analyse websites. "
-                                "When a URL is submitted to urlscan.io, an automated process will browse to the URL "
-                                "like a regular user and record the activity that this page navigation creates. "
-                                "This includes the domains and IPs contacted, the resources (JavaScript, CSS, etc) requested from "
-                                "those domains, as well as additional information about the page itself. "
-                                "urlscan.io will take a screenshot of the page, record the DOM content, JavaScript global variables, "
-                                "cookies created by the page, and a myriad of other observations.",
+            "When a URL is submitted to urlscan.io, an automated process will browse to the URL "
+            "like a regular user and record the activity that this page navigation creates. "
+            "This includes the domains and IPs contacted, the resources (JavaScript, CSS, etc) requested from "
+            "those domains, as well as additional information about the page itself. "
+            "urlscan.io will take a screenshot of the page, record the DOM content, JavaScript global variables, "
+            "cookies created by the page, and a myriad of other observations.",
         }
     }
 

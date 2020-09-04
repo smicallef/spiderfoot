@@ -33,7 +33,7 @@ class sfp_github(SpiderFootPlugin):
             'favIcon': "https://github.githubassets.com/favicons/favicon.png",
             'logo': "https://github.githubassets.com/favicons/favicon.png",
             'description': "GitHub brings together the world's largest community of "
-                                "developers to discover, share, and build better software.",
+            "developers to discover, share, and build better software.",
         }
     }
 

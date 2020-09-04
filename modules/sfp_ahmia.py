@@ -35,13 +35,13 @@ class sfp_ahmia(SpiderFootPlugin):
             'favIcon': "https://ahmia.fi/static/images/favicon.ico",
             'logo': "https://ahmia.fi/static/images/ahmiafi_black.png",
             'description': "Ahmia searches hidden services on the Tor network. To access these hidden services,"
-                                "you need the Tor browser bundle. Abuse material is not allowed on Ahmia. "
-                                "See our service blacklist and report abuse material if you find it in the index. "
-                                "It will be removed as soon as possible.\n"
-                                "Contributors to Ahmia believe that the Tor network is an important and "
-                                "resilient distributed platform for anonymity and privacy worldwide. "
-                                "By providing a search engine for what many call the \"deep web\" or \"dark net\", "
-                                "Ahmia makes hidden services accessible to a wide range of people, not just Tor network early adopters."
+            "you need the Tor browser bundle. Abuse material is not allowed on Ahmia. "
+            "See our service blacklist and report abuse material if you find it in the index. "
+            "It will be removed as soon as possible.\n"
+            "Contributors to Ahmia believe that the Tor network is an important and "
+            "resilient distributed platform for anonymity and privacy worldwide. "
+            "By providing a search engine for what many call the \"deep web\" or \"dark net\", "
+            "Ahmia makes hidden services accessible to a wide range of people, not just Tor network early adopters."
         }
     }
 

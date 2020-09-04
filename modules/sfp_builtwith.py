@@ -41,11 +41,11 @@ class sfp_builtwith(SpiderFootPlugin):
             'favIcon': "https://d28rh9vvmrd65v.cloudfront.net/favicon.ico",
             'logo': "https://d28rh9vvmrd65v.cloudfront.net/favicon.ico",
             'description': "Build lists of websites from our database of 38,701+ web technologies and over a quarter of a billion websites showing "
-                                "which sites use shopping carts, analytics, hosting and many more. "
-                                "Filter by location, traffic, vertical and more.\n"
-                                "Know your prospects platform before you talk to them. "
-                                "Improve your conversions with validated market adoption.\n"
-                                "Get advanced technology market share information and country based analytics for all web technologies.",
+            "which sites use shopping carts, analytics, hosting and many more. "
+            "Filter by location, traffic, vertical and more.\n"
+            "Know your prospects platform before you talk to them. "
+            "Improve your conversions with validated market adoption.\n"
+            "Get advanced technology market share information and country based analytics for all web technologies.",
         }
     }
 

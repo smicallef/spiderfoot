@@ -33,8 +33,8 @@ class sfp_wikileaks(SpiderFootPlugin):
             'favIcon': "https://wikileaks.org/IMG/favicon.ico",
             'logo': "https://wikileaks.org/IMG/favicon.ico",
             'description': "WikiLeaks specializes in the analysis and publication of large datasets of censored "
-                                "or otherwise restricted official materials involving war, spying and corruption. "
-                                "It has so far published more than 10 million documents and associated analyses.",
+            "or otherwise restricted official materials involving war, spying and corruption. "
+            "It has so far published more than 10 million documents and associated analyses.",
         }
     }
 

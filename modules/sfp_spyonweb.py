@@ -42,7 +42,7 @@ class sfp_spyonweb(SpiderFootPlugin):
             'favIcon': "http://spyonweb.com/favicon.ico",
             'logo': "http://spyonweb.com/favicon.ico",
             'description': "We take the information from public sources, then structure it for your quick and convenient search "
-                                "for the websites that probably belong to the same owner.",
+            "for the websites that probably belong to the same owner.",
         }
     }
 

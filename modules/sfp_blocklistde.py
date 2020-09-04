@@ -46,9 +46,9 @@ class sfp_blocklistde(SpiderFootPlugin):
             'favIcon': "http://www.blocklist.de/templates/css/logo_web-size.jpg",
             'logo': "http://www.blocklist.de/templates/css/logo_web-size.jpg",
             'description': "www.blocklist.de is a free and voluntary service provided by a Fraud/Abuse-specialist, "
-                                "whose servers are often attacked via SSH-, Mail-Login-, FTP-, Webserver- and other services.\n"
-                                "The mission is to report any and all attacks to the respective abuse departments of the infected PCs/servers, "
-                                "to ensure that the responsible provider can inform their customer about the infection and disable the attacker."
+            "whose servers are often attacked via SSH-, Mail-Login-, FTP-, Webserver- and other services.\n"
+            "The mission is to report any and all attacks to the respective abuse departments of the infected PCs/servers, "
+            "to ensure that the responsible provider can inform their customer about the infection and disable the attacker."
         }
     }
 

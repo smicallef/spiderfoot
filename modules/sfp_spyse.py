@@ -44,10 +44,10 @@ class sfp_spyse(SpiderFootPlugin):
             'favIcon': "https://spyse.com/favicon/favicon-32x32.png",
             'logo': "https://spyse.com/favicon/favicon-32x32.png",
             'description': " Spyse Search can explore entire countries, various types of infrastructures and "
-                                "everything down to the smallest particles of the web. "
-                                "Use the plethora of search parameters at your disposal to achieve the most accurate results.\n"
-                                "Spyse Scoring has been designed to quickly evaluate the "
-                                "security status of different elements of a network - IPs and domains.",
+            "everything down to the smallest particles of the web. "
+            "Use the plethora of search parameters at your disposal to achieve the most accurate results.\n"
+            "Spyse Scoring has been designed to quickly evaluate the "
+            "security status of different elements of a network - IPs and domains.",
         }
     }
 

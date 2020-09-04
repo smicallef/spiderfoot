@@ -46,15 +46,15 @@ class sfp_isc(SpiderFootPlugin):
             'favIcon': "https://isc.sans.edu/iscfavicon.ico",
             'logo': "https://isc.sans.edu/images/logos/isc/large.png",
             'description': "The ISC provides a free analysis and warning service to thousands of Internet users "
-                                "and organizations, and is actively working with Internet Service Providers to "
-                                "fight back against the most malicious attackers.\n"
-                                "Thousands of sensors that work with most firewalls, intrusion detection systems, "
-                                "home broadband devices, and nearly all operating systems are constantly collecting information about "
-                                "unwanted traffic arriving from the Internet. "
-                                "These devices feed the DShield database where human volunteers as well as machines pour through "
-                                "the data looking for abnormal trends and behavior. "
-                                "The resulting analysis is posted to the ISC's main web page where it can be automatically retrieved "
-                                "by simple scripts or can be viewed in near real time by any Internet user.",
+            "and organizations, and is actively working with Internet Service Providers to "
+            "fight back against the most malicious attackers.\n"
+            "Thousands of sensors that work with most firewalls, intrusion detection systems, "
+            "home broadband devices, and nearly all operating systems are constantly collecting information about "
+            "unwanted traffic arriving from the Internet. "
+            "These devices feed the DShield database where human volunteers as well as machines pour through "
+            "the data looking for abnormal trends and behavior. "
+            "The resulting analysis is posted to the ISC's main web page where it can be automatically retrieved "
+            "by simple scripts or can be viewed in near real time by any Internet user.",
         }
     }
 

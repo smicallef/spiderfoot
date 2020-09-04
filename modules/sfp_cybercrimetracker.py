@@ -44,7 +44,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
             'favIcon': "http://cybercrime-tracker.net/favicon.ico",
             'logo': "http://cybercrime-tracker.net/favicon.ico",
             'description': "CyberCrime is a C&C panel tracker, in other words, "
-                                "it lists the administration interfaces of certain in-the-wild botnets.",
+            "it lists the administration interfaces of certain in-the-wild botnets.",
         }
     }
 

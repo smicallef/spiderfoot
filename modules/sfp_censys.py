@@ -46,9 +46,9 @@ class sfp_censys(SpiderFootPlugin):
             'favIcon': "https://censys.io/assets/favicon.png",
             'logo': "https://censys.io/assets/logo.png",
             'description': "Discover exposures and other common entry points for attackers.\n"
-                               "Censys scans the entire internet constantly, including obscure ports. "
-                               "We use a combination of banner grabs and deep protocol handshakes "
-                               "to provide industry-leading visibility and an accurate depiction of what is live on the internet.",
+            "Censys scans the entire internet constantly, including obscure ports. "
+            "We use a combination of banner grabs and deep protocol handshakes "
+            "to provide industry-leading visibility and an accurate depiction of what is live on the internet.",
         }
     }
 

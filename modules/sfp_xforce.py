@@ -47,10 +47,10 @@ class sfp_xforce(SpiderFootPlugin):
             'favIcon': "https://exchange.xforce.ibmcloud.com/images/shortcut-icons/apple-icon-57x57.png",
             'logo': "https://exchange.xforce.ibmcloud.com/images/shortcut-icons/apple-icon-57x57.png",
             'description': "IBM® X-Force Exchange is a cloud-based, threat intelligence sharing platform that you can use "
-                                "to rapidly research the latest global security threats, aggregate actionable intelligence, "
-                                "consult with experts and collaborate with peers. "
-                                "IBM X-Force Exchange, supported by human- and machine-generated intelligence, "
-                                "leverages the scale of IBM X-Force to help users stay ahead of emerging threats.",
+            "to rapidly research the latest global security threats, aggregate actionable intelligence, "
+            "consult with experts and collaborate with peers. "
+            "IBM X-Force Exchange, supported by human- and machine-generated intelligence, "
+            "leverages the scale of IBM X-Force to help users stay ahead of emerging threats.",
         }
     }
 

@@ -44,13 +44,13 @@ class sfp_citadel(SpiderFootPlugin):
             'favIcon': "https://leak-lookup.com/favicon.png",
             'logo': "https://leak-lookup.com/favicon.png",
             'description': "Leak-Lookup allows you to search across thousands of data breaches "
-                                "to stay on top of credentials that may have been compromised in the wild.\n"
-                                "The creators came together when they realized they had a vast trove of data "
-                                "that could be of great value to pen-testers seeking weaknesses in client passwords "
-                                "and those concerned about which of their credentials have been leaked into the wild.\n"
-                                "Always looking forward, Leak-Lookup invests all of its profits back into securing the "
-                                "latest data breaches and leaks / dumps as they become available, ensuring that "
-                                "as well as historical data, Leak-Lookup becomes a field leader in credential monitoring.",
+            "to stay on top of credentials that may have been compromised in the wild.\n"
+            "The creators came together when they realized they had a vast trove of data "
+            "that could be of great value to pen-testers seeking weaknesses in client passwords "
+            "and those concerned about which of their credentials have been leaked into the wild.\n"
+            "Always looking forward, Leak-Lookup invests all of its profits back into securing the "
+            "latest data breaches and leaks / dumps as they become available, ensuring that "
+            "as well as historical data, Leak-Lookup becomes a field leader in credential monitoring.",
         }
     }
 

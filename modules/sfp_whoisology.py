@@ -40,8 +40,8 @@ class sfp_whoisology(SpiderFootPlugin):
             'favIcon': "https://whoisology.com/img/w-logo.png",
             'logo': "https://whoisology.com/assets/images/il1.gif",
             'description': "Whoisology is a domain name ownership archive with literally billions of searchable and cross referenced domain name whois records.\n"
-                                "Our main focus is reverse whois which is used for cyber crime investigation / InfoSec, "
-                                "corporate intelligence, legal research, business development, and for good ol' fashioned poking around.",
+            "Our main focus is reverse whois which is used for cyber crime investigation / InfoSec, "
+            "corporate intelligence, legal research, business development, and for good ol' fashioned poking around.",
         }
     }
 

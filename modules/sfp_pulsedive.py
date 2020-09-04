@@ -45,8 +45,8 @@ class sfp_pulsedive(SpiderFootPlugin):
             'favIcon': "https://pulsedive.com/favicon.ico?v=3.9.72",
             'logo': "https://pulsedive.com/img/logo.svg",
             'description': "Why check 30 different solutions for varying snippets of data when you can just check one? "
-                                "Pulsedive enriches IOCs but also fetches article summaries from Wikipedia and "
-                                "even posts from Reddit and the infosec blogosphere to provide contextual information for threats.",
+            "Pulsedive enriches IOCs but also fetches article summaries from Wikipedia and "
+            "even posts from Reddit and the infosec blogosphere to provide contextual information for threats.",
         }
     }
 

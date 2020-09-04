@@ -44,9 +44,9 @@ class sfp_openphish(SpiderFootPlugin):
             'favIcon': "",
             'logo': "https://openphish.com/static/openphish_logo2.png",
             'description': "Timely. Accurate. Relevant Threat Intelligence.\n"
-                                "OpenPhish is a fully automated self-contained platform for phishing intelligence. "
-                                "It identifies phishing sites and performs intelligence analysis ""in real time "
-                                "without human intervention and without using any external resources, such as blacklists.",
+            "OpenPhish is a fully automated self-contained platform for phishing intelligence. "
+            "It identifies phishing sites and performs intelligence analysis ""in real time "
+            "without human intervention and without using any external resources, such as blacklists.",
         }
     }
 

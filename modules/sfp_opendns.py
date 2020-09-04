@@ -35,9 +35,9 @@ class sfp_opendns(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://www.opendns.com/",
             'logo': "https://d15ni2z53ptwz9.cloudfront.net/opendns-www/img/logo-opendns.png",
             'description': "Cisco Umbrella provides protection against threats on the internet such as "
-                                "malware, phishing, and ransomware.\n"
-                                "OpenDNS is a suite of consumer products aimed at "
-                                "making your internet faster, safer, and more reliable.",
+            "malware, phishing, and ransomware.\n"
+            "OpenDNS is a suite of consumer products aimed at "
+            "making your internet faster, safer, and more reliable.",
         }
     }
 

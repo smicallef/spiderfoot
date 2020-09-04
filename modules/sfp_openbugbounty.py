@@ -31,13 +31,13 @@ class sfp_openbugbounty(SpiderFootPlugin):
             'favIcon': "https://www.openbugbounty.org/favicon.ico",
             'logo': "https://www.openbugbounty.org/images/design/logo-obbnew.svg",
             'description': "Open Bug Bounty is an open, disintermediated, cost-free, and community-driven bug bounty platform "
-                                "for coordinated, responsible and ISO 29147 compatible vulnerability disclosure.\n"
-                                "The role of Open Bug Bounty is limited to independent verification of the "
-                                "submitted vulnerabilities and proper notification of website owners by all available means. "
-                                "Once notified, the website owner and the researcher are in direct contact to "
-                                "remediate the vulnerability and coordinate its disclosure. "
-                                "At this and at any later stages, we never act as an intermediary between "
-                                "website owners and security researchers.",
+            "for coordinated, responsible and ISO 29147 compatible vulnerability disclosure.\n"
+            "The role of Open Bug Bounty is limited to independent verification of the "
+            "submitted vulnerabilities and proper notification of website owners by all available means. "
+            "Once notified, the website owner and the researcher are in direct contact to "
+            "remediate the vulnerability and coordinate its disclosure. "
+            "At this and at any later stages, we never act as an intermediary between "
+            "website owners and security researchers.",
         }
     }
     # Default options

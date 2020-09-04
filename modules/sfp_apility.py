@@ -41,7 +41,7 @@ class sfp_apility(SpiderFootPlugin):
             'favIcon': "https://cdn.auth0.com/styleguide/components/1.0.8/media/logos/img/favicon.png",
             'logo': "https://auth0.com/signals/docs/images/signals-docs-logo.svg",
             'description': "Malicious login traffic is detected with Auth0’s Anomaly Detection engine. "
-                                "This helps protect our customers from automated attacks, such as credential stuffing.",
+            "This helps protect our customers from automated attacks, such as credential stuffing.",
         }
     }
 

@@ -37,7 +37,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
             'favIcon': "https://as.onionsearchengine.com/images/onionsearchengine.jpg",
             'logo': "https://as.onionsearchengine.com/images/onionsearchengine.jpg",
             'description': "No cookies, no javascript, no trace. We protect your privacy.\n"
-                                "Onion search engine is search engine with ability to find content on tor network / deepweb / darkweb.",
+            "Onion search engine is search engine with ability to find content on tor network / deepweb / darkweb.",
         }
     }
 

@@ -31,6 +31,7 @@ malchecks = {
     }
 }
 
+
 class sfp_bambenek(SpiderFootPlugin):
 
     meta = {
@@ -50,11 +51,11 @@ class sfp_bambenek(SpiderFootPlugin):
             'favIcon': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/mini-logo1.ico",
             'logo': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/logo_transparent21-300x84.png",
             'description': "Bambenek Consulting is an cybersecurity investigations and intelligence consulting firm "
-                                "focusing on tackling major criminal threats. "
-                                "Every day, there is another story about another company having their banking accounts drained, "
-                                "someone having their identity stolen, or critical infrastructure being taken offline by hostile entities. "
-                                "Led by IT security expert, John Bambenek, we have the resources to bring to your business so "
-                                "you can be sure your organization and your customers’ data is safe.",
+            "focusing on tackling major criminal threats. "
+            "Every day, there is another story about another company having their banking accounts drained, "
+            "someone having their identity stolen, or critical infrastructure being taken offline by hostile entities. "
+            "Led by IT security expert, John Bambenek, we have the resources to bring to your business so "
+            "you can be sure your organization and your customers’ data is safe.",
         }
     }
 

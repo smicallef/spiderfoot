@@ -36,8 +36,8 @@ class sfp_dronebl(SpiderFootPlugin):
             'favIcon': "https://dronebl.org/images/favicon.ico",
             'logo': "https://dronebl.org/images/dronebl-logo.svg",
             'description': "DroneBL is a realtime monitor of abusable IPs, which has "
-                                "the goal of stopping abuse of infected machines.\n"
-                                "A real-time tracker of abusable IPs.",
+            "the goal of stopping abuse of infected machines.\n"
+            "A real-time tracker of abusable IPs.",
         }
     }
 

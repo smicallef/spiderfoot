@@ -32,11 +32,11 @@ class sfp_emergingthreats(SpiderFootPlugin):
             'favIcon': "",
             'logo': "",
             'description': "Emerging Threats delivers the most timely and accurate threat intelligence.\n"
-                                "Emerging Threat (ET) intelligence helps prevent attacks and reduce risk by "
-                                "helping you understand the historical context of where these threats originated, "
-                                "who is behind them, when have they attacked, what methods they used, and what they're after. "
-                                "Get on-demand access to current and historical metadata on IPs, domains, "
-                                "and other related threat intelligence to help research threats and investigate incidents.",
+            "Emerging Threat (ET) intelligence helps prevent attacks and reduce risk by "
+            "helping you understand the historical context of where these threats originated, "
+            "who is behind them, when have they attacked, what methods they used, and what they're after. "
+            "Get on-demand access to current and historical metadata on IPs, domains, "
+            "and other related threat intelligence to help research threats and investigate incidents.",
         }
     }
 

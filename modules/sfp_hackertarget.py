@@ -38,10 +38,10 @@ class sfp_hackertarget(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://hackertarget.com/",
             'logo': "https://hackertarget.com/wp-content/uploads/2018/03/online-security.png",
             'description': "Simplify the security assessment process with hosted vulnerability scanners. "
-                                "From attack surface discovery to vulnerability identification, "
-                                "actionable network intelligence for IT & security operations. "
-                                "Proactively hunt for security weakness. "
-                                "Pivot from attack surface discovery to vulnerability identification.",
+            "From attack surface discovery to vulnerability identification, "
+            "actionable network intelligence for IT & security operations. "
+            "Proactively hunt for security weakness. "
+            "Pivot from attack surface discovery to vulnerability identification.",
         }
     }
 

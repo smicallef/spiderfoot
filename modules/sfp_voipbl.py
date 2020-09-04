@@ -44,8 +44,8 @@ class sfp_voipbl(SpiderFootPlugin):
             'favIcon': "",
             'logo': "http://www.voipbl.org/images/scopserv.png",
             'description': "Protect your business and PBX's against VoIP Fraud.\n"
-                                "Minimize the risks of attacks on your Telephony Server.\n"
-                                "Save bandwidth by using Geolocation filtering.",
+            "Minimize the risks of attacks on your Telephony Server.\n"
+            "Save bandwidth by using Geolocation filtering.",
         }
     }
 

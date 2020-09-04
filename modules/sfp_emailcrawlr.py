@@ -43,10 +43,10 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             'favIcon': "https://emailcrawlr.com/assets/fav-165eaa698b0dc774f0b250fadb2b41266e4c70dfbd7fb5fd4413e4bdecfd229d.png",
             'logo': "https://emailcrawlr.com/assets/logo_black-d136617b2fc5d52df6eea245a4db78477d8d99f873e08c24a9c3c7defe1c1379.png",
             'description': "By using the EmailCrawlr JSON API you can: "
-                                "Get key information about company websites.\n"
-                                "Find all email addresses associated with a domain.\n"
-                                "Get social accounts associated with an email.\n"
-                                "Verify email address deliverability.",
+            "Get key information about company websites.\n"
+            "Find all email addresses associated with a domain.\n"
+            "Get social accounts associated with an email.\n"
+            "Verify email address deliverability.",
         }
     }
 

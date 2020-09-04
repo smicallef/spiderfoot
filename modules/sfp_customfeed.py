@@ -25,6 +25,7 @@ malchecks = {
     }
 }
 
+
 class sfp_customfeed(SpiderFootPlugin):
 
     meta = {

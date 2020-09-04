@@ -36,8 +36,8 @@ class sfp_grep_app(SpiderFootPlugin):
             'favIcon': "https://grep.app/favicon-16x16.png",
             'logo': "https://grep.app/apple-touch-icon.png",
             'description': "grep.app searches code from over a half million public repositories on GitHub.\n"
-                                "It searches for the exact string you enter, including any punctuation or other characters.\n"
-                                "You can also search by regular expression, using the RE2 syntax.",
+            "It searches for the exact string you enter, including any punctuation or other characters.\n"
+            "You can also search by regular expression, using the RE2 syntax.",
         }
     }
 

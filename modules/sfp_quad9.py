@@ -34,11 +34,11 @@ class sfp_quad9(SpiderFootPlugin):
             'favIcon': "https://quad9.net/wp-content/uploads/2018/01/favicon-32.png",
             'logo': "https://quad9.net/wp-content/uploads/2017/11/quad9-logo-white@2x.png",
             'description': "Quad9 brings together cyber threat intelligence about malicious domains "
-                                "from a variety of public and private sources and blocks access "
-                                "to those malicious domains when your system attempts to contact them.\n"
-                                "When you use Quad9, attackers and malware cannot leverage the known malicious domains to control your systems, "
-                                "and their ability to steal your data or cause harm will be hindered. "
-                                "Quad9 is an effective and easy way to add an additional layer of security to your infrastructure for free.",
+            "from a variety of public and private sources and blocks access "
+            "to those malicious domains when your system attempts to contact them.\n"
+            "When you use Quad9, attackers and malware cannot leverage the known malicious domains to control your systems, "
+            "and their ability to steal your data or cause harm will be hindered. "
+            "Quad9 is an effective and easy way to add an additional layer of security to your infrastructure for free.",
         }
     }
 

@@ -39,10 +39,10 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             'favIcon': "https://riddler.io/static/images/favicon.png",
             'logo': "https://riddler.io/static/images/logo.png",
             'description': "Riddler.io allows you to search in a high quality dataset with more than 396,831,739 hostnames. "
-                                "Unlike others, we do not rely on simple port scanning techniques - we crawl the web, "
-                                "ensuring an in-depth quality data set you will not find anywhere else.\n"
-                                "Use Riddler to enumerate possible attack vectors during your pen-test or use the very same data "
-                                "to monitor potential threats before it is too late.",
+            "Unlike others, we do not rely on simple port scanning techniques - we crawl the web, "
+            "ensuring an in-depth quality data set you will not find anywhere else.\n"
+            "Use Riddler to enumerate possible attack vectors during your pen-test or use the very same data "
+            "to monitor potential threats before it is too late.",
         }
     }
 
