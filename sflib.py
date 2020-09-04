@@ -2442,6 +2442,53 @@ class SpiderFoot:
 
         return ret
 
+    def useProxyForUrl(self, url):
+        """Check if the configured proxy should be used to connect to a specified URL.
+
+        Args:
+            url (str): The URL to check
+
+        Returns:
+            bool: should the configured proxy be used?
+        """
+        host = self.urlFQDN(url).lower()
+
+        if not self.opts['_socks1type']:
+            return False
+
+        proxy_host = self.opts['_socks2addr']
+
+        if not proxy_host:
+            return False
+
+        proxy_port = self.opts['_socks3port']
+
+        if not proxy_port:
+            return False
+
+        # Never proxy requests to the proxy
+        if host == proxy_host.lower():
+            return False
+
+        # Never proxy RFC1918 addresses on the LAN or the local network interface
+        if self.validIP(host):
+            if netaddr.IPAddress(host).is_private():
+                return False
+            if netaddr.IPAddress(host).is_loopback():
+                return False
+
+        # Never proxy local hostnames
+        else:
+            neverProxyNames = ['local', 'localhost']
+            if host in neverProxyNames:
+                return False
+
+            for s in neverProxyNames:
+                if host.endswith(s):
+                    return False
+
+        return True
+
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
                  postData=None, dontMangle=False, sizeLimit=None,
@@ -2462,53 +2509,15 @@ class SpiderFoot:
         url = url.strip()
 
         proxies = dict()
-        if self.opts['_socks1type']:
-            neverProxyNames = [self.opts['_socks2addr']]
-            neverProxySubnets = [
-                "127."
-                "10.",
-                "192.168.",
-                "172.16.",
-                "172.17.",
-                "172.18.",
-                "172.19.",
-                "172.20.",
-                "172.21.",
-                "172.22.",
-                "172.23.",
-                "172.24.",
-                "172.25.",
-                "172.26.",
-                "172.27.",
-                "172.28.",
-                "172.29.",
-                "172.30.",
-                "172.31."
-            ]
-            host = self.urlFQDN(url)
-
-            # Completely on or off?
-            proxy = bool(self.opts['_socks1type'])
-
-            # Never proxy these system/internal locations
-            if host in neverProxyNames:
-                proxy = False
-            for s in neverProxyNames:
-                if host.endswith(s):
-                    proxy = False
-            for sub in neverProxySubnets:
-                if host.startswith(sub):
-                    proxy = False
-
-            if proxy:
-                self.debug(f"Using proxy for {host}")
-                self.debug("Proxy set to " + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']))
-                proxies = {
-                    'http': 'socks5h://' + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port']),
-                    'https': 'socks5h://' + self.opts['_socks2addr'] + ":" + str(self.opts['_socks3port'])
-                }
-            else:
-                self.debug("Not using proxy for " + host)
+        if self.useProxyForUrl(url):
+            proxy_url = f"socks5h://{self.opts['_socks2addr']}:{self.opts['_socks3port']}"
+            self.debug(f"Using proxy {proxy_url} for {url}")
+            proxies = {
+                'http': proxy_url,
+                'https': proxy_url
+            }
+        else:
+            self.debug(f"Not using proxy for {url}")
 
         try:
             header = dict()
