@@ -62,7 +62,6 @@ sfConfig = {
     '__logging': True,  # Logging in general
     '__outputfilter': None,  # Event types to filter from modules' output
     '__blocknotif': False,  # Block notifications
-    '_fatalerrors': False,
     '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
     '_dnsserver': '',  # Override the default resolver
     '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
@@ -98,7 +97,6 @@ sfOptdescs = {
     '_socks4user': 'SOCKS Username. Valid only for SOCKS4 and SOCKS5 servers.',
     '_socks5pwd': "SOCKS Password. Valid only for SOCKS5 servers.",
     '_torctlport': "The port TOR is taking control commands on. This is necessary for SpiderFoot to tell TOR to re-circuit when it suspects anonymity is compromised.",
-    '_fatalerrors': "Abort the scan when modules encounter exceptions.",
     '_modulesenabled': "Modules enabled for the scan."  # This is a hack to get a description for an option not actually available.
 }
 
