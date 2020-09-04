@@ -133,8 +133,6 @@ class SpiderFootScanner():
 
         # If a SOCKS server was specified, set it up
         if self.__config['_socks1type']:
-            # TODO: review why socksDns is unused
-            # socksDns = self.__config['_socks6dns']
             socksAddr = self.__config['_socks2addr']
             socksPort = int(self.__config['_socks3port'])
             socksUsername = self.__config['_socks4user'] or ''
