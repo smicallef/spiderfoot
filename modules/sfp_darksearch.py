@@ -203,8 +203,8 @@ class sfp_darksearch(SpiderFootPlugin):
                         continue
 
                     evt = SpiderFootEvent("DARKNET_MENTION_CONTENT",
-                                          "Title: " + result.get('title') + "\n\n" +
-                                          "..." + result.get('description') + "...",
+                                          "Title: " + result.get('title') + "\n\n"
+                                          + "..." + result.get('description') + "...",
                                           self.__name__,
                                           event)
                     self.notifyListeners(evt)

@@ -140,12 +140,12 @@ class sfp_pastebin(SpiderFootPlugin):
                                        useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.debug("Ignoring " + link + " as no data returned")
+                    self.sf.debug(f"Ignoring {link} as no data returned")
                     continue
 
                 # Sometimes pastes search results false positives
-                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                             r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData)
+                             + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                     continue
 
                 try:
