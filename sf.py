@@ -31,7 +31,7 @@ from logging import handlers
 import cherrypy
 from cherrypy.lib import auth_digest
 
-from sfdb import SpiderFootDb
+from spiderfoot import SpiderFootDb
 from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
 from sfwebui import SpiderFootWebUi

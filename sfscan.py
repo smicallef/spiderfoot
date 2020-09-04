@@ -17,9 +17,8 @@ from copy import deepcopy
 
 import dns.resolver
 
-from sfdb import SpiderFootDb
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget
+from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget
 
 
 class SpiderFootScanner():

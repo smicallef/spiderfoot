@@ -16,7 +16,6 @@ import threading
 import time
 
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootEvent
 
 
 class SpiderFootDb:
@@ -1106,6 +1105,7 @@ class SpiderFootDb:
             ValueError: arg value was invalid
             IOError: database I/O failed
         """
+        from spiderfoot import SpiderFootEvent
 
         if not isinstance(instanceId, str):
             raise TypeError(f"instanceId is {type(instanceId)}; expected str()")

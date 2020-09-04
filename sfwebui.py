@@ -26,7 +26,7 @@ from mako.lookup import TemplateLookup
 from mako.template import Template
 from secure import SecureHeaders
 
-from sfdb import SpiderFootDb
+from spiderfoot import SpiderFootDb
 from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
 
@@ -432,20 +432,19 @@ class SpiderFootWebUi:
         if not info:
             return self.error("Invalid scan ID.")
 
-        scanconfig = dbh.scanConfigGet(id)
         scanname = info[0]
         scantarget = info[1]
-        targetType = None
 
-        if len(scanconfig) == 0:
-            return self.error("Something went wrong internally.")
+        scanconfig = dbh.scanConfigGet(id)
+        if not scanconfig:
+            return self.error(f"Error loading config from scan: {id}")
 
         modlist = scanconfig['_modulesenabled'].split(',')
         if "sfp__stor_stdout" in modlist:
             modlist.remove("sfp__stor_stdout")
 
         targetType = sf.targetType(scantarget)
-        if targetType is None:
+        if not targetType:
             # It must then be a name, as a re-run scan should always have a clean
             # target. Put quotes around the target value and try to determine the
             # target type again.

@@ -1,8 +1,7 @@
 # test_spiderfootplugin.py
 import unittest
 
-from sfdb import SpiderFootDb, SpiderFootEvent
-from spiderfoot import SpiderFootPlugin, SpiderFootTarget
+from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget
 
 
 class TestSpiderFootPlugin(unittest.TestCase):
