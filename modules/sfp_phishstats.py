@@ -112,8 +112,8 @@ class sfp_phishstats(SpiderFootPlugin):
 
         try:
             return json.loads(res['content'])
-        except:
-            self.sf.error("Ill formatted data received as JSON response", False)
+        except BaseException as e:
+            self.sf.error(f"Error processing JSON response: {e}", False)
             return None
 
     # Handle events sent to this module
@@ -177,7 +177,7 @@ class sfp_phishstats(SpiderFootPlugin):
 
             try:
                 maliciousIP = data[0].get('ip')
-            except:
+            except BaseException:
                 # If ArrayIndex is out of bounds then data doesn't exist
                 continue
 

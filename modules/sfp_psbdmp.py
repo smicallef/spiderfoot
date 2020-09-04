@@ -38,16 +38,11 @@ class sfp_psbdmp(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
     }
 
-    # Option descriptions
     optdescs = {
     }
-
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
 
     results = None
 
@@ -55,23 +50,14 @@ class sfp_psbdmp(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
-
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        ret = ["EMAILADDR", "DOMAIN_NAME", "INTERNET_NAME"]
+        return ["EMAILADDR", "DOMAIN_NAME", "INTERNET_NAME"]
 
-        return ret
-
-    # What events this module produces
     def producedEvents(self):
-        ret = ["LEAKSITE_URL", "LEAKSITE_CONTENT"]
-
-        return ret
+        return ["LEAKSITE_URL", "LEAKSITE_CONTENT"]
 
     def query(self, qry):
         ret = None
@@ -105,7 +91,6 @@ class sfp_psbdmp(SpiderFootPlugin):
 
         return ids
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -113,12 +98,11 @@ class sfp_psbdmp(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         data = self.query(eventData)
         if data is None:
@@ -128,22 +112,28 @@ class sfp_psbdmp(SpiderFootPlugin):
             e = SpiderFootEvent("LEAKSITE_URL", n, self.__name__, event)
             self.notifyListeners(e)
 
-            res = self.sf.fetchUrl(n, timeout=self.opts['_fetchtimeout'],
-                                   useragent=self.opts['_useragent'])
+            res = self.sf.fetchUrl(
+                n,
+                timeout=self.opts['_fetchtimeout'],
+                useragent=self.opts['_useragent']
+            )
 
             if res['content'] is None:
-                self.sf.debug("Ignoring " + n + " as no data returned")
+                self.sf.debug(f"Ignoring {n} as no data returned")
                 continue
 
             # Sometimes pastes search results false positives
-            if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData)
-                         + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+            if re.search(
+                r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) + r"[^a-zA-Z\-\_0-9]",
+                res['content'],
+                re.IGNORECASE
+            ) is None:
                 continue
 
             try:
                 startIndex = res['content'].index(eventData)
             except BaseException:
-                self.sf.debug("String not found in pastes content.")
+                self.sf.debug(f"{eventData} not found in pastes content.")
                 continue
 
             evt = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, e)

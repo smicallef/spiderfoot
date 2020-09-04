@@ -148,7 +148,6 @@ class sfp_fullcontact(SpiderFootPlugin):
 
         return self.query(url, q)
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -157,30 +156,36 @@ class sfp_fullcontact(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_fullcontact but did not set an API key!", False)
+        if self.opts["api_key"] == "":
+            self.sf.error(
+                f"You enabled {self.__class__.__name__} but did not set an API key!",
+                False,
+            )
             self.errorState = True
             return None
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == "EMAILADDR":
             data = self.queryPerson(email=eventData)
+
             if not data:
                 return None
-            if not data.get('fullName'):
+
+            full_name = data.get('fullName')
+
+            if not full_name:
                 return None
-            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
-                                data['fullName'], self.__name__, event)
+
+            e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {full_name}", self.__name__, event)
             self.notifyListeners(e)
-            return
+            return None
 
         if eventName == "DOMAIN_NAME":
             data = self.queryCompany(eventData)
@@ -219,9 +224,12 @@ class sfp_fullcontact(SpiderFootPlugin):
             if data.get("keyPeople"):
                 for r in data['keyPeople']:
                     if r.get('fullName'):
-                        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
-                                            r['fullName'], self.__name__, event)
+                        e = SpiderFootEvent(
+                            "RAW_RIR_DATA",
+                            "Possible full name: {r['fullName']}",
+                            self.__name__,
+                            event
+                        )
                         self.notifyListeners(e)
-
 
 # End of sfp_fullcontact class
