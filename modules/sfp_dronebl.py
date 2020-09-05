@@ -21,7 +21,7 @@ class sfp_dronebl(SpiderFootPlugin):
 
     meta = {
         'name': "DroneBL",
-        'summary': "Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc.",
+        'summary': "Query the DroneBL database for open relays, open proxies, vulnerable servers, etc.",
         'flags': [""],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
