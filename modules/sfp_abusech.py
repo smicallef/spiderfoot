@@ -36,6 +36,7 @@ malchecks = {
     }
 }
 
+
 class sfp_abusech(SpiderFootPlugin):
 
     meta = {
@@ -69,10 +70,10 @@ class sfp_abusech(SpiderFootPlugin):
             'favIcon': "https://abuse.ch/favicon.ico",
             'logo': "https://abuse.ch/images/abusech.svg",
             'description': "abuse.ch is operated by a random swiss guy fighting malware for non-profit, "
-                                "running a couple of projects helping internet service providers and "
-                                "network operators protecting their infrastructure from malware.\n"
-                                "IT-Security researchers, vendors and law enforcement agencies rely on data from abuse.ch,"
-                                "trying to make the internet a safer place.",
+            "running a couple of projects helping internet service providers and "
+            "network operators protecting their infrastructure from malware.\n"
+            "IT-Security researchers, vendors and law enforcement agencies rely on data from abuse.ch,"
+            "trying to make the internet a safer place.",
         }
     }
 

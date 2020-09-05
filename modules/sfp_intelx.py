@@ -43,12 +43,12 @@ class sfp_intelx(SpiderFootPlugin):
             'favIcon': "https://intelx.io/favicon/favicon-32x32.png",
             'logo': "https://intelx.io/assets/img/IntelligenceX.svg",
             'description': "Intelligence X is an independent European technology company founded in 2018 by Peter Kleissner. "
-                                "Its mission is to develop and maintain the search engine and data archive.\n"
-                                "The search works with selectors, i.e. specific search terms such as "
-                                "email addresses, domains, URLs, IPs, CIDRs, Bitcoin addresses, IPFS hashes, etc.\n"
-                                "It searches in places such as the darknet, document sharing platforms, whois data, public data leaks and others.\n"
-                                "It keeps a historical data archive of results, "
-                                "similar to how the Wayback Machine from archive.org stores historical copies of websites.",
+            "Its mission is to develop and maintain the search engine and data archive.\n"
+            "The search works with selectors, i.e. specific search terms such as "
+            "email addresses, domains, URLs, IPs, CIDRs, Bitcoin addresses, IPFS hashes, etc.\n"
+            "It searches in places such as the darknet, document sharing platforms, whois data, public data leaks and others.\n"
+            "It keeps a historical data archive of results, "
+            "similar to how the Wayback Machine from archive.org stores historical copies of websites.",
         }
     }
 

@@ -44,8 +44,8 @@ class sfp_totalhash(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://totalhash.cymru.com/",
             'logo': "https://totalhash.cymru.com/wp-content/uploads/2014/12/TC_logo-300x141.png",
             'description': "#totalhash provides static and dynamic analysis of Malware samples. "
-                                "The data available on this site is free for non commercial use. "
-                                "If you have samples that you would like analyzed you may upload them to our anonymous FTP server.",
+            "The data available on this site is free for non commercial use. "
+            "If you have samples that you would like analyzed you may upload them to our anonymous FTP server.",
         }
     }
 

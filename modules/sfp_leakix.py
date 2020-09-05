@@ -33,8 +33,8 @@ class sfp_leakix(SpiderFootPlugin):
             'favIcon': "https://leakix.net/public/img/favicon.png",
             'logo': "https://leakix.net/public/img/logoleakix-v1.png",
             'description': "LeakIX provides insights into devices and servers that are compromised "
-                                "and compromised database schemas online.\n"
-                                "In this scope we inspect found services for weak credentials.",
+            "and compromised database schemas online.\n"
+            "In this scope we inspect found services for weak credentials.",
         }
     }
 

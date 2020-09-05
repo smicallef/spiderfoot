@@ -47,8 +47,8 @@ class sfp_dnsgrep(SpiderFootPlugin):
             'favIcon': "https://www.rapid7.com/includes/img/favicon.ico",
             'logo': "https://www.rapid7.com/includes/img/Rapid7_logo.svg",
             'description': "Offering researchers and community members open access to data from Project Sonar, "
-                                "which conducts internet-wide surveys to gain insights into global exposure "
-                                "to common vulnerabilities.",
+            "which conducts internet-wide surveys to gain insights into global exposure "
+            "to common vulnerabilities.",
         }
     }
 

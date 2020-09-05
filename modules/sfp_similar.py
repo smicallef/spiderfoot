@@ -57,6 +57,7 @@ pairs = {
     '11': ['ll', 'lll', 'l1l', '1l1']
 }
 
+
 class sfp_similar(SpiderFootPlugin):
 
     meta = {

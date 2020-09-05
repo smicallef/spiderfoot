@@ -42,11 +42,11 @@ class sfp_honeypot(SpiderFootPlugin):
             'favIcon': "https://www.projecthoneypot.org/favicon.ico",
             'logo': "https://www.projecthoneypot.org/images/php_logo.gif",
             'description': "Project Honey Pot is the first and only distributed system for identifying spammers "
-                                "and the spambots they use to scrape addresses from your website. "
-                                "Using the Project Honey Pot system you can install addresses "
-                                "that are custom-tagged to the time and IP address of a visitor to your site. "
-                                "If one of these addresses begins receiving email we not only can tell that the messages are spam, "
-                                "but also the exact moment when the address was harvested and the IP address that gathered it.",
+            "and the spambots they use to scrape addresses from your website. "
+            "Using the Project Honey Pot system you can install addresses "
+            "that are custom-tagged to the time and IP address of a visitor to your site. "
+            "If one of these addresses begins receiving email we not only can tell that the messages are spam, "
+            "but also the exact moment when the address was harvested and the IP address that gathered it.",
         }
     }
 

@@ -34,14 +34,14 @@ class sfp_adblock(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://adblockplus.org/en/",
             'logo': "https://adblockplus.org/img/navbar-logo.svg",
             'description': "Adblock Plus is a free extension that allows you to customize your web experience."
-                                "You can block annoying ads, disable tracking and lots more."
-                                "It’s available for all major desktop browsers and for your mobile devices.\n"
-                                "Block ads that interrupt your browsing experience."
-                                "Say goodbye to video ads, pop-ups, flashing banners and more."
-                                "Blocking these annoyances means pages load faster.\n"
-                                "With Adblock Plus avoiding tracking and malware is easy."
-                                "Blocking intrusive ads reduces the risk of \"malvertising\" infections."
-                                "Blocking tracking stops companies following your online activity."
+            "You can block annoying ads, disable tracking and lots more."
+            "It’s available for all major desktop browsers and for your mobile devices.\n"
+            "Block ads that interrupt your browsing experience."
+            "Say goodbye to video ads, pop-ups, flashing banners and more."
+            "Blocking these annoyances means pages load faster.\n"
+            "With Adblock Plus avoiding tracking and malware is easy."
+            "Blocking intrusive ads reduces the risk of \"malvertising\" infections."
+            "Blocking tracking stops companies following your online activity."
         }
     }
 

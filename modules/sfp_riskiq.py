@@ -42,9 +42,9 @@ class sfp_riskiq(SpiderFootPlugin):
             'favIcon': "https://community.riskiq.com/static/assets/favicon.png",
             'logo': "https://community.riskiq.com/static/assets/favicon.png",
             'description': "RiskIQ Community brings petabytes of internet intelligence directly to your fingertips. "
-                                "Investigate threats by pivoting through attacker infrastructure data. "
-                                "Understand your digital assets that are internet-exposed, "
-                                "and map and monitor your external attack surface.",
+            "Investigate threats by pivoting through attacker infrastructure data. "
+            "Understand your digital assets that are internet-exposed, "
+            "and map and monitor your external attack surface.",
         }
     }
 

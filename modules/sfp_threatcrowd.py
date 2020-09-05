@@ -34,8 +34,8 @@ class sfp_threatcrowd(SpiderFootPlugin):
             'favIcon': "https://www.threatcrowd.org/img/favicon-32x32.png",
             'logo': "https://www.threatcrowd.org/img/home.png",
             'description': "The ThreatCrowd API allows you to quickly identify related infrastructure and malware.\n"
-                                "With the ThreatCrowd API you can search for Domains, IP Addreses, E-mail adddresses, "
-                                "Filehashes, Antivirus detections.",
+            "With the ThreatCrowd API you can search for Domains, IP Addreses, E-mail adddresses, "
+            "Filehashes, Antivirus detections.",
         }
     }
 

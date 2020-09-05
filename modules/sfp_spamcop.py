@@ -36,8 +36,8 @@ class sfp_spamcop(SpiderFootPlugin):
             'favIcon': "https://www.spamcop.net/images/favicon.ico",
             'logo': "https://www.spamcop.net/images/05logo.png",
             'description': "SpamCop is the premier service for reporting spam. "
-                                "SpamCop determines the origin of unwanted email and reports it "
-                                "to the relevant Internet service providers.",
+            "SpamCop determines the origin of unwanted email and reports it "
+            "to the relevant Internet service providers.",
         }
     }
 

@@ -37,10 +37,10 @@ class sfp_threatminer(SpiderFootPlugin):
             'favIcon': "https://www.threatminer.org/images/favicon.gif",
             'logo': "https://www.threatminer.org/images/logo.png",
             'description': "ThreatMiner is a threat intelligence portal designed to enable analysts to research under a single interface. "
-                                "It is used in the SANS FOR578 Cyber Threat Intelligence course.\n"
-                                "Threat intelligence and intrusion analysts who regularly perform research "
-                                "into malware and network infrastructure often find the need to rely on "
-                                "mutliple websites that individually holds a small piece of the larger puzzle.",
+            "It is used in the SANS FOR578 Cyber Threat Intelligence course.\n"
+            "Threat intelligence and intrusion analysts who regularly perform research "
+            "into malware and network infrastructure often find the need to rely on "
+            "mutliple websites that individually holds a small piece of the larger puzzle.",
         }
     }
     # Default options

@@ -40,9 +40,9 @@ class sfp_securitytrails(SpiderFootPlugin):
             'favIcon': "https://securitytrails.com/user/themes/lego/favicon/apple-touch-icon.png",
             'logo': "https://securitytrails.com/user/themes/lego/favicon/apple-touch-icon.png",
             'description': "Data for Security companies, researchers and teams. Fast, always up API that "
-                                "allows you to access current and historical data. "
-                                "The API is paid via a simple pricing structure that allows you to embed our data into your applications.\n"
-                                "Search nearly 3 billion historical and current WHOIS data and WHOIS changes.",
+            "allows you to access current and historical data. "
+            "The API is paid via a simple pricing structure that allows you to embed our data into your applications.\n"
+            "Search nearly 3 billion historical and current WHOIS data and WHOIS changes.",
         }
     }
 

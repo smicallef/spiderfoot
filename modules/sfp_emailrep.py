@@ -38,10 +38,10 @@ class sfp_emailrep(SpiderFootPlugin):
             'favIcon': "https://emailrep.io/assets/img/favicon.png",
             'logo': "https://emailrep.io/assets/img/logo-light.png",
             'description': "Illuminate the \"reputation\" behind an email address.\n"
-                                "EmailRep uses hundreds of factors like domain age, traffic rankings, "
-                                "presence on social media sites, professional networking sites, personal connections, "
-                                "public records, deliverability, data breaches, dark web credential leaks, "
-                                "phishing emails, threat actor emails, and more to answer these types of questions.",
+            "EmailRep uses hundreds of factors like domain age, traffic rankings, "
+            "presence on social media sites, professional networking sites, personal connections, "
+            "public records, deliverability, data breaches, dark web credential leaks, "
+            "phishing emails, threat actor emails, and more to answer these types of questions.",
         }
     }
 

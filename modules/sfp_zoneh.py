@@ -34,11 +34,11 @@ class sfp_zoneh(SpiderFootPlugin):
             'favIcon': "https://zone-h.org/images/logo.gif",
             'logo': "https://zone-h.org/images/logo.gif",
             'description': "Once a defaced website is submitted to Zone-H, it is mirrored on the Zone-H servers. "
-                                "The website is then moderated by the Zone-H staff to check if the defacement was fake. "
-                                "Sometimes, the hackers themselves submit their hacked pages to the site.\n"
-                                "It is an Internet security portal containing original IT security news, digital warfare news, "
-                                "geopolitics, proprietary and general advisories, analyses, forums, researches. "
-                                "Zone-H is the largest web intrusions archive. It is published in several languages.",
+            "The website is then moderated by the Zone-H staff to check if the defacement was fake. "
+            "Sometimes, the hackers themselves submit their hacked pages to the site.\n"
+            "It is an Internet security portal containing original IT security news, digital warfare news, "
+            "geopolitics, proprietary and general advisories, analyses, forums, researches. "
+            "Zone-H is the largest web intrusions archive. It is published in several languages.",
         }
     }
 

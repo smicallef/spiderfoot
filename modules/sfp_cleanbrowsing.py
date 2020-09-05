@@ -36,13 +36,13 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
             'favIcon': "https://cleanbrowsing.org/favicon-new.ico",
             'logo': "https://cleanbrowsing.org/images/logos/CleanBrowsing-logo-large-2019-Orange-II.png",
             'description': "You get to decide what type of content is allowed in your home or network via our "
-                                "DNS-based content filtering service. Parents can protect their kids from adult content, "
-                                "schools can be CIPA compliant and businesses can block malicious domains and "
-                                "gain visibility into their network.\n"
-                                "CleanBrowsing is a DNS-based content filtering service that offers a safe way to browse the web without surprises. "
-                                "It intercepts domain requests and filter sites that should be blocked, based on your requirements. "
-                                "Our free family filter, for example, blocks adult content, while still allowing Google, "
-                                "Youtube, Bing, DuckDuckGo and the rest of the web to load safely.",
+            "DNS-based content filtering service. Parents can protect their kids from adult content, "
+            "schools can be CIPA compliant and businesses can block malicious domains and "
+            "gain visibility into their network.\n"
+            "CleanBrowsing is a DNS-based content filtering service that offers a safe way to browse the web without surprises. "
+            "It intercepts domain requests and filter sites that should be blocked, based on your requirements. "
+            "Our free family filter, for example, blocks adult content, while still allowing Google, "
+            "Youtube, Bing, DuckDuckGo and the rest of the web to load safely.",
         }
     }
 

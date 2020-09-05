@@ -37,10 +37,10 @@ class sfp_spamhaus(SpiderFootPlugin):
             'favIcon': "https://www.spamhaus.org/favicon.ico",
             'logo': "https://www.spamhaus.org/images/sh_logo1.jpg",
             'description': "The Spamhaus Project is an international nonprofit organization that "
-                                "tracks spam and related cyber threats such as phishing, malware and botnets, "
-                                "provides realtime actionable and highly accurate threat intelligence to "
-                                "the Internet's major networks, corporations and security vendors, "
-                                "and works with law enforcement agencies to identify and pursue spam and malware sources worldwide.",
+            "tracks spam and related cyber threats such as phishing, malware and botnets, "
+            "provides realtime actionable and highly accurate threat intelligence to "
+            "the Internet's major networks, corporations and security vendors, "
+            "and works with law enforcement agencies to identify and pursue spam and malware sources worldwide.",
         }
     }
 

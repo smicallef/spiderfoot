@@ -33,9 +33,9 @@ class sfp_greensnow(SpiderFootPlugin):
             'favIcon': "https://greensnow.co/favicon.ico",
             'logo': "https://greensnow.co/img/logo.png",
             'description': "GreenSnow is a team consisting of the best specialists in computer security, "
-                                "we harvest a large number of IPs from different computers located around the world. "
-                                "GreenSnow is comparable with SpamHaus.org for attacks of any kind except for spam. "
-                                "Our list is updated automatically and you can withdraw at any time your IP address if it has been listed.",
+            "we harvest a large number of IPs from different computers located around the world. "
+            "GreenSnow is comparable with SpamHaus.org for attacks of any kind except for spam. "
+            "Our list is updated automatically and you can withdraw at any time your IP address if it has been listed.",
         }
     }
 

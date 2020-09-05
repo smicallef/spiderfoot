@@ -38,8 +38,8 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
             'favIcon': "https://iknowwhatyoudownload.com/assets/img/utorrent2.png",
             'logo': "https://iknowwhatyoudownload.com/assets/img/logo.png",
             'description': "Our system collects torrent files in two ways: parsing torrent sites, and listening DHT network. "
-                                "We have more than 1.500.000 torrents which where classified and which are using now "
-                                "for collecting peer sharing facts (up to 200.000.000 daily).",
+            "We have more than 1.500.000 torrents which where classified and which are using now "
+            "for collecting peer sharing facts (up to 200.000.000 daily).",
         }
     }
 

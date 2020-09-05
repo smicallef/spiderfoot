@@ -38,9 +38,9 @@ class sfp_darksearch(SpiderFootPlugin):
             'favIcon': "https://darksearch.io/favicons/favicon-64.png",
             'logo': "https://darksearch.io/images/darksearch-logo-02.svg?366834f96a6d3988f0f11f99dba27bf4",
             'description': "The 1st real Dark Web search engine.\n"
-                                "Our DarkWeb search engine is completely free.\n"
-                                "Access the results directly, without the need to install Tor.\n"
-                                "Our API is available for free to automate your research.",
+            "Our DarkWeb search engine is completely free.\n"
+            "Access the results directly, without the need to install Tor.\n"
+            "Our API is available for free to automate your research.",
         }
     }
 

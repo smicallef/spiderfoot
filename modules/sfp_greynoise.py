@@ -44,10 +44,10 @@ class sfp_greynoise(SpiderFootPlugin):
             'favIcon': "https://images.squarespace-cdn.com/content/v1/59c94f7de5dd5bc27643cfec/1515180784460-Q9F9GZ2FAIS3RY2UTGWN/ke17ZwdGBToddI8pDm48kFHWzgSH27ZAa1xr1ZK0Wg-oCXeSvxnTEQmG4uwOsdIceAoHiyRoc52GMN5_2H8Wp5iYt049DnwfYKhjLn0DeccIKHlHqVEMKuKBm52PGcc4mK60CANOrFfnj5Qv8IlCgw/favicon.ico?format=",
             'logo': "https://images.squarespace-cdn.com/content/59c94f7de5dd5bc27643cfec/1516136002680-2TPB58LXCMAYDIYAAVS7/grey+noise+%28grey%29trans.png?format=1500w&content-type=image%2Fpng",
             'description': "At GreyNoise, we collect and analyze untargeted, widespread, "
-                                "and opportunistic scan and attack activity that reaches every server directly connected to the Internet. "
-                                "Mass scanners (such as Shodan and Censys), search engines, bots, worms, "
-                                "and crawlers generate logs and events omnidirectionally on every IP address in the IPv4 space. "
-                                "GreyNoise gives you the ability to filter this useless noise out.",
+            "and opportunistic scan and attack activity that reaches every server directly connected to the Internet. "
+            "Mass scanners (such as Shodan and Censys), search engines, bots, worms, "
+            "and crawlers generate logs and events omnidirectionally on every IP address in the IPv4 space. "
+            "GreyNoise gives you the ability to filter this useless noise out.",
         }
     }
 

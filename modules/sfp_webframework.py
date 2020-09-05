@@ -26,6 +26,7 @@ regexps = dict({
     "Wordpress": list([r'\/wp-includes\/', r'\/wp-content\/'])
 })
 
+
 class sfp_webframework(SpiderFootPlugin):
 
     meta = {

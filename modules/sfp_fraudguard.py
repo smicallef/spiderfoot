@@ -44,10 +44,10 @@ class sfp_fraudguard(SpiderFootPlugin):
             'favIcon': "https://fraudguard.io/img/favicon.ico",
             'logo': "https://s3.amazonaws.com/fraudguard.io/img/header.png",
             'description': "FraudGuard is a service designed to provide an easy way to validate usage "
-                                "by continuously collecting and analyzing real-time internet traffic. "
-                                "Utilizing just a few simple API endpoints we make integration as simple as possible "
-                                "and return data such as: Risk Level, Threat Type, Geo Location, etc. Super fast, super simple.\n"
-                                "Lookup any IP address by querying our threat engine.",
+            "by continuously collecting and analyzing real-time internet traffic. "
+            "Utilizing just a few simple API endpoints we make integration as simple as possible "
+            "and return data such as: Risk Level, Threat Type, Geo Location, etc. Super fast, super simple.\n"
+            "Lookup any IP address by querying our threat engine.",
         }
     }
 

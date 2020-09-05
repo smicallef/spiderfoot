@@ -26,6 +26,7 @@ regexps = dict({
 
 })
 
+
 class sfp_errors(SpiderFootPlugin):
 
     meta = {

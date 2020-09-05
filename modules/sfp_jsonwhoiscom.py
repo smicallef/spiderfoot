@@ -42,9 +42,9 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
             'favIcon': "https://jsonwhois.com/assets/fav.ico",
             'logo': "https://jsonwhois.com/assets/fav.ico",
             'description': "Get access to accurate Whois records for generic and country TLDs. "
-                                "Around 1000 gTLDs include .com, .org, .net, .us, .biz, .info, .mobi, .pro, .asia and many other new ones.\n"
-                                "Raw and parsed Whois data are both accessible for downloads in the form of "
-                                "MYSQL or MYSQL database dumps and Comma Separated Values (.CSV) files.",
+            "Around 1000 gTLDs include .com, .org, .net, .us, .biz, .info, .mobi, .pro, .asia and many other new ones.\n"
+            "Raw and parsed Whois data are both accessible for downloads in the form of "
+            "MYSQL or MYSQL database dumps and Comma Separated Values (.CSV) files.",
         }
     }
 

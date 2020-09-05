@@ -42,7 +42,7 @@ class sfp_virustotal(SpiderFootPlugin):
             'favIcon': "https://www.virustotal.com/gui/images/favicon.png",
             'logo': "https://www.virustotal.com/gui/images/logo.svg",
             'description': "Analyze suspicious files and URLs to detect types of malware, "
-                                "automatically share them with the security community.",
+            "automatically share them with the security community.",
         }
     }
 

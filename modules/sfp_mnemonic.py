@@ -38,11 +38,11 @@ class sfp_mnemonic(SpiderFootPlugin):
             'favIcon': "https://www.mnemonic.no/favicon-96x96.png",
             'logo': "https://www.mnemonic.no/UI/logo.svg",
             'description': "mnemonic helps businesses manage their security risks, "
-                                "protect their data and defend against cyber threats.\n"
-                                "Our expert team of security consultants, product specialists, "
-                                "threat researchers, incident responders and ethical hackers, combined "
-                                "with our Argus security platform ensures we stay ahead of "
-                                "advanced cyberattacks and protect our customers from evolving threats.",
+            "protect their data and defend against cyber threats.\n"
+            "Our expert team of security consultants, product specialists, "
+            "threat researchers, incident responders and ethical hackers, combined "
+            "with our Argus security platform ensures we stay ahead of "
+            "advanced cyberattacks and protect our customers from evolving threats.",
         }
     }
 

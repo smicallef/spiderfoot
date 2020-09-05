@@ -39,8 +39,8 @@ class sfp_ipinfo(SpiderFootPlugin):
             'favIcon': "https://ipinfo.io/static/favicon-96x96.png?v3",
             'logo': "https://ipinfo.io/static/deviceicons/android-icon-96x96.png",
             'description': "The Trusted Source for IP Address Data.\n"
-                                "With IPinfo, you can pinpoint your users’ locations, customize their experiences, "
-                                "prevent fraud, ensure compliance, and so much more.",
+            "With IPinfo, you can pinpoint your users’ locations, customize their experiences, "
+            "prevent fraud, ensure compliance, and so much more.",
         }
     }
 

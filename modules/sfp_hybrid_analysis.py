@@ -41,7 +41,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             'favIcon': "https://www.hybrid-analysis.com/favicon.ico",
             'logo': "https://www.hybrid-analysis.com/img/logo.svg",
             'description': "A free malware analysis service for the community. "
-                                "Using this service you can submit files for in-depth static and dynamic analysis.",
+            "Using this service you can submit files for in-depth static and dynamic analysis.",
         }
     }
 

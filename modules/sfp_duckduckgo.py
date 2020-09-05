@@ -34,7 +34,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
             'favIcon': "https://duckduckgo.com/favicon.ico",
             'logo': "https://duckduckgo.com/assets/icons/meta/DDG-icon_256x256.png",
             'description': "Our Instant Answer API gives you free access to many of our instant answers like: "
-                                "topic summaries , categories, disambiguation, and !bang redirects.",
+            "topic summaries , categories, disambiguation, and !bang redirects.",
         }
     }
 

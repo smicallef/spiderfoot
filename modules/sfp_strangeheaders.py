@@ -25,6 +25,7 @@ headers = ["access-control-allow-origin", "accept-ranges", "age", "allow", "cach
            "x-frame-options", "x-xss-protection", "content-security-policy", "x-content-security-policy",
            "x-webkit-csp", "x-content-type-options", "x-powered-by", "x-ua-compatible"]
 
+
 class sfp_strangeheaders(SpiderFootPlugin):
 
     meta = {

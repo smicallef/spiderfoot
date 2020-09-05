@@ -115,9 +115,9 @@ class sfp_template(SpiderFootPlugin):
 
             # A paragraph or two about the data source.
             'description': "A paragraph of text with details about the data source / services. "
-                               "Keep things neat by breaking the text up across multiple lines as "
-                               "has been done here. If line breaks are needed for breaking up "
-                               "multiple paragraphs, use \n.",
+            "Keep things neat by breaking the text up across multiple lines as "
+            "has been done here. If line breaks are needed for breaking up "
+            "multiple paragraphs, use \n.",
         }
     }
 

@@ -26,7 +26,7 @@ class sfp_gravatar(SpiderFootPlugin):
         'flags': [""],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
-            'dataSource': {
+        'dataSource': {
             'website': "https://secure.gravatar.com/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
@@ -35,9 +35,9 @@ class sfp_gravatar(SpiderFootPlugin):
             'favIcon': "https://secure.gravatar.com/favicon.ico",
             'logo': "https://secure.gravatar.com/favicon.ico",
             'description': "Your Gravatar is an image that follows you from site to site "
-                                "appearing beside your name when you do things like comment or post on a blog.\n"
-                                "A Gravatar is a Globally Recognized Avatar. You upload it and create your profile just once, "
-                                "and then when you participate in any Gravatar-enabled site, your Gravatar image will automatically follow you there.",
+            "appearing beside your name when you do things like comment or post on a blog.\n"
+            "A Gravatar is a Globally Recognized Avatar. You upload it and create your profile just once, "
+            "and then when you participate in any Gravatar-enabled site, your Gravatar image will automatically follow you there.",
         }
     }
 

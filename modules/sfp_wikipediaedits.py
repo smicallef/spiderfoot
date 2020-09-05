@@ -40,7 +40,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
             'favIcon': "https://www.wikipedia.org/static/favicon/wikipedia.ico",
             'logo': "https://www.wikipedia.org/static/apple-touch/wikipedia.png",
             'description': "Wikipedia is a multilingual online encyclopedia created and maintained as an "
-                                "open collaboration project by a community of volunteer editors, using a wiki-based editing system.",
+            "open collaboration project by a community of volunteer editors, using a wiki-based editing system.",
         }
     }
 

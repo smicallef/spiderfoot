@@ -31,6 +31,7 @@ malchecks = {
     }
 }
 
+
 class sfp_coinblocker(SpiderFootPlugin):
 
     meta = {
@@ -50,9 +51,9 @@ class sfp_coinblocker(SpiderFootPlugin):
             'favIcon': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/assets/img/favicon.png",
             'logo': "https://zerodot1.gitlab.io/CoinBlockerListsWeb/assets/img/favicon.png",
             'description': "The CoinBlockerLists are a project to prevent illegal mining in "
-                                "browsers or other applications using IPlists and URLLists.\n"
-                                "It's not just to block everything without any reason, but to protect "
-                                "internet users from illegal mining.",
+            "browsers or other applications using IPlists and URLLists.\n"
+            "It's not just to block everything without any reason, but to protect "
+            "internet users from illegal mining.",
         }
     }
 

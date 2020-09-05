@@ -36,9 +36,9 @@ class sfp_comodo(SpiderFootPlugin):
             'favIcon': "https://www.comodo.com/favicon.ico",
             'logo': "https://www.comodo.com/new-assets/images/logo.png",
             'description': "100% cloud-based, load-balanced, geo-distributed, highly available Anycast DNS infrastructure hosted in 25+ countries.\n"
-                                "Cloud-based web security delivered at the DNS level, first layer for everything internet connected.\n"
-                                "Per company, location, endpoint, mobile device, IP, subnet and user.\n"
-                                "Get real-time web visibility for everything internet connected and schedule reports to be sent to your email.",
+            "Cloud-based web security delivered at the DNS level, first layer for everything internet connected.\n"
+            "Per company, location, endpoint, mobile device, IP, subnet and user.\n"
+            "Get real-time web visibility for everything internet connected and schedule reports to be sent to your email.",
         }
     }
 

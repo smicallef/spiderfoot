@@ -43,8 +43,8 @@ class sfp_networksdb(SpiderFootPlugin):
             'favIcon': "https://networksdb.io/img/favicon/favicon-96x96.png",
             'logo': "https://networksdb.io/img/logo.png",
             'description': "Our database contains information about the public IPv4 and IPv6 addresses, "
-                                "networks and domains owned by companies and organisations across the world "
-                                "along with city-level IP geolocation data and autonomous system information.",
+            "networks and domains owned by companies and organisations across the world "
+            "along with city-level IP geolocation data and autonomous system information.",
         }
     }
     # Default options

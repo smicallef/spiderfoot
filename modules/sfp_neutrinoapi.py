@@ -39,9 +39,9 @@ class sfp_neutrinoapi(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://www.neutrinoapi.com/",
             'logo': "https://www.google.com/s2/favicons?domain=https://www.neutrinoapi.com/",
             'description': "Parse, validate and get location information about a phone number.\n"
-                                "Use this API to validate local and international phone numbers in any country. "
-                                "You can determine the location of the number and also reformat the number into "
-                                "local and international dialing formats.",
+            "Use this API to validate local and international phone numbers in any country. "
+            "You can determine the location of the number and also reformat the number into "
+            "local and international dialing formats.",
         }
     }
 

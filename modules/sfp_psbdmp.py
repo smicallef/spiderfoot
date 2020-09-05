@@ -32,9 +32,9 @@ class sfp_psbdmp(SpiderFootPlugin):
             'favIcon': "",
             'logo': "",
             'description': "Search dump(s) by some word.\n"
-                                "Search dump(s) by email.\n"
-                                "Search dump(s) by domain.\n"
-                                "Search dump(s) from specific date.",
+            "Search dump(s) by email.\n"
+            "Search dump(s) by domain.\n"
+            "Search dump(s) from specific date.",
         }
     }
 

@@ -38,7 +38,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
             'favIcon': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
             'logo': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
             'description': "The Bing Search APIs let you build web-connected apps and services that "
-                                "find webpages, images, news, locations, and more without advertisements.",
+            "find webpages, images, news, locations, and more without advertisements.",
         }
     }
 
