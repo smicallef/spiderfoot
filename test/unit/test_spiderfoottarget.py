@@ -170,7 +170,7 @@ class TestSpiderFootTarget(unittest.TestCase):
         addresses = target.getAddresses()
         self.assertEqual(list, type(addresses))
 
-    def test_matches_should_return_a_boolean(self):
+    def test_matches_argument_value_invalid_type_should_return_False(self):
         """
         Test matches(self, value, includeParents=False, includeChildren=True)
         """
@@ -178,8 +178,11 @@ class TestSpiderFootTarget(unittest.TestCase):
         target_type = 'IP_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
-        matches = target.matches(target_value)
-        self.assertIsInstance(matches, bool)
+        invalid_types = [None, list(), dict(), int()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                matches = target.matches(invalid_type)
+                self.assertFalse(matches)
 
     def test_matches_argument_value_matching_ipv4_address_should_return_True(self):
         """
@@ -203,7 +206,17 @@ class TestSpiderFootTarget(unittest.TestCase):
         matches = target.matches('1.1.1.2')
         self.assertFalse(matches)
 
-    @unittest.skip("fixme - this test fails due to a bug in the IPv6 matching logic")
+    def test_matches_argument_value_unmatching_ipv4_address_in_same_subnet_when_targetType_is_netblock_should_return_True(self):
+        """
+        Test matches(self, value, includeParents=False, includeChildren=True)
+        """
+        target_value = '127.0.0.0/24'
+        target_type = 'NETBLOCK_OWNER'
+        target = SpiderFootTarget(target_value, target_type)
+
+        matches = target.matches('127.0.0.2')
+        self.assertTrue(matches)
+
     def test_matches_argument_value_matching_ipv6_address_should_return_True(self):
         """
         Test matches(self, value, includeParents=False, includeChildren=True)
@@ -226,11 +239,56 @@ class TestSpiderFootTarget(unittest.TestCase):
         matches = target.matches('::2')
         self.assertFalse(matches)
 
+    def test_matches_argument_value_matching_internet_name_should_return_True(self):
+        """
+        Test matches(self, value, includeParents=False, includeChildren=True)
+        """
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+
+        matches = target.matches(target_value)
+        self.assertTrue(matches)
+
+    def test_matches_argument_value_unmatching_internet_name_should_return_False(self):
+        """
+        Test matches(self, value, includeParents=False, includeChildren=True)
+        """
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+
+        matches = target.matches(f"{target_value}.test")
+        self.assertFalse(matches)
+
+    def test_matches_argument_includeChildren_true_with_matching_target_subdomain_should_return_True(self):
+        """
+        Test matches(self, value, includeParents=False, includeChildren=True)
+        """
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+
+        matches = target.matches(f"test.{target_value}", includeChildren=True)
+        self.assertTrue(matches)
+
+    def test_matches_argument_includeParents_true_with_matching_target_parent_domain_should_return_True(self):
+        """
+        Test matches(self, value, includeParents=False, includeChildren=True)
+        """
+        parent_domain = 'spiderfoot.net'
+        target_value = f"test.{parent_domain}"
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+
+        matches = target.matches(parent_domain, includeParents=True)
+        self.assertTrue(matches)
+
     def test_matches_argument_value_any_human_name_should_return_True(self):
         """
         Test matches(self, value, includeParents=False, includeChildren=True)
         """
-        target_value = 'Spider Foot'
+        target_value = 'SpiderFoot'
         target_type = 'HUMAN_NAME'
         target = SpiderFootTarget(target_value, target_type)
 
@@ -267,7 +325,7 @@ class TestSpiderFootTarget(unittest.TestCase):
         target_type = 'IP_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
-        matches = target.matches(None)
+        matches = target.matches("")
         self.assertFalse(matches)
 
 
