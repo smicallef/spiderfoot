@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:        sfp_api_recon_dev
-# Purpose:     Search api.recon.dev for subdomains.
+# Name:        sfp_recondev
+# Purpose:     Search Recon.dev for subdomains.
 #
 # Authors:     <bcoles@gmail.com>
 #
@@ -17,16 +17,16 @@ import urllib
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
-class sfp_api_recon_dev(SpiderFootPlugin):
+class sfp_recondev(SpiderFootPlugin):
 
     meta = {
-        'name': "api.recon.dev",
-        'summary': "Search api.recon.dev for subdomains.",
+        'name': "Recon.dev",
+        'summary': "Search Recon.dev for subdomains.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         "dataSource": {
-            "website": "https://api.recon.dev",
+            "website": "https://recon.dev",
             "references": ["https://recon.dev/api/docs"],
             "apiKeyInstructions": [
                 "Visit https://recon.dev/",
@@ -43,7 +43,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
     }
 
     optdescs = {
-        "api_key": "api.recon.dev API key.",
+        "api_key": "Recon.dev API key.",
         "verify": "Verify identified domains still resolve to the associated specified IP address.",
         "delay": "Delay between requests, in seconds."
     }
@@ -76,7 +76,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         })
         res = self.sf.fetchUrl(
-            f"https://api.recon.dev/api/search?{params}",
+            f"https://recon.dev/api/search?{params}",
             headers=headers,
             timeout=30,
             useragent=self.opts['_useragent']
@@ -87,9 +87,9 @@ class sfp_api_recon_dev(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     def parseAPIResponse(self, res):
-        # Future proofing - api.recon.dev does not implement rate limiting
+        # Future proofing - recon.dev does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by api.recon.dev", False)
+            self.sf.error("You are being rate-limited by Recon.dev", False)
             self.errorState = True
             return None
 
@@ -100,7 +100,7 @@ class sfp_api_recon_dev(SpiderFootPlugin):
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from api.recon.dev", False)
+            self.sf.error("Failed to retrieve content from Recon.dev", False)
             self.errorState = True
             return None
 
@@ -115,10 +115,10 @@ class sfp_api_recon_dev(SpiderFootPlugin):
 
         # returns list of results; 'null' when no results; or dict when there's an error
         if not isinstance(data, list):
-            self.sf.error("Failed to retrieve content from api.recon.dev", False)
+            self.sf.error("Failed to retrieve content from Recon.dev", False)
 
             if isinstance(data, dict) and data.get('message'):
-                self.sf.debug(f"Failed to retrieve content from api.recon.dev: {data.get('message')}")
+                self.sf.debug(f"Failed to retrieve content from Recon.dev: {data.get('message')}")
                 self.errorState = True
                 return None
 
@@ -187,4 +187,4 @@ class sfp_api_recon_dev(SpiderFootPlugin):
 
         return None
 
-# End of sfp_api_recon_dev class
+# End of sfp_recondev class
