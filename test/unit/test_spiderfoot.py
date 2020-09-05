@@ -33,7 +33,6 @@ class TestSpiderFoot(unittest.TestCase):
         '_socks3port': '',
         '_socks4user': '',
         '_socks5pwd': '',
-        '_socks6dns': True,
         '_torctlport': 9051,
         '__logstdout': False
     }
