@@ -157,13 +157,15 @@ class SpiderFootTarget():
         to the original target.
 
         Tightly in this case means:
-          1. If the value is an IP:
-              1.1 is it in the list of aliases or the target itself?
-              1.2 is it on the target's subnet?
-          2. If the value is a name (subdomain, domain, hostname):
-              2.1 is it in the list of aliases or the target itself?
-              2.2 is it a parent of the aliases of the target (domain/subdomain)
-              2.3 is it a child of the aliases of the target (hostname)
+
+        If the value is an IP:
+            * is it in the list of aliases or the target itself?
+            * is it on the target's subnet?
+
+        If the value is an internet name (subdomain, domain, hostname):
+            * is it in the list of aliases or the target itself?
+            * is it a parent of the aliases of the target (domain/subdomain)
+            * is it a child of the aliases of the target (hostname)
 
         Args:
             value (str): can be an Internet Name (hostname, subnet, domain) or an IP address.
@@ -191,28 +193,31 @@ class SpiderFootTarget():
         if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME"]:
             return True
 
-        if netaddr.valid_ipv4(value):
-            # 1.1
+        # TODO: review handling of other potential self.targetType target types:
+        # "INTERNET_NAME", "EMAILADDR", "BGP_AS_OWNER"
+
+        # For IP addreses, check if it is an alias of the target or within the target's subnet.
+        if netaddr.valid_ipv4(value) or netaddr.valid_ipv6(value):
             if value in self.getAddresses():
                 return True
-            # 1.2
-            if self.targetType == "NETBLOCK_OWNER":
-                if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
-                    return True
-            if self.targetType in ["IP_ADDRESS", "IPV6_ADDRESS"]:
-                if netaddr.IPAddress(value) in netaddr.IPNetwork(netaddr.IPAddress(self.targetValue)):
-                    return True
-        else:
-            for name in self.getNames():
-                # 2.1
-                if value == name:
-                    return True
-                # 2.2
-                if includeParents and name.endswith("." + value):
-                    return True
-                # 2.3
-                if includeChildren and value.endswith("." + name):
-                    return True
+
+            if self.targetType in ["IP_ADDRESS", "IPV6_ADDRESS", "NETBLOCK_OWNER"]:
+                try:
+                    if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
+                        return True
+                except netaddr.AddrFormatError as e:
+                    return False
+
+            return False
+
+        # For everything else, check if the value is within or equal to target names
+        for name in self.getNames():
+            if value == name:
+                return True
+            if includeParents and name.endswith("." + value):
+                return True
+            if includeChildren and value.endswith("." + name):
+                return True
 
         return False
 
