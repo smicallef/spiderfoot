@@ -24,7 +24,7 @@ class TestSpiderFootTarget(unittest.TestCase):
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
-                    target = SpiderFootTarget(invalid_type, target_type)
+                    SpiderFootTarget(invalid_type, target_type)
 
     def test_init_argument_targetType_invalid_type_should_raise_TypeError(self):
         """
@@ -36,7 +36,7 @@ class TestSpiderFootTarget(unittest.TestCase):
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
-                    target = SpiderFootTarget(target_value, invalid_type)
+                    SpiderFootTarget(target_value, invalid_type)
 
     def test_init_argument_targetType_invalid_should_raise_ValueError(self):
         """

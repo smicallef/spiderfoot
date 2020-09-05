@@ -80,7 +80,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         })
 
         res = self.sf.fetchUrl(
-            "https://maps.googleapis.com/maps/api/geocode/json?{params}",
+            f"https://maps.googleapis.com/maps/api/geocode/json?{params}",
             timeout=self.opts['_fetchtimeout'],
             useragent=self.opts['_useragent']
         )

@@ -130,11 +130,12 @@ class sfp_psbdmp(SpiderFootPlugin):
             ) is None:
                 continue
 
-            try:
-                startIndex = res['content'].index(eventData)
-            except BaseException:
-                self.sf.debug(f"{eventData} not found in pastes content.")
-                continue
+            # TODO: review why this is now unused
+            # try:
+            #     startIndex = res['content'].index(eventData)
+            # except BaseException:
+            #     self.sf.debug(f"{eventData} not found in pastes content.")
+            #     continue
 
             evt = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, e)
             self.notifyListeners(evt)

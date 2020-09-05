@@ -89,7 +89,7 @@ class sfp_opencorporates(SpiderFootPlugin):
         })
 
         res = self.sf.fetchUrl(
-            "https://api.opencorporates.com/v{version}/companies/search?{params}{apiparam}",
+            f"https://api.opencorporates.com/v{version}/companies/search?{params}{apiparam}",
             timeout=60,  # High timeouts as they can sometimes take a while
             useragent=self.opts['_useragent']
         )

@@ -205,7 +205,7 @@ class SpiderFootTarget():
                 try:
                     if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
                         return True
-                except netaddr.AddrFormatError as e:
+                except netaddr.AddrFormatError:
                     return False
 
             return False
