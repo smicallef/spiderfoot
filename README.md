@@ -106,7 +106,6 @@ Ahmia|Search Tor 'Ahmia' search engine for mentions of the target domain.|[https
 AlienVault IP Reputation|Check if an IP or netblock is malicious according to the AlienVault IP Reputation database.|[https://cybersecurity.att.com/](https://cybersecurity.att.com/)
 AlienVault OTX|Obtain information from AlienVault Open Threat Exchange (OTX)|[https://otx.alienvault.com/](https://otx.alienvault.com/)
 Amazon S3 Bucket Finder|Search for potential Amazon S3 buckets associated with the target and attempt to list their contents.|[https://aws.amazon.com/s3/](https://aws.amazon.com/s3/)
-api.recon.dev|Search api.recon.dev for subdomains.|
 Apility|Search Apility API for IP address and domain reputation.|[https://auth0.com/signals](https://auth0.com/signals)
 Archive.org|Identifies historic versions of interesting files/pages from the Wayback Machine.|[https://archive.org/](https://archive.org/)
 ARIN|Queries ARIN registry for contact information.|[https://www.arin.net/](https://www.arin.net/)
@@ -117,15 +116,17 @@ Bambenek C&C List|Check if a host/domain or IP appears on Bambenek Consulting's 
 Base64 Decoder|Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information.|
 BGPView|Obtain network information from BGPView API.|[https://bgpview.io/](https://bgpview.io/)
 Binary String Extractor|Attempt to identify strings in binary content.|
-BinaryEdge|Obtain information from BinaryEdge.io's Internet scanning systems about breaches, vulerabilities, torrents and passive DNS.|[https://www.binaryedge.io/](https://www.binaryedge.io/)
+BinaryEdge|Obtain information from BinaryEdge.io Internet scanning systems, including breaches, vulnerabilities, torrents and passive DNS.|[https://www.binaryedge.io/](https://www.binaryedge.io/)
 Bing (Shared IPs)|Search Bing for hosts sharing the same IP.|[https://www.bing.com/](https://www.bing.com/)
 Bing|Obtain information from bing to identify sub-domains and links.|[https://www.bing.com/](https://www.bing.com/)
 Bitcoin Finder|Identify bitcoin addresses in scraped webpages.|
+BitcoinAbuse|Check bitcoin address against bitcoinabuse.com database|[https://www.bitcoinabuse.com/](https://www.bitcoinabuse.com/)
 Blockchain|Queries blockchain.info to find the balance of identified bitcoin wallet addresses.|[https://www.blockchain.com/](https://www.blockchain.com/)
 blocklist.de|Check if a netblock or IP is malicious according to blocklist.de.|[http://www.blocklist.de/en/index.html](http://www.blocklist.de/en/index.html)
 BotScout|Searches botscout.com's database of spam-bot IPs and e-mail addresses.|[http://botscout.com/](http://botscout.com/)
 botvrij.eu|Check if a domain is malicious according to botvrij.eu.|
 BuiltWith|Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more.|[https://builtwith.com/](https://builtwith.com/)
+C99|This module queries c99 API that offers various data (geo location, proxy detection, phone lookup, etc).|[https://api.c99.nl/](https://api.c99.nl/)
 CallerName|Lookup US phone number location and reputation information.|[http://callername.com/](http://callername.com/)
 Censys|Obtain information from Censys.io|[https://censys.io/](https://censys.io/)
 Certificate Transparency|Gather hostnames from historical certificates in crt.sh.|[https://crt.sh/](https://crt.sh/)
@@ -155,7 +156,7 @@ DNS Raw Records|Retrieves raw DNS records such as MX, TXT and others.|
 DNS Resolver|Resolves Hosts and IP Addresses identified, also extracted from raw content.|
 DNS Zone Transfer|Attempts to perform a full DNS zone transfer.|
 DNSGrep|Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API.|[https://opendata.rapid7.com/](https://opendata.rapid7.com/)
-DroneBL|Query the DroneBL  database for open relays, open proxies, vulnerable servers, etc.|[https://dronebl.org/](https://dronebl.org/)
+DroneBL|Query the DroneBL database for open relays, open proxies, vulnerable servers, etc.|[https://dronebl.org/](https://dronebl.org/)
 DuckDuckGo|Query DuckDuckGo's API for descriptive information about your target.|[https://duckduckgo.com/](https://duckduckgo.com/)
 E-Mail Address Extractor|Identify e-mail addresses in any obtained data.|
 EmailCrawlr|Search EmailCrawlr for email addresses and phone numbers associated with a domain.|[https://emailcrawlr.com/](https://emailcrawlr.com/)
@@ -234,6 +235,7 @@ Port Scanner - TCP|Scans for commonly open TCP ports on Internet-facing systems.
 Psbdmp|Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.|[https://psbdmp.cc/](https://psbdmp.cc/)
 Pulsedive|Obtain information from Pulsedive's API.|[https://pulsedive.com/](https://pulsedive.com/)
 Quad9|Check if a host would be blocked by Quad9|[https://quad9.net/](https://quad9.net/)
+Recon.dev|Search Recon.dev for subdomains.|[https://recon.dev](https://recon.dev)
 RIPE|Queries the RIPE registry (includes ARIN data) to identify netblocks and other info.|[https://www.ripe.net/](https://www.ripe.net/)
 RiskIQ|Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases.|[https://community.riskiq.com/](https://community.riskiq.com/)
 Robtex|Search Robtex.com for hosts sharing the same IP.|[https://www.robtex.com/](https://www.robtex.com/)
@@ -259,10 +261,10 @@ Talos Intelligence|Check if a netblock or IP is malicious according to talosinte
 ThreatCrowd|Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses.|[https://www.threatcrowd.org](https://www.threatcrowd.org)
 ThreatMiner|Obtain information from ThreatMiner's database for passive DNS and threat intelligence.|[https://www.threatminer.org/](https://www.threatminer.org/)
 TLD Searcher|Search all Internet TLDs for domains with the same name as the target (this can be very slow.)|
-Tool - CMSeeK|Identify what Content Management System (CMS) might be used.|
-Tool - DNSTwist|Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation.|
-Tool - Nmap|Identify what Operating System might be used.|
-Tool - WhatWeb|Identify what software is in use on the specified website.|
+Tool - CMSeeK|Identify what Content Management System (CMS) might be used.|[https://github.com/Tuhinshubhra/CMSeeK](https://github.com/Tuhinshubhra/CMSeeK)
+Tool - DNSTwist|Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation.|[https://github.com/elceef/dnstwist](https://github.com/elceef/dnstwist)
+Tool - Nmap|Identify what Operating System might be used.|[https://nmap.org/](https://nmap.org/)
+Tool - WhatWeb|Identify what software is in use on the specified website.|[https://github.com/urbanadventurer/whatweb](https://github.com/urbanadventurer/whatweb)
 TOR Exit Nodes|Check if an IP or netblock appears on the torproject.org exit node list.|
 TORCH|Search Tor 'TORCH' search engine for mentions of the target domain.|
 TotalHash.com|Check if a host/domain or IP is malicious according to TotalHash.com.|[https://totalhash.cymru.com/](https://totalhash.cymru.com/)
