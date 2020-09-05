@@ -1,14 +1,14 @@
-# test_sfp_api_recon_dev.py
+# test_sfp_recondev.py
 import unittest
 
-from modules.sfp_api_recon_dev import sfp_api_recon_dev
+from modules.sfp_recondev import sfp_recondev
 from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-class TestModuleapi_recon_dev(unittest.TestCase):
+class TestModulerecondev(unittest.TestCase):
     """
-    Test modules.sfp_api_recon_dev
+    Test modules.sfp_recondev
     """
 
     default_options = {
@@ -38,7 +38,7 @@ class TestModuleapi_recon_dev(unittest.TestCase):
     }
 
     def test_opts(self):
-        module = sfp_api_recon_dev()
+        module = sfp_recondev()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
@@ -47,15 +47,15 @@ class TestModuleapi_recon_dev(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_api_recon_dev()
+        module = sfp_recondev()
         module.setup(sf, dict())
 
     def test_watchedEvents_should_return_list(self):
-        module = sfp_api_recon_dev()
+        module = sfp_recondev()
         self.assertIsInstance(module.watchedEvents(), list)
 
     def test_producedEvents_should_return_list(self):
-        module = sfp_api_recon_dev()
+        module = sfp_recondev()
         self.assertIsInstance(module.producedEvents(), list)
 
     def test_handleEvent(self):
@@ -64,7 +64,7 @@ class TestModuleapi_recon_dev(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_api_recon_dev()
+        module = sfp_recondev()
         module.setup(sf, dict())
 
         target_value = 'example target value'
