@@ -653,7 +653,7 @@ class SpiderFoot:
                 with open(cacheFile, "r") as fp:
                     fileContents = fp.read()
                 return fileContents
-        except BaseException as e:
+        except BaseException:
             return None
 
         return None

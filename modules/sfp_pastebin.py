@@ -148,11 +148,12 @@ class sfp_pastebin(SpiderFootPlugin):
                              + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                     continue
 
-                try:
-                    startIndex = res['content'].index(eventData)
-                except BaseException:
-                    self.sf.debug("String not found in pastes content.")
-                    continue
+                # TODO: review why this is now unused
+                # try:
+                #     startIndex = res['content'].index(eventData)
+                # except BaseException:
+                #     self.sf.debug("String not found in pastes content.")
+                #     continue
 
                 evt1 = SpiderFootEvent("LEAKSITE_URL", link, self.__name__, event)
                 self.notifyListeners(evt1)
