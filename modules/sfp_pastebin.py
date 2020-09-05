@@ -144,16 +144,16 @@ class sfp_pastebin(SpiderFootPlugin):
                     continue
 
                 # Sometimes pastes search results false positives
-                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData)
-                             + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                if eventData.lower() not in str(res['content']).lower():
+                    self.sf.debug("String not found in pastes content.")
                     continue
 
-                # TODO: review why this is now unused
-                # try:
-                #     startIndex = res['content'].index(eventData)
-                # except BaseException:
-                #     self.sf.debug("String not found in pastes content.")
-                #     continue
+                if re.search(
+                    r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) + r"[^a-zA-Z\-\_0-9]",
+                    res['content'],
+                    re.IGNORECASE
+                ) is None:
+                    continue
 
                 evt1 = SpiderFootEvent("LEAKSITE_URL", link, self.__name__, event)
                 self.notifyListeners(evt1)

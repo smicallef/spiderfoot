@@ -123,19 +123,16 @@ class sfp_psbdmp(SpiderFootPlugin):
                 continue
 
             # Sometimes pastes search results false positives
+            if eventData.lower() not in str(res['content']).lower():
+                self.sf.debug(f"{eventData} not found in pastes content.")
+                continue
+
             if re.search(
                 r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) + r"[^a-zA-Z\-\_0-9]",
                 res['content'],
                 re.IGNORECASE
             ) is None:
                 continue
-
-            # TODO: review why this is now unused
-            # try:
-            #     startIndex = res['content'].index(eventData)
-            # except BaseException:
-            #     self.sf.debug(f"{eventData} not found in pastes content.")
-            #     continue
 
             evt = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, e)
             self.notifyListeners(evt)
