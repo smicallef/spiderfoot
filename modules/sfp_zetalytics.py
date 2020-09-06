@@ -19,8 +19,8 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_zetalytics(SpiderFootPlugin):
     BASE_URL = "https://zonecruncher.com/api/v1"
     meta = {
-        "name": "ZoneCruncher",
-        "summary": "Query ZoneCruncher database",
+        "name": "Zetalytics",
+        "summary": "Query Zetalytics database",
         "flags": ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Passive DNS"],
@@ -30,11 +30,11 @@ class sfp_zetalytics(SpiderFootPlugin):
             "references": ["https://zonecruncher.com/api-v1-docs/"],
             "apiKeyInstructions": [
                 "Visit https://mailchi.mp/zetalytics/trial-access-request",
-                "Register a free account and request API key",
+                "Register a free account and request an API key",
             ],
             "favIcon": "https://zetalytics.com/favicon.ico",
             "logo": "https://zetalytics.com/assets/images/logo.png",
-            "description": "ZoneCruncher database provides several useful endpoints to perform passive DNS analysis",
+            "description": "Zetalytics database provides several useful endpoints to perform passive DNS analysis",
         },
     }
 
@@ -77,13 +77,13 @@ class sfp_zetalytics(SpiderFootPlugin):
             useragent="SpiderFoot",
         )
         if res["content"] is None:
-            self.sf.info(f"No ZoneCruncher info found for {path}?{qs}")
+            self.sf.info(f"No Zetalytics info found for {path}?{qs}")
             return None
         try:
             info = json.loads(res["content"])
         except Exception as e:
             self.sf.error(
-                f"Error processing JSON response from ZoneCruncer: {e}", False
+                f"Error processing JSON response from Zetalytics: {e}", False
             )
             return None
 

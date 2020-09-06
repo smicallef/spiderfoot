@@ -8,7 +8,7 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 class TestModuleZetalytics(unittest.TestCase):
     """
-    Test modules.sfp_bitcoinabuse
+    Test modules.sfp_zetalytics
     """
 
     default_options = {
