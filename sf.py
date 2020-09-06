@@ -63,6 +63,13 @@ def main():
             print("SpiderFoot requires -l <ip>:<port> to start the web server.")
             sys.exit(-1)
 
+    # web server config
+    sfWebUiConfig = {
+        'host': '127.0.0.1',
+        'port': 5001,
+        'root': '/'
+    }
+
     # 'Global' configuration options
     # These can be overriden on a per-module basis, and some will
     # be overridden from saved configuration settings stored in the DB.
@@ -78,17 +85,13 @@ def main():
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
         '__version__': '3.3-DEV',
         '__database': 'spiderfoot.db',
-        '__webaddr': '127.0.0.1',
-        '__webport': 5001,
-        '__docroot': '',  # don't put trailing /
         '__modules__': None,  # List of modules. Will be set after start-up.
         '_socks1type': '',
         '_socks2addr': '',
         '_socks3port': '',
         '_socks4user': '',
         '_socks5pwd': '',
-        '_torctlport': 9051,
-        '__logstdout': False
+        '_torctlport': 9051
     }
 
     sfOptdescs = {
@@ -141,17 +144,6 @@ def main():
         log.setLevel(logging.NOTSET)
         sfConfig['__logging'] = False
 
-    if args.l:
-        try:
-            (addr, port) = args.l.split(":")
-            sfConfig['__webaddr'] = addr
-            sfConfig['__webport'] = int(port)
-        except BaseException:
-            log.critical("Invalid ip:port format.")
-            sys.exit(-1)
-    else:
-        sfConfig['__logstdout'] = True
-
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
 
@@ -202,7 +194,16 @@ def main():
     sfConfig['__globaloptdescs__'] = sfOptdescs
 
     if args.l:
-        start_web_server(sfConfig)
+        try:
+            (host, port) = args.l.split(":")
+        except BaseException:
+            log.critical("Invalid ip:port format.")
+            sys.exit(-1)
+
+        sfWebUiConfig['host'] = host
+        sfWebUiConfig['port'] = port
+
+        start_web_server(sfWebUiConfig, sfConfig)
     else:
         start_scan(sfConfig, sfModules, args)
 
@@ -421,23 +422,24 @@ def start_scan(sfConfig, sfModules, args):
     return None
 
 
-def start_web_server(sfConfig):
+def start_web_server(sfWebUiConfig, sfConfig):
     """Start the web server so you can start looking at results"""
 
-    sf = SpiderFoot(sfConfig)
-
-    web_host = sfConfig['__webaddr']
-    web_port = sfConfig['__webport']
-
-    log.info(f"Starting web server at {web_host}:{web_port} ...")
+    web_host = sfWebUiConfig.get('host', '127.0.0.1')
+    web_port = sfWebUiConfig.get('port', 5001)
+    web_root = sfWebUiConfig.get('root', '/')
 
     cherrypy.config.update({
         'server.socket_host': web_host,
-        'server.socket_port': web_port
+        'server.socket_port': int(web_port)
     })
+
+    log.info(f"Starting web server at {web_host}:{web_port} ...")
 
     # Disable auto-reloading of content
     cherrypy.engine.autoreload.unsubscribe()
+
+    sf = SpiderFoot(sfConfig)
 
     # Enable access to static files via the web directory
     conf = {
@@ -480,7 +482,7 @@ def start_web_server(sfConfig):
             log.info("Enabling authentication based on supplied passwd file.")
             conf['/'] = {
                 'tools.auth_digest.on': True,
-                'tools.auth_digest.realm': sfConfig['__webaddr'],
+                'tools.auth_digest.realm': web_host,
                 'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(secrets),
                 'tools.auth_digest.key': random.SystemRandom().randint(0, 99999999)
             }
@@ -496,15 +498,20 @@ def start_web_server(sfConfig):
         warn_msg += "********************************************************************\n"
         log.warning(warn_msg)
 
+    if web_host == "0.0.0.0":  # nosec
+        url = f"http://<IP of this host>:{web_port}{web_root}"
+    else:
+        url = f"http://{web_host}:{web_port}{web_root}"
+
     key_path = sf.dataPath() + '/spiderfoot.key'
     crt_path = sf.dataPath() + '/spiderfoot.crt'
     if os.path.isfile(key_path) and os.path.isfile(crt_path):
         if not os.access(crt_path, os.R_OK):
-            log.critical("Could not read spiderfoot.crt file. Permission denied.")
+            log.critical(f"Could not read {crt_path} file. Permission denied.")
             sys.exit(-1)
 
         if not os.access(key_path, os.R_OK):
-            log.critical("Could not read spiderfoot.key file. Permission denied.")
+            log.critical(f"Could not read {key_path} file. Permission denied.")
             sys.exit(-1)
 
         log.info("Enabling SSL based on supplied key and certificate file.")
@@ -512,9 +519,16 @@ def start_web_server(sfConfig):
         cherrypy.server.ssl_certificate = crt_path
         cherrypy.server.ssl_private_key = key_path
 
-    # Try starting the web server. If it fails due to a database being
-    # missing, start a smaller web server just for setting up the DB.
-    cherrypy.quickstart(SpiderFootWebUi(sfConfig), script_name=sfConfig['__docroot'], config=conf)
+        url = url.replace("http://", "https://")
+
+    print("")
+    print("*************************************************************")
+    print(" Use SpiderFoot by starting your web browser of choice and ")
+    print(f" browse to {url}")
+    print("*************************************************************")
+    print("")
+
+    cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig), script_name=web_root, config=conf)
 
 
 def handle_abort(signal, frame):
