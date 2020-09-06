@@ -139,7 +139,7 @@ class sfp_projectdiscovery(SpiderFootPlugin):
         for subdomain in subdomains:
             if self.checkForStop():
                 return None
-                
+
             if subdomain in resultsSet:
                 continue
             completeSubdomain = f"{subdomain}.{eventData}"
