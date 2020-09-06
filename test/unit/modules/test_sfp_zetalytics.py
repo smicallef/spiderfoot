@@ -1,12 +1,12 @@
-# test_sfp_zonecruncher.py
+# test_sfp_zetalytics.py
 import unittest
 
-from modules.sfp_zonecruncher import sfp_zonecruncher
+from modules.sfp_zetalytics import sfp_zetalytics
 from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-class TestModuleBitcoinAbuse(unittest.TestCase):
+class TestModuleZetalytics(unittest.TestCase):
     """
     Test modules.sfp_bitcoinabuse
     """
@@ -40,7 +40,7 @@ class TestModuleBitcoinAbuse(unittest.TestCase):
     }
 
     def test_opts(self):
-        module = sfp_zonecruncher()
+        module = sfp_zetalytics()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
@@ -49,15 +49,15 @@ class TestModuleBitcoinAbuse(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_zonecruncher()
+        module = sfp_zetalytics()
         module.setup(sf, dict())
 
     def test_watchedEvents_should_return_list(self):
-        module = sfp_zonecruncher()
+        module = sfp_zetalytics()
         self.assertIsInstance(module.watchedEvents(), list)
 
     def test_producedEvents_should_return_list(self):
-        module = sfp_zonecruncher()
+        module = sfp_zetalytics()
         self.assertIsInstance(module.producedEvents(), list)
 
     def test_handleEvent(self):
@@ -66,7 +66,7 @@ class TestModuleBitcoinAbuse(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_zonecruncher()
+        module = sfp_zetalytics()
         module.setup(sf, dict())
 
         target_value = 'example target value'

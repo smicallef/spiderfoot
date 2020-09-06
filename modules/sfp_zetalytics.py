@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_zonecruncher
-# Purpose:      Query ZoneCruncher database for hostname & subdomain information
+# Name:         sfp_zetalytics
+# Purpose:      Query Zetalytics database for hostname & subdomain information
 #
 # Author:      Leo Trubach <leotrubach@gmail.com>
 #
@@ -16,7 +16,7 @@ from urllib.parse import urlencode
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
-class sfp_zonecruncher(SpiderFootPlugin):
+class sfp_zetalytics(SpiderFootPlugin):
     BASE_URL = "https://zonecruncher.com/api/v1"
     meta = {
         "name": "ZoneCruncher",
@@ -43,7 +43,7 @@ class sfp_zonecruncher(SpiderFootPlugin):
     }
 
     optdescs = {
-        "api_key": "ZoneCruncher API Key.",
+        "api_key": "Zetalytics API Key.",
     }
 
     results = None
@@ -160,10 +160,10 @@ class sfp_zonecruncher(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        if (eventName, eventData) in self.results:
+        if "{}:{}".format(eventName, eventData) in self.results:
             self.sf.debug(f"Skipping {eventName}:{eventData}, already checked.")
             return None
-        self.results[eventName, eventData] = True
+        self.results["{}:{}".format(eventName, eventData)] = True
 
         if eventName == "INTERNET_NAME":
             data = self.query_subdomains(eventData)
