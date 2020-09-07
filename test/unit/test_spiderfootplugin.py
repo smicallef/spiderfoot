@@ -13,7 +13,6 @@ class TestSpiderFootPlugin(unittest.TestCase):
         '_debug': False,  # Debug
         '__logging': True,  # Logging in general
         '__outputfilter': None,  # Event types to filter from modules' output
-        '_fatalerrors': False,
         '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
         '_dnsserver': '',  # Override the default resolver
         '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
@@ -30,7 +29,6 @@ class TestSpiderFootPlugin(unittest.TestCase):
         '_socks5pwd': '',
         '_socks6dns': True,
         '_torctlport': 9051,
-        '__logstdout': False
     }
 
     def test_init(self):
@@ -209,7 +207,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
         temp_storage = sfp.tempStorage()
         self.assertIsInstance(temp_storage, dict)
 
-    def test_notifyListeners(self):
+    def test_notifyListeners_should_notify_listener_modules(self):
         """
         Test notifyListeners(self, sfEvent)
 
@@ -233,7 +231,7 @@ class TestSpiderFootPlugin(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    def test_notifyListeners_invalid_event_should_raise_TypeError(self):
+    def test_notifyListeners_argument_sfEvent_invalid_event_should_raise_TypeError(self):
         """
         Test notifyListeners(self, sfEvent)
         """
@@ -243,14 +241,11 @@ class TestSpiderFootPlugin(unittest.TestCase):
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
-                    sfp.notifyListeners(None)
+                    sfp.notifyListeners(invalid_type)
 
     def test_checkForStop(self):
         """
         Test checkForStop(self)
-
-        Todo:
-            include other statuses for completeness
         """
         sfp = SpiderFootPlugin()
 
@@ -262,7 +257,13 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.__scanId__ = 'example scan id'
 
         # pseudo-parameterized test
-        for status, expectedReturnValue in [("RUNNING", False), ("ABORT-REQUESTED", True)]:
+        scan_statuses = [
+            (None, False),
+            ("anything", False),
+            ("RUNNING", False),
+            ("ABORT-REQUESTED", True)
+        ]
+        for status, expectedReturnValue in scan_statuses:
             returnValue = sfp.checkForStop()
             self.assertEqual(returnValue, expectedReturnValue, status)
 

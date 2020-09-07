@@ -40,6 +40,12 @@ class TestSf(unittest.TestCase):
         out, err = proc.communicate()
         return out, err, proc.returncode
 
+    def test_no_args_should_print_arg_l_required(self):
+        out, err, code = self.execute([sys.executable, "sf.py"])
+        self.assertIn(b"SpiderFoot requires -l <ip>:<port> to start the web server. Try --help for guidance.", out)
+        self.assertEqual(b"", err)
+        self.assertEqual(255, code)
+
     def test_help_arg_should_print_help_and_exit(self):
         out, err, code = self.execute([sys.executable, "sf.py", "-h"])
         self.assertIn(b"show this help message and exit", out)
@@ -63,6 +69,18 @@ class TestSf(unittest.TestCase):
         self.assertIn(bytes(f"Starting web server at {listen}", 'utf-8'), err)
         self.assertEqual(0, code)
 
+    def test_debug_arg_should_enable_and_print_debug_output(self):
+        out, err, code = self.execute([sys.executable, "sf.py", "-d", "-m", "example module", "-s", "spiderfoot.net"])
+        self.assertIn(b"[DEBUG]", err)
+        self.assertIn(b"modules.sfp__stor_db : Storing an event: ROOT", err)
+        self.assertEqual(0, code)
+
+    def test_run_scan_invalid_target_should_exit(self):
+        invalid_target = '.'
+        out, err, code = self.execute([sys.executable, "sf.py", "-s", invalid_target])
+        self.assertIn(bytes(f"Could not determine target type. Invalid target: {invalid_target}", 'utf-8'), err)
+        self.assertEqual(255, code)
+
     def test_run_scan_with_modules_no_target_should_exit(self):
         out, err, code = self.execute([sys.executable, "sf.py", "-m", ",".join(self.default_modules)])
         self.assertIn(b"You must specify a target when running in scan mode", err)
@@ -84,14 +102,24 @@ class TestSf(unittest.TestCase):
         self.assertIn(b"Based on your criteria, no modules were enabled", err)
         self.assertEqual(255, code)
 
-    def test_run_scan_with_modules_should_run_scan_and_exit(self):
-        out, err, code = self.execute([sys.executable, "sf.py", "-m", ",".join(self.default_modules), "-s", "spiderfoot.net"])
+    def test_run_scan_should_print_scan_result_and_exit(self):
+        target = "spiderfoot.net"
+        out, err, code = self.execute([sys.executable, "sf.py", "-m", ",".join(self.default_modules), "-s", target, "-o", "csv"])
         self.assertIn(b"Scan completed with status FINISHED", err)
         self.assertEqual(0, code)
 
         for module in self.default_modules:
             with self.subTest(module=module):
                 self.assertIn(module.encode(), err)
+
+        expected_output = [
+            "Source,Type,Data",
+            "SpiderFoot UI,Internet Name,spiderfoot.net,spiderfoot.net\n",
+            "SpiderFoot UI,Domain Name,spiderfoot.net,spiderfoot.net\n",
+            "sfp_countryname,Country Name,spiderfoot.net,United States\n",
+        ]
+        for output in expected_output:
+            self.assertIn(bytes(output, 'utf-8'), out)
 
 
 if __name__ == '__main__':
