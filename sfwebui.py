@@ -41,32 +41,32 @@ class SpiderFootWebUi:
     docroot = ''
     log = logging.getLogger(__name__)
 
-    def __init__(self, config):
+    def __init__(self, web_config, config):
         """Initialize web server
 
         Args:
-            config: TBD
+            web_config: config settings for web interface (interface, port, root path)
+            config: SpiderFoot config
         """
 
         if not isinstance(config, dict):
-            raise TypeError("config is %s; expected dict()" % type(config))
+            raise TypeError(f"config is {type(config)}; expected dict()")
         if not config:
             raise ValueError("config is empty")
 
+        if not isinstance(web_config, dict):
+            raise TypeError(f"web_config is {type(web_config)}; expected dict()")
+        if not config:
+            raise ValueError("web_config is empty")
+
+        self.docroot = web_config.get('root', '/').rstrip('/')
+
+        # 'config' supplied will be the defaults, let's supplement them
+        # now with any configuration which may have previously been saved.
         self.defaultConfig = deepcopy(config)
         dbh = SpiderFootDb(self.defaultConfig)
-        # 'config' supplied will be the defaults, let's supplement them
-        # now with any configuration which may have previously been
-        # saved.
         sf = SpiderFoot(self.defaultConfig)
         self.config = sf.configUnserialize(dbh.configGet(), self.defaultConfig)
-
-        if self.config['__webaddr'] == "0.0.0.0":  # nosec
-            addr = "<IP of this host>"
-        else:
-            addr = self.config['__webaddr']
-
-        self.docroot = self.config['__docroot'].rstrip('/')
 
         cherrypy.config.update({
             'error_page.404': self.error_page_404,
@@ -84,20 +84,6 @@ class SpiderFootWebUi:
             "tools.response_headers.headers": secure_headers.cherrypy()
         })
 
-        if (cherrypy.server.ssl_certificate is None or cherrypy.server.ssl_private_key is None):
-            url = "http://%s:%s%s" % (addr, self.config['__webport'], self.docroot)
-        else:
-            url = "https://%s:%s%s" % (addr, self.config['__webport'], self.docroot)
-
-        print("")
-        print("")
-        print("*************************************************************")
-        print(" Use SpiderFoot by starting your web browser of choice and ")
-        print(" browse to %s" % url)
-        print("*************************************************************")
-        print("")
-        print("")
-
     def error_page(self):
         """Error page"""
 
@@ -106,7 +92,7 @@ class SpiderFootWebUi:
         if self.config['_debug']:
             cherrypy.response.body = _cperror.get_error_page(status=500, traceback=_cperror.format_exc())
         else:
-            cherrypy.response.body = '<html><body>Error</body></html>'
+            cherrypy.response.body = b"<html><body>Error</body></html>"
 
     def error_page_404(self, status, message, traceback, version):
         """Error page 404
@@ -468,7 +454,7 @@ class SpiderFootWebUi:
             self.log.info("Waiting for the scan to initialize...")
             time.sleep(1)
 
-        raise cherrypy.HTTPRedirect(f"scaninfo?id={scanId}", status=302)
+        raise cherrypy.HTTPRedirect(f"{self.docroot}/scaninfo?id={scanId}", status=302)
 
     rerunscan.exposed = True
 
@@ -703,7 +689,7 @@ class SpiderFootWebUi:
                 cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
                 return json.dumps(["SUCCESS", ""]).encode('utf-8')
 
-            raise cherrypy.HTTPRedirect("/")
+            raise cherrypy.HTTPRedirect(f"{self.docroot}/")
 
         templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
         return templ.render(id=id, name=str(res[0]),
@@ -735,7 +721,7 @@ class SpiderFootWebUi:
         if confirm:
             for id in ids.split(','):
                 dbh.scanInstanceDelete(id)
-            raise cherrypy.HTTPRedirect("/")
+            raise cherrypy.HTTPRedirect(self.docroot)
 
         templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
         return templ.render(id=None, name=None, ids=ids.split(','), names=names,
@@ -781,7 +767,7 @@ class SpiderFootWebUi:
         # Reset config to default
         if allopts == "RESET":
             if self.reset_settings():
-                raise cherrypy.HTTPRedirect("/opts?updated=1")
+                raise cherrypy.HTTPRedirect(f"{self.docroot}/opts?updated=1")
             else:
                 return self.error("Failed to reset settings")
 
@@ -803,7 +789,7 @@ class SpiderFootWebUi:
         except Exception as e:
             return self.error("Processing one or more of your inputs failed: %s" % e)
 
-        raise cherrypy.HTTPRedirect("/opts?updated=1")
+        raise cherrypy.HTTPRedirect(f"{self.docroot}/opts?updated=1")
 
     savesettings.exposed = True
 
@@ -1098,7 +1084,7 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
             return json.dumps(["SUCCESS", scanId]).encode('utf-8')
 
-        raise cherrypy.HTTPRedirect(f"/scaninfo?id={scanId}")
+        raise cherrypy.HTTPRedirect(f"{self.docroot}/scaninfo?id={scanId}")
 
     startscan.exposed = True
 
@@ -1134,7 +1120,7 @@ class SpiderFootWebUi:
 
             dbh.scanInstanceSet(id, status="ABORT-REQUESTED")
 
-        raise cherrypy.HTTPRedirect("/")
+        raise cherrypy.HTTPRedirect(f"{self.docroot}/")
 
     stopscanmulti.exposed = True
 
@@ -1177,7 +1163,7 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
             return json.dumps(["SUCCESS", ""]).encode('utf-8')
 
-        raise cherrypy.HTTPRedirect("/")
+        raise cherrypy.HTTPRedirect(f"{self.docroot}/")
 
     stopscan.exposed = True
 

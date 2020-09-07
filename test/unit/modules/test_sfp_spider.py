@@ -23,9 +23,6 @@ class TestModulespider(unittest.TestCase):
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
         '__version__': '3.3-DEV',
         '__database': 'spiderfoot.test.db',  # note: test database file
-        '__webaddr': '127.0.0.1',
-        '__webport': 5001,
-        '__docroot': '',  # don't put trailing /
         '__modules__': None,  # List of modules. Will be set after start-up.
         '_socks1type': '',
         '_socks2addr': '',
