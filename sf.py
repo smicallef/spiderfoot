@@ -54,14 +54,9 @@ dbh = None
 
 
 def main():
-    if len(sys.argv) == 0:
-        print("SpiderFoot requires -l <ip>:<port> to start the web server.")
+    if len(sys.argv) <= 1:
+        print("SpiderFoot requires -l <ip>:<port> to start the web server. Try --help for guidance.")
         sys.exit(-1)
-
-    if len(sys.argv) > 1:
-        if not sys.argv[1].startswith("-"):
-            print("SpiderFoot requires -l <ip>:<port> to start the web server.")
-            sys.exit(-1)
 
     # web server config
     sfWebUiConfig = {
