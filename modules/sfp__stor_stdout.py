@@ -88,8 +88,7 @@ class sfp__stor_stdout(SpiderFootPlugin):
             if self.opts['_showsource']:
                 print(('{0:30}\t{1:45}\t{2}\t{3}'.format(event.module, self.opts['_eventtypes'][event.eventType], srcdata, data)))
             else:
-                # ToDo: Is it ok to not find the keys here?
-                print(('{0:30}\t{1:45}\t{2}'.format(event.module, self.opts['_eventtypes'].get(event.eventType, ""), data)))
+                print(('{0:30}\t{1:45}\t{2}'.format(event.module, self.opts['_eventtypes'][event.eventType], data)))
 
         if self.opts['_format'] == "csv":
             print((event.module + d + self.opts['_eventtypes'][event.eventType] + d + srcdata + d + data))
