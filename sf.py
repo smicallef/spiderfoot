@@ -366,8 +366,33 @@ def start_scan(sfConfig, sfModules, args):
     if args.x and args.t:
         cfg['__outputfilter'] = args.t.split(",")
 
+    # Prepare scan output headers
     if args.o == "json":
         print("[", end='')
+    elif not args.H:
+        delim = "\t"
+
+        if args.o == "tab":
+            delim = "\t"
+
+        if args.o == "csv":
+            if args.D:
+                delim = args.D
+            else:
+                delim = ","
+
+        if args.r:
+            if delim == "\t":
+                headers = '{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data")
+            else:
+                headers = delim.join(["Source", "Type", "Source Data", "Data"])
+        else:
+            if delim == "\t":
+                headers = '{0:30}{1}{2:45}{3}{4}'.format("Source", delim, "Type", delim, "Data")
+            else:
+                headers = delim.join(["Source", "Type", "Data"])
+
+        print(headers)
 
     # Start running a new scan
     scanName = target
@@ -380,28 +405,7 @@ def start_scan(sfConfig, sfModules, args):
         log.error(f"Scan [{scanId}] failed: {e}")
         sys.exit(-1)
 
-    # If field headers weren't disabled, print them
-    if not args.H and args.o != "json":
-        if args.D:
-            delim = args.D
-        else:
-            if args.o in ["tab", None]:
-                delim = "\t"
-
-            if args.o == "csv":
-                delim = ","
-
-        if not args.r:
-            if delim != "\t":
-                print(delim.join(["Source", "Type", "Data"]))
-            else:
-                print('{0:30}{1}{2:45}{3}{4}'.format("Source", delim, "Type", delim, "Data"))
-        else:
-            if delim != "\t":
-                print(delim.join(["Source", "Type", "Source Data", "Data"]))
-            else:
-                print('{0:30}{1}{2:45}{3}{4}{5}{6}'.format("Source", delim, "Type", delim, "Source Data", delim, "Data"))
-
+    # Poll for scan status until completion
     while True:
         time.sleep(1)
         info = dbh.scanInstanceGet(scanId)
