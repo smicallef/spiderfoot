@@ -1268,7 +1268,3 @@ class TestSpiderFootDb(unittest.TestCase):
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
                     sfdb.scanElementChildrenAll(instance_id, invalid_type)
-
-
-if __name__ == '__main__':
-    unittest.main()

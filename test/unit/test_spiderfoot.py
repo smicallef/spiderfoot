@@ -1514,7 +1514,3 @@ class TestSpiderFoot(unittest.TestCase):
 
         sf.bingIterate(None, None)
         self.assertEqual('TBD', 'TBD')
-
-
-if __name__ == '__main__':
-    unittest.main()

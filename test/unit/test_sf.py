@@ -120,7 +120,3 @@ class TestSf(unittest.TestCase):
         ]
         for output in expected_output:
             self.assertIn(bytes(output, 'utf-8'), out)
-
-
-if __name__ == '__main__':
-    unittest.main()

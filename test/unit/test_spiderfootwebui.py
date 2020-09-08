@@ -803,7 +803,3 @@ class TestSpiderFootWebUi(unittest.TestCase):
         sfwebui = SpiderFootWebUi(self.default_web_options, opts)
         scan_element_type_discovery = sfwebui.scanelementtypediscovery(None, None)
         self.assertIsInstance(scan_element_type_discovery, str)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -55,7 +55,6 @@ class TestModulecallername(unittest.TestCase):
         module = sfp_callername()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)

@@ -349,7 +349,3 @@ class TestSpiderFootEvent(unittest.TestCase):
         evt_hash = evt.getHash()
 
         self.assertIsInstance(evt_hash, str)
-
-
-if __name__ == '__main__':
-    unittest.main()

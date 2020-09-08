@@ -327,7 +327,3 @@ class TestSpiderFootTarget(unittest.TestCase):
 
         matches = target.matches("")
         self.assertFalse(matches)
-
-
-if __name__ == '__main__':
-    unittest.main()
