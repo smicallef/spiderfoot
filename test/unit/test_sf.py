@@ -102,6 +102,7 @@ class TestSf(unittest.TestCase):
         self.assertIn(b"Based on your criteria, no modules were enabled", err)
         self.assertEqual(255, code)
 
+    @unittest.skip("flakey")
     def test_run_scan_should_print_scan_result_and_exit(self):
         target = "spiderfoot.net"
         out, err, code = self.execute([sys.executable, "sf.py", "-m", ",".join(self.default_modules), "-s", target, "-o", "csv"])
