@@ -567,7 +567,3 @@ class TestSpiderFootCli(unittest.TestCase):
         sfcli = SpiderFootCli()
         do_eof = sfcli.do_EOF(None)
         self.assertTrue(do_eof)
-
-
-if __name__ == '__main__':
-    unittest.main()

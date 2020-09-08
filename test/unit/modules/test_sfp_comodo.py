@@ -33,7 +33,6 @@ class TestModulecomodo(unittest.TestCase):
         '__logstdout': False
     }
 
-    @unittest.skip("todo")
     def test_opts(self):
         module = sfp_comodo()
         self.assertEqual(len(module.opts), len(module.optdescs))
@@ -55,7 +54,6 @@ class TestModulecomodo(unittest.TestCase):
         module = sfp_comodo()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)

@@ -215,7 +215,3 @@ class TestSpiderFootScanner(unittest.TestCase):
 
         status = sfscan.status
         self.assertIsInstance(status, str)
-
-
-if __name__ == '__main__':
-    unittest.main()

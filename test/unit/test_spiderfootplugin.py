@@ -305,7 +305,3 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp = SpiderFootPlugin()
 
         sfp.start()
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -33,7 +33,6 @@ class TestModulecloudflaredns(unittest.TestCase):
         '__logstdout': False
     }
 
-    @unittest.skip("todo")
     def test_opts(self):
         module = sfp_cloudflaredns()
         self.assertEqual(len(module.opts), len(module.optdescs))
@@ -55,7 +54,6 @@ class TestModulecloudflaredns(unittest.TestCase):
         module = sfp_cloudflaredns()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)
