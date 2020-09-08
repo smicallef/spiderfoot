@@ -332,9 +332,6 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 return None
 
         # Report the host
-        # Commented this out since CNAMEs weren't being reported.
-        # TODO: review CNAME handling
-        # if host != parentEvent.data and htype != parentEvent.eventType:
         if host != parentEvent.data:
             evt = SpiderFootEvent(htype, host, self.__name__, parentEvent)
             self.notifyListeners(evt)
