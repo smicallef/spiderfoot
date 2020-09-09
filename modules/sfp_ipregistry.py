@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_ipregistry
-# Purpose:      Example module to use for new modules.
+# Purpose:      IPRegistry database query module.
 #
 # Author:      Leo Trubach <leotrubach@gmail.com>
 #
