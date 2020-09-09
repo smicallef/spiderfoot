@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_ipregistry
-# Purpose:      IPRegistry database query module.
+# Purpose:      ipregistry database query module.
 #
 # Author:      Leo Trubach <leotrubach@gmail.com>
 #
@@ -17,10 +17,9 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_ipregistry(SpiderFootPlugin):
-    __name__ = 'sfp_ipregistry'
     meta = {
-        "name": "IP Registry",
-        "summary": "Query IPRegistry database",
+        "name": "ipregistry",
+        "summary": "Query ipregistry database",
         "flags": ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Reputation Systems"],
@@ -36,7 +35,7 @@ class sfp_ipregistry(SpiderFootPlugin):
             ],
             "favIcon": "https://cdn.ipregistry.co/icons/favicon-32x32.png",
             "logo": "https://ipregistry.co/assets/ipregistry.svg",
-            "description": "IPRegistry is a trusted and in-depth IP "
+            "description": "Ipregistry is a trusted and in-depth IP "
             "Geolocation and Threat detections source of information that can"
             "benefit publishers, ad networks, retailers, financial services, "
             "e-commerce stores and more.",
@@ -48,7 +47,7 @@ class sfp_ipregistry(SpiderFootPlugin):
     }
 
     optdescs = {
-        "api_key": "IPRegistry API Key.",
+        "api_key": "Ipregistry API Key.",
     }
 
     results = None
@@ -138,7 +137,7 @@ class sfp_ipregistry(SpiderFootPlugin):
             security.get(k) for k in ("is_abuser", "is_attacker", "is_threat")
         )
         if malicious:
-            self.emit("MALICIOUS_IP_ADDRESS", pevent.data, pevent)
+            self.emit("MALICIOUS_IPADDR", f"ipregistry [{pevent.data}]", pevent)
 
     def generate_events(self, data, pevent):
         if not isinstance(data, dict):
