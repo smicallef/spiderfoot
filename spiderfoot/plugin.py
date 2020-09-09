@@ -224,7 +224,7 @@ class SpiderFootPlugin():
 
             try:
                 listener.handleEvent(sfEvent)
-            except BaseException as e:
+            except Exception as e:
                 self.log.exception(f"Module ({listener.__module__}) encountered an error: {e}")
 
     def checkForStop(self):
