@@ -45,7 +45,7 @@ from stem import Signal
 from stem.control import Controller
 
 # For hiding the SSL warnings coming from the requests lib
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # noqa: DUO131
 
 
 class SpiderFoot:
@@ -77,7 +77,7 @@ class SpiderFoot:
 
         # This is ugly but we don't want any fetches to fail - we expect
         # to encounter unverified SSL certs!
-        ssl._create_default_https_context = ssl._create_unverified_context
+        ssl._create_default_https_context = ssl._create_unverified_context  # noqa: DUO122
 
         if self.opts.get('_dnsserver', "") != "":
             res = dns.resolver.Resolver()
