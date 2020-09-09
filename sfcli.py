@@ -1219,7 +1219,7 @@ class SpiderFootCli(cmd.Cmd):
         """shell
         Run a shell command locally."""
         self.dprint("Running shell command:" + str(line))
-        self.dprint(os.popen(line).read(), plain=True)  # nosec
+        self.dprint(os.popen(line).read(), plain=True)  # noqa: DUO106
 
     def do_clear(self, line):
         """clear
