@@ -55,8 +55,7 @@ RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpe
     && rm -rf /lib/apk/db \
     && rm -rf /root/.cache \
     && mkdir $SPIDERFOOT_DATA \
-    && chown spiderfoot:spiderfoot /var/lib/spiderfoot \
-    && chown spiderfoot:spiderfoot /home/spiderfoot
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA
 
 COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
