@@ -279,7 +279,7 @@ class SpiderFootDb:
         # read and write to such a file.
         try:
             dbh = sqlite3.connect(database_path)
-        except BaseException as e:
+        except Exception as e:
             raise IOError(f"Error connecting to internal database {database_path}: {e}")
 
         if dbh is None:
@@ -296,7 +296,7 @@ class SpiderFootDb:
             try:
                 rx = re.compile(qry, re.IGNORECASE | re.DOTALL)
                 ret = rx.match(data)
-            except BaseException:
+            except Exception:
                 return False
             return ret is not None
 
@@ -311,7 +311,7 @@ class SpiderFootDb:
                 try:
                     self.create()
                     init = True
-                except BaseException as e:
+                except Exception as e:
                     raise IOError(f"Tried to set up the SpiderFoot database schema, but failed: {e.args[0]}")
 
             if init:
@@ -319,7 +319,7 @@ class SpiderFootDb:
                     try:
                         self.dbh.execute(qry)
                         self.conn.commit()
-                    except BaseException:
+                    except Exception:
                         continue
                 self.conn.commit()
                 # self.conn.close()
