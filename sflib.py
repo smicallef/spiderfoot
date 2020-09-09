@@ -413,17 +413,17 @@ class SpiderFoot:
         """Log a scan event.
 
         Args:
-            level (str): TBD
-            message (str): TBD
-            component (str): TBD
+            level (str): log level
+            message (str): log message
+            component (str): component from which the log event originated
 
         Returns:
             bool: scan event logged successfully
         """
 
         if not self.dbh:
-            self.error("No database handle. Could not log event to database: %s" % message, True)
-            return False
+            self.log.exception(f"No database handle. Could not log event to database: {message}")
+            raise BaseException(f"Internal Error Encountered: {message}")
 
         return self.dbh.scanLogEvent(self.scanId, level, message, component)
 
