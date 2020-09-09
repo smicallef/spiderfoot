@@ -50,7 +50,7 @@ class sfp_template(SpiderFootPlugin):
         #   - Passive DNS: Analyses passive DNS sources
         #   - Public Registries: Queries open/public registries of information
         #   - Real World: Queries sources about the real world (addresses, names, etc.)
-        #   - Reputation Systems: Queries systems that describe the reptuation of other systems
+        #   - Reputation Systems: Queries systems that describe the reputation of other systems
         #   - Search Engines: Searches public search engines with data about the whole Internet
         #   - Secondary Networks: Queries information about participation on secondary networks, like Bitcoin
         #   - Social Media: Searches social media data sources
@@ -192,7 +192,7 @@ class sfp_template(SpiderFootPlugin):
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        # The data souce for a module is, by defualt, set to the module name.
+        # The data source for a module is, by default, set to the module name.
         # If you want to override that, for instance in cases where the module
         # is purely processing data from other modules instead of producing
         # data itself, you can do so with the following. Note that this is only
