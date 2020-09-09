@@ -24,6 +24,17 @@ from os.path import expanduser
 
 import requests
 
+
+ASCII_LOGO = r"""
+  _________      .__    .___          ___________            __
+ /   _____/_____ |__| __| _/__________\_   _____/___   _____/  |_
+ \_____  \\____ \|  |/ __ |/ __ \_  __ \    __)/  _ \ /  _ \   __\
+ /        \  |_> >  / /_/ \  ___/|  | \/     \(  <_> |  <_> )  |
+/_______  /   __/|__\____ |\___  >__|  \___  / \____/ \____/|__|
+        \/|__|           \/    \/          \/
+                Open Source Intelligence Automation."""
+COPYRIGHT_INFO = "               by Steve Micallef | @spiderfoot\n"
+
 try:
     import readline
 except ImportError:
@@ -1208,7 +1219,7 @@ class SpiderFootCli(cmd.Cmd):
         """shell
         Run a shell command locally."""
         self.dprint("Running shell command:" + str(line))
-        self.dprint(os.popen(line).read(), plain=True)  # nosec
+        self.dprint(os.popen(line).read(), plain=True)  # noqa: DUO106
 
     def do_clear(self, line):
         """clear
@@ -1308,16 +1319,8 @@ if __name__ == "__main__":
 
     if not args.q:
         s = SpiderFootCli()
-        s.dprint("\n\
-  _________      .__    .___          ___________            __  \n\
- /   _____/_____ |__| __| _/__________\\_   _____/___   _____/  |_ \n\
- \_____  \\\\____ \|  |/ __ |/ __ \\_  __ \\    __)/  _ \ /  _ \\   __\\\n\
- /        \\  |_> >  / /_/ \\  ___/|  | \\/     \\(  <_> |  <_> )  |  \n\
-/_______  /   __/|__\\____ |\\___  >__|  \\___  / \\____/ \\____/|__|  \n\
-        \\/|__|           \\/    \\/          \\/                     \n\
-                Open Source Intelligence Automation.", plain=True, color=bcolors.GREYBLUE)
-        s.dprint("\
-               by Steve Micallef | @spiderfoot\n", plain=True,
+        s.dprint(ASCII_LOGO, plain=True, color=bcolors.GREYBLUE)
+        s.dprint(COPYRIGHT_INFO, plain=True,
                  color=bcolors.GREYBLUE_DARK)
         s.dprint(f"Version {s.version}.")
         if args.b:
