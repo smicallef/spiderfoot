@@ -181,7 +181,7 @@ class sfp_template(SpiderFootPlugin):
     # has failed and you don't wish to process any more events.
     errorState = False
 
-    def setup(self, sfc, userOpts=dict()):
+    def setup(self, sfc, userOpts=None):
         self.sf = sfc
         # self.tempStorage() basically returns a dict(), but we use self.tempStorage()
         # instead since on SpiderFoot HX, different mechanisms are used to persist
@@ -199,8 +199,8 @@ class sfp_template(SpiderFootPlugin):
         # utilised in SpiderFoot HX and not the open source version.
         self.__dataSource__ = "Some Data Source"
 
-        for opt in list(userOpts.keys()):
-            self.opts[opt] = userOpts[opt]
+        if userOpts:
+            self.opts.update(userOpts)
 
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
@@ -273,7 +273,7 @@ class sfp_template(SpiderFootPlugin):
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_template but did not set an API key!", False)
+            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!", False)
             self.errorState = True
             return None
 
