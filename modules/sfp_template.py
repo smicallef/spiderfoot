@@ -246,6 +246,12 @@ class sfp_template(SpiderFootPlugin):
 
         return info
 
+    def emit(self, etype, data, pevent, notify=True):
+        evt = SpiderFootEvent(etype, data, self.__name__, pevent)
+        if notify:
+            self.notifyListeners(evt)
+        return evt
+
     # Handle events sent to this module
     def handleEvent(self, event):
         # The three most used fields in SpiderFootEvent are:
