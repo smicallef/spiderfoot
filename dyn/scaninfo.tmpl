@@ -348,17 +348,18 @@
                         $('#ucounter').html(uniqueCount);
                         $('#tcounter').html(totalCount);
                         $('#scanstatusbadge').html(scanStatus);
+
+                        var statusy = "";
                         if (scanStatus == "FINISHED") {
                             statusy = "alert-success";
-                        }
-                        if (scanStatus.indexOf("ABORT") >= 0) {
+                        } else if (scanStatus.indexOf("ABORT") >= 0) {
                             statusy = "alert-warning";
-                        }
-                        if (scanStatus == "RUNNING" || scanStatus == "STARTED" || scanStatus == "STARTING" || scanStatus == "INITIALIZING") {
+                        } else if (scanStatus == "CREATED" || scanStatus == "RUNNING" || scanStatus == "STARTED" || scanStatus == "STARTING" || scanStatus == "INITIALIZING") {
                             statusy = "alert-info";
-                        }
-                        if (scanStatus.indexOf("FAILED") >= 0) {
+                        } else if (scanStatus.indexOf("FAILED") >= 0) {
                             statusy = "alert-danger";
+                        } else {
+                            statusy = "alert-info";
                         }
                         $('#scanstatusbadge').removeClass(["alert-info", "alert-warning", "alert-danger"]).addClass(statusy);
                         $('#status').html(scanStatus);

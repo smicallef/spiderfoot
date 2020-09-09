@@ -176,17 +176,19 @@
                     table += "<td>" + data[i][2] + "</td>";
                     table += "<td>" + data[i][3] + "</td>";
                     table += "<td>" + data[i][5] + "</td>";
+
+                    var statusy = "";
+
                     if (data[i][6] == "FINISHED") {
                         statusy = "alert-success";
-                    }
-                    if (data[i][6].indexOf("ABORT") >= 0) {
+                    } else if (data[i][6].indexOf("ABORT") >= 0) {
                         statusy = "alert-warning";
-                    }
-                    if (data[i][6] == "RUNNING" || data[i][6] == "STARTED" || data[i][6] == "STARTING" || data[i][6] == "INITIALIZING") {
+                    } else if (data[i][6] == "CREATED" || data[i][6] == "RUNNING" || data[i][6] == "STARTED" || data[i][6] == "STARTING" || data[i][6] == "INITIALIZING") {
                         statusy = "alert-info";
-                    }
-                    if (data[i][6].indexOf("FAILED") >= 0) {
+                    } else if (data[i][6].indexOf("FAILED") >= 0) {
                         statusy = "alert-danger";
+                    } else {
+                        statusy = "alert-info";
                     }
                     table += "<td class='text-center'><span class='badge " + statusy + "'>" + data[i][6] + "</span></td>";
                     table += "<td class='text-center'>" + data[i][7] + "</td>";
