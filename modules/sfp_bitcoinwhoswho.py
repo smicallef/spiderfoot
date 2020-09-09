@@ -17,10 +17,9 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_bitcoinwhoswho(SpiderFootPlugin):
-    __name__ = 'sfp_bitcoinwhoswho'
     meta = {
         'name': "Bitcoin Who's Who",
-        'summary': "Check for malicious Bitcoin address agains BitcoinWhosWho database",
+        'summary': "Check for malicious Bitcoin address against Bitcoin Who's Who database",
         'flags': ["apikey"],
         'useCases': ["Passive"],
         'categories': ["Reputation Systems"],
@@ -106,7 +105,7 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
 
         scams = data.get("scams", [])
         if scams:
-            self.emit("MALICIOUS_BITCOIN_ADDRESS", pevent.data)
+            self.emit("MALICIOUS_BITCOIN_ADDRESS", f"Bitcoin Who's Who[{pevent.data}]")
 
     def handleEvent(self, event):
         if self.errorState:
@@ -115,7 +114,7 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
         self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(f"You enabled {self.__name__} but did not set an API key!", False)
+            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!", False)
             self.errorState = True
             return None
 
