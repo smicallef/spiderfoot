@@ -2,3 +2,4 @@ venv/
 cache/
 spiderfoot.db*
 
+*.log
