@@ -102,7 +102,17 @@ class TestSf(unittest.TestCase):
         self.assertIn(b"Based on your criteria, no modules were enabled", err)
         self.assertEqual(255, code)
 
-    @unittest.skip("flakey")
+    def test_run_scan_should_run_scan_and_exit(self):
+        target = "spiderfoot.net"
+        out, err, code = self.execute([sys.executable, "sf.py", "-m", ",".join(self.default_modules), "-s", target])
+        self.assertIn(b"Scan completed with status FINISHED", err)
+        self.assertEqual(0, code)
+
+        for module in self.default_modules:
+            with self.subTest(module=module):
+                self.assertIn(module.encode(), err)
+
+    @unittest.skip("output buffering sometimes causes this test to fail")
     def test_run_scan_should_print_scan_result_and_exit(self):
         target = "spiderfoot.net"
         out, err, code = self.execute([sys.executable, "sf.py", "-m", ",".join(self.default_modules), "-s", target, "-o", "csv"])
