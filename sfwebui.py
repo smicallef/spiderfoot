@@ -1048,7 +1048,7 @@ class SpiderFootWebUi:
         # User selected a use case
         if len(modlist) == 0 and usecase != "":
             for mod in self.config['__modules__']:
-                if usecase == 'all' or usecase in self.config['__modules__'][mod]['cats']:
+                if usecase == 'all' or usecase in self.config['__modules__'][mod]['group']:
                     modlist.append(mod)
 
         # Add our mandatory storage module..
