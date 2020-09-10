@@ -247,7 +247,7 @@ class SpiderFootScanner():
                 try:
                     module = __import__('modules.' + modName, globals(), locals(), [modName])
                 except ImportError:
-                    self.__sf.error("Failed to load module: " + modName, False)
+                    self.__sf.error(f"Failed to load module: {modName}")
                     continue
 
                 mod = getattr(module, modName)()
@@ -350,7 +350,7 @@ class SpiderFootScanner():
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.__sf.error(f"Unhandled exception ({e.__class__.__name__}) encountered during scan."
                             + "Please report this as a bug: "
-                            + repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
+                            + repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
             self.__sf.status(f"Scan [{self.__scanId}] failed: {e}")
             self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
 
