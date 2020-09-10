@@ -54,6 +54,23 @@ class TestModulecomodo(unittest.TestCase):
         module = sfp_comodo()
         self.assertIsInstance(module.producedEvents(), list)
 
+    def test_queryAddr_should_resolve_unblocked_host(self):
+        """
+        Test queryAddr(self, qaddr)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_comodo()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        resolved = module.queryAddr('comodo.com')
+        self.assertTrue(resolved)
+
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)

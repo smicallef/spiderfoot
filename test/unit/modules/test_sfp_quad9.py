@@ -54,6 +54,23 @@ class TestModulequad9(unittest.TestCase):
         module = sfp_quad9()
         self.assertIsInstance(module.producedEvents(), list)
 
+    def test_query_should_resolve_unblocked_host(self):
+        """
+        Test query(self, qaddr)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_quad9()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        resolved = module.query('quad9.net')
+        self.assertTrue(resolved)
+
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)

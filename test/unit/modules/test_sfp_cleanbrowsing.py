@@ -54,6 +54,23 @@ class TestModulecleanbrowsing(unittest.TestCase):
         module = sfp_cleanbrowsing()
         self.assertIsInstance(module.producedEvents(), list)
 
+    def test_queryAddr_should_resolve_unblocked_host(self):
+        """
+        Test queryAddr(self, qaddr)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_cleanbrowsing()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        resolved = module.queryAddr('cleanbrowsing.org')
+        self.assertTrue(resolved)
+
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)
@@ -63,13 +80,13 @@ class TestModulecleanbrowsing(unittest.TestCase):
         module = sfp_cleanbrowsing()
         module.setup(sf, dict())
 
-        target_value = 'example target value'
-        target_type = 'IP_ADDRESS'
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
 
         event_type = 'ROOT'
-        event_data = 'example data'
+        event_data = 'cleanbrowsing.org'
         event_module = ''
         source_event = ''
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
