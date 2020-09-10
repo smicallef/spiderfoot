@@ -27,17 +27,20 @@
 #   sudo docker run --rm spiderfoot sf.py -h
 #
 # Running spiderfoot unit tests in container
-#   
-#   sudo docker run --rm spiderfoot -m unittest discover -s test/unit
+#   sudo docker build -t spiderfoot-test --build-arg REQUIREMENTS=requirements_test.txt .
+#   sudo docker run --rm spiderfoot-test -m pytest --flake8 .
 
 FROM alpine:3.9.6 AS build
+ARG REQUIREMENTS=requirements.txt
 RUN apk add --no-cache gcc git curl python3 python3-dev py3-pip swig tinyxml-dev \
  python3-dev musl-dev openssl-dev libffi-dev libxslt-dev libxml2-dev jpeg-dev \
  openjpeg-dev zlib-dev
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin":$PATH
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+COPY $REQUIREMENTS requirements.txt ./
+RUN ls
+RUN echo "$REQUIREMENTS"
+RUN pip3 install -r "$REQUIREMENTS"
 
 
 
