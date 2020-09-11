@@ -188,15 +188,12 @@ class TestSpiderFoot(unittest.TestCase):
 
     def test_error(self):
         """
-        Test error(self, error, exception=True)
+        Test error(self, error, exception=False)
         """
         sf = SpiderFoot(self.default_options)
 
         sf.error(None, exception=False)
         self.assertEqual('TBD', 'TBD')
-
-        with self.assertRaises(BaseException):
-            sf.error(None, exception=True)
 
     def test_fatal_should_exit(self):
         """

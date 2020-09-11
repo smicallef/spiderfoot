@@ -427,7 +427,7 @@ class SpiderFoot:
 
         return self.dbh.scanLogEvent(self.scanId, level, message, component)
 
-    def error(self, message, exception=True):
+    def error(self, message, exception=False):
         """Print an error message and optionally also raise an exception.
 
         Args:
@@ -444,11 +444,7 @@ class SpiderFoot:
         if self.dbh:
             self._dblog("ERROR", message)
 
-        if exception:
-            self.log.exception(message)
-            raise BaseException(f"Internal Error Encountered: {message}")
-        else:
-            self.log.error(message)
+        self.log.error(message)
 
     def fatal(self, error):
         """Print an error message and stacktrace then exit.
