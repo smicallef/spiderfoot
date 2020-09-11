@@ -436,7 +436,7 @@ class SpiderFootWebUi:
             # target type again.
             targetType = sf.targetType(f'"{scantarget}"')
 
-        if targetType != "HUMAN_NAME":
+        if targetType not in ["HUMAN_NAME", "BITCOIN_ADDRESS"]:
             scantarget = scantarget.lower()
 
         # Start running a new scan
@@ -488,7 +488,7 @@ class SpiderFootWebUi:
             targetType = sf.targetType(scantarget)
             if targetType is None:
                 # Should never be triggered for a re-run scan..
-                return self.error("Invalid target type. Could not recognize it as a human name, IP address, IP subnet, ASN, domain name or host name.")
+                return self.error("Invalid target type. Could not recognize it as a target SpiderFoot supports.")
 
             # Start running a new scan
             scanId = sf.genScanInstanceId()
@@ -1052,14 +1052,14 @@ class SpiderFootWebUi:
                 cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
                 return json.dumps(["ERROR", "Unrecognised target type."]).encode('utf-8')
 
-            return self.error("Invalid target type. Could not recognize it as a human name, IP address, IP subnet, ASN, domain name or host name.")
+            return self.error("Invalid target type. Could not recognize it as a target SpiderFoot supports.")
 
         # Delete the stdout module in case it crept in
         if "sfp__stor_stdout" in modlist:
             modlist.remove("sfp__stor_stdout")
 
         # Start running a new scan
-        if targetType in ["HUMAN_NAME", "USERNAME"]:
+        if targetType in ["HUMAN_NAME", "USERNAME", "BITCOIN_ADDRESS"]:
             scantarget = scantarget.replace("\"", "")
         else:
             scantarget = scantarget.lower()
