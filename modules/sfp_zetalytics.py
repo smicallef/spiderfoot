@@ -72,7 +72,7 @@ class sfp_zetalytics(SpiderFootPlugin):
         params = {**params, "token": self.opts["api_key"]}
         qs = urlencode(params)
         res = self.sf.fetchUrl(
-            f"{self.BASE_URL}{path}?{qs}",
+            f"{self.BASE_URL}{path}/?{qs}",
             timeout=self.opts["_fetchtimeout"],
             useragent="SpiderFoot",
         )
@@ -90,7 +90,7 @@ class sfp_zetalytics(SpiderFootPlugin):
         return info
 
     def query_subdomains(self, domain):
-        info = self.request("/subdomain", {"q": domain})
+        info = self.request("/subdomains", {"q": domain})
         return info
 
     def query_hostname(self, hostname):
@@ -156,7 +156,7 @@ class sfp_zetalytics(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_template but did not set an API key!", False)
+            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!", False)
             self.errorState = True
             return None
 
