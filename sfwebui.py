@@ -372,7 +372,7 @@ class SpiderFootWebUi:
         ret['configdesc'] = dict()
         for key in list(ret['config'].keys()):
             if ':' not in key:
-                ret['configdesc'][key] = self.config['__globaloptdescs__'][key]
+                ret['configdesc'][key] = self.config['__globaloptdescs__'].get(key, f"{key} (legacy)")
             else:
                 [modName, modOpt] = key.split(':')
                 if modName not in list(self.config['__modules__'].keys()):
