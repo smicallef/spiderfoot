@@ -54,6 +54,23 @@ class TestModulenorton(unittest.TestCase):
         module = sfp_norton()
         self.assertIsInstance(module.producedEvents(), list)
 
+    def test_queryAddr_should_resolve_host(self):
+        """
+        Test queryAddr(self, qaddr)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_norton()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        resolved = module.queryAddr('norton.com')
+        self.assertTrue(resolved)
+
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)
