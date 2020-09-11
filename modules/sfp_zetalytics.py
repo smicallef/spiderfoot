@@ -40,10 +40,12 @@ class sfp_zetalytics(SpiderFootPlugin):
 
     opts = {
         "api_key": "",
+        "verify": True
     }
 
     optdescs = {
         "api_key": "Zetalytics API Key.",
+        "verify": "Verify that any hostnames found on the target domain still resolve?"
     }
 
     results = None
@@ -60,13 +62,20 @@ class sfp_zetalytics(SpiderFootPlugin):
         return ["INTERNET_NAME", "DOMAIN_NAME", "EMAILADDR"]
 
     def producedEvents(self):
-        return ["INTERNET_NAME", "AFFILIATE_DOMAIN_NAME"]
+        return ["INTERNET_NAME", "AFFILIATE_DOMAIN_NAME", "INTERNET_NAME_UNRESOLVED"]
 
     def emit(self, etype, data, pevent, notify=True):
         evt = SpiderFootEvent(etype, data, self.__name__, pevent)
         if notify:
             self.notifyListeners(evt)
         return evt
+
+    def verify_emit_internet_name(self, hostname, pevent):
+        if self.opts["verify"] and not self.sf.resolveHost(hostname):
+            self.sf.debug(f"Host {hostname} could not be resolved")
+            self.emit("INTERNET_NAME_UNRESOLVED", hostname, pevent)
+        else:
+            self.emit("INTERNET_NAME", hostname, pevent)
 
     def request(self, path, params):
         params = {**params, "token": self.opts["api_key"]}
@@ -113,7 +122,7 @@ class sfp_zetalytics(SpiderFootPlugin):
                     qname = r.get("qname")
                     if not isinstance(qname, str):
                         continue
-                    self.emit("INTERNET_NAME", qname, pevent)
+                    self.verify_emit_internet_name(qname, pevent)
 
     def generate_hostname_events(self, data, pevent):
         hostnames = set()
@@ -125,7 +134,7 @@ class sfp_zetalytics(SpiderFootPlugin):
                     if isinstance("qname", str):
                         hostnames.add(qname)
         for hostname in hostnames:
-            self.emit("INTERNET_NAME", hostname, pevent)
+            self.verify_emit_internet_name(hostname, pevent)
 
     def generate_email_events(self, data, pevent):
         if isinstance(data, dict):
