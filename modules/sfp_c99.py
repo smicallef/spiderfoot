@@ -156,8 +156,6 @@ class sfp_c99(SpiderFootPlugin):
                 return None
 
             subDomain = subDomainElem.get("subdomain")
-            ip = subDomainElem.get("ip")
-            cloudFlare = subDomainElem.get("cloudflare")
 
             if subDomain:
                 if self.opts["verify"] and not self.sf.resolveHost(subDomain):
@@ -187,7 +185,6 @@ class sfp_c99(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            date = domainHistoryElem.get("date")
             ip = domainHistoryElem.get("ip_address")
 
             if ip:
