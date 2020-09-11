@@ -17,18 +17,18 @@ from spiderfoot import SpiderFootPlugin, SpiderFootEvent
 class sfp_c99(SpiderFootPlugin):
     meta = {
         "name": "C99",
-        "summary": "This module queries c99 API that offers various data (geo location, proxy detection, phone lookup, etc).",
+        "summary": "Queries the C99 API which offers various data (geo location, proxy detection, phone lookup, etc).",
         "flags": ["apikey"],
         "useCases": ["Footprint", "Passive", "Investigate"],
-        "categories": ["Content Analysis"],
+        "categories": ["Search Engines"],
         "dataSource": {
             "website": "https://api.c99.nl/",
             "model": "COMMERCIAL_ONLY",
             "references": ["https://api.c99.nl/api_overview", "https://api.c99.nl/faq"],
             "apiKeyInstructions": [
-                "Visit api.c99.nl",
-                "Press shop in navigation or go to https://api.c99.nl/dashboard/shop",
-                "Press purchase key on option 'C99.NL API KEY' (you can also buy 1 year key if you want)",
+                "Visit https://api.c99.nl",
+                "Click shop in the top navigation or go to https://api.c99.nl/dashboard/shop",
+                "Click purchase key on option 'C99.NL API KEY' (you can also purchase a 1 year key)",
                 "You will receive your API key by email.",
             ],
             "favIcon": "https://api.c99.nl/favicon.ico",
@@ -41,7 +41,10 @@ class sfp_c99(SpiderFootPlugin):
         },
     }
 
-    opts = {"api_key": "", "verify": True}
+    opts = {
+        "api_key": "",
+        "verify": True
+    }
 
     optdescs = {
         "api_key": "C99 API Key.",
@@ -163,7 +166,7 @@ class sfp_c99(SpiderFootPlugin):
                     )
                     evt = SpiderFootEvent(
                         "INTERNET_NAME_UNRESOLVED",
-                        f"Sub domain: {subDomain}, IP: {ip}, CloudFlare: {cloudFlare}",
+                        subDomain,
                         self.__name__,
                         event,
                     )
@@ -171,7 +174,7 @@ class sfp_c99(SpiderFootPlugin):
                 else:
                     evt = SpiderFootEvent(
                         "INTERNET_NAME",
-                        f"Sub domain: {subDomain}, IP: {ip}, CloudFlare: {cloudFlare}",
+                        subDomain,
                         self.__name__,
                         event,
                     )
@@ -190,7 +193,7 @@ class sfp_c99(SpiderFootPlugin):
             if ip:
                 evt = SpiderFootEvent(
                     "IP_ADDRESS",
-                    f"IP: {ip}, Date: {date}",
+                    ip,
                     self.__name__,
                     event,
                 )
@@ -204,7 +207,7 @@ class sfp_c99(SpiderFootPlugin):
         if skype:
             evt = SpiderFootEvent(
                 "ACCOUNT_EXTERNAL_OWNED",
-                skype,
+                f"Skype [{skype}]",
                 self.__name__,
                 event,
             )
@@ -287,9 +290,6 @@ class sfp_c99(SpiderFootPlugin):
         record = data.get("records")
 
         if record:
-            continent = (
-                record["continent"].get("name") if record.get("continent") else None
-            )
             country = record.get("country_name")
             region = record["region"].get("name") if record.get("region") else None
             city = record.get("city")
@@ -316,10 +316,10 @@ class sfp_c99(SpiderFootPlugin):
                 )
                 self.notifyListeners(evt)
 
-            if continent or country or region or city or postalCode:
+            if country or region or city or postalCode:
                 evt = SpiderFootEvent(
                     "GEOINFO",
-                    f"Continent: {continent}, Country: {country}, Region: {region}, City: {city}, Postal code: {postalCode}",
+                    f"Country: {country}, Region: {region}, City: {city}, Postal code: {postalCode}",
                     self.__name__,
                     event,
                 )

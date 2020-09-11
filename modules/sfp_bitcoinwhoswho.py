@@ -19,9 +19,9 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_bitcoinwhoswho(SpiderFootPlugin):
     meta = {
         'name': "Bitcoin Who's Who",
-        'summary': "Check for malicious Bitcoin address against Bitcoin Who's Who database",
+        'summary': "Check for Bitcoin addresses against the Bitcoin Who's Who database of suspect/malicious addresses.",
         'flags': ["apikey"],
-        'useCases': ["Passive"],
+        'useCases': ["Passive", "Investigate"],
         'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://bitcoinwhoswho.com/",

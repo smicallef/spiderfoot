@@ -19,9 +19,9 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_ipregistry(SpiderFootPlugin):
     meta = {
         "name": "ipregistry",
-        "summary": "Query ipregistry database",
+        "summary": "Query the ipregistry.co database for reputation and geo-location.",
         "flags": ["apikey"],
-        "useCases": ["Passive"],
+        "useCases": ["Passive", "Footprint", "Investigate"],
         "categories": ["Reputation Systems"],
         "dataSource": {
             "website": "https://ipregistry.co/",
