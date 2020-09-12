@@ -69,6 +69,9 @@ class SpiderFoot:
 
         Args:
             options (dict): dictionary of configuration options.
+
+        Raises:
+            TypeError: options argument was invalid type
         """
         if not isinstance(options, dict):
             raise TypeError("options is %s; expected dict()" % type(options))
@@ -116,12 +119,19 @@ class SpiderFoot:
         """Called usually some time after instantiation
         to set up a database handle and scan ID, used
         for logging events to the database about a scan.
+
+        Args:
+            dbh (SpiderFootDB): database handle
         """
         self._dbh = dbh
 
     @scanId.setter
     def scanId(self, scanId):
-        """Set the scan ID this instance of SpiderFoot is being used in."""
+        """Set the scan ID this instance of SpiderFoot is being used in.
+
+        Args:
+            scanId: scan instance ID
+        """
         self._scanId = scanId
 
     @socksProxy.setter
@@ -131,6 +141,9 @@ class SpiderFoot:
         Bit of a hack to support SOCKS because of the loading order of
         modules. sfscan will call this to update the socket reference
         to the SOCKS one.
+
+        Args:
+            socksProxy (str): SOCKS proxy
         """
         self._socksProxy = socksProxy
 
@@ -138,7 +151,7 @@ class SpiderFoot:
         """Tell TOR to re-circuit.
 
         Returns:
-            None
+            None: success
         """
 
         if self.opts['_socks1type'] != "TOR":
@@ -163,11 +176,10 @@ class SpiderFoot:
         and if a string it will simply be returned back.
 
         Args:
-            val (str): TBD
-            fatal (bool): TBD
+            val (str): option name
 
         Returns:
-            str: TBD
+            str: option data
         """
 
         if not isinstance(val, str):
@@ -203,7 +215,7 @@ class SpiderFoot:
         basis for building graphs in various formats.
 
         Args:
-            root (str): TBD
+            data (str): TBD
             flt (list): TBD
 
         Returns:
@@ -401,6 +413,9 @@ class SpiderFoot:
 
         Returns:
             bool: scan event logged successfully
+
+        Raises:
+            BaseException: internal error encountered attempting to access the database handler
         """
 
         if not self.dbh:
@@ -433,9 +448,6 @@ class SpiderFoot:
 
         Args:
             error (str): error message
-
-        Returns:
-            None
         """
 
         if self.dbh:
@@ -644,6 +656,9 @@ class SpiderFoot:
 
         Returns:
             dict: config options
+
+        Raises:
+            TypeError: arg type was invalid
         """
 
         if not isinstance(opts, dict):
@@ -710,6 +725,9 @@ class SpiderFoot:
 
         Returns:
             dict: TBD
+
+        Raises:
+            TypeError: arg type was invalid
         """
 
         if not isinstance(opts, dict):
@@ -724,26 +742,29 @@ class SpiderFoot:
             if opt.startswith('__') and filterSystem:
                 # Leave out system variables
                 continue
-            if opt in opts:
-                if isinstance(referencePoint[opt], bool):
-                    if opts[opt] == "1":
-                        returnOpts[opt] = True
-                    else:
-                        returnOpts[opt] = False
 
-                if isinstance(referencePoint[opt], str):
-                    returnOpts[opt] = str(opts[opt])
+            if opt not in opts:
+                continue
 
-                if isinstance(referencePoint[opt], int):
-                    returnOpts[opt] = int(opts[opt])
+            if isinstance(referencePoint[opt], bool):
+                if opts[opt] == "1":
+                    returnOpts[opt] = True
+                else:
+                    returnOpts[opt] = False
 
-                if isinstance(referencePoint[opt], list):
-                    if isinstance(referencePoint[opt][0], int):
-                        returnOpts[opt] = list()
-                        for x in str(opts[opt]).split(","):
-                            returnOpts[opt].append(int(x))
-                    else:
-                        returnOpts[opt] = str(opts[opt]).split(",")
+            if isinstance(referencePoint[opt], str):
+                returnOpts[opt] = str(opts[opt])
+
+            if isinstance(referencePoint[opt], int):
+                returnOpts[opt] = int(opts[opt])
+
+            if isinstance(referencePoint[opt], list):
+                if isinstance(referencePoint[opt][0], int):
+                    returnOpts[opt] = list()
+                    for x in str(opts[opt]).split(","):
+                        returnOpts[opt].append(int(x))
+                else:
+                    returnOpts[opt] = str(opts[opt]).split(",")
 
         if '__modules__' not in referencePoint:
             return returnOpts
@@ -1528,7 +1549,15 @@ class SpiderFoot:
         return list(set(addrs))
 
     def validateIP(self, host, ip):
-        """Verify a host resolves to a given IP."""
+        """Verify a host resolves to a given IP.
+
+        Args:
+            host (str): host
+            ip (str): IP address
+
+        Returns:
+            bool: host resolves to the given IP address
+        """
 
         addrs = self.resolveHost(host)
 
@@ -1590,13 +1619,31 @@ class SpiderFoot:
         return list(set(ret))
 
     def safeSocket(self, host, port, timeout):
-        """Create a safe socket that's using SOCKS/TOR if it was enabled."""
+        """Create a safe socket that's using SOCKS/TOR if it was enabled.
+
+        Args:
+            host (str): host
+            port (str): port
+            timeout (int): timeout
+
+        Returns:
+            sock
+        """
         sock = socket.create_connection((host, int(port)), int(timeout))
         sock.settimeout(int(timeout))
         return sock
 
     def safeSSLSocket(self, host, port, timeout):
-        """Create a safe SSL connection that's using SOCKs/TOR if it was enabled."""
+        """Create a safe SSL connection that's using SOCKs/TOR if it was enabled.
+
+        Args:
+            host (str): host
+            port (str): port
+            timeout (int): timeout
+
+        Returns:
+            sock
+        """
         s = socket.socket()
         s.settimeout(int(timeout))
         s.connect((host, int(port)))
@@ -2148,6 +2195,9 @@ class SpiderFoot:
 
         Returns:
             str: PEM-encoded certificate as a byte string
+
+        Raises:
+            TypeError: arg type was invalid
         """
 
         if not isinstance(der_cert, bytes):
@@ -2293,6 +2343,9 @@ class SpiderFoot:
             url (str): TBD
             data (str): data to examine for links
             domains: TBD
+
+        Returns:
+            list: links
         """
         returnLinks = dict()
 
@@ -2407,7 +2460,14 @@ class SpiderFoot:
         return session
 
     def removeUrlCreds(self, url):
-        """Remove key= and others from URLs to avoid credentials in logs."""
+        """Remove key= and others from URLs to avoid credentials in logs.
+
+        Args:
+            url (str): URL
+
+        Returns:
+            str: URL
+        """
 
         pats = {
             r'key=\S+': "key=XXX",
@@ -2469,11 +2529,43 @@ class SpiderFoot:
 
         return True
 
-    def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
-                 useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
-                 headOnly=False, verify=True):
-        """Fetch a URL, return the response object."""
+    def fetchUrl(
+        self,
+        url,
+        fatal=False,
+        cookies=None,
+        timeout=30,
+        useragent="SpiderFoot",
+        headers=None,
+        noLog=False,
+        postData=None,
+        dontMangle=False,
+        sizeLimit=None,
+        headOnly=False,
+        verify=True
+    ):
+        """Fetch a URL, return the response object.
+
+        Args:
+            url (str): URL to fetch
+            fatal (bool): raise an exception upon request error
+            cookies (str): cookies
+            timeout (int): timeout
+            useragent (str): user agent header
+            headers (str): headers
+            noLog (bool): do not log
+            postData (str): HTTP POST data
+            dontMangle (bool): do not mangle
+            sizeLimit (int): size threshold
+            headOnly (bool): use HTTP HEAD method
+            verify (bool): use HTTPS SSL/TLS verification
+
+        Returns:
+            dict: HTTP response
+
+        Raises:
+            Exception: request error
+        """
 
         if not url:
             return None
@@ -2658,6 +2750,9 @@ class SpiderFoot:
 
         Args:
             target (str): TBD
+
+        Returns:
+            bool: wildcard DNS
         """
 
         if not target:
@@ -2687,6 +2782,9 @@ class SpiderFoot:
         Args:
             searchString (str) :TBD
             opts (dict): TBD
+
+        Returns:
+            dict: TBD
         """
 
         endpoint = "https://www.googleapis.com/customsearch/v1?q={search_string}&".format(
@@ -2751,6 +2849,8 @@ class SpiderFoot:
             searchString (str): TBD
             opts (dict): TBD
 
+        Returns:
+            dict: TBD
         """
 
         endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&".format(
