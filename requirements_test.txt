@@ -1,4 +1,5 @@
 -r requirements.txt
+darglint==1.5.4
 dlint==0.10.3
 pytest==5.3.0
 pytest-mock==1.12.0
