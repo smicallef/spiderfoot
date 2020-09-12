@@ -2580,6 +2580,16 @@ class SpiderFoot:
 
         url = url.strip()
 
+        try:
+            parsed_url = urllib.parse.urlparse(url)
+        except Exception:
+            self.debug(f"Could not parse URL: {url}")
+            return None
+
+        if parsed_url.scheme != 'http' and parsed_url.scheme != 'https':
+            self.debug(f"Invalid URL scheme for URL: {url}")
+            return None
+
         proxies = dict()
         if self.useProxyForUrl(url):
             proxy_url = f"socks5h://{self.opts['_socks2addr']}:{self.opts['_socks3port']}"
