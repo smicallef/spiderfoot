@@ -15,8 +15,6 @@ import sqlite3
 import threading
 import time
 
-from sflib import SpiderFoot
-
 
 class SpiderFootDb:
     """SpiderFoot database
@@ -265,9 +263,7 @@ class SpiderFootDb:
         if not opts.get('__database'):
             raise ValueError("opts['__database'] is empty")
 
-        sf = SpiderFoot(opts)
-
-        database_path = f"{sf.dataPath()}/{opts['__database']}"
+        database_path = opts['__database']
 
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
