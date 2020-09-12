@@ -171,10 +171,13 @@ class SpiderFootCli(cmd.Cmd):
             val = "0"
         else:
             val = "1"
+
         if self.ownopts['cli.spool_file']:
             return self.do_set("cli.spool = " + val)
         else:
             self.edprint("You haven't set cli.spool_file. Set that before enabling spooling.")
+
+        return None
 
     def do_history(self, line):
         """history [-l]
@@ -871,7 +874,7 @@ class SpiderFootCli(cmd.Cmd):
         c = self.myparseline(line)
         if len(c[0]) < 3:
             self.edprint("Invalid syntax.")
-            return
+            return None
 
         if "-m" in c[0]:
             mods = c[0][c[0].index("-m") + 1]
@@ -886,7 +889,7 @@ class SpiderFootCli(cmd.Cmd):
 
         if not mods and not types and not usecase:
             self.edprint("Invalid syntax.")
-            return
+            return None
 
         target = c[0][0]
         if "-n" in c[0]:
@@ -905,7 +908,7 @@ class SpiderFootCli(cmd.Cmd):
         d = self.request(self.ownopts['cli.server_baseurl'] + "/startscan",
                          post=post)
         if not d:
-            return
+            return None
 
         s = json.loads(d)
         if s[0] == "SUCCESS":
@@ -916,6 +919,8 @@ class SpiderFootCli(cmd.Cmd):
 
         if "-w" in c[0]:
             return self.do_logs(s[1] + " -w")
+
+        return None
 
     # Stop a running scan.
     def do_stop(self, line):
