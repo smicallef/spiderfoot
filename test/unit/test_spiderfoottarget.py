@@ -11,7 +11,8 @@ class TestSpiderFootTarget(unittest.TestCase):
 
     valid_target_types = [
         'IP_ADDRESS', 'IPV6_ADDRESS', 'NETBLOCK_OWNER', 'INTERNET_NAME',
-        'EMAILADDR', 'HUMAN_NAME', 'BGP_AS_OWNER', 'PHONE_NUMBER', "USERNAME"
+        'EMAILADDR', 'HUMAN_NAME', 'BGP_AS_OWNER', 'PHONE_NUMBER', "USERNAME",
+        'BITCOIN_ADDRESS'
     ]
 
     def test_init_argument_targetValue_invalid_type_should_raise_TypeError(self):
@@ -301,6 +302,17 @@ class TestSpiderFootTarget(unittest.TestCase):
         """
         target_value = 'SpiderFoot'
         target_type = 'PHONE_NUMBER'
+        target = SpiderFootTarget(target_value, target_type)
+
+        matches = target.matches('something else entirely')
+        self.assertTrue(matches)
+
+    def test_matches_argument_value_any_bitcoin_address_should_return_True(self):
+        """
+        Test matches(self, value, includeParents=False, includeChildren=True)
+        """
+        target_value = 'SpiderFoot'
+        target_type = 'BITCOIN_ADDRESS'
         target = SpiderFootTarget(target_value, target_type)
 
         matches = target.matches('something else entirely')

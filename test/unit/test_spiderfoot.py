@@ -373,6 +373,8 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertEqual('IPV6_ADDRESS', target_type)
         target_type = sf.targetType("spiderfoot.net")
         self.assertEqual('INTERNET_NAME', target_type)
+        target_type = sf.targetType("1HesYJSP1QqcyPEjnQ9vzBL1wujruNGe7R")
+        self.assertEqual('BITCOIN_ADDRESS', target_type)
 
     def test_target_type_invalid_seed_should_return_none(self):
         """
