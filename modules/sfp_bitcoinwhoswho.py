@@ -19,9 +19,9 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_bitcoinwhoswho(SpiderFootPlugin):
     meta = {
         'name': "Bitcoin Who's Who",
-        'summary': "Check for malicious Bitcoin address against Bitcoin Who's Who database",
+        'summary': "Check for Bitcoin addresses against the Bitcoin Who's Who database of suspect/malicious addresses.",
         'flags': ["apikey"],
-        'useCases': ["Passive"],
+        'useCases': ["Passive", "Investigate"],
         'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://bitcoinwhoswho.com/",
@@ -101,11 +101,14 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
 
     def generate_events(self, data, pevent):
         if not isinstance(data, dict):
-            return
+            return False
 
         scams = data.get("scams", [])
         if scams:
-            self.emit("MALICIOUS_BITCOIN_ADDRESS", f"Bitcoin Who's Who[{pevent.data}]")
+            self.emit("MALICIOUS_BITCOIN_ADDRESS", f"Bitcoin Who's Who [{pevent.data}]")
+            return True
+
+        return False
 
     def handleEvent(self, event):
         if self.errorState:
@@ -125,8 +128,9 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
 
         if event.eventType == "BITCOIN_ADDRESS":
             data = self.query(event.data)
-            self.generate_events(data, event)
+            r = self.generate_events(data, event)
 
-            self.emit("RAW_RIR_DATA", json.dumps(data), event)
+            if r:
+                self.emit("RAW_RIR_DATA", json.dumps(data), event)
 
 # End of sfp_bitcoinwhoswho class

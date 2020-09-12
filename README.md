@@ -99,7 +99,7 @@ SpiderFoot has over 190 modules, most of which *don't require API keys*, and man
 | Name         | Description  | Link       |
 |:-------------| :------------| :----------|
 abuse.ch|Check if a host/domain, IP or netblock is malicious according to abuse.ch.|[https://www.abuse.ch](https://www.abuse.ch)
-AbuseIPDB|Check if an IP address is malicious according to AbuseIPDB.com.|[https://www.abuseipdb.com](https://www.abuseipdb.com)
+AbuseIPDB|Check if an IP address is malicious according to AbuseIPDB.com blacklist.|[https://www.abuseipdb.com](https://www.abuseipdb.com)
 Account Finder|Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc.|
 AdBlock Check|Check if linked pages would be blocked by AdBlock Plus.|[https://adblockplus.org/](https://adblockplus.org/)
 Ahmia|Search Tor 'Ahmia' search engine for mentions of the target domain.|[https://ahmia.fi/](https://ahmia.fi/)
@@ -120,19 +120,20 @@ BinaryEdge|Obtain information from BinaryEdge.io Internet scanning systems, incl
 Bing (Shared IPs)|Search Bing for hosts sharing the same IP.|[https://www.bing.com/](https://www.bing.com/)
 Bing|Obtain information from bing to identify sub-domains and links.|[https://www.bing.com/](https://www.bing.com/)
 Bitcoin Finder|Identify bitcoin addresses in scraped webpages.|
-BitcoinAbuse|Check bitcoin address against bitcoinabuse.com database|[https://www.bitcoinabuse.com/](https://www.bitcoinabuse.com/)
+Bitcoin Who's Who|Check for Bitcoin addresses against the Bitcoin Who's Who database of suspect/malicious addresses.|[https://bitcoinwhoswho.com/](https://bitcoinwhoswho.com/)
+BitcoinAbuse|Check Bitcoin addresses against the bitcoinabuse.com database of suspect/malicious addresses.|[https://www.bitcoinabuse.com/](https://www.bitcoinabuse.com/)
 Blockchain|Queries blockchain.info to find the balance of identified bitcoin wallet addresses.|[https://www.blockchain.com/](https://www.blockchain.com/)
 blocklist.de|Check if a netblock or IP is malicious according to blocklist.de.|[http://www.blocklist.de/en/index.html](http://www.blocklist.de/en/index.html)
 BotScout|Searches botscout.com's database of spam-bot IPs and e-mail addresses.|[http://botscout.com/](http://botscout.com/)
 botvrij.eu|Check if a domain is malicious according to botvrij.eu.|
 BuiltWith|Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more.|[https://builtwith.com/](https://builtwith.com/)
-C99|This module queries c99 API that offers various data (geo location, proxy detection, phone lookup, etc).|[https://api.c99.nl/](https://api.c99.nl/)
+C99|Queries the C99 API which offers various data (geo location, proxy detection, phone lookup, etc).|[https://api.c99.nl/](https://api.c99.nl/)
 CallerName|Lookup US phone number location and reputation information.|[http://callername.com/](http://callername.com/)
 Censys|Obtain information from Censys.io|[https://censys.io/](https://censys.io/)
 Certificate Transparency|Gather hostnames from historical certificates in crt.sh.|[https://crt.sh/](https://crt.sh/)
 CINS Army List|Check if a netblock or IP address is malicious according to cinsscore.com's Army List.|
 CIRCL.LU|Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases.|[https://www.circl.lu/](https://www.circl.lu/)
-Cleanbrowsing.org|Check if a host would be blocked by Cleanbrowsing.org DNS|[https://cleanbrowsing.org/](https://cleanbrowsing.org/)
+CleanBrowsing.org|Check if a host would be blocked by CleanBrowsing.org DNS|[https://cleanbrowsing.org/](https://cleanbrowsing.org/)
 CleanTalk Spam List|Check if a netblock or IP address is on CleanTalk.org's spam IP list.|[https://cleantalk.org](https://cleantalk.org)
 Clearbit|Check for names, addresses, domains and more based on lookups of e-mail addresses on clearbit.com.|[https://clearbit.com/](https://clearbit.com/)
 CloudFlare Malware DNS|Check if a host would be blocked by CloudFlare Malware-blocking DNS|[https://www.cloudflare.com/](https://www.cloudflare.com/)
@@ -144,7 +145,7 @@ Cookie Extractor|Extract Cookies from HTTP headers.|
 Country Name Extractor|Identify country names in any obtained data.|
 Credit Card Number Extractor|Identify Credit Card Numbers in any data|
 Crobat API|Search Crobat API for subdomains.|
-Cross-Referencer|Identify whether other domains are associated ('Affiliates') of the target.|
+Cross-Referencer|Identify whether other domains are associated ('Affiliates') of the target by looking for links back to the target site(s).|
 Custom Threat Feed|Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed.|
 cybercrime-tracker.net|Check if a host/domain or IP is malicious according to cybercrime-tracker.net.|[http://cybercrime-tracker.net/](http://cybercrime-tracker.net/)
 Darksearch|Search the Darksearch.io Tor search engine for mentions of the target domain.|[https://darksearch.io/](https://darksearch.io/)
@@ -198,6 +199,7 @@ IntelligenceX|Obtain information from IntelligenceX about identified IP addresse
 Interesting File Finder|Identifies potential files of interest, e.g. office documents, zip files.|
 Internet Storm Center|Check if an IP is malicious according to SANS ISC.|[https://isc.sans.edu](https://isc.sans.edu)
 IPInfo.io|Identifies the physical location of IP addresses identified using ipinfo.io.|[https://ipinfo.io](https://ipinfo.io)
+ipregistry|Query the ipregistry.co database for reputation and geo-location.|[https://ipregistry.co/](https://ipregistry.co/)
 ipstack|Identifies the physical location of IP addresses identified using ipstack.com.|[https://ipstack.com/](https://ipstack.com/)
 JsonWHOIS.com|Search JsonWHOIS.com for WHOIS records associated with a domain.|[https://jsonwhois.com](https://jsonwhois.com)
 Junk File Finder|Looks for old/temporary and other similar files.|
@@ -232,6 +234,7 @@ PhishStats|Determine if an IP Address is malicious|[https://phishstats.info/](ht
 PhishTank|Check if a host/domain is malicious according to PhishTank.|[https://phishtank.com/](https://phishtank.com/)
 Phone Number Extractor|Identify phone numbers in scraped webpages.|
 Port Scanner - TCP|Scans for commonly open TCP ports on Internet-facing systems.|
+ProjectDiscovery|Search for hosts/subdomains using chaos.projectdiscovery.io|[https://chaos.projectdiscovery.io](https://chaos.projectdiscovery.io)
 Psbdmp|Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.|[https://psbdmp.cc/](https://psbdmp.cc/)
 Pulsedive|Obtain information from Pulsedive's API.|[https://pulsedive.com/](https://pulsedive.com/)
 Quad9|Check if a host would be blocked by Quad9|[https://quad9.net/](https://quad9.net/)
@@ -291,6 +294,7 @@ Wikileaks|Search Wikileaks for mentions of domain names and e-mail addresses.|[h
 Wikipedia Edits|Identify edits to Wikipedia articles made from a given IP address or username.|[https://www.wikipedia.org/](https://www.wikipedia.org/)
 XForce Exchange|Obtain information from IBM X-Force Exchange|[https://exchange.xforce.ibmcloud.com/](https://exchange.xforce.ibmcloud.com/)
 Yandex DNS|Check if a host would be blocked by Yandex DNS|[https://yandex.com/](https://yandex.com/)
+Zetalytics|Query the Zetalytics database for hosts on your target domain(s).|[https://zetalytics.com/](https://zetalytics.com/)
 Zone-H Defacement Check|Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed.|[https://zone-h.org/](https://zone-h.org/)
 
 ### DOCUMENTATION
