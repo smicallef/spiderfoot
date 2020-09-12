@@ -1467,11 +1467,32 @@ class TestSpiderFoot(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        invalid_types = [None, "", list(), dict(), int()]
+        invalid_types = [None, list(), dict(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 res = sf.fetchUrl(invalid_type)
                 self.assertEqual(None, res)
+
+    def test_fetchUrl_argument_url_invalid_url_should_return_None(self):
+        """
+        Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
+                 useragent="SpiderFoot", headers=None, noLog=False,
+                 postData=None, dontMangle=False, sizeLimit=None,
+                 headOnly=False, verify=False)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        res = sf.fetchUrl("")
+        self.assertEqual(None, res)
+
+        res = sf.fetchUrl("://spiderfoot.net/")
+        self.assertEqual(None, res)
+
+        res = sf.fetchUrl("file:///etc/hosts")
+        self.assertEqual(None, res)
+
+        res = sf.fetchUrl("irc://spiderfoot.net:6697/")
+        self.assertEqual(None, res)
 
     def test_check_dns_wildcard_invalid_target_should_return_none(self):
         """
