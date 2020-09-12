@@ -252,9 +252,6 @@ class SpiderFootDb:
             init (bool): initialise the database schema.
                          if the database file does not exist this option will be ignored.
 
-        Returns:
-            None: success
-
         Raises:
             TypeError: arg type was invalid
             ValueError: arg value was invalid
@@ -329,9 +326,6 @@ class SpiderFootDb:
     def create(self):
         """Create the database schema.
 
-        Returns:
-            None: success
-
         Raises:
             IOError: database I/O failed
         """
@@ -348,11 +342,7 @@ class SpiderFootDb:
                 raise IOError(f"SQL error encountered when setting up database: {e.args[0]}")
 
     def close(self):
-        """Close the database handle
-
-        Returns:
-            None: success
-        """
+        """Close the database handle."""
 
         with self.dbhLock:
             self.dbh.close()
@@ -467,10 +457,8 @@ class SpiderFootDb:
             message (str): TBD
             component (str): TBD
 
-        Returns:
-            None: success
-
         Raises:
+            TypeError: arg type was invalid
             IOError: database I/O failed
 
         Todo:
@@ -515,9 +503,6 @@ class SpiderFootDb:
             scanName(str): scan name
             scanTarget (str): scan target
 
-        Returns:
-            None: success
-
         Raises:
             TypeError: arg type was invalid
             IOError: database I/O failed
@@ -553,9 +538,6 @@ class SpiderFootDb:
             started (str): scan start time
             ended (str): scan end time
             status (str): scan status
-
-        Returns:
-            None: success
 
         Raises:
             TypeError: arg type was invalid
@@ -854,9 +836,6 @@ class SpiderFootDb:
         Args:
             instanceId (str): scan instance ID
 
-        Returns:
-            None: success
-
         Raises:
             TypeError: arg type was invalid
             IOError: database I/O failed
@@ -926,9 +905,6 @@ class SpiderFootDb:
         Args:
             optMap (dict): config options
 
-        Returns:
-            None: success
-
         Raises:
             TypeError: arg type was invalid
             ValueError: arg value was invalid
@@ -993,9 +969,6 @@ class SpiderFootDb:
         """Reset the config to default.
         Clears the config from the database and lets the hard-coded settings in the code take effect.
 
-        Returns:
-            None: success
-
         Raises:
             IOError: database I/O failed
         """
@@ -1014,9 +987,6 @@ class SpiderFootDb:
         Args:
             id (int): scan instance ID
             optMap (dict): config options
-
-        Returns:
-            None: success
 
         Raises:
             TypeError: arg type was invalid
@@ -1094,9 +1064,6 @@ class SpiderFootDb:
             instanceId (str): scan instance ID
             sfEvent (SpiderFootEvent): event to be stored in the database
             truncateSize (int): truncate size for event data
-
-        Returns:
-            None: success
 
         Raises:
             TypeError: arg type was invalid
@@ -1224,6 +1191,9 @@ class SpiderFootDb:
 
     def scanResultHistory(self, instanceId):
         """History of data from the scan.
+
+        Args:
+            instanceId (str): scan instance ID
 
         Returns:
             list: scan data history
@@ -1361,7 +1331,7 @@ class SpiderFootDb:
 
         Raises:
             TypeError: arg type was invalid
-            IOError: database I/O failed
+            ValueError: arg value was invalid
         """
 
         if not isinstance(instanceId, str):
@@ -1432,7 +1402,6 @@ class SpiderFootDb:
 
         Raises:
             TypeError: arg type was invalid
-            IOError: database I/O failed
 
         Note: This function is not the same as the scanElementParent* functions.
               This function returns only ids.
