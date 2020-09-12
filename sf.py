@@ -39,12 +39,22 @@ console_handler = logging.StreamHandler(sys.stderr)
 console_handler.setFormatter(log_format)
 log.addHandler(console_handler)
 
-debug_handler = handlers.RotatingFileHandler("spiderfoot.debug.log", maxBytes=(1048576 * 5), backupCount=7)
+debug_handler = handlers.TimedRotatingFileHandler(
+    "log/spiderfoot.debug.log",
+    when="d",
+    interval=1,
+    backupCount=30
+)
 debug_handler.setLevel(logging.DEBUG)
 debug_handler.setFormatter(log_format)
 log.addHandler(debug_handler)
 
-error_handler = handlers.RotatingFileHandler("spiderfoot.error.log", maxBytes=(1048576 * 5), backupCount=7)
+error_handler = handlers.TimedRotatingFileHandler(
+    "log/spiderfoot.error.log",
+    when="d",
+    interval=1,
+    backupCount=30
+)
 error_handler.setLevel(logging.WARN)
 error_handler.setFormatter(log_format)
 log.addHandler(error_handler)
