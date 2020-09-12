@@ -105,7 +105,7 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
 
         scams = data.get("scams", [])
         if scams:
-            self.emit("MALICIOUS_BITCOIN_ADDRESS", f"Bitcoin Who's Who [{pevent.data}]")
+            self.emit("MALICIOUS_BITCOIN_ADDRESS", f"Bitcoin Who's Who [{pevent.data}]", pevent)
             return True
 
         return False
