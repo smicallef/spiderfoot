@@ -103,28 +103,28 @@ class TestSpiderFoot(unittest.TestCase):
         res = sf.refreshTorIdent()
         self.assertEqual(None, res)
 
-    def test_opt_value_to_data(self):
+    def test_optValueToData_should_return_data_as_string(self):
         """
-        Test optValueToData(self, val, fatal=True, splitLines=True)
+        Test optValueToData(self, val)
         """
         sf = SpiderFoot(self.default_options)
 
         test_string = "example string"
-        opt_data = sf.optValueToData(test_string, fatal=False, splitLines=True)
+        opt_data = sf.optValueToData(test_string)
         self.assertIsInstance(opt_data, str)
         self.assertEqual(test_string, opt_data)
 
-    def test_opt_value_to_data_invalid_opt_should_return_none(self):
+    def test_optValueToData_argument_val_invalid_type_should_return_None(self):
         """
-        Test optValueToData(self, val, fatal=True, splitLines=True)
+        Test optValueToData(self, val)
         """
         sf = SpiderFoot(self.default_options)
 
-        opt_data = sf.optValueToData(None, fatal=False, splitLines=True)
-        self.assertEqual(None, opt_data)
-
-        opt_data = sf.optValueToData([], fatal=False, splitLines=True)
-        self.assertEqual(None, opt_data)
+        invalid_types = [None, list(), int(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                opt_data = sf.optValueToData(invalid_type)
+                self.assertEqual(opt_data, None)
 
     def test_buildGraphData_should_return_a_set(self):
         """
