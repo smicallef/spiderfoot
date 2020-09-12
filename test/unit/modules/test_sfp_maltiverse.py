@@ -33,7 +33,6 @@ class TestModulemaltiverse(unittest.TestCase):
         '__logstdout': False
     }
 
-    @unittest.skip("todo")
     def test_opts(self):
         module = sfp_maltiverse()
         self.assertEqual(len(module.opts), len(module.optdescs))
