@@ -22,13 +22,11 @@ class SpiderFootDb:
     """SpiderFoot database
 
     Attributes:
-        sf (SpiderFoot): SpiderFoot object
         conn: SQLite connect() connection
         dbh: SQLite cursor() database handle
         dbhLock (_thread.RLock): thread lock on database handle
     """
 
-    sf = None
     dbh = None
     conn = None
 
@@ -250,7 +248,7 @@ class SpiderFootDb:
         Creates database schema if it does not exist.
 
         Args:
-            opts (dict): TBD
+            opts (dict): must specify the database file path in the '__database' key
             init (bool): initialise the database schema.
                          if the database file does not exist this option will be ignored.
 
@@ -270,9 +268,9 @@ class SpiderFootDb:
         if not opts.get('__database'):
             raise ValueError("opts['__database'] is empty")
 
-        self.sf = SpiderFoot(opts)
+        sf = SpiderFoot(opts)
 
-        database_path = f"{self.sf.dataPath()}/{opts['__database']}"
+        database_path = f"{sf.dataPath()}/{opts['__database']}"
 
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
@@ -504,7 +502,7 @@ class SpiderFootDb:
             except sqlite3.Error as e:
                 if "locked" in e.args[0] or "thread" in e.args[0]:
                     # print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
-                    # self.sf.fatal(f"Unable to log event in DB due to lock: {e.args[0]}")
+                    # log.critical(f"Unable to log event in DB due to lock: {e.args[0]}")
                     pass
                 else:
                     raise IOError(f"Unable to log scan event in DB: {e.args[0]}")
