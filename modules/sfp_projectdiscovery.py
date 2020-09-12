@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_projectdiscovery
-# Purpose:      Find hosts on domain using chaos.projectdiscovery.io
+# Purpose:      Search for hosts/subdomains using chaos.projectdiscovery.io
 #
 # Author:      Filip Aleksić <faleksicdev@gmail.com>
 #
@@ -17,11 +17,11 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 class sfp_projectdiscovery(SpiderFootPlugin):
     meta = {
-        "name": "ProjectDiscovery",
+        "name": "ProjectDiscovery Chaos",
         "summary": "Search for hosts/subdomains using chaos.projectdiscovery.io",
         "flags": ["apikey"],
         "useCases": ["Passive", "Footprint", "Investigate"],
-        "categories": ["Search Engines"],
+        "categories": ["Passive DNS"],
         "dataSource": {
             "website": "https://chaos.projectdiscovery.io",
             "model": "PRIVATE_ONLY",
