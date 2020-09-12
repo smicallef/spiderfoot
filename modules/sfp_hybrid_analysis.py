@@ -63,9 +63,6 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        """
-        Initialize module and module options
-        """
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -74,21 +71,19 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        """
-        What events is this module interested in for input
-        """
         return ["IP_ADDRESS", "DOMAIN_NAME"]
 
     def producedEvents(self):
-        """
-        What events this module produces
-        """
         return ["RAW_RIR_DATA", "INTERNET_NAME", "DOMAIN_NAME", "LINKED_URL_INTERNAL"]
 
     def queryDomain(self, qry):
-        """
-        Query domain
-        https://www.hybrid-analysis.com/docs/api/v2
+        """Query a domain
+
+        Args:
+            qry (str): domain
+
+        Returns:
+            str: API response as JSON
         """
 
         params = {
@@ -111,9 +106,13 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     def queryHost(self, qry):
-        """
-        Query host
-        https://www.hybrid-analysis.com/docs/api/v2
+        """Query a host
+
+        Args:
+            qry (str): host
+
+        Returns:
+            str: API response as JSON
         """
 
         params = {
@@ -136,9 +135,13 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     def queryHash(self, qry):
-        """
-        Query hash
-        https://www.hybrid-analysis.com/docs/api/v2
+        """Query a hash
+
+        Args:
+            qry (str): hash
+
+        Returns:
+            str: API response as JSON
         """
 
         params = {
@@ -161,8 +164,13 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     def parseAPIResponse(self, res):
-        """
-        Parse API response
+        """Parse HTTP response from API
+
+        Args:
+            res (dict): HTTP response from SpiderFoot.fetchUrl()
+
+        Returns:
+            str: API response as JSON
         """
 
         if res['code'] == '400':
@@ -194,10 +202,6 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         return data
 
     def handleEvent(self, event):
-        """
-        Handle events sent to this module
-        """
-
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data

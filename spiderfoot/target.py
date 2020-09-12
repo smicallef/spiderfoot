@@ -24,11 +24,6 @@ class SpiderFootTarget():
         Args:
             targetValue (str): target value
             typeName (str): target type
-
-        Raises:
-            TypeError: targetValue type was invalid
-            ValueError: targetValue value was empty
-            ValueError: typeName value was an invalid target type
         """
 
         self.targetType = typeName
@@ -105,6 +100,9 @@ class SpiderFootTarget():
 
     def _getEquivalents(self, typeName):
         """TBD
+
+        Args:
+            typeName (str): event type
 
         Returns:
             list: target aliases

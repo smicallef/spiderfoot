@@ -54,7 +54,11 @@ class SpiderFootPlugin():
 
     def _updateSocket(self, socksProxy):
         """Hack to override module's use of socket, replacing it with
-        one that uses the supplied SOCKS server."""
+        one that uses the supplied SOCKS server.
+
+        Args:
+            socksProxy (str): SOCKS proxy
+        """
         self.socksProxy = socksProxy
 
     def clearListeners(self):
@@ -65,12 +69,22 @@ class SpiderFootPlugin():
         self._stopScanning = False
 
     def setup(self, sf, userOpts={}):
-        """Will always be overriden by the implementer."""
+        """Will always be overriden by the implementer.
+
+        Args:
+            sf (SpiderFoot): SpiderFoot object
+            userOpts (dict): TBD
+        """
         pass
 
     def enrichTarget(self, target):
-        """Rarely used, only in special cases where a module can find
-        aliases for a target."""
+        """Find aliases for a target.
+
+        Note: rarely used in special cases
+
+        Args:
+            target (str): TBD
+        """
         pass
 
     def setTarget(self, target):
@@ -78,6 +92,9 @@ class SpiderFootPlugin():
 
         Args:
             target (SpiderFootTarget): target
+
+        Raises:
+            TypeError: target argument was invalid type
         """
         from spiderfoot import SpiderFootTarget
 
@@ -99,7 +116,10 @@ class SpiderFootPlugin():
         """Set the scan ID.
 
         Args:
-            id (str): scan ID
+            scanId (str): scan instance ID
+
+        Raises:
+            TypeError: scanId argument was invalid type
         """
         if not isinstance(scanId, str):
             raise TypeError(f"scanId is {type(scanId)}; expected str")
@@ -111,6 +131,9 @@ class SpiderFootPlugin():
 
         Returns:
             str: scan ID
+
+        Raises:
+            TypeError: Module called getScanId() but no scanId is set.
         """
         if not self.__scanId__:
             raise TypeError("Module called getScanId() but no scanId is set.")
@@ -118,7 +141,14 @@ class SpiderFootPlugin():
         return self.__scanId__
 
     def getTarget(self):
-        """Gets the current target this module is acting against."""
+        """Gets the current target this module is acting against.
+
+        Returns:
+            str: current target
+
+        Raises:
+            TypeError: Module called getTarget() but no target is set.
+        """
         if not self._currentTarget:
             raise TypeError("Module called getTarget() but no target is set.")
 
@@ -160,6 +190,12 @@ class SpiderFootPlugin():
 
         Args:
             sfEvent (SpiderFootEvent): event
+
+        Returns:
+            None
+
+        Raises:
+            TypeError: sfEvent argument was invalid type
         """
         from spiderfoot import SpiderFootEvent
 

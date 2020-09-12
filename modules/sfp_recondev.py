@@ -66,7 +66,14 @@ class sfp_recondev(SpiderFootPlugin):
         return ["RAW_RIR_DATA", "INTERNET_NAME"]
 
     def queryDomain(self, qry):
-        """https://recon.dev/api/docs"""
+        """Query a domain
+
+        Args:
+            qry (str): domain
+
+        Returns:
+            str: API response as JSON
+        """
 
         headers = {
             "Accept": "application/json"

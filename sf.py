@@ -422,7 +422,12 @@ def start_scan(sfConfig, sfModules, args):
 
 
 def start_web_server(sfWebUiConfig, sfConfig):
-    """Start the web server so you can start looking at results"""
+    """Start the web server so you can start looking at results
+
+    Args:
+        sfWebUiConfig (dict): web server options
+        sfConfig (dict): SpiderFoot config options
+    """
 
     web_host = sfWebUiConfig.get('host', '127.0.0.1')
     web_port = sfWebUiConfig.get('port', 5001)
@@ -531,7 +536,12 @@ def start_web_server(sfWebUiConfig, sfConfig):
 
 
 def handle_abort(signal, frame):
-    """Handle interrupt and abort scan."""
+    """Handle interrupt and abort scan.
+
+    Args:
+        signal: TBD
+        frame: TBD
+    """
     global dbh
     global scanId
 

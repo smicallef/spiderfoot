@@ -46,10 +46,6 @@ class SpiderFootEvent():
             confidence (int): how sure are we of this data's validity, 0-100
             visibility (int): how 'visible' was this data, 0-100
             risk (int): how much risk does this data represent, 0-100
-
-        Raises:
-            TypeError: arg type was invalid
-            ValueError: arg value was invalid
         """
 
         self._generated = time.time()
@@ -116,12 +112,10 @@ class SpiderFootEvent():
 
     @property
     def actualSource(self):
-        """actual source"""
         return self._actualSource
 
     @property
     def moduleDataSource(self):
-        """module data source"""
         return self._moduleDataSource
 
     @property
@@ -216,6 +210,9 @@ class SpiderFootEvent():
     @module.setter
     def module(self, module):
         """
+        Args:
+            module (str): module
+
         Raises:
             TypeError: module type was invalid
             ValueError: module value was invalid
@@ -232,7 +229,11 @@ class SpiderFootEvent():
 
     @data.setter
     def data(self, data):
-        """
+        """Event data
+
+        Args:
+            data (str): data
+
         Raises:
             TypeError: data type was invalid
             ValueError: data value was invalid
@@ -248,7 +249,11 @@ class SpiderFootEvent():
 
     @sourceEvent.setter
     def sourceEvent(self, sourceEvent):
-        """
+        """source event
+
+        Args:
+            sourceEvent (SpiderFootEvent): source event
+
         Raises:
             TypeError: sourceEvent type was invalid
         """
@@ -295,7 +300,13 @@ class SpiderFootEvent():
         return evtDict
 
     def getHash(self):
-        """Required for SpiderFoot HX compatibility of modules"""
+        """Event hash
+
+        Note: required for SpiderFoot HX compatibility of modules.
+
+        Returns:
+            str: event hash
+        """
         return self.hash
 
 # end of SpiderFootEvent class

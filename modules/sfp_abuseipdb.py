@@ -142,6 +142,7 @@ class sfp_abuseipdb(SpiderFootPlugin):
 
     def parseBlacklist(self, blacklist):
         """Parse plaintext blacklist
+
         Args:
             blacklist (str): plaintext blacklist from AbuseIPDB
 
