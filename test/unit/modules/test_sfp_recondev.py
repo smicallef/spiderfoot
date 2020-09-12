@@ -54,7 +54,7 @@ class TestModulerecondev(unittest.TestCase):
         module = sfp_recondev()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent(self):
+    def test_handleEvent_no_api_key_should_set_errorState(self):
         """
         Test handleEvent(self, event)
         """
@@ -77,3 +77,4 @@ class TestModulerecondev(unittest.TestCase):
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)
+        self.assertTrue(module.errorState)

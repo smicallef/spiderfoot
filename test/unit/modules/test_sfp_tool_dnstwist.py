@@ -54,7 +54,7 @@ class TestModuletool_dnstwist(unittest.TestCase):
         module = sfp_tool_dnstwist()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent(self):
+    def test_handleEvent_no_tool_path_configured_should_set_errorState(self):
         """
         Test handleEvent(self, event)
         """
@@ -77,3 +77,4 @@ class TestModuletool_dnstwist(unittest.TestCase):
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)
+        self.assertTrue(module.errorState)
