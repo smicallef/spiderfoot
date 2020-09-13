@@ -188,12 +188,10 @@ class SpiderFootScanner():
 
     @property
     def scanId(self):
-        """Unique identifier for this scan"""
         return self.__scanId
 
     @property
     def status(self):
-        """Status of this scan"""
         return self.__status
 
     def __setStatus(self, status, started=None, ended=None):
@@ -203,9 +201,6 @@ class SpiderFootScanner():
             status (str): scan status
             started (float): timestamp at start of scan
             ended (float): timestamp at end of scan
-
-        Returns:
-            None
 
         Raises:
             TypeError: arg type was invalid

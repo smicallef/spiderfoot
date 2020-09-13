@@ -33,7 +33,6 @@ class TestModulecensys(unittest.TestCase):
         '__logstdout': False
     }
 
-    @unittest.skip("todo")
     def test_opts(self):
         module = sfp_censys()
         self.assertEqual(len(module.opts), len(module.optdescs))

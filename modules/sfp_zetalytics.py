@@ -20,7 +20,7 @@ class sfp_zetalytics(SpiderFootPlugin):
     BASE_URL = "https://zonecruncher.com/api/v1"
     meta = {
         "name": "Zetalytics",
-        "summary": "Query Zetalytics database",
+        "summary": "Query the Zetalytics database for hosts on your target domain(s).",
         "flags": ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Passive DNS"],

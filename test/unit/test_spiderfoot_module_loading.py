@@ -33,9 +33,6 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
     }
 
     def test_module_loading(self):
-        """
-        Test module loading
-        """
         sf = SpiderFoot(self.default_options)
 
         # Go through each module in the modules directory with a .py extension

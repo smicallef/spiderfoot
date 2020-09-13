@@ -17,11 +17,9 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_bitcoinabuse(SpiderFootPlugin):
-    # The module descriptor dictionary contains all the meta data about a module necessary
-    # for users to understand...
     meta = {
         "name": "BitcoinAbuse",
-        "summary": "Check bitcoin address against bitcoinabuse.com database",
+        "summary": "Check Bitcoin addresses against the bitcoinabuse.com database of suspect/malicious addresses.",
         "flags": ["apikey"],
         "useCases": ["Passive", "Investigate"],
         "categories": ["Reputation Systems"],
@@ -32,9 +30,9 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
             "apiKeyInstructions": [
                 "Visit https://www.bitcoinabuse.com/register",
                 "Register a free account",
-                "Click on account icon and click on 'Your Settings'",
+                "Click on the account icon and click on 'Your Settings'",
                 "Click on 'API'",
-                "Enter token name and press 'Create'",
+                "Enter a token name and press 'Create'",
             ],
             "favIcon": "https://www.bitcoinabuse.com/favicon-32x32.png",
             "logo": "https://www.bitcoinabuse.com/img/logo-sm.png",
@@ -123,7 +121,7 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
                 if isinstance(count, int):
                     if count > 0:
                         evt = SpiderFootEvent(
-                            "MALICIOUS_BITCOIN_ADDRESS", f"BitcoinAbuse[{rec['address']}]", self.__name__, event
+                            "MALICIOUS_BITCOIN_ADDRESS", f"BitcoinAbuse [{rec['address']}]", self.__name__, event
                         )
                         self.notifyListeners(evt)
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_projectdiscovery
-# Purpose:      Find hosts on domain using chaos.projectdiscovery.io
+# Purpose:      Search for hosts/subdomains using chaos.projectdiscovery.io
 #
 # Author:      Filip Aleksić <faleksicdev@gmail.com>
 #
@@ -12,14 +12,13 @@
 
 import json
 
-
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_projectdiscovery(SpiderFootPlugin):
     meta = {
-        "name": "ProjectDiscovery",
-        "summary": "This module finds hosts on domain using chaos.projectdiscovery.io",
+        "name": "ProjectDiscovery Chaos",
+        "summary": "Search for hosts/subdomains using chaos.projectdiscovery.io",
         "flags": ["apikey"],
         "useCases": ["Passive", "Footprint", "Investigate"],
         "categories": ["Passive DNS"],
@@ -33,8 +32,8 @@ class sfp_projectdiscovery(SpiderFootPlugin):
             ],
             "apiKeyInstructions": [
                 "Visit https://chaos.projectdiscovery.io/#/",
-                "Press button request access",
-                "Press 'Early signup form' link or go to https://forms.gle/GP5nTamxJPfiMaBn9",
+                "Click the request access button",
+                "Click the 'Early signup form' link or go to https://forms.gle/GP5nTamxJPfiMaBn9",
                 "Click on 'Developer'",
                 "The API key is listed under 'Your API Key'",
                 "You will receive your API key by email.",

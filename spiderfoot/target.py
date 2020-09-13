@@ -12,7 +12,8 @@ class SpiderFootTarget():
     """
 
     _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
-                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME"]
+                   "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME",
+                   "BITCOIN_ADDRESS"]
     _targetType = None
     _targetValue = None
     _targetAliases = list()
@@ -23,11 +24,6 @@ class SpiderFootTarget():
         Args:
             targetValue (str): target value
             typeName (str): target type
-
-        Raises:
-            TypeError: targetValue type was invalid
-            ValueError: targetValue value was empty
-            ValueError: typeName value was an invalid target type
         """
 
         self.targetType = typeName
@@ -105,6 +101,9 @@ class SpiderFootTarget():
     def _getEquivalents(self, typeName):
         """TBD
 
+        Args:
+            typeName (str): event type
+
         Returns:
             list: target aliases
         """
@@ -180,17 +179,15 @@ class SpiderFootTarget():
         if not isinstance(value, str) and not isinstance(value, bytes):
             return False
 
-        value = value.lower()
-
         if isinstance(value, bytes):
             value = value.decode("utf-8")
 
         if not value:
             return False
 
-        # We can't really say anything about names, username or phone numbers,
-        # so everything matches
-        if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME"]:
+        # We can't really say anything about names, username, bitcoin addresses
+        # or phone numbers, so everything matches
+        if self.targetType in ["HUMAN_NAME", "PHONE_NUMBER", "USERNAME", "BITCOIN_ADDRESS"]:
             return True
 
         # TODO: review handling of other potential self.targetType target types:
