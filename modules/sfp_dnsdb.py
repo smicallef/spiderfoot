@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:        sfp_dnsdb
-# Purpose:     SpiderFoot plug-in that resolves and get history of domains and IPs
+# Purpose:     SpiderFoot plug-in that resolves and gets history of domains and IPs
 #
 # Author:      Filip Aleksić <faleksicdev@gmail.com>
 #
@@ -19,7 +19,7 @@ import time
 class sfp_dnsdb(SpiderFootPlugin):
     meta = {
         "name": "DNSDB",
-        "summary": "Resolve and get history of domain and APIs",
+        "summary": "Resolve and get history of some domain and IP",
         "flags": ["apikey"],
         "useCases": ["Passive", "Footprint", "Investigate"],
         "categories": ["Passive DNS"],
