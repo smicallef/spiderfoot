@@ -19,7 +19,7 @@ import time
 class sfp_dnsdb(SpiderFootPlugin):
     meta = {
         "name": "DNSDB",
-        "summary": "Resolve and get history of some domain and IP",
+        "summary": "Query FarSight's DNSDB for historical and passive DNS data.",
         "flags": ["apikey"],
         "useCases": ["Passive", "Footprint", "Investigate"],
         "categories": ["Passive DNS"],
@@ -123,12 +123,15 @@ class sfp_dnsdb(SpiderFootPlugin):
         if len(splittedContent) == 2:
             self.sf.info(f"No DNSDB record found for {query}")
             return None
+        elif len(splittedContent) < 2:
+            self.sf.info(f"Unexpected DNSDB response {query}")
+            return None
 
         try:
             records = []
             for content in splittedContent:
                 records.append(json.loads(content))
-        except Exception as e:
+        except json.JSONDecodeError as e:
             self.sf.error(f"Error processing JSON response from DNSDB: {e}", False)
             return None
 
@@ -175,12 +178,14 @@ class sfp_dnsdb(SpiderFootPlugin):
             if rrsetRecords is None:
                 return None
 
+            self.emit("RAW_RIR_DATA", str(rrsetRecords), event)
+
             for record in rrsetRecords:
                 record = record.get("obj")
                 if self.checkForStop():
                     return None
 
-                if self.isTooOld(record.get("time_last")):
+                if self.isTooOld(record.get("time_last", 0)):
                     continue
 
                 if record.get("rrtype") not in (
@@ -193,7 +198,6 @@ class sfp_dnsdb(SpiderFootPlugin):
                 ):
                     continue
 
-                self.emit("RAW_RIR_DATA", str(record), event)
                 for data in record.get("rdata"):
                     data = data.rstrip(".")
                     if data in responseData:
@@ -254,11 +258,14 @@ class sfp_dnsdb(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
             rdataRecords = self.query("rdata", "name", eventData)
+
             if rdataRecords is None:
                 return None
+
+            self.emit("RAW_RIR_DATA", str(rdataRecords), event)
             for record in rdataRecords:
                 record = record.get("obj")
-                if self.isTooOld(record.time_last):
+                if self.isTooOld(record.get("time_last", 0)):
                     continue
 
                 if record.get("rrtype") not in ("NS", "CNAME"):
@@ -279,12 +286,13 @@ class sfp_dnsdb(SpiderFootPlugin):
             if rdataRecords is None:
                 return None
 
+            self.emit("RAW_RIR_DATA", str(rdataRecords), event)
             for record in rdataRecords:
                 record = record.get("obj")
                 if self.checkForStop():
                     return None
 
-                if self.isTooOld(record.get("time_last")):
+                if self.isTooOld(record.get("time_last", 0)):
                     continue
 
                 if record.get("rrtype") not in ("A", "AAAA"):
@@ -296,17 +304,11 @@ class sfp_dnsdb(SpiderFootPlugin):
                     continue
                 responseData.add(data)
 
-                self.emit("RAW_RIR_DATA", str(record), event)
-
                 if self.opts["verify"] and not self.sf.resolveHost(data):
                     self.sf.debug(f"Host {data} could not be resolved")
-                    evt = SpiderFootEvent(
-                        "INTERNET_NAME_UNRESOLVED", data, self.__name__, event
-                    )
-                    self.notifyListeners(evt)
+                    self.emit("INTERNET_NAME_UNRESOLVED", data, event)
                 else:
-                    evt = SpiderFootEvent("INTERNET_NAME", data, self.__name__, event)
-                    self.notifyListeners(evt)
+                    self.emit("INTERNET_NAME", data, event)
 
                 if not self.getTarget().matches(data):
                     coHosts.add(data)
@@ -326,7 +328,7 @@ class sfp_dnsdb(SpiderFootPlugin):
                     continue
 
             if self.cohostcount < self.opts["maxcohost"]:
-                self.emit("CO_HOSTED_SITE", co, self.__name__, event)
+                self.emit("CO_HOSTED_SITE", co, event)
                 self.cohostcount += 1
 
 
