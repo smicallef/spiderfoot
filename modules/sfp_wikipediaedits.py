@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------------------
 # Name:        sfp_wikipediaedits
 # Purpose:     Identify edits to Wikipedia articles made from a given IP address
-#             or username.
+#              or username.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -44,18 +44,13 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         "days_limit": "365"
     }
 
-    # Option descriptions
     optdescs = {
         "days_limit": "Maximum age of data to be considered valid (0 = unlimited)."
     }
-
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
 
     results = None
 
@@ -64,25 +59,20 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.__dataSource__ = "Wikipedia"
 
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
-
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ["IP_ADDRESS", "USERNAME"]
 
-    # What events this module produces
     def producedEvents(self):
         return ["WIKIPEDIA_PAGE_EDIT"]
 
     def query(self, qry):
-        params = {
+        params = urllib.parse.urlencode({
             "action": "feedcontributions",
             "user": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
-        }
+        })
 
         if self.opts['days_limit'] != "0":
             dt = datetime.datetime.now() - datetime.timedelta(days=int(self.opts['days_limit']))
@@ -90,12 +80,13 @@ class sfp_wikipediaedits(SpiderFootPlugin):
             params["month"] = dt.strftime("%m")
 
         res = self.sf.fetchUrl(
-            "https://en.wikipedia.org/w/api.php?%s" % urllib.parse.urlencode(params),
+            f"https://en.wikipedia.org/w/api.php?{params}",
             timeout=self.opts['_fetchtimeout'],
             useragent="SpiderFoot"
         )
 
         if res['code'] in ["404", "403", "500"]:
+            self.sf.debug(f"Unexpected response code {res['code']} from Wikipedia")
             return None
 
         if not res['content']:
@@ -114,11 +105,10 @@ class sfp_wikipediaedits(SpiderFootPlugin):
                     d = parser.unescape(m)
                     links.append(d)
             return set(links)
-        except BaseException as e:
-            self.sf.error("Error processing response from Wikipedia: %s" % e, False)
+        except Exception as e:
+            self.sf.error(f"Error processing response from Wikipedia: {e}")
             return None
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -126,7 +116,6 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
@@ -136,6 +125,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         data = self.query(eventData)
 
         if data is None:
+            self.sf.debug(f"No results from Wikipedia for {eventData}")
             return None
 
         for link in data:
