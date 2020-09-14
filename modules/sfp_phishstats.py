@@ -112,7 +112,7 @@ class sfp_phishstats(SpiderFootPlugin):
 
         try:
             return json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.error(f"Error processing JSON response: {e}", False)
             return None
 
@@ -177,7 +177,7 @@ class sfp_phishstats(SpiderFootPlugin):
 
             try:
                 maliciousIP = data[0].get('ip')
-            except BaseException:
+            except Exception:
                 # If ArrayIndex is out of bounds then data doesn't exist
                 continue
 

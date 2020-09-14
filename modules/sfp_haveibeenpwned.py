@@ -144,7 +144,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                     site = n["Title"]
                 else:
                     site = n["Name"]
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
                 continue
 

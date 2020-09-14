@@ -133,10 +133,10 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
                     evt = SpiderFootEvent("SIMILARDOMAIN", r['domain-name'],
                                           self.__name__, event)
                     self.notifyListeners(evt)
-            except BaseException as e:
+            except Exception as e:
                 self.sf.error("Couldn't parse the JSON output of DNSTwist: " + str(e), False)
                 return None
-        except BaseException as e:
+        except Exception as e:
             self.sf.error("Unable to run DNSTwist: " + str(e), False)
             return None
 

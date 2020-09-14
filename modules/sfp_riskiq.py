@@ -142,7 +142,7 @@ class sfp_riskiq(SpiderFootPlugin):
             if 'results' not in ret:
                 self.sf.info("No RiskIQ info found for " + qry)
                 return None
-        except BaseException as e:
+        except Exception as e:
             self.sf.error(f"Invalid JSON returned by RiskIQ: {e}", False)
             return None
 
@@ -197,7 +197,7 @@ class sfp_riskiq(SpiderFootPlugin):
                                 e = SpiderFootEvent("DOMAIN_NAME", res['subjectCommonName'],
                                                     self.__name__, event)
                                 self.notifyListeners(e)
-                except BaseException as e:
+                except Exception as e:
                     self.sf.error("Invalid response returned from RiskIQ: " + str(e), False)
 
         if eventName == 'EMAILADDR':

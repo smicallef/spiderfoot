@@ -72,7 +72,7 @@ class sfp_venmo(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 

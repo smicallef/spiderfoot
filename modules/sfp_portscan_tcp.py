@@ -105,7 +105,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             sock = self.sf.safeSocket(ip, port, self.opts['timeout'])
             with self.lock:
                 self.portResults[peer] = True
-        except BaseException:
+        except Exception:
             with self.lock:
                 self.portResults[peer] = False
             return
@@ -193,7 +193,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                     scanIps.append(ipaddr)
             else:
                 scanIps.append(eventData)
-        except BaseException as e:
+        except Exception as e:
             self.sf.error("Strange netblock identified, unable to parse: "
                           + eventData + " (" + str(e) + ")", False)
             return None

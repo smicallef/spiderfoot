@@ -230,7 +230,7 @@ class sfp_pulsedive(SpiderFootPlugin):
                     if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
                         self.sf.debug("Record found but too old, skipping.")
                         continue
-                except BaseException:
+                except Exception:
                     self.sf.debug("Couldn't parse date from Pulsedive so assuming it's OK.")
                 e = SpiderFootEvent(evtType, descr, self.__name__, event)
                 self.notifyListeners(e)

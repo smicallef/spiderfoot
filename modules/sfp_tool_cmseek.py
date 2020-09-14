@@ -134,10 +134,10 @@ class sfp_tool_cmseek(SpiderFootPlugin):
                 evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", j['cms_name'],
                                       self.__name__, event)
                 self.notifyListeners(evt)
-            except BaseException as e:
+            except Exception as e:
                 self.sf.error("Couldn't parse the JSON output of CMSeeK: " + str(e), False)
                 return None
-        except BaseException as e:
+        except Exception as e:
             self.sf.error("Unable to run CMSeeK: " + str(e), False)
             return None
 

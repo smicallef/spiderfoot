@@ -101,7 +101,7 @@ class sfp_github(SpiderFootPlugin):
             try:
                 network = eventData.split(": ")[0]
                 url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
-            except BaseException as e:
+            except Exception as e:
                 self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})", False)
                 return None
 
@@ -112,7 +112,7 @@ class sfp_github(SpiderFootPlugin):
             try:
                 urlParts = url.split("/")
                 username = urlParts[len(urlParts) - 1]
-            except BaseException:
+            except Exception:
                 self.sf.debug(f"Couldn't get a username out of {url}")
                 return None
 
@@ -127,7 +127,7 @@ class sfp_github(SpiderFootPlugin):
 
             try:
                 json_data = json.loads(res['content'])
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug(f"Error processing JSON response: {e}")
                 return None
 
@@ -185,7 +185,7 @@ class sfp_github(SpiderFootPlugin):
         if not failed:
             try:
                 ret = json.loads(res['content'])
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug(f"Error processing JSON response from GitHub: {e}")
                 ret = None
 
@@ -227,7 +227,7 @@ class sfp_github(SpiderFootPlugin):
                 if ret is None:
                     self.sf.error(f"Unable to process empty response from Github for: {username}", False)
                     failed = True
-            except BaseException:
+            except Exception:
                 self.sf.error(f"Unable to process invalid response from Github for: {username}", False)
                 failed = True
 
@@ -253,7 +253,7 @@ class sfp_github(SpiderFootPlugin):
 
                 try:
                     repret = json.loads(res['content'])
-                except BaseException as e:
+                except Exception as e:
                     self.sf.error(f"Invalid JSON returned from Github: {e}", False)
                     continue
 

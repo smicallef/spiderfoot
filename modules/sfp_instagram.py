@@ -66,7 +66,7 @@ class sfp_instagram(SpiderFootPlugin):
 
         try:
             data = json.loads(json_data[0])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
@@ -88,7 +88,7 @@ class sfp_instagram(SpiderFootPlugin):
         try:
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
-        except BaseException as e:
+        except Exception as e:
             self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})", False)
             return None
 

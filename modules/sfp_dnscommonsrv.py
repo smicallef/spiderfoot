@@ -132,7 +132,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
             try:
                 answers = res.query(name, 'SRV')
-            except BaseException:
+            except Exception:
                 answers = []
 
             for a in answers:

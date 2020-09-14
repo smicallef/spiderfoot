@@ -230,7 +230,7 @@ class sfp_intelx(SpiderFootPlugin):
                     if not val or not evt:
                         self.sf.debug(f"Unexpected record, skipping ({rec['bucket']})")
                         continue
-                except BaseException as e:
+                except Exception as e:
                     self.sf.error(f"Error processing content from IntelX: {e}", False)
                     continue
 
@@ -265,7 +265,7 @@ class sfp_intelx(SpiderFootPlugin):
                     if not val or not evt:
                         self.sf.debug("Unexpected record, skipping.")
                         continue
-                except BaseException as e:
+                except Exception as e:
                     self.sf.error(f"Error processing content from IntelX: {e}", False)
                     continue
 

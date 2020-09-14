@@ -99,7 +99,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             if addrs:
                 with self.lock:
                     self.hostResults[name] = True
-        except BaseException:
+        except Exception:
             with self.lock:
                 self.hostResults[name] = False
 

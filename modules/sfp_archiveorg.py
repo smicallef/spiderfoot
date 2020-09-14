@@ -149,7 +149,7 @@ class sfp_archiveorg(SpiderFootPlugin):
 
             try:
                 ret = json.loads(res['content'])
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug(f"Error processing JSON response from Archive.org: {e}")
                 ret = None
 
