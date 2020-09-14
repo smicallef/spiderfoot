@@ -71,11 +71,17 @@ class sfp_zetalytics(SpiderFootPlugin):
         return evt
 
     def verify_emit_internet_name(self, hostname, pevent):
+        if f"INTERNET_NAME:{hostname}" in self.results:
+            return
+        if not self.getTarget().matches(hostname):
+            return
         if self.opts["verify"] and not self.sf.resolveHost(hostname):
             self.sf.debug(f"Host {hostname} could not be resolved")
             self.emit("INTERNET_NAME_UNRESOLVED", hostname, pevent)
         else:
             self.emit("INTERNET_NAME", hostname, pevent)
+            if self.sf.isDomain(hostname, self.opts['_internettlds']):
+                self.emit("DOMAIN_NAME", hostname, pevent)
 
     def request(self, path, params):
         params = {**params, "token": self.opts["api_key"]}
