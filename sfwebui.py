@@ -461,7 +461,7 @@ class SpiderFootWebUi:
             p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True
             p.start()
-        except BaseException as e:
+        except Exception as e:
             self.log.error(f"[-] Scan [{scanId}] failed: {e}")
             return self.error(f"[-] Scan [{scanId}] failed: {e}")
 
@@ -515,7 +515,7 @@ class SpiderFootWebUi:
                 p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
                 p.daemon = True
                 p.start()
-            except BaseException as e:
+            except Exception as e:
                 self.log.error(f"[-] Scan [{scanId}] failed: {e}")
                 return self.error(f"[-] Scan [{scanId}] failed: {e}")
 
@@ -822,7 +822,7 @@ class SpiderFootWebUi:
                         tmp[opt_array[0]] = '='.join(opt_array[1:])
 
                     allopts = json.dumps(tmp).encode('utf-8')
-                except BaseException as e:
+                except Exception as e:
                     return self.error("Failed to parse input file. Was it generated from SpiderFoot? (%s)" % e)
 
         # Reset config to default
@@ -1051,7 +1051,7 @@ class SpiderFootWebUi:
             data = ret.fetchall()
             columnNames = [c[0] for c in dbh.dbh.description]
             data = [dict(zip(columnNames, row)) for row in data]
-        except BaseException as e:
+        except Exception as e:
             return json.dumps(["ERROR", str(e)]).encode('utf-8')
 
         return json.dumps(data).encode('utf-8')
@@ -1158,7 +1158,7 @@ class SpiderFootWebUi:
             p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True
             p.start()
-        except BaseException as e:
+        except Exception as e:
             self.log.error(f"[-] Scan [{scanId}] failed: {e}")
             return self.error(f"[-] Scan [{scanId}] failed: {e}")
 
