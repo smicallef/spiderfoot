@@ -428,7 +428,7 @@ def start_scan(sfConfig, sfModules, args):
                 print("]")
             sys.exit(0)
 
-    return None
+    return
 
 
 def start_web_server(sfWebUiConfig, sfConfig):

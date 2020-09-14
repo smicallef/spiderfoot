@@ -191,9 +191,6 @@ class SpiderFootPlugin():
         Args:
             sfEvent (SpiderFootEvent): event
 
-        Returns:
-            None
-
         Raises:
             TypeError: sfEvent argument was invalid type
         """
@@ -210,15 +207,15 @@ class SpiderFootPlugin():
             # the ROOT event or the event type of the target.
             if eventName not in ('ROOT', self.getTarget().targetType):
                 if eventName not in self.__outputFilter__:
-                    return None
+                    return
 
         storeOnly = False  # Under some conditions, only store and don't notify
 
         if not eventData:
-            return None
+            return
 
         if self.checkForStop():
-            return None
+            return
 
         # Look back to ensure the original notification for an element
         # is what's linked to children. For instance, sfp_dns may find
@@ -256,7 +253,7 @@ class SpiderFootPlugin():
             # Check if we've been asked to stop in the meantime, so that
             # notifications stop triggering module activity.
             if self.checkForStop():
-                return None
+                return
 
             try:
                 listener.handleEvent(sfEvent)
@@ -312,22 +309,16 @@ class SpiderFootPlugin():
 
         Args:
             sfEvent (SpiderFootEvent): event
-
-        Returns:
-            None
         """
 
-        return None
+        return
 
     def start(self):
         """Kick off the work (for some modules nothing will happen here, but instead
         the work will start from the handleEvent() method.
         Will usually be overriden by the implementer.
-
-        Returns:
-            None
         """
 
-        return None
+        return
 
 # end of SpiderFootPlugin class

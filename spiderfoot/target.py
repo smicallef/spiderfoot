@@ -76,27 +76,22 @@ class SpiderFootTarget():
         Args:
             value (str): TBD
             typeName (str): TBD
-
-        Returns:
-            None
         """
         if not isinstance(value, (str, bytes)):
-            return None
+            return
 
         if not value:
-            return None
+            return
 
         if not isinstance(typeName, (str, bytes)):
-            return None
+            return
 
         if {'type': typeName, 'value': value} in self.targetAliases:
-            return None
+            return
 
         self.targetAliases.append(
             {'type': typeName, 'value': value.lower()}
         )
-
-        return None
 
     def _getEquivalents(self, typeName):
         """TBD

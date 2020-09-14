@@ -148,14 +148,10 @@ class SpiderFoot:
         self._socksProxy = socksProxy
 
     def refreshTorIdent(self):
-        """Tell TOR to re-circuit.
-
-        Returns:
-            None: success
-        """
+        """Tell TOR to re-circuit."""
 
         if self.opts['_socks1type'] != "TOR":
-            return None
+            return
 
         try:
             self.info("Re-circuiting TOR...")
@@ -167,7 +163,7 @@ class SpiderFoot:
         except BaseException as e:
             self.fatal(f"Unable to re-circuit TOR: {e}")
 
-        return None
+        return
 
     def optValueToData(self, val):
         """Supplied an option value, return the data based on what the
@@ -430,13 +426,10 @@ class SpiderFoot:
         Args:
             message (str): error message
             exception (bool): also raise an exception
-
-        Returns:
-            None
         """
 
         if not self.opts['__logging']:
-            return None
+            return
 
         if self.dbh:
             self._dblog("ERROR", message)
@@ -464,13 +457,10 @@ class SpiderFoot:
 
         Args:
             message (str): status message
-
-        Returns:
-            None
         """
 
         if not self.opts['__logging']:
-            return None
+            return
 
         if self.dbh:
             self._dblog("STATUS", message)
@@ -482,13 +472,10 @@ class SpiderFoot:
 
         Args:
             message (str): info message
-
-        Returns:
-            None
         """
 
         if not self.opts['__logging']:
-            return None
+            return
 
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
@@ -516,15 +503,12 @@ class SpiderFoot:
 
         Args:
             message (str): debug message
-
-        Returns:
-            None
         """
 
         if not self.opts['_debug']:
             return
         if not self.opts['__logging']:
-            return None
+            return
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
 
