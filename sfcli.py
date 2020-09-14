@@ -190,7 +190,7 @@ class SpiderFootCli(cmd.Cmd):
             while i < readline.get_current_history_length():
                 self.dprint(readline.get_history_item(i), plain=True)
                 i += 1
-            return
+            return None
         if self.ownopts['cli.history']:
             val = "0"
         else:
