@@ -1,5 +1,7 @@
 import logging
 
+from spiderfoot import SpiderFootTarget
+
 
 class SpiderFootPlugin():
     """SpiderFootPlugin module object
@@ -140,7 +142,7 @@ class SpiderFootPlugin():
 
         return self.__scanId__
 
-    def getTarget(self):
+    def getTarget(self) -> SpiderFootTarget:
         """Gets the current target this module is acting against.
 
         Returns:
