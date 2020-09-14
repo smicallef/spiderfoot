@@ -121,7 +121,7 @@ class sfp_threatminer(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from ThreatMiner: {e}", False)
+            self.sf.error(f"Error processing JSON response from ThreatMiner: {e}")
             return None
 
         return info

@@ -83,7 +83,7 @@ class sfp_urlscan(SpiderFootPlugin):
                                useragent=self.opts['_useragent'])
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by URLScan.io.", False)
+            self.sf.error("You are being rate-limited by URLScan.io.")
             self.errorState = True
             return None
 

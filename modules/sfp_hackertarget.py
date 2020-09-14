@@ -151,7 +151,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'])
 
         if res['content'] is None:
-            self.sf.error("Unable to fetch HTTP headers for " + ip + " from HackerTarget.com.", False)
+            self.sf.error("Unable to fetch HTTP headers for " + ip + " from HackerTarget.com.")
             return None
 
         if not res['content'].startswith('HTTP/'):
@@ -176,7 +176,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'])
 
         if res['content'] is None:
-            self.sf.error("Unable to fetch DNS zone for " + ip + " from HackerTarget.com.", False)
+            self.sf.error("Unable to fetch DNS zone for " + ip + " from HackerTarget.com.")
             return None
 
         records = list()
@@ -196,7 +196,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                                useragent=self.opts['_useragent'],
                                timeout=self.opts['_fetchtimeout'])
         if res['content'] is None:
-            self.sf.error("Unable to fetch hackertarget.com content.", False)
+            self.sf.error("Unable to fetch hackertarget.com content.")
             return None
 
         if "No records" in res['content']:

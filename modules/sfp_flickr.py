@@ -156,7 +156,7 @@ class sfp_flickr(SpiderFootPlugin):
         api_key = self.retrieveApiKey()
 
         if not api_key:
-            self.sf.error("Failed to obtain API key", False)
+            self.sf.error("Failed to obtain API key")
             return None
 
         self.sf.debug(f"Retrieved API key: {api_key}")

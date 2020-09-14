@@ -111,7 +111,7 @@ class sfp_hostio(SpiderFootPlugin):
         try:
             info = json.loads(res["content"])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Host.io: {e}", False)
+            self.sf.error(f"Error processing JSON response from Host.io: {e}")
             return None
 
         return info
@@ -141,7 +141,7 @@ class sfp_hostio(SpiderFootPlugin):
 
         data = self.query(event.data)
         if not data:
-            self.sf.error(f"No data received for {event.data}", False)
+            self.sf.error(f"No data received for {event.data}")
             return None
 
         found = False

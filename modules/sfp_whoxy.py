@@ -91,7 +91,7 @@ class sfp_whoxy(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("Whoxy API key seems to have been rejected or you have exceeded usage limits.", False)
+            self.sf.error("Whoxy API key seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
@@ -134,7 +134,7 @@ class sfp_whoxy(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_whoxy but did not set an API key!", False)
+            self.sf.error("You enabled sfp_whoxy but did not set an API key!")
             self.errorState = True
             return None
 

@@ -90,7 +90,7 @@ class sfp_twilio(SpiderFootPlugin):
         )
 
         if res['code'] == '400':
-            self.sf.error("Bad request.", False)
+            self.sf.error("Bad request.")
             return None
 
         if res['code'] == '404':
@@ -98,15 +98,15 @@ class sfp_twilio(SpiderFootPlugin):
             return None
 
         if res['code'] == '429':
-            self.sf.error("API usage limit reached.", False)
+            self.sf.error("API usage limit reached.")
             return None
 
         if res['code'] == '503':
-            self.sf.error("Service unavailable.", False)
+            self.sf.error("Service unavailable.")
             return None
 
         if not res['code'] == '200':
-            self.sf.error("Could not fetch data.", False)
+            self.sf.error("Could not fetch data.")
             return None
 
         return res.get('content')
@@ -125,7 +125,7 @@ class sfp_twilio(SpiderFootPlugin):
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key_account_sid'] == "" or self.opts['api_key_auth_token'] == "":
-            self.sf.error("You enabled sfp_twilio but did not set account sid/auth token", False)
+            self.sf.error("You enabled sfp_twilio but did not set account sid/auth token")
             self.errorState = True
             return None
 

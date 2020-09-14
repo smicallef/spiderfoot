@@ -102,7 +102,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from DNSGrep: {e}", False)
+            self.sf.error(f"Error processing JSON response from DNSGrep: {e}")
             return None
 
         return data

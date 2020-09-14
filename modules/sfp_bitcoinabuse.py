@@ -88,7 +88,7 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
         try:
             info = json.loads(res["content"])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from BitcoinAbuse: {e}", False)
+            self.sf.error(f"Error processing JSON response from BitcoinAbuse: {e}")
             return None
 
         return info
@@ -104,7 +104,7 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_bitcoinabuse but did not set an API key!", False)
+            self.sf.error("You enabled sfp_bitcoinabuse but did not set an API key!")
             self.errorState = True
             return None
 

@@ -102,7 +102,7 @@ class sfp_github(SpiderFootPlugin):
                 network = eventData.split(": ")[0]
                 url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
             except Exception as e:
-                self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})", False)
+                self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
                 return None
 
             if not network == "Github":
@@ -179,7 +179,7 @@ class sfp_github(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.error(f"Unable to fetch {url}", False)
+            self.sf.error(f"Unable to fetch {url}")
             failed = True
 
         if not failed:
@@ -190,7 +190,7 @@ class sfp_github(SpiderFootPlugin):
                 ret = None
 
             if ret is None:
-                self.sf.error(f"Unable to process empty response from Github for: {username}", False)
+                self.sf.error(f"Unable to process empty response from Github for: {username}")
                 failed = True
 
         if not failed:
@@ -218,17 +218,17 @@ class sfp_github(SpiderFootPlugin):
         )
 
         if res['content'] is None:
-            self.sf.error(f"Unable to fetch {url}", False)
+            self.sf.error(f"Unable to fetch {url}")
             failed = True
 
         if not failed:
             try:
                 ret = json.loads(res['content'])
                 if ret is None:
-                    self.sf.error(f"Unable to process empty response from Github for: {username}", False)
+                    self.sf.error(f"Unable to process empty response from Github for: {username}")
                     failed = True
             except Exception:
-                self.sf.error(f"Unable to process invalid response from Github for: {username}", False)
+                self.sf.error(f"Unable to process invalid response from Github for: {username}")
                 failed = True
 
         if not failed:
@@ -248,17 +248,17 @@ class sfp_github(SpiderFootPlugin):
                                        useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.error(f"Unable to fetch {url}", False)
+                    self.sf.error(f"Unable to fetch {url}")
                     continue
 
                 try:
                     repret = json.loads(res['content'])
                 except Exception as e:
-                    self.sf.error(f"Invalid JSON returned from Github: {e}", False)
+                    self.sf.error(f"Invalid JSON returned from Github: {e}")
                     continue
 
                 if repret is None:
-                    self.sf.error(f"Unable to process empty response from Github for: {username}", False)
+                    self.sf.error(f"Unable to process empty response from Github for: {username}")
                     continue
 
                 for item in repret:

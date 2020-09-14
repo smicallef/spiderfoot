@@ -107,12 +107,12 @@ class sfp_onyphe(SpiderFootPlugin):
         )
 
         if res["code"] == "429":
-            self.sf.error("Reaching rate limit on Onyphe API", False)
+            self.sf.error("Reaching rate limit on Onyphe API")
             self.errorState = True
             return None
 
         if res["code"] == 400:
-            self.sf.error("Invalid request or API key on Onyphe", False)
+            self.sf.error("Invalid request or API key on Onyphe")
             self.errorState = True
             return None
 
@@ -130,7 +130,7 @@ class sfp_onyphe(SpiderFootPlugin):
                 return None
         except Exception as e:
             self.sf.debug(f"{e.__class__} {res['code']} {res['content']}")
-            self.sf.error("Error processing JSON response from Onyphe.", False)
+            self.sf.error("Error processing JSON response from Onyphe.")
             return None
 
         # Go through other pages if user has paid plan
@@ -229,7 +229,7 @@ class sfp_onyphe(SpiderFootPlugin):
         self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_onyphe, but did not set an API key!", False)
+            self.sf.error("You enabled sfp_onyphe, but did not set an API key!")
             self.errorState = True
             return None
 

@@ -104,14 +104,14 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             retry += 1
 
             if res['code'] == "401":
-                self.sf.error("Failed to authenticate key with HaveIBeenPwned.com.", False)
+                self.sf.error("Failed to authenticate key with HaveIBeenPwned.com.")
                 self.errorState = True
                 return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}", False)
+            self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
             return None
 
         return ret

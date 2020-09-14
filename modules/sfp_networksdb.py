@@ -221,12 +221,12 @@ class sfp_networksdb(SpiderFootPlugin):
     def parseApiResponse(self, res):
         # Future proofing - NetworksDB does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by NetworksDB", False)
+            self.sf.error("You are being rate-limited by NetworksDB")
             self.errorState = True
             return None
 
         if res['code'] == '403':
-            self.sf.error("Authentication failed", False)
+            self.sf.error("Authentication failed")
             self.errorState = True
             return None
 
@@ -236,7 +236,7 @@ class sfp_networksdb(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from NetworksDB: {e}", False)
+            self.sf.error(f"Error processing JSON response from NetworksDB: {e}")
             return None
 
         if data.get('warning'):
@@ -260,7 +260,7 @@ class sfp_networksdb(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == '':
-            self.sf.error("You enabled sfp_networksdb but did not set an API key!", False)
+            self.sf.error("You enabled sfp_networksdb but did not set an API key!")
             self.errorState = True
             return None
 

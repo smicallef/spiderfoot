@@ -108,7 +108,7 @@ class sfp_wigle(SpiderFootPlugin):
             return None
 
         if "too many queries" in res['content']:
-            self.sf.error("Wigle.net query limit reached for the day.", False)
+            self.sf.error("Wigle.net query limit reached for the day.")
             return None
 
         try:
@@ -117,7 +117,7 @@ class sfp_wigle(SpiderFootPlugin):
                 return None
             return info['results'][0]['boundingbox']
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Wigle.net: {e}", False)
+            self.sf.error(f"Error processing JSON response from Wigle.net: {e}")
             return None
 
     def getnetworks(self, coords):
@@ -153,7 +153,7 @@ class sfp_wigle(SpiderFootPlugin):
             return None
 
         if "too many queries" in res['content']:
-            self.sf.error("Wigle.net query limit reached for the day.", False)
+            self.sf.error("Wigle.net query limit reached for the day.")
             return None
 
         ret = list()
@@ -169,7 +169,7 @@ class sfp_wigle(SpiderFootPlugin):
 
             return ret
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from WiGLE: {e}", False)
+            self.sf.error(f"Error processing JSON response from WiGLE: {e}")
             return None
 
     # Handle events sent to this module
@@ -182,7 +182,7 @@ class sfp_wigle(SpiderFootPlugin):
             return None
 
         if self.opts['api_key_encoded'] == "":
-            self.sf.error("You enabled sfp_wigle but did not set an API key!", False)
+            self.sf.error("You enabled sfp_wigle but did not set an API key!")
             self.errorState = True
             return None
 
@@ -197,12 +197,12 @@ class sfp_wigle(SpiderFootPlugin):
 
         coords = self.getcoords(eventData)
         if not coords:
-            self.sf.error("Couldn't get coordinates for address from Wigle.net.", False)
+            self.sf.error("Couldn't get coordinates for address from Wigle.net.")
             return None
 
         nets = self.getnetworks(coords)
         if not nets:
-            self.sf.error("Couldn't get networks for coordinates from Wigle.net.", False)
+            self.sf.error("Couldn't get networks for coordinates from Wigle.net.")
             return None
 
         for n in nets:

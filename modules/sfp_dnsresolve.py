@@ -201,7 +201,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                                     m = match
                                 self.processHost(m, parentEvent, False)
                     except Exception as e:
-                        self.sf.error(f"Error applying regex to data ({e})", False)
+                        self.sf.error(f"Error applying regex to data ({e})")
 
                     offset = data.find(name, start + len(chunkhost))
 

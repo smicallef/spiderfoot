@@ -83,7 +83,7 @@ class sfp_bingsearch(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_bingsearch but did not set a Bing API key!", False)
+            self.sf.error("You enabled sfp_bingsearch but did not set a Bing API key!")
             self.errorState = True
             return None
 

@@ -118,7 +118,7 @@ class sfp_circllu(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] not in ["200", "201"]:
-            self.sf.error("CIRCL.LU access seems to have been rejected or you have exceeded usage limits.", False)
+            self.sf.error("CIRCL.LU access seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
@@ -146,7 +146,7 @@ class sfp_circllu(SpiderFootPlugin):
             return None
 
         if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":
-            self.sf.error("You enabled sfp_circllu but did not set an credentials!", False)
+            self.sf.error("You enabled sfp_circllu but did not set an credentials!")
             self.errorState = True
             return None
 

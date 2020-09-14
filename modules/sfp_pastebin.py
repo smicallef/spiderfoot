@@ -91,7 +91,7 @@ class sfp_pastebin(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_pastebin but did not set a Google API key!", False)
+            self.sf.error("You enabled sfp_pastebin but did not set a Google API key!")
             self.errorState = True
             return None
 

@@ -99,7 +99,7 @@ class sfp_scylla(SpiderFootPlugin):
         time.sleep(self.opts['pause'])
 
         if res['code'] != "200":
-            self.sf.error("Syclla.sh is having problems.", False)
+            self.sf.error("Syclla.sh is having problems.")
             self.errorState = True
             return None
 

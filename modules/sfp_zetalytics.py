@@ -83,7 +83,7 @@ class sfp_zetalytics(SpiderFootPlugin):
             info = json.loads(res["content"])
         except Exception as e:
             self.sf.error(
-                f"Error processing JSON response from Zetalytics: {e}", False
+                f"Error processing JSON response from Zetalytics: {e}"
             )
             return None
 
@@ -156,7 +156,7 @@ class sfp_zetalytics(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!", False)
+            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
             self.errorState = True
             return None
 

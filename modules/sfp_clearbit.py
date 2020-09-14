@@ -101,13 +101,13 @@ class sfp_clearbit(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", headers=headers)
 
         if res['code'] != "200":
-            self.sf.error("Return code indicates no results or potential API key failure or exceeded limits.", False)
+            self.sf.error("Return code indicates no results or potential API key failure or exceeded limits.")
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from clearbit.io: {e}", False)
+            self.sf.error(f"Error processing JSON response from clearbit.io: {e}")
             return None
 
         return ret
@@ -122,7 +122,7 @@ class sfp_clearbit(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_clearbit but did not set an API key!", False)
+            self.sf.error("You enabled sfp_clearbit but did not set an API key!")
             self.errorState = True
             return None
 

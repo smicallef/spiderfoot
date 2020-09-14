@@ -80,7 +80,7 @@ class sfp_myspace(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None:
-                self.sf.error(f"Could not fetch MySpace content for {email}", False)
+                self.sf.error(f"Could not fetch MySpace content for {email}")
                 return None
 
             # Extract HTML containing potential profile matches
@@ -119,8 +119,7 @@ class sfp_myspace(SpiderFootPlugin):
                 network = eventData.split(": ")[0]
                 url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
             except Exception as e:
-                self.sf.error("Unable to parse SOCIAL_MEDIA: "
-                              + eventData + " (" + str(e) + ")", False)
+                self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
                 return None
 
             if network != "MySpace":

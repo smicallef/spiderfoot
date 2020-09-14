@@ -111,7 +111,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from ThreatCrowd: {e}", False)
+            self.sf.error(f"Error processing JSON response from ThreatCrowd: {e}")
             self.errorState = True
             return None
 

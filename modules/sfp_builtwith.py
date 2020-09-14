@@ -102,7 +102,7 @@ class sfp_builtwith(SpiderFootPlugin):
         try:
             return json.loads(res['content'])['Relationships']
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from builtwith.com: {e}", False)
+            self.sf.error(f"Error processing JSON response from builtwith.com: {e}")
             return None
 
     def queryDomainInfo(self, t):
@@ -119,7 +119,7 @@ class sfp_builtwith(SpiderFootPlugin):
         try:
             return json.loads(res['content'])['Results'][0]
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from builtwith.com: {e}", False)
+            self.sf.error(f"Error processing JSON response from builtwith.com: {e}")
             return None
 
     # Handle events sent to this module
@@ -134,7 +134,7 @@ class sfp_builtwith(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_builtwith but did not set an API key!", False)
+            self.sf.error("You enabled sfp_builtwith but did not set an API key!")
             self.errorState = True
             return None
 

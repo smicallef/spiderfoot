@@ -103,7 +103,7 @@ class sfp_wikileaks(SpiderFootPlugin):
             "https://search.wikileaks.org/?" + wlurl
         )
         if res['content'] is None:
-            self.sf.error("Unable to fetch Wikileaks content.", False)
+            self.sf.error("Unable to fetch Wikileaks content.")
             return None
 
         # Fetch the paste site content
