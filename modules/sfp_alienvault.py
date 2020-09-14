@@ -131,7 +131,7 @@ class sfp_alienvault(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] == "403":
-            self.sf.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+            self.sf.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -142,7 +142,7 @@ class sfp_alienvault(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from AlienVault OTX: {e}", False)
+            self.sf.error(f"Error processing JSON response from AlienVault OTX: {e}")
             return None
 
         return info
@@ -159,7 +159,7 @@ class sfp_alienvault(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_alienvault but did not set an API key/password!", False)
+            self.sf.error("You enabled sfp_alienvault but did not set an API key/password!")
             self.errorState = True
             return None
 

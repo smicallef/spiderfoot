@@ -73,12 +73,12 @@ class sfp_commoncrawl(SpiderFootPlugin):
                                    useragent="SpiderFoot")
 
             if res['code'] in ["400", "401", "402", "403", "404"]:
-                self.sf.error("CommonCrawl search doesn't seem to be available.", False)
+                self.sf.error("CommonCrawl search doesn't seem to be available.")
                 self.errorState = True
                 return None
 
             if not res['content']:
-                self.sf.error("CommonCrawl search doesn't seem to be available.", False)
+                self.sf.error("CommonCrawl search doesn't seem to be available.")
                 self.errorState = True
                 return None
 
@@ -92,12 +92,12 @@ class sfp_commoncrawl(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['code'] in ["400", "401", "402", "403", "404"]:
-            self.sf.error("CommonCrawl index collection doesn't seem to be available.", False)
+            self.sf.error("CommonCrawl index collection doesn't seem to be available.")
             self.errorState = True
             return list()
 
         if not res['content']:
-            self.sf.error("CommonCrawl index collection doesn't seem to be available.", False)
+            self.sf.error("CommonCrawl index collection doesn't seem to be available.")
             self.errorState = True
             return list()
 
@@ -110,7 +110,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
         topindexes = sorted(list(indexlist.keys()), reverse=True)[0:self.opts['indexes']]
 
         if len(topindexes) < self.opts['indexes']:
-            self.sf.error("Not able to find latest CommonCrawl indexes.", False)
+            self.sf.error("Not able to find latest CommonCrawl indexes.")
             self.errorState = True
             return list()
 
@@ -150,16 +150,16 @@ class sfp_commoncrawl(SpiderFootPlugin):
             self.indexBase = self.getLatestIndexes()
 
         if not self.indexBase:
-            self.sf.error("Unable to fetch CommonCrawl index.", False)
+            self.sf.error("Unable to fetch CommonCrawl index.")
             return None
 
         if len(self.indexBase) == 0:
-            self.sf.error("Unable to fetch CommonCrawl index.", False)
+            self.sf.error("Unable to fetch CommonCrawl index.")
             return None
 
         data = self.search(eventData)
         if not data:
-            self.sf.error("Unable to obtain content from CommonCrawl.", False)
+            self.sf.error("Unable to obtain content from CommonCrawl.")
             return None
 
         sent = list()

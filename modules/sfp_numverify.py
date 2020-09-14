@@ -139,7 +139,7 @@ class sfp_numverify(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_numverify but did not set an API key!", False)
+            self.sf.error("You enabled sfp_numverify but did not set an API key!")
             self.errorState = True
             return None
 

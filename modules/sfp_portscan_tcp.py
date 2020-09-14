@@ -173,7 +173,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if not self.portlist:
-            self.sf.error('No ports specified in port list', False)
+            self.sf.error('No ports specified in port list')
             self.errorState = True
             return None
 
@@ -194,8 +194,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             else:
                 scanIps.append(eventData)
         except Exception as e:
-            self.sf.error("Strange netblock identified, unable to parse: "
-                          + eventData + " (" + str(e) + ")", False)
+            self.sf.error("Strange netblock identified, unable to parse: " + eventData + " (" + str(e) + ")")
             return None
 
         for ipAddr in scanIps:

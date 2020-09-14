@@ -97,7 +97,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
                     return None
 
         except Exception as e:
-            self.sf.error("Strange netblock identified, unable to parse: " + eventData + " (" + str(e) + ")", False)
+            self.sf.error("Strange netblock identified, unable to parse: " + eventData + " (" + str(e) + ")")
             return None
 
         # Don't look up stuff twice, check IP == IP here
@@ -114,7 +114,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
         self.results[eventData] = True
 
         if not self.opts['nmappath']:
-            self.sf.error("You enabled sfp_tool_nmap but did not set a path to the tool!", False)
+            self.sf.error("You enabled sfp_tool_nmap but did not set a path to the tool!")
             self.errorState = True
             return None
 
@@ -124,7 +124,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
         elif self.opts['nmappath'].endswith('/'):
             exe = self.opts['nmappath'] + "nmap"
         else:
-            self.sf.error("Could not recognize your nmap path configuration.", False)
+            self.sf.error("Could not recognize your nmap path configuration.")
             self.errorState = True
 
         # If tool is not found, abort
@@ -135,7 +135,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
 
         # Sanitize domain name.
         if not self.sf.validIP(eventData) and not self.sf.validIpNetwork(eventData):
-            self.sf.error("Invalid input, refusing to run.", False)
+            self.sf.error("Invalid input, refusing to run.")
             return None
 
         try:
@@ -144,7 +144,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
             if p.returncode == 0:
                 content = stdout.decode('utf-8', errors='replace')
             else:
-                self.sf.error("Unable to read Nmap content.", False)
+                self.sf.error("Unable to read Nmap content.")
                 self.sf.debug("Error running Nmap: " + stderr + ", " + stdout)
                 return None
 
@@ -190,7 +190,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
                         self.notifyListeners(evt)
                         currentIp = None
             except Exception as e:
-                self.sf.error(f"Couldn't parse the output of Nmap: {e}", False)
+                self.sf.error(f"Couldn't parse the output of Nmap: {e}")
                 return None
 
 # End of sfp_tool_nmap class

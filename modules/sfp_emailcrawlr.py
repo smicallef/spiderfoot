@@ -112,23 +112,23 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             return None
 
         if res['code'] == "401":
-            self.sf.error("Invalid EmailCrawlr API key.", False)
+            self.sf.error("Invalid EmailCrawlr API key.")
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by EmailCrawlr", False)
+            self.sf.error("You are being rate-limited by EmailCrawlr")
             self.errorState = True
             return None
 
         if res['code'] == '503':
-            self.sf.error("EmailCrawlr service unavailable", False)
+            self.sf.error("EmailCrawlr service unavailable")
             self.errorState = True
             return None
 
         # Catch all other non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from EmailCrawlr", False)
+            self.sf.error("Failed to retrieve content from EmailCrawlr")
             self.errorState = True
             return None
 
@@ -156,7 +156,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_emailcrawlr but did not set an API key!", False)
+            self.sf.error("You enabled sfp_emailcrawlr but did not set an API key!")
             self.errorState = True
             return None
 

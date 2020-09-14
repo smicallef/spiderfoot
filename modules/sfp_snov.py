@@ -100,7 +100,7 @@ class sfp_snov(SpiderFootPlugin):
         )
 
         if not res['code'] == '200':
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
+            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return None
         try:
@@ -109,12 +109,12 @@ class sfp_snov(SpiderFootPlugin):
             accessToken = json.loads(content).get('access_token')
 
             if accessToken is None:
-                self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
+                self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
                 return None
 
             return str(accessToken)
         except Exception:
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
+            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return None
 
@@ -159,7 +159,7 @@ class sfp_snov(SpiderFootPlugin):
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key_client_id'] == "" or self.opts['api_key_client_secret'] == "":
-            self.sf.error("You enabled sfp_snov but did not set a Client ID and/or Client Secret", False)
+            self.sf.error("You enabled sfp_snov but did not set a Client ID and/or Client Secret")
             self.errorState = True
             return None
 
@@ -173,7 +173,7 @@ class sfp_snov(SpiderFootPlugin):
         # Get access token from Snov IO API
         accessToken = self.queryAccessToken()
         if accessToken is None or accessToken == '':
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
+            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return None
 

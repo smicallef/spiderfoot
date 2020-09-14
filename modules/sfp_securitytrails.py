@@ -113,7 +113,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                                postData=request)
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("SecurityTrails API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+            self.sf.error("SecurityTrails API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -156,7 +156,7 @@ class sfp_securitytrails(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_securitytrails but did not set an API uid/secret!", False)
+            self.sf.error("You enabled sfp_securitytrails but did not set an API uid/secret!")
             self.errorState = True
             return None
 

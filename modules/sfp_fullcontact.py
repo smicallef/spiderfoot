@@ -101,13 +101,13 @@ class sfp_fullcontact(SpiderFootPlugin):
         )
 
         if res['code'] in ["401", "400"]:
-            self.sf.error("API key rejected by FullContact", False)
+            self.sf.error("API key rejected by FullContact")
             self.errorState = True
             return None
 
         if res['code'] == "403":
             if failcount == 3:
-                self.sf.error("Throttled or other blocking by FullContact", False)
+                self.sf.error("Throttled or other blocking by FullContact")
                 return None
 
             time.sleep(2)
@@ -115,13 +115,13 @@ class sfp_fullcontact(SpiderFootPlugin):
             return self.query(url, data, failcount)
 
         if not res['content']:
-            self.sf.error("No content returned from FullContact", False)
+            self.sf.error("No content returned from FullContact")
             return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from FullContact: {e}", False)
+            self.sf.error(f"Error processing JSON response from FullContact: {e}")
             return None
 
         if "updated" in ret and int(self.opts['max_age_days']) > 0:

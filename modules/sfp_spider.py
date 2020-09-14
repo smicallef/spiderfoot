@@ -116,7 +116,7 @@ class sfp_spider(SpiderFootPlugin):
 
         if url not in self.urlEvents:
             # TODO: be more descriptive
-            self.sf.error("Something strange happened - shouldn't get here: url not in self.urlEvents", False)
+            self.sf.error("Something strange happened - shouldn't get here: url not in self.urlEvents")
             self.urlEvents[url] = None
 
         # Notify modules about the content obtained

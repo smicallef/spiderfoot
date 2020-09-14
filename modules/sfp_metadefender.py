@@ -113,14 +113,14 @@ class sfp_metadefender(SpiderFootPlugin):
     # Parse API response
     def parseApiResponse(self, res):
         if res['code'] == "401":
-            self.sf.error("Invalid MetaDefender API key", False)
+            self.sf.error("Invalid MetaDefender API key")
             self.errorState = True
             return None
 
         # https://onlinehelp.opswat.com/mdcloud/3._Rate_Limiting.html
         # https://onlinehelp.opswat.com/mdcloud/4._Throttling.html
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by MetaDefender", False)
+            self.sf.error("You are being rate-limited by MetaDefender")
             self.errorState = True
             return None
 
@@ -151,7 +151,7 @@ class sfp_metadefender(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_metadefender but did not set an API key!", False)
+            self.sf.error("You enabled sfp_metadefender but did not set an API key!")
             self.errorState = True
             return None
 

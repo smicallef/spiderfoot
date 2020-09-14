@@ -101,13 +101,13 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from iknowwhatyoudownload.com: {e}", False)
+            self.sf.error(f"Error processing JSON response from iknowwhatyoudownload.com: {e}")
             return None
 
         if 'error' in ret:
             if ret['error'] == "INVALID_DAYS":
                 self.errorState = True
-                self.sf.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.", False)
+                self.sf.error("The number of days you have configured is not accepted. If you have the demo key, try 30 days or less.")
                 return None
 
         if 'contents' not in ret:
@@ -134,7 +134,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!", False)
+            self.sf.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!")
             self.errorState = True
             return None
 

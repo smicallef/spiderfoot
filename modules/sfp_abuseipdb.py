@@ -117,22 +117,22 @@ class sfp_abuseipdb(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbuseIPDB", False)
+            self.sf.error("You are being rate-limited by AbuseIPDB")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error(f"Error retrieving search results, code {res['code']}", False)
+            self.sf.error(f"Error retrieving search results, code {res['code']}")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from AbuseIPDB", False)
+            self.sf.error("Error retrieving search results from AbuseIPDB")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AbuseIPDB", False)
+            self.sf.error("Received no content from AbuseIPDB")
             self.errorState = True
             return None
 
@@ -193,17 +193,17 @@ class sfp_abuseipdb(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbuseIPDB", False)
+            self.sf.error("You are being rate-limited by AbuseIPDB")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from AbuseIPDB", False)
+            self.sf.error("Error retrieving search results from AbuseIPDB")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AbuseIPDB", False)
+            self.sf.error("Received no content from AbuseIPDB")
             self.errorState = True
             return None
 
@@ -247,17 +247,17 @@ class sfp_abuseipdb(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by AbuseIPDB", False)
+            self.sf.error("You are being rate-limited by AbuseIPDB")
             self.errorState = True
             return None
 
         if res['code'] != "200":
-            self.sf.error("Error retrieving search results from AbuseIPDB", False)
+            self.sf.error("Error retrieving search results from AbuseIPDB")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.error("Received no content from AbuseIPDB", False)
+            self.sf.error("Received no content from AbuseIPDB")
             self.errorState = True
             return None
 

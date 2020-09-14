@@ -90,7 +90,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             self.results[eventData] = True
 
         if not self.opts['dnstwistpath']:
-            self.sf.error("You enabled sfp_tool_dnstwist but did not set a path to the tool!", False)
+            self.sf.error("You enabled sfp_tool_dnstwist but did not set a path to the tool!")
             self.errorState = True
             return None
 
@@ -110,7 +110,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
-            self.sf.error("Invalid input, refusing to run.", False)
+            self.sf.error("Invalid input, refusing to run.")
             return None
 
         try:
@@ -119,7 +119,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             if p.returncode == 0:
                 content = stdout
             else:
-                self.sf.error("Unable to read DNSTwist content.", False)
+                self.sf.error("Unable to read DNSTwist content.")
                 self.sf.debug("Error running DNSTwist: " + stderr + ", " + stdout)
                 return None
 

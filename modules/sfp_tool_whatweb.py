@@ -87,7 +87,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         self.results[eventData] = True
 
         if not self.opts['whatweb_path']:
-            self.sf.error("You enabled sfp_tool_whatweb but did not set a path to the tool!", False)
+            self.sf.error("You enabled sfp_tool_whatweb but did not set a path to the tool!")
             self.errorState = True
             return None
 
@@ -103,7 +103,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
-            self.sf.error("Invalid input, refusing to run.", False)
+            self.sf.error("Invalid input, refusing to run.")
             return None
 
         # Set aggression level
@@ -131,11 +131,11 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             p = Popen(args, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
         except Exception as e:
-            self.sf.error(f"Unable to run WhatWeb: {e}", False)
+            self.sf.error(f"Unable to run WhatWeb: {e}")
             return None
 
         if p.returncode != 0:
-            self.sf.error("Unable to read WhatWeb output.", False)
+            self.sf.error("Unable to read WhatWeb output.")
             self.sf.debug("Error running WhatWeb: " + stderr + ", " + stdout)
             return None
 
@@ -146,7 +146,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         try:
             result_json = json.loads(stdout)
         except Exception as e:
-            self.sf.error(f"Couldn't parse the JSON output of WhatWeb: {e}", False)
+            self.sf.error(f"Couldn't parse the JSON output of WhatWeb: {e}")
             return None
 
         if len(result_json) == 0:

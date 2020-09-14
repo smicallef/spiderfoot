@@ -95,13 +95,13 @@ class sfp_leakix(SpiderFootPlugin):
 
         # Future proofing - LeakIX does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by LeakIX", False)
+            self.sf.error("You are being rate-limited by LeakIX")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from LeakIX", False)
+            self.sf.error("Failed to retrieve content from LeakIX")
             self.errorState = True
             return None
 

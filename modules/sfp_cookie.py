@@ -71,7 +71,7 @@ class sfp_cookie(SpiderFootPlugin):
             if jdata is None:
                 return None
         except Exception:
-            self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
+            self.sf.error("Received HTTP headers from another module in an unexpected format.")
             return None
 
         if 'set-cookie' in jdata:

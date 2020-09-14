@@ -95,11 +95,11 @@ class sfp_opencorporates(SpiderFootPlugin):
         )
 
         if res['code'] == "401":
-            self.sf.error("Invalid OpenCorporates API key.", False)
+            self.sf.error("Invalid OpenCorporates API key.")
             return None
 
         if res['code'] == "403":
-            self.sf.error("You are being rate-limited by OpenCorporates.", False)
+            self.sf.error("You are being rate-limited by OpenCorporates.")
             return None
 
         try:
@@ -126,11 +126,11 @@ class sfp_opencorporates(SpiderFootPlugin):
         )
 
         if res['code'] == "401":
-            self.sf.error("Invalid OpenCorporates API key.", False)
+            self.sf.error("Invalid OpenCorporates API key.")
             return None
 
         if res['code'] == "403":
-            self.sf.error("You are being rate-limited by OpenCorporates.", False)
+            self.sf.error("You are being rate-limited by OpenCorporates.")
             return None
 
         try:

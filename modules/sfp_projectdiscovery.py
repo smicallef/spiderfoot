@@ -87,8 +87,7 @@ class sfp_projectdiscovery(SpiderFootPlugin):
             info = json.loads(res["content"])
         except json.JSONDecodeError as e:
             self.sf.error(
-                f"Error processing JSON response from Chaos projectdiscovery: {e}",
-                False,
+                f"Error processing JSON response from Chaos projectdiscovery: {e}"
             )
             return None
 
@@ -108,7 +107,7 @@ class sfp_projectdiscovery(SpiderFootPlugin):
 
         if self.opts["api_key"] == "":
             self.sf.error(
-                "You enabled sfp_projectdiscovery but did not set an API key!", False
+                "You enabled sfp_projectdiscovery but did not set an API key!"
             )
             self.errorState = True
             return None

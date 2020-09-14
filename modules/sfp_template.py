@@ -241,7 +241,7 @@ class sfp_template(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return info
@@ -273,7 +273,7 @@ class sfp_template(SpiderFootPlugin):
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_template but did not set an API key!", False)
+            self.sf.error("You enabled sfp_template but did not set an API key!")
             self.errorState = True
             return None
 

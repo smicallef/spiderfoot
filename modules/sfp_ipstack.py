@@ -85,7 +85,7 @@ class sfp_ipstack(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_ipstack but did not set an API key!", False)
+            self.sf.error("You enabled sfp_ipstack but did not set an API key!")
             self.errorState = True
             return None
 
@@ -104,7 +104,7 @@ class sfp_ipstack(SpiderFootPlugin):
         try:
             hostip = json.loads(res['content'])
             if 'success' in hostip and hostip['success'] is False:
-                self.sf.error("Invalid ipstack.com API key or usage limits exceeded.", False)
+                self.sf.error("Invalid ipstack.com API key or usage limits exceeded.")
                 self.errorState = True
                 return None
         except Exception as e:
