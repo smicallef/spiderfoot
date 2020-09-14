@@ -158,7 +158,7 @@ class sfp_torch(SpiderFootPlugin):
                         try:
                             startIndex = res['content'].index(eventData) - 120
                             endIndex = startIndex + len(eventData) + 240
-                        except BaseException:
+                        except Exception:
                             self.sf.debug("String not found in content.")
                             continue
 

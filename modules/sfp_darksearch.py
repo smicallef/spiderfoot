@@ -94,7 +94,7 @@ class sfp_darksearch(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
@@ -183,7 +183,7 @@ class sfp_darksearch(SpiderFootPlugin):
                     try:
                         startIndex = res['content'].index(eventData) - 120
                         endIndex = startIndex + len(eventData) + 240
-                    except BaseException:
+                    except Exception:
                         self.sf.debug("String not found in content.")
                         continue
 

@@ -221,7 +221,7 @@ class sfp_alienvault(SpiderFootPlugin):
                             if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
-                        except BaseException:
+                        except Exception:
                             self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
                         e = SpiderFootEvent(evtType, host, self.__name__, event)
                         self.notifyListeners(e)
@@ -258,7 +258,7 @@ class sfp_alienvault(SpiderFootPlugin):
                             if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
-                        except BaseException:
+                        except Exception:
                             self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
 
                     # For netblocks, we need to create the IP address event so that

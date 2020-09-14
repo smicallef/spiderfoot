@@ -99,7 +99,7 @@ class sfp_crt(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
@@ -180,7 +180,7 @@ class sfp_crt(SpiderFootPlugin):
 
             try:
                 cert = self.sf.parseCert(str(res['content']))
-            except BaseException as e:
+            except Exception as e:
                 self.sf.info('Error parsing certificate: ' + str(e))
                 continue
 

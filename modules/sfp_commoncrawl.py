@@ -185,7 +185,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
                     evt = SpiderFootEvent("LINKED_URL_INTERNAL", link['url'],
                                           self.__name__, event)
                     self.notifyListeners(evt)
-            except BaseException as e:
+            except Exception as e:
                 self.sf.error("Malformed JSON from CommonCrawl.org: " + str(e), False)
                 return None
 

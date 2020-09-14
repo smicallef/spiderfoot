@@ -82,13 +82,13 @@ class sfp_phone(SpiderFootPlugin):
         if eventName == 'PHONE_NUMBER':
             try:
                 number = phonenumbers.parse(eventData)
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug('Error parsing phone number: ' + str(e))
                 return None
 
             try:
                 number_carrier = carrier.name_for_number(number, 'en')
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug('Error retrieving phone number carrier: ' + str(e))
                 return None
 
@@ -104,7 +104,7 @@ class sfp_phone(SpiderFootPlugin):
 
             # try:
             #     location = geocoder.description_for_number(number, 'en')
-            # except BaseException as e:
+            # except Exception as e:
             #     self.sf.debug('Error retrieving phone number location: ' + str(e))
             #     return None
 

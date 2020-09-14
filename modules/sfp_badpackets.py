@@ -252,14 +252,14 @@ class sfp_badpackets(SpiderFootPlugin):
                                 category = record.get('tags')[0].get('category')
                                 if category:
                                     maliciousIPDesc += " - CATEGORY : " + str(category) + "\n"
-                            except BaseException:
+                            except Exception:
                                 self.sf.debug("No category found for target")
 
                             try:
                                 description = record.get('tags')[0].get('description')
                                 if description:
                                     maliciousIPDesc += " - DESCRIPTION : " + str(description) + "\n"
-                            except BaseException:
+                            except Exception:
                                 self.sf.debug("No description found for target")
 
                             maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)

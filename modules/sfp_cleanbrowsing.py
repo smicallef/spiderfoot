@@ -82,7 +82,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
         try:
             addrs = res.query(qaddr)
             self.sf.debug(f"Addresses returned: {addrs}")
-        except BaseException:
+        except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 

@@ -238,7 +238,7 @@ class sfp_spyonweb(SpiderFootPlugin):
             try:
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
-            except BaseException as e:
+            except Exception as e:
                 self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})", False)
                 return None
 

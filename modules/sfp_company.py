@@ -100,7 +100,7 @@ class sfp_company(SpiderFootPlugin):
         try:
             if eventName == "SSL_CERTIFICATE_ISSUED":
                 eventData = eventData.split("O=")[1]
-        except BaseException:
+        except Exception:
             self.sf.debug("Couldn't strip out 'O=' from certificate issuer, proceeding anyway...")
 
         # Find chunks of text containing what might be a company name first.

@@ -95,7 +95,7 @@ class sfp_duckduckgo(SpiderFootPlugin):
 
         try:
             ret = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.error(f"Error processing JSON response from DuckDuckGo: {e}", False)
             return None
 

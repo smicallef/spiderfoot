@@ -80,14 +80,14 @@ class sfp_dnsneighbor(SpiderFootPlugin):
 
         try:
             ip = IPAddress(eventData)
-        except BaseException:
+        except Exception:
             self.sf.error(f"Invalid IP address received: {eventData}", False)
             return None
 
         try:
             minip = IPAddress(int(ip) - self.opts['lookasidecount'])
             maxip = IPAddress(int(ip) + self.opts['lookasidecount'])
-        except BaseException:
+        except Exception:
             self.sf.error(f"Received an invalid IP address: {eventData}", False)
             return None
 

@@ -91,7 +91,7 @@ class sfp_sslcert(SpiderFootPlugin):
                 if u.port:
                     port = u.port
                 fqdn = self.sf.urlFQDN(eventData.lower())
-            except BaseException:
+            except Exception:
                 self.sf.debug("Couldn't parse URL: " + eventData)
                 return None
         else:
@@ -111,7 +111,7 @@ class sfp_sslcert(SpiderFootPlugin):
             dercert = sock.getpeercert(True)
             pemcert = self.sf.sslDerToPem(dercert)
             cert = self.sf.parseCert(str(pemcert), fqdn, self.opts['certexpiringdays'])
-        except BaseException as x:
+        except Exception as x:
             self.sf.info("Unable to SSL-connect to " + fqdn + " (" + str(x) + ")")
             return None
 

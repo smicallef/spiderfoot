@@ -82,7 +82,7 @@ class sfp_fringeproject(SpiderFootPlugin):
 
         try:
             json_data = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response from Fringe Project: {e}")
             return None
 
@@ -162,7 +162,7 @@ class sfp_fringeproject(SpiderFootPlugin):
             for tag in tags:
                 try:
                     port = re.findall(r'^port:([0-9]+)', tag)
-                except BaseException:
+                except Exception:
                     self.sf.debug("Didn't get sane data from FringeProject.")
                     continue
 

@@ -109,7 +109,7 @@ class sfp_dnsraw(SpiderFootPlugin):
 
                 if not len(res.answer):
                     continue
-            except BaseException as e:
+            except Exception as e:
                 self.sf.error("Failed to obtain DNS response for %s (%s)" % (eventData, e), False)
                 continue
 

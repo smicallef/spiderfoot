@@ -106,7 +106,7 @@ class sfp_keybase(SpiderFootPlugin):
         try:
             if not int(code) == 0:
                 return None
-        except BaseException:
+        except Exception:
             self.sf.error("Invalid code returned as response", False)
             return None
 
@@ -165,7 +165,7 @@ class sfp_keybase(SpiderFootPlugin):
         # Contains all data about the target username
         try:
             them = content.get('them')[0]
-        except BaseException:
+        except Exception:
             self.sf.error("Invalid data received", False)
             them = None
 

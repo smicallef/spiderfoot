@@ -191,7 +191,7 @@ class sfp_snov(SpiderFootPlugin):
 
             try:
                 data = json.loads(data)
-            except BaseException:
+            except Exception:
                 self.sf.debug("No email address found for target domain")
                 break
 

@@ -82,7 +82,7 @@ class sfp_base64(SpiderFootPlugin):
 
             try:
                 string += " (" + base64.b64decode(match) + ")"
-            except BaseException:
+            except Exception:
                 self.sf.debug("Unable to base64-decode string.")
                 continue
 

@@ -109,7 +109,7 @@ class sfp_filemeta(SpiderFootPlugin):
                         data = pdf.getDocumentInfo()
                         meta = str(data)
                         self.sf.debug("Obtained meta data from " + eventData)
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.error("Unable to parse meta data from: "
                                       + eventData + "(" + str(e) + ")", False)
                         return None
@@ -124,7 +124,7 @@ class sfp_filemeta(SpiderFootPlugin):
                         c = doc.core_properties.comments
                         data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.error("Unable to process file: "
                                       + eventData + "(" + str(e) + ")", False)
                         return None
@@ -139,7 +139,7 @@ class sfp_filemeta(SpiderFootPlugin):
                         c = doc.core_properties.comments
                         data = [_f for _f in [a, c] if _f]
                         meta = ", ".join(data)
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.error("Unable to process file: "
                                       + eventData + "(" + str(e) + ")", False)
                         return None
@@ -151,7 +151,7 @@ class sfp_filemeta(SpiderFootPlugin):
                         if data is None or len(data) == 0:
                             continue
                         meta = str(data)
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.error("Unable to parse meta data from: "
                                       + eventData + "(" + str(e) + ")", False)
                         return None
@@ -174,7 +174,7 @@ class sfp_filemeta(SpiderFootPlugin):
 
                         if "Image Software" in data:
                             val.append(str(data['Image Software']))
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.error("Failed to parse PDF, " + eventData + ": " + str(e), False)
                         return None
 

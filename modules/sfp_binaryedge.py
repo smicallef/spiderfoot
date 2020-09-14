@@ -439,7 +439,7 @@ class sfp_binaryedge(SpiderFootPlugin):
 
                         try:
                             banner = prec['result']['data']['service']['banner']
-                        except BaseException:
+                        except Exception:
                             self.sf.debug("No banner information found.")
                             continue
 

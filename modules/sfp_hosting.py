@@ -73,13 +73,13 @@ class sfp_hosting(SpiderFootPlugin):
                 continue
             try:
                 [start, end, title, url] = line.split(",")
-            except BaseException:
+            except Exception:
                 continue
 
             try:
                 if IPAddress(qaddr) > IPAddress(start) and IPAddress(qaddr) < IPAddress(end):
                     return [title, url]
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug("Encountered an issue processing an IP: " + str(e))
                 continue
 
