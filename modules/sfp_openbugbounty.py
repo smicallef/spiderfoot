@@ -91,7 +91,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
                 if m[1] == qry or m[1].endswith("." + qry):
                     ret.append("From openbugbounty.org: <SFURL>" + base + m[0] + "</SFURL>")
         except Exception as e:
-            self.sf.error("Error processing response from openbugbounty.org: " + str(e), False)
+            self.sf.error("Error processing response from openbugbounty.org: " + str(e))
             return None
         return ret
 

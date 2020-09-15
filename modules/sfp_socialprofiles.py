@@ -157,8 +157,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
 
             if self.opts["method"].lower() == "yahoo":
                 self.sf.error(
-                    "Yahoo is no longer supported. Please try 'bing' or 'google'.",
-                    False,
+                    "Yahoo is no longer supported. Please try 'bing' or 'google'."
                 )
                 return None
 

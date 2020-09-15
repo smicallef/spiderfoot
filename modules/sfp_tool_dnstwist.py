@@ -104,7 +104,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
-            self.sf.error("File does not exist: " + exe, False)
+            self.sf.error("File does not exist: " + exe)
             self.errorState = True
             return None
 
@@ -134,10 +134,10 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
                                           self.__name__, event)
                     self.notifyListeners(evt)
             except Exception as e:
-                self.sf.error("Couldn't parse the JSON output of DNSTwist: " + str(e), False)
+                self.sf.error("Couldn't parse the JSON output of DNSTwist: " + str(e))
                 return None
         except Exception as e:
-            self.sf.error("Unable to run DNSTwist: " + str(e), False)
+            self.sf.error("Unable to run DNSTwist: " + str(e))
             return None
 
 # End of sfp_tool_dnstwist class

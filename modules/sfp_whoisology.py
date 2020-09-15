@@ -99,7 +99,7 @@ class sfp_whoisology(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
             if info.get("domains") is None:
-                self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"), False)
+                self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"))
                 return None
 
             if len(info.get("domains", [])) == 0:

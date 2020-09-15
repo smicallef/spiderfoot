@@ -160,7 +160,7 @@ class sfp_intelx(SpiderFootPlugin):
                 try:
                     ret = json.loads(res['content'])
                 except Exception as e:
-                    self.sf.error("Error processing JSON response from IntelligenceX: " + str(e), False)
+                    self.sf.error("Error processing JSON response from IntelligenceX: " + str(e))
                     return None
 
                 status = ret['status']

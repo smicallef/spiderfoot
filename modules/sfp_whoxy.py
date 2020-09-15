@@ -102,7 +102,7 @@ class sfp_whoxy(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
             if info.get("status", 0) == 0:
-                self.sf.error("Error querying Whoxy: " + info.get("status_reason", "Unknown"), False)
+                self.sf.error("Error querying Whoxy: " + info.get("status_reason", "Unknown"))
                 self.errorState = True
                 return None
             if info.get("total_pages", 1) > 1:
@@ -119,7 +119,7 @@ class sfp_whoxy(SpiderFootPlugin):
             else:
                 return info.get('search_result', [])
         except Exception as e:
-            self.sf.error("Error processing JSON response from Whoxy: " + str(e), False)
+            self.sf.error("Error processing JSON response from Whoxy: " + str(e))
             return None
 
     # Handle events sent to this module

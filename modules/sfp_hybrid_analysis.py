@@ -186,7 +186,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: Unexpected response status %s" % res['code'], False)
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: Unexpected response status %s" % res['code'])
             self.errorState = True
             return None
 

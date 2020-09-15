@@ -130,7 +130,7 @@ class sfp_onioncity(SpiderFootPlugin):
             )
             self.notifyListeners(evt)
         else:
-            self.sf.error("Failed to fetch Google web search URL", exception=False)
+            self.sf.error("Failed to fetch Google web search URL")
 
         # Check if we've been asked to stop
         if self.checkForStop():

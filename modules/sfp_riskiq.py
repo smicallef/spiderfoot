@@ -198,7 +198,7 @@ class sfp_riskiq(SpiderFootPlugin):
                                                     self.__name__, event)
                                 self.notifyListeners(e)
                 except Exception as e:
-                    self.sf.error("Invalid response returned from RiskIQ: " + str(e), False)
+                    self.sf.error("Invalid response returned from RiskIQ: " + str(e))
 
         if eventName == 'EMAILADDR':
             ret = self.query(eventData, "WHOIS")

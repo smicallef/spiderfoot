@@ -140,7 +140,7 @@ class sfp_zoneh(SpiderFootPlugin):
         if content is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
-                self.sf.error("Unable to fetch " + url, False)
+                self.sf.error("Unable to fetch " + url)
                 self.errorState = True
                 return None
             else:

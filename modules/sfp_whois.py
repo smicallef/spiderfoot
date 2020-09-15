@@ -86,10 +86,10 @@ class sfp_whois(SpiderFootPlugin):
                 if whoisdata:
                     data = str(whoisdata)
             if not data:
-                self.sf.error("Unable to perform WHOIS on " + eventData, False)
+                self.sf.error("Unable to perform WHOIS on " + eventData)
                 return None
         except Exception as e:
-            self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
+            self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e))
             return None
 
         # This is likely to be an error about being throttled rather than real data

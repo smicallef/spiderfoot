@@ -106,7 +106,7 @@ class sfp_botscout(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
         if res['content'] is None or "|" not in res['content']:
-            self.sf.error("Error encountered processing " + eventData, False)
+            self.sf.error("Error encountered processing " + eventData)
             return None
 
         if res['content'].startswith("Y|"):

@@ -125,7 +125,7 @@ class sfp_isc(SpiderFootPlugin):
                 res = self.sf.fetchUrl(url.format(target), timeout=30, useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target), False)
+                    self.sf.error("Unable to fetch " + url.format(target))
                     return None
 
                 if self.contentMalicious(res['content'], malchecks[check]['goodregex'], malchecks[check]['badregex']):

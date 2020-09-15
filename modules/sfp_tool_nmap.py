@@ -129,7 +129,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
-            self.sf.error("File does not exist: " + exe, False)
+            self.sf.error("File does not exist: " + exe)
             self.errorState = True
             return None
 
@@ -152,7 +152,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
                 self.sf.debug("Couldn't reliably detect the OS for " + eventData)
                 return None
         except Exception as e:
-            self.sf.error("Unable to run Nmap: " + str(e), False)
+            self.sf.error("Unable to run Nmap: " + str(e))
             return None
 
         if not content:
@@ -169,7 +169,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
                     evt = SpiderFootEvent("OPERATING_SYSTEM", opsys, self.__name__, event)
                     self.notifyListeners(evt)
             except Exception as e:
-                self.sf.error("Couldn't parse the output of Nmap: " + str(e), False)
+                self.sf.error("Couldn't parse the output of Nmap: " + str(e))
                 return None
 
         if eventName == "NETBLOCK_OWNER":
