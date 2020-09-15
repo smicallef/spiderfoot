@@ -141,7 +141,7 @@ class sfp_securitytrails(SpiderFootPlugin):
             else:
                 return info.get('records', [])
         except Exception as e:
-            self.sf.error("Error processing JSON response from SecurityTrails: " + str(e), False)
+            self.sf.error("Error processing JSON response from SecurityTrails: " + str(e))
             return None
 
     # Handle events sent to this module

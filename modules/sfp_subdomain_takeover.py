@@ -54,7 +54,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
             res = self.sf.fetchUrl(url, useragent="SpiderFoot")
 
             if res['content'] is None:
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 

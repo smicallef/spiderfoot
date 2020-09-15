@@ -93,22 +93,22 @@ class sfp_emailrep(SpiderFootPlugin):
             return None
 
         if res['code'] == '400':
-            self.sf.error('API error: Bad request', False)
+            self.sf.error('API error: Bad request')
             self.errorState = True
             return None
 
         if res['code'] == '401':
-            self.sf.error('API error: Invalid API key', False)
+            self.sf.error('API error: Invalid API key')
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error('API error: Too Many Requests', False)
+            self.sf.error('API error: Too Many Requests')
             self.errorState = True
             return None
 
         if res['code'] != '200':
-            self.sf.error('Unexpected reply from EmailRep.io: ' + res['code'], False)
+            self.sf.error('Unexpected reply from EmailRep.io: ' + res['code'])
             self.errorState = True
             return None
 

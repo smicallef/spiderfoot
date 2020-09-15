@@ -190,7 +190,7 @@ class sfp_circllu(SpiderFootPlugin):
                                 e = SpiderFootEvent("SSL_CERTIFICATE_ISSUED", r[0][0], self.__name__, ipe)
                                 self.notifyListeners(e)
                 except Exception as e:
-                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e), False)
+                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e))
 
         if eventName in ['IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME']:
             ret = self.query(eventData, "PDNS")
@@ -205,7 +205,7 @@ class sfp_circllu(SpiderFootPlugin):
                 try:
                     rec = json.loads(line)
                 except Exception as e:
-                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e), False)
+                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e))
                     continue
 
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])

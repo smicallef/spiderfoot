@@ -243,7 +243,7 @@ class sfp_networksdb(SpiderFootPlugin):
             self.sf.debug("Received warning from NetworksDB: " + data.get('warning'))
 
         if data.get('error'):
-            self.sf.error("Received error from NetworksDB: " + data.get('error'), False)
+            self.sf.error("Received error from NetworksDB: " + data.get('error'))
 
         return data
 

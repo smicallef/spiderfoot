@@ -120,8 +120,7 @@ class sfp_onyphe(SpiderFootPlugin):
             info = json.loads(res["content"])
             if "status" in info and info["status"] == "nok":
                 self.sf.error(
-                    f"Unexpected error happened while requesting data from Onyphe. Error message: {info.get('text', '')}",
-                    False,
+                    f"Unexpected error happened while requesting data from Onyphe. Error message: {info.get('text', '')}"
                 )
                 self.errorState = True
                 return None
@@ -145,8 +144,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
                 if page > self.opts["max_page"]:
                     self.sf.error(
-                        "Maximum number of pages from options for Onyphe reached.",
-                        False,
+                        "Maximum number of pages from options for Onyphe reached."
                     )
                     return [info]
                 retarr.append(info)
@@ -158,8 +156,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
         except ValueError:
             self.sf.error(
-                f"Unexpected value for page in response from Onyphe, url: https://www.onyphe.io/api/v2/simple/{endpoint}/{ip}?page={page}",
-                False,
+                f"Unexpected value for page in response from Onyphe, url: https://www.onyphe.io/api/v2/simple/{endpoint}/{ip}?page={page}"
             )
             self.errorState = True
             return None

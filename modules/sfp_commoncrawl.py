@@ -186,7 +186,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
                                           self.__name__, event)
                     self.notifyListeners(evt)
             except Exception as e:
-                self.sf.error("Malformed JSON from CommonCrawl.org: " + str(e), False)
+                self.sf.error("Malformed JSON from CommonCrawl.org: " + str(e))
                 return None
 
 # End of sfp_commoncrawl class

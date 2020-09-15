@@ -109,7 +109,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
                 continue
 
             if len(columns) != 7:
-                self.sf.error("Unexpected number of columns for row. Expected 7, Found " + str(len(columns)), False)
+                self.sf.error("Unexpected number of columns for row. Expected 7, Found " + str(len(columns)))
                 continue
 
             data.append(columns)

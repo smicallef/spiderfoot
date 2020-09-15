@@ -103,17 +103,17 @@ class sfp_numverify(SpiderFootPlugin):
             return None
 
         if res['code'] == '101':
-            self.sf.error('API error: invalid API key', False)
+            self.sf.error('API error: invalid API key')
             self.errorState = True
             return None
 
         if res['code'] == '102':
-            self.sf.error('API error: user account deactivated', False)
+            self.sf.error('API error: user account deactivated')
             self.errorState = True
             return None
 
         if res['code'] == '104':
-            self.sf.error('API error: usage limit exceeded', False)
+            self.sf.error('API error: usage limit exceeded')
             self.errorState = True
             return None
 
@@ -124,7 +124,7 @@ class sfp_numverify(SpiderFootPlugin):
             return None
 
         if data.get('error') is not None:
-            self.sf.error('API error: ' + str(data.get('error')), False)
+            self.sf.error('API error: ' + str(data.get('error')))
             return None
 
         return data
