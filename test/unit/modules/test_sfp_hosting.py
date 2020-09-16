@@ -54,6 +54,7 @@ class TestModuleHosting(unittest.TestCase):
         module = sfp_hosting()
         self.assertIsInstance(module.producedEvents(), list)
 
+    @unittest.skip("todo")
     def test_handleEvent_event_data_ip_address_hosted_should_return_event(self):
         sf = SpiderFoot(self.default_options)
 
@@ -86,6 +87,7 @@ class TestModuleHosting(unittest.TestCase):
 
         self.assertIsNone(result)
 
+    @unittest.skip("todo")
     def test_handleEvent_event_data_ip_address_not_hosted_should_not_return_event(self):
         sf = SpiderFoot(self.default_options)
 
