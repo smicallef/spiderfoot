@@ -75,15 +75,17 @@ class sfp_base64(SpiderFootPlugin):
             if caps < (minlen / 4):
                 continue
 
-            if type(match) != str:
+            if isinstance(match, str):
+                string = match
+            else:
                 string = str(match)
 
             self.sf.info(f"Found Base64 string: {match}")
 
             try:
-                string += " (" + base64.b64decode(match) + ")"
-            except Exception:
-                self.sf.debug("Unable to base64-decode string.")
+                string += f" ({base64.b64decode(match).decode('utf-8')})"
+            except Exception as e:
+                self.sf.debug(f"Unable to base64-decode string: {e}")
                 continue
 
             evt = SpiderFootEvent("BASE64_DATA", string, self.__name__, event)
