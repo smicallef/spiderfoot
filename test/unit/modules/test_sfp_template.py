@@ -3,7 +3,7 @@ import unittest
 
 from modules.sfp_template import sfp_template
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootTarget
+from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 class TestModuletemplate(unittest.TestCase):
@@ -78,4 +78,3 @@ class TestModuletemplate(unittest.TestCase):
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)
-        
