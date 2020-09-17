@@ -135,12 +135,6 @@ class sfp_dnsdb(SpiderFootPlugin):
 
         return records[1:-1]
 
-    def emit(self, etype, data, pevent, notify=True):
-        evt = SpiderFootEvent(etype, data, self.__name__, pevent)
-        if notify:
-            self.notifyListeners(evt)
-        return evt
-
     def isTooOld(self, lastSeen):
         ageLimitTs = int(time.time()) - (86400 * self.opts["age_limit_days"])
         if self.opts["age_limit_days"] > 0 and lastSeen < ageLimitTs:
@@ -176,7 +170,8 @@ class sfp_dnsdb(SpiderFootPlugin):
             if rrsetRecords is None:
                 return None
 
-            self.emit("RAW_RIR_DATA", str(rrsetRecords), event)
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(rrsetRecords), self.__name__, event)
+            self.notifyListeners(evt)
 
             for record in rrsetRecords:
                 record = record.get("obj")
@@ -218,7 +213,7 @@ class sfp_dnsdb(SpiderFootPlugin):
                         if not self.getTarget().matches(data):
                             coHosts.add(data)
 
-                        evt = self.emit("IP_ADDRESS", data, event, False)
+                        evt = SpiderFootEvent("IP_ADDRESS", data, self.__name__, event)
 
                     if record.get("rrtype") == "AAAA":
 
@@ -242,13 +237,13 @@ class sfp_dnsdb(SpiderFootPlugin):
                         if not self.getTarget().matches(data):
                             coHosts.add(data)
 
-                        evt = self.emit("IPV6_ADDRESS", data, event, False)
+                        evt = SpiderFootEvent("IPV6_ADDRESS", data, self.__name__, event)
                     elif record.get("rrtype") == "MX":
-                        evt = self.emit("PROVIDER_MAIL", data, event, False)
+                        evt = SpiderFootEvent("PROVIDER_MAIL", data, self.__name__, event)
                     elif record.get("rrtype") == "NS":
-                        evt = self.emit("PROVIDER_DNS", data, event, False)
+                        evt = SpiderFootEvent("PROVIDER_DNS", data, self.__name__, event)
                     elif record.get("rrtype") == "TXT":
-                        evt = self.emit("DNS_TEXT", data, event, False)
+                        evt = SpiderFootEvent("DNS_TEXT", data, self.__name__, event)
                     elif record.get("rrtype") == "CNAME":
                         if not self.getTarget().matches(data):
                             coHosts.add(data)
@@ -260,7 +255,9 @@ class sfp_dnsdb(SpiderFootPlugin):
             if rdataRecords is None:
                 return None
 
-            self.emit("RAW_RIR_DATA", str(rdataRecords), event)
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(rdataRecords), self.__name__, event)
+            self.notifyListeners(evt)
+
             for record in rdataRecords:
                 record = record.get("obj")
                 if self.isTooOld(record.get("time_last", 0)):
@@ -274,7 +271,7 @@ class sfp_dnsdb(SpiderFootPlugin):
                     continue
                 responseData.add(data)
                 if record.get("rrtype") == "NS":
-                    evt = self.emit("PROVIDER_DNS", data, event, False)
+                    evt = SpiderFootEvent("PROVIDER_DNS", data, self.__name__, event)
                 elif record.get("rrtype") == "CNAME":
                     if not self.getTarget().matches(data):
                         coHosts.add(data)
@@ -284,7 +281,9 @@ class sfp_dnsdb(SpiderFootPlugin):
             if rdataRecords is None:
                 return None
 
-            self.emit("RAW_RIR_DATA", str(rdataRecords), event)
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(rdataRecords), self.__name__, event)
+            self.notifyListeners(evt)
+
             for record in rdataRecords:
                 record = record.get("obj")
                 if self.checkForStop():
@@ -304,9 +303,10 @@ class sfp_dnsdb(SpiderFootPlugin):
 
                 if self.opts["verify"] and not self.sf.resolveHost(data):
                     self.sf.debug(f"Host {data} could not be resolved")
-                    self.emit("INTERNET_NAME_UNRESOLVED", data, event)
+                    evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", data, self.__name__, event)
                 else:
-                    self.emit("INTERNET_NAME", data, event)
+                    evt = SpiderFootEvent("INTERNET_NAME", data, self.__name__, event)
+                self.notifyListeners(evt)
 
                 if not self.getTarget().matches(data):
                     coHosts.add(data)
@@ -326,8 +326,8 @@ class sfp_dnsdb(SpiderFootPlugin):
                     continue
 
             if self.cohostcount < self.opts["maxcohost"]:
-                self.emit("CO_HOSTED_SITE", co, event)
+                evt = SpiderFootEvent("CO_HOSTED_SITE", co, self.__name__, event)
+                self.notifyListeners(evt)
                 self.cohostcount += 1
-
 
 # End of sfp_dnsdb class
