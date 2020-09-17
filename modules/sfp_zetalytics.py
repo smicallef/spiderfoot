@@ -16,6 +16,10 @@ from urllib.parse import urlencode
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
+class ModuleStop(Exception):
+    pass
+
+
 class sfp_zetalytics(SpiderFootPlugin):
     BASE_URL = "https://zonecruncher.com/api/v1"
     meta = {
@@ -65,6 +69,8 @@ class sfp_zetalytics(SpiderFootPlugin):
         return ["INTERNET_NAME", "AFFILIATE_DOMAIN_NAME", "INTERNET_NAME_UNRESOLVED"]
 
     def emit(self, etype, data, pevent, notify=True):
+        if self.checkForStop():
+            raise ModuleStop()
         evt = SpiderFootEvent(etype, data, self.__name__, pevent)
         if notify:
             self.notifyListeners(evt)
@@ -160,7 +166,7 @@ class sfp_zetalytics(SpiderFootPlugin):
                     if isinstance(domain, str):
                         self.emit("AFFILIATE_DOMAIN_NAME", domain, pevent)
 
-    def handleEvent(self, event):
+    def _handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
@@ -199,3 +205,11 @@ class sfp_zetalytics(SpiderFootPlugin):
             return None
 
         self.emit("RAW_RIR_DATA", json.dumps(data), event)
+
+    def handleEvent(self, event):
+        if self.checkForStop():
+            return None
+        try:
+            self._handleEvent(event)
+        except ModuleStop():
+            return None
