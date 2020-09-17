@@ -64,7 +64,7 @@ class sfp_base64(SpiderFootPlugin):
         m = re.findall(pat, eventData)
         for match in m:
             if self.checkForStop():
-                return None
+                return
 
             minlen = int(self.opts['minlength'])
             if len(match) < minlen:
@@ -90,7 +90,5 @@ class sfp_base64(SpiderFootPlugin):
 
             evt = SpiderFootEvent("BASE64_DATA", string, self.__name__, event)
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_base64 class

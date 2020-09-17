@@ -132,9 +132,9 @@ class sfp_azureblobstorage(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -143,7 +143,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
                 b = self.sf.urlFQDN(eventData)
                 evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", b, self.__name__, event)
                 self.notifyListeners(evt)
-            return None
+            return
 
         targets = [eventData.replace('.', '')]
         kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
@@ -155,7 +155,7 @@ class sfp_azureblobstorage(SpiderFootPlugin):
             suffixes = [''] + self.opts['suffixes'].split(',')
             for s in suffixes:
                 if self.checkForStop():
-                    return None
+                    return
 
                 b = t + s + ".blob.core.windows.net"
                 url = "https://" + b

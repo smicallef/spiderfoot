@@ -89,6 +89,4 @@ class sfp_bitcoin(SpiderFootPlugin):
                 evt = SpiderFootEvent("BITCOIN_ADDRESS", m, self.__name__, event)
                 self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_bitcoin class

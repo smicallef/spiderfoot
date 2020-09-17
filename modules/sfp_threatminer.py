@@ -119,12 +119,11 @@ class sfp_threatminer(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from ThreatMiner: {e}")
-            return None
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -137,29 +136,29 @@ class sfp_threatminer(SpiderFootPlugin):
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxnetblock']))
-                    return None
+                    return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxsubnet']))
-                    return None
+                    return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -176,7 +175,7 @@ class sfp_threatminer(SpiderFootPlugin):
             ret = self.query(qry, "passive")
             if ret is None:
                 self.sf.info("No Passive DNS info for " + qry)
-                return None
+                return
 
             if "results" not in ret:
                 continue
@@ -218,11 +217,11 @@ class sfp_threatminer(SpiderFootPlugin):
             ret = self.query(eventData, "subs")
             if ret is None:
                 self.sf.debug("No hosts found")
-                return None
+                return
 
             if len(ret.get("results", list())) == 0:
                 self.sf.debug("No hosts found")
-                return None
+                return
 
             for rec in ret.get("results"):
                 self.sf.debug("Found host results in ThreatMiner")

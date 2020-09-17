@@ -78,18 +78,18 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already scanned.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if not self.opts['whatweb_path']:
             self.sf.error("You enabled sfp_tool_whatweb but did not set a path to the tool!")
             self.errorState = True
-            return None
+            return
 
         exe = self.opts['whatweb_path']
         if self.opts['whatweb_path'].endswith('/'):
@@ -99,12 +99,12 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         if not os.path.isfile(exe):
             self.sf.error("File does not exist: " + exe)
             self.errorState = True
-            return None
+            return
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
             self.sf.error("Invalid input, refusing to run.")
-            return None
+            return
 
         # Set aggression level
         try:
@@ -132,25 +132,25 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             stdout, stderr = p.communicate(input=None)
         except Exception as e:
             self.sf.error(f"Unable to run WhatWeb: {e}")
-            return None
+            return
 
         if p.returncode != 0:
             self.sf.error("Unable to read WhatWeb output.")
             self.sf.debug("Error running WhatWeb: " + stderr + ", " + stdout)
-            return None
+            return
 
         if not stdout:
             self.sf.debug(f"WhatWeb returned no output for {eventData}")
-            return None
+            return
 
         try:
             result_json = json.loads(stdout)
         except Exception as e:
             self.sf.error(f"Couldn't parse the JSON output of WhatWeb: {e}")
-            return None
+            return
 
         if len(result_json) == 0:
-            return None
+            return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(result_json), self.__name__, event)
         self.notifyListeners(evt)

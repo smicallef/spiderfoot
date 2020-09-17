@@ -70,6 +70,4 @@ class sfp_hashes(SpiderFootPlugin):
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_hashes class

@@ -234,6 +234,4 @@ class sfp_multiproxy(SpiderFootPlugin):
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_multiproxy class

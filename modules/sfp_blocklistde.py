@@ -248,6 +248,4 @@ class sfp_blocklistde(SpiderFootPlugin):
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_blocklistde class

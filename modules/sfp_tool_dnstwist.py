@@ -80,19 +80,19 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         # Don't look up stuff twice, check IP == IP here
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already scanned.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if not self.opts['dnstwistpath']:
             self.sf.error("You enabled sfp_tool_dnstwist but did not set a path to the tool!")
             self.errorState = True
-            return None
+            return
 
         # Normalize path
         if self.opts['dnstwistpath'].endswith('dnstwist.py'):
@@ -106,12 +106,12 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
         if not os.path.isfile(exe):
             self.sf.error("File does not exist: " + exe)
             self.errorState = True
-            return None
+            return
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
             self.sf.error("Invalid input, refusing to run.")
-            return None
+            return
 
         try:
             p = Popen([self.opts['pythonpath'], exe, "-f", "json", "-r", eventData], stdout=PIPE, stderr=PIPE)
@@ -121,7 +121,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             else:
                 self.sf.error("Unable to read DNSTwist content.")
                 self.sf.debug("Error running DNSTwist: " + stderr + ", " + stdout)
-                return None
+                return
 
             # For each line in output, generate a SIMILARDOMAIN event
             try:
@@ -135,9 +135,9 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
                     self.notifyListeners(evt)
             except Exception as e:
                 self.sf.error("Couldn't parse the JSON output of DNSTwist: " + str(e))
-                return None
+                return
         except Exception as e:
             self.sf.error("Unable to run DNSTwist: " + str(e))
-            return None
+            return
 
 # End of sfp_tool_dnstwist class

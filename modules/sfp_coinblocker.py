@@ -257,6 +257,4 @@ class sfp_coinblocker(SpiderFootPlugin):
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_coinblocker class

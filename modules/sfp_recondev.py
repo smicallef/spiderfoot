@@ -137,10 +137,10 @@ class sfp_recondev(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -151,16 +151,16 @@ class sfp_recondev(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         if eventName not in ["DOMAIN_NAME"]:
-            return None
+            return
 
         data = self.queryDomain(eventData)
 
         if data is None:
             self.sf.debug(f"No information found for domain {eventData}")
-            return None
+            return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(evt)
@@ -175,7 +175,7 @@ class sfp_recondev(SpiderFootPlugin):
 
         for domain in set(domains):
             if self.checkForStop():
-                return None
+                return
 
             if domain in self.results:
                 continue
@@ -190,7 +190,5 @@ class sfp_recondev(SpiderFootPlugin):
             else:
                 evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_recondev class

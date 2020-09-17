@@ -229,6 +229,4 @@ class sfp_phishtank(SpiderFootPlugin):
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_phishtank class

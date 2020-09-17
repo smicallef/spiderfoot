@@ -83,13 +83,13 @@ class sfp_ahmia(SpiderFootPlugin):
         eventData = event.data
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         # Sites hosted on the domain
         data = self.sf.fetchUrl("https://ahmia.fi/search/?q=" + eventData.replace(" ", "%20"),
@@ -97,12 +97,11 @@ class sfp_ahmia(SpiderFootPlugin):
                                 timeout=self.opts['_fetchtimeout'])
         if data is None or not data.get('content'):
             self.sf.info("No results returned from ahmia.fi.")
-            return None
+            return
 
         if "redirect_url=" in data['content']:
-            # Check if we've been asked to stop
             if self.checkForStop():
-                return None
+                return
 
             links = re.findall("redirect_url=(.[^\"]+)\"", data['content'], re.IGNORECASE | re.DOTALL)
 
@@ -115,7 +114,7 @@ class sfp_ahmia(SpiderFootPlugin):
                     self.sf.debug("Found a darknet mention: " + link)
                     if self.sf.urlFQDN(link).endswith(".onion"):
                         if self.checkForStop():
-                            return None
+                            return
                         if self.opts['fetchlinks']:
                             res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
                                                    useragent=self.opts['_useragent'],
@@ -154,6 +153,5 @@ class sfp_ahmia(SpiderFootPlugin):
                 evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
                                       self.__name__, event)
                 self.notifyListeners(evt)
-
 
 # End of sfp_ahmia class

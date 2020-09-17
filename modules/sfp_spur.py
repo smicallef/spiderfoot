@@ -129,9 +129,7 @@ class sfp_spur(SpiderFootPlugin):
             self.sf.error("Unable to fetch data from spur.us")
             return None
 
-        content = res.get('content')
-
-        return content
+        return res.get('content')
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -139,7 +137,7 @@ class sfp_spur(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -148,34 +146,34 @@ class sfp_spur(SpiderFootPlugin):
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_spur but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.sf.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxnetblock']))
-                return None
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                 self.sf.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxsubnet']))
-                return None
+                return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -185,13 +183,13 @@ class sfp_spur(SpiderFootPlugin):
         else:
             # If user has enabled affiliate checking
             if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
-                return None
+                return
             qrylist.append(eventData)
 
         for addr in qrylist:
 
             if self.checkForStop():
-                return None
+                return
 
             content = self.queryIPAddress(addr)
 
@@ -280,7 +278,5 @@ class sfp_spur(SpiderFootPlugin):
                 else:
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousIPDesc, self.__name__, event)
                     self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_spur class

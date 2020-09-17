@@ -82,41 +82,41 @@ class sfp_tool_nmap(SpiderFootPlugin):
 
         if srcModuleName == "sfp_tool_nmap":
             self.sf.debug("Skipping event from myself.")
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         try:
             if eventName == "NETBLOCK_OWNER" and self.opts['netblockscan']:
                 net = IPNetwork(eventData)
                 if net.prefixlen < self.opts['netblockscanmax']:
                     self.sf.debug("Skipping port scanning of " + eventData + ", too big.")
-                    return None
+                    return
 
         except Exception as e:
             self.sf.error("Strange netblock identified, unable to parse: " + eventData + " (" + str(e) + ")")
-            return None
+            return
 
         # Don't look up stuff twice, check IP == IP here
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already scanned.")
-            return None
+            return
         else:
             # Might be a subnet within a subnet or IP within a subnet
             for addr in self.results:
                 if IPNetwork(eventData) in IPNetwork(addr):
                     self.sf.debug("Skipping " + eventData + " as already within a scanned range.")
-                    return None
+                    return
 
         self.results[eventData] = True
 
         if not self.opts['nmappath']:
             self.sf.error("You enabled sfp_tool_nmap but did not set a path to the tool!")
             self.errorState = True
-            return None
+            return
 
         # Normalize path
         if self.opts['nmappath'].endswith('nmap'):
@@ -131,12 +131,12 @@ class sfp_tool_nmap(SpiderFootPlugin):
         if not os.path.isfile(exe):
             self.sf.error("File does not exist: " + exe)
             self.errorState = True
-            return None
+            return
 
         # Sanitize domain name.
         if not self.sf.validIP(eventData) and not self.sf.validIpNetwork(eventData):
             self.sf.error("Invalid input, refusing to run.")
-            return None
+            return
 
         try:
             p = Popen([exe, "-O", "--osscan-limit", eventData], stdout=PIPE, stderr=PIPE)
@@ -146,18 +146,18 @@ class sfp_tool_nmap(SpiderFootPlugin):
             else:
                 self.sf.error("Unable to read Nmap content.")
                 self.sf.debug("Error running Nmap: " + stderr + ", " + stdout)
-                return None
+                return
 
             if "No exact OS matches for host" in content or "OSScan results may be unreliable" in content:
                 self.sf.debug("Couldn't reliably detect the OS for " + eventData)
-                return None
+                return
         except Exception as e:
             self.sf.error("Unable to run Nmap: " + str(e))
-            return None
+            return
 
         if not content:
             self.sf.debug("No content from Nmap to parse.")
-            return None
+            return
 
         if eventName == "IP_ADDRESS":
             try:
@@ -170,7 +170,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
                     self.notifyListeners(evt)
             except Exception as e:
                 self.sf.error("Couldn't parse the output of Nmap: " + str(e))
-                return None
+                return
 
         if eventName == "NETBLOCK_OWNER":
             try:
@@ -191,6 +191,6 @@ class sfp_tool_nmap(SpiderFootPlugin):
                         currentIp = None
             except Exception as e:
                 self.sf.error(f"Couldn't parse the output of Nmap: {e}")
-                return None
+                return
 
 # End of sfp_tool_nmap class

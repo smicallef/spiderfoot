@@ -238,7 +238,7 @@ class sfp_spider(SpiderFootPlugin):
         self.notifyListeners(event)
 
         if not httpresult.get('headers'):
-            return None
+            return
 
         ctype = httpresult['headers'].get('content-type')
         if ctype:
@@ -326,7 +326,7 @@ class sfp_spider(SpiderFootPlugin):
                 self.robotsRules[targetBase] = self.sf.parseRobotsTxt(robotsTxt['content'])
 
         if self.checkForStop():
-            return None
+            return
 
         # First iteration we are starting with links found on the start page
         # Iterations after that are based on links found on those pages,
@@ -335,7 +335,7 @@ class sfp_spider(SpiderFootPlugin):
 
         if links is None:
             self.sf.debug("No links found on the first fetch!")
-            return None
+            return
 
         while keepSpidering:
             # Gets hit in the second and subsequent iterations when more links
@@ -352,7 +352,7 @@ class sfp_spider(SpiderFootPlugin):
 
                     # Check if we've been asked to stop
                     if self.checkForStop():
-                        return None
+                        return
 
                     self.sf.debug("Fetching fresh content from: " + link)
                     time.sleep(self.opts['pausesec'])

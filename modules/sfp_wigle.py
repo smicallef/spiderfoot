@@ -179,31 +179,31 @@ class sfp_wigle(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key_encoded'] == "":
             self.sf.error("You enabled sfp_wigle but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         coords = self.getcoords(eventData)
         if not coords:
             self.sf.error("Couldn't get coordinates for address from Wigle.net.")
-            return None
+            return
 
         nets = self.getnetworks(coords)
         if not nets:
             self.sf.error("Couldn't get networks for coordinates from Wigle.net.")
-            return None
+            return
 
         for n in nets:
             e = SpiderFootEvent("WIFI_ACCESS_POINT", n, self.__name__, event)

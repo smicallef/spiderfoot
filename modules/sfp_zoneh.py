@@ -104,19 +104,19 @@ class sfp_zoneh(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
-            return None
+            return
         if eventName == 'AFFILIATE_INTERNET_NAME' or eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts['checkaffiliates']:
-            return None
+            return
 
         evtType = 'DEFACED_INTERNET_NAME'
 
@@ -133,7 +133,7 @@ class sfp_zoneh(SpiderFootPlugin):
             evtType = 'DEFACED_AFFILIATE_IPADDR'
 
         if self.checkForStop():
-            return None
+            return
 
         url = "https://www.zone-h.org/rss/specialdefacements"
         content = self.sf.cacheGet("sfzoneh", 48)
@@ -142,7 +142,7 @@ class sfp_zoneh(SpiderFootPlugin):
             if data['content'] is None:
                 self.sf.error("Unable to fetch " + url)
                 self.errorState = True
-                return None
+                return
             else:
                 self.sf.cachePut("sfzoneh", data['content'])
                 content = data['content']

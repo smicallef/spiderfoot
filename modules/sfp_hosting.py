@@ -94,7 +94,8 @@ class sfp_hosting(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
+
         self.results[eventData] = True
 
         ret = self.queryAddr(eventData)

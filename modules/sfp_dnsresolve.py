@@ -125,13 +125,13 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         # Don't be recursive for names
         if srcModuleName in ["sfp_dnsresolve"] and "_NAME" in eventName:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
             self.sf.debug("Skipping duplicate event.")
-            return None
+            return
         self.events[eventDataHash] = True
 
         # Simply translates these to their domains
@@ -151,10 +151,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
             # In case the domain of the provided host is different, report that too
             dom = self.sf.hostDomain(eventData, self.opts['_internettlds'])
             if dom == eventData or dom is None:
-                return None
+                return
             evt = SpiderFootEvent(ev, dom, self.__name__, parentEvent)
             self.notifyListeners(evt)
-            return None
+            return
 
         # Search for IPs/hosts in raw data
         if eventName not in ["CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME",
@@ -168,7 +168,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
             for name in self.getTarget().getNames():
                 if self.checkForStop():
-                    return None
+                    return
 
                 offset = data.find(name)
                 if offset < 0:
@@ -206,21 +206,21 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     offset = data.find(name, start + len(chunkhost))
 
             # Nothing left to do with internal links and raw data
-            return None
+            return
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxnetblock']))
-                    return None
+                    return
 
             # Not handling IPv6 (yet)
             if "::" in eventData:
-                return None
+                return
 
             self.sf.debug(f"Looking up IPs in owned netblock: {eventData}")
             for ip in IPNetwork(eventData):
@@ -233,7 +233,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     continue
 
                 if self.checkForStop():
-                    return None
+                    return
 
                 addrs = self.sf.resolveIP(ipaddr)
                 if addrs:
@@ -244,10 +244,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
                         # let the handling by this module take
                         # care of follow-up processing.
                         if self.checkForStop():
-                            return None
+                            return
 
                         self.processHost(addr, parentEvent, False)
-            return None
+            return
 
         if eventName in ["IP_ADDRESS", "INTERNET_NAME", "IPV6_ADDRESS",
                          "AFFILIATE_IPADDR", "AFFILIATE_INTERNET_NAME"]:
@@ -258,14 +258,14 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 addrs = self.sf.resolveIP(eventData)
 
             if not addrs:
-                return None
+                return
 
             addrs.append(eventData)
 
             # We now have a set of hosts/IPs to do something with.
             for addr in addrs:
                 if self.checkForStop():
-                    return None
+                    return
 
                 # Does the host/IP match to the original target?
                 if self.getTarget().matches(addr):
@@ -287,8 +287,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if parentHash in self.hostresults[host] or parentEvent.data == host:
                 self.sf.debug("Skipping host, " + host + ", already processed.")
                 return None
-            else:
-                self.hostresults[host] = self.hostresults[host] + [parentHash]
+
+            self.hostresults[host] = self.hostresults[host] + [parentHash]
 
         self.sf.debug("Found host: " + host)
         # If the returned hostname is aliaseed to our

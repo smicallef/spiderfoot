@@ -174,12 +174,11 @@ class sfp_xforce(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from X-Force Exchange: {e}")
-            return None
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -190,44 +189,44 @@ class sfp_xforce(SpiderFootPlugin):
         infield_sep = " ; "
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['xforce_api_key'] == "" or self.opts['xforce_api_key_password'] == "":
             self.sf.error("You enabled sfp_xforce but did not set an API key/password!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxnetblock']))
-                    return None
+                    return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxsubnet']))
-                    return None
+                    return
 
         if eventName.startswith('AFFILIATE_') and not self.opts.get('checkaffiliates', False):
-            return None
+            return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -241,7 +240,7 @@ class sfp_xforce(SpiderFootPlugin):
         if eventName == "IP_ADDRESS":
             evtType = "CO_HOSTED_SITE"
             if self.cohostcount > self.opts['maxcohost']:
-                return None
+                return
 
             ret = self.query(eventData, "resolve")
             if ret is None:
@@ -268,7 +267,7 @@ class sfp_xforce(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
                 evtType = 'MALICIOUS_IPADDR'

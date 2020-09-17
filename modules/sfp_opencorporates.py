@@ -194,7 +194,7 @@ class sfp_opencorporates(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -204,13 +204,13 @@ class sfp_opencorporates(SpiderFootPlugin):
 
         if res is None:
             self.sf.debug("Found no results for " + eventData)
-            return None
+            return
 
         companies = res.get('companies')
 
         if not companies:
             self.sf.debug("Found no results for " + eventData)
-            return None
+            return
 
         for c in companies:
             company = c.get('company')

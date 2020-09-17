@@ -181,15 +181,15 @@ class sfp_apility(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_apility but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -200,13 +200,13 @@ class sfp_apility(SpiderFootPlugin):
 
             if data is None:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             res = data.get('response')
 
             if not res:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             for m in res:
                 if m == 'FREEMAIL' and not self.opts['malicious_freemail']:
@@ -219,13 +219,13 @@ class sfp_apility(SpiderFootPlugin):
 
             if data is None:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             res = data.get('response')
 
             if not res:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
             self.notifyListeners(evt)
@@ -240,7 +240,7 @@ class sfp_apility(SpiderFootPlugin):
 
             if not domain:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             if domain.get('blacklist'):
                 for m in domain.get('blacklist'):

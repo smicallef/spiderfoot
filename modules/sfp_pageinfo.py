@@ -70,7 +70,7 @@ class sfp_pageinfo(SpiderFootPlugin):
         # event.sourceEvent.data set to the URL of the source.
         if "sfp_spider" not in event.module:
             self.sf.debug("Ignoring web content from " + event.module)
-            return None
+            return
 
         eventName = event.eventType
         srcModuleName = event.module
@@ -83,11 +83,11 @@ class sfp_pageinfo(SpiderFootPlugin):
         # our base domain.
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
             self.sf.debug("Not gathering page info for external site " + eventSource)
-            return None
+            return
 
         if eventSource in self.results:
             self.sf.debug("Already checked this page for a page type, skipping.")
-            return None
+            return
 
         self.results[eventSource] = list()
 
@@ -125,7 +125,5 @@ class sfp_pageinfo(SpiderFootPlugin):
                 self.sf.debug("Externally hosted JavaScript found at: %s" % match)
                 evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_pageinfo class

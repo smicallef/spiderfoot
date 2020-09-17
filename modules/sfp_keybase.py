@@ -259,6 +259,4 @@ class sfp_keybase(SpiderFootPlugin):
             evt = SpiderFootEvent("PGP_KEY", pgpKey, self.__name__, event)
             self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_keybase class

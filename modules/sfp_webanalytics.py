@@ -55,7 +55,7 @@ class sfp_webanalytics(SpiderFootPlugin):
 
         if sourceData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[sourceData] = True
 
@@ -378,7 +378,5 @@ class sfp_webanalytics(SpiderFootPlugin):
                                       self.__name__, event)
                 evt.moduleDataSource = datasource
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_webanalytics class

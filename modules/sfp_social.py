@@ -70,7 +70,7 @@ class sfp_social(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in list(self.results.keys()):
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -94,7 +94,5 @@ class sfp_social(SpiderFootPlugin):
                     un = bits.group(1)
                     evt = SpiderFootEvent("USERNAME", str(un), self.__name__, event)
                     self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_social class
