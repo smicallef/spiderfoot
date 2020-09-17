@@ -11,6 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
+import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 import time
@@ -103,7 +104,7 @@ class sfp_dnsdb(SpiderFootPlugin):
 
         res = self.sf.fetchUrl(
             f"https://api.dnsdb.info/dnsdb/v2/lookup/{endpoint}/{queryType}/{query}",
-            timeout=self.opts["_fetchtimeout"],
+            timeout=30,
             useragent="SpiderFoot",
             headers=headers,
         )
@@ -210,9 +211,6 @@ class sfp_dnsdb(SpiderFootPlugin):
                             )
                             continue
 
-                        if not self.getTarget().matches(data):
-                            coHosts.add(data)
-
                         evt = SpiderFootEvent("IP_ADDRESS", data, self.__name__, event)
 
                     if record.get("rrtype") == "AAAA":
@@ -234,15 +232,14 @@ class sfp_dnsdb(SpiderFootPlugin):
                             )
                             continue
 
-                        if not self.getTarget().matches(data):
-                            coHosts.add(data)
-
                         evt = SpiderFootEvent("IPV6_ADDRESS", data, self.__name__, event)
                     elif record.get("rrtype") == "MX":
+                        data = re.sub(r'.*\s+(.*)', r'\1', data)
                         evt = SpiderFootEvent("PROVIDER_MAIL", data, self.__name__, event)
                     elif record.get("rrtype") == "NS":
                         evt = SpiderFootEvent("PROVIDER_DNS", data, self.__name__, event)
                     elif record.get("rrtype") == "TXT":
+                        data = data.replace('"', '')
                         evt = SpiderFootEvent("DNS_TEXT", data, self.__name__, event)
                     elif record.get("rrtype") == "CNAME":
                         if not self.getTarget().matches(data):
@@ -301,15 +298,16 @@ class sfp_dnsdb(SpiderFootPlugin):
                     continue
                 responseData.add(data)
 
+                if not self.getTarget().matches(data):
+                    coHosts.add(data)
+                    continue
+
                 if self.opts["verify"] and not self.sf.resolveHost(data):
                     self.sf.debug(f"Host {data} could not be resolved")
                     evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", data, self.__name__, event)
                 else:
                     evt = SpiderFootEvent("INTERNET_NAME", data, self.__name__, event)
                 self.notifyListeners(evt)
-
-                if not self.getTarget().matches(data):
-                    coHosts.add(data)
 
         for co in coHosts:
             if eventName == "IP_ADDRESS" and (
