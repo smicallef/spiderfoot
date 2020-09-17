@@ -90,13 +90,13 @@ class sfp_duckduckgo(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['content'] is None:
-            self.sf.error(f"Unable to fetch {url}", False)
+            self.sf.error(f"Unable to fetch {url}")
             return None
 
         try:
             ret = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.error(f"Error processing JSON response from DuckDuckGo: {e}", False)
+        except Exception as e:
+            self.sf.error(f"Error processing JSON response from DuckDuckGo: {e}")
             return None
 
         if not ret['Heading']:

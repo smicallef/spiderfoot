@@ -117,7 +117,7 @@ class sfp_spur(SpiderFootPlugin):
         code = res.get('code')
 
         if code == '403':
-            self.sf.error("Invalid credentials. Please check API Token", False)
+            self.sf.error("Invalid credentials. Please check API Token")
             self.errorState = True
             return None
 
@@ -126,7 +126,7 @@ class sfp_spur(SpiderFootPlugin):
             return None
 
         if not code == '200':
-            self.sf.error("Unable to fetch data from spur.us", False)
+            self.sf.error("Unable to fetch data from spur.us")
             return None
 
         content = res.get('content')
@@ -146,7 +146,7 @@ class sfp_spur(SpiderFootPlugin):
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_spur but did not set an API key!", False)
+            self.sf.error("You enabled sfp_spur but did not set an API key!")
             self.errorState = True
             return None
 

@@ -124,65 +124,65 @@ class sfp_whatcms(SpiderFootPlugin):
             return None
 
         if res['code'] != '200':
-            self.sf.error('Unexpected reply from WhatCMS.org: ' + res['code'], False)
+            self.sf.error('Unexpected reply from WhatCMS.org: ' + res['code'])
             self.errorState = True
             return None
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         result = data.get('result')
         if result is None:
-            self.sf.error('API error: no results', False)
+            self.sf.error('API error: no results')
             return None
 
         code = str(result.get('code'))
 
         if code == '0':
-            self.sf.error('API error: Server failure', False)
+            self.sf.error('API error: Server failure')
             self.errorState = True
             return None
 
         if code == '101':
-            self.sf.error('API error: Invalid API Key', False)
+            self.sf.error('API error: Invalid API Key')
             self.errorState = True
             return None
 
         if code == '102':
-            self.sf.error('API error: Unauthenticated request. Invalid API key?', False)
+            self.sf.error('API error: Unauthenticated request. Invalid API key?')
             self.errorState = True
             return None
 
         if code == '111':
-            self.sf.error('API error: Invalid URL', False)
+            self.sf.error('API error: Invalid URL')
             self.errorState = True
             return None
 
         if code == '120':
-            self.sf.error('API error: Too many requests', False)
+            self.sf.error('API error: Too many requests')
             self.errorState = True
             return None
 
         if code == '121':
-            self.sf.error('API error: You have exceeded your monthly request quota', False)
+            self.sf.error('API error: You have exceeded your monthly request quota')
             self.errorState = True
             return None
 
         if code == '123':
-            self.sf.error('API error: Account disabled per violation of Terms and Conditions', False)
+            self.sf.error('API error: Account disabled per violation of Terms and Conditions')
             self.errorState = True
             return None
 
         if code == '201':
-            self.sf.error('API error: CMS or Host not found', False)
+            self.sf.error('API error: CMS or Host not found')
             self.errorState = True
             return None
 
         if code != '200':
-            self.sf.error('Unexpected status code from WhatCMS.org: ' + code, False)
+            self.sf.error('Unexpected status code from WhatCMS.org: ' + code)
             self.errorState = True
             return None
 
@@ -198,7 +198,7 @@ class sfp_whatcms(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == '':
-            self.sf.error('You enabled sfp_whatcms but did not set an API key!', False)
+            self.sf.error('You enabled sfp_whatcms but did not set an API key!')
             self.errorState = True
             return None
 

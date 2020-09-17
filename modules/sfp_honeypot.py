@@ -164,7 +164,7 @@ class sfp_honeypot(SpiderFootPlugin):
 
                 evt = SpiderFootEvent(e, text.format(qaddr), self.__name__, parentEvent)
                 self.notifyListeners(evt)
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
         return None
@@ -182,7 +182,7 @@ class sfp_honeypot(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_honeypot but did not set an API key!", False)
+            self.sf.error("You enabled sfp_honeypot but did not set an API key!")
             self.errorState = True
             return None
 

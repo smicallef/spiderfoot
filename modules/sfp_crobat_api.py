@@ -80,13 +80,13 @@ class sfp_crobat_api(SpiderFootPlugin):
     def parseAPIResponse(self, res):
         # Future proofing - Crobat API does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by Crobat API", False)
+            self.sf.error("You are being rate-limited by Crobat API")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Crobat API", False)
+            self.sf.error("Failed to retrieve content from Crobat API")
             self.errorState = True
             return None
 
@@ -104,7 +104,7 @@ class sfp_crobat_api(SpiderFootPlugin):
             return None
 
         if not isinstance(data, list):
-            self.sf.error("Failed to retrieve content from Crobat API", False)
+            self.sf.error("Failed to retrieve content from Crobat API")
             return None
 
         return data

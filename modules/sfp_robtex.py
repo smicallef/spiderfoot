@@ -155,14 +155,14 @@ class sfp_robtex(SpiderFootPlugin):
                 retry += 1
 
             if res['content'] is None:
-                self.sf.error("Unable to query robtex API.", False)
+                self.sf.error("Unable to query robtex API.")
                 retry += 1
                 continue
 
             try:
                 data = json.loads(res['content'])
-            except BaseException as e:
-                self.sf.error(f"Error parsing JSON from Robtex API: {e}", False)
+            except Exception as e:
+                self.sf.error(f"Error parsing JSON from Robtex API: {e}")
                 return None
 
             pas = data.get('pas')

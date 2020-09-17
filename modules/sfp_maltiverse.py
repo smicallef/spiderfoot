@@ -98,11 +98,11 @@ class sfp_maltiverse(SpiderFootPlugin):
         )
 
         if res['code'] == "400":
-            self.sf.error("Bad request. " + qry + " is not a valid IP Address", False)
+            self.sf.error("Bad request. " + qry + " is not a valid IP Address")
             return None
 
         if res['code'] == "404":
-            self.sf.error("API endpoint not found", False)
+            self.sf.error("API endpoint not found")
             return None
 
         if not res['code'] == "200":
@@ -113,8 +113,8 @@ class sfp_maltiverse(SpiderFootPlugin):
             # Maltiverse returns \\n instead of \n in the response
             data = str(res['content']).replace("\\n", " ")
             return json.loads(data)
-        except BaseException:
-            self.sf.error("Incorrectly formatted data received as JSON response", False)
+        except Exception:
+            self.sf.error("Incorrectly formatted data received as JSON response")
             return None
 
     # Handle events sent to this module
@@ -182,7 +182,7 @@ class sfp_maltiverse(SpiderFootPlugin):
                 continue
 
             if addr != maliciousIP:
-                self.sf.error("Reported address doesn't match requested, skipping", False)
+                self.sf.error("Reported address doesn't match requested, skipping")
                 continue
 
             blacklistedRecords = data.get('blacklist')
@@ -212,8 +212,8 @@ class sfp_maltiverse(SpiderFootPlugin):
 
                 try:
                     lastSeenDate = datetime.strptime(str(lastSeen), "%Y-%m-%d %H:%M:%S")
-                except BaseException:
-                    self.sf.error("Invalid date in JSON response, skipping", False)
+                except Exception:
+                    self.sf.error("Invalid date in JSON response, skipping")
                     continue
 
                 today = datetime.now()

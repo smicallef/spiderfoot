@@ -137,7 +137,7 @@ class sfp_binaryedge(SpiderFootPlugin):
         elif querytype == "passive":
             queryurl = "domains/ip"
         else:
-            self.sf.error(f"Invalid query type: {querytype}", False)
+            self.sf.error(f"Invalid query type: {querytype}")
             return None
 
         headers = {
@@ -152,7 +152,7 @@ class sfp_binaryedge(SpiderFootPlugin):
         )
 
         if res['code'] in ["429", "500"]:
-            self.sf.error("BinaryEdge.io API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+            self.sf.error("BinaryEdge.io API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -163,13 +163,13 @@ class sfp_binaryedge(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from BinaryEdge.io: {e}", False)
+            self.sf.error(f"Error processing JSON response from BinaryEdge.io: {e}")
             return None
 
         if info.get('page') and info['total'] > info.get('pagesize', 100) * info.get('page', 0):
             page = info['page'] + 1
             if page > self.opts['maxpages']:
-                self.sf.error("Maximum number of pages reached.", False)
+                self.sf.error("Maximum number of pages reached.")
                 return [info]
             retarr.append(info)
             e = self.query(qry, querytype, page)
@@ -192,8 +192,7 @@ class sfp_binaryedge(SpiderFootPlugin):
 
         if self.opts["binaryedge_api_key"] == "":
             self.sf.error(
-                f"You enabled {self.__class__.__name__} but did not set an API key!",
-                False,
+                f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return None
@@ -439,7 +438,7 @@ class sfp_binaryedge(SpiderFootPlugin):
 
                         try:
                             banner = prec['result']['data']['service']['banner']
-                        except BaseException:
+                        except Exception:
                             self.sf.debug("No banner information found.")
                             continue
 

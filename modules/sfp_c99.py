@@ -95,12 +95,12 @@ class sfp_c99(SpiderFootPlugin):
         )
 
         if res["code"] == "429":
-            self.sf.error("Reaching rate limit on C99 API", False)
+            self.sf.error("Reaching rate limit on C99 API")
             self.errorState = True
             return None
 
         if res["code"] == 400:
-            self.sf.error("Invalid request or API key on C99 API", False)
+            self.sf.error("Invalid request or API key on C99 API")
             self.errorState = True
             return None
 
@@ -112,7 +112,7 @@ class sfp_c99(SpiderFootPlugin):
             info = json.loads(res["content"])
         except Exception as e:
             self.errorState = True
-            self.sf.error(f"Error processing response from C99: {e}", False)
+            self.sf.error(f"Error processing response from C99: {e}")
             return None
 
         return info
@@ -375,7 +375,7 @@ class sfp_c99(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_c99, but did not set an API key!", False)
+            self.sf.error("You enabled sfp_c99, but did not set an API key!")
             self.errorState = True
             return None
 

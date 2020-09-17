@@ -138,7 +138,7 @@ class sfp_intelx(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from IntelligenceX: {e}", False)
+            self.sf.error(f"Error processing JSON response from IntelligenceX: {e}")
             self.errorState = True
             return None
 
@@ -160,7 +160,7 @@ class sfp_intelx(SpiderFootPlugin):
                 try:
                     ret = json.loads(res['content'])
                 except Exception as e:
-                    self.sf.error("Error processing JSON response from IntelligenceX: " + str(e), False)
+                    self.sf.error("Error processing JSON response from IntelligenceX: " + str(e))
                     return None
 
                 status = ret['status']
@@ -186,7 +186,7 @@ class sfp_intelx(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "" or self.opts['base_url'] == "":
-            self.sf.error("You enabled sfp_intelx but did not set an API key and/or base URL!", False)
+            self.sf.error("You enabled sfp_intelx but did not set an API key and/or base URL!")
             self.errorState = True
             return None
 
@@ -230,8 +230,8 @@ class sfp_intelx(SpiderFootPlugin):
                     if not val or not evt:
                         self.sf.debug(f"Unexpected record, skipping ({rec['bucket']})")
                         continue
-                except BaseException as e:
-                    self.sf.error(f"Error processing content from IntelX: {e}", False)
+                except Exception as e:
+                    self.sf.error(f"Error processing content from IntelX: {e}")
                     continue
 
                 # Notify other modules of what you've found
@@ -265,8 +265,8 @@ class sfp_intelx(SpiderFootPlugin):
                     if not val or not evt:
                         self.sf.debug("Unexpected record, skipping.")
                         continue
-                except BaseException as e:
-                    self.sf.error(f"Error processing content from IntelX: {e}", False)
+                except Exception as e:
+                    self.sf.error(f"Error processing content from IntelX: {e}")
                     continue
 
                 # Notify other modules of what you've found

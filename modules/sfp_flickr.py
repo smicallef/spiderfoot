@@ -128,7 +128,7 @@ class sfp_flickr(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
@@ -156,7 +156,7 @@ class sfp_flickr(SpiderFootPlugin):
         api_key = self.retrieveApiKey()
 
         if not api_key:
-            self.sf.error("Failed to obtain API key", False)
+            self.sf.error("Failed to obtain API key")
             return None
 
         self.sf.debug(f"Retrieved API key: {api_key}")

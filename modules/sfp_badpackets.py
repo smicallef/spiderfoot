@@ -123,20 +123,20 @@ class sfp_badpackets(SpiderFootPlugin):
 
         # Error codes as mentioned in Bad Packets Documentation
         if res['code'] == '400':
-            self.sf.error("Invalid IP Address", False)
+            self.sf.error("Invalid IP Address")
             return None
 
         if res['code'] == '401':
-            self.sf.error("Unauthorized API Key", False)
+            self.sf.error("Unauthorized API Key")
             return None
 
         if res['code'] == '403':
-            self.sf.error("Forbidden Request", False)
+            self.sf.error("Forbidden Request")
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Bad Packets", False)
+            self.sf.error("Failed to retrieve content from Bad Packets")
             return None
 
         # Always always always process external data with try/except since we cannot
@@ -144,7 +144,7 @@ class sfp_badpackets(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Bad Packets: {e}", False)
+            self.sf.error(f"Error processing JSON response from Bad Packets: {e}")
             return None
 
         return data
@@ -163,7 +163,7 @@ class sfp_badpackets(SpiderFootPlugin):
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_badpackets but did not set an API key!", False)
+            self.sf.error("You enabled sfp_badpackets but did not set an API key!")
             self.errorState = True
             return None
 
@@ -242,7 +242,7 @@ class sfp_badpackets(SpiderFootPlugin):
                         maliciousIP = record.get('source_ip_address')
 
                         if maliciousIP != addr:
-                            self.sf.error("Reported address doesn't match requested, skipping.", False)
+                            self.sf.error("Reported address doesn't match requested, skipping.")
                             continue
 
                         if maliciousIP:
@@ -252,14 +252,14 @@ class sfp_badpackets(SpiderFootPlugin):
                                 category = record.get('tags')[0].get('category')
                                 if category:
                                     maliciousIPDesc += " - CATEGORY : " + str(category) + "\n"
-                            except BaseException:
+                            except Exception:
                                 self.sf.debug("No category found for target")
 
                             try:
                                 description = record.get('tags')[0].get('description')
                                 if description:
                                     maliciousIPDesc += " - DESCRIPTION : " + str(description) + "\n"
-                            except BaseException:
+                            except Exception:
                                 self.sf.debug("No description found for target")
 
                             maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)

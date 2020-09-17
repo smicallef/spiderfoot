@@ -151,7 +151,7 @@ class sfp_apility(SpiderFootPlugin):
         # https://apility.io/docs/step-4-plans-pricing/
         # https://apility.io/docs/difference-hits-requests/
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by apility ", False)
+            self.sf.error("You are being rate-limited by apility ")
             self.errorState = True
             return None
 
@@ -162,7 +162,7 @@ class sfp_apility(SpiderFootPlugin):
             return None
 
         if res['content'] == 'Unauthorized':
-            self.sf.error("Authentication failed", False)
+            self.sf.error("Authentication failed")
             self.errorState = True
             return None
 
@@ -187,7 +187,7 @@ class sfp_apility(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_apility but did not set an API key!", False)
+            self.sf.error("You enabled sfp_apility but did not set an API key!")
             self.errorState = True
             return None
 

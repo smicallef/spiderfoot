@@ -131,7 +131,7 @@ class sfp_virustotal(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from VirusTotal: {e}", False)
+            self.sf.error(f"Error processing JSON response from VirusTotal: {e}")
             self.errorState = True
             return None
 
@@ -160,7 +160,7 @@ class sfp_virustotal(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from VirusTotal: {e}", False)
+            self.sf.error(f"Error processing JSON response from VirusTotal: {e}")
             self.errorState = True
             return None
 
@@ -178,8 +178,7 @@ class sfp_virustotal(SpiderFootPlugin):
 
         if self.opts["api_key"] == "":
             self.sf.error(
-                f"You enabled {self.__class__.__name__} but did not set an API key!",
-                False,
+                f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return None

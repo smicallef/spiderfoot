@@ -100,7 +100,7 @@ class sfp_shodan(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return info
@@ -117,7 +117,7 @@ class sfp_shodan(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return info
@@ -138,7 +138,7 @@ class sfp_shodan(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return info
@@ -155,7 +155,7 @@ class sfp_shodan(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_shodan but did not set an API key!", False)
+            self.sf.error("You enabled sfp_shodan but did not set an API key!")
             self.errorState = True
             return None
 
@@ -178,8 +178,8 @@ class sfp_shodan(SpiderFootPlugin):
             try:
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
-            except BaseException as e:
-                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})", False)
+            except Exception as e:
+                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})")
                 return None
 
             if network not in ['Google AdSense', 'Google Analytics', 'Google Site Verification']:

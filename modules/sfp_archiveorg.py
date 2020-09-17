@@ -144,17 +144,17 @@ class sfp_archiveorg(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None:
-                self.sf.error(f"Unable to fetch {url}", False)
+                self.sf.error(f"Unable to fetch {url}")
                 continue
 
             try:
                 ret = json.loads(res['content'])
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug(f"Error processing JSON response from Archive.org: {e}")
                 ret = None
 
             if not ret:
-                self.sf.error("Unable to process empty response from archive.org: {eventData}", False)
+                self.sf.error("Unable to process empty response from archive.org: {eventData}")
                 continue
 
             if len(ret['archived_snapshots']) < 1:

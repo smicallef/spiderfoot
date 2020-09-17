@@ -131,7 +131,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # Parse API response
     def parseApiResponse(self, res):
         if res['code'] == "403":
-            self.sf.error("Authentication failed", False)
+            self.sf.error("Authentication failed")
             self.errorState = True
             return None
 
@@ -146,12 +146,12 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
         if res['code'] == "400":
             if data.get('api-error-msg'):
-                self.sf.error("Error: " + data.get('api-error-msg'), False)
+                self.sf.error("Error: " + data.get('api-error-msg'))
                 if "EXCEED" in data.get('api-error-msg'):
                     self.errorState = True
                     return None
             else:
-                self.sf.error("Error: HTTP 400", False)
+                self.sf.error("Error: HTTP 400")
             return None
 
         return data
@@ -169,12 +169,12 @@ class sfp_neutrinoapi(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_neutrinoapi but did not set an API key!", False)
+            self.sf.error("You enabled sfp_neutrinoapi but did not set an API key!")
             self.errorState = True
             return None
 
         if self.opts['user_id'] == "":
-            self.sf.error("You enabled sfp_neutrinoapi but did not set a user ID!", False)
+            self.sf.error("You enabled sfp_neutrinoapi but did not set a user ID!")
             self.errorState = True
             return None
 

@@ -108,14 +108,14 @@ class sfp_greynoise(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=header)
 
         if res['code'] not in ["200"]:
-            self.sf.error("Greynoise API key seems to have been rejected or you have exceeded usage limits.", False)
+            self.sf.error("Greynoise API key seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Greynoise: {e}", False)
+            self.sf.error(f"Error processing JSON response from Greynoise: {e}")
             return None
 
         return info
@@ -132,7 +132,7 @@ class sfp_greynoise(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_greynoise but did not set an API key!", False)
+            self.sf.error("You enabled sfp_greynoise but did not set an API key!")
             self.errorState = True
             return None
 

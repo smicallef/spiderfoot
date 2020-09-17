@@ -272,7 +272,7 @@ class sfp_censys(SpiderFootPlugin):
                         dat = rec['metadata']['os_description']
                         e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, pevent)
                         self.notifyListeners(e)
-            except BaseException as e:
+            except Exception as e:
                 self.sf.error(f"Error encountered processing record for {eventData} ({e})")
 
 # End of sfp_censys class

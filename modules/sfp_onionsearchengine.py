@@ -178,7 +178,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                 try:
                     startIndex = res['content'].index(eventData) - 120
                     endIndex = startIndex + len(eventData) + 240
-                except BaseException:
+                except Exception:
                     self.sf.debug('String "' + eventData + '" not found in content.')
                     continue
 

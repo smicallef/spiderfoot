@@ -205,7 +205,7 @@ class sfp_spyonweb(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_spyonweb but did not set an API key!", False)
+            self.sf.error("You enabled sfp_spyonweb but did not set an API key!")
             self.errorState = True
             return None
 
@@ -238,8 +238,8 @@ class sfp_spyonweb(SpiderFootPlugin):
             try:
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
-            except BaseException as e:
-                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})", False)
+            except Exception as e:
+                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})")
                 return None
 
             data = dict()

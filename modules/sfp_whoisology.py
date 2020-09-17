@@ -88,7 +88,7 @@ class sfp_whoisology(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("Whoisology API key seems to have been rejected or you have exceeded usage limits.", False)
+            self.sf.error("Whoisology API key seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
@@ -99,7 +99,7 @@ class sfp_whoisology(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
             if info.get("domains") is None:
-                self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"), False)
+                self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"))
                 return None
 
             if len(info.get("domains", [])) == 0:
@@ -108,7 +108,7 @@ class sfp_whoisology(SpiderFootPlugin):
 
             return info.get('domains')
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Whoisology: {e}", False)
+            self.sf.error(f"Error processing JSON response from Whoisology: {e}")
             return None
 
     # Handle events sent to this module
@@ -123,7 +123,7 @@ class sfp_whoisology(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_whoisology but did not set an API key!", False)
+            self.sf.error("You enabled sfp_whoisology but did not set an API key!")
             self.errorState = True
             return None
 

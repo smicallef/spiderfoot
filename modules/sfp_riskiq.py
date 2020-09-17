@@ -129,7 +129,7 @@ class sfp_riskiq(SpiderFootPlugin):
                                postData=post)
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("RiskIQ access seems to have been rejected or you have exceeded usage limits.", False)
+            self.sf.error("RiskIQ access seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
@@ -142,8 +142,8 @@ class sfp_riskiq(SpiderFootPlugin):
             if 'results' not in ret:
                 self.sf.info("No RiskIQ info found for " + qry)
                 return None
-        except BaseException as e:
-            self.sf.error(f"Invalid JSON returned by RiskIQ: {e}", False)
+        except Exception as e:
+            self.sf.error(f"Invalid JSON returned by RiskIQ: {e}")
             return None
 
         return ret['results']
@@ -166,7 +166,7 @@ class sfp_riskiq(SpiderFootPlugin):
             return None
 
         if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":
-            self.sf.error("You enabled sfp_riskiq but did not set an credentials!", False)
+            self.sf.error("You enabled sfp_riskiq but did not set an credentials!")
             self.errorState = True
             return None
 
@@ -197,8 +197,8 @@ class sfp_riskiq(SpiderFootPlugin):
                                 e = SpiderFootEvent("DOMAIN_NAME", res['subjectCommonName'],
                                                     self.__name__, event)
                                 self.notifyListeners(e)
-                except BaseException as e:
-                    self.sf.error("Invalid response returned from RiskIQ: " + str(e), False)
+                except Exception as e:
+                    self.sf.error("Invalid response returned from RiskIQ: " + str(e))
 
         if eventName == 'EMAILADDR':
             ret = self.query(eventData, "WHOIS")

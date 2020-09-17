@@ -75,8 +75,8 @@ class sfp_twitter(SpiderFootPlugin):
         try:
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
-        except BaseException as e:
-            self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})", False)
+        except Exception as e:
+            self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return None
 
         if not network == "Twitter":

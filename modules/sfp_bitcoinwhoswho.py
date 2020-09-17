@@ -86,9 +86,7 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
         try:
             info = json.loads(res["content"])
         except Exception as e:
-            self.sf.error(
-                f"Error processing JSON response from {self.meta['name']}: {e}", False
-            )
+            self.sf.error(f"Error processing JSON response from {self.meta['name']}: {e}")
             return None
 
         return info
@@ -117,7 +115,7 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
         self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!", False)
+            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
             self.errorState = True
             return None
 

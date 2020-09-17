@@ -93,28 +93,28 @@ class sfp_emailrep(SpiderFootPlugin):
             return None
 
         if res['code'] == '400':
-            self.sf.error('API error: Bad request', False)
+            self.sf.error('API error: Bad request')
             self.errorState = True
             return None
 
         if res['code'] == '401':
-            self.sf.error('API error: Invalid API key', False)
+            self.sf.error('API error: Invalid API key')
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error('API error: Too Many Requests', False)
+            self.sf.error('API error: Too Many Requests')
             self.errorState = True
             return None
 
         if res['code'] != '200':
-            self.sf.error('Unexpected reply from EmailRep.io: ' + res['code'], False)
+            self.sf.error('Unexpected reply from EmailRep.io: ' + res['code'])
             self.errorState = True
             return None
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
@@ -133,7 +133,7 @@ class sfp_emailrep(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == '':
-            self.sf.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.", False)
+            self.sf.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.")
 
         res = self.query(eventData)
 

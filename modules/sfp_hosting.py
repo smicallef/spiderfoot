@@ -63,7 +63,7 @@ class sfp_hosting(SpiderFootPlugin):
         if data['content'] is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
-                self.sf.error("Unable to fetch " + url, False)
+                self.sf.error("Unable to fetch " + url)
                 return None
             else:
                 self.sf.cachePut("sfipcat", data['content'])
@@ -73,13 +73,13 @@ class sfp_hosting(SpiderFootPlugin):
                 continue
             try:
                 [start, end, title, url] = line.split(",")
-            except BaseException:
+            except Exception:
                 continue
 
             try:
                 if IPAddress(qaddr) > IPAddress(start) and IPAddress(qaddr) < IPAddress(end):
                     return [title, url]
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug("Encountered an issue processing an IP: " + str(e))
                 continue
 

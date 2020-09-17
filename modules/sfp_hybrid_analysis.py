@@ -174,19 +174,19 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         """
 
         if res['code'] == '400':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: Invalid request", False)
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: Invalid request")
             self.sf.debug("API response: %s" % res['content'])
             return None
 
         # Future proofing - Hybrid Analysis does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: rate limit exceeded", False)
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: rate limit exceeded")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: Unexpected response status %s" % res['code'], False)
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: Unexpected response status %s" % res['code'])
             self.errorState = True
             return None
 

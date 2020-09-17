@@ -105,7 +105,7 @@ class sfp_hunter(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from hunter.io: %s" % e, False)
+            self.sf.error("Error processing JSON response from hunter.io: %s" % e)
             return None
 
         return ret
@@ -129,7 +129,7 @@ class sfp_hunter(SpiderFootPlugin):
             self.results[eventData] = True
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_hunter but did not set an API key!", False)
+            self.sf.error("You enabled sfp_hunter but did not set an API key!")
             self.errorState = True
             return None
 

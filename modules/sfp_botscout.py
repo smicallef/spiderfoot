@@ -86,7 +86,7 @@ class sfp_botscout(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_botscout but did not set an API key!", False)
+            self.sf.error("You enabled sfp_botscout but did not set an API key!")
             self.errorState = True
             return None
 
@@ -106,7 +106,7 @@ class sfp_botscout(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
         if res['content'] is None or "|" not in res['content']:
-            self.sf.error("Error encountered processing " + eventData, False)
+            self.sf.error("Error encountered processing " + eventData)
             return None
 
         if res['content'].startswith("Y|"):

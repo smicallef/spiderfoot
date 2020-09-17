@@ -110,7 +110,7 @@ class sfp_fraudguard(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("Fraudguard.io API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+            self.sf.error("Fraudguard.io API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -121,7 +121,7 @@ class sfp_fraudguard(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Fraudguard.io: {e}", False)
+            self.sf.error(f"Error processing JSON response from Fraudguard.io: {e}")
             return None
 
         return info
@@ -138,7 +138,7 @@ class sfp_fraudguard(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['fraudguard_api_key_account'] == "" or self.opts['fraudguard_api_key_password'] == "":
-            self.sf.error("You enabled sfp_fraudguard but did not set an API username/password!", False)
+            self.sf.error("You enabled sfp_fraudguard but did not set an API username/password!")
             self.errorState = True
             return None
 

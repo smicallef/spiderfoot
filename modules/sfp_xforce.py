@@ -141,7 +141,7 @@ class sfp_xforce(SpiderFootPlugin):
             return None
 
         if res['code'] == '400':
-            self.sf.error("Bad request", False)
+            self.sf.error("Bad request")
             return None
 
         if res['code'] == '404':
@@ -149,34 +149,34 @@ class sfp_xforce(SpiderFootPlugin):
             return None
 
         if res['code'] == '401':
-            self.sf.error("X-Force Exchange API key seems to have been rejected.", False)
+            self.sf.error("X-Force Exchange API key seems to have been rejected.")
             self.errorState = True
             return None
 
         if res['code'] == '402':
-            self.sf.error("X-Force Exchange monthly quota exceeded", False)
+            self.sf.error("X-Force Exchange monthly quota exceeded")
             self.errorState = True
             return None
 
         if res['code'] == '403':
-            self.sf.error("Access denied", False)
+            self.sf.error("Access denied")
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error("Rate limit exceeded", False)
+            self.sf.error("Rate limit exceeded")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from X-Force Exchange", False)
+            self.sf.error("Failed to retrieve content from X-Force Exchange")
             return None
 
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from X-Force Exchange: {e}", False)
+            self.sf.error(f"Error processing JSON response from X-Force Exchange: {e}")
             return None
 
         return info
@@ -195,7 +195,7 @@ class sfp_xforce(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['xforce_api_key'] == "" or self.opts['xforce_api_key_password'] == "":
-            self.sf.error("You enabled sfp_xforce but did not set an API key/password!", False)
+            self.sf.error("You enabled sfp_xforce but did not set an API key/password!")
             self.errorState = True
             return None
 

@@ -111,7 +111,7 @@ class sfp_hostio(SpiderFootPlugin):
         try:
             info = json.loads(res["content"])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Host.io: {e}", False)
+            self.sf.error(f"Error processing JSON response from Host.io: {e}")
             return None
 
         return info
@@ -128,8 +128,7 @@ class sfp_hostio(SpiderFootPlugin):
 
         if self.opts["api_key"] == "":
             self.sf.error(
-                f"You enabled {self.__class__.__name__} but did not set an API key!",
-                False,
+                f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return None
@@ -141,7 +140,7 @@ class sfp_hostio(SpiderFootPlugin):
 
         data = self.query(event.data)
         if not data:
-            self.sf.error(f"No data received for {event.data}", False)
+            self.sf.error(f"No data received for {event.data}")
             return None
 
         found = False

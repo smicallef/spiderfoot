@@ -103,28 +103,28 @@ class sfp_numverify(SpiderFootPlugin):
             return None
 
         if res['code'] == '101':
-            self.sf.error('API error: invalid API key', False)
+            self.sf.error('API error: invalid API key')
             self.errorState = True
             return None
 
         if res['code'] == '102':
-            self.sf.error('API error: user account deactivated', False)
+            self.sf.error('API error: user account deactivated')
             self.errorState = True
             return None
 
         if res['code'] == '104':
-            self.sf.error('API error: usage limit exceeded', False)
+            self.sf.error('API error: usage limit exceeded')
             self.errorState = True
             return None
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if data.get('error') is not None:
-            self.sf.error('API error: ' + str(data.get('error')), False)
+            self.sf.error('API error: ' + str(data.get('error')))
             return None
 
         return data
@@ -139,7 +139,7 @@ class sfp_numverify(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_numverify but did not set an API key!", False)
+            self.sf.error("You enabled sfp_numverify but did not set an API key!")
             self.errorState = True
             return None
 

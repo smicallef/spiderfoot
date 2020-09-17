@@ -87,7 +87,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                         nsip = n
                         break
             else:
-                self.sf.error("Couldn't resolve the name server, so not attempting zone transfer.", False)
+                self.sf.error("Couldn't resolve the name server, so not attempting zone transfer.")
                 return None
         else:
             nsip = eventData
@@ -119,7 +119,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                             evt = SpiderFootEvent("INTERNET_NAME", strdata, self.__name__, parentEvent)
                             self.notifyListeners(evt)
 
-            except BaseException as e:
+            except Exception as e:
                 self.sf.info(f"Unable to perform DNS zone transfer for {eventData} ({name}): {e}")
 
 # End of sfp_dnszonexfer class

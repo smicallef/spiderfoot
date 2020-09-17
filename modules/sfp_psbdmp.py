@@ -76,7 +76,7 @@ class sfp_psbdmp(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from psbdmp.cc: {e}", False)
+            self.sf.error(f"Error processing JSON response from psbdmp.cc: {e}")
             return None
 
         ids = list()

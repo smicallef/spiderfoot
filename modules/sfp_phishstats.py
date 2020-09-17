@@ -112,8 +112,8 @@ class sfp_phishstats(SpiderFootPlugin):
 
         try:
             return json.loads(res['content'])
-        except BaseException as e:
-            self.sf.error(f"Error processing JSON response: {e}", False)
+        except Exception as e:
+            self.sf.error(f"Error processing JSON response: {e}")
             return None
 
     # Handle events sent to this module
@@ -177,7 +177,7 @@ class sfp_phishstats(SpiderFootPlugin):
 
             try:
                 maliciousIP = data[0].get('ip')
-            except BaseException:
+            except Exception:
                 # If ArrayIndex is out of bounds then data doesn't exist
                 continue
 
@@ -185,7 +185,7 @@ class sfp_phishstats(SpiderFootPlugin):
                 continue
 
             if addr != maliciousIP:
-                self.sf.error("Reported address doesn't match requested, skipping", False)
+                self.sf.error("Reported address doesn't match requested, skipping")
                 continue
 
             # Data is reported about the IP Address

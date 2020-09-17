@@ -428,7 +428,7 @@ def start_scan(sfConfig, sfModules, args):
                 print("]")
             sys.exit(0)
 
-    return None
+    return
 
 
 def start_web_server(sfWebUiConfig, sfConfig):
@@ -444,6 +444,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
     web_root = sfWebUiConfig.get('root', '/')
 
     cherrypy.config.update({
+        'log.screen': False,
         'server.socket_host': web_host,
         'server.socket_port': int(web_port)
     })

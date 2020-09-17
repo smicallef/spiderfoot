@@ -154,7 +154,7 @@ class sfp_similar(SpiderFootPlugin):
                     self.sf.debug(f"Resolved {d_tld}")
                     evt = SpiderFootEvent("SIMILARDOMAIN", d_tld, self.__name__, event)
                     self.notifyListeners(evt)
-            except BaseException:
+            except Exception:
                 continue
 
         return None

@@ -68,12 +68,11 @@ class sfp_zetalytics(SpiderFootPlugin):
     def producedEvents(self):
         return ["INTERNET_NAME", "AFFILIATE_DOMAIN_NAME", "INTERNET_NAME_UNRESOLVED"]
 
-    def emit(self, etype, data, pevent, notify=True):
+    def emit(self, etype, data, pevent):
         if self.checkForStop():
             raise ModuleStop()
         evt = SpiderFootEvent(etype, data, self.__name__, pevent)
-        if notify:
-            self.notifyListeners(evt)
+        self.notifyListeners(evt)
         return evt
 
     def verify_emit_internet_name(self, hostname, pevent):
@@ -104,7 +103,7 @@ class sfp_zetalytics(SpiderFootPlugin):
             info = json.loads(res["content"])
         except Exception as e:
             self.sf.error(
-                f"Error processing JSON response from Zetalytics: {e}", False
+                f"Error processing JSON response from Zetalytics: {e}"
             )
             return None
 
@@ -177,7 +176,7 @@ class sfp_zetalytics(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!", False)
+            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
             self.errorState = True
             return None
 

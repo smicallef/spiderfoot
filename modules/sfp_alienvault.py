@@ -131,7 +131,7 @@ class sfp_alienvault(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] == "403":
-            self.sf.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+            self.sf.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -142,7 +142,7 @@ class sfp_alienvault(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from AlienVault OTX: {e}", False)
+            self.sf.error(f"Error processing JSON response from AlienVault OTX: {e}")
             return None
 
         return info
@@ -159,7 +159,7 @@ class sfp_alienvault(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_alienvault but did not set an API key/password!", False)
+            self.sf.error("You enabled sfp_alienvault but did not set an API key/password!")
             self.errorState = True
             return None
 
@@ -221,7 +221,7 @@ class sfp_alienvault(SpiderFootPlugin):
                             if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
-                        except BaseException:
+                        except Exception:
                             self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
                         e = SpiderFootEvent(evtType, host, self.__name__, event)
                         self.notifyListeners(e)
@@ -258,7 +258,7 @@ class sfp_alienvault(SpiderFootPlugin):
                             if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
-                        except BaseException:
+                        except Exception:
                             self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
 
                     # For netblocks, we need to create the IP address event so that

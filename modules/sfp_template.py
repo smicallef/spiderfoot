@@ -229,7 +229,6 @@ class sfp_template(SpiderFootPlugin):
         # Report when unexpected things happen:
         # - debug(message) if it's only for debugging (user will see this if debugging is enabled)
         # - info(message) if it's not a bad thing
-        # - error(message, False) if it's a bad thing but SpiderFoot can continue
         # - error(message) if it's a bad thing and should cause the scan to abort
         # - fatal(message) if it's a horrible thing and should kill SpiderFoot completely
         if res['content'] is None:
@@ -241,16 +240,10 @@ class sfp_template(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return info
-
-    def emit(self, etype, data, pevent, notify=True):
-        evt = SpiderFootEvent(etype, data, self.__name__, pevent)
-        if notify:
-            self.notifyListeners(evt)
-        return evt
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -273,7 +266,7 @@ class sfp_template(SpiderFootPlugin):
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_template but did not set an API key!", False)
+            self.sf.error("You enabled sfp_template but did not set an API key!")
             self.errorState = True
             return None
 

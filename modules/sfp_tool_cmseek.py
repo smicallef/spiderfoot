@@ -88,7 +88,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             self.results[eventData] = True
 
         if not self.opts['cmseekpath']:
-            self.sf.error("You enabled sfp_tool_cmseek but did not set a path to the tool!", False)
+            self.sf.error("You enabled sfp_tool_cmseek but did not set a path to the tool!")
             self.errorState = True
             return None
 
@@ -105,13 +105,13 @@ class sfp_tool_cmseek(SpiderFootPlugin):
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
-            self.sf.error("File does not exist: " + exe, False)
+            self.sf.error("File does not exist: " + exe)
             self.errorState = True
             return None
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
-            self.sf.error("Invalid input, refusing to run.", False)
+            self.sf.error("Invalid input, refusing to run.")
             return None
 
         try:
@@ -120,7 +120,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             if p.returncode == 0:
                 content = stdout
             else:
-                self.sf.error("Unable to read CMSeeK content.", False)
+                self.sf.error("Unable to read CMSeeK content.")
                 self.sf.debug("Error running CMSeeK: " + stderr + ", " + stdout)
                 return None
 
@@ -134,11 +134,11 @@ class sfp_tool_cmseek(SpiderFootPlugin):
                 evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", j['cms_name'],
                                       self.__name__, event)
                 self.notifyListeners(evt)
-            except BaseException as e:
-                self.sf.error("Couldn't parse the JSON output of CMSeeK: " + str(e), False)
+            except Exception as e:
+                self.sf.error("Couldn't parse the JSON output of CMSeeK: " + str(e))
                 return None
-        except BaseException as e:
-            self.sf.error("Unable to run CMSeeK: " + str(e), False)
+        except Exception as e:
+            self.sf.error("Unable to run CMSeeK: " + str(e))
             return None
 
 # End of sfp_tool_cmseek class

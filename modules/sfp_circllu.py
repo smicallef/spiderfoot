@@ -118,7 +118,7 @@ class sfp_circllu(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] not in ["200", "201"]:
-            self.sf.error("CIRCL.LU access seems to have been rejected or you have exceeded usage limits.", False)
+            self.sf.error("CIRCL.LU access seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
@@ -146,7 +146,7 @@ class sfp_circllu(SpiderFootPlugin):
             return None
 
         if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":
-            self.sf.error("You enabled sfp_circllu but did not set an credentials!", False)
+            self.sf.error("You enabled sfp_circllu but did not set an credentials!")
             self.errorState = True
             return None
 
@@ -189,8 +189,8 @@ class sfp_circllu(SpiderFootPlugin):
                             if r:
                                 e = SpiderFootEvent("SSL_CERTIFICATE_ISSUED", r[0][0], self.__name__, ipe)
                                 self.notifyListeners(e)
-                except BaseException as e:
-                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e), False)
+                except Exception as e:
+                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e))
 
         if eventName in ['IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME']:
             ret = self.query(eventData, "PDNS")
@@ -204,8 +204,8 @@ class sfp_circllu(SpiderFootPlugin):
                     continue
                 try:
                     rec = json.loads(line)
-                except BaseException as e:
-                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e), False)
+                except Exception as e:
+                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e))
                     continue
 
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])

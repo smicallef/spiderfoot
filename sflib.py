@@ -148,14 +148,10 @@ class SpiderFoot:
         self._socksProxy = socksProxy
 
     def refreshTorIdent(self):
-        """Tell TOR to re-circuit.
-
-        Returns:
-            None: success
-        """
+        """Tell TOR to re-circuit."""
 
         if self.opts['_socks1type'] != "TOR":
-            return None
+            return
 
         try:
             self.info("Re-circuiting TOR...")
@@ -167,7 +163,7 @@ class SpiderFoot:
         except BaseException as e:
             self.fatal(f"Unable to re-circuit TOR: {e}")
 
-        return None
+        return
 
     def optValueToData(self, val):
         """Supplied an option value, return the data based on what the
@@ -424,19 +420,15 @@ class SpiderFoot:
 
         return self.dbh.scanLogEvent(self.scanId, level, message, component)
 
-    def error(self, message, exception=False):
-        """Print an error message and optionally also raise an exception.
+    def error(self, message):
+        """Print and log an error message
 
         Args:
             message (str): error message
-            exception (bool): also raise an exception
-
-        Returns:
-            None
         """
 
         if not self.opts['__logging']:
-            return None
+            return
 
         if self.dbh:
             self._dblog("ERROR", message)
@@ -464,13 +456,10 @@ class SpiderFoot:
 
         Args:
             message (str): status message
-
-        Returns:
-            None
         """
 
         if not self.opts['__logging']:
-            return None
+            return
 
         if self.dbh:
             self._dblog("STATUS", message)
@@ -482,13 +471,10 @@ class SpiderFoot:
 
         Args:
             message (str): info message
-
-        Returns:
-            None
         """
 
         if not self.opts['__logging']:
-            return None
+            return
 
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
@@ -516,15 +502,12 @@ class SpiderFoot:
 
         Args:
             message (str): debug message
-
-        Returns:
-            None
         """
 
         if not self.opts['_debug']:
             return
         if not self.opts['__logging']:
-            return None
+            return
         frm = inspect.stack()[1]
         mod = inspect.getmodule(frm[0])
 
@@ -972,7 +955,7 @@ class SpiderFoot:
         """
 
         if not url:
-            self.error("Invalid URL: %s" % url, False)
+            self.error("Invalid URL: %s" % url)
             return None
 
         finalBits = list()
@@ -1010,7 +993,7 @@ class SpiderFoot:
         """
 
         if not url:
-            self.error("Invalid URL: %s" % url, False)
+            self.error("Invalid URL: %s" % url)
             return None
 
         bits = url.split('/')
@@ -1040,7 +1023,7 @@ class SpiderFoot:
         """
 
         if not url:
-            self.error("Invalid URL: %s" % url, False)
+            self.error("Invalid URL: %s" % url)
             return None
 
         if '://' in url:
@@ -1064,7 +1047,7 @@ class SpiderFoot:
         """
 
         if not url:
-            self.error(f"Invalid URL: {url}", False)
+            self.error(f"Invalid URL: {url}")
             return None
 
         baseurl = self.urlBaseUrl(url)
@@ -1088,7 +1071,7 @@ class SpiderFoot:
         """
 
         if not domain:
-            self.error(f"Invalid domain: {domain}", False)
+            self.error(f"Invalid domain: {domain}")
             return None
 
         # Strip off the TLD
@@ -1117,7 +1100,7 @@ class SpiderFoot:
         """
 
         if not domainList:
-            self.error("Invalid domain list: %s" % domainList, False)
+            self.error("Invalid domain list: %s" % domainList)
             return set()
 
         keywords = list()
@@ -1422,7 +1405,7 @@ class SpiderFoot:
         """
 
         if not isinstance(data, dict):
-            self.error("Data is not a dict", False)
+            self.error("Data is not a dict")
             return {}
 
         def get_children(needle, haystack):
@@ -1532,7 +1515,7 @@ class SpiderFoot:
         addrs = list()
 
         if not hostname:
-            self.error("Unable to resolve %s (Invalid hostname)" % hostname, False)
+            self.error("Unable to resolve %s (Invalid hostname)" % hostname)
             return addrs
 
         try:
@@ -2218,7 +2201,7 @@ class SpiderFoot:
         """
 
         if not rawcert:
-            self.error(f"Invalid certificate: {rawcert}", False)
+            self.error(f"Invalid certificate: {rawcert}")
             return None
 
         ret = dict()
@@ -2253,7 +2236,7 @@ class SpiderFoot:
             if ret['expiry'] <= now:
                 ret['expired'] = True
         except BaseException as e:
-            self.error(f"Error processing date in certificate: {e}", False)
+            self.error(f"Error processing date in certificate: {e}")
             ret['certerror'] = True
             return ret
 
@@ -2310,7 +2293,7 @@ class SpiderFoot:
                 if not found:
                     ret['mismatch'] = True
             except BaseException as e:
-                self.error("Error processing certificate: " + str(e), False)
+                self.error("Error processing certificate: " + str(e))
                 ret['certerror'] = True
 
         return ret
@@ -2385,7 +2368,7 @@ class SpiderFoot:
                     if lnk.has_attr(tags[t]):
                         urlsRel.append(lnk[tags[t]])
         except BaseException as e:
-            self.error("Error parsing with BeautifulSoup: " + str(e), False)
+            self.error("Error parsing with BeautifulSoup: " + str(e))
             return returnLinks
 
         # Loop through all the URLs/links found
@@ -2739,8 +2722,8 @@ class SpiderFoot:
             if not noLog:
                 # TODO: why another except block?
                 try:
-                    self.error(f"Unexpected exception ({e}) occurred fetching URL: {url}", False)
-                    self.error(traceback.format_exc(), False)
+                    self.error(f"Unexpected exception ({e}) occurred fetching URL: {url}")
+                    self.error(traceback.format_exc())
                 except BaseException as f:
                     # TODO: why is this exception ignored?
                     self.debug(f"Ignoring exception: {f}")

@@ -2,7 +2,7 @@
 # -----------------------------------------------------------------------------
 # Name:         sfp_dnscommonsrv
 # Purpose:      SpiderFoot plug-in for attempting to resolve through
-#               brute-forcing common SRV record.
+#               brute-forcing common DNS SRV records.
 #
 # Author:      Michael Scherer <misc@zarb.org>
 #
@@ -20,16 +20,14 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
     meta = {
         'name': "DNS Common SRV",
-        'summary': "Attempts to identify hostnames through common SRV.",
-        'flags': [""],
-        'useCases': ["Footprint", "Investigate", "Passive"],
+        'summary': "Attempts to identify hostnames through brute-forcing common DNS SRV records.",
+        'flags': ["slow"],
+        'useCases': ["Footprint", "Investigate"],
         'categories': ["DNS"]
     }
 
-    # Default options
     opts = {}
 
-    # Option descriptions
     optdescs = {}
 
     events = None
@@ -83,27 +81,21 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ['INTERNET_NAME', 'DOMAIN_NAME']
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["INTERNET_NAME", "AFFILIATE_INTERNET_NAME"]
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
-        self.sf.debug("Received event, " + eventName
-                      + ", from " + srcModuleName)
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_dnscommonsrv":
-            self.sf.debug("Ignoring " + eventName + ", from self.")
+            self.sf.debug(f"Ignoring {eventName}, from self.")
             return None
 
         eventDataHash = self.sf.hashstring(eventData)
@@ -119,6 +111,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
             res.nameservers = [self.opts['_dnsserver']]
 
         self.sf.debug("Iterating through possible SRV records.")
+
         # Try resolving common names
         for srv in self.commonsrv:
             if self.checkForStop():
@@ -132,23 +125,35 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
             try:
                 answers = res.query(name, 'SRV')
-            except BaseException:
+            except Exception:
                 answers = []
+
+            if not answers:
+                continue
+
+            evt = SpiderFootEvent(
+                "DNS_SRV",
+                name,
+                self.__name__,
+                parentEvent
+            )
+            self.notifyListeners(evt)
 
             for a in answers:
                 # Strip off the trailing .
                 tgt_clean = a.target.to_text().rstrip(".")
-                # Report the host
-                if self.getTarget().matches(tgt_clean):
-                    evt = SpiderFootEvent("INTERNET_NAME", tgt_clean,
-                                          self.__name__, parentEvent)
-                    self.notifyListeners(evt)
-                else:
-                    evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME", tgt_clean,
-                                          self.__name__, parentEvent)
-                    self.notifyListeners(evt)
 
-                evt = SpiderFootEvent("DNS_SRV", name,
-                                      self.__name__, parentEvent)
+                if self.getTarget().matches(tgt_clean):
+                    evt_type = "INTERNET_NAME"
+                else:
+                    evt_type = "AFFILIATE_INTERNET_NAME"
+
+                evt = SpiderFootEvent(
+                    evt_type,
+                    tgt_clean,
+                    self.__name__,
+                    parentEvent
+                )
                 self.notifyListeners(evt)
+
 # End of sfp_dnscommonsrv class

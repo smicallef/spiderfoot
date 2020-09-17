@@ -247,28 +247,28 @@ class sfp_spyse(SpiderFootPlugin):
         """
 
         if res['code'] == '400':
-            self.sf.error("Malformed request", False)
+            self.sf.error("Malformed request")
             return None
 
         if res['code'] == '402':
-            self.sf.error("Request limit exceeded", False)
+            self.sf.error("Request limit exceeded")
             self.errorState = True
             return None
 
         if res['code'] == '403':
-            self.sf.error("Authentication failed", False)
+            self.sf.error("Authentication failed")
             self.errorState = True
             return None
 
         # Future proofing - Spyse does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by Spyse", False)
+            self.sf.error("You are being rate-limited by Spyse")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Spyse", False)
+            self.sf.error("Failed to retrieve content from Spyse")
             self.errorState = True
             return None
 
@@ -311,7 +311,7 @@ class sfp_spyse(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == '':
-            self.sf.error("You enabled sfp_spyse but did not set an API key!", False)
+            self.sf.error("You enabled sfp_spyse but did not set an API key!")
             self.errorState = True
             return None
 

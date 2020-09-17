@@ -113,7 +113,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         time.sleep(self.opts['delay'])
 
         if res['code'] == "403":
-            self.sf.error("Pulsedive API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+            self.sf.error("Pulsedive API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -123,7 +123,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Pulsedive: {e}", False)
+            self.sf.error(f"Error processing JSON response from Pulsedive: {e}")
             return None
 
         return info
@@ -140,7 +140,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_pulsedive but did not set an API key!", False)
+            self.sf.error("You enabled sfp_pulsedive but did not set an API key!")
             self.errorState = True
             return None
 
@@ -230,7 +230,7 @@ class sfp_pulsedive(SpiderFootPlugin):
                     if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
                         self.sf.debug("Record found but too old, skipping.")
                         continue
-                except BaseException:
+                except Exception:
                     self.sf.debug("Couldn't parse date from Pulsedive so assuming it's OK.")
                 e = SpiderFootEvent(evtType, descr, self.__name__, event)
                 self.notifyListeners(e)

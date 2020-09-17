@@ -96,18 +96,18 @@ class sfp_recondev(SpiderFootPlugin):
     def parseAPIResponse(self, res):
         # Future proofing - recon.dev does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by Recon.dev", False)
+            self.sf.error("You are being rate-limited by Recon.dev")
             self.errorState = True
             return None
 
         if res['code'] == '500':
-            self.sf.error("Error during request from either an inproper domain/API key or you have used up all your API credits for the month", False)
+            self.sf.error("Error during request from either an inproper domain/API key or you have used up all your API credits for the month")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Recon.dev", False)
+            self.sf.error("Failed to retrieve content from Recon.dev")
             self.errorState = True
             return None
 
@@ -122,7 +122,7 @@ class sfp_recondev(SpiderFootPlugin):
 
         # returns list of results; 'null' when no results; or dict when there's an error
         if not isinstance(data, list):
-            self.sf.error("Failed to retrieve content from Recon.dev", False)
+            self.sf.error("Failed to retrieve content from Recon.dev")
 
             if isinstance(data, dict) and data.get('message'):
                 self.sf.debug(f"Failed to retrieve content from Recon.dev: {data.get('message')}")
@@ -148,8 +148,7 @@ class sfp_recondev(SpiderFootPlugin):
 
         if self.opts["api_key"] == "":
             self.sf.error(
-                f"You enabled {self.__class__.__name__} but did not set an API key!",
-                False,
+                f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return None

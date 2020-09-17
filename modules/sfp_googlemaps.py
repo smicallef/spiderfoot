@@ -109,8 +109,7 @@ class sfp_googlemaps(SpiderFootPlugin):
 
         if self.opts["api_key"] == "":
             self.sf.error(
-                f"You enabled {self.__class__.__name__} but did not set an API key!",
-                False,
+                f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
             return None

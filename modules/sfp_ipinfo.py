@@ -84,7 +84,7 @@ class sfp_ipinfo(SpiderFootPlugin):
                                headers=headers)
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by ipinfo.io.", False)
+            self.sf.error("You are being rate-limited by ipinfo.io.")
             self.errorState = True
             return None
 
@@ -112,7 +112,7 @@ class sfp_ipinfo(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_ipinfo but did not set an API key!", False)
+            self.sf.error("You enabled sfp_ipinfo but did not set an API key!")
             self.errorState = True
             return None
 
