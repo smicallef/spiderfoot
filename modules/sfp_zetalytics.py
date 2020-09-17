@@ -181,13 +181,13 @@ class sfp_zetalytics(SpiderFootPlugin):
         self.results["{}:{}".format(eventName, eventData)] = True
 
         if eventName == "INTERNET_NAME":
-            data = self.query_subdomains(eventData)
-            self.generate_subdomains_events(data, event)
-
             data = self.query_hostname(eventData)
             self.generate_hostname_events(data, event)
 
         elif eventName == "DOMAIN_NAME":
+            data = self.query_subdomains(eventData)
+            self.generate_subdomains_events(data, event)
+
             data = self.query_email_domain(eventData)
             self.generate_email_domain_events(data, event)
 
