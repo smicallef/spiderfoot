@@ -92,13 +92,11 @@ class sfp_dnsdb(SpiderFootPlugin):
 
     def query(self, endpoint, queryType, query):
         if endpoint not in ("rrset", "rdata"):
-            self.sf.error(
-                f"Endpoint MUST be rrset or rdata, you sent {endpoint}", False
-            )
+            self.sf.error(f"Endpoint MUST be rrset or rdata, you sent {endpoint}")
             return None
 
         if queryType not in ("name", "ip"):
-            self.sf.error(f"Query type MUST be name or ip, you sent {queryType}", False)
+            self.sf.error(f"Query type MUST be name or ip, you sent {queryType}")
             return None
 
         headers = {"Accept": "application/x-ndjson", "X-API-Key": self.opts["api_key"]}
@@ -111,7 +109,7 @@ class sfp_dnsdb(SpiderFootPlugin):
         )
 
         if res["code"] == "429":
-            self.sf.error("You are being rate-limited by DNSDB", False)
+            self.sf.error("You are being rate-limited by DNSDB")
             self.errorState = True
             return None
 
@@ -132,7 +130,7 @@ class sfp_dnsdb(SpiderFootPlugin):
             for content in splittedContent:
                 records.append(json.loads(content))
         except json.JSONDecodeError as e:
-            self.sf.error(f"Error processing JSON response from DNSDB: {e}", False)
+            self.sf.error(f"Error processing JSON response from DNSDB: {e}")
             return None
 
         return records[1:-1]
@@ -161,7 +159,7 @@ class sfp_dnsdb(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_dnsdb but did not set an API key!", False)
+            self.sf.error("You enabled sfp_dnsdb but did not set an API key!")
             self.errorState = True
             return None
 
