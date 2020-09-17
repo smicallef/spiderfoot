@@ -62,10 +62,9 @@ class sfp_zetalytics(SpiderFootPlugin):
     def producedEvents(self):
         return ["INTERNET_NAME", "AFFILIATE_DOMAIN_NAME"]
 
-    def emit(self, etype, data, pevent, notify=True):
+    def emit(self, etype, data, pevent):
         evt = SpiderFootEvent(etype, data, self.__name__, pevent)
-        if notify:
-            self.notifyListeners(evt)
+        self.notifyListeners(evt)
         return evt
 
     def request(self, path, params):
