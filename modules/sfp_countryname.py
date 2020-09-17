@@ -233,6 +233,4 @@ class sfp_countryname(SpiderFootPlugin):
             evt.moduleDataSource = moduleDataSource
             self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_countryname class

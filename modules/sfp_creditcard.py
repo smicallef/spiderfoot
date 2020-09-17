@@ -94,5 +94,4 @@ class sfp_creditcard(SpiderFootPlugin):
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
 
-        return None
 # End of sfp_creditcard class

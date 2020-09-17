@@ -242,5 +242,4 @@ class sfp_maltiverse(SpiderFootPlugin):
 
             self.notifyListeners(evt)
 
-        return None
 # End of sfp_maltiverse class

@@ -180,18 +180,18 @@ class sfp_censys(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['censys_api_key_uid'] == "" or self.opts['censys_api_key_secret'] == "":
             self.sf.error("You enabled sfp_censys but did not set an API uid/secret!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -205,7 +205,7 @@ class sfp_censys(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if eventName in ["IP_ADDRESS", "NETBLOCK_OWNER"]:
                 rec = self.queryIp(addr)

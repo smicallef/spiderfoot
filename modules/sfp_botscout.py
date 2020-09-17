@@ -81,21 +81,21 @@ class sfp_botscout(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_botscout but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already searched.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if self.opts['api_key']:
             url = "http://botscout.com/test/?key=" + self.opts['api_key'] + "&all="
@@ -107,7 +107,7 @@ class sfp_botscout(SpiderFootPlugin):
                                useragent=self.opts['_useragent'])
         if res['content'] is None or "|" not in res['content']:
             self.sf.error("Error encountered processing " + eventData)
-            return None
+            return
 
         if res['content'].startswith("Y|"):
             self.sf.info("Found Botscout entry for " + eventData + ": " + res['content'])
@@ -118,7 +118,5 @@ class sfp_botscout(SpiderFootPlugin):
 
             evt = SpiderFootEvent(t, "Botscout [" + eventData + "]", self.__name__, event)
             self.notifyListeners(evt)
-
-            return None
 
 # End of sfp_botscout class

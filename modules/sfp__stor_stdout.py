@@ -105,7 +105,7 @@ class sfp__stor_stdout(SpiderFootPlugin):
     # Handle events sent to this module
     def handleEvent(self, sfEvent):
         if sfEvent.eventType == "ROOT":
-            return None
+            return
 
         if self.opts['_showonlyrequested']:
             if sfEvent.eventType in self.opts['_requested']:

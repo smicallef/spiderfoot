@@ -80,7 +80,7 @@ class sfp_accounts(SpiderFootPlugin):
             if data['content'] is None:
                 self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
-                return None
+                return
 
             content = data['content']
             self.sf.cachePut("sfaccounts", content)
@@ -90,7 +90,7 @@ class sfp_accounts(SpiderFootPlugin):
         except Exception as e:
             self.sf.error(f"Unable to parse social media accounts list: {e}")
             self.errorState = True
-            return None
+            return
 
     def watchedEvents(self):
         return ["EMAILADDR", "DOMAIN_NAME", "HUMAN_NAME", "USERNAME"]
@@ -100,7 +100,7 @@ class sfp_accounts(SpiderFootPlugin):
 
     def checkSite(self, name, site):
         if 'check_uri' not in site:
-            return None
+            return
 
         url = site['check_uri'].format(account=name)
         retname = f"{site['name']} (Category: {site['category']})\n<SFURL>{url}</SFURL>"
@@ -198,17 +198,17 @@ class sfp_accounts(SpiderFootPlugin):
         users = list()
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Skip events coming from me unless they are USERNAME events
         if eventName != "USERNAME" and srcModuleName == "sfp_accounts":
             self.sf.debug(f"Ignoring {eventName}, from self.")
-            return None
+            return
 
         if eventData in list(self.results.keys()):
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -251,7 +251,7 @@ class sfp_accounts(SpiderFootPlugin):
         if eventName == "DOMAIN_NAME":
             kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
             if not kw:
-                return None
+                return
 
             users.append(kw)
 

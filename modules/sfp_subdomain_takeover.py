@@ -56,7 +56,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
             if res['content'] is None:
                 self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
-                return None
+                return
 
             self.sf.cachePut("subjack-fingerprints", res['content'])
             content = res['content']
@@ -66,7 +66,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
         except Exception as e:
             self.sf.error(f"Unable to parse subdomain takeover fingerprints list: {e}")
             self.errorState = True
-            return None
+            return
 
     # What events is this module interested in for input
     def watchedEvents(self):
@@ -83,10 +83,10 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -124,8 +124,6 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
                                 self.notifyListeners(evt)
                                 break
 
-            return None
-
         if eventName == "AFFILIATE_INTERNET_NAME_UNRESOLVED":
             for data in self.fingerprints:
                 service = data.get("service")
@@ -141,7 +139,5 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
                     self.sf.info("%s appears to be vulnerable to takeover on %s" % (eventData, service))
                     evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME_HIJACKABLE", eventData, self.__name__, event)
                     self.notifyListeners(evt)
-
-            return None
 
 # End of sfp_subdomain_takeover class

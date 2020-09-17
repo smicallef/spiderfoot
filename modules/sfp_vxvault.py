@@ -114,8 +114,8 @@ class sfp_vxvault(SpiderFootPlugin):
                     if data['content'] is None:
                         self.sf.error("Unable to fetch " + url)
                         return None
-                    else:
-                        self.sf.cachePut("sfmal_" + cid, data['content'])
+
+                    self.sf.cachePut("sfmal_" + cid, data['content'])
 
                 # If we're looking at netblocks
                 if targetType == "netblock":
@@ -191,15 +191,15 @@ class sfp_vxvault(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
+            return
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):
-            return None
+            return
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
@@ -228,14 +228,12 @@ class sfp_vxvault(SpiderFootPlugin):
             url = self.lookupItem(cid, typeId, eventData)
 
             if self.checkForStop():
-                return None
+                return
 
             # Notify other modules of what you've found
             if url is not None:
                 text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_vxvault class

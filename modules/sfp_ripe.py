@@ -278,9 +278,9 @@ class sfp_ripe(SpiderFootPlugin):
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         # BGP AS Owner -> Other Netblocks
         if eventName == "BGP_AS_OWNER":
@@ -307,7 +307,7 @@ class sfp_ripe(SpiderFootPlugin):
                                           event)
                     self.notifyListeners(evt)
 
-            return None
+            return
 
         # NETBLOCK -> AS and other owned netblocks
         if eventName.startswith("NETBLOCK_"):
@@ -315,7 +315,7 @@ class sfp_ripe(SpiderFootPlugin):
             asn = self.netblockAs(eventData)
             if asn is None:
                 self.sf.debug("Could not identify BGP AS for " + eventData)
-                return None
+                return
 
             if eventName == "NETBLOCK_OWNER" and self.ownsAs(asn):
                 asevt = SpiderFootEvent("BGP_AS_OWNER", asn, self.__name__, event)
@@ -327,7 +327,7 @@ class sfp_ripe(SpiderFootPlugin):
                 asevt = SpiderFootEvent("BGP_AS_MEMBER", asn, self.__name__, event)
                 self.notifyListeners(asevt)
 
-            return None
+            return
 
         # IP ADDRESS -> NETBLOCK
         if eventName == "IP_ADDRESS":
@@ -335,19 +335,17 @@ class sfp_ripe(SpiderFootPlugin):
             prefix = self.ipNetblock(eventData)
             if prefix is None:
                 self.sf.debug("Could not identify network prefix for " + eventData)
-                return None
+                return
 
             # Get the BGP AS the netblock is a part of
             asn = self.netblockAs(prefix)
             if asn is None:
                 self.sf.debug("Could not identify BGP AS for " + prefix)
-                return None
+                return
 
             if self.sf.validIpNetwork(prefix):
                 self.sf.info("Netblock found: " + prefix + "(" + asn + ")")
                 evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_ripe class

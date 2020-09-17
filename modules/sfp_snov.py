@@ -152,7 +152,7 @@ class sfp_snov(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -161,28 +161,28 @@ class sfp_snov(SpiderFootPlugin):
         if self.opts['api_key_client_id'] == "" or self.opts['api_key_client_secret'] == "":
             self.sf.error("You enabled sfp_snov but did not set a Client ID and/or Client Secret")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         # Get access token from Snov IO API
         accessToken = self.queryAccessToken()
         if accessToken is None or accessToken == '':
             self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
-            return None
+            return
 
         currentOffset = 0
         nextPageHasData = True
 
         while nextPageHasData:
             if self.checkForStop():
-                return None
+                return
 
             data = self.queryDomainName(eventData, accessToken, currentOffset)
             if data is None:
@@ -224,5 +224,4 @@ class sfp_snov(SpiderFootPlugin):
                 nextPageHasData = False
             currentOffset += self.limit
 
-        return None
 # End of sfp_snov class

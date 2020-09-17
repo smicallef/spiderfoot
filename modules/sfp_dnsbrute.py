@@ -150,18 +150,18 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_dnsbrute":
-            return None
+            return
 
         if eventDataHash in self.events:
-            return None
+            return
         self.events[eventDataHash] = True
 
         if eventName == "INTERNET_NAME" and not self.getTarget().matches(eventData, includeChildren=False):
             if not self.opts['numbersuffix']:
-                return None
+                return
 
             if self.checkForStop():
-                return None
+                return
 
             h, dom = eventData.split(".", 1)
 
@@ -169,7 +169,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             wildcard = self.sf.checkDnsWildcard(dom)
             if self.opts['skipcommonwildcard'] and wildcard:
                 self.sf.debug("Wildcard DNS detected on " + dom + " so skipping host iteration.")
-                return None
+                return
 
             dom = "." + dom
             nextsubs = dict()
@@ -184,23 +184,23 @@ class sfp_dnsbrute(SpiderFootPlugin):
             self.tryHostWrapper(list(nextsubs.keys()), event)
 
             # The rest of the module is for handling targets only
-            return None
+            return
 
         # Only for the target, from this point forward...
         if not self.getTarget().matches(eventData, includeChildren=False):
-            return None
+            return
 
         # Try resolving common names
         self.sf.debug("Iterating through possible sub-domains.")
         wildcard = self.sf.checkDnsWildcard(eventData)
         if self.opts['skipcommonwildcard'] and wildcard:
             self.sf.debug("Wildcard DNS detected.")
-            return None
+            return
 
         targetList = list()
         for sub in self.sublist:
             if self.checkForStop():
-                return None
+                return
 
             name = sub + "." + eventData
 
@@ -219,7 +219,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             dom = "." + eventData
             for s in self.sublist:
                 if self.checkForStop():
-                    return None
+                    return
 
                 for i in range(10):
                     nextsubs[s + str(i) + dom] = True

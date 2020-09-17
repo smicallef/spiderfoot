@@ -117,6 +117,4 @@ class sfp_ipstack(SpiderFootPlugin):
             evt = SpiderFootEvent("GEOINFO", geoinfo, self.__name__, event)
             self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_ipstack class

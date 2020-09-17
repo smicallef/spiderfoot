@@ -129,13 +129,12 @@ class sfp_virustotal(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from VirusTotal: {e}")
             self.errorState = True
-            return None
 
-        return data
+        return None
 
     def queryDomain(self, qry):
         params = urllib.parse.urlencode({
@@ -158,13 +157,12 @@ class sfp_virustotal(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from VirusTotal: {e}")
             self.errorState = True
-            return None
 
-        return data
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -172,7 +170,7 @@ class sfp_virustotal(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -181,39 +179,39 @@ class sfp_virustotal(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
-            return None
+            return
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
-            return None
+            return
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
 
             net_size = IPNetwork(eventData).prefixlen
             max_netblock = self.opts['maxnetblock']
             if net_size < max_netblock:
                 self.sf.debug(f"Network size {net_size} bigger than permitted: {max_netblock}")
-                return None
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
 
             net_size = IPNetwork(eventData).prefixlen
             max_subnet = self.opts['maxsubnet']
             if net_size < max_subnet:
                 self.sf.debug(f"Network size {net_size} bigger than permitted: {max_subnet}")
-                return None
+                return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -225,7 +223,7 @@ class sfp_virustotal(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if self.sf.validIP(addr):
                 info = self.queryIp(addr)

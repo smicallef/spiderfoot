@@ -195,15 +195,15 @@ class sfp_whatcms(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == '':
             self.sf.error('You enabled sfp_whatcms but did not set an API key!')
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -213,13 +213,13 @@ class sfp_whatcms(SpiderFootPlugin):
 
         if data is None:
             self.sf.debug('No web technology found for ' + eventData)
-            return None
+            return
 
         results = data.get('results')
 
         if results is None:
             self.sf.debug('No web technology found for ' + eventData)
-            return None
+            return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
         self.notifyListeners(evt)

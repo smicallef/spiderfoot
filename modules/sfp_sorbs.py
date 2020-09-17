@@ -163,28 +163,28 @@ class sfp_sorbs(SpiderFootPlugin):
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxnetblock']))
-                    return None
+                    return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxsubnet']))
-                    return None
+                    return
 
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):
                 if self.checkForStop():
-                    return None
+                    return
                 self.queryAddr(str(addr), parentEvent)
         else:
             self.queryAddr(eventData, parentEvent)

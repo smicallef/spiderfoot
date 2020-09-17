@@ -118,7 +118,7 @@ class sfp_twilio(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -127,18 +127,18 @@ class sfp_twilio(SpiderFootPlugin):
         if self.opts['api_key_account_sid'] == "" or self.opts['api_key_auth_token'] == "":
             self.sf.error("You enabled sfp_twilio but did not set account sid/auth token")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         content = self.queryPhoneNumber(eventData)
 
         if content is None:
-            return None
+            return
 
         data = json.loads(content)
 
@@ -152,7 +152,5 @@ class sfp_twilio(SpiderFootPlugin):
         if callerName:
             evt = SpiderFootEvent("COMPANY_NAME", callerName, self.__name__, event)
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_twilio class

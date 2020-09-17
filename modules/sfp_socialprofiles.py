@@ -127,21 +127,21 @@ class sfp_socialprofiles(SpiderFootPlugin):
         self.currentEventSrc = event
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['google_api_key'] == "" and self.opts['bing_api_key'] == "":
             self.sf.error("You enabled sfp_socialprofiles but did not set a Google or Bing API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if self.keywords is None:
             self.keywords = self.sf.domainKeywords(
@@ -159,7 +159,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 self.sf.error(
                     "Yahoo is no longer supported. Please try 'bing' or 'google'."
                 )
-                return None
+                return
 
             if self.opts["method"].lower() == "google":
                 res = self.sf.googleIterate(
@@ -190,7 +190,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 continue
 
             if self.checkForStop():
-                return None
+                return
 
             # Submit the results for analysis
             evt = SpiderFootEvent(
@@ -218,7 +218,7 @@ class sfp_socialprofiles(SpiderFootPlugin):
                         instances.append(match)
 
                     if self.checkForStop():
-                        return None
+                        return
 
                     # Fetch the profile page if we are checking
                     # for a firm relationship.

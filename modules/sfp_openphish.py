@@ -233,6 +233,4 @@ class sfp_openphish(SpiderFootPlugin):
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_openphish class

@@ -81,7 +81,7 @@ class sfp_wikileaks(SpiderFootPlugin):
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -104,7 +104,7 @@ class sfp_wikileaks(SpiderFootPlugin):
         )
         if res['content'] is None:
             self.sf.error("Unable to fetch Wikileaks content.")
-            return None
+            return
 
         # Fetch the paste site content
         links = dict()
@@ -136,7 +136,7 @@ class sfp_wikileaks(SpiderFootPlugin):
                 else:
                     self.sf.debug("Found a link: " + link)
                     if self.checkForStop():
-                        return None
+                        return
 
                     # Wikileaks leak links will have a nested folder structure link
                     if link.count('/') >= 4:

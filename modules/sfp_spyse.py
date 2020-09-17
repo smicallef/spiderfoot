@@ -308,19 +308,19 @@ class sfp_spyse(SpiderFootPlugin):
     def handleEvent(self, event):
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == '':
             self.sf.error("You enabled sfp_spyse but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -334,7 +334,7 @@ class sfp_spyse(SpiderFootPlugin):
 
             while nextPageHasData:
                 if self.checkForStop():
-                    return None
+                    return
 
                 data = self.queryDomainsOnIP(eventData, currentOffset)
                 if not data:
@@ -394,7 +394,7 @@ class sfp_spyse(SpiderFootPlugin):
 
             while nextPageHasData:
                 if self.checkForStop():
-                    return None
+                    return
                 data = self.queryIPPort(eventData, currentOffset)
                 if not data:
                     nextPageHasData = False
@@ -439,7 +439,7 @@ class sfp_spyse(SpiderFootPlugin):
 
             while nextPageHasData:
                 if self.checkForStop():
-                    return None
+                    return
 
                 data = self.querySubdomains(eventData, currentOffset)
                 if not data:
@@ -483,7 +483,5 @@ class sfp_spyse(SpiderFootPlugin):
                 else:
                     evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
                     self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_spyse class

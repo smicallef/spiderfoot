@@ -111,28 +111,28 @@ class sfp_archiveorg(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "INTERESTING_FILE" and not self.opts['intfiles']:
-            return None
+            return
         if eventName == "URL_PASSWORD" and not self.opts['passwordpages']:
-            return None
+            return
         if eventName == "URL_STATIC" and not self.opts['staticpages']:
-            return None
+            return
         if eventName == "URL_FORM" and not self.opts['formpages']:
-            return None
+            return
         if eventName == "URL_UPLOAD" and not self.opts['uploadpages']:
-            return None
+            return
         if eventName == "URL_JAVA_APPLET" and not self.opts['javapages']:
-            return None
+            return
         if eventName == "URL_FLASH" and not self.opts['flashpages']:
-            return None
+            return
         if eventName == "URL_JAVASCRIPT" and not self.opts['javascriptpages']:
-            return None
+            return
         if eventName == "URL_WEB_FRAMEWORK" and not self.opts['webframeworkpages']:
-            return None
+            return
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         for daysback in self.opts['farback'].split(","):
             newDate = datetime.datetime.now() - datetime.timedelta(days=int(daysback))

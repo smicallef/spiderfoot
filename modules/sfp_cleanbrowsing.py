@@ -99,20 +99,20 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by CleanBrowsing.org.
         if not self.sf.resolveHost(eventData):
-            return None
+            return
 
         found = self.queryAddr(eventData)
 
         # Host was found, not blocked
         if found:
-            return None
+            return
 
         typ = "MALICIOUS_" + eventName
 

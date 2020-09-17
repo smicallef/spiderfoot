@@ -107,13 +107,13 @@ class sfp_badipscom(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         if eventName not in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -121,7 +121,7 @@ class sfp_badipscom(SpiderFootPlugin):
 
         if eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
-                return None
+                return
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
 
         self.sf.debug("Checking maliciousness of IP address %s with BadIPs.com" % eventData)
@@ -129,7 +129,7 @@ class sfp_badipscom(SpiderFootPlugin):
         url = self.query(eventData)
 
         if not url:
-            return None
+            return
 
         text = "BadIPs.com IP Reputation List [%s]\n<SFURL>%s</SFURL>" % (eventData, url)
         evt = SpiderFootEvent(evtType, text, self.__name__, event)

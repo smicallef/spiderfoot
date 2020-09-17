@@ -308,6 +308,4 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
                 evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
                 self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_hybrid_analysis class

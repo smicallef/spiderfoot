@@ -86,7 +86,7 @@ class sfp_adblock(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.rules is None:
             raw = self.sf.fetchUrl(self.opts['blocklist'], timeout=30)
@@ -111,7 +111,7 @@ class sfp_adblock(SpiderFootPlugin):
             self.results[eventData] = True
         else:
             self.sf.debug("Already checked this page for AdBlock matching, skipping.")
-            return None
+            return
 
         try:
             if self.rules and self.rules.should_block(eventData):
@@ -121,7 +121,5 @@ class sfp_adblock(SpiderFootPlugin):
         except Exception as e:
             self.sf.error("Parsing error handling AdBlock list: " + str(e))
             self.errorState = True
-
-        return None
 
 # End of sfp_adblock class

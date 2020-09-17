@@ -65,9 +65,9 @@ class sfp_whois(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -87,15 +87,15 @@ class sfp_whois(SpiderFootPlugin):
                     data = str(whoisdata)
             if not data:
                 self.sf.error("Unable to perform WHOIS on " + eventData)
-                return None
+                return
         except Exception as e:
             self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e))
-            return None
+            return
 
         # This is likely to be an error about being throttled rather than real data
         if len(data) < 250:
             self.sf.error("Throttling from Whois is probably happening.")
-            return None
+            return
 
         if eventName.startswith("DOMAIN_NAME"):
             typ = "DOMAIN_WHOIS"

@@ -151,18 +151,18 @@ class sfp_viewdns(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_viewdns but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -176,22 +176,22 @@ class sfp_viewdns(SpiderFootPlugin):
         elif eventName == "PROVIDER_DNS":
             if not self.getTarget().matches(eventData):
                 self.sf.debug("DNS provider found but not related to target, skipping")
-                return None
+                return
             ident = "reversens"
             valkey = "domain"
         else:
-            return None
+            return
 
         self.accum = list()
         self.query(eventData, ident)
         rec = self.accum
 
         if not rec:
-            return None
+            return
 
         # Leave out registrar parking sites, and other highly used IPs
         if eventName == "IP_ADDRESS" and len(rec) > self.opts['maxcohost']:
-            return None
+            return
 
         myres = list()
 
