@@ -42,14 +42,11 @@ class sfp_zetalytics(SpiderFootPlugin):
         },
     }
 
-    opts = {
-        "api_key": "",
-        "verify": True
-    }
+    opts = {"api_key": "", "verify": True}
 
     optdescs = {
         "api_key": "Zetalytics API Key.",
-        "verify": "Verify that any hostnames found on the target domain still resolve?"
+        "verify": "Verify that any hostnames found on the target domain still resolve?",
     }
 
     results = None
@@ -85,7 +82,7 @@ class sfp_zetalytics(SpiderFootPlugin):
             self.emit("INTERNET_NAME_UNRESOLVED", hostname, pevent)
         else:
             self.emit("INTERNET_NAME", hostname, pevent)
-            if self.sf.isDomain(hostname, self.opts['_internettlds']):
+            if self.sf.isDomain(hostname, self.opts["_internettlds"]):
                 self.emit("DOMAIN_NAME", hostname, pevent)
 
     def request(self, path, params):
@@ -102,9 +99,7 @@ class sfp_zetalytics(SpiderFootPlugin):
         try:
             info = json.loads(res["content"])
         except Exception as e:
-            self.sf.error(
-                f"Error processing JSON response from Zetalytics: {e}"
-            )
+            self.sf.error(f"Error processing JSON response from Zetalytics: {e}")
             return None
 
         return info
@@ -176,7 +171,9 @@ class sfp_zetalytics(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
-            self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
+            self.sf.error(
+                f"You enabled {self.__class__.__name__} but did not set an API key!"
+            )
             self.errorState = True
             return None
 
