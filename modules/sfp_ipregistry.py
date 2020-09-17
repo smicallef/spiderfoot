@@ -89,10 +89,9 @@ class sfp_ipregistry(SpiderFootPlugin):
 
         return info
 
-    def emit(self, etype, data, pevent, notify=True):
+    def emit(self, etype, data, pevent):
         evt = SpiderFootEvent(etype, data, self.__name__, pevent)
-        if notify:
-            self.notifyListeners(evt)
+        self.notifyListeners(evt)
         return evt
 
     def generate_location_events(self, location, pevent):
