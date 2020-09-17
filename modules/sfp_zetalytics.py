@@ -211,5 +211,5 @@ class sfp_zetalytics(SpiderFootPlugin):
             return None
         try:
             self._handleEvent(event)
-        except ModuleStop():
+        except ModuleStop:
             return None
