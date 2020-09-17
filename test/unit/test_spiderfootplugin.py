@@ -215,12 +215,8 @@ class TestSpiderFootPlugin(unittest.TestCase):
             Test with source event
         """
         sfp = SpiderFootPlugin()
-
-        class DatabaseStub:
-            def scanInstanceGet(self, scanId):
-                return [None, None, None, None, None, None]
-
-        sfp.__sfdb__ = DatabaseStub()
+        sfdb = SpiderFootDb(self.default_options, False)
+        sfp.setDbh(sfdb)
 
         event_type = 'ROOT'
         event_data = 'test data'
