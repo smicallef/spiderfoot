@@ -60,7 +60,7 @@ class TestSpiderFootTarget(unittest.TestCase):
                 self.assertEqual(target.targetType, target_type)
                 self.assertEqual(target.targetValue, target_value)
 
-    def test_setAlias(self):
+    def test_setAlias_invalid_alias_should_not_set_alias(self):
         """
         Test setAlias(self, value, typeName)
         """
@@ -69,7 +69,36 @@ class TestSpiderFootTarget(unittest.TestCase):
         target = SpiderFootTarget(target_value, target_type)
 
         target.setAlias(None, None)
-        self.assertEqual('TBD', 'TBD')
+        target.setAlias("", None)
+        target.setAlias(None, "")
+        target.setAlias("", "")
+        target.setAlias("example value", None)
+        target.setAlias(None, "example type")
+
+        target_aliases = target.targetAliases
+        self.assertIsInstance(target_aliases, list)
+        self.assertEqual([], target_aliases)
+
+    def test_setAlias_should_set_alias(self):
+        """
+        Test setAlias(self, value, typeName)
+        """
+        target_value = 'example target value'
+        target_type = 'IP_ADDRESS'
+        target = SpiderFootTarget(target_value, target_type)
+
+        target.setAlias("example value", "example type")
+
+        expected_aliases = [{'type': 'example type', 'value': 'example value'}]
+
+        target_aliases = target.targetAliases
+        self.assertEqual(expected_aliases, target_aliases)
+
+        # check duplicated aliases aren't created
+        target.setAlias("example value", "example type")
+
+        target_aliases = target.targetAliases
+        self.assertEqual(expected_aliases, target_aliases)
 
     def test_targetType_attribute_should_return_a_string(self):
         """
@@ -121,6 +150,17 @@ class TestSpiderFootTarget(unittest.TestCase):
                     target = SpiderFootTarget(target_value, target_type)
                     target.targetValue = invalid_type
 
+    def test_targetValue_attribute_setter_empty_value_should_raise_ValueError(self):
+        """
+        Test targetValue attribute
+        """
+        target_value = 'example target value'
+        target_type = 'IP_ADDRESS'
+
+        with self.assertRaises(ValueError):
+            target = SpiderFootTarget(target_value, target_type)
+            target.targetValue = ""
+
     def test_targetAliases_attribute_should_return_a_list(self):
         """
         Test targetAliases attribute
@@ -141,6 +181,22 @@ class TestSpiderFootTarget(unittest.TestCase):
 
         equivalents = target._getEquivalents(target_type)
         self.assertEqual(list, type(equivalents))
+
+    def test_getEquivalents_should_return_alias_values(self):
+        """
+        Test _getEquivalents(self, typeName)
+        """
+        target_value = 'example target value'
+        target_type = 'IP_ADDRESS'
+        target = SpiderFootTarget(target_value, target_type)
+
+        alias_type = "example type"
+        alias_value = "example value"
+        target.setAlias(alias_value, alias_type)
+
+        equivalents = target._getEquivalents(alias_type)
+        self.assertIsInstance(equivalents, list)
+        self.assertEqual(equivalents[0], alias_value)
 
     def test_getNames_should_return_a_list(self):
         """

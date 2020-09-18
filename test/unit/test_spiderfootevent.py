@@ -283,6 +283,39 @@ class TestSpiderFootEvent(unittest.TestCase):
                 with self.assertRaises(TypeError):
                     evt.risk = invalid_type
 
+    def test_actualSource_attribute_should_return_actual_source_as_string(self):
+        event_type = 'ROOT'
+        event_data = 'example event data'
+        module = ''
+        source_event = ''
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        actual_source = 'example actual source'
+        evt.actualSource = actual_source
+
+        self.assertEqual(actual_source, evt.actualSource)
+
+    def test_sourceEventHash_attribute_should_return_source_event_hash_as_string(self):
+        event_type = 'ROOT'
+        event_data = 'example event data'
+        module = ''
+        source_event = ''
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        self.assertEqual("ROOT", evt.sourceEventHash)
+
+    def test_moduleDataSource_attribute_should_return_module_data_source_as_string(self):
+        event_type = 'ROOT'
+        event_data = 'example event data'
+        module = ''
+        source_event = ''
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        module_data_source = 'example module data source'
+        evt.moduleDataSource = module_data_source
+
+        self.assertEqual(module_data_source, evt.moduleDataSource)
+
     def test_asdict_root_event_should_return_event_as_a_dict(self):
         """
         Test asDict(self)
