@@ -138,7 +138,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
 
             app_full_name = f"{trackName} {version} ({bundleId})"
 
-            if not bundleId.startswith(domain_reversed) and f".{domain_reversed}." not in bundleId:
+            if not bundleId.startswith(f"{domain_reversed}.") and f".{domain_reversed}." not in bundleId:
                 self.sf.debug(f"App {app_full_name} does not match {domain_reversed}, skipping")
                 continue
 
