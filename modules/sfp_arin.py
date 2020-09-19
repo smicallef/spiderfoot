@@ -136,14 +136,14 @@ class sfp_arin(SpiderFootPlugin):
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if eventName == "DOMAIN_NAME":
             ret = self.query("domain", eventData)
             if not ret:
-                return None
+                return
             if "pocs" in ret:
                 if "pocRef" in ret['pocs']:
                     ref = list()
@@ -173,7 +173,7 @@ class sfp_arin(SpiderFootPlugin):
         if eventName == "HUMAN_NAME":
             ret = self.query("name", eventData)
             if not ret:
-                return None
+                return
             if "pocs" in ret:
                 if "pocRef" in ret['pocs']:
                     ref = list()

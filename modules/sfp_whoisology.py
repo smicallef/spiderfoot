@@ -118,19 +118,19 @@ class sfp_whoisology(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_whoisology but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
         else:
             self.results[eventData] = True
 

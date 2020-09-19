@@ -188,6 +188,4 @@ class sfp_leakix(SpiderFootPlugin):
                         evt = SpiderFootEvent("LEAKSITE_CONTENT", leak_data, self.__name__, event)
                         self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_leakix class

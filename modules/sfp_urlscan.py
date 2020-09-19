@@ -92,12 +92,11 @@ class sfp_urlscan(SpiderFootPlugin):
             return None
 
         try:
-            result = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return result
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -106,26 +105,26 @@ class sfp_urlscan(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         data = self.query(eventData)
 
         if data is None:
-            return None
+            return
 
         results = data.get('results')
 
         if not results:
-            return None
+            return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
         self.notifyListeners(evt)
@@ -208,7 +207,5 @@ class sfp_urlscan(SpiderFootPlugin):
         for server in set(servers):
             evt = SpiderFootEvent('WEBSERVER_BANNER', server, self.__name__, event)
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_ipinfo class

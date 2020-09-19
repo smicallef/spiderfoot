@@ -118,7 +118,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -126,7 +126,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
 
         if data is None:
             self.sf.debug(f"No results from Wikipedia for {eventData}")
-            return None
+            return
 
         for link in data:
             evt = SpiderFootEvent("WIKIPEDIA_PAGE_EDIT", link, self.__name__, event)

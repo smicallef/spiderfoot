@@ -122,7 +122,8 @@ class sfp_dnsdb(SpiderFootPlugin):
         if len(splittedContent) == 2:
             self.sf.info(f"No DNSDB record found for {query}")
             return None
-        elif len(splittedContent) < 2:
+
+        if len(splittedContent) < 2:
             self.sf.info(f"Unexpected DNSDB response {query}")
             return None
 
@@ -149,18 +150,18 @@ class sfp_dnsdb(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_dnsdb but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
         self.results[eventData] = True
 
         responseData = set()
@@ -169,7 +170,7 @@ class sfp_dnsdb(SpiderFootPlugin):
         if eventName == "DOMAIN_NAME":
             rrsetRecords = self.query("rrset", "name", eventData)
             if rrsetRecords is None:
-                return None
+                return
 
             evt = SpiderFootEvent("RAW_RIR_DATA", str(rrsetRecords), self.__name__, event)
             self.notifyListeners(evt)
@@ -177,7 +178,7 @@ class sfp_dnsdb(SpiderFootPlugin):
             for record in rrsetRecords:
                 record = record.get("obj")
                 if self.checkForStop():
-                    return None
+                    return
 
                 if self.isTooOld(record.get("time_last", 0)):
                     continue
@@ -250,7 +251,7 @@ class sfp_dnsdb(SpiderFootPlugin):
             rdataRecords = self.query("rdata", "name", eventData)
 
             if rdataRecords is None:
-                return None
+                return
 
             evt = SpiderFootEvent("RAW_RIR_DATA", str(rdataRecords), self.__name__, event)
             self.notifyListeners(evt)
@@ -276,7 +277,7 @@ class sfp_dnsdb(SpiderFootPlugin):
         elif eventName in ("IP_ADDRESS", "IPV6_ADDRESS"):
             rdataRecords = self.query("rdata", "ip", eventData)
             if rdataRecords is None:
-                return None
+                return
 
             evt = SpiderFootEvent("RAW_RIR_DATA", str(rdataRecords), self.__name__, event)
             self.notifyListeners(evt)
@@ -284,7 +285,7 @@ class sfp_dnsdb(SpiderFootPlugin):
             for record in rdataRecords:
                 record = record.get("obj")
                 if self.checkForStop():
-                    return None
+                    return
 
                 if self.isTooOld(record.get("time_last", 0)):
                     continue

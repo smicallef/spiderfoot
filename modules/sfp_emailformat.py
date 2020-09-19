@@ -106,6 +106,4 @@ class sfp_emailformat(SpiderFootPlugin):
             evt = SpiderFootEvent(evttype, email, self.__name__, event)
             self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_emailformat class

@@ -65,9 +65,9 @@ class sfp_twitter(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -77,21 +77,21 @@ class sfp_twitter(SpiderFootPlugin):
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
         except Exception as e:
             self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
-            return None
+            return
 
         if not network == "Twitter":
             self.sf.debug("Skipping social network profile, " + url + ", as not a Twitter profile")
-            return None
+            return
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
         if res['content'] is None:
-            return None
+            return
 
         if not res['code'] == "200":
             self.sf.debug(url + " is not a valid Twitter profile")
-            return None
+            return
 
         # Retrieve name
         human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>',

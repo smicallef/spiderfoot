@@ -96,13 +96,13 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
 
         if srcModuleName == "sfp_dnscommonsrv":
             self.sf.debug(f"Ignoring {eventName}, from self.")
-            return None
+            return
 
         eventDataHash = self.sf.hashstring(eventData)
         parentEvent = event
 
         if eventDataHash in self.events:
-            return None
+            return
 
         self.events[eventDataHash] = True
 
@@ -115,7 +115,7 @@ class sfp_dnscommonsrv(SpiderFootPlugin):
         # Try resolving common names
         for srv in self.commonsrv:
             if self.checkForStop():
-                return None
+                return
 
             name = srv + "." + eventData
 

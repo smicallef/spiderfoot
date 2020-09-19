@@ -95,5 +95,4 @@ class sfp_iban(SpiderFootPlugin):
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
 
-        return None
 # End of sfp_iban class

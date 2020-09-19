@@ -94,7 +94,7 @@ class sfp_yandexdns(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -105,15 +105,15 @@ class sfp_yandexdns(SpiderFootPlugin):
                 resolved = True
         except Exception:
             self.sf.debug(f"Unable to resolve {eventData}")
-            return None
+            return
 
         if not resolved:
-            return None
+            return
 
         found = self.queryAddr(eventData)
 
         if found:
-            return None
+            return
 
         if eventName == "CO_HOSTED_SITE":
             typ = "MALICIOUS_COHOST"

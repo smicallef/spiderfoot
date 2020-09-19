@@ -91,32 +91,30 @@ class sfp_zetalytics(SpiderFootPlugin):
             timeout=self.opts["_fetchtimeout"],
             useragent="SpiderFoot",
         )
+
         if res["content"] is None:
             self.sf.info(f"No Zetalytics info found for {path}?{qs}")
             return None
-        try:
-            info = json.loads(res["content"])
-        except Exception as e:
-            self.sf.error(f"Error processing JSON response from Zetalytics: {e}")
-            return None
 
-        return info
+        try:
+            return json.loads(res["content"])
+        except Exception as e:
+            self.sf.error(
+                f"Error processing JSON response from Zetalytics: {e}"
+            )
+        return None
 
     def query_subdomains(self, domain):
-        info = self.request("/subdomains", {"q": domain})
-        return info
+        return self.request("/subdomains", {"q": domain})
 
     def query_hostname(self, hostname):
-        info = self.request("/hostname", {"q": hostname})
-        return info
+        return self.request("/hostname", {"q": hostname})
 
     def query_email_domain(self, email_domain):
-        info = self.request("/email_domain", {"q": email_domain})
-        return info
+        return self.request("/email_domain", {"q": email_domain})
 
     def query_email_address(self, email_address):
-        info = self.request("/email_address", {"q": email_address})
-        return info
+        return self.request("/email_address", {"q": email_address})
 
     def generate_subdomains_events(self, data, pevent):
         events_generated = False
@@ -176,7 +174,7 @@ class sfp_zetalytics(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if self.checkForStop():
             return None
@@ -190,11 +188,11 @@ class sfp_zetalytics(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         if "{}:{}".format(eventName, eventData) in self.results:
             self.sf.debug(f"Skipping {eventName}:{eventData}, already checked.")
-            return None
+            return
         self.results["{}:{}".format(eventName, eventData)] = True
 
         if eventName == "INTERNET_NAME":
@@ -217,7 +215,7 @@ class sfp_zetalytics(SpiderFootPlugin):
                 events_generated = True
 
         else:
-            return None
+            return
 
         if events_generated and not self.checkForStop():
             self.emit("RAW_RIR_DATA", json.dumps(data), event)

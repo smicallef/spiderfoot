@@ -107,36 +107,34 @@ class sfp_ipinfo(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_ipinfo but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         data = self.queryIP(eventData)
 
         if data is None:
-            return None
+            return
 
         if 'country' not in data:
-            return None
+            return
 
         location = ', '.join([_f for _f in [data.get('city'), data.get('region'), data.get('country')] if _f])
         self.sf.info("Found GeoIP for " + eventData + ": " + location)
 
         evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
         self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_ipinfo class

@@ -60,21 +60,21 @@ class sfp_webserver(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
         if eventSource in self.results:
-            return None
+            return
 
         self.results[eventSource] = True
 
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
             self.sf.debug("Not collecting web server information for external sites.")
-            return None
+            return
 
         try:
             jdata = json.loads(eventData)
             if jdata is None:
-                return None
+                return
         except Exception:
             self.sf.error("Received HTTP headers from another module in an unexpected format.")
-            return None
+            return
 
         # Check location header for linked URLs
         if 'location' in jdata:
@@ -113,7 +113,7 @@ class sfp_webserver(SpiderFootPlugin):
             evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", jdata['x-powered-by'],
                                   self.__name__, event)
             self.notifyListeners(evt)
-            return None
+            return
 
         tech = None
         if 'set-cookie' in jdata and 'PHPSESS' in jdata['set-cookie']:

@@ -70,7 +70,7 @@ class sfp_skymem(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
         else:
             self.results[eventData] = True
 
@@ -80,7 +80,7 @@ class sfp_skymem(SpiderFootPlugin):
         res = self.sf.fetchUrl("http://www.skymem.info/srch?q=" + eventData, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            return None
+            return
 
         # Extract emails from results page
         emails = self.sf.parseEmails(res['content'])
@@ -106,7 +106,7 @@ class sfp_skymem(SpiderFootPlugin):
         domain_ids = re.findall(r'<a href="/domain/([a-z0-9]+)\?p=', res['content'])
 
         if not domain_ids:
-            return None
+            return
 
         domain_id = domain_ids[0]
 
@@ -142,7 +142,5 @@ class sfp_skymem(SpiderFootPlugin):
                     max_page = int(p)
             if page >= max_page:
                 break
-
-        return None
 
 # End of sfp_skymem class

@@ -208,12 +208,12 @@ class sfp_abuseipdb(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
-        return data
+        return None
 
     def queryNetblock(self, ip):
         """Query API for a netblock.
@@ -262,12 +262,11 @@ class sfp_abuseipdb(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return data
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -281,33 +280,33 @@ class sfp_abuseipdb(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'AFFILIATE_IPADDR' and not self.opts.get('checkaffiliates'):
-            return None
+            return
 
         if eventName == 'IP_ADDRESS':
             evtType = 'MALICIOUS_IPADDR'
         elif eventName == 'AFFILIATE_IPADDR':
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
         else:
-            return None
+            return
 
         self.sf.debug(f"Checking maliciousness of IP address {eventData} with AbuseIPDB")
 
         blacklist = self.queryBlacklist()
 
         if not blacklist:
-            return None
+            return
 
         if eventData not in blacklist:
-            return None
+            return
 
         self.sf.info(f"Malicious IP address {eventData} found in AbuseIPDB blacklist")
 
@@ -320,7 +319,5 @@ class sfp_abuseipdb(SpiderFootPlugin):
             event
         )
         self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_abuseipdb class

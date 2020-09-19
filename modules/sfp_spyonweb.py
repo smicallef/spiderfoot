@@ -195,10 +195,10 @@ class sfp_spyonweb(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -207,7 +207,7 @@ class sfp_spyonweb(SpiderFootPlugin):
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_spyonweb but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
 
@@ -217,7 +217,7 @@ class sfp_spyonweb(SpiderFootPlugin):
 
             if data is None:
                 self.sf.info(f"No data found for {eventData}")
-                return None
+                return
 
             google_adsense = data.get('adsense')
 
@@ -240,7 +240,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                 analytics_id = eventData.split(": ")[1]
             except Exception as e:
                 self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})")
-                return None
+                return
 
             data = dict()
             if network == 'Google AdSense':
@@ -248,11 +248,11 @@ class sfp_spyonweb(SpiderFootPlugin):
             elif network == 'Google Analytics':
                 data = self.queryGoogleAnalytics(analytics_id, limit=self.opts['limit'])
             else:
-                return None
+                return
 
             if data is None:
                 self.sf.info("No data found for " + eventData)
-                return None
+                return
 
             for r in list(data.keys()):
                 last_seen = int(datetime.datetime.strptime(data[r], '%Y-%m-%d').strftime('%s')) * 1000
@@ -274,7 +274,7 @@ class sfp_spyonweb(SpiderFootPlugin):
 
             if data is None:
                 self.sf.info("No data found for " + eventData)
-                return None
+                return
 
             self.cohostcount = 0
 

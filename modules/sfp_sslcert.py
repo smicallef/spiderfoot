@@ -82,7 +82,7 @@ class sfp_sslcert(SpiderFootPlugin):
 
         if eventName == "LINKED_URL_INTERNAL":
             if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
-                return None
+                return
 
             try:
                 # Handle URLs containing port numbers
@@ -93,7 +93,7 @@ class sfp_sslcert(SpiderFootPlugin):
                 fqdn = self.sf.urlFQDN(eventData.lower())
             except Exception:
                 self.sf.debug("Couldn't parse URL: " + eventData)
-                return None
+                return
         else:
             fqdn = eventData
             port = 443
@@ -101,7 +101,7 @@ class sfp_sslcert(SpiderFootPlugin):
         if fqdn not in self.results:
             self.results[fqdn] = True
         else:
-            return None
+            return
 
         self.sf.debug("Testing SSL for: " + fqdn + ':' + str(port))
         # Re-fetch the certificate from the site and process
@@ -113,7 +113,7 @@ class sfp_sslcert(SpiderFootPlugin):
             cert = self.sf.parseCert(str(pemcert), fqdn, self.opts['certexpiringdays'])
         except Exception as x:
             self.sf.info("Unable to SSL-connect to " + fqdn + " (" + str(x) + ")")
-            return None
+            return
 
         if eventName in ['INTERNET_NAME', 'IP_ADDRESS']:
             evt = SpiderFootEvent('TCP_PORT_OPEN', fqdn + ':' + str(port), self.__name__, event)
@@ -121,7 +121,7 @@ class sfp_sslcert(SpiderFootPlugin):
 
         if not cert.get('text'):
             self.sf.info("Failed to parse the SSL cert for " + fqdn)
-            return None
+            return
 
         # Generate the event for the raw cert (in text form)
         # Cert raw data text contains a lot of gems..
@@ -166,11 +166,10 @@ class sfp_sslcert(SpiderFootPlugin):
         if cert.get('expired'):
             evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRED", cert.get('expirystr', 'Unknown'), self.__name__, event)
             self.notifyListeners(evt)
-            return None
+            return
 
         if cert.get('expiring'):
             evt = SpiderFootEvent("SSL_CERTIFICATE_EXPIRING", cert.get('expirystr', 'Unknown'), self.__name__, event)
             self.notifyListeners(evt)
-            return None
 
 # End of sfp_sslcert class

@@ -60,7 +60,7 @@ class sfp_phone(SpiderFootPlugin):
         sourceData = self.sf.hashstring(eventData)
 
         if sourceData in self.results:
-            return None
+            return
         else:
             self.results[sourceData] = True
 
@@ -84,13 +84,13 @@ class sfp_phone(SpiderFootPlugin):
                 number = phonenumbers.parse(eventData)
             except Exception as e:
                 self.sf.debug('Error parsing phone number: ' + str(e))
-                return None
+                return
 
             try:
                 number_carrier = carrier.name_for_number(number, 'en')
             except Exception as e:
                 self.sf.debug('Error retrieving phone number carrier: ' + str(e))
-                return None
+                return
 
             if number_carrier:
                 evt = SpiderFootEvent("PROVIDER_TELCO", number_carrier, self.__name__, event)
@@ -106,14 +106,12 @@ class sfp_phone(SpiderFootPlugin):
             #     location = geocoder.description_for_number(number, 'en')
             # except Exception as e:
             #     self.sf.debug('Error retrieving phone number location: ' + str(e))
-            #     return None
+            #     return
 
             # if location:
             #     evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             #     self.notifyListeners(evt)
             # else:
             #     self.sf.debug("No location information found for " + eventData)
-
-        return None
 
 # End of sfp_phone class

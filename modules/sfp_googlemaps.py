@@ -162,6 +162,4 @@ class sfp_googlemaps(SpiderFootPlugin):
             )
             self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_googlemaps class

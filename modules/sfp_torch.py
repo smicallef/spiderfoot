@@ -58,11 +58,11 @@ class sfp_torch(SpiderFootPlugin):
         eventData = event.data
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -74,13 +74,13 @@ class sfp_torch(SpiderFootPlugin):
 
         if not formpage['content']:
             self.sf.info("Couldn't connect to TORCH, check that you have TOR enabled.")
-            return None
+            return
 
         # Need the form ID to submit later for the search
         m = re.findall(r"\<form method=\"get\" action=\"/(\S+)/search.cgi\"\>",
                        formpage['content'], re.IGNORECASE | re.DOTALL)
         if not m:
-            return None
+            return
 
         formid = m[0]
 
@@ -90,7 +90,7 @@ class sfp_torch(SpiderFootPlugin):
         while "color=gray>next &gt;&gt;" not in pagecontent.lower() and pagecount < self.opts['pages']:
             # Check if we've been asked to stop
             if self.checkForStop():
-                return None
+                return
 
             if pagecount > 0:
                 p = "&np=" + str(pagecount)
@@ -106,12 +106,12 @@ class sfp_torch(SpiderFootPlugin):
 
             if data is None or not data.get('content'):
                 self.sf.info("No results returned from TORCH.")
-                return None
+                return
 
             pagecontent = data['content']
 
             if "No documents were found" in data['content']:
-                return None
+                return
 
             # Submit the google results for analysis
             evt = SpiderFootEvent(
@@ -134,7 +134,7 @@ class sfp_torch(SpiderFootPlugin):
 
                 if self.sf.urlFQDN(link).endswith(".onion"):
                     if self.checkForStop():
-                        return None
+                        return
 
                     if self.opts['fetchlinks']:
                         res = self.sf.fetchUrl(

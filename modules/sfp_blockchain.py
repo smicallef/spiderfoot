@@ -96,6 +96,4 @@ class sfp_blockchain(SpiderFootPlugin):
         evt = SpiderFootEvent("BITCOIN_BALANCE", str(balance) + " BTC", self.__name__, event)
         self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_blockchain class

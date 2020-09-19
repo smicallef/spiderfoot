@@ -103,13 +103,13 @@ class sfp_similar(SpiderFootPlugin):
 
         dom = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
         if not dom:
-            return None
+            return
 
         tld = "." + eventData.split(dom + ".")[-1]
         self.sf.debug(f"Keyword extracted from {eventData}: {dom}")
 
         if dom in self.results:
-            return None
+            return
 
         self.results[dom] = True
 
@@ -156,7 +156,5 @@ class sfp_similar(SpiderFootPlugin):
                     self.notifyListeners(evt)
             except Exception:
                 continue
-
-        return None
 
 # End of sfp_similar class

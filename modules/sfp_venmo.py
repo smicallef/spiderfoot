@@ -91,7 +91,7 @@ class sfp_venmo(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -100,7 +100,7 @@ class sfp_venmo(SpiderFootPlugin):
         data = self.query(eventData)
 
         if not data:
-            return None
+            return
 
         e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)

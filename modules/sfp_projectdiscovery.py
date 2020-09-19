@@ -155,7 +155,4 @@ class sfp_projectdiscovery(SpiderFootPlugin):
 
             resultsSet.add(subdomain)
 
-        return None
-
-
 # End of sfp_projectdiscovery class

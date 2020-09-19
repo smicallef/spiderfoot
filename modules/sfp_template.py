@@ -238,12 +238,11 @@ class sfp_template(SpiderFootPlugin):
         # Always process external data which is expected to be in a specific format
         # with try/except since we cannot trust the data is formatted as intended.
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from SHODAN: {e}")
-            return None
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -252,28 +251,16 @@ class sfp_template(SpiderFootPlugin):
         # event.module - the name of the module that generated the event, e.g. sfp_dnsresolve
         # event.data - the actual data, e.g. 127.0.0.1. This can sometimes be megabytes in size (e.g. a PDF)
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         # Once we are in this state, return immediately.
         if self.errorState:
-            return None
-
-        # Log this before complaining about a missing API key so we know the
-        # event was received.
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
-
-        # Always check if the API key is set and complain if it isn't, then set
-        # self.errorState to avoid this being a continual complaint during the scan.
-        if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_template but did not set an API key!")
-            self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
         # If eventData might be something large, set the key to a hash
         # of the value instead of the value, to avoid memory abuse.
         self.results[eventData] = True
@@ -281,13 +268,13 @@ class sfp_template(SpiderFootPlugin):
         if eventName == 'NETBLOCK_OWNER':
             # Note here an example of handling the netblocklookup option
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxnetblock']))
-                    return None
+                    return
 
         # When handling netblocks/subnets, assuming the user set
         # netblocklookup/subnetlookup to True, we need to expand it
@@ -345,7 +332,7 @@ class sfp_template(SpiderFootPlugin):
             # Whenever operating in a loop, call this to check whether the user
             # requested the scan to be aborted.
             if self.checkForStop():
-                return None
+                return
 
             # In some cases, you want to override the data source for the event
             # you're producing to be the data source of the event that you've

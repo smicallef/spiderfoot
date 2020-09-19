@@ -766,6 +766,8 @@ class SpiderFootWebUi:
 
         for id in ids.split(','):
             res = dbh.scanInstanceGet(id)
+            if not res:
+                continue
             names.append(str(res[0]))
             if res is None:
                 return self.error("Scan ID not found (" + id + ").")
@@ -776,7 +778,7 @@ class SpiderFootWebUi:
         if confirm:
             for id in ids.split(','):
                 dbh.scanInstanceDelete(id)
-            raise cherrypy.HTTPRedirect(self.docroot)
+            raise cherrypy.HTTPRedirect(f"{self.docroot}/")
 
         templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
         return templ.render(id=None, name=None, ids=ids.split(','), names=names,

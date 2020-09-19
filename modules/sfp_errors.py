@@ -105,6 +105,4 @@ class sfp_errors(SpiderFootPlugin):
                                           self.__name__, event)
                     self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_errors class

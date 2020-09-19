@@ -99,6 +99,4 @@ class sfp_email(SpiderFootPlugin):
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
 
-        return None
-
 # End of sfp_email class

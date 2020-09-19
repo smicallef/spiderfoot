@@ -76,7 +76,7 @@ class sfp_dnsraw(SpiderFootPlugin):
 
         if eventDataHash in self.events:
             self.sf.debug("Skipping duplicate event for " + eventData)
-            return None
+            return
 
         self.events[eventDataHash] = True
 
@@ -94,7 +94,7 @@ class sfp_dnsraw(SpiderFootPlugin):
 
         for rec in list(recs.keys()):
             if self.checkForStop():
-                return None
+                return
 
             try:
                 req = dns.message.make_query(eventData, dns.rdatatype.from_text(rec))

@@ -122,10 +122,10 @@ class sfp_scylla(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -141,7 +141,7 @@ class sfp_scylla(SpiderFootPlugin):
 
         while position < (per_page * max_pages):
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
                 break
@@ -149,7 +149,7 @@ class sfp_scylla(SpiderFootPlugin):
             data = self.query(eventData, per_page, position)
 
             if not data:
-                return None
+                return
 
             position += per_page
 
