@@ -203,15 +203,26 @@ class sfp_template(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
-    # For a list of all events, check sfdb.py.
+    # For a list of all events, check spiderfoot/db.py.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_OWNER", "DOMAIN_NAME", "WEB_ANALYTICS_ID"]
+        return [
+            "IP_ADDRESS",
+            "NETBLOCK_OWNER",
+            "DOMAIN_NAME",
+            "WEB_ANALYTICS_ID"
+        ]
 
     # What events this module produces
     def producedEvents(self):
-        return ["OPERATING_SYSTEM", "DEVICE_TYPE",
-                "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
-                'RAW_RIR_DATA', 'GEOINFO', 'VULNERABILITY']
+        return [
+            "OPERATING_SYSTEM",
+            "DEVICE_TYPE",
+            "TCP_PORT_OPEN",
+            "TCP_PORT_OPEN_BANNER",
+            'RAW_RIR_DATA',
+            'GEOINFO',
+            'VULNERABILITY'
+        ]
 
     # When querying third parties, it's best to have a dedicated function
     # to do so and avoid putting it in handleEvent()
@@ -222,9 +233,11 @@ class sfp_template(SpiderFootPlugin):
         # from global config), and the user agent is SpiderFoot so that the
         # provider knows the request comes from the tool. Many third parties
         # request that, so best to just be consistent anyway.
-        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry + "?key=" + self.opts['api_key'],
-                               timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot")
+        res = self.sf.fetchUrl(
+            f"https://api.shodan.io/shodan/host/{qry}?key={self.opts['api_key']}",
+            timeout=self.opts['_fetchtimeout'],
+            useragent="SpiderFoot"
+        )
 
         # Report when unexpected things happen:
         # - debug(message) if it's only for debugging (user will see this if debugging is enabled)
@@ -232,7 +245,7 @@ class sfp_template(SpiderFootPlugin):
         # - error(message) if it's a bad thing and should cause the scan to abort
         # - fatal(message) if it's a horrible thing and should kill SpiderFoot completely
         if res['content'] is None:
-            self.sf.info("No SHODAN info found for " + qry)
+            self.sf.info(f"No SHODAN info found for {qry}")
             return None
 
         # Always process external data which is expected to be in a specific format
@@ -261,6 +274,7 @@ class sfp_template(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return
+
         # If eventData might be something large, set the key to a hash
         # of the value instead of the value, to avoid memory abuse.
         self.results[eventData] = True
@@ -269,12 +283,12 @@ class sfp_template(SpiderFootPlugin):
             # Note here an example of handling the netblocklookup option
             if not self.opts['netblocklookup']:
                 return
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxnetblock']))
-                    return
+
+            max_netblock = self.opts['maxnetblock']
+            net_size = IPNetwork(eventData).prefixlen
+            if net_size < max_netblock:
+                self.sf.debug(f"Network size {net_size} bigger than permitted: {max_netblock}")
+                return
 
         # When handling netblocks/subnets, assuming the user set
         # netblocklookup/subnetlookup to True, we need to expand it
