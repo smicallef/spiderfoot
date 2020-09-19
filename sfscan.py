@@ -106,9 +106,6 @@ class SpiderFootScanner():
         self.__sf.dbh = self.__dbh
 
         # Create a unique ID for this scan in the back-end DB.
-        if not isinstance(scanId, str):
-            raise TypeError(f"scanId is {type(scanId)}; expected str()")
-
         if scanId:
             self.__scanId = scanId
         else:

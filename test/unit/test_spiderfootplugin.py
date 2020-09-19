@@ -210,9 +210,6 @@ class TestSpiderFootPlugin(unittest.TestCase):
     def test_notifyListeners_should_notify_listener_modules(self):
         """
         Test notifyListeners(self, sfEvent)
-
-        Todo:
-            Test with source event
         """
         sfp = SpiderFootPlugin()
         sfdb = SpiderFootDb(self.default_options, False)
@@ -223,6 +220,94 @@ class TestSpiderFootPlugin(unittest.TestCase):
         module = 'test module'
         source_event = None
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
+        sfp.notifyListeners(evt)
+
+        self.assertEqual('TBD', 'TBD')
+
+    def test_notifyListeners_output_filter_matched_should_notify_listener_modules(self):
+        """
+        Test notifyListeners(self, sfEvent)
+        """
+        sfp = SpiderFootPlugin()
+        sfdb = SpiderFootDb(self.default_options, False)
+        sfp.setDbh(sfdb)
+
+        target = SpiderFootTarget("spiderfoot.net", "INTERNET_NAME")
+        sfp.setTarget(target)
+
+        event_type = 'ROOT'
+        event_data = 'test data'
+        module = 'test module'
+        source_event = None
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        event_type = 'test event type'
+        event_data = 'test data'
+        module = 'test module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        sfp.__outputFilter__ = event_type
+
+        sfp.notifyListeners(evt)
+
+        self.assertEqual('TBD', 'TBD')
+
+    def test_notifyListeners_output_filter_unmatched_should_not_notify_listener_modules(self):
+        """
+        Test notifyListeners(self, sfEvent)
+        """
+        sfp = SpiderFootPlugin()
+        sfdb = SpiderFootDb(self.default_options, False)
+        sfp.setDbh(sfdb)
+
+        target = SpiderFootTarget("spiderfoot.net", "INTERNET_NAME")
+        sfp.setTarget(target)
+
+        event_type = 'ROOT'
+        event_data = 'test data'
+        module = 'test module'
+        source_event = None
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        event_type = 'test event type'
+        event_data = 'test data'
+        module = 'test module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        sfp.__outputFilter__ = "example unmatched event type"
+
+        sfp.notifyListeners(evt)
+
+        self.assertEqual('TBD', 'TBD')
+
+    def test_notifyListeners_event_type_and_data_same_as_source_event_source_event_should_story_only(self):
+        """
+        Test notifyListeners(self, sfEvent)
+        """
+        sfp = SpiderFootPlugin()
+        sfdb = SpiderFootDb(self.default_options, False)
+        sfp.setDbh(sfdb)
+
+        event_type = 'ROOT'
+        event_data = 'test data'
+        module = 'test module'
+        source_event = None
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        event_type = 'test event type'
+        event_data = 'test data'
+        module = 'test module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, module, source_event)
+
         sfp.notifyListeners(evt)
 
         self.assertEqual('TBD', 'TBD')
