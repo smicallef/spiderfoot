@@ -1,6 +1,5 @@
 # test_spiderfootcli.py
 import io
-import subprocess
 import sys
 import unittest
 
@@ -26,21 +25,6 @@ class TestSpiderFootCli(unittest.TestCase):
         "cli.password": "",
         "cli.server_baseurl": "http://127.0.0.1:5001"
     }
-
-    def execute(self, command):
-        proc = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        out, err = proc.communicate()
-        return out, err, proc.returncode
-
-    def test_help_arg_should_print_help_and_exit(self):
-        out, err, code = self.execute([sys.executable, "sfcli.py", "-h"])
-        self.assertIn(b"show this help message and exit", out)
-        self.assertEqual(b"", err)
-        self.assertEqual(0, code)
 
     def test_default(self):
         """
