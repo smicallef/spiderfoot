@@ -99,9 +99,7 @@ class sfp_zetalytics(SpiderFootPlugin):
         try:
             return json.loads(res["content"])
         except Exception as e:
-            self.sf.error(
-                f"Error processing JSON response from Zetalytics: {e}"
-            )
+            self.sf.error(f"Error processing JSON response from Zetalytics: {e}")
         return None
 
     def query_subdomains(self, domain):
