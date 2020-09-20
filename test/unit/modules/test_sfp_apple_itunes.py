@@ -1,4 +1,4 @@
-# test_sfp_apple_items.py
+# test_sfp_apple_itunes.py
 import unittest
 
 from modules.sfp_apple_itunes import sfp_apple_itunes
