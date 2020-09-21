@@ -10,7 +10,7 @@ pysocks>=1.7.1
 requests>=2.20.0
 ipwhois==1.0.0
 ipaddr>=2.2.0
-phonenumbers>=8.10.2
+phonenumbers>=8.12.9
 pygexf>=0.2.2
 PyPDF2>=1.26.0
 stem>=1.7.1
