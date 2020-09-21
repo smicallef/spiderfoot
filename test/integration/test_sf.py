@@ -14,7 +14,8 @@ class TestSf(unittest.TestCase):
     ]
 
     default_modules = [
-        "sfp_binstring",
+        "sfp_base64",
+        "sfp_bitcoin",
         "sfp_company",
         "sfp_cookie",
         "sfp_countryname",
@@ -28,7 +29,10 @@ class TestSf(unittest.TestCase):
         "sfp_names",
         "sfp_pageinfo",
         "sfp_phone",
-        "sfp_webanalytics"
+        "sfp_strangeheaders",
+        "sfp_webframework",
+        "sfp_webserver",
+        "sfp_webanalytics",
     ]
 
     def execute(self, command):
