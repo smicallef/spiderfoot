@@ -331,7 +331,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_ping(self):
         """
         Test do_ping(self, line)
@@ -341,7 +340,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_modules(self):
         """
         Test do_modules(self, line, cacheonly=False)
@@ -351,7 +349,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_types(self):
         """
         Test do_types(self, line, cacheonly=False)
@@ -361,7 +358,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_load(self):
         """
         Test do_load(self, line)
@@ -381,7 +377,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_scans(self):
         """
         Test do_scans(self, line)
