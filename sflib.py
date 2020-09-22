@@ -2545,9 +2545,6 @@ class SpiderFoot:
 
         Returns:
             dict: HTTP response
-
-        Raises:
-            Exception: request error
         """
 
         if not url:
@@ -2584,26 +2581,24 @@ class SpiderFoot:
         else:
             self.debug(f"Not using proxy for {url}")
 
-        try:
-            header = dict()
-            btime = time.time()
-            if isinstance(useragent, list):
-                header['User-Agent'] = random.SystemRandom().choice(useragent)
-            else:
-                header['User-Agent'] = useragent
+        header = dict()
+        btime = time.time()
 
-            # Add custom headers
-            if headers is not None:
-                for k in list(headers.keys()):
-                    if isinstance(headers[k], str):
-                        header[k] = headers[k]
-                    else:
-                        header[k] = str(headers[k])
+        if isinstance(useragent, list):
+            header['User-Agent'] = random.SystemRandom().choice(useragent)
+        else:
+            header['User-Agent'] = useragent
 
-            if sizeLimit or headOnly:
-                if not noLog:
-                    self.info(f"Fetching (HEAD only): {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
+        # Add custom headers
+        if isinstance(headers, dict):
+            for k in list(headers.keys()):
+                header[k] = str(headers[k])
 
+        if sizeLimit or headOnly:
+            if not noLog:
+                self.info(f"Fetching (HEAD only): {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
+
+            try:
                 hdr = self.getSession().head(
                     url,
                     headers=header,
@@ -2611,25 +2606,36 @@ class SpiderFoot:
                     verify=verify,
                     timeout=timeout
                 )
-                size = int(hdr.headers.get('content-length', 0))
-                newloc = hdr.headers.get('location', url).strip()
+            except Exception as e:
+                if not noLog:
+                    self.error(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {url}")
+                    self.error(traceback.format_exc())
 
-                # Relative re-direct
-                if newloc.startswith("/") or newloc.startswith("../"):
-                    newloc = self.urlBaseUrl(url) + newloc
-                result['realurl'] = newloc
-                result['code'] = str(hdr.status_code)
+                if fatal:
+                    self.fatal(f"URL could not be fetched ({e})")
 
-                if headOnly:
-                    return result
+                return result
 
-                if size > sizeLimit:
-                    return result
+            size = int(hdr.headers.get('content-length', 0))
+            newloc = hdr.headers.get('location', url).strip()
 
-                if result['realurl'] != url:
-                    if not noLog:
-                        self.info(f"Fetching (HEAD only): {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
+            # Relative re-direct
+            if newloc.startswith("/") or newloc.startswith("../"):
+                newloc = self.urlBaseUrl(url) + newloc
+            result['realurl'] = newloc
+            result['code'] = str(hdr.status_code)
 
+            if headOnly:
+                return result
+
+            if size > sizeLimit:
+                return result
+
+            if result['realurl'] != url:
+                if not noLog:
+                    self.info(f"Fetching (HEAD only): {self.removeUrlCreds(result['realurl'])} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
+
+                try:
                     hdr = self.getSession().head(
                         result['realurl'],
                         headers=header,
@@ -2644,64 +2650,93 @@ class SpiderFoot:
                     if size > sizeLimit:
                         return result
 
+                except Exception as e:
+                    if not noLog:
+                        self.error(f"Unexpected exception ({e}) occurred fetching (HEAD only) URL: {result['realurl']}")
+                        self.error(traceback.format_exc())
+
+                    if fatal:
+                        self.fatal(f"URL could not be fetched ({e})")
+
+                    return result
+
+        if not noLog:
+            if cookies:
+                self.info(f"Fetching (incl. cookies): {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
+            else:
+                self.info(f"Fetching: {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
+
+        try:
+            if postData:
+                res = self.getSession().post(
+                    url,
+                    data=postData,
+                    headers=header,
+                    proxies=proxies,
+                    allow_redirects=True,
+                    cookies=cookies,
+                    timeout=timeout,
+                    verify=verify
+                )
+            else:
+                res = self.getSession().get(
+                    url,
+                    headers=header,
+                    proxies=proxies,
+                    allow_redirects=True,
+                    cookies=cookies,
+                    timeout=timeout,
+                    verify=verify
+                )
+        except requests.exceptions.RequestException:
+            self.error(f"Failed to connect to {url}")
+            return result
+        except Exception as e:
             if not noLog:
-                if cookies is None:
-                    self.info(f"Fetching: {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
-                else:
-                    self.info(f"Fetching (incl. cookies): {self.removeUrlCreds(url)} [user-agent: {header['User-Agent']}] [timeout: {timeout}]")
+                self.error(f"Unexpected exception ({e}) occurred fetching URL: {url}")
+                self.error(traceback.format_exc())
 
-            try:
-                if postData:
-                    res = self.getSession().post(
-                        url,
-                        data=postData,
-                        headers=header,
-                        proxies=proxies,
-                        allow_redirects=True,
-                        cookies=cookies,
-                        timeout=timeout,
-                        verify=verify
-                    )
-                else:
-                    res = self.getSession().get(
-                        url,
-                        headers=header,
-                        proxies=proxies,
-                        allow_redirects=True,
-                        cookies=cookies,
-                        timeout=timeout,
-                        verify=verify
-                    )
-            except requests.exceptions.RequestException:
-                raise Exception('Failed to connect to %s' % url) from None
+            if fatal:
+                self.fatal(f"URL could not be fetched ({e})")
 
+            return result
+
+        try:
             result['headers'] = dict()
+
             for header, value in res.headers.items():
-                if not isinstance(header, str):
-                    header = str(header)
-
-                if not isinstance(value, str):
-                    value = str(value)
-
-                result['headers'][header.lower()] = value
+                result['headers'][str(header).lower()] = str(value)
 
             # Sometimes content exceeds the size limit after decompression
             if sizeLimit and len(res.content) > sizeLimit:
-                self.debug("Content exceeded size limit, so returning no data just headers")
+                self.debug(f"Content exceeded size limit ({sizeLimit}), so returning no data just headers")
                 result['realurl'] = res.url
                 result['code'] = str(res.status_code)
                 return result
 
-            if 'refresh' in result['headers']:
+            refresh_header = result['headers'].get('refresh')
+            if refresh_header:
                 try:
-                    newurl = result['headers']['refresh'].split(";url=")[1]
-                except BaseException as e:
-                    self.debug(f"Refresh header '{result['headers']['refresh']}' found but not parsable: {e}")
+                    newurl = refresh_header.split(";url=")[1]
+                except Exception as e:
+                    self.debug(f"Refresh header '{refresh_header}' found, but not parsable: {e}")
                     return result
-                self.debug("Refresh header found, re-directing to " + self.removeUrlCreds(newurl))
-                return self.fetchUrl(newurl, fatal, cookies, timeout,
-                                     useragent, headers, noLog, postData,
-                                     dontMangle, sizeLimit, headOnly)
+
+                self.debug(f"Refresh header '{refresh_header}' found, re-directing to {self.removeUrlCreds(newurl)}")
+
+                return self.fetchUrl(
+                    newurl,
+                    fatal,
+                    cookies,
+                    timeout,
+                    useragent,
+                    headers,
+                    noLog,
+                    postData,
+                    dontMangle,
+                    sizeLimit,
+                    headOnly
+                )
 
             result['realurl'] = res.url
             result['code'] = str(res.status_code)
@@ -2712,26 +2747,22 @@ class SpiderFoot:
                     result['content'] = res.content.decode("utf-8")
                 except UnicodeDecodeError:
                     result['content'] = res.content.decode("ascii")
+
             if fatal:
                 try:
                     res.raise_for_status()
                 except requests.exceptions.HTTPError:
                     self.fatal(f"URL could not be fetched ({res.status_code}) / {res.content})")
 
-        except BaseException as e:
-            if not noLog:
-                # TODO: why another except block?
-                try:
-                    self.error(f"Unexpected exception ({e}) occurred fetching URL: {url}")
-                    self.error(traceback.format_exc())
-                except BaseException as f:
-                    # TODO: why is this exception ignored?
-                    self.debug(f"Ignoring exception: {f}")
-                    return result
-            result['content'] = None
-            result['status'] = str(e)
+        except Exception as e:
+            self.error(f"Unexpected exception ({e}) occurred parsing response for URL: {url}")
+            self.error(traceback.format_exc())
+
             if fatal:
                 self.fatal(f"URL could not be fetched ({e})")
+
+            result['content'] = None
+            result['status'] = str(e)
 
         atime = time.time()
         t = str(atime - btime)
@@ -2780,16 +2811,14 @@ class SpiderFoot:
             dict: TBD
         """
 
-        endpoint = "https://www.googleapis.com/customsearch/v1?q={search_string}&".format(
-            search_string=searchString.replace(" ", "%20")
-        )
-        params = {
+        search_string = searchString.replace(" ", "%20")
+        params = urllib.parse.urlencode({
             "cx": opts["cse_id"],
             "key": opts["api_key"],
-        }
+        })
 
         response = self.fetchUrl(
-            endpoint + urllib.parse.urlencode(params),
+            f"https://www.googleapis.com/customsearch/v1?q={search_string}&{params}",
             timeout=opts["timeout"],
         )
 
@@ -2806,22 +2835,18 @@ class SpiderFoot:
         if "items" not in response_json:
             return None
 
-        # We attempt to make the URL look as authentically human as possible
-        params = {
+        # We attempt to make the URL params look as authentically human as possible
+        params = urllib.parse.urlencode({
             "ie": "utf-8",
             "oe": "utf-8",
             "aq": "t",
             "rls": "org.mozilla:en-US:official",
             "client": "firefox-a",
-        }
-        search_url = "https://www.google.com/search?q={search_string}&{params}".format(
-            search_string=searchString.replace(" ", "%20"),
-            params=urllib.parse.urlencode(params)
-        )
+        })
 
         return {
             "urls": [str(k['link']) for k in response_json['items']],
-            "webSearchUrl": search_url,
+            "webSearchUrl": f"https://www.google.com/search?q={search_string}&{params}"
         }
 
     def bingIterate(self, searchString, opts={}):
@@ -2846,24 +2871,21 @@ class SpiderFoot:
             dict: TBD
         """
 
-        endpoint = "https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&".format(
-            search_string=searchString.replace(" ", "%20")
-        )
-
-        params = {
+        search_string = searchString.replace(" ", "%20")
+        params = urllib.parse.urlencode({
             "responseFilter": "Webpages",
             "count": opts["count"],
-        }
+        })
 
         response = self.fetchUrl(
-            endpoint + urllib.parse.urlencode(params),
+            f"https://api.cognitive.microsoft.com/bing/v7.0/search?q={search_string}&{params}",
             timeout=opts["timeout"],
             useragent=opts["useragent"],
             headers={"Ocp-Apim-Subscription-Key": opts["api_key"]},
         )
 
         if response['code'] != '200':
-            self.error("Failed to get a valid response from the bing API")
+            self.error("Failed to get a valid response from the Bing API")
             return None
 
         try:
