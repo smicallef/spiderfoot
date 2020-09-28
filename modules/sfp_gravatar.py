@@ -66,7 +66,7 @@ class sfp_gravatar(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'HUMAN_NAME', 'USERNAME',
+        return ['RAW_RIR_DATA', 'USERNAME',
                 'EMAILADDR', 'EMAILADDR_GENERIC', 'PHONE_NUMBER', 'GEOINFO',
                 'ACCOUNT_EXTERNAL_OWNED', 'SOCIAL_MEDIA']
 
@@ -138,7 +138,7 @@ class sfp_gravatar(SpiderFootPlugin):
 
             for name in names:
                 if name.get('formatted') is not None:
-                    evt = SpiderFootEvent("HUMAN_NAME", name.get('formatted'), self.__name__, event)
+                    evt = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {name.get('formatted')}", self.__name__, event)
                     self.notifyListeners(evt)
 
         # TODO: re-enable once location validation is implemented

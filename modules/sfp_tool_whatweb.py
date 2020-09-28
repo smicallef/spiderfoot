@@ -152,9 +152,6 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         if len(result_json) == 0:
             return
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(result_json), self.__name__, event)
-        self.notifyListeners(evt)
-
         blacklist = [
             'Country', 'IP',
             'Script', 'Title',
@@ -163,6 +160,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
             'X-UA-Compatible', 'X-Powered-By', 'X-Forwarded-For', 'X-Frame-Options', 'X-XSS-Protection'
         ]
 
+        found = False
         for result in result_json:
             plugin_matches = result.get('plugins')
 
@@ -173,16 +171,23 @@ class sfp_tool_whatweb(SpiderFootPlugin):
                 for w in plugin_matches.get('HTTPServer').get('string'):
                     evt = SpiderFootEvent('WEBSERVER_BANNER', w, self.__name__, event)
                     self.notifyListeners(evt)
+                    found = True
 
             if plugin_matches.get('X-Powered-By'):
                 for w in plugin_matches.get('X-Powered-By').get('string'):
                     evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', w, self.__name__, event)
                     self.notifyListeners(evt)
+                    found = True 
 
             for plugin in plugin_matches:
                 if plugin in blacklist:
                     continue
                 evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', plugin, self.__name__, event)
                 self.notifyListeners(evt)
+                found = True
+
+        if found:
+            evt = SpiderFootEvent('RAW_RIR_DATA', str(result_json), self.__name__, event)
+            self.notifyListeners(evt)
 
 # End of sfp_tool_whatweb class

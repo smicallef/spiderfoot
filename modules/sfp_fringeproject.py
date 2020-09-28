@@ -44,9 +44,11 @@ class sfp_fringeproject(SpiderFootPlugin):
     }
 
     opts = {
+        'verify': True
     }
 
     optdescs = {
+        'verify': "Verify hosts resolve before reporting them."
     }
 
     results = None
@@ -64,7 +66,8 @@ class sfp_fringeproject(SpiderFootPlugin):
 
     def producedEvents(self):
         return ['INTERNET_NAME', 'LINKED_URL_INTERNAL', 'DOMAIN_NAME',
-                'TCP_PORT_OPEN', 'SOFTWARE_USED', 'RAW_RIR_DATA']
+                'TCP_PORT_OPEN', 'SOFTWARE_USED', 'RAW_RIR_DATA',
+                'INTERNET_NAME_UNRESOLVED']
 
     def query(self, qry):
         params = {
@@ -171,8 +174,13 @@ class sfp_fringeproject(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
         for host in set(hosts):
-            evt = SpiderFootEvent('INTERNET_NAME', host, self.__name__, event)
+            if self.opts["verify"] and not self.sf.resolveHost(host):
+                self.sf.debug("Host " + host+ " could not be resolved")
+                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
+            else:
+                evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
             self.notifyListeners(evt)
+
             if self.sf.isDomain(host, self.opts['_internettlds']):
                 evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
                 self.notifyListeners(evt)

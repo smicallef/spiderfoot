@@ -11,6 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import random
 import threading
 import time
 
@@ -83,7 +84,8 @@ class sfp_azureblobstorage(SpiderFootPlugin):
                 return None
 
             self.sf.info("Spawning thread to check bucket: " + site)
-            t.append(threading.Thread(name='thread_sfp_azureblobstorages_' + site,
+            tname = str(random.SystemRandom().randint(0, 999999999))
+            t.append(threading.Thread(name='thread_sfp_azureblobstorages_' + tname,
                                       target=self.checkSite, args=(site,)))
             t[i].start()
             i += 1

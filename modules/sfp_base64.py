@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_base64
-# Purpose:      Identifies (best-effort) Base64-encoded strings in content and URLs.
+# Purpose:      Identifies (best-effort) Base64-encoded strings in URLs.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -19,7 +19,7 @@ class sfp_base64(SpiderFootPlugin):
 
     meta = {
         'name': "Base64 Decoder",
-        'summary': "Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information.",
+        'summary': "Identify Base64-encoded strings in URLs, often revealing interesting hidden information.",
         'flags': [""],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Content Analysis"]
@@ -44,7 +44,7 @@ class sfp_base64(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["LINKED_URL_INTERNAL", "TARGET_WEB_CONTENT"]
+        return ["LINKED_URL_INTERNAL"]
 
     # What events this module produces
     def producedEvents(self):

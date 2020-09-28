@@ -81,7 +81,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["RAW_RIR_DATA", "EMAILADDR", "EMAILADDR_GENERIC",
-                "PHONE_NUMBER", "GEOINFO", "HUMAN_NAME"]
+                "PHONE_NUMBER", "GEOINFO"]
 
     # Query domain
     # https://emailcrawlr.com/docs
@@ -197,7 +197,8 @@ class sfp_emailcrawlr(SpiderFootPlugin):
                 if name:
                     full_name = name.get('name')
                     if full_name and len(full_name) > 3:
-                        evt = SpiderFootEvent("HUMAN_NAME", full_name, self.__name__, event)
+                        evt = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {full_name}",
+                                              self.__name__, event)
                         self.notifyListeners(evt)
 
                 phone_numbers = res.get('numbers')
