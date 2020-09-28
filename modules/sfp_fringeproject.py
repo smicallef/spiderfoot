@@ -175,7 +175,7 @@ class sfp_fringeproject(SpiderFootPlugin):
 
         for host in set(hosts):
             if self.opts["verify"] and not self.sf.resolveHost(host):
-                self.sf.debug("Host " + host+ " could not be resolved")
+                self.sf.debug(f"Host {host} could not be resolved.")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
             else:
                 evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)

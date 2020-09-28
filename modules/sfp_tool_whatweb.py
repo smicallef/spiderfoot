@@ -177,7 +177,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
                 for w in plugin_matches.get('X-Powered-By').get('string'):
                     evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', w, self.__name__, event)
                     self.notifyListeners(evt)
-                    found = True 
+                    found = True
 
             for plugin in plugin_matches:
                 if plugin in blacklist:
