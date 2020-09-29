@@ -56,6 +56,8 @@ class sfp_onyphe(SpiderFootPlugin):
         "max_page": 10,
         "verify": True,
         "age_limit_days": 30,
+        "cohostsamedomain": False,
+        "maxcohost": 100,
     }
     optdescs = {
         "api_key": "Onyphe access token.",
@@ -63,10 +65,13 @@ class sfp_onyphe(SpiderFootPlugin):
         "max_page": "Maximum number of pages to iterate through. Onyphe has a maximum of 1000 pages (10,000 results). Only matters for paid plans",
         "verify": "Verify identified domains still resolve to the associated specified IP address.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
+        "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
+        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
     }
 
     results = None
     errorState = False
+    cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -183,15 +188,33 @@ class sfp_onyphe(SpiderFootPlugin):
                 domains.add(subDomain)
 
         for domain in domains:
-            if self.opts["verify"] and not self.sf.resolveHost(domain):
-                self.sf.debug(f"Host {domain} could not be resolved for {eventData}")
-                evt = SpiderFootEvent(
-                    "INTERNET_NAME_UNRESOLVED", domain, self.__name__, event
-                )
+            if self.getTarget().matches(domain, includeParents=True):
+                if self.opts['verify'] and self.sf.resolveHost(domain):
+                    evt = SpiderFootEvent('INTERNET_NAME', domain, self.__name__, event)
+                else:
+                    evt = SpiderFootEvent('INTERNET_NAME_UNRESOLVED', domain, self.__name__, event)
                 self.notifyListeners(evt)
-            else:
-                evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
+
+                if self.sf.isDomain(domain, self.opts['_internettlds']):
+                    evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)
+                    self.notifyListeners(evt)
+                continue
+
+            if self.cohostcount < self.opts['maxcohost']:
+                if self.opts["verify"] and not self.sf.validateIP(domain, eventData):
+                    self.sf.debug("Host no longer resolves to our IP.")
+                    continue
+
+                if not self.opts["cohostsamedomain"]:
+                    if self.getTarget().matches(domain, includeParents=True):
+                        self.sf.debug(
+                            "Skipping " + domain + " because it is on the same domain."
+                        )
+                        continue
+
+                evt = SpiderFootEvent("CO_HOSTED_SITE", domain, self.__name__, event)
                 self.notifyListeners(evt)
+                self.cohostcount += 1
 
     def isFreshEnough(self, result):
         limit = self.opts["age_limit_days"]
