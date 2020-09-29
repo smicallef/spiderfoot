@@ -135,6 +135,11 @@ class sfp_intelx(SpiderFootPlugin):
             self.sf.info("No IntelligenceX info found for " + qry)
             return None
 
+        if res['code'] == "402":
+            self.sf.info("IntelligenceX credits expired.")
+            self.errorState = True
+            return None
+
         try:
             ret = json.loads(res['content'])
         except Exception as e:
@@ -155,6 +160,11 @@ class sfp_intelx(SpiderFootPlugin):
                 res = self.sf.fetchUrl(resulturl, headers=headers)
                 if res['content'] is None:
                     self.sf.info("No IntelligenceX info found for results from " + qry)
+                    return None
+
+                if res['code'] == "402":
+                    self.sf.info("IntelligenceX credits expired.")
+                    self.errorState = True
                     return None
 
                 try:
