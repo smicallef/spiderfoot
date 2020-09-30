@@ -12,10 +12,11 @@
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_leakix(SpiderFootPlugin):
-    """LeakIX:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Search LeakIX for host data leaks, open ports, software and geoip."""
 
     meta = {
         'name': "LeakIX",
@@ -32,8 +33,8 @@ class sfp_leakix(SpiderFootPlugin):
             'favIcon': "https://leakix.net/public/img/favicon.png",
             'logo': "https://leakix.net/public/img/logoleakix-v1.png",
             'description': "LeakIX provides insights into devices and servers that are compromised "
-                                "and compromised database schemas online.\n"
-                                "In this scope we inspect found services for weak credentials.",
+            "and compromised database schemas online.\n"
+            "In this scope we inspect found services for weak credentials.",
         }
     }
 
@@ -76,10 +77,10 @@ class sfp_leakix(SpiderFootPlugin):
             "Accept": "application/json"
         }
         res = self.sf.fetchUrl(
-          'https://leakix.net/host/' + qry,
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://leakix.net/host/' + qry,
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])
@@ -94,13 +95,13 @@ class sfp_leakix(SpiderFootPlugin):
 
         # Future proofing - LeakIX does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by LeakIX", False)
+            self.sf.error("You are being rate-limited by LeakIX")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from LeakIX", False)
+            self.sf.error("Failed to retrieve content from LeakIX")
             self.errorState = True
             return None
 
@@ -186,7 +187,5 @@ class sfp_leakix(SpiderFootPlugin):
                     if leak_data:
                         evt = SpiderFootEvent("LEAKSITE_CONTENT", leak_data, self.__name__, event)
                         self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_leakix class

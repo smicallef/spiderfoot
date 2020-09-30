@@ -12,11 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import dns.resolver
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_yandexdns(SpiderFootPlugin):
-    """Yandex DNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by Yandex DNS"""
 
     meta = {
         'name': "Yandex DNS",
@@ -33,8 +33,8 @@ class sfp_yandexdns(SpiderFootPlugin):
             'favIcon': "https://yastatic.net/iconostasis/_/tToKamh-mh5XlViKpgiJRQgjz1Q.png",
             'logo': "https://yastatic.net/iconostasis/_/tToKamh-mh5XlViKpgiJRQgjz1Q.png",
             'description': "Yandex is a technology company that builds intelligent products and services powered by machine learning. "
-                                "Our goal is to help consumers and businesses better navigate the online and offline world. "
-                                "Since 1997, we have delivered world-class, locally relevant search and information services.",
+            "Our goal is to help consumers and businesses better navigate the online and offline world. "
+            "Since 1997, we have delivered world-class, locally relevant search and information services.",
         }
     }
 
@@ -75,7 +75,7 @@ class sfp_yandexdns(SpiderFootPlugin):
         try:
             addrs = res.query(qaddr)
             self.sf.debug(f"Addresses returned: {addrs}")
-        except BaseException:
+        except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
@@ -94,7 +94,7 @@ class sfp_yandexdns(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -103,17 +103,17 @@ class sfp_yandexdns(SpiderFootPlugin):
         try:
             if self.sf.resolveHost(eventData):
                 resolved = True
-        except BaseException:
+        except Exception:
             self.sf.debug(f"Unable to resolve {eventData}")
-            return None
+            return
 
         if not resolved:
-            return None
+            return
 
         found = self.queryAddr(eventData)
 
         if found:
-            return None
+            return
 
         if eventName == "CO_HOSTED_SITE":
             typ = "MALICIOUS_COHOST"

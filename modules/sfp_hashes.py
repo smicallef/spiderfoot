@@ -11,10 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_hashes(SpiderFootPlugin):
-    """Hash Extractor:Footprint,Investigate,Passive:Content Analysis::Identify MD5 and SHA hashes in web content, files and more."""
 
     meta = {
         'name': "Hash Extractor",
@@ -42,7 +42,7 @@ class sfp_hashes(SpiderFootPlugin):
     # What events is this module interested in for input
     def watchedEvents(self):
         return ["TARGET_WEB_CONTENT", "BASE64_DATA",
-                "LEAKSITE_CONTENT", "RAW_DNS_RECORDS", 
+                "LEAKSITE_CONTENT", "RAW_DNS_RECORDS",
                 "RAW_FILE_META_DATA"]
 
     # What events this module produces
@@ -69,7 +69,5 @@ class sfp_hashes(SpiderFootPlugin):
             else:
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_hashes class

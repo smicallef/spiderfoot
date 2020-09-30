@@ -10,12 +10,12 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin
 import json
+
+from spiderfoot import SpiderFootPlugin
 
 
 class sfp__stor_stdout(SpiderFootPlugin):
-    """Command-line output::::Dumps output to standard out. Used for when a SpiderFoot scan is run via the command-line."""
 
     meta = {
         'name': "Command-line output",
@@ -88,8 +88,7 @@ class sfp__stor_stdout(SpiderFootPlugin):
             if self.opts['_showsource']:
                 print(('{0:30}\t{1:45}\t{2}\t{3}'.format(event.module, self.opts['_eventtypes'][event.eventType], srcdata, data)))
             else:
-                # ToDo: Is it ok to not find the keys here?
-                print(('{0:30}\t{1:45}\t{2}'.format(event.module, self.opts['_eventtypes'].get(event.eventType, ""), data)))
+                print(('{0:30}\t{1:45}\t{2}'.format(event.module, self.opts['_eventtypes'][event.eventType], data)))
 
         if self.opts['_format'] == "csv":
             print((event.module + d + self.opts['_eventtypes'][event.eventType] + d + srcdata + d + data))
@@ -106,7 +105,7 @@ class sfp__stor_stdout(SpiderFootPlugin):
     # Handle events sent to this module
     def handleEvent(self, sfEvent):
         if sfEvent.eventType == "ROOT":
-            return None
+            return
 
         if self.opts['_showonlyrequested']:
             if sfEvent.eventType in self.opts['_requested']:

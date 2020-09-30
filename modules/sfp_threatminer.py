@@ -11,13 +11,15 @@
 # -------------------------------------------------------------------------------
 
 import json
-from datetime import datetime
 import time
+from datetime import datetime
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_threatminer(SpiderFootPlugin):
-    """ThreatMiner:Footprint,Investigate,Passive:Search Engines::Obtain information from ThreatMiner's database for passive DNS and threat intelligence."""
 
     meta = {
         'name': "ThreatMiner",
@@ -35,10 +37,10 @@ class sfp_threatminer(SpiderFootPlugin):
             'favIcon': "https://www.threatminer.org/images/favicon.gif",
             'logo': "https://www.threatminer.org/images/logo.png",
             'description': "ThreatMiner is a threat intelligence portal designed to enable analysts to research under a single interface. "
-                                "It is used in the SANS FOR578 Cyber Threat Intelligence course.\n"
-                                "Threat intelligence and intrusion analysts who regularly perform research "
-                                "into malware and network infrastructure often find the need to rely on "
-                                "mutliple websites that individually holds a small piece of the larger puzzle.",
+            "It is used in the SANS FOR578 Cyber Threat Intelligence course.\n"
+            "Threat intelligence and intrusion analysts who regularly perform research "
+            "into malware and network infrastructure often find the need to rely on "
+            "mutliple websites that individually holds a small piece of the larger puzzle.",
         }
     }
     # Default options
@@ -117,12 +119,11 @@ class sfp_threatminer(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from ThreatMiner: {e}", False)
-            return None
+            self.sf.error(f"Error processing JSON response from ThreatMiner: {e}")
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -135,29 +136,29 @@ class sfp_threatminer(SpiderFootPlugin):
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
-                    return None
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
+                    return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
-                    return None
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxsubnet']))
+                    return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -174,7 +175,7 @@ class sfp_threatminer(SpiderFootPlugin):
             ret = self.query(qry, "passive")
             if ret is None:
                 self.sf.info("No Passive DNS info for " + qry)
-                return None
+                return
 
             if "results" not in ret:
                 continue
@@ -216,11 +217,11 @@ class sfp_threatminer(SpiderFootPlugin):
             ret = self.query(eventData, "subs")
             if ret is None:
                 self.sf.debug("No hosts found")
-                return None
+                return
 
             if len(ret.get("results", list())) == 0:
                 self.sf.debug("No hosts found")
-                return None
+                return
 
             for rec in ret.get("results"):
                 self.sf.debug("Found host results in ThreatMiner")

@@ -10,12 +10,13 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import base64
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import json
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_riskiq(SpiderFootPlugin):
-    """RiskIQ:Investigate,Passive:Reputation Systems:apikey:Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases."""
 
     meta = {
         'name': "RiskIQ",
@@ -32,18 +33,18 @@ class sfp_riskiq(SpiderFootPlugin):
                 "https://api.riskiq.net/api/concepts.html"
             ],
             'apiKeyInstructions': [
-                "Visit community.riskiq.com/home",
+                "Visit https://community.riskiq.com/home",
                 "Register a free account",
-                "Navigate to community.riskiq.com/settings",
+                "Navigate to https://community.riskiq.com/settings",
                 "Click on 'Show' beside 'User'",
                 "The API Key combination will be under 'Key' and 'Secret'"
             ],
             'favIcon': "https://community.riskiq.com/static/assets/favicon.png",
             'logo': "https://community.riskiq.com/static/assets/favicon.png",
             'description': "RiskIQ Community brings petabytes of internet intelligence directly to your fingertips. "
-                                "Investigate threats by pivoting through attacker infrastructure data. "
-                                "Understand your digital assets that are internet-exposed, "
-                                "and map and monitor your external attack surface.",
+            "Investigate threats by pivoting through attacker infrastructure data. "
+            "Understand your digital assets that are internet-exposed, "
+            "and map and monitor your external attack surface.",
         }
     }
 
@@ -128,7 +129,7 @@ class sfp_riskiq(SpiderFootPlugin):
                                postData=post)
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("RiskIQ access seems to have been rejected or you have exceeded usage limits.", False)
+            self.sf.error("RiskIQ access seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
@@ -141,8 +142,8 @@ class sfp_riskiq(SpiderFootPlugin):
             if 'results' not in ret:
                 self.sf.info("No RiskIQ info found for " + qry)
                 return None
-        except BaseException as e:
-            self.sf.error(f"Invalid JSON returned by RiskIQ: {e}", False)
+        except Exception as e:
+            self.sf.error(f"Invalid JSON returned by RiskIQ: {e}")
             return None
 
         return ret['results']
@@ -165,7 +166,7 @@ class sfp_riskiq(SpiderFootPlugin):
             return None
 
         if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":
-            self.sf.error("You enabled sfp_riskiq but did not set an credentials!", False)
+            self.sf.error("You enabled sfp_riskiq but did not set an credentials!")
             self.errorState = True
             return None
 
@@ -196,8 +197,8 @@ class sfp_riskiq(SpiderFootPlugin):
                                 e = SpiderFootEvent("DOMAIN_NAME", res['subjectCommonName'],
                                                     self.__name__, event)
                                 self.notifyListeners(e)
-                except BaseException as e:
-                    self.sf.error("Invalid response returned from RiskIQ: " + str(e), False)
+                except Exception as e:
+                    self.sf.error("Invalid response returned from RiskIQ: " + str(e))
 
         if eventName == 'EMAILADDR':
             ret = self.query(eventData, "WHOIS")

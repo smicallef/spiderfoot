@@ -1,6 +1,7 @@
 # test_spiderfootdb.py
-from sfdb import SpiderFootDb, SpiderFootEvent
 import unittest
+
+from spiderfoot import SpiderFootDb, SpiderFootEvent
 
 
 class TestSpiderFootDb(unittest.TestCase):
@@ -11,26 +12,20 @@ class TestSpiderFootDb(unittest.TestCase):
         '_debug': False,
         '__logging': True,
         '__outputfilter': None,
-        '__blocknotif': False,
-        '_fatalerrors': False,
         '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',
         '_dnsserver': '',
         '_fetchtimeout': 5,
         '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
         '_internettlds_cache': 72,
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-        '__version__': '3.2-DEV',
+        '__version__': '3.3-DEV',
         '__database': 'spiderfoot.test.db',  # note: test database file
-        '__webaddr': '127.0.0.1',
-        '__webport': 5001,
-        '__docroot': '',
         '__modules__': None,
         '_socks1type': '',
         '_socks2addr': '',
         '_socks3port': '',
         '_socks4user': '',
         '_socks5pwd': '',
-        '_socks6dns': True,
         '_torctlport': 9051,
         '__logstdout': False
     }
@@ -1273,7 +1268,3 @@ class TestSpiderFootDb(unittest.TestCase):
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises(TypeError):
                     sfdb.scanElementChildrenAll(instance_id, invalid_type)
-
-
-if __name__ == '__main__':
-    unittest.main()

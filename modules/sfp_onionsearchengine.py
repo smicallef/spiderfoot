@@ -12,12 +12,14 @@
 # -------------------------------------------------------------------------------
 
 import re
+import urllib.error
+import urllib.parse
+import urllib.request
 
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_onionsearchengine(SpiderFootPlugin):
-    """Onionsearchengine.com:Footprint,Investigate:Search Engines::Search Tor onionsearchengine.com for mentions of the target domain."""
 
     meta = {
         'name': "Onionsearchengine.com",
@@ -35,7 +37,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
             'favIcon': "https://as.onionsearchengine.com/images/onionsearchengine.jpg",
             'logo': "https://as.onionsearchengine.com/images/onionsearchengine.jpg",
             'description': "No cookies, no javascript, no trace. We protect your privacy.\n"
-                                "Onion search engine is search engine with ability to find content on tor network / deepweb / darkweb.",
+            "Onion search engine is search engine with ability to find content on tor network / deepweb / darkweb.",
         }
     }
 
@@ -176,7 +178,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                 try:
                     startIndex = res['content'].index(eventData) - 120
                     endIndex = startIndex + len(eventData) + 240
-                except BaseException:
+                except Exception:
                     self.sf.debug('String "' + eventData + '" not found in content.')
                     continue
 

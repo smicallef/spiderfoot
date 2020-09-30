@@ -12,10 +12,11 @@
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_bgpview(SpiderFootPlugin):
-    """BGPView:Investigate,Footprint,Passive:Search Engines::Obtain network information from BGPView API."""
 
     meta = {
         'name': "BGPView",
@@ -35,7 +36,7 @@ class sfp_bgpview(SpiderFootPlugin):
             'description': "BGPView is a simple API allowing consumers to view all sort of analytics data about the current state and structure of the internet.",
         }
     }
-    
+
     opts = {
     }
 
@@ -71,8 +72,8 @@ class sfp_bgpview(SpiderFootPlugin):
 
         try:
             json_data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug("Error processing JSON response from BGPView: " + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response from BGPView: {e}")
             return None
 
         if not json_data.get('status') == 'ok':
@@ -99,8 +100,8 @@ class sfp_bgpview(SpiderFootPlugin):
 
         try:
             json_data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug("Error processing JSON response from BGPView: " + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response from BGPView: {e}")
             return None
 
         if not json_data.get('status') == 'ok':
@@ -127,8 +128,8 @@ class sfp_bgpview(SpiderFootPlugin):
 
         try:
             json_data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug("Error processing JSON response from BGPView: " + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response from BGPView: {e}")
             return None
 
         if not json_data.get('status') == 'ok':

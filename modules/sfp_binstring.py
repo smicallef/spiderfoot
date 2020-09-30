@@ -11,10 +11,11 @@
 # -------------------------------------------------------------------------------
 
 import string
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_binstring(SpiderFootPlugin):
-    """Binary String Extractor:Footprint:Content Analysis:errorprone:Attempt to identify strings in binary content."""
 
     meta = {
         'name': "Binary String Extractor",

@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_hunter
 # Purpose:      Query hunter.io using their API.
 #
@@ -7,14 +7,17 @@
 # Created:     22/02/2017
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_hunter(SpiderFootPlugin):
-    """Hunter.io:Footprint,Investigate,Passive:Search Engines:apikey:Check for e-mail addresses and names on hunter.io."""
 
     meta = {
         'name': "Hunter.io",
@@ -29,7 +32,7 @@ class sfp_hunter(SpiderFootPlugin):
                 "https://hunter.io/api"
             ],
             'apiKeyInstructions': [
-                "Visit hunter.io/",
+                "Visit https://hunter.io/",
                 "Sign up for a free account",
                 "Click on 'Account Settings'",
                 "Click on 'API'",
@@ -38,9 +41,9 @@ class sfp_hunter(SpiderFootPlugin):
             'favIcon': "https://hunter.io/assets/head/favicon-d5796c45076e78aa5cf22dd53c5a4a54155062224bac758a412f3a849f38690b.ico",
             'logo': "https://hunter.io/assets/head/touch-icon-iphone-fd9330e31552eeaa12b177489943de997551bfd991c4c44e8c3d572e78aea5f3.png",
             'description': "Hunter lets you find email addresses in seconds and connect with the people that matter for your business.\n"
-                                "The Domain Search lists all the people working in a company with their name "
-                                "and email address found on the web. With 100+ million email addresses indexed, "
-                                "effective search filters and scoring, it's the most powerful email-finding tool ever created.",
+            "The Domain Search lists all the people working in a company with their name "
+            "and email address found on the web. With 100+ million email addresses indexed, "
+            "effective search filters and scoring, it's the most powerful email-finding tool ever created.",
         }
     }
 
@@ -102,7 +105,7 @@ class sfp_hunter(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from hunter.io: %s" % e, False)
+            self.sf.error("Error processing JSON response from hunter.io: %s" % e)
             return None
 
         return ret
@@ -126,7 +129,7 @@ class sfp_hunter(SpiderFootPlugin):
             self.results[eventData] = True
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_hunter but did not set an API key!", False)
+            self.sf.error("You enabled sfp_hunter but did not set an API key!")
             self.errorState = True
             return None
 
@@ -160,7 +163,7 @@ class sfp_hunter(SpiderFootPlugin):
                 self.notifyListeners(e)
 
                 if 'first_name' in email and 'last_name' in email:
-                    if email['first_name'] != None and email['last_name'] != None:
+                    if email['first_name'] is not None and email['last_name'] is not None:
                         n = email['first_name'] + " " + email['last_name']
                         e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n,
                                             self.__name__, event)
@@ -170,7 +173,7 @@ class sfp_hunter(SpiderFootPlugin):
                 return None
 
             data = self.query(eventData, rescount, 10)
-            if data == None:
+            if data is None:
                 return None
             if "data" not in data:
                 return None

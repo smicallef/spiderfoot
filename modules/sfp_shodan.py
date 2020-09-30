@@ -11,14 +11,17 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib.request, urllib.parse, urllib.error
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_shodan(SpiderFootPlugin):
-    """SHODAN:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from SHODAN about identified IP addresses."""
 
     meta = {
         'name': "SHODAN",
@@ -26,7 +29,7 @@ class sfp_shodan(SpiderFootPlugin):
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Search Engines"],
-            'dataSource': {
+        'dataSource': {
             'website': "https://www.shodan.io/",
             'model': "FREE_AUTH_LIMITED",
             'references': [
@@ -34,17 +37,17 @@ class sfp_shodan(SpiderFootPlugin):
                 "https://developer.shodan.io/apps"
             ],
             'apiKeyInstructions': [
-                "Visit shodan.io",
+                "Visit https://shodan.io",
                 "Register a free account",
-                "Navigate to account.shodan.io/",
+                "Navigate to https://account.shodan.io/",
                 "The API key is listed under 'API Key'"
             ],
             'favIcon': "https://static.shodan.io/shodan/img/favicon.png",
             'logo': "https://static.shodan.io/developer/img/logo.png",
             'description': "Shodan is the world's first search engine for Internet-connected devices.\n"
-                                "Use Shodan to discover which of your devices are connected to the Internet, where they are located and who is using them."
-                                "Keep track of all the computers on your network that are directly accessible from the Internet. "
-                                "Shodan lets you understand your digital footprint.",
+            "Use Shodan to discover which of your devices are connected to the Internet, where they are located and who is using them."
+            "Keep track of all the computers on your network that are directly accessible from the Internet. "
+            "Shodan lets you understand your digital footprint.",
         }
     }
 
@@ -86,8 +89,8 @@ class sfp_shodan(SpiderFootPlugin):
                 'RAW_RIR_DATA', 'GEOINFO', 'VULNERABILITY']
 
     def query(self, qry):
-        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
-                               "?key=" + self.opts['api_key'],
+        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry
+                               + "?key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
         time.sleep(1)
         if res['content'] is None:
@@ -95,16 +98,16 @@ class sfp_shodan(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
-        return info
+        return None
 
     def searchHosts(self, qry):
-        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?query=hostname:" + qry +
-                               "&key=" + self.opts['api_key'],
+        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/search?query=hostname:" + qry
+                               + "&key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
         time.sleep(1)
         if res['content'] is None:
@@ -112,12 +115,12 @@ class sfp_shodan(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
-        return info
+        return None
 
     def searchHtml(self, qry):
         params = {
@@ -133,12 +136,12 @@ class sfp_shodan(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -147,27 +150,27 @@ class sfp_shodan(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_shodan but did not set an API key!", False)
+            self.sf.error("You enabled sfp_shodan but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
         else:
             self.results[eventData] = True
 
         if eventName == "DOMAIN_NAME":
             hosts = self.searchHosts(eventData)
             if hosts is None:
-                return None
-            
+                return
+
             evt = SpiderFootEvent("RAW_RIR_DATA", str(hosts), self.__name__, event)
             self.notifyListeners(evt)
 
@@ -175,33 +178,32 @@ class sfp_shodan(SpiderFootPlugin):
             try:
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
-            except BaseException as e:
-                self.sf.error("Unable to parse WEB_ANALYTICS_ID: " +
-                              eventData + " (" + str(e) + ")", False)
-                return None
+            except Exception as e:
+                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})")
+                return
 
             if network not in ['Google AdSense', 'Google Analytics', 'Google Site Verification']:
                 self.sf.debug("Skipping " + eventData + ", as not supported.")
-                return None
+                return
 
             rec = self.searchHtml(analytics_id)
 
             if rec is None:
-                return None
+                return
 
             evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
             self.notifyListeners(evt)
-            return None
+            return
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
-                    return None
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
+                    return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -228,18 +230,18 @@ class sfp_shodan(SpiderFootPlugin):
             self.notifyListeners(evt)
 
             if self.checkForStop():
-                return None
+                return
 
             if rec.get('os') is not None:
                 # Notify other modules of what you've found
-                evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os') +
-                                      " (" + addr + ")", self.__name__, pevent)
+                evt = SpiderFootEvent("OPERATING_SYSTEM", rec.get('os')
+                                      + " (" + addr + ")", self.__name__, pevent)
                 self.notifyListeners(evt)
 
             if rec.get('devtype') is not None:
                 # Notify other modules of what you've found
-                evt = SpiderFootEvent("DEVICE_TYPE", rec.get('devtype') +
-                                      " (" + addr + ")", self.__name__, pevent)
+                evt = SpiderFootEvent("DEVICE_TYPE", rec.get('devtype')
+                                      + " (" + addr + ")", self.__name__, pevent)
                 self.notifyListeners(evt)
 
             if rec.get('country_name') is not None:
@@ -299,6 +301,5 @@ class sfp_shodan(SpiderFootPlugin):
                                 evt = SpiderFootEvent('VULNERABILITY', vuln,
                                                       self.__name__, pevent)
                                 self.notifyListeners(evt)
-        return None
 
 # End of sfp_shodan class

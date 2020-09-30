@@ -38,6 +38,7 @@
                 });
 
                 if (ids.length == 0) {
+                    sf.log("You need to select at least one scan.");
                     alert("You need to select at least one scan.");
                     return false;
                 }
@@ -49,6 +50,7 @@
                 ids = getSelected();
 
                 if (ids != false) {
+                    sf.log("Stopping scans: " + ids.join(','));
                     window.location.href = docroot + '/stopscanmulti?ids=' + ids.join(',');
                 }
             }
@@ -57,6 +59,7 @@
                 ids = getSelected();
 
                 if (ids != false) {
+                    sf.log("Deleting scans: " + ids.join(','));
                     window.location.href = docroot + '/scandeletemulti?ids=' + ids.join(',');
                 }
             }
@@ -65,6 +68,7 @@
                 ids = getSelected();
 
                 if (ids != false) {
+                    sf.log("Re-running scans: " + ids.join(','));
                     window.location.href = docroot + '/rerunscanmulti?ids=' + ids.join(',');
                 }
             }
@@ -73,6 +77,7 @@
                 ids = getSelected();
 
                 if (!ids) {
+                    sf.log("Error: no scan(s) selected");
                     return;
                 }
 
@@ -80,16 +85,19 @@
                 var efr = document.getElementById('exportframe');
                 switch(type) {
                     case "gexf":
+                        sf.log("Exporting scans as " + type + ": " + ids.join(','));
                         efr.src = docroot + '/scanvizmulti?ids=' + ids.join(',');
                         break;
                     case "csv":
+                        sf.log("Exporting scans as " + type + ": " + ids.join(','));
                         efr.src = docroot + '/scaneventresultexportmulti?ids=' + ids.join(',');
                         break;
                     case "json":
+                        sf.log("Exporting scans as " + type + ": " + ids.join(','));
                         efr.src = docroot + '/scanexportjsonmulti?ids=' + ids.join(',');
                         break;
                     default:
-                        console.log("Invalid export type");
+                        sf.log("Error: Invalid export type: " + type);
                 }
                 $("#loader").fadeOut(500);
             }
@@ -168,17 +176,19 @@
                     table += "<td>" + data[i][2] + "</td>";
                     table += "<td>" + data[i][3] + "</td>";
                     table += "<td>" + data[i][5] + "</td>";
+
+                    var statusy = "";
+
                     if (data[i][6] == "FINISHED") {
                         statusy = "alert-success";
-                    }
-                    if (data[i][6].indexOf("ABORT") >= 0) {
+                    } else if (data[i][6].indexOf("ABORT") >= 0) {
                         statusy = "alert-warning";
-                    }
-                    if (data[i][6] == "RUNNING" || data[i][6] == "STARTED" || data[i][6] == "STARTING" || data[i][6] == "INITIALIZING") {
+                    } else if (data[i][6] == "CREATED" || data[i][6] == "RUNNING" || data[i][6] == "STARTED" || data[i][6] == "STARTING" || data[i][6] == "INITIALIZING") {
                         statusy = "alert-info";
-                    }
-                    if (data[i][6].indexOf("FAILED") >= 0) {
+                    } else if (data[i][6].indexOf("FAILED") >= 0) {
                         statusy = "alert-danger";
+                    } else {
+                        statusy = "alert-info";
                     }
                     table += "<td class='text-center'><span class='badge " + statusy + "'>" + data[i][6] + "</span></td>";
                     table += "<td class='text-center'>" + data[i][7] + "</td>";

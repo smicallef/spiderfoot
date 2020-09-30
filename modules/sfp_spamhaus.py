@@ -13,11 +13,11 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_spamhaus(SpiderFootPlugin):
-    """Spamhaus:Investigate,Passive:Reputation Systems::Query the Spamhaus databases for open relays, open proxies, vulnerable servers, etc."""
 
     meta = {
         'name': "Spamhaus",
@@ -37,10 +37,10 @@ class sfp_spamhaus(SpiderFootPlugin):
             'favIcon': "https://www.spamhaus.org/favicon.ico",
             'logo': "https://www.spamhaus.org/images/sh_logo1.jpg",
             'description': "The Spamhaus Project is an international nonprofit organization that "
-                                "tracks spam and related cyber threats such as phishing, malware and botnets, "
-                                "provides realtime actionable and highly accurate threat intelligence to "
-                                "the Internet's major networks, corporations and security vendors, "
-                                "and works with law enforcement agencies to identify and pursue spam and malware sources worldwide.",
+            "tracks spam and related cyber threats such as phishing, malware and botnets, "
+            "provides realtime actionable and highly accurate threat intelligence to "
+            "the Internet's major networks, corporations and security vendors, "
+            "and works with law enforcement agencies to identify and pursue spam and malware sources worldwide.",
         }
     }
 
@@ -87,14 +87,10 @@ class sfp_spamhaus(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ['IP_ADDRESS', 'AFFILIATE_IPADDR', 'NETBLOCK_OWNER',
                 'NETBLOCK_MEMBER']
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
                 "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK"]
@@ -146,12 +142,11 @@ class sfp_spamhaus(SpiderFootPlugin):
                     evt = SpiderFootEvent(e, text, self.__name__, parentEvent)
                     self.notifyListeners(evt)
 
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
         return None
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -161,33 +156,32 @@ class sfp_spamhaus(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
+
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
-                    return None
+                return
+
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
-                    return None
+                return
+
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
 
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):
                 if self.checkForStop():
-                    return None
+                    return
                 self.queryAddr(str(addr), parentEvent)
         else:
             self.queryAddr(eventData, parentEvent)

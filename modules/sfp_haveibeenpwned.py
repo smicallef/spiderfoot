@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_haveibeenpwned
 # Purpose:      Query haveibeenpwned.com to see if an e-mail account has been hacked.
 #
@@ -7,14 +7,15 @@
 # Created:     19/02/2015
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_haveibeenpwned(SpiderFootPlugin):
-    """HaveIBeenPwned:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches."""
 
     meta = {
         'name': "HaveIBeenPwned",
@@ -103,14 +104,14 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             retry += 1
 
             if res['code'] == "401":
-                self.sf.error("Failed to authenticate key with HaveIBeenPwned.com.", False)
+                self.sf.error("Failed to authenticate key with HaveIBeenPwned.com.")
                 self.errorState = True
                 return None
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}", False)
+            self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
             return None
 
         return ret
@@ -134,7 +135,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             self.results[eventData] = True
 
         data = self.query(eventData)
-        if data == None:
+        if data is None:
             return None
 
         for n in data:
@@ -143,7 +144,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                     site = n["Title"]
                 else:
                     site = n["Name"]
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
                 continue
 

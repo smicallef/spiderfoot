@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_twitter
 # Purpose:      Query Twitter for name and location information.
 #
@@ -7,14 +7,14 @@
 # Created:     2018-10-17
 # Copyright:   (c) bcoles 2018
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_twitter(SpiderFootPlugin):
-    """Twitter:Footprint,Investigate,Passive:Social Media::Gather name and location from Twitter profiles."""
 
     meta = {
         'name': "Twitter",
@@ -29,8 +29,8 @@ class sfp_twitter(SpiderFootPlugin):
             'favIcon': "https://abs.twimg.com/favicons/twitter.ico",
             'logo': "https://abs.twimg.com/responsive-web/web/icon-ios.8ea219d4.png",
             'description': "Twitter is an American microblogging and social networking service "
-                                "on which users post and interact with messages known as \"tweets\". "
-                                "Registered users can post, like, and retweet tweets, but unregistered users can only read them.",
+            "on which users post and interact with messages known as \"tweets\". "
+            "Registered users can post, like, and retweet tweets, but unregistered users can only read them.",
         }
     }
 
@@ -65,9 +65,9 @@ class sfp_twitter(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -75,24 +75,23 @@ class sfp_twitter(SpiderFootPlugin):
         try:
             network = eventData.split(": ")[0]
             url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
-        except BaseException as e:
-            self.sf.error("Unable to parse SOCIAL_MEDIA: " +
-                          eventData + " (" + str(e) + ")", False)
-            return None
+        except Exception as e:
+            self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
+            return
 
         if not network == "Twitter":
             self.sf.debug("Skipping social network profile, " + url + ", as not a Twitter profile")
-            return None
+            return
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
         if res['content'] is None:
-            return None
+            return
 
         if not res['code'] == "200":
             self.sf.debug(url + " is not a valid Twitter profile")
-            return None
+            return
 
         # Retrieve name
         human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>',

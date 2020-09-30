@@ -12,13 +12,15 @@
 
 import json
 import re
-
 import time
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_fringeproject(SpiderFootPlugin):
-    """Fringe Project:Investigate,Footprint,Passive:Search Engines::Obtain network information from Fringe Project API."""
 
     meta = {
         'name': "Fringe Project",
@@ -35,9 +37,9 @@ class sfp_fringeproject(SpiderFootPlugin):
             'favIcon': "https://fringeproject.com/favicon.png",
             'logo': "https://fringeproject.com/favicon.png",
             'description': "Discover the Right Data for Your Security Assessment.\n"
-                                "FringeProject allows you to scan and search through various source of information to discover assets and vulnerabilities.\n"
-                                "We parse your data and add it to our runner. " 
-                                "It does active and passive scanning to find new assets on the Internet.",
+            "FringeProject allows you to scan and search through various source of information to discover assets and vulnerabilities.\n"
+            "We parse your data and add it to our runner. "
+            "It does active and passive scanning to find new assets on the Internet.",
         }
     }
 
@@ -80,8 +82,8 @@ class sfp_fringeproject(SpiderFootPlugin):
 
         try:
             json_data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug("Error processing JSON response from Fringe Project: " + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response from Fringe Project: {e}")
             return None
 
         data = json_data.get('results')
@@ -160,7 +162,7 @@ class sfp_fringeproject(SpiderFootPlugin):
             for tag in tags:
                 try:
                     port = re.findall(r'^port:([0-9]+)', tag)
-                except BaseException:
+                except Exception:
                     self.sf.debug("Didn't get sane data from FringeProject.")
                     continue
 

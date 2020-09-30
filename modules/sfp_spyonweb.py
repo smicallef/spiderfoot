@@ -14,10 +14,11 @@
 import datetime
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_spyonweb(SpiderFootPlugin):
-    """SpyOnWeb:Footprint,Investigate,Passive:Passive DNS:apikey:Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code."""
 
     meta = {
         'name': "SpyOnWeb",
@@ -33,7 +34,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                 "https://api.spyonweb.com/"
             ],
             'apiKeyInstructions': [
-                "Visit api.spyonweb.com",
+                "Visit https://api.spyonweb.com",
                 "Sign up for a free account",
                 "Click on 'Dashboard'",
                 "The API key is listed under 'Access Token'"
@@ -41,7 +42,7 @@ class sfp_spyonweb(SpiderFootPlugin):
             'favIcon': "http://spyonweb.com/favicon.ico",
             'logo': "http://spyonweb.com/favicon.ico",
             'description': "We take the information from public sources, then structure it for your quick and convenient search "
-                                "for the websites that probably belong to the same owner.",
+            "for the websites that probably belong to the same owner.",
         }
     }
 
@@ -73,7 +74,6 @@ class sfp_spyonweb(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "SpyOnWeb"
         self.results = self.tempStorage()
         self.cohostcount = 0
 
@@ -195,19 +195,19 @@ class sfp_spyonweb(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_spyonweb but did not set an API key!", False)
+            self.sf.error("You enabled sfp_spyonweb but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
 
@@ -216,21 +216,21 @@ class sfp_spyonweb(SpiderFootPlugin):
             data = self.querySummary(eventData, limit=self.opts['limit'])
 
             if data is None:
-                self.sf.info("No data found for " + eventData)
-                return None
+                self.sf.info(f"No data found for {eventData}")
+                return
 
             google_adsense = data.get('adsense')
 
             if google_adsense:
                 for r in list(google_adsense.keys()):
-                    evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google AdSense: " + r, self.__name__, event)
+                    evt = SpiderFootEvent("WEB_ANALYTICS_ID", f"Google AdSense: {r}", self.__name__, event)
                     self.notifyListeners(evt)
 
             google_analytics = data.get('analytics')
 
             if google_analytics:
                 for r in list(google_analytics.keys()):
-                    evt = SpiderFootEvent("WEB_ANALYTICS_ID", "Google Analytics: " + r, self.__name__, event)
+                    evt = SpiderFootEvent("WEB_ANALYTICS_ID", f"Google Analytics: {r}", self.__name__, event)
                     self.notifyListeners(evt)
 
         # Find affiliate domains for the specified Google AdSense ID or Google Analytics ID
@@ -238,10 +238,9 @@ class sfp_spyonweb(SpiderFootPlugin):
             try:
                 network = eventData.split(": ")[0]
                 analytics_id = eventData.split(": ")[1]
-            except BaseException as e:
-                self.sf.error("Unable to parse WEB_ANALYTICS_ID: " +
-                              eventData + " (" + str(e) + ")", False)
-                return None
+            except Exception as e:
+                self.sf.error(f"Unable to parse WEB_ANALYTICS_ID: {eventData} ({e})")
+                return
 
             data = dict()
             if network == 'Google AdSense':
@@ -249,11 +248,11 @@ class sfp_spyonweb(SpiderFootPlugin):
             elif network == 'Google Analytics':
                 data = self.queryGoogleAnalytics(analytics_id, limit=self.opts['limit'])
             else:
-                return None
+                return
 
             if data is None:
                 self.sf.info("No data found for " + eventData)
-                return None
+                return
 
             for r in list(data.keys()):
                 last_seen = int(datetime.datetime.strptime(data[r], '%Y-%m-%d').strftime('%s')) * 1000
@@ -275,7 +274,7 @@ class sfp_spyonweb(SpiderFootPlugin):
 
             if data is None:
                 self.sf.info("No data found for " + eventData)
-                return None
+                return
 
             self.cohostcount = 0
 
@@ -287,7 +286,7 @@ class sfp_spyonweb(SpiderFootPlugin):
                     continue
 
                 if self.opts['verify'] and not self.sf.validateIP(co, eventData):
-                    self.sf.debug("Host " + co + " no longer resolves to " + eventData)
+                    self.sf.debug(f"Host {co} no longer resolves to {eventData}")
                     continue
 
                 if not self.opts['cohostsamedomain']:

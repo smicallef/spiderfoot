@@ -11,14 +11,15 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from subprocess import Popen, PIPE
 import io
 import json
 import os.path
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from subprocess import PIPE, Popen
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_tool_cmseek(SpiderFootPlugin):
-    """Tool - CMSeeK:Footprint,Investigate:Content Analysis:tool:Identify what Content Management System (CMS) might be used."""
 
     meta = {
         'name': "Tool - CMSeeK",
@@ -77,19 +78,19 @@ class sfp_tool_cmseek(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         # Don't look up stuff twice, check IP == IP here
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already scanned.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if not self.opts['cmseekpath']:
-            self.sf.error("You enabled sfp_tool_cmseek but did not set a path to the tool!", False)
+            self.sf.error("You enabled sfp_tool_cmseek but did not set a path to the tool!")
             self.errorState = True
-            return None
+            return
 
         # Normalize path
         if self.opts['cmseekpath'].endswith('cmseek.py'):
@@ -104,14 +105,14 @@ class sfp_tool_cmseek(SpiderFootPlugin):
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
-            self.sf.error("File does not exist: " + exe, False)
+            self.sf.error("File does not exist: " + exe)
             self.errorState = True
-            return None
+            return
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
-            self.sf.error("Invalid input, refusing to run.", False)
-            return None
+            self.sf.error("Invalid input, refusing to run.")
+            return
 
         try:
             p = Popen([self.opts['pythonpath'], exe, "--follow-redirect", "-u", eventData], stdout=PIPE, stderr=PIPE)
@@ -119,25 +120,24 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             if p.returncode == 0:
                 content = stdout
             else:
-                self.sf.error("Unable to read CMSeeK content.", False)
+                self.sf.error("Unable to read CMSeeK content.")
                 self.sf.debug("Error running CMSeeK: " + stderr + ", " + stdout)
-                return None
+                return
 
             if "CMS Detection failed" in content:
                 self.sf.debug("Couldn't detect the CMS for " + eventData)
-                return None
+                return
 
             try:
                 f = io.open(resultpath + "/" + eventData + "/cms.json", encoding='utf-8')
                 j = json.loads(f.read())
                 evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", j['cms_name'],
-                                       self.__name__, event)
+                                      self.__name__, event)
                 self.notifyListeners(evt)
-            except BaseException as e:
-                self.sf.error("Couldn't parse the JSON output of CMSeeK: " + str(e), False)
-                return None
-        except BaseException as e:
-            self.sf.error("Unable to run CMSeeK: " + str(e), False)
-            return None
+            except Exception as e:
+                self.sf.error("Couldn't parse the JSON output of CMSeeK: " + str(e))
+                return
+        except Exception as e:
+            self.sf.error("Unable to run CMSeeK: " + str(e))
 
 # End of sfp_tool_cmseek class

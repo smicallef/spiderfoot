@@ -13,11 +13,10 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_emailformat(SpiderFootPlugin):
-    """EmailFormat:Footprint,Investigate,Passive:Search Engines::Look up e-mail addresses on email-format.com."""
 
     meta = {
         'name': "EmailFormat",
@@ -106,7 +105,5 @@ class sfp_emailformat(SpiderFootPlugin):
 
             evt = SpiderFootEvent(evttype, email, self.__name__, event)
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_emailformat class

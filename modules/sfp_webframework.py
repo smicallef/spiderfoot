@@ -12,7 +12,7 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 regexps = dict({
     "jQuery": list(['jquery']),  # unlikely false positive
@@ -26,8 +26,8 @@ regexps = dict({
     "Wordpress": list([r'\/wp-includes\/', r'\/wp-content\/'])
 })
 
+
 class sfp_webframework(SpiderFootPlugin):
-    """Web Framework Identifier:Footprint,Passive:Content Analysis::Identify the usage of popular web frameworks like jQuery, YUI and others."""
 
     meta = {
         'name': "Web Framework Identifier",
@@ -78,7 +78,7 @@ class sfp_webframework(SpiderFootPlugin):
 
         # We only want web content
         if srcModuleName != "sfp_spider":
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -88,7 +88,7 @@ class sfp_webframework(SpiderFootPlugin):
         # We only want web content for pages on the target site
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
             self.sf.debug("Not collecting web content information for external sites.")
-            return None
+            return
 
         for regexpGrp in list(regexps.keys()):
             if regexpGrp in self.results[eventSource]:
@@ -103,7 +103,5 @@ class sfp_webframework(SpiderFootPlugin):
                     evt = SpiderFootEvent("URL_WEB_FRAMEWORK", regexpGrp,
                                           self.__name__, event)
                     self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_webframework class

@@ -12,17 +12,36 @@
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_metadefender(SpiderFootPlugin):
-    """MetaDefender:Footprint,Investigate,Passive:Reputation Systems:apikey:Search MetaDefender API for IP address and domain IP reputation."""
 
     meta = {
         'name': "MetaDefender",
         'summary': "Search MetaDefender API for IP address and domain IP reputation.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Reputation Systems"]
+        'categories': ["Reputation Systems"],
+        'dataSource': {
+            'website': "https://metadefender.opswat.com/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://onlinehelp.opswat.com/mdcloud/"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://metadefender.opswat.com/",
+                "Register a free account",
+                "Navigate to https://metadefender.opswat.com/account",
+                "The API key is listed under 'API key'"
+            ],
+            'favIcon': "https://mcl-cdn.opswat.com/1.40.3-729f31db/city/icons/icon-48x48.png?v=61be50566cce944a710aaa90ba6bbb8d",
+            'logo': "https://mcl-cdn.opswat.com/1.40.3-729f31db/city/icons/icon-48x48.png?v=61be50566cce944a710aaa90ba6bbb8d",
+            'description': "File Analysis - Analyzing binaries with 30+ anti-malware engines.\n"
+            "Heuristic analysis to detect more unknown and targeted attacks.\n"
+            "Binary vulnerability data assessment, IP/Domain reputation, Threat Intelligence Feeds",
+        }
     }
 
     # Default options
@@ -94,14 +113,14 @@ class sfp_metadefender(SpiderFootPlugin):
     # Parse API response
     def parseApiResponse(self, res):
         if res['code'] == "401":
-            self.sf.error("Invalid MetaDefender API key", False)
+            self.sf.error("Invalid MetaDefender API key")
             self.errorState = True
             return None
 
         # https://onlinehelp.opswat.com/mdcloud/3._Rate_Limiting.html
         # https://onlinehelp.opswat.com/mdcloud/4._Throttling.html
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by MetaDefender", False)
+            self.sf.error("You are being rate-limited by MetaDefender")
             self.errorState = True
             return None
 
@@ -132,7 +151,7 @@ class sfp_metadefender(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_metadefender but did not set an API key!", False)
+            self.sf.error("You enabled sfp_metadefender but did not set an API key!")
             self.errorState = True
             return None
 

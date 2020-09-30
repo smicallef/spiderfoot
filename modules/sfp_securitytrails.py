@@ -12,10 +12,11 @@
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_securitytrails(SpiderFootPlugin):
-    """SecurityTrails:Investigate,Passive:Search Engines:apikey:Obtain Passive DNS and other information from SecurityTrails"""
 
     meta = {
         'name': "SecurityTrails",
@@ -31,17 +32,17 @@ class sfp_securitytrails(SpiderFootPlugin):
                 "https://docs.securitytrails.com/reference#general"
             ],
             'apiKeyInstructions': [
-                "Visit securitytrails.com",
+                "Visit https://securitytrails.com",
                 "Register a free account",
-                "Navigate to securitytrails.com/app/account/credentials",
+                "Navigate to https://securitytrails.com/app/account/credentials",
                 "The API key is listed under 'API Key'"
             ],
             'favIcon': "https://securitytrails.com/user/themes/lego/favicon/apple-touch-icon.png",
             'logo': "https://securitytrails.com/user/themes/lego/favicon/apple-touch-icon.png",
             'description': "Data for Security companies, researchers and teams. Fast, always up API that "
-                                "allows you to access current and historical data. "
-                                "The API is paid via a simple pricing structure that allows you to embed our data into your applications.\n"
-                                "Search nearly 3 billion historical and current WHOIS data and WHOIS changes.",
+            "allows you to access current and historical data. "
+            "The API is paid via a simple pricing structure that allows you to embed our data into your applications.\n"
+            "Search nearly 3 billion historical and current WHOIS data and WHOIS changes.",
         }
     }
 
@@ -112,7 +113,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                                postData=request)
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("SecurityTrails API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+            self.sf.error("SecurityTrails API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -132,7 +133,7 @@ class sfp_securitytrails(SpiderFootPlugin):
                         accum.extend(info.get('records'))
                     else:
                         accum = info.get('records')
-                    return self.query(qry, querytype, page+1, accum)
+                    return self.query(qry, querytype, page + 1, accum)
                 else:
                     # We are at the last page
                     accum.extend(info.get('records', []))
@@ -140,7 +141,7 @@ class sfp_securitytrails(SpiderFootPlugin):
             else:
                 return info.get('records', [])
         except Exception as e:
-            self.sf.error("Error processing JSON response from SecurityTrails: " + str(e), False)
+            self.sf.error("Error processing JSON response from SecurityTrails: " + str(e))
             return None
 
     # Handle events sent to this module
@@ -150,21 +151,21 @@ class sfp_securitytrails(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_securitytrails but did not set an API uid/secret!", False)
+            self.sf.error("You enabled sfp_securitytrails but did not set an API uid/secret!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS", "NETLBLOCK_OWNER"]:
             ip = eventData

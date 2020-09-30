@@ -11,55 +11,54 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 nearchars = {
- 'a': ['4', 's'],
- 'b': ['v', 'n'],
- 'c': ['x', 'v'],
- 'd': ['s', 'f'],
- 'e': ['w', 'r'],
- 'f': ['d', 'g'],
- 'g': ['f', 'h'],
- 'h': ['g', 'j', 'n'],
- 'i': ['o', 'u', '1'],
- 'j': ['k', 'h', 'i'],
- 'k': ['l', 'j'],
- 'l': ['i', '1', 'k'],
- 'm': ['n'],
- 'n': ['m'],
- 'o': ['p', 'i', '0'],
- 'p': ['o', 'q'],
- 'r': ['t', 'e'],
- 's': ['a', 'd', '5'],
- 't': ['7', 'y', 'z', 'r'],
- 'u': ['v', 'i', 'y', 'z'],
- 'v': ['u', 'c', 'b'],
- 'w': ['v', 'vv', 'q', 'e'],
- 'x': ['z', 'y', 'c'],
- 'y': ['z', 'x'],
- 'z': ['y', 'x'],
- '0': ['o'],
- '1': ['l'],
- '2': ['5'],
- '3': ['e'],
- '4': ['a'],
- '5': ['s'],
- '6': ['b'],
- '7': ['t'],
- '8': ['b'],
- '9': []
+    'a': ['4', 's'],
+    'b': ['v', 'n'],
+    'c': ['x', 'v'],
+    'd': ['s', 'f'],
+    'e': ['w', 'r'],
+    'f': ['d', 'g'],
+    'g': ['f', 'h'],
+    'h': ['g', 'j', 'n'],
+    'i': ['o', 'u', '1'],
+    'j': ['k', 'h', 'i'],
+    'k': ['l', 'j'],
+    'l': ['i', '1', 'k'],
+    'm': ['n'],
+    'n': ['m'],
+    'o': ['p', 'i', '0'],
+    'p': ['o', 'q'],
+    'r': ['t', 'e'],
+    's': ['a', 'd', '5'],
+    't': ['7', 'y', 'z', 'r'],
+    'u': ['v', 'i', 'y', 'z'],
+    'v': ['u', 'c', 'b'],
+    'w': ['v', 'vv', 'q', 'e'],
+    'x': ['z', 'y', 'c'],
+    'y': ['z', 'x'],
+    'z': ['y', 'x'],
+    '0': ['o'],
+    '1': ['l'],
+    '2': ['5'],
+    '3': ['e'],
+    '4': ['a'],
+    '5': ['s'],
+    '6': ['b'],
+    '7': ['t'],
+    '8': ['b'],
+    '9': []
 }
 
 pairs = {
- 'oo': ['00'],
- 'll': ['l1l', 'l1l', '111', '11'],
- '11': ['ll', 'lll', 'l1l', '1l1']
+    'oo': ['00'],
+    'll': ['l1l', 'l1l', '111', '11'],
+    '11': ['ll', 'lll', 'l1l', '1l1']
 }
 
-# These are all string builders, {0} = the domain keyword, {1} = the page number
+
 class sfp_similar(SpiderFootPlugin):
-    """Similar Domain Finder:Footprint,Investigate:DNS::Search various sources to identify similar looking domain names, for instance squatted domains."""
 
     meta = {
         'name': "Similar Domain Finder",
@@ -101,19 +100,20 @@ class sfp_similar(SpiderFootPlugin):
     # Search for similar sounding domains
     def handleEvent(self, event):
         eventData = event.data
-        domlist = list()
 
         dom = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
         if not dom:
-            return None
+            return
 
         tld = "." + eventData.split(dom + ".")[-1]
-        self.sf.debug("Keyword extracted from " + eventData + ": " + dom)
+        self.sf.debug(f"Keyword extracted from {eventData}: {dom}")
 
         if dom in self.results:
-            return None
-        else:
-            self.results[dom] = True
+            return
+
+        self.results[dom] = True
+
+        domlist = list()
 
         # Search for typos
         pos = 0
@@ -143,24 +143,18 @@ class sfp_similar(SpiderFootPlugin):
         # Search for double character domains
         pos = 0
         for c in dom:
-            domlist.append(dom[0:pos] + c + c + dom[(pos+1):len(dom)])
+            domlist.append(dom[0:pos] + c + c + dom[(pos + 1):len(dom)])
             pos += 1
 
         for d in domlist:
-            resolved = False
+            d_tld = f"{d}{tld}"
+
             try:
-                if self.sf.resolveHost(d + tld):
-                    resolved = True
-                if self.sf.resolveHost("www." + d + tld):
-                    resolved = True
-
-                if resolved:
-                    self.sf.debug("Resolved " + d + tld)
-                    evt = SpiderFootEvent("SIMILARDOMAIN", d + tld, self.__name__, event)
+                if self.sf.resolveHost(d_tld) or self.sf.resolveHost(f"www.{d_tld}"):
+                    self.sf.debug(f"Resolved {d_tld}")
+                    evt = SpiderFootEvent("SIMILARDOMAIN", d_tld, self.__name__, event)
                     self.notifyListeners(evt)
-            except BaseException:
+            except Exception:
                 continue
-
-        return None
 
 # End of sfp_similar class

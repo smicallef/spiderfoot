@@ -12,10 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_neutrinoapi(SpiderFootPlugin):
-    """NeutrinoAPI:Footprint,Investigate,Passive:Reputation Systems:apikey:Search NeutrinoAPI for IP address info and check IP reputation."""
 
     meta = {
         'name': "NeutrinoAPI",
@@ -30,7 +31,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
                 "https://www.neutrinoapi.com/api/phone-validate/"
             ],
             'apiKeyInstructions': [
-                "Visit www.neutrinoapi.com/",
+                "Visit https://www.neutrinoapi.com/",
                 "Sign up for a free account",
                 "Click on 'My Account'",
                 "The API key is listed under 'Master Key'"
@@ -38,9 +39,9 @@ class sfp_neutrinoapi(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://www.neutrinoapi.com/",
             'logo': "https://www.google.com/s2/favicons?domain=https://www.neutrinoapi.com/",
             'description': "Parse, validate and get location information about a phone number.\n"
-                                "Use this API to validate local and international phone numbers in any country. "
-                                "You can determine the location of the number and also reformat the number into "
-                                "local and international dialing formats.",
+            "Use this API to validate local and international phone numbers in any country. "
+            "You can determine the location of the number and also reformat the number into "
+            "local and international dialing formats.",
         }
     }
 
@@ -130,7 +131,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
     # Parse API response
     def parseApiResponse(self, res):
         if res['code'] == "403":
-            self.sf.error("Authentication failed", False)
+            self.sf.error("Authentication failed")
             self.errorState = True
             return None
 
@@ -145,12 +146,12 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
         if res['code'] == "400":
             if data.get('api-error-msg'):
-                self.sf.error("Error: " + data.get('api-error-msg'), False)
+                self.sf.error("Error: " + data.get('api-error-msg'))
                 if "EXCEED" in data.get('api-error-msg'):
                     self.errorState = True
                     return None
             else:
-                self.sf.error("Error: HTTP 400", False)
+                self.sf.error("Error: HTTP 400")
             return None
 
         return data
@@ -168,12 +169,12 @@ class sfp_neutrinoapi(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_neutrinoapi but did not set an API key!", False)
+            self.sf.error("You enabled sfp_neutrinoapi but did not set an API key!")
             self.errorState = True
             return None
 
         if self.opts['user_id'] == "":
-            self.sf.error("You enabled sfp_neutrinoapi but did not set a user ID!", False)
+            self.sf.error("You enabled sfp_neutrinoapi but did not set a user ID!")
             self.errorState = True
             return None
 
@@ -197,7 +198,6 @@ class sfp_neutrinoapi(SpiderFootPlugin):
                     self.notifyListeners(evt)
                     evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
                     self.notifyListeners(evt)
-
 
         if eventName == 'IP_ADDRESS':
             data = self.queryIpInfo(eventData)

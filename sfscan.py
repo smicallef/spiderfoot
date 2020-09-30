@@ -9,14 +9,16 @@
 # Copyright:    (c) Steve Micallef 2013
 # License:      GPL
 # -----------------------------------------------------------------
-import traceback
-import time
-import sys
 import socket
+import sys
+import time
+import traceback
 from copy import deepcopy
+
 import dns.resolver
-from sfdb import SpiderFootDb
-from sflib import SpiderFoot, SpiderFootEvent, SpiderFootTarget, SpiderFootPlugin
+
+from sflib import SpiderFoot
+from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget
 
 
 class SpiderFootScanner():
@@ -104,9 +106,6 @@ class SpiderFootScanner():
         self.__sf.dbh = self.__dbh
 
         # Create a unique ID for this scan in the back-end DB.
-        if not isinstance(scanId, str):
-            raise TypeError(f"scanId is {type(scanId)}; expected str()")
-
         if scanId:
             self.__scanId = scanId
         else:
@@ -131,8 +130,6 @@ class SpiderFootScanner():
 
         # If a SOCKS server was specified, set it up
         if self.__config['_socks1type']:
-            # TODO: review why socksDns is unused
-            # socksDns = self.__config['_socks6dns']
             socksAddr = self.__config['_socks2addr']
             socksPort = int(self.__config['_socks3port'])
             socksUsername = self.__config['_socks4user'] or ''
@@ -188,12 +185,10 @@ class SpiderFootScanner():
 
     @property
     def scanId(self):
-        """Unique identifier for this scan"""
         return self.__scanId
 
     @property
     def status(self):
-        """Status of this scan"""
         return self.__status
 
     def __setStatus(self, status, started=None, ended=None):
@@ -203,9 +198,6 @@ class SpiderFootScanner():
             status (str): scan status
             started (float): timestamp at start of scan
             ended (float): timestamp at end of scan
-
-        Returns:
-            None
 
         Raises:
             TypeError: arg type was invalid
@@ -247,7 +239,7 @@ class SpiderFootScanner():
                 try:
                     module = __import__('modules.' + modName, globals(), locals(), [modName])
                 except ImportError:
-                    self.__sf.error("Failed to load module: " + modName, False)
+                    self.__sf.error(f"Failed to load module: {modName}")
                     continue
 
                 mod = getattr(module, modName)()
@@ -341,17 +333,17 @@ class SpiderFootScanner():
                     break
 
             if aborted:
-                self.__sf.status("Scan [" + self.__scanId + "] aborted.")
+                self.__sf.status(f"Scan [{self.__scanId}] aborted.")
                 self.__setStatus("ABORTED", None, time.time() * 1000)
             else:
-                self.__sf.status("Scan [" + self.__scanId + "] completed.")
+                self.__sf.status(f"Scan [{self.__scanId}] completed.")
                 self.__setStatus("FINISHED", None, time.time() * 1000)
         except BaseException as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.__sf.error("Unhandled exception (" + e.__class__.__name__ + ") " +
-                            "encountered during scan. Please report this as a bug: " +
-                            repr(traceback.format_exception(exc_type, exc_value, exc_traceback)), False)
-            self.__sf.status("Scan [" + self.__scanId + "] failed: " + str(e))
+            self.__sf.error(f"Unhandled exception ({e.__class__.__name__}) encountered during scan."
+                            + "Please report this as a bug: "
+                            + repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+            self.__sf.status(f"Scan [{self.__scanId}] failed: {e}")
             self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
 
         self.__dbh.close()

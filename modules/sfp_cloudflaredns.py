@@ -12,11 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import dns.resolver
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_cloudflaredns(SpiderFootPlugin):
-    """CloudFlare Malware DNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by CloudFlare Malware-blocking DNS"""
 
     meta = {
         'name': "CloudFlare Malware DNS",
@@ -33,9 +33,9 @@ class sfp_cloudflaredns(SpiderFootPlugin):
             'favIcon': "https://www.cloudflare.com/img/favicon/favicon-32x32.png",
             'logo': "https://www.cloudflare.com/img/logo-web-badges/cf-logo-on-white-bg.svg",
             'description': "1.1.1.1 for Families is the easiest way to add a layer of protection to "
-                                "your home network and protect it from malware and adult content. "
-                                "1.1.1.1 for Families leverages Cloudflare’s global network to ensure "
-                                "that it is fast and secure around the world.",
+            "your home network and protect it from malware and adult content. "
+            "1.1.1.1 for Families leverages Cloudflare’s global network to ensure "
+            "that it is fast and secure around the world.",
         }
     }
 
@@ -74,7 +74,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         try:
             addrs = res.query(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
-        except BaseException:
+        except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
@@ -106,7 +106,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         try:
             if self.sf.resolveHost(eventData):
                 resolved = True
-        except BaseException:
+        except Exception:
             return None
 
         if resolved:

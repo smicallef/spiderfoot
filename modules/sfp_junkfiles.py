@@ -10,11 +10,12 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
 import random
 
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
+
 class sfp_junkfiles(SpiderFootPlugin):
-    """Junk File Finder:Footprint:Crawling and Scanning:slow,errorprone,invasive:Looks for old/temporary and other similar files."""
 
     meta = {
         'name': "Junk File Finder",

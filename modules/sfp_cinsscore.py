@@ -11,10 +11,11 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_cinsscore(SpiderFootPlugin):
-    """CINS Army List:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is malicious according to cinsscore.com's Army List."""
 
     meta = {
         'name': "CINS Army List",
@@ -72,12 +73,12 @@ class sfp_cinsscore(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 

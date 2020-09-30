@@ -12,10 +12,10 @@
 
 from netaddr import IPAddress, IPNetwork
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_greensnow(SpiderFootPlugin):
-    """Greensnow:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is malicious according to greensnow.co."""
 
     meta = {
         'name': "Greensnow",
@@ -33,9 +33,9 @@ class sfp_greensnow(SpiderFootPlugin):
             'favIcon': "https://greensnow.co/favicon.ico",
             'logo': "https://greensnow.co/img/logo.png",
             'description': "GreenSnow is a team consisting of the best specialists in computer security, "
-                                "we harvest a large number of IPs from different computers located around the world. "
-                                "GreenSnow is comparable with SpamHaus.org for attacks of any kind except for spam. "
-                                "Our list is updated automatically and you can withdraw at any time your IP address if it has been listed.",
+            "we harvest a large number of IPs from different computers located around the world. "
+            "GreenSnow is comparable with SpamHaus.org for attacks of any kind except for spam. "
+            "Our list is updated automatically and you can withdraw at any time your IP address if it has been listed.",
         }
     }
 
@@ -87,12 +87,12 @@ class sfp_greensnow(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 

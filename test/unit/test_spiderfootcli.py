@@ -1,9 +1,9 @@
 # test_spiderfootcli.py
-from sfcli import SpiderFootCli
-import unittest
 import io
 import sys
-import subprocess
+import unittest
+
+from sfcli import SpiderFootCli
 
 
 class TestSpiderFootCli(unittest.TestCase):
@@ -25,21 +25,6 @@ class TestSpiderFootCli(unittest.TestCase):
         "cli.password": "",
         "cli.server_baseurl": "http://127.0.0.1:5001"
     }
-
-    def execute(self, command):
-        proc = subprocess.Popen(
-           command,
-           stdout=subprocess.PIPE,
-           stderr=subprocess.PIPE,
-        )
-        out, err = proc.communicate()
-        return out, err, proc.returncode
-
-    def test_help_arg_should_print_help_and_exit(self):
-        out, err, code = self.execute([sys.executable, "sfcli.py", "-h"])
-        self.assertIn(b"show this help message and exit", out)
-        self.assertEqual(b"", err)
-        self.assertEqual(0, code)
 
     def test_default(self):
         """
@@ -346,7 +331,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_ping(self):
         """
         Test do_ping(self, line)
@@ -356,7 +340,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_modules(self):
         """
         Test do_modules(self, line, cacheonly=False)
@@ -366,7 +349,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_types(self):
         """
         Test do_types(self, line, cacheonly=False)
@@ -376,7 +358,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_load(self):
         """
         Test do_load(self, line)
@@ -396,7 +377,6 @@ class TestSpiderFootCli(unittest.TestCase):
 
         self.assertEqual('TBD', 'TBD')
 
-    @unittest.skip("todo")
     def test_do_scans(self):
         """
         Test do_scans(self, line)
@@ -566,7 +546,3 @@ class TestSpiderFootCli(unittest.TestCase):
         sfcli = SpiderFootCli()
         do_eof = sfcli.do_EOF(None)
         self.assertTrue(do_eof)
-
-
-if __name__ == '__main__':
-    unittest.main()

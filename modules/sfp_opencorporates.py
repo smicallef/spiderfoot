@@ -11,11 +11,13 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import urllib
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_opencorporates(SpiderFootPlugin):
-    """OpenCorporates:Passive,Footprint,Investigate:Search Engines::Look up company information from OpenCorporates."""
 
     meta = {
         'name': "OpenCorporates",
@@ -32,19 +34,17 @@ class sfp_opencorporates(SpiderFootPlugin):
             'favIcon': "https://opencorporates.com/assets/favicons/favicon.png",
             'logo': "https://opencorporates.com/contents/ui/theme/img/oc-logo.svg",
             'description': "The largest open database of companies in the world.\n"
-                                "As the largest, open database of companies in the world, "
-                                "our business is making high-quality, official company data openly available. "
-                                "Data that can be trusted, accessed, analysed and interrogated when and how it’s needed.",
+            "As the largest, open database of companies in the world, "
+            "our business is making high-quality, official company data openly available. "
+            "Data that can be trusted, accessed, analysed and interrogated when and how it’s needed.",
         }
     }
 
-    # Default options
     opts = {
         'confidence': 100,
         'api_key': ''
     }
 
-    # Option descriptions
     optdescs = {
         'confidence': "Confidence that the search result objects are correct (numeric value between 0 and 100).",
         'api_key': 'OpenCorporates.com API key.'
@@ -54,46 +54,58 @@ class sfp_opencorporates(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "OpenCorporates"
         self.results = self.tempStorage()
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ["COMPANY_NAME"]
 
-    # What events this module produces
     def producedEvents(self):
         return ["COMPANY_NAME", "PHYSICAL_ADDRESS", "RAW_RIR_DATA"]
 
-    # Search for company name
-    # https://api.opencorporates.com/documentation/API-Reference
     def searchCompany(self, qry):
+        """Search for company name
+
+        Args:
+            qry (str): company name
+
+        Returns:
+            str
+        """
+
+        version = '0.4'
+
         apiparam = ""
         if not self.opts['api_key'] == "":
             apiparam = "&api_token=" + self.opts['api_key']
 
-        # High timeouts as they can sometimes take a while
-        res = self.sf.fetchUrl("https://api.opencorporates.com/v0.4/companies/search?q=" + \
-                               qry + "&format=json&order=score&confidence=" + \
-                               str(self.opts['confidence']) + apiparam,
-                               timeout=60, useragent=self.opts['_useragent'])
+        params = urllib.parse.urlencode({
+            'q': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
+            'format': 'json',
+            'order': 'score',
+            'confidence': self.opts['confidence']
+        })
+
+        res = self.sf.fetchUrl(
+            f"https://api.opencorporates.com/v{version}/companies/search?{params}{apiparam}",
+            timeout=60,  # High timeouts as they can sometimes take a while
+            useragent=self.opts['_useragent']
+        )
 
         if res['code'] == "401":
-            self.sf.error("Invalid OpenCorporates API key.", False)
+            self.sf.error("Invalid OpenCorporates API key.")
             return None
 
         if res['code'] == "403":
-            self.sf.error("You are being rate-limited by OpenCorporates.", False)
+            self.sf.error("You are being rate-limited by OpenCorporates.")
             return None
 
-        # Parse response content as JSON
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if 'results' not in data:
@@ -101,36 +113,36 @@ class sfp_opencorporates(SpiderFootPlugin):
 
         return data['results']
 
-    # Retrieve company details
-    # https://api.opencorporates.com/documentation/API-Reference
     def retrieveCompanyDetails(self, jurisdiction_code, company_number):
-        url = "https://api.opencorporates.com/companies/" + jurisdiction_code + "/" + str(company_number)
+        url = f"https://api.opencorporates.com/companies/{jurisdiction_code}/{company_number}"
 
         if not self.opts['api_key'] == "":
-            url += '?' + self.opts['api_key']
+            url += "?api_token=" + self.opts['api_key']
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(
+            url,
+            timeout=self.opts['_fetchtimeout'],
+            useragent=self.opts['_useragent']
+        )
 
         if res['code'] == "401":
-            self.sf.error("Invalid OpenCorporates API key.", False)
+            self.sf.error("Invalid OpenCorporates API key.")
             return None
 
         if res['code'] == "403":
-            self.sf.error("You are being rate-limited by OpenCorporates.", False)
+            self.sf.error("You are being rate-limited by OpenCorporates.")
             return None
 
-        # Parse response content as JSON
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if 'results' not in data:
             return None
 
         return data['results']
-
 
     # Extract company address, previous names, and officer names
     def extractCompanyDetails(self, company, sevt):
@@ -175,7 +187,6 @@ class sfp_opencorporates(SpiderFootPlugin):
                     e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n, self.__name__, sevt)
                     self.notifyListeners(e)
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -183,24 +194,23 @@ class sfp_opencorporates(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Search for the company
-        res = self.searchCompany(eventData + "*")
+        res = self.searchCompany(f"{eventData}*")
 
         if res is None:
             self.sf.debug("Found no results for " + eventData)
-            return None
+            return
 
         companies = res.get('companies')
 
         if not companies:
             self.sf.debug("Found no results for " + eventData)
-            return None
+            return
 
         for c in companies:
             company = c.get('company')

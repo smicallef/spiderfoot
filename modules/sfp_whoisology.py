@@ -11,10 +11,11 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_whoisology(SpiderFootPlugin):
-    """Whoisology:Investigate,Passive:Search Engines:apikey:Reverse Whois lookups using Whoisology.com."""
 
     meta = {
         'name': "Whoisology",
@@ -24,16 +25,23 @@ class sfp_whoisology(SpiderFootPlugin):
         'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://whoisology.com/",
-            'model': "FREE_NOAUTH_UNLIMITED",
+            'model': "COMMERCIAL_ONLY",
             'references': [
                 "https://whoisology.com/whois-database-download",
                 "https://whoisology.com/tutorial"
             ],
+            'apiKeyInstructions': [
+                "Visit https://whoisology.com/",
+                "Register a free account",
+                "Navigate to https://whoisology.com/account",
+                "Click on API Access",
+                "Pay for Access and receive the API Key"
+            ],
             'favIcon': "https://whoisology.com/img/w-logo.png",
             'logo': "https://whoisology.com/assets/images/il1.gif",
             'description': "Whoisology is a domain name ownership archive with literally billions of searchable and cross referenced domain name whois records.\n"
-                                "Our main focus is reverse whois which is used for cyber crime investigation / InfoSec, "
-                                "corporate intelligence, legal research, business development, and for good ol' fashioned poking around.",
+            "Our main focus is reverse whois which is used for cyber crime investigation / InfoSec, "
+            "corporate intelligence, legal research, business development, and for good ol' fashioned poking around.",
         }
     }
 
@@ -73,8 +81,6 @@ class sfp_whoisology(SpiderFootPlugin):
 
     # Search Whoisology
     def query(self, qry, querytype):
-        info = None
-
         url = "https://whoisology.com/api?auth=" + self.opts['api_key'] + "&request=flat"
         url += "&field=" + querytype + "&value=" + qry + "&level=Registrant|Admin|Tec|Billing|Other"
 
@@ -82,27 +88,27 @@ class sfp_whoisology(SpiderFootPlugin):
                                useragent="SpiderFoot")
 
         if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("Whoisology API key seems to have been rejected or you have exceeded usage limits.", False)
+            self.sf.error("Whoisology API key seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No Whoisology info found for " + qry)
+            self.sf.info(f"No Whoisology info found for {qry}")
             return None
 
         try:
             info = json.loads(res['content'])
-            if info.get("domains") == None:
-                self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"), False)
+            if info.get("domains") is None:
+                self.sf.error("Error querying Whoisology: " + info.get("status_reason", "Unknown"))
                 return None
 
             if len(info.get("domains", [])) == 0:
-                self.sf.debug("No data found in Whoisology for " + qry)
+                self.sf.debug(f"No data found in Whoisology for {qry}")
                 return None
-            else:
-                return info.get('domains')
+
+            return info.get('domains')
         except Exception as e:
-            self.sf.error("Error processing JSON response from Whoisology: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from Whoisology: {e}")
             return None
 
     # Handle events sent to this module
@@ -112,19 +118,19 @@ class sfp_whoisology(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_whoisology but did not set an API key!", False)
+            self.sf.error("You enabled sfp_whoisology but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
         else:
             self.results[eventData] = True
 

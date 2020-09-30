@@ -12,7 +12,7 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 # Taken from Google Dorks on exploit-db.com
 regexps = dict({
@@ -26,8 +26,8 @@ regexps = dict({
 
 })
 
+
 class sfp_errors(SpiderFootPlugin):
-    """Error String Extractor:Footprint,Passive:Content Analysis::Identify common error messages in content like SQL errors, etc."""
 
     meta = {
         'name': "Error String Extractor",
@@ -104,12 +104,5 @@ class sfp_errors(SpiderFootPlugin):
                     evt = SpiderFootEvent("ERROR_MESSAGE", regexpGrp,
                                           self.__name__, event)
                     self.notifyListeners(evt)
-
-        return None
-
-    # If you intend for this module to act on its own (e.g. not solely rely
-    # on events from other modules, then you need to have a start() method
-    # and within that method call self.checkForStop() to see if you've been
-    # politely asked by the controller to stop your activities (user abort.)
 
 # End of sfp_errors class

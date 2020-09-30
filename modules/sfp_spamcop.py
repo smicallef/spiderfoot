@@ -13,11 +13,11 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_spamcop(SpiderFootPlugin):
-    """SpamCop:Investigate,Passive:Reputation Systems::Query various spamcop databases for open relays, open proxies, vulnerable servers, etc."""
 
     meta = {
         'name': "SpamCop",
@@ -36,8 +36,8 @@ class sfp_spamcop(SpiderFootPlugin):
             'favIcon': "https://www.spamcop.net/images/favicon.ico",
             'logo': "https://www.spamcop.net/images/05logo.png",
             'description': "SpamCop is the premier service for reporting spam. "
-                                "SpamCop determines the origin of unwanted email and reports it "
-                                "to the relevant Internet service providers.",
+            "SpamCop determines the origin of unwanted email and reports it "
+            "to the relevant Internet service providers.",
         }
     }
 
@@ -134,7 +134,7 @@ class sfp_spamcop(SpiderFootPlugin):
                     evt = SpiderFootEvent(e, text, self.__name__, parentEvent)
                     self.notifyListeners(evt)
 
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
         return None
@@ -157,9 +157,9 @@ class sfp_spamcop(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
                     return None
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -167,9 +167,9 @@ class sfp_spamcop(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxsubnet']))
                     return None
 
         if eventName.startswith("NETBLOCK_"):

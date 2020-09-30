@@ -13,10 +13,10 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_ethereum(SpiderFootPlugin):
-    """Ethereum Address Extractor:Footprint,Investigate,Passive:Content Analysis::Identify ethereum addresses in scraped webpages."""
 
     meta = {
         'name': "Ethereum Address Extractor",
@@ -57,9 +57,9 @@ class sfp_ethereum(SpiderFootPlugin):
         sourceData = self.sf.hashstring(eventData)
 
         if sourceData in self.results:
-            return None
-        else:
-            self.results[sourceData] = True
+            return
+
+        self.results[sourceData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -69,7 +69,5 @@ class sfp_ethereum(SpiderFootPlugin):
             self.sf.debug("Ethereum address match: " + m)
             evt = SpiderFootEvent("ETHEREUM_ADDRESS", m, self.__name__, event)
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_ethereum class

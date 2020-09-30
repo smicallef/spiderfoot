@@ -11,15 +11,16 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPNetwork
 import random
 import threading
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from netaddr import IPNetwork
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_portscan_tcp(SpiderFootPlugin):
-    """Port Scanner - TCP:Footprint,Investigate:Crawling and Scanning:slow,invasive:Scans for commonly open TCP ports on Internet-facing systems."""
 
     meta = {
         'name': "Port Scanner - TCP",
@@ -104,7 +105,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
             sock = self.sf.safeSocket(ip, port, self.opts['timeout'])
             with self.lock:
                 self.portResults[peer] = True
-        except BaseException:
+        except Exception:
             with self.lock:
                 self.portResults[peer] = False
             return
@@ -172,7 +173,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if not self.portlist:
-            self.sf.error('No ports specified in port list', False)
+            self.sf.error('No ports specified in port list')
             self.errorState = True
             return None
 
@@ -192,9 +193,8 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                     scanIps.append(ipaddr)
             else:
                 scanIps.append(eventData)
-        except BaseException as e:
-            self.sf.error("Strange netblock identified, unable to parse: " +
-                          eventData + " (" + str(e) + ")", False)
+        except Exception as e:
+            self.sf.error("Strange netblock identified, unable to parse: " + eventData + " (" + str(e) + ")")
             return None
 
         for ipAddr in scanIps:

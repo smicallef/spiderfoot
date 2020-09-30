@@ -11,14 +11,14 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import datetime
 import json
 import time
-import datetime
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_intelx(SpiderFootPlugin):
-    """IntelligenceX:Investigate,Passive:Search Engines:apikey:Obtain information from IntelligenceX about identified IP addresses, domains, e-mail addresses and phone numbers."""
 
     meta = {
         'name': "IntelligenceX",
@@ -35,20 +35,20 @@ class sfp_intelx(SpiderFootPlugin):
                 "https://github.com/IntelligenceX/SDK"
             ],
             'apiKeyInstructions': [
-                "Visit intelx.io/",
+                "Visit https://intelx.io/",
                 "Register a free account",
-                "Navigate to intelx.io/account?tab=developer",
+                "Navigate to https://intelx.io/account?tab=developer",
                 "The API key is listed under 'Your API details'"
             ],
             'favIcon': "https://intelx.io/favicon/favicon-32x32.png",
             'logo': "https://intelx.io/assets/img/IntelligenceX.svg",
             'description': "Intelligence X is an independent European technology company founded in 2018 by Peter Kleissner. "
-                                "Its mission is to develop and maintain the search engine and data archive.\n"
-                                "The search works with selectors, i.e. specific search terms such as "
-                                "email addresses, domains, URLs, IPs, CIDRs, Bitcoin addresses, IPFS hashes, etc.\n"
-                                "It searches in places such as the darknet, document sharing platforms, whois data, public data leaks and others.\n"
-                                "It keeps a historical data archive of results, "
-                                "similar to how the Wayback Machine from archive.org stores historical copies of websites.",
+            "Its mission is to develop and maintain the search engine and data archive.\n"
+            "The search works with selectors, i.e. specific search terms such as "
+            "email addresses, domains, URLs, IPs, CIDRs, Bitcoin addresses, IPFS hashes, etc.\n"
+            "It searches in places such as the darknet, document sharing platforms, whois data, public data leaks and others.\n"
+            "It keeps a historical data archive of results, "
+            "similar to how the Wayback Machine from archive.org stores historical copies of websites.",
         }
     }
 
@@ -102,7 +102,7 @@ class sfp_intelx(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["LEAKSITE_URL", "DARKNET_MENTION_URL", 
+        return ["LEAKSITE_URL", "DARKNET_MENTION_URL",
                 "INTERNET_NAME", "DOMAIN_NAME",
                 "EMAILADDR", "EMAILADDR_GENERIC"]
 
@@ -125,10 +125,10 @@ class sfp_intelx(SpiderFootPlugin):
             "sort": 4,
             "media": 0,
             "terminate": []
-        } 
+        }
 
-        url = 'https://' + self.opts['base_url']  + '/' + qtype + '/search'
-        res = self.sf.fetchUrl(url, postData=json.dumps(payload), 
+        url = 'https://' + self.opts['base_url'] + '/' + qtype + '/search'
+        res = self.sf.fetchUrl(url, postData=json.dumps(payload),
                                headers=headers, timeout=self.opts['_fetchtimeout'])
 
         if res['content'] is None:
@@ -138,13 +138,13 @@ class sfp_intelx(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error("Error processing JSON response from IntelligenceX: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from IntelligenceX: {e}")
             self.errorState = True
             return None
 
         if ret.get('status', -1) == 0:
-            #Craft API URL with the id to return results
-            resulturl = url + "/result?id=%s" % str(ret['id'])
+            # Craft API URL with the id to return results
+            resulturl = f"{url}/result?id={ret['id']}"
             limit = 30
             count = 0
             status = 3  # status 3 = No results yet, keep trying. 0 = Success with results
@@ -160,7 +160,7 @@ class sfp_intelx(SpiderFootPlugin):
                 try:
                     ret = json.loads(res['content'])
                 except Exception as e:
-                    self.sf.error("Error processing JSON response from IntelligenceX: " + str(e), False)
+                    self.sf.error("Error processing JSON response from IntelligenceX: " + str(e))
                     return None
 
                 status = ret['status']
@@ -169,11 +169,11 @@ class sfp_intelx(SpiderFootPlugin):
                 retdata.append(ret)
                 # No more results left
                 if status == 1:
-                    #print data in json format to manipulate as desired
+                    # print data in json format to manipulate as desired
                     break
 
                 time.sleep(1)
-                
+
         return retdata
 
     # Handle events sent to this module
@@ -186,18 +186,17 @@ class sfp_intelx(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "" or self.opts['base_url'] == "":
-            self.sf.error("You enabled sfp_intelx but did not set an API key and/or base URL!", False)
+            self.sf.error("You enabled sfp_intelx but did not set an API key and/or base URL!")
             self.errorState = True
             return None
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
             return None
@@ -229,12 +228,12 @@ class sfp_intelx(SpiderFootPlugin):
                         val = rec['name']
 
                     if not val or not evt:
-                        self.sf.debug("Unexpected record, skipping (" + str(rec['bucket'] + ")"))
+                        self.sf.debug(f"Unexpected record, skipping ({rec['bucket']})")
                         continue
-                except BaseException as e:
-                    self.sf.error("Error processing content from IntelX: " + str(e), False)
+                except Exception as e:
+                    self.sf.error(f"Error processing content from IntelX: {e}")
                     continue
-                    
+
                 # Notify other modules of what you've found
                 e = SpiderFootEvent(evt, val, self.__name__, event)
                 self.notifyListeners(e)
@@ -246,7 +245,7 @@ class sfp_intelx(SpiderFootPlugin):
         if data is None:
             return None
 
-        self.sf.info("Found IntelligenceX host and email data for " + eventData)
+        self.sf.info(f"Found IntelligenceX host and email data for {eventData}")
         for info in data:
             for rec in info.get("selectors", dict()):
                 try:
@@ -266,8 +265,8 @@ class sfp_intelx(SpiderFootPlugin):
                     if not val or not evt:
                         self.sf.debug("Unexpected record, skipping.")
                         continue
-                except BaseException as e:
-                    self.sf.error("Error processing content from IntelX: " + str(e), False)
+                except Exception as e:
+                    self.sf.error(f"Error processing content from IntelX: {e}")
                     continue
 
                 # Notify other modules of what you've found
@@ -277,8 +276,5 @@ class sfp_intelx(SpiderFootPlugin):
                 if evt == "INTERNET_NAME" and self.sf.isDomain(val, self.opts['_internettlds']):
                     e = SpiderFootEvent("DOMAIN_NAME", val, self.__name__, event)
                     self.notifyListeners(e)
-            
-
-
 
 # End of sfp_intelx class

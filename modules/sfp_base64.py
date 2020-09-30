@@ -12,11 +12,10 @@
 import base64
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_base64(SpiderFootPlugin):
-    """Base64 Decoder:Investigate,Passive:Content Analysis::Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information."""
 
     meta = {
         'name': "Base64 Decoder",
@@ -65,7 +64,7 @@ class sfp_base64(SpiderFootPlugin):
         m = re.findall(pat, eventData)
         for match in m:
             if self.checkForStop():
-                return None
+                return
 
             minlen = int(self.opts['minlength'])
             if len(match) < minlen:
@@ -73,23 +72,23 @@ class sfp_base64(SpiderFootPlugin):
 
             # Base64-encoded strings don't look like normal strings
             caps = sum(1 for c in match if c.isupper())
-            if caps < (minlen/4):
+            if caps < (minlen / 4):
                 continue
 
-            if type(match) != str:
+            if isinstance(match, str):
+                string = match
+            else:
                 string = str(match)
 
             self.sf.info(f"Found Base64 string: {match}")
 
             try:
-                string += " (" + base64.b64decode(match) + ")"
-            except BaseException:
-                self.sf.debug("Unable to base64-decode string.")
+                string += f" ({base64.b64decode(match).decode('utf-8')})"
+            except Exception as e:
+                self.sf.debug(f"Unable to base64-decode string: {e}")
                 continue
 
             evt = SpiderFootEvent("BASE64_DATA", string, self.__name__, event)
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_base64 class

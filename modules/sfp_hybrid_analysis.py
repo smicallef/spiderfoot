@@ -12,10 +12,11 @@
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_hybrid_analysis(SpiderFootPlugin):
-    """Hybrid Analysis:Footprint,Investigate,Passive:Reputation Systems:apikey:Search Hybrid Analysis for domains and URLs related to the target."""
 
     meta = {
         'name': "Hybrid Analysis",
@@ -24,7 +25,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
-            'website': "www.hybrid-analysis.com",
+            'website': "https://www.hybrid-analysis.com",
             'model': "FREE_AUTH_UNLIMITED",
             'references': [
                 "https://www.hybrid-analysis.com/knowledge-base",
@@ -33,14 +34,14 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             'apiKeyInstructions': [
                 "Visit https://www.hybrid-analysis.com/signup",
                 "Register a free account",
-                "Navigate to www.hybrid-analysis.com/my-account?tab=%23api-key-tab",
+                "Navigate to https://www.hybrid-analysis.com/my-account?tab=%23api-key-tab",
                 "Create an API Key",
                 "The API key is listed under 'API Key'"
             ],
             'favIcon': "https://www.hybrid-analysis.com/favicon.ico",
             'logo': "https://www.hybrid-analysis.com/img/logo.svg",
             'description': "A free malware analysis service for the community. "
-                                "Using this service you can submit files for in-depth static and dynamic analysis.",
+            "Using this service you can submit files for in-depth static and dynamic analysis.",
         }
     }
 
@@ -62,9 +63,6 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
     errorState = False
 
     def setup(self, sfc, userOpts=dict()):
-        """
-        Initialize module and module options
-        """
         self.sf = sfc
         self.results = self.tempStorage()
         self.errorState = False
@@ -73,21 +71,19 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        """
-        What events is this module interested in for input
-        """
         return ["IP_ADDRESS", "DOMAIN_NAME"]
 
     def producedEvents(self):
-        """
-        What events this module produces
-        """
         return ["RAW_RIR_DATA", "INTERNET_NAME", "DOMAIN_NAME", "LINKED_URL_INTERNAL"]
 
     def queryDomain(self, qry):
-        """
-        Query domain
-        https://www.hybrid-analysis.com/docs/api/v2
+        """Query a domain
+
+        Args:
+            qry (str): domain
+
+        Returns:
+            str: API response as JSON
         """
 
         params = {
@@ -110,9 +106,13 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     def queryHost(self, qry):
-        """
-        Query host
-        https://www.hybrid-analysis.com/docs/api/v2
+        """Query a host
+
+        Args:
+            qry (str): host
+
+        Returns:
+            str: API response as JSON
         """
 
         params = {
@@ -135,11 +135,15 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     def queryHash(self, qry):
+        """Query a hash
+
+        Args:
+            qry (str): hash
+
+        Returns:
+            str: API response as JSON
         """
-        Query hash
-        https://www.hybrid-analysis.com/docs/api/v2
-        """
- 
+
         params = {
             "hash": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
         }
@@ -160,24 +164,29 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         return self.parseAPIResponse(res)
 
     def parseAPIResponse(self, res):
-        """
-        Parse API response
+        """Parse HTTP response from API
+
+        Args:
+            res (dict): HTTP response from SpiderFoot.fetchUrl()
+
+        Returns:
+            str: API response as JSON
         """
 
         if res['code'] == '400':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: Invalid request", False)
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: Invalid request")
             self.sf.debug("API response: %s" % res['content'])
             return None
 
         # Future proofing - Hybrid Analysis does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: rate limit exceeded", False)
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: rate limit exceeded")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Hybrid Analysis: Unexpected response status %s" % res['code'], False)
+            self.sf.error("Failed to retrieve content from Hybrid Analysis: Unexpected response status %s" % res['code'])
             self.errorState = True
             return None
 
@@ -193,10 +202,6 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         return data
 
     def handleEvent(self, event):
-        """
-        Handle events sent to this module
-        """
-
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
@@ -247,7 +252,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         urls = []
         domains = []
- 
+
         for hash in hashes:
             results = self.queryHash(hash)
 
@@ -276,7 +281,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         for url in set(urls):
             host = self.sf.urlFQDN(url.lower())
-    
+
             if not self.getTarget().matches(host, includeChildren=True, includeParents=True):
                 continue
 
@@ -302,7 +307,5 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             else:
                 evt = SpiderFootEvent("INTERNET_NAME", domain, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_hybrid_analysis class

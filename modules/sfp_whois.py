@@ -11,13 +11,14 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import whois
 import ipwhois
+import whois
 from netaddr import IPAddress
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_whois(SpiderFootPlugin):
-    """Whois:Footprint,Investigate,Passive:Public Registries::Perform a WHOIS look-up on domain names and owned netblocks."""
 
     meta = {
         'name': "Whois",
@@ -64,9 +65,9 @@ class sfp_whois(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -85,16 +86,16 @@ class sfp_whois(SpiderFootPlugin):
                 if whoisdata:
                     data = str(whoisdata)
             if not data:
-                self.sf.error("Unable to perform WHOIS on " + eventData, False)
-                return None
-        except BaseException as e:
-            self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e), False)
-            return None
+                self.sf.error("Unable to perform WHOIS on " + eventData)
+                return
+        except Exception as e:
+            self.sf.error("Unable to perform WHOIS on " + eventData + ": " + str(e))
+            return
 
         # This is likely to be an error about being throttled rather than real data
         if len(data) < 250:
-            self.sf.error("Throttling from Whois is probably happening.", False)
-            return None
+            self.sf.error("Throttling from Whois is probably happening.")
+            return
 
         if eventName.startswith("DOMAIN_NAME"):
             typ = "DOMAIN_WHOIS"

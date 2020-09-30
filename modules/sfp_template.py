@@ -11,44 +11,15 @@
 # -------------------------------------------------------------------------------
 
 import json
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_template(SpiderFootPlugin):
-    # The below docstring is going away in 3.3, in favor of the module descriptor dictionary further below.
-    #
-    # Format of the below must be, in order, separated by ':'
-    #
-    # Module name: A very short but human readable name for the module.
-    # Use cases: The use case(s) this module should be included in, options are Footprint, Investigate and Passive.
-    #   - Passive means the user's scan target is not contacted at all
-    #   - Footprint means that this module is useful when understanding the target's footprint on the Internet
-    #   - Investigate means that this module is useful when investigating the danger/risk of a target
-    # Category: The category this module belongs in, describing how it operates. Only one category is permitted.
-    #   - Content Analysis: Analyses content found
-    #   - Crawling and Scanning: Performs crawling or scanning of the target
-    #   - DNS: Queries DNS
-    #   - Leaks, Dumps and Breaches: Queries data dumps and breaches
-    #   - Passive DNS: Analyses passive DNS sources
-    #   - Public Registries: Queries open/public registries of information
-    #   - Real World: Queries sources about the real world (addresses, names, etc.)
-    #   - Reputation Systems: Queries systems that describe the reptuation of other systems
-    #   - Search Engines: Searches public search engines with data about the whole Internet
-    #   - Secondary Networks: Queries information about participation on secondary networks, like Bitcoin
-    #   - Social Media: Searches social media data sources
-    # Flags: Attributes about this module:
-    #   - apikey: Needs an API key to function
-    #   - slow: Can be slow to find information
-    #   - errorprone: Might generate high false positives
-    #   - invasive: Interrogates the target, might be intensive
-    #   - tool: Runs an external tool to collect data
-    # Description: A sentence briefly describing the module.
-    #
-    """Template Module:Footprint,Investigate,Passive:Search Engines:apikey:Obtain open port from SomeDataSource about identified IP addresses."""
-
     # The module descriptor dictionary contains all the meta data about a module necessary
     # for users to understand...
-
     meta = {
         # Module name: A very short but human readable name for the module.
         'name': "Template Module",
@@ -70,7 +41,7 @@ class sfp_template(SpiderFootPlugin):
         #   - Investigate means that this module is useful when investigating the danger/risk of a target
         'useCases': ["Passive"],
 
-        # Categories: The categories this module belongs in, describing how it operates. Only the first category is 
+        # Categories: The categories this module belongs in, describing how it operates. Only the first category is
         # used for now.
         #   - Content Analysis: Analyses content found
         #   - Crawling and Scanning: Performs crawling or scanning of the target
@@ -79,7 +50,7 @@ class sfp_template(SpiderFootPlugin):
         #   - Passive DNS: Analyses passive DNS sources
         #   - Public Registries: Queries open/public registries of information
         #   - Real World: Queries sources about the real world (addresses, names, etc.)
-        #   - Reputation Systems: Queries systems that describe the reptuation of other systems
+        #   - Reputation Systems: Queries systems that describe the reputation of other systems
         #   - Search Engines: Searches public search engines with data about the whole Internet
         #   - Secondary Networks: Queries information about participation on secondary networks, like Bitcoin
         #   - Social Media: Searches social media data sources
@@ -93,22 +64,22 @@ class sfp_template(SpiderFootPlugin):
             # Descriptive text about the tool
             'description': "Detailed descriptive text about the tool",
 
-            # The website for the tool. In many cases this will also be the
+            # The website URL for the tool. In many cases this will also be the
             # repo, but no harm in duplicating it.
             'website': 'https://tool.org',
 
             # The repo where the code of the tool lives.
             'repository': 'https://github.com/author/tool'
         },
-        
+
         # Information about the data source (if any) this module queries for data. For modules
         # that purley parse data from other modules (e.g. sfp_email), this may be omitted.
         'dataSource': {
-            # The primary website for the data source.
+            # The primary website URL for the data source.
             'website': "https://www.datasource.com",
 
             # The subscription model for this data source.
-            # - FREE_NOAUTH_UNLIMITED: Completely free, no need to obtain an API key and no limits 
+            # - FREE_NOAUTH_UNLIMITED: Completely free, no need to obtain an API key and no limits
             #                          imposed beyond throttling.
             # - FREE_NOAUTH_LIMITED:   Completely free, no need to obtain an API key however limits
             #                          are imposed and you need to register/pay to exceed them.
@@ -126,9 +97,10 @@ class sfp_template(SpiderFootPlugin):
             ],
 
             # If an API key is optional or required, information on how to obtain the API key.
-            # Each array element is a step.
+            # Each array element is a step. Ensure URLs are full URLs so they can be linked
+            # automatically in the UI.
             'apiKeyInstructions': [
-                "Visit www.datasource.com",
+                "Visit https://www.datasource.com",
                 "Register a free account",
                 "Click on 'Account Settings'",
                 "Click on 'Developer'",
@@ -143,9 +115,9 @@ class sfp_template(SpiderFootPlugin):
 
             # A paragraph or two about the data source.
             'description': "A paragraph of text with details about the data source / services. "
-                               "Keep things neat by breaking the text up across multiple lines as "
-                               "has been done here. If line breaks are needed for breaking up "
-                               "multiple paragraphs, use \n.",
+            "Keep things neat by breaking the text up across multiple lines as "
+            "has been done here. If line breaks are needed for breaking up "
+            "multiple paragraphs, use \n.",
         }
     }
 
@@ -213,14 +185,14 @@ class sfp_template(SpiderFootPlugin):
         self.sf = sfc
         # self.tempStorage() basically returns a dict(), but we use self.tempStorage()
         # instead since on SpiderFoot HX, different mechanisms are used to persist
-        # data for load distribution, avoiding excess memory consumption and fault 
+        # data for load distribution, avoiding excess memory consumption and fault
         # tolerance. This keeps modules transparently compatible with both versions.
         self.results = self.tempStorage()
 
         # Clear / reset any other class member variables here
         # or you risk them persisting between threads.
 
-        # The data souce for a module is, by defualt, set to the module name.
+        # The data source for a module is, by default, set to the module name.
         # If you want to override that, for instance in cases where the module
         # is purely processing data from other modules instead of producing
         # data itself, you can do so with the following. Note that this is only
@@ -231,15 +203,26 @@ class sfp_template(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
-    # For a list of all events, check sfdb.py.
+    # For a list of all events, check spiderfoot/db.py.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_OWNER", "DOMAIN_NAME", "WEB_ANALYTICS_ID"]
+        return [
+            "IP_ADDRESS",
+            "NETBLOCK_OWNER",
+            "DOMAIN_NAME",
+            "WEB_ANALYTICS_ID"
+        ]
 
     # What events this module produces
     def producedEvents(self):
-        return ["OPERATING_SYSTEM", "DEVICE_TYPE",
-                "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
-                'RAW_RIR_DATA', 'GEOINFO', 'VULNERABILITY']
+        return [
+            "OPERATING_SYSTEM",
+            "DEVICE_TYPE",
+            "TCP_PORT_OPEN",
+            "TCP_PORT_OPEN_BANNER",
+            'RAW_RIR_DATA',
+            'GEOINFO',
+            'VULNERABILITY'
+        ]
 
     # When querying third parties, it's best to have a dedicated function
     # to do so and avoid putting it in handleEvent()
@@ -250,30 +233,29 @@ class sfp_template(SpiderFootPlugin):
         # from global config), and the user agent is SpiderFoot so that the
         # provider knows the request comes from the tool. Many third parties
         # request that, so best to just be consistent anyway.
-        res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry +
-                               "?key=" + self.opts['api_key'],
-                               timeout=self.opts['_fetchtimeout'], 
-                               useragent="SpiderFoot")
+        res = self.sf.fetchUrl(
+            f"https://api.shodan.io/shodan/host/{qry}?key={self.opts['api_key']}",
+            timeout=self.opts['_fetchtimeout'],
+            useragent="SpiderFoot"
+        )
 
         # Report when unexpected things happen:
         # - debug(message) if it's only for debugging (user will see this if debugging is enabled)
         # - info(message) if it's not a bad thing
-        # - error(message, False) if it's a bad thing but SpiderFoot can continue
         # - error(message) if it's a bad thing and should cause the scan to abort
         # - fatal(message) if it's a horrible thing and should kill SpiderFoot completely
         if res['content'] is None:
-            self.sf.info("No SHODAN info found for " + qry)
+            self.sf.info(f"No SHODAN info found for {qry}")
             return None
 
         # Always process external data which is expected to be in a specific format
         # with try/except since we cannot trust the data is formatted as intended.
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
-            return None
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -282,44 +264,31 @@ class sfp_template(SpiderFootPlugin):
         # event.module - the name of the module that generated the event, e.g. sfp_dnsresolve
         # event.data - the actual data, e.g. 127.0.0.1. This can sometimes be megabytes in size (e.g. a PDF)
         eventName = event.eventType
-        srcModuleName = event.module
         eventData = event.data
 
         # Once we are in this state, return immediately.
         if self.errorState:
-            return None
-
-        # Log this before complaining about a missing API key so we know the
-        # event was received.
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
-
-        # Always check if the API key is set and complain if it isn't, then set
-        # self.errorState to avoid this being a continual complaint during the scan.
-        if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_template but did not set an API key!", False)
-            self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            # If eventData might be something large, set the key to a hash
-            # of the value instead of the value, to avoid memory abuse.
-            self.results[eventData] = True
+            return
+
+        # If eventData might be something large, set the key to a hash
+        # of the value instead of the value, to avoid memory abuse.
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             # Note here an example of handling the netblocklookup option
             if not self.opts['netblocklookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
-                    return None
+                return
 
+            max_netblock = self.opts['maxnetblock']
+            net_size = IPNetwork(eventData).prefixlen
+            if net_size < max_netblock:
+                self.sf.debug(f"Network size {net_size} bigger than permitted: {max_netblock}")
+                return
 
         # When handling netblocks/subnets, assuming the user set
         # netblocklookup/subnetlookup to True, we need to expand it
@@ -377,10 +346,10 @@ class sfp_template(SpiderFootPlugin):
             # Whenever operating in a loop, call this to check whether the user
             # requested the scan to be aborted.
             if self.checkForStop():
-                return None
+                return
 
             # In some cases, you want to override the data source for the event
-            # you're producing to be the data source of the event that you've 
+            # you're producing to be the data source of the event that you've
             # received. This is needed, for example, when the module is purely
             # extracting data from a received event, so the data source is not
             # actually this module, but the data source of the received event

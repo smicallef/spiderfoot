@@ -10,10 +10,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_badipscom(SpiderFootPlugin):
-    """badips.com:Investigate,Passive:Reputation Systems::Check if an IP address is malicious according to BadIPs.com."""
 
     meta = {
         'name': "badips.com",
@@ -31,9 +31,9 @@ class sfp_badipscom(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://www.badips.com/",
             'logo': "https://www.badips.com/img/badips.com-lm.png",
             'description': "badips.com is a community based IP blacklist service. "
-                                "You can report malicious IPs and you can download blacklists or query our API to find out if a IP is listed. "
-                                "We're also offering some eye-candy: Get personalized stats and graphs of attackers trying to brute-force your systems, "
-                                "see where the bad guys come from and share your knowledge!",
+            "You can report malicious IPs and you can download blacklists or query our API to find out if a IP is listed. "
+            "We're also offering some eye-candy: Get personalized stats and graphs of attackers trying to brute-force your systems, "
+            "see where the bad guys come from and share your knowledge!",
         }
     }
 
@@ -79,12 +79,12 @@ class sfp_badipscom(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 
@@ -107,13 +107,13 @@ class sfp_badipscom(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         if eventName not in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -121,7 +121,7 @@ class sfp_badipscom(SpiderFootPlugin):
 
         if eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
-                return None
+                return
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
 
         self.sf.debug("Checking maliciousness of IP address %s with BadIPs.com" % eventData)
@@ -129,7 +129,7 @@ class sfp_badipscom(SpiderFootPlugin):
         url = self.query(eventData)
 
         if not url:
-            return None
+            return
 
         text = "BadIPs.com IP Reputation List [%s]\n<SFURL>%s</SFURL>" % (eventData, url)
         evt = SpiderFootEvent(evtType, text, self.__name__, event)

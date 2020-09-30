@@ -11,10 +11,11 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_emergingthreats(SpiderFootPlugin):
-    """Emerging Threats:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to emergingthreats.net."""
 
     meta = {
         'name': "Emerging Threats",
@@ -31,11 +32,11 @@ class sfp_emergingthreats(SpiderFootPlugin):
             'favIcon': "",
             'logo': "",
             'description': "Emerging Threats delivers the most timely and accurate threat intelligence.\n"
-                                "Emerging Threat (ET) intelligence helps prevent attacks and reduce risk by "
-                                "helping you understand the historical context of where these threats originated, "
-                                "who is behind them, when have they attacked, what methods they used, and what they're after. "
-                                "Get on-demand access to current and historical metadata on IPs, domains, "
-                                "and other related threat intelligence to help research threats and investigate incidents.",
+            "Emerging Threat (ET) intelligence helps prevent attacks and reduce risk by "
+            "helping you understand the historical context of where these threats originated, "
+            "who is behind them, when have they attacked, what methods they used, and what they're after. "
+            "Get on-demand access to current and historical metadata on IPs, domains, "
+            "and other related threat intelligence to help research threats and investigate incidents.",
         }
     }
 
@@ -87,12 +88,12 @@ class sfp_emergingthreats(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 

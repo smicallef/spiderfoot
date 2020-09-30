@@ -36,3 +36,8 @@ $(document).ready(function() {
   $("#btn-opt-export").click(function() { window.location.href=docroot + "/optsexport?pattern=api_key"; return false; });
   $("#tab_global").click(function() { switchTab("global"); });
 });
+
+$(function () {
+  $('[data-toggle="popover"]').popover()
+  $('[data-toggle="popover"]').on("show.bs.popover", function() { $(this).data("bs.popover").tip().css("max-width", "600px") });
+});

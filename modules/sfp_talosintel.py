@@ -10,10 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from netaddr import IPAddress, IPNetwork
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'talosintelligence.com List': {
@@ -25,7 +26,6 @@ malchecks = {
 
 
 class sfp_talosintel(SpiderFootPlugin):
-    """Talos Intelligence:Investigate,Passive:Reputation Systems::Check if a netblock or IP is malicious according to talosintelligence.com."""
 
     meta = {
         'name': "Talos Intelligence",
@@ -43,12 +43,12 @@ class sfp_talosintel(SpiderFootPlugin):
             'favIcon': "https://talosintelligence.com/assets/favicons/favicon-49c9b25776778ff43873cf5ebde2e1ffcd0747ad1042ac5a5306cdde3ffca8cd.ico",
             'logo': "https://talosintelligence.com/assets/favicons/favicon-49c9b25776778ff43873cf5ebde2e1ffcd0747ad1042ac5a5306cdde3ffca8cd.ico",
             'description': "Cisco Talos Incident Response provides a full suite of proactive and reactive services "
-                                "to help you prepare, respond and recover from a breach. "
-                                "With Talos IR, you have direct access to the same threat intelligence available "
-                                "to Cisco and world-class emergency response capabilities — "
-                                "in addition to more than 350 threat researchers for questions and analysis. "
-                                "Let our experts work with you to evaluate existing plans, develop a new plan, "
-                                "and provide rapid assistance when you need it most.",
+            "to help you prepare, respond and recover from a breach. "
+            "With Talos IR, you have direct access to the same threat intelligence available "
+            "to Cisco and world-class emergency response capabilities — "
+            "in addition to more than 350 threat researchers for questions and analysis. "
+            "Let our experts work with you to evaluate existing plans, develop a new plan, "
+            "and provide rapid assistance when you need it most.",
         }
     }
 
@@ -114,7 +114,7 @@ class sfp_talosintel(SpiderFootPlugin):
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url, False)
+                        self.sf.error("Unable to fetch " + url)
                         return None
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
@@ -132,7 +132,7 @@ class sfp_talosintel(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                #self.sf.debug("Adding " + grp[0] + " to list.")
+                                # self.sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -144,11 +144,10 @@ class sfp_talosintel(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
+                            self.sf.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -167,9 +166,9 @@ class sfp_talosintel(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
                                     re.match(rxTgt, line, re.IGNORECASE):
-                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
+                                self.sf.debug(f"{target}/{targetDom} found in {check} list.")
                                 return url
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.debug("Error encountered parsing 2: " + str(e))
                         continue
 
@@ -179,7 +178,7 @@ class sfp_talosintel(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
+                self.sf.debug(f"Checking maliciousness of {target} ({itemType}) with: {cid}")
                 return self.resourceList(cid, target, itemType)
 
         return None
@@ -194,19 +193,19 @@ class sfp_talosintel(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
+            return
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):
-            return None
+            return
         if eventName == 'NETBLOCK_OWNER' and not self.opts.get('checknetblocks', False):
-            return None
+            return
         if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
-            return None
+            return
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
@@ -242,14 +241,12 @@ class sfp_talosintel(SpiderFootPlugin):
             url = self.lookupItem(cid, typeId, eventData)
 
             if self.checkForStop():
-                return None
+                return
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_talosintel class

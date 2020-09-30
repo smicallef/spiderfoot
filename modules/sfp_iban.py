@@ -11,10 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_iban(SpiderFootPlugin):
-    """IBAN Number Extractor:Footprint,Investigate,Passive:Content Analysis::Identify IBAN Numbers in any data"""
 
     meta = {
         'name': "IBAN Number Extractor",
@@ -26,7 +26,6 @@ class sfp_iban(SpiderFootPlugin):
 
     # Default options.
     opts = {
-         # Options specific to this module
     }
 
     # Option descriptions.
@@ -81,14 +80,14 @@ class sfp_iban(SpiderFootPlugin):
         myres = list()
         for ibanNumber in ibanNumbers:
             evttype = "IBAN_NUMBER"
-            
+
             self.sf.info("Found IBAN number : " + ibanNumber)
 
             if ibanNumber in myres:
                 self.sf.debug("Already found from this source")
                 continue
             myres.append(ibanNumber)
-            
+
             evt = SpiderFootEvent(evttype, ibanNumber, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
@@ -96,5 +95,4 @@ class sfp_iban(SpiderFootPlugin):
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
 
-        return None
 # End of sfp_iban class

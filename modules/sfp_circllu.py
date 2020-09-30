@@ -10,15 +10,15 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import base64
+import json
 import re
-
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_circllu(SpiderFootPlugin):
-    """CIRCL.LU:Investigate,Passive:Reputation Systems:apikey:Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases."""
 
     meta = {
         'name': "CIRCL.LU",
@@ -30,24 +30,25 @@ class sfp_circllu(SpiderFootPlugin):
             'website': "https://www.circl.lu/",
             'model': "FREE_AUTH_UNLIMITED",
             'references': [
-                "https://www.circl.lu/services/training/",
+                "https://www.circl.lu/services/passive-dns/",
+                "https://www.circl.lu/services/passive-ssl/",
                 "https://www.circl.lu/services/",
                 "https://www.circl.lu/pub/",
                 "https://www.circl.lu/projects"
             ],
             'apiKeyInstructions': [
-                "Visit www.circl.lu/contact/",
-                "Contact with email or phone to request access for API",
+                "Visit https://www.circl.lu/contact/",
+                "Contact with email or phone to request access for Passive DNS and Passive SSL API services",
                 "The API access will be provided once approved"
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://www.circl.lu/",
             'logo': "https://www.circl.lu/assets/images/circl-logo.png",
             'description': "The Computer Incident Response Center Luxembourg (CIRCL) is a government-driven initiative "
-                                "designed to gather, review, report and respond to computer security threats and incidents.\n"
-                                "CIRCL provides a reliable and trusted point of contact for any users, companies and organizations "
-                                "based in Luxembourg, for the handling of attacks and incidents. "
-                                "Its team of experts acts like a fire brigade, with the ability to react promptly and "
-                                "efficiently whenever threats are suspected, detected or incidents occur.",
+            "designed to gather, review, report and respond to computer security threats and incidents.\n"
+            "CIRCL provides a reliable and trusted point of contact for any users, companies and organizations "
+            "based in Luxembourg, for the handling of attacks and incidents. "
+            "Its team of experts acts like a fire brigade, with the ability to react promptly and "
+            "efficiently whenever threats are suspected, detected or incidents occur.",
         }
     }
 
@@ -117,7 +118,7 @@ class sfp_circllu(SpiderFootPlugin):
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] not in ["200", "201"]:
-            self.sf.error("CIRCL.LU access seems to have been rejected or you have exceeded usage limits.", False)
+            self.sf.error("CIRCL.LU access seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
             return None
 
@@ -145,7 +146,7 @@ class sfp_circllu(SpiderFootPlugin):
             return None
 
         if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":
-            self.sf.error("You enabled sfp_circllu but did not set an credentials!", False)
+            self.sf.error("You enabled sfp_circllu but did not set an credentials!")
             self.errorState = True
             return None
 
@@ -188,8 +189,8 @@ class sfp_circllu(SpiderFootPlugin):
                             if r:
                                 e = SpiderFootEvent("SSL_CERTIFICATE_ISSUED", r[0][0], self.__name__, ipe)
                                 self.notifyListeners(e)
-                except BaseException as e:
-                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e), False)
+                except Exception as e:
+                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e))
 
         if eventName in ['IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME']:
             ret = self.query(eventData, "PDNS")
@@ -203,8 +204,8 @@ class sfp_circllu(SpiderFootPlugin):
                     continue
                 try:
                     rec = json.loads(line)
-                except BaseException as e:
-                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e), False)
+                except Exception as e:
+                    self.sf.error("Invalid response returned from CIRCL.LU: " + str(e))
                     continue
 
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])

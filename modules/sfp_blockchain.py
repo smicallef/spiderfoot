@@ -12,11 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_blockchain(SpiderFootPlugin):
-    """Blockchain:Footprint,Investigate,Passive:Public Registries::Queries blockchain.info to find the balance of identified bitcoin wallet addresses."""
 
     meta = {
         'name': "Blockchain",
@@ -36,9 +36,9 @@ class sfp_blockchain(SpiderFootPlugin):
             'favIcon': "https://www.blockchain.com/static/favicon.ico",
             'logo': "https://exchange.blockchain.com/api/assets/images/logo.png",
             'description': "Blockchain Exchange is the most secure place to buy, sell, and trade crypto.\n"
-                                "Use the most popular block explorer to search and "
-                                "verify transactions on the Bitcoin, Ethereum, and Bitcoin Cash blockchains.\n"
-                                "Stay on top of Bitcoin and other top cryptocurrency prices, news, and market information.",
+            "Use the most popular block explorer to search and "
+            "verify transactions on the Bitcoin, Ethereum, and Bitcoin Cash blockchains.\n"
+            "Stay on top of Bitcoin and other top cryptocurrency prices, news, and market information.",
         }
     }
 
@@ -95,7 +95,5 @@ class sfp_blockchain(SpiderFootPlugin):
 
         evt = SpiderFootEvent("BITCOIN_BALANCE", str(balance) + " BTC", self.__name__, event)
         self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_blockchain class

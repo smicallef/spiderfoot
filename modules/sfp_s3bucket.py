@@ -13,10 +13,11 @@
 
 import threading
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_s3bucket(SpiderFootPlugin):
-    """Amazon S3 Bucket Finder:Footprint,Passive:Crawling and Scanning::Search for potential Amazon S3 buckets associated with the target and attempt to list their contents."""
 
     meta = {
         'name': "Amazon S3 Bucket Finder",
@@ -70,14 +71,21 @@ class sfp_s3bucket(SpiderFootPlugin):
     def checkSite(self, url):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
-        if res['code'] not in ["301", "302", "200"] and \
-            (res['content'] is None or "NoSuchBucket" in res['content']):
-            self.sf.debug("Not a valid bucket: " + url)
-        else:
+        if not res['content']:
+            return None
+
+        if "NoSuchBucket" in res['content']:
+            self.sf.debug(f"Not a valid bucket: {url}")
+            return None
+
+        # Bucket found
+        if res['code'] in ["301", "302", "200"]:
+            # Bucket has files
             if "ListBucketResult" in res['content']:
                 with self.lock:
                     self.s3results[url] = res['content'].count("<Key>")
             else:
+                # Bucket has no files
                 with self.lock:
                     self.s3results[url] = 0
 
@@ -120,13 +128,13 @@ class sfp_s3bucket(SpiderFootPlugin):
         for site in sites:
             if i >= self.opts['_maxthreads']:
                 data = self.threadSites(siteList)
-                if data == None:
+                if data is None:
                     return res
 
                 for ret in list(data.keys()):
                     if data[ret]:
                         # bucket:filecount
-                        res.append(ret + ":" + str(data[ret]))
+                        res.append(f"{ret}:{data[ret]}")
                 i = 0
                 siteList = list()
 

@@ -15,11 +15,14 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_dnsgrep(SpiderFootPlugin):
-    """DNSGrep:Footprint,Investigate,Passive:Passive DNS::Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API."""
 
     meta = {
         'name': "DNSGrep",
@@ -35,17 +38,17 @@ class sfp_dnsgrep(SpiderFootPlugin):
                 "https://www.rapid7.com/about/research"
             ],
             'apiKeyInstructions': [
-                "Visit opendata.rapid7.com/apihelp/",
+                "Visit https://opendata.rapid7.com/apihelp/",
                 "Submit form requesting for access",
-                "After getting access, navigate to insight.rapid7.com/platform#/apiKeyManagement",
+                "After getting access, navigate to https://insight.rapid7.com/platform#/apiKeyManagement",
                 "Create an User Key",
                 "The API key will be listed after creation"
             ],
             'favIcon': "https://www.rapid7.com/includes/img/favicon.ico",
             'logo': "https://www.rapid7.com/includes/img/Rapid7_logo.svg",
             'description': "Offering researchers and community members open access to data from Project Sonar, "
-                                "which conducts internet-wide surveys to gain insights into global exposure "
-                                "to common vulnerabilities.",
+            "which conducts internet-wide surveys to gain insights into global exposure "
+            "to common vulnerabilities.",
         }
     }
 
@@ -99,7 +102,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from DNSGrep: {e}", False)
+            self.sf.error(f"Error processing JSON response from DNSGrep: {e}")
             return None
 
         return data
@@ -133,7 +136,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
             for r in fdns:
                 try:
                     ip, domain = r.split(',')
-                except:
+                except Exception:
                     continue
 
                 domains.append(domain)
@@ -144,7 +147,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
             for r in rdns:
                 try:
                     ip, domain = r.split(',')
-                except:
+                except Exception:
                     continue
 
                 domains.append(domain)
@@ -159,7 +162,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
             evt_type = "INTERNET_NAME"
 
             if self.opts["dns_resolve"] and not self.sf.resolveHost(domain):
-                self.sf.debug("Host " + domain + " could not be resolved")
+                self.sf.debug(f"Host {domain} could not be resolved")
                 evt_type += "_UNRESOLVED"
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, event)

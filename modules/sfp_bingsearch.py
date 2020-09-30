@@ -9,11 +9,10 @@
 # Copyright:   (c) Steve Micallef 2013
 # Licence:     GPL
 # -------------------------------------------------------------------------------
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_bingsearch(SpiderFootPlugin):
-    """Bing:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from bing to identify sub-domains and links."""
 
     meta = {
         'name': "Bing",
@@ -36,7 +35,7 @@ class sfp_bingsearch(SpiderFootPlugin):
             'favIcon': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
             'logo': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
             'description': "The Bing Search APIs let you build web-connected apps and services that "
-                                "find webpages, images, news, locations, and more without advertisements.",
+            "find webpages, images, news, locations, and more without advertisements.",
         }
     }
 
@@ -84,7 +83,7 @@ class sfp_bingsearch(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_bingsearch but did not set a Bing API key!", False)
+            self.sf.error("You enabled sfp_bingsearch but did not set a Bing API key!")
             self.errorState = True
             return None
 
@@ -113,8 +112,8 @@ class sfp_bingsearch(SpiderFootPlugin):
         new_links = list(set(urls) - set(self.results.keys()))
 
         # Add new links to results
-        for l in new_links:
-            self.results[l] = True
+        for link in new_links:
+            self.results[link] = True
 
         internal_links = [
             link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)
@@ -130,7 +129,5 @@ class sfp_bingsearch(SpiderFootPlugin):
                 "RAW_RIR_DATA", str(res), self.__name__, event
             )
             self.notifyListeners(evt)
-
-
 
 # End of sfp_bingsearch class

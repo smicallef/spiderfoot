@@ -12,7 +12,7 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'Watchguard Reputation Authority Lookup': {
@@ -26,7 +26,6 @@ malchecks = {
 
 
 class sfp_watchguard(SpiderFootPlugin):
-    """Watchguard:Investigate,Passive:Reputation Systems::Check if an IP is malicious according to Watchguard's reputationauthority.org."""
 
     meta = {
         'name': "Watchguard",
@@ -43,8 +42,8 @@ class sfp_watchguard(SpiderFootPlugin):
             'favIcon': "http://reputationauthority.org/images/favicon.ico",
             'logo': "http://reputationauthority.org/images/ripley/footer_logo.gif",
             'description': "WatchGuard ReputationAuthority is the world's most effective reputation service for email and web security, "
-                                "providing critical protection and a better performing network to businesses, government organizations, "
-                                "ISPs, and other security vendors.",
+            "providing critical protection and a better performing network to businesses, government organizations, "
+            "ISPs, and other security vendors.",
         }
     }
 
@@ -115,7 +114,7 @@ class sfp_watchguard(SpiderFootPlugin):
                 res = self.sf.fetchUrl(url.format(target), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target), False)
+                    self.sf.error("Unable to fetch " + url.format(target))
                     return None
 
                 if self.contentMalicious(res['content'], malchecks[check]['goodregex'], malchecks[check]['badregex']):
@@ -142,19 +141,19 @@ class sfp_watchguard(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
+            return
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):
-            return None
+            return
         if eventName == 'NETBLOCK_OWNER' and not self.opts.get('checknetblocks', False):
-            return None
+            return
         if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
-            return None
+            return
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
@@ -190,14 +189,12 @@ class sfp_watchguard(SpiderFootPlugin):
             url = self.lookupItem(cid, typeId, eventData)
 
             if self.checkForStop():
-                return None
+                return
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_watchguard class

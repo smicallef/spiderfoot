@@ -14,11 +14,14 @@
 import json
 import math
 import time
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_grep_app(SpiderFootPlugin):
-    """grep.app:Footprint,Investigate,Passive:Search Engines::Search grep.app API for links and emails related to the specified domain."""
 
     meta = {
         'name': "grep.app",
@@ -32,9 +35,9 @@ class sfp_grep_app(SpiderFootPlugin):
             'references': [],
             'favIcon': "https://grep.app/favicon-16x16.png",
             'logo': "https://grep.app/apple-touch-icon.png",
-            'description': "grep.app searches code from over a half million public repositories on GitHub.\n" 
-                                "It searches for the exact string you enter, including any punctuation or other characters.\n"
-                                "You can also search by regular expression, using the RE2 syntax.",
+            'description': "grep.app searches code from over a half million public repositories on GitHub.\n"
+            "It searches for the exact string you enter, including any punctuation or other characters.\n"
+            "You can also search by regular expression, using the RE2 syntax.",
         }
     }
 
@@ -65,7 +68,7 @@ class sfp_grep_app(SpiderFootPlugin):
         return ["DOMAIN_NAME"]
 
     def producedEvents(self):
-        return ["EMAILADDR", "EMAILADDR_GENERIC", "DOMAIN_NAME", 
+        return ["EMAILADDR", "EMAILADDR_GENERIC", "DOMAIN_NAME",
                 "INTERNET_NAME", "RAW_RIR_DATA",
                 "INTERNET_NAME_UNRESOLVED", "LINKED_URL_INTERNAL"]
 
@@ -86,8 +89,8 @@ class sfp_grep_app(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data
@@ -223,7 +226,7 @@ class sfp_grep_app(SpiderFootPlugin):
                 return None
 
             if self.opts['dns_resolve'] and not self.sf.resolveHost(host):
-                self.sf.debug("Host " + host + " could not be resolved")
+                self.sf.debug(f"Host {host} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
                 self.notifyListeners(evt)
                 continue

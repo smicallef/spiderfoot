@@ -10,11 +10,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_googlesearch(SpiderFootPlugin):
-    """Google:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from the Google Custom Search API to identify sub-domains and links."""
 
     meta = {
         'name': "Google",
@@ -31,7 +30,7 @@ class sfp_googlesearch(SpiderFootPlugin):
                 "https://cse.google.com/cse"
             ],
             'apiKeyInstructions': [
-                "Visit developers.google.com/custom-search/v1/introduction",
+                "Visit https://developers.google.com/custom-search/v1/introduction",
                 "Register a free Google account",
                 "Click on 'Get A Key'",
                 "Connect a Project",
@@ -40,9 +39,9 @@ class sfp_googlesearch(SpiderFootPlugin):
             'favIcon': "https://www.gstatic.com/devrel-devsite/prod/v2210deb8920cd4a55bd580441aa58e7853afc04b39a9d9ac4198e1cd7fbe04ef/developers/images/favicon.png",
             'logo': "https://www.gstatic.com/devrel-devsite/prod/v2210deb8920cd4a55bd580441aa58e7853afc04b39a9d9ac4198e1cd7fbe04ef/developers/images/favicon.png",
             'description': "Google Custom Search enables you to create a search engine for your website, your blog, or a collection of websites. "
-                                "You can configure your engine to search both web pages and images. "
-                                "You can fine-tune the ranking, add your own promotions and customize the look and feel of the search results. "
-                                "You can monetize the search by connecting your engine to your Google AdSense account.",
+            "You can configure your engine to search both web pages and images. "
+            "You can fine-tune the ranking, add your own promotions and customize the look and feel of the search results. "
+            "You can monetize the search by connecting your engine to your Google AdSense account.",
         }
     }
 
@@ -91,7 +90,7 @@ class sfp_googlesearch(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_googlesearch but did not set a Google API key!", False)
+            self.sf.error("You enabled sfp_googlesearch but did not set a Google API key!")
             self.errorState = True
             return None
 
@@ -119,8 +118,8 @@ class sfp_googlesearch(SpiderFootPlugin):
         new_links = list(set(urls) - set(self.results.keys()))
 
         # Add new links to results
-        for l in new_links:
-            self.results[l] = True
+        for link in new_links:
+            self.results[link] = True
 
         internal_links = [
             link for link in new_links if self.sf.urlFQDN(link).endswith(eventData)

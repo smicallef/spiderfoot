@@ -10,11 +10,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_intfiles(SpiderFootPlugin):
-    """Interesting File Finder:Footprint,Passive:Crawling and Scanning::Identifies potential files of interest, e.g. office documents, zip files."""
 
     meta = {
         'name': "Interesting File Finder",

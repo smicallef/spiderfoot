@@ -10,10 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from netaddr import IPAddress, IPNetwork
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'OpenPhish': {
@@ -26,7 +27,6 @@ malchecks = {
 
 
 class sfp_openphish(SpiderFootPlugin):
-    """OpenPhish:Investigate,Passive:Reputation Systems::Check if a host/domain is malicious according to OpenPhish.com."""
 
     meta = {
         'name': "OpenPhish",
@@ -44,9 +44,9 @@ class sfp_openphish(SpiderFootPlugin):
             'favIcon': "",
             'logo': "https://openphish.com/static/openphish_logo2.png",
             'description': "Timely. Accurate. Relevant Threat Intelligence.\n"
-                                "OpenPhish is a fully automated self-contained platform for phishing intelligence. "
-                                "It identifies phishing sites and performs intelligence analysis ""in real time "
-                                "without human intervention and without using any external resources, such as blacklists.",
+            "OpenPhish is a fully automated self-contained platform for phishing intelligence. "
+            "It identifies phishing sites and performs intelligence analysis ""in real time "
+            "without human intervention and without using any external resources, such as blacklists.",
         }
     }
 
@@ -109,7 +109,7 @@ class sfp_openphish(SpiderFootPlugin):
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url, False)
+                        self.sf.error("Unable to fetch " + url)
                         return None
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
@@ -127,7 +127,7 @@ class sfp_openphish(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                #self.sf.debug("Adding " + grp[0] + " to list.")
+                                # self.sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -163,7 +163,7 @@ class sfp_openphish(SpiderFootPlugin):
                                     re.match(rxTgt, line, re.IGNORECASE):
                                 self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                                 return url
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.debug("Error encountered parsing 2: " + str(e))
                         continue
 
@@ -229,10 +229,8 @@ class sfp_openphish(SpiderFootPlugin):
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_openphish class

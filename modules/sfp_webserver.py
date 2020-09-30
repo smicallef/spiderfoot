@@ -12,10 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_webserver(SpiderFootPlugin):
-    """Web Server Identifier:Footprint,Investigate,Passive:Content Analysis::Obtain web server banners to identify versions of web servers being used."""
 
     meta = {
         'name': "Web Server Identifier",
@@ -59,21 +60,21 @@ class sfp_webserver(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
         if eventSource in self.results:
-            return None
-        else:
-            self.results[eventSource] = True
+            return
+
+        self.results[eventSource] = True
 
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
             self.sf.debug("Not collecting web server information for external sites.")
-            return None
+            return
 
         try:
             jdata = json.loads(eventData)
-            if jdata == None:
-                return None
-        except BaseException:
-            self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
-            return None
+            if jdata is None:
+                return
+        except Exception:
+            self.sf.error("Received HTTP headers from another module in an unexpected format.")
+            return
 
         # Check location header for linked URLs
         if 'location' in jdata:
@@ -112,7 +113,7 @@ class sfp_webserver(SpiderFootPlugin):
             evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", jdata['x-powered-by'],
                                   self.__name__, event)
             self.notifyListeners(evt)
-            return None
+            return
 
         tech = None
         if 'set-cookie' in jdata and 'PHPSESS' in jdata['set-cookie']:

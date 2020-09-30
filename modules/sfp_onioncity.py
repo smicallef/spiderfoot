@@ -11,19 +11,26 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
 import re
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_onioncity(SpiderFootPlugin):
-    """Onion.link:Footprint,Investigate:Search Engines:apikey:Search Tor 'Onion City' search engine for mentions of the target domain."""
 
     meta = {
         'name': "Onion.link",
         'summary': "Search Tor 'Onion City' search engine for mentions of the target domain.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate"],
-        'categories': ["Search Engines"]
+        'categories': ["Search Engines"],
+        'dataSource': {
+            'website': "https://onion.link/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'favIcon': "https://www.google.com/s2/favicons?domain=https://onion.link",
+            'logo': "https://onion.link/images/OC.png",
+            'description': "Enabling search and global access to Tor's onionsites.",
+        }
     }
 
     # Default options
@@ -79,7 +86,7 @@ class sfp_onioncity(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_onioncity but did not set a Google API key!", False)
+            self.sf.error("You enabled sfp_onioncity but did not set a Google API key!")
             self.errorState = True
             return None
 
@@ -107,8 +114,8 @@ class sfp_onioncity(SpiderFootPlugin):
         new_links = list(set(urls) - set(self.results.keys()))
 
         # Add new links to results
-        for l in new_links:
-            self.results[l] = True
+        for link in new_links:
+            self.results[link] = True
 
         # Submit the Google results for analysis
         googlesearch_url = res["webSearchUrl"]
@@ -123,7 +130,7 @@ class sfp_onioncity(SpiderFootPlugin):
             )
             self.notifyListeners(evt)
         else:
-            self.sf.error("Failed to fetch Google web search URL", exception=False)
+            self.sf.error("Failed to fetch Google web search URL")
 
         # Check if we've been asked to stop
         if self.checkForStop():
@@ -138,16 +145,16 @@ class sfp_onioncity(SpiderFootPlugin):
             torlink = link.replace(".onion.link", ".onion")
             if self.opts['fetchlinks']:
                 res = self.sf.fetchUrl(torlink, timeout=self.opts['_fetchtimeout'],
-                                        useragent=self.opts['_useragent'],
-                                        verify=False)
+                                       useragent=self.opts['_useragent'],
+                                       verify=False)
 
                 if res['content'] is None:
                     self.sf.debug("Ignoring " + link + " as no data returned")
                     continue
 
                 # Sometimes onion city search results false positives
-                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) +
-                                r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData)
+                             + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                     self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
                     continue
 
@@ -157,13 +164,13 @@ class sfp_onioncity(SpiderFootPlugin):
                 try:
                     startIndex = res['content'].index(eventData) - 120
                     endIndex = startIndex + len(eventData) + 240
-                except BaseException:
+                except Exception:
                     self.sf.debug("String not found in content.")
                     continue
 
                 data = res['content'][startIndex:endIndex]
                 evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + data + "...",
-                                        self.__name__, evt)
+                                      self.__name__, evt)
                 self.notifyListeners(evt)
             else:
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", torlink, self.__name__, event)

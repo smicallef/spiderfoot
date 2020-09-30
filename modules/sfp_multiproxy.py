@@ -11,9 +11,10 @@
 # -------------------------------------------------------------------------------
 
 import re
+
 from netaddr import IPAddress, IPNetwork
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'multiproxy.org Open Proxies': {
@@ -26,7 +27,6 @@ malchecks = {
 
 
 class sfp_multiproxy(SpiderFootPlugin):
-    """multiproxy.org Open Proxies:Investigate,Passive:Secondary Networks::Check if an IP is an open proxy according to multiproxy.org' open proxy list."""
 
     meta = {
         'name': "multiproxy.org Open Proxies",
@@ -46,11 +46,11 @@ class sfp_multiproxy(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://multiproxy.org/",
             'logo': "https://multiproxy.org/images/mproxy_title.png",
             'description': "MultiProxy is a multifunctional personal proxy server that protects your privacy "
-                                "while on the Internet as well as speeds up your downloads, "
-                                "especially if you are trying to get several files form overseas or from otherwise rather slow server. "
-                                "It can also completely hide your IP address by dynamically connecting to "
-                                "non-transparent anonymizing public proxy servers. "
-                                "You can also test a list of proxy servers and sort them by connection speed and level of anonimity.",
+            "while on the Internet as well as speeds up your downloads, "
+            "especially if you are trying to get several files form overseas or from otherwise rather slow server. "
+            "It can also completely hide your IP address by dynamically connecting to "
+            "non-transparent anonymizing public proxy servers. "
+            "You can also test a list of proxy servers and sort them by connection speed and level of anonimity.",
         }
     }
 
@@ -86,7 +86,6 @@ class sfp_multiproxy(SpiderFootPlugin):
     def watchedEvents(self):
         return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
 
-
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
@@ -111,7 +110,7 @@ class sfp_multiproxy(SpiderFootPlugin):
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url, False)
+                        self.sf.error("Unable to fetch " + url)
                         return None
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
@@ -129,7 +128,7 @@ class sfp_multiproxy(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                #self.sf.debug("Adding " + grp[0] + " to list.")
+                                # self.sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -141,11 +140,10 @@ class sfp_multiproxy(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
+                            self.sf.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -166,7 +164,7 @@ class sfp_multiproxy(SpiderFootPlugin):
                                     re.match(rxTgt, line, re.IGNORECASE):
                                 self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                                 return url
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.debug("Error encountered parsing 2: " + str(e))
                         continue
 
@@ -232,10 +230,8 @@ class sfp_multiproxy(SpiderFootPlugin):
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_multiproxy class

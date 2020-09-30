@@ -11,12 +11,13 @@
 # -------------------------------------------------------------------------------
 
 import json
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_threatcrowd(SpiderFootPlugin):
-    """ThreatCrowd:Investigate,Passive:Reputation Systems::Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses."""
 
     meta = {
         'name': "ThreatCrowd",
@@ -33,8 +34,8 @@ class sfp_threatcrowd(SpiderFootPlugin):
             'favIcon': "https://www.threatcrowd.org/img/favicon-32x32.png",
             'logo': "https://www.threatcrowd.org/img/home.png",
             'description': "The ThreatCrowd API allows you to quickly identify related infrastructure and malware.\n"
-                                "With the ThreatCrowd API you can search for Domains, IP Addreses, E-mail adddresses, "
-                                "Filehashes, Antivirus detections.",
+            "With the ThreatCrowd API you can search for Domains, IP Addreses, E-mail adddresses, "
+            "Filehashes, Antivirus detections.",
         }
     }
 
@@ -110,7 +111,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
         try:
             ret = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from ThreatCrowd: {e}", False)
+            self.sf.error(f"Error processing JSON response from ThreatCrowd: {e}")
             self.errorState = True
             return None
 
@@ -145,9 +146,9 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
                     return None
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -155,9 +156,9 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 return None
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxsubnet']))
                     return None
 
         qrylist = list()
@@ -198,8 +199,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 infourl = "<SFURL>" + info.get('permalink') + "</SFURL>"
 
                 # Notify other modules of what you've found
-                e = SpiderFootEvent(evt, "ThreatCrowd [" + addr + "]\n" +
-                                    infourl, self.__name__, event)
+                e = SpiderFootEvent(evt, "ThreatCrowd [" + addr + "]\n" + infourl, self.__name__, event)
                 self.notifyListeners(e)
 
 # End of sfp_threatcrowd class

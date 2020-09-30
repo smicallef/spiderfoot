@@ -11,11 +11,11 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_bingsharedip(SpiderFootPlugin):
-    """Bing (Shared IPs):Footprint,Investigate,Passive:Search Engines:apikey:Search Bing for hosts sharing the same IP."""
 
     meta = {
         'name': "Bing (Shared IPs)",
@@ -38,7 +38,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
             'favIcon': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
             'logo': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
             'description': "The Bing Search APIs let you build web-connected apps and services that "
-                                "find webpages, images, news, locations, and more without advertisements.",
+            "find webpages, images, news, locations, and more without advertisements.",
         }
     }
 
@@ -97,7 +97,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "" and self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_bingsharedip but did not set a Bing API key!", False)
+            self.sf.error("You enabled sfp_bingsharedip but did not set a Bing API key!")
             self.errorState = True
             return None
 
@@ -153,13 +153,11 @@ class sfp_bingsharedip(SpiderFootPlugin):
                     if not self.opts["cohostsamedomain"]:
                         if self.getTarget().matches(site, includeParents=True):
                             self.sf.debug(
-                                "Skipping "
-                                + site
-                                + " because it is on the same domain."
+                                f"Skipping {site} because it is on the same domain."
                             )
                             continue
                     if self.opts["verify"] and not self.sf.validateIP(site, ip):
-                        self.sf.debug("Host " + site + " no longer resolves to " + ip)
+                        self.sf.debug(f"Host {site} no longer resolves to {ip}")
                         continue
                     # Create an IP Address event stemming from the netblock as the
                     # link to the co-host.

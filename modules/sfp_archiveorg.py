@@ -13,13 +13,13 @@
 
 import datetime
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_archiveorg(SpiderFootPlugin):
-    """Archive.org:Footprint,Passive:Search Engines:slow:Identifies historic versions of interesting files/pages from the Wayback Machine."""
 
-    meta = { 
+    meta = {
         'name': "Archive.org",
         'summary': "Identifies historic versions of interesting files/pages from the Wayback Machine.",
         'flags': ["slow"],
@@ -35,16 +35,16 @@ class sfp_archiveorg(SpiderFootPlugin):
             'favIcon': "https://archive.org/images/glogo.jpg",
             'logo': "https://archive.org/images/glogo.jpg",
             'description': "Internet Archive is a non-profit library of millions of free books, movies, software, music, websites, and more.\n"
-                               "The Internet Archive, a 501(c)(3) non-profit, is building a digital library of Internet sites "
-                               "and other cultural artifacts in digital form. Like a paper library, we provide free access to "
-                               "researchers, historians, scholars, the print disabled, and the general public. "
-                               "Our mission is to provide Universal Access to All Knowledge.\n"
-                               "We began in 1996 by archiving the Internet itself, a medium that was just beginning to grow in use. "
-                               "Like newspapers, the content published on the web was ephemeral - but unlike newspapers, no one was saving it. "
-                               "Today we have 20+ years of web history accessible through the Wayback Machine and we work with 625+ library and "
-                               "other partners through our Archive-It program to identify important web pages.",
+            "The Internet Archive, a 501(c)(3) non-profit, is building a digital library of Internet sites "
+            "and other cultural artifacts in digital form. Like a paper library, we provide free access to "
+            "researchers, historians, scholars, the print disabled, and the general public. "
+            "Our mission is to provide Universal Access to All Knowledge.\n"
+            "We began in 1996 by archiving the Internet itself, a medium that was just beginning to grow in use. "
+            "Like newspapers, the content published on the web was ephemeral - but unlike newspapers, no one was saving it. "
+            "Today we have 20+ years of web history accessible through the Wayback Machine and we work with 625+ library and "
+            "other partners through our Archive-It program to identify important web pages.",
         }
-    
+
     }
 
     # Default options
@@ -111,28 +111,28 @@ class sfp_archiveorg(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName == "INTERESTING_FILE" and not self.opts['intfiles']:
-            return None
+            return
         if eventName == "URL_PASSWORD" and not self.opts['passwordpages']:
-            return None
+            return
         if eventName == "URL_STATIC" and not self.opts['staticpages']:
-            return None
+            return
         if eventName == "URL_FORM" and not self.opts['formpages']:
-            return None
+            return
         if eventName == "URL_UPLOAD" and not self.opts['uploadpages']:
-            return None
+            return
         if eventName == "URL_JAVA_APPLET" and not self.opts['javapages']:
-            return None
+            return
         if eventName == "URL_FLASH" and not self.opts['flashpages']:
-            return None
+            return
         if eventName == "URL_JAVASCRIPT" and not self.opts['javascriptpages']:
-            return None
+            return
         if eventName == "URL_WEB_FRAMEWORK" and not self.opts['webframeworkpages']:
-            return None
+            return
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         for daysback in self.opts['farback'].split(","):
             newDate = datetime.datetime.now() - datetime.timedelta(days=int(daysback))
@@ -143,18 +143,18 @@ class sfp_archiveorg(SpiderFootPlugin):
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
-            if res['content'] == None:
-                self.sf.error("Unable to fetch " + url, False)
+            if res['content'] is None:
+                self.sf.error(f"Unable to fetch {url}")
                 continue
 
             try:
                 ret = json.loads(res['content'])
-            except BaseException as e:
-                self.sf.debug(f"Error processing JSON response: {e}")
+            except Exception as e:
+                self.sf.debug(f"Error processing JSON response from Archive.org: {e}")
                 ret = None
 
-            if ret == None:
-                self.sf.error("Unable to process empty response from archive.org: {eventData}", False)
+            if not ret:
+                self.sf.error("Unable to process empty response from archive.org: {eventData}")
                 continue
 
             if len(ret['archived_snapshots']) < 1:

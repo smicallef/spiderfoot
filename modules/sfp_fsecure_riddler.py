@@ -12,10 +12,11 @@
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_fsecure_riddler(SpiderFootPlugin):
-    """F-Secure Riddler.io:Investigate,Footprint,Passive:Search Engines:apikey:Obtain network information from F-Secure Riddler.io API."""
 
     meta = {
         'name': "F-Secure Riddler.io",
@@ -38,10 +39,10 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             'favIcon': "https://riddler.io/static/images/favicon.png",
             'logo': "https://riddler.io/static/images/logo.png",
             'description': "Riddler.io allows you to search in a high quality dataset with more than 396,831,739 hostnames. "
-                                "Unlike others, we do not rely on simple port scanning techniques - we crawl the web, "
-                                "ensuring an in-depth quality data set you will not find anywhere else.\n"
-                                "Use Riddler to enumerate possible attack vectors during your pen-test or use the very same data "
-                                "to monitor potential threats before it is too late.",
+            "Unlike others, we do not rely on simple port scanning techniques - we crawl the web, "
+            "ensuring an in-depth quality data set you will not find anywhere else.\n"
+            "Use Riddler to enumerate possible attack vectors during your pen-test or use the very same data "
+            "to monitor potential threats before it is too late.",
         }
     }
 
@@ -100,19 +101,19 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug("Error processing JSON response from F-Secure Riddler: " + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response from F-Secure Riddler: {e}")
             return None
 
         try:
             token = data.get('response').get('user').get('authentication_token')
-        except:
-            self.sf.error('Login failed', False)
+        except Exception:
+            self.sf.error('Login failed')
             self.errorState = True
             return None
 
         if not token:
-            self.sf.error('Login failed', False)
+            self.sf.error('Login failed')
             self.errorState = True
             return None
 
@@ -130,7 +131,6 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             'Content-Type': 'application/json',
         }
 
-
         res = self.sf.fetchUrl('https://riddler.io/api/search',
                                postData=json.dumps(params),
                                headers=headers,
@@ -140,7 +140,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         time.sleep(1)
 
         if res['code'] in ["400", "401", "402", "403"]:
-            self.sf.error('Unexpected HTTP response code: ' + res['code'], False)
+            self.sf.error('Unexpected HTTP response code: ' + res['code'])
             self.errorState = True
             return None
 
@@ -149,8 +149,8 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug("Error processing JSON response from F-Secure Riddler: " + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response from F-Secure Riddler: {e}")
             return None
 
         if not data:
@@ -178,7 +178,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             return None
 
         if self.opts['username'] == '' or self.opts['password'] == '':
-            self.sf.error('You enabled sfp_fsecure_riddler but did not set an API username/password!', False)
+            self.sf.error('You enabled sfp_fsecure_riddler but did not set an API username/password!')
             self.errorState = True
             return None
 
@@ -236,7 +236,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(host):
-                self.sf.debug("Host " + host + " could not be resolved")
+                self.sf.debug(f"Host {host} could not be resolved")
                 evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, host, self.__name__, event)

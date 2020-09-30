@@ -13,10 +13,11 @@
 # -------------------------------------------------------------------------------
 
 import re
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_pgp(SpiderFootPlugin):
-    """PGP Key Servers:Footprint,Investigate,Passive:Public Registries::Look up e-mail addresses in PGP public key servers."""
 
     meta = {
         'name': "PGP Key Servers",
@@ -47,7 +48,6 @@ class sfp_pgp(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "PGP Key Servers"
         self.results = self.tempStorage()
 
         for opt in list(userOpts.keys()):
@@ -70,9 +70,9 @@ class sfp_pgp(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -124,7 +124,5 @@ class sfp_pgp(SpiderFootPlugin):
 
                     evt = SpiderFootEvent("PGP_KEY", match, self.__name__, event)
                     self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_pgp class

@@ -11,14 +11,14 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
 import json
-from datetime import datetime
 import time
+from datetime import datetime
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_onyphe(SpiderFootPlugin):
-    """Onyphe:Footprint,Investigate,Passive:Reputation Systems:apikey:Check Onyphe data (threat list, geo-location, pastries, vulnerabilities)  about a given IP."""
 
     meta = {
         "name": "Onyphe",
@@ -107,12 +107,12 @@ class sfp_onyphe(SpiderFootPlugin):
         )
 
         if res["code"] == "429":
-            self.sf.error("Reaching rate limit on Onyphe API", False)
+            self.sf.error("Reaching rate limit on Onyphe API")
             self.errorState = True
             return None
 
         if res["code"] == 400:
-            self.sf.error("Invalid request or API key on Onyphe", False)
+            self.sf.error("Invalid request or API key on Onyphe")
             self.errorState = True
             return None
 
@@ -120,8 +120,7 @@ class sfp_onyphe(SpiderFootPlugin):
             info = json.loads(res["content"])
             if "status" in info and info["status"] == "nok":
                 self.sf.error(
-                    f"Unexpected error happened while requesting data from Onyphe. Error message: {info.get('text', '')}",
-                    False,
+                    f"Unexpected error happened while requesting data from Onyphe. Error message: {info.get('text', '')}"
                 )
                 self.errorState = True
                 return None
@@ -130,19 +129,22 @@ class sfp_onyphe(SpiderFootPlugin):
                 return None
         except Exception as e:
             self.sf.debug(f"{e.__class__} {res['code']} {res['content']}")
-            self.sf.error("Error processing JSON response from Onyphe.", False)
+            self.sf.error("Error processing JSON response from Onyphe.")
             return None
 
         # Go through other pages if user has paid plan
         try:
             current_page = int(info["page"])
-            if (self.opts["paid_plan"] and info.get("page") and int(info.get("max_page")) > current_page):
+            if (
+                self.opts["paid_plan"]
+                and info.get("page")
+                and int(info.get("max_page")) > current_page
+            ):
                 page = current_page + 1
 
                 if page > self.opts["max_page"]:
                     self.sf.error(
-                        "Maximum number of pages from options for Onyphe reached.",
-                        False,
+                        "Maximum number of pages from options for Onyphe reached."
                     )
                     return [info]
                 retarr.append(info)
@@ -154,8 +156,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
         except ValueError:
             self.sf.error(
-                f"Unexpected value for page in response from Onyphe, url: https://www.onyphe.io/api/v2/simple/{endpoint}/{ip}?page={page}",
-                False,
+                f"Unexpected value for page in response from Onyphe, url: https://www.onyphe.io/api/v2/simple/{endpoint}/{ip}?page={page}"
             )
             self.errorState = True
             return None
@@ -217,6 +218,7 @@ class sfp_onyphe(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+        sentData = set()
 
         if self.errorState:
             return None
@@ -224,7 +226,7 @@ class sfp_onyphe(SpiderFootPlugin):
         self.sf.debug("Received event, %s, from %s" % (eventName, srcModuleName))
 
         if self.opts["api_key"] == "":
-            self.sf.error("You enabled sfp_onyphe, but did not set an API key!", False)
+            self.sf.error("You enabled sfp_onyphe, but did not set an API key!")
             self.errorState = True
             return None
 
@@ -254,16 +256,34 @@ class sfp_onyphe(SpiderFootPlugin):
                     location = ", ".join(
                         [
                             _f
-                            for _f in [result.get("city"), result.get("country"),]
+                            for _f in [
+                                result.get("city"),
+                                result.get("country"),
+                            ]
                             if _f
                         ]
                     )
                     self.sf.info("Found GeoIP for " + eventData + ": " + location)
 
+                    if location in sentData:
+                        self.sf.debug(f"Skipping {location}, already sent")
+                        continue
+
+                    sentData.add(location)
+
                     evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                     self.notifyListeners(evt)
 
-                    self.emitLocationEvent(result.get("location"), eventData, event)
+                    coordinates = result.get("location")
+                    if coordinates is None:
+                        continue
+
+                    if coordinates in sentData:
+                        self.sf.debug(f"Skipping {coordinates}, already sent")
+                        continue
+                    sentData.add(coordinates)
+
+                    self.emitLocationEvent(coordinates, eventData, event)
 
                     self.emitDomainData(result, eventData, event)
 
@@ -280,11 +300,20 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in pastriesData["results"]:
+                    pastry = result.get("content")
+                    if pastry is None:
+                        continue
+
+                    if pastry in sentData:
+                        self.sf.debug(f"Skipping {pastry}, already sent")
+                        continue
+                    sentData.add(pastry)
+
                     if not self.isFreshEnough(result):
                         continue
 
                     evt = SpiderFootEvent(
-                        "LEAKSITE_CONTENT", result.get("content"), self.__name__, event
+                        "LEAKSITE_CONTENT", pastry, self.__name__, event
                     )
                     self.notifyListeners(evt)
 
@@ -301,6 +330,16 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in threatListData["results"]:
+                    threatList = result.get("threatlist")
+
+                    if threatList is None:
+                        continue
+
+                    if threatList in sentData:
+                        self.sf.debug(f"Skipping {threatList}, already sent")
+                        continue
+                    sentData.add(threatList)
+
                     if not self.isFreshEnough(result):
                         continue
 
@@ -325,17 +364,28 @@ class sfp_onyphe(SpiderFootPlugin):
                     return None
 
                 for result in vulnerabilityData["results"]:
+                    cves = result.get("cve")
+
+                    if cves is None:
+                        continue
+
+                    cveData = ", ".join([cve for cve in cves if cve])
+
+                    if cveData in sentData:
+                        self.sf.debug(f"Skipping {cveData}, already sent")
+                        continue
+                    sentData.add(cveData)
+
                     if not self.isFreshEnough(result):
                         continue
 
-                    if result.get("cve") is not None:
-                        evt = SpiderFootEvent(
-                            "VULNERABILITY",
-                            ", ".join([cve for cve in result["cve"] if cve]),
-                            self.__name__,
-                            event,
-                        )
-                        self.notifyListeners(evt)
+                    evt = SpiderFootEvent(
+                        "VULNERABILITY",
+                        cveData,
+                        self.__name__,
+                        event,
+                    )
+                    self.notifyListeners(evt)
 
 
 # End of sfp_onyphe class

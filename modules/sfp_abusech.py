@@ -10,22 +10,13 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from netaddr import IPAddress, IPNetwork
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
-    'abuse.ch Zeus Tracker (Domain)': {
-        'id': 'abusezeusdomain',
-        'checks': ['domain'],
-        'url': 'https://zeustracker.abuse.ch/blocklist.php?download=baddomains'
-    },
-    'abuse.ch Zeus Tracker (IP)': {
-        'id': 'abusezeusip',
-        'checks': ['ip', 'netblock'],
-        'url': 'https://zeustracker.abuse.ch/blocklist.php?download=badips'
-    },
     'abuse.ch Feodo Tracker (IP)': {
         'id': 'abusefeodoip',
         'checks': ['ip', 'netblock'],
@@ -40,20 +31,14 @@ malchecks = {
     'abuse.ch URLhaus (Domain)': {
         'id': 'abuseurlhaus',
         'checks': ['domain'],
-        'url': 'https://urlhaus.abuse.ch/downloads/csv/',
+        'url': 'https://urlhaus.abuse.ch/downloads/csv_recent/',
         'regex': '.*//{0}/.*'
-    },
-    'abuse.ch Ransomware Blocklist (Domain)': {
-        'id': 'abuseransomdom',
-        'checks': ['domain'],
-        'url': 'https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt',
-        'regex': '^{0}$'
     }
 }
 
+
 class sfp_abusech(SpiderFootPlugin):
-    """abuse.ch:Investigate,Passive:Reputation Systems::Check if a host/domain, IP or netblock is malicious according to abuse.ch."""
-    
+
     meta = {
         'name': "abuse.ch",
         'summary': "Check if a host/domain, IP or netblock is malicious according to abuse.ch.",
@@ -77,30 +62,26 @@ class sfp_abusech(SpiderFootPlugin):
                 "The API key is listed under 'Your API Key'",
                 "Visit https://igotphished.abuse.ch/api/",
                 "Request an API key from the email listed under 'Submit data to I Got Phished'",
-                "Visit urlhaus.abuse.ch/api/",
-                "Login using a Twitter Account at urlhaus.abuse.ch/login/",
-                "Navigate to urlhaus.abuse.ch/api/#account",
+                "Visit https://urlhaus.abuse.ch/api/",
+                "Login using a Twitter Account at https://urlhaus.abuse.ch/login/",
+                "Navigate to https://urlhaus.abuse.ch/api/#account",
                 "The API Key is listed under 'API-Key'"
             ],
             'favIcon': "https://abuse.ch/favicon.ico",
             'logo': "https://abuse.ch/images/abusech.svg",
             'description': "abuse.ch is operated by a random swiss guy fighting malware for non-profit, "
-                                "running a couple of projects helping internet service providers and "
-                                "network operators protecting their infrastructure from malware.\n"
-                                "IT-Security researchers, vendors and law enforcement agencies rely on data from abuse.ch,"
-                                "trying to make the internet a safer place.",
+            "running a couple of projects helping internet service providers and "
+            "network operators protecting their infrastructure from malware.\n"
+            "IT-Security researchers, vendors and law enforcement agencies rely on data from abuse.ch,"
+            "trying to make the internet a safer place.",
         }
     }
 
     # Default options
     opts = {
-        'abusezeusdomain': True,
-        'abusezeusip': True,
-        'abusefeododomain': True,
         'abusefeodoip': True,
         'abusesslblip': True,
         'abuseurlhaus': True,
-        'abuseransomdom': True,
         'checkaffiliates': True,
         'checkcohosts': True,
         'cacheperiod': 18,
@@ -110,13 +91,9 @@ class sfp_abusech(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'abusezeusdomain': "Enable abuse.ch Zeus domain check?",
-        'abusezeusip': "Enable abuse.ch Zeus IP check?",
-        'abusefeododomain': "Enable abuse.ch Feodo domain check?",
         'abusefeodoip': "Enable abuse.ch Feodo IP check?",
         'abusesslblip': "Enable abuse.ch SSL Backlist IP check?",
         'abuseurlhaus': "Enable abuse.ch URLhaus check?",
-        'abuseransomdom': "Enable abuse.ch Ransom Domains check?",
         'checkaffiliates': "Apply checks to affiliates?",
         'checkcohosts': "Apply checks to sites found to be co-hosted on the target's IP?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
@@ -172,7 +149,7 @@ class sfp_abusech(SpiderFootPlugin):
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url, False)
+                        self.sf.error("Unable to fetch " + url)
                         return None
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
@@ -190,7 +167,7 @@ class sfp_abusech(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                #self.sf.debug("Adding " + grp[0] + " to list.")
+                                # self.sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -202,11 +179,10 @@ class sfp_abusech(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
+                            self.sf.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -227,7 +203,7 @@ class sfp_abusech(SpiderFootPlugin):
                                     re.match(rxTgt, line, re.IGNORECASE):
                                 self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                                 return url
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.debug("Error encountered parsing 2: " + str(e))
                         continue
 
@@ -237,7 +213,7 @@ class sfp_abusech(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
+                self.sf.debug(f"Checking maliciousness of {target} ({itemType}) with: {cid}")
                 return self.resourceList(cid, target, itemType)
 
         return None
@@ -252,19 +228,19 @@ class sfp_abusech(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
+            return
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):
-            return None
+            return
         if eventName == 'NETBLOCK_OWNER' and not self.opts.get('checknetblocks', False):
-            return None
+            return
         if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
-            return None
+            return
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
@@ -300,14 +276,12 @@ class sfp_abusech(SpiderFootPlugin):
             url = self.lookupItem(cid, typeId, eventData)
 
             if self.checkForStop():
-                return None
+                return
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_abusech class

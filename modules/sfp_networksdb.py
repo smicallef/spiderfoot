@@ -13,11 +13,14 @@
 
 import json
 import time
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_networksdb(SpiderFootPlugin):
-    """NetworksDB:Footprint,Investigate,Passive:Passive DNS:apikey:Search NetworksDB.io API for IP address and domain information."""
 
     meta = {
         'name': "NetworksDB",
@@ -32,7 +35,7 @@ class sfp_networksdb(SpiderFootPlugin):
                 "https://networksdb.io/api/docs"
             ],
             'apiKeyInstructions': [
-                "Visit networksdb.io/api/order/free",
+                "Visit https://networksdb.io/api/order/free",
                 "Register a free account",
                 "Click on 'Generate a Free API Key'",
                 "The API key is listed under 'API Key: Free plan'"
@@ -40,8 +43,8 @@ class sfp_networksdb(SpiderFootPlugin):
             'favIcon': "https://networksdb.io/img/favicon/favicon-96x96.png",
             'logo': "https://networksdb.io/img/logo.png",
             'description': "Our database contains information about the public IPv4 and IPv6 addresses, "
-                                "networks and domains owned by companies and organisations across the world "
-                                "along with city-level IP geolocation data and autonomous system information.",
+            "networks and domains owned by companies and organisations across the world "
+            "along with city-level IP geolocation data and autonomous system information.",
         }
     }
     # Default options
@@ -218,12 +221,12 @@ class sfp_networksdb(SpiderFootPlugin):
     def parseApiResponse(self, res):
         # Future proofing - NetworksDB does not implement rate limiting
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by NetworksDB", False)
+            self.sf.error("You are being rate-limited by NetworksDB")
             self.errorState = True
             return None
 
         if res['code'] == '403':
-            self.sf.error("Authentication failed", False)
+            self.sf.error("Authentication failed")
             self.errorState = True
             return None
 
@@ -233,14 +236,14 @@ class sfp_networksdb(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from NetworksDB: {e}", False)
+            self.sf.error(f"Error processing JSON response from NetworksDB: {e}")
             return None
 
         if data.get('warning'):
             self.sf.debug("Received warning from NetworksDB: " + data.get('warning'))
 
         if data.get('error'):
-            self.sf.error("Received error from NetworksDB: " + data.get('error'), False)
+            self.sf.error("Received error from NetworksDB: " + data.get('error'))
 
         return data
 
@@ -257,7 +260,7 @@ class sfp_networksdb(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == '':
-            self.sf.error("You enabled sfp_networksdb but did not set an API key!", False)
+            self.sf.error("You enabled sfp_networksdb but did not set an API key!")
             self.errorState = True
             return None
 

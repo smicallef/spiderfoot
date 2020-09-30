@@ -12,7 +12,7 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'Internet Storm Center': {
@@ -26,7 +26,6 @@ malchecks = {
 
 
 class sfp_isc(SpiderFootPlugin):
-    """Internet Storm Center:Investigate,Passive:Reputation Systems::Check if an IP is malicious according to SANS ISC."""
 
     meta = {
         'name': "Internet Storm Center",
@@ -47,15 +46,15 @@ class sfp_isc(SpiderFootPlugin):
             'favIcon': "https://isc.sans.edu/iscfavicon.ico",
             'logo': "https://isc.sans.edu/images/logos/isc/large.png",
             'description': "The ISC provides a free analysis and warning service to thousands of Internet users "
-                                "and organizations, and is actively working with Internet Service Providers to "
-                                "fight back against the most malicious attackers.\n"
-                                "Thousands of sensors that work with most firewalls, intrusion detection systems, "
-                                "home broadband devices, and nearly all operating systems are constantly collecting information about "
-                                "unwanted traffic arriving from the Internet. "
-                                "These devices feed the DShield database where human volunteers as well as machines pour through "
-                                "the data looking for abnormal trends and behavior. "
-                                "The resulting analysis is posted to the ISC's main web page where it can be automatically retrieved "
-                                "by simple scripts or can be viewed in near real time by any Internet user.",
+            "and organizations, and is actively working with Internet Service Providers to "
+            "fight back against the most malicious attackers.\n"
+            "Thousands of sensors that work with most firewalls, intrusion detection systems, "
+            "home broadband devices, and nearly all operating systems are constantly collecting information about "
+            "unwanted traffic arriving from the Internet. "
+            "These devices feed the DShield database where human volunteers as well as machines pour through "
+            "the data looking for abnormal trends and behavior. "
+            "The resulting analysis is posted to the ISC's main web page where it can be automatically retrieved "
+            "by simple scripts or can be viewed in near real time by any Internet user.",
         }
     }
 
@@ -126,7 +125,7 @@ class sfp_isc(SpiderFootPlugin):
                 res = self.sf.fetchUrl(url.format(target), timeout=30, useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target), False)
+                    self.sf.error("Unable to fetch " + url.format(target))
                     return None
 
                 if self.contentMalicious(res['content'], malchecks[check]['goodregex'], malchecks[check]['badregex']):
@@ -194,10 +193,8 @@ class sfp_isc(SpiderFootPlugin):
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_isc class

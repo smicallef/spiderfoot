@@ -12,7 +12,7 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'TotalHash.com Database': {
@@ -26,7 +26,6 @@ malchecks = {
 
 
 class sfp_totalhash(SpiderFootPlugin):
-    """TotalHash.com:Investigate,Passive:Reputation Systems::Check if a host/domain or IP is malicious according to TotalHash.com."""
 
     meta = {
         'name': "TotalHash.com",
@@ -45,8 +44,8 @@ class sfp_totalhash(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://totalhash.cymru.com/",
             'logo': "https://totalhash.cymru.com/wp-content/uploads/2014/12/TC_logo-300x141.png",
             'description': "#totalhash provides static and dynamic analysis of Malware samples. "
-                                "The data available on this site is free for non commercial use. "
-                                "If you have samples that you would like analyzed you may upload them to our anonymous FTP server.",
+            "The data available on this site is free for non commercial use. "
+            "If you have samples that you would like analyzed you may upload them to our anonymous FTP server.",
         }
     }
 
@@ -123,7 +122,7 @@ class sfp_totalhash(SpiderFootPlugin):
                 res = self.sf.fetchUrl(url.format(target), timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
                 if res['content'] is None:
-                    self.sf.error("Unable to fetch " + url.format(target), False)
+                    self.sf.error("Unable to fetch " + url.format(target))
                     return None
 
                 if self.contentMalicious(res['content'], malchecks[check]['goodregex'], malchecks[check]['badregex']):
@@ -150,15 +149,15 @@ class sfp_totalhash(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
+            return
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):
-            return None
+            return
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
@@ -187,14 +186,12 @@ class sfp_totalhash(SpiderFootPlugin):
             url = self.lookupItem(cid, typeId, eventData)
 
             if self.checkForStop():
-                return None
+                return
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_totalhash class

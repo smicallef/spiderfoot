@@ -14,11 +14,13 @@
 import random
 import threading
 import time
+
 import dns.resolver
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_tldsearch(SpiderFootPlugin):
-    """TLD Searcher:Footprint:DNS:slow:Search all Internet TLDs for domains with the same name as the target (this can be very slow.)"""
 
     meta = {
         'name': "TLD Searcher",
@@ -77,7 +79,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             resolver.nameservers = [self.opts['_dnsserver']]
 
         if self.opts['skipwildcards'] and self.sf.checkDnsWildcard(tld):
-            return None
+            return
 
         try:
             addrs = self.sf.resolveHost(target)
@@ -87,7 +89,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             else:
                 with self.lock:
                     self.tldResults[target] = True
-        except BaseException:
+        except Exception:
             with self.lock:
                 self.tldResults[target] = False
 
@@ -130,7 +132,7 @@ class sfp_tldsearch(SpiderFootPlugin):
         # Inform listening modules
         if self.opts['activeonly']:
             if self.checkForStop():
-                return None
+                return
 
             pageContent = self.sf.fetchUrl('http://' + result,
                                            timeout=self.opts['_fetchtimeout'],
@@ -149,7 +151,7 @@ class sfp_tldsearch(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
         else:
             self.results[eventData] = True
 
@@ -158,7 +160,7 @@ class sfp_tldsearch(SpiderFootPlugin):
         targetList = list()
 
         if keyword in self.results:
-            return None
+            return
         else:
             self.results[keyword] = True
 
@@ -181,7 +183,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             tryDomain = keyword + "." + tld
 
             if self.checkForStop():
-                return None
+                return
 
             if len(targetList) <= self.opts['_maxthreads']:
                 targetList.append([tryDomain, tld])
@@ -192,7 +194,5 @@ class sfp_tldsearch(SpiderFootPlugin):
         # Scan whatever may be left over.
         if len(targetList) > 0:
             self.tryTldWrapper(targetList, event)
-
-        return None
 
 # End of sfp_tldsearch class

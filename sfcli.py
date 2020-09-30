@@ -11,17 +11,29 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import sys
+import argparse
+import cmd
+import codecs
+import json
 import os
 import re
-import json
-import requests
 import shlex
-import codecs
+import sys
 import time
-import cmd
-import argparse
 from os.path import expanduser
+
+import requests
+
+
+ASCII_LOGO = r"""
+  _________      .__    .___          ___________            __
+ /   _____/_____ |__| __| _/__________\_   _____/___   _____/  |_
+ \_____  \\____ \|  |/ __ |/ __ \_  __ \    __)/  _ \ /  _ \   __\
+ /        \  |_> >  / /_/ \  ___/|  | \/     \(  <_> |  <_> )  |
+/_______  /   __/|__\____ |\___  >__|  \___  / \____/ \____/|__|
+        \/|__|           \/    \/          \/
+                Open Source Intelligence Automation."""
+COPYRIGHT_INFO = "               by Steve Micallef | @spiderfoot\n"
 
 try:
     import readline
@@ -41,7 +53,7 @@ class bcolors:
 
 
 class SpiderFootCli(cmd.Cmd):
-    version = "3.2-DEV"
+    version = "3.3-DEV"
     pipecmd = None
     output = None
     modules = []
@@ -159,10 +171,13 @@ class SpiderFootCli(cmd.Cmd):
             val = "0"
         else:
             val = "1"
+
         if self.ownopts['cli.spool_file']:
             return self.do_set("cli.spool = " + val)
         else:
             self.edprint("You haven't set cli.spool_file. Set that before enabling spooling.")
+
+        return None
 
     def do_history(self, line):
         """history [-l]
@@ -175,7 +190,7 @@ class SpiderFootCli(cmd.Cmd):
             while i < readline.get_current_history_length():
                 self.dprint(readline.get_history_item(i), plain=True)
                 i += 1
-            return
+            return None
         if self.ownopts['cli.history']:
             val = "0"
         else:
@@ -859,7 +874,7 @@ class SpiderFootCli(cmd.Cmd):
         c = self.myparseline(line)
         if len(c[0]) < 3:
             self.edprint("Invalid syntax.")
-            return
+            return None
 
         if "-m" in c[0]:
             mods = c[0][c[0].index("-m") + 1]
@@ -874,7 +889,7 @@ class SpiderFootCli(cmd.Cmd):
 
         if not mods and not types and not usecase:
             self.edprint("Invalid syntax.")
-            return
+            return None
 
         target = c[0][0]
         if "-n" in c[0]:
@@ -893,7 +908,7 @@ class SpiderFootCli(cmd.Cmd):
         d = self.request(self.ownopts['cli.server_baseurl'] + "/startscan",
                          post=post)
         if not d:
-            return
+            return None
 
         s = json.loads(d)
         if s[0] == "SUCCESS":
@@ -904,6 +919,8 @@ class SpiderFootCli(cmd.Cmd):
 
         if "-w" in c[0]:
             return self.do_logs(s[1] + " -w")
+
+        return None
 
     # Stop a running scan.
     def do_stop(self, line):
@@ -1207,7 +1224,7 @@ class SpiderFootCli(cmd.Cmd):
         """shell
         Run a shell command locally."""
         self.dprint("Running shell command:" + str(line))
-        self.dprint(os.popen(line).read(), plain=True)  # nosec
+        self.dprint(os.popen(line).read(), plain=True)  # noqa: DUO106
 
     def do_clear(self, line):
         """clear
@@ -1307,16 +1324,8 @@ if __name__ == "__main__":
 
     if not args.q:
         s = SpiderFootCli()
-        s.dprint("\n\
-  _________      .__    .___          ___________            __  \n\
- /   _____/_____ |__| __| _/__________\\_   _____/___   _____/  |_ \n\
- \_____  \\\\____ \|  |/ __ |/ __ \\_  __ \\    __)/  _ \ /  _ \\   __\\\n\
- /        \\  |_> >  / /_/ \\  ___/|  | \\/     \\(  <_> |  <_> )  |  \n\
-/_______  /   __/|__\\____ |\\___  >__|  \\___  / \\____/ \\____/|__|  \n\
-        \\/|__|           \\/    \\/          \\/                     \n\
-                Open Source Intelligence Automation.", plain=True, color=bcolors.GREYBLUE)
-        s.dprint("\
-               by Steve Micallef | @spiderfoot\n", plain=True,
+        s.dprint(ASCII_LOGO, plain=True, color=bcolors.GREYBLUE)
+        s.dprint(COPYRIGHT_INFO, plain=True,
                  color=bcolors.GREYBLUE_DARK)
         s.dprint(f"Version {s.version}.")
         if args.b:

@@ -11,10 +11,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from netaddr import IPAddress, IPNetwork
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'Custom Threat Data': {
@@ -24,8 +25,8 @@ malchecks = {
     }
 }
 
+
 class sfp_customfeed(SpiderFootPlugin):
-    """Custom Threat Feed:Investigate,Passive:Reputation Systems::Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed."""
 
     meta = {
         'name': "Custom Threat Feed",
@@ -100,7 +101,7 @@ class sfp_customfeed(SpiderFootPlugin):
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url, False)
+                        self.sf.error("Unable to fetch " + url)
                         return None
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
@@ -118,7 +119,7 @@ class sfp_customfeed(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                #self.sf.debug("Adding " + grp[0] + " to list.")
+                                # self.sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -130,11 +131,10 @@ class sfp_customfeed(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
+                            self.sf.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -155,7 +155,7 @@ class sfp_customfeed(SpiderFootPlugin):
                                     re.match(rxTgt, line, re.IGNORECASE):
                                 self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                                 return url
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.debug("Error encountered parsing 2: " + str(e))
                         continue
 
@@ -165,8 +165,8 @@ class sfp_customfeed(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" +
-                              itemType + ") with: " + cid)
+                self.sf.debug("Checking maliciousness of " + target + " ("
+                              + itemType + ") with: " + cid)
                 return self.resourceList(cid, target, itemType)
 
         return None
@@ -183,7 +183,7 @@ class sfp_customfeed(SpiderFootPlugin):
             return None
 
         if self.opts['url'] == "":
-            self.sf.error("You enabled sfp_customfeed but defined no custom feed URL!", False)
+            self.sf.error("You enabled sfp_customfeed but defined no custom feed URL!")
             self.errorState = True
             return None
 
@@ -241,10 +241,8 @@ class sfp_customfeed(SpiderFootPlugin):
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_customfeed class

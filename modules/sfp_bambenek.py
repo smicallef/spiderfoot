@@ -10,10 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from netaddr import IPAddress, IPNetwork
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'Bambenek C&C IP List': {
@@ -30,8 +31,8 @@ malchecks = {
     }
 }
 
+
 class sfp_bambenek(SpiderFootPlugin):
-    """Bambenek C&C List:Investigate,Passive:Reputation Systems::Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists."""
 
     meta = {
         'name': "Bambenek C&C List",
@@ -50,11 +51,11 @@ class sfp_bambenek(SpiderFootPlugin):
             'favIcon': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/mini-logo1.ico",
             'logo': "http://www.bambenekconsulting.com/wp-content/uploads/2013/04/logo_transparent21-300x84.png",
             'description': "Bambenek Consulting is an cybersecurity investigations and intelligence consulting firm "
-                                "focusing on tackling major criminal threats. "
-                                "Every day, there is another story about another company having their banking accounts drained, "
-                                "someone having their identity stolen, or critical infrastructure being taken offline by hostile entities. "
-                                "Led by IT security expert, John Bambenek, we have the resources to bring to your business so "
-                                "you can be sure your organization and your customers’ data is safe.",    
+            "focusing on tackling major criminal threats. "
+            "Every day, there is another story about another company having their banking accounts drained, "
+            "someone having their identity stolen, or critical infrastructure being taken offline by hostile entities. "
+            "Led by IT security expert, John Bambenek, we have the resources to bring to your business so "
+            "you can be sure your organization and your customers’ data is safe.",
         }
     }
 
@@ -128,7 +129,7 @@ class sfp_bambenek(SpiderFootPlugin):
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url, False)
+                        self.sf.error("Unable to fetch " + url)
                         return None
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
@@ -146,7 +147,7 @@ class sfp_bambenek(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                #self.sf.debug("Adding " + grp[0] + " to list.")
+                                # self.sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -158,11 +159,10 @@ class sfp_bambenek(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
+                            self.sf.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -183,7 +183,7 @@ class sfp_bambenek(SpiderFootPlugin):
                                     re.match(rxTgt, line, re.IGNORECASE):
                                 self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                                 return url
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.debug("Error encountered parsing 2: " + str(e))
                         continue
 
@@ -208,19 +208,19 @@ class sfp_bambenek(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
+            return
         if eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts.get('checkaffiliates', False):
-            return None
+            return
         if eventName == 'NETBLOCK_OWNER' and not self.opts.get('checknetblocks', False):
-            return None
+            return
         if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
-            return None
+            return
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
@@ -252,14 +252,12 @@ class sfp_bambenek(SpiderFootPlugin):
             url = self.lookupItem(cid, typeId, eventData)
 
             if self.checkForStop():
-                return None
+                return
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_bambenek class

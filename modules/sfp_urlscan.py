@@ -11,11 +11,14 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_urlscan(SpiderFootPlugin):
-    """URLScan.io:Footprint,Investigate,Passive:Search Engines::Search URLScan.io cache for domain information."""
 
     meta = {
         'name': "URLScan.io",
@@ -32,12 +35,12 @@ class sfp_urlscan(SpiderFootPlugin):
             'favIcon': "https://urlscan.io/img/urlscan_256.png",
             'logo': "https://urlscan.io/img/urlscan_256.png",
             'description': "urlscan.io is a service to scan and analyse websites. "
-                                "When a URL is submitted to urlscan.io, an automated process will browse to the URL "
-                                "like a regular user and record the activity that this page navigation creates. "
-                                "This includes the domains and IPs contacted, the resources (JavaScript, CSS, etc) requested from "
-                                "those domains, as well as additional information about the page itself. "
-                                "urlscan.io will take a screenshot of the page, record the DOM content, JavaScript global variables, "
-                                "cookies created by the page, and a myriad of other observations.",
+            "When a URL is submitted to urlscan.io, an automated process will browse to the URL "
+            "like a regular user and record the activity that this page navigation creates. "
+            "This includes the domains and IPs contacted, the resources (JavaScript, CSS, etc) requested from "
+            "those domains, as well as additional information about the page itself. "
+            "urlscan.io will take a screenshot of the page, record the DOM content, JavaScript global variables, "
+            "cookies created by the page, and a myriad of other observations.",
         }
     }
 
@@ -80,7 +83,7 @@ class sfp_urlscan(SpiderFootPlugin):
                                useragent=self.opts['_useragent'])
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by URLScan.io.", False)
+            self.sf.error("You are being rate-limited by URLScan.io.")
             self.errorState = True
             return None
 
@@ -89,12 +92,11 @@ class sfp_urlscan(SpiderFootPlugin):
             return None
 
         try:
-            result = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return result
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -103,26 +105,26 @@ class sfp_urlscan(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         data = self.query(eventData)
 
         if data is None:
-            return None
+            return
 
         results = data.get('results')
 
         if not results:
-            return None
+            return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
         self.notifyListeners(evt)
@@ -205,7 +207,5 @@ class sfp_urlscan(SpiderFootPlugin):
         for server in set(servers):
             evt = SpiderFootEvent('WEBSERVER_BANNER', server, self.__name__, event)
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_ipinfo class

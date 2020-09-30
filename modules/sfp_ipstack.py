@@ -12,11 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_ipstack(SpiderFootPlugin):
-    """ipstack:Footprint,Investigate,Passive:Real World:apikey:Identifies the physical location of IP addresses identified using ipstack.com."""
 
     meta = {
         'name': "ipstack",
@@ -32,7 +32,7 @@ class sfp_ipstack(SpiderFootPlugin):
                 "https://ipstack.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit ipstack.com/product",
+                "Visit https://ipstack.com/product",
                 "Click on 'Get Free API Key'",
                 "Click on 'Dashboard'",
                 "The API key is listed under 'Your API Access Key'"
@@ -40,8 +40,8 @@ class sfp_ipstack(SpiderFootPlugin):
             'favIcon': "https://ipstack.com/ipstack_images/ipstack_logo.svg",
             'logo': "https://ipstack.com/ipstack_images/ipstack_logo.svg",
             'description': "Locate and identify website visitors by IP address.\n"
-                                "ipstack offers one of the leading IP to geolocation APIS "
-                                "and global IP database services worldwide.",
+            "ipstack offers one of the leading IP to geolocation APIS "
+            "and global IP database services worldwide.",
         }
     }
 
@@ -85,7 +85,7 @@ class sfp_ipstack(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_ipstack but did not set an API key!", False)
+            self.sf.error("You enabled sfp_ipstack but did not set an API key!")
             self.errorState = True
             return None
 
@@ -93,31 +93,28 @@ class sfp_ipstack(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
 
-        res = self.sf.fetchUrl("http://api.ipstack.com/" + eventData + "?access_key="  + self.opts['api_key'],
+        self.results[eventData] = True
+
+        res = self.sf.fetchUrl("http://api.ipstack.com/" + eventData + "?access_key=" + self.opts['api_key'],
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] is None:
             self.sf.info("No GeoIP info found for " + eventData)
 
         try:
             hostip = json.loads(res['content'])
-            if 'success' in hostip and hostip['success'] == False:
-                self.sf.error("Invalid ipstack.com API key or usage limits exceeded.", False)
+            if 'success' in hostip and hostip['success'] is False:
+                self.sf.error("Invalid ipstack.com API key or usage limits exceeded.")
                 self.errorState = True
                 return None
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
-        if hostip.get('country_name', None) != None:
-            self.sf.info("Found GeoIP for " + eventData + ": " + hostip['country_name'])
-            countrycity = hostip['country_name']
-
-            evt = SpiderFootEvent("GEOINFO", countrycity, self.__name__, event)
+        geoinfo = hostip.get('country_name')
+        if geoinfo:
+            self.sf.info(f"Found GeoIP for {eventData}: {geoinfo}")
+            evt = SpiderFootEvent("GEOINFO", geoinfo, self.__name__, event)
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_ipstack class

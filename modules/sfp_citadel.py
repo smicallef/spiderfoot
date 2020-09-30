@@ -11,11 +11,14 @@
 # -------------------------------------------------------------------------------
 
 import json
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_citadel(SpiderFootPlugin):
-    """Leak-Lookup:Footprint,Investigate,Passive:Leaks, Dumps and Breaches:apikey:Searches Leak-Lookup.com's database of breaches."""
 
     meta = {
         'name': "Leak-Lookup",
@@ -31,7 +34,7 @@ class sfp_citadel(SpiderFootPlugin):
                 "https://leak-lookup.com/databases"
             ],
             'apiKeyInstructions': [
-                "Visit leak-lookup.com",
+                "Visit https://leak-lookup.com",
                 "Register an account",
                 "Login to your account",
                 "Click on 'Account'",
@@ -41,13 +44,13 @@ class sfp_citadel(SpiderFootPlugin):
             'favIcon': "https://leak-lookup.com/favicon.png",
             'logo': "https://leak-lookup.com/favicon.png",
             'description': "Leak-Lookup allows you to search across thousands of data breaches "
-                                "to stay on top of credentials that may have been compromised in the wild.\n"
-                                "The creators came together when they realized they had a vast trove of data "
-                                "that could be of great value to pen-testers seeking weaknesses in client passwords "
-                                "and those concerned about which of their credentials have been leaked into the wild.\n"
-                                "Always looking forward, Leak-Lookup invests all of its profits back into securing the "
-                                "latest data breaches and leaks / dumps as they become available, ensuring that "
-                                "as well as historical data, Leak-Lookup becomes a field leader in credential monitoring.",
+            "to stay on top of credentials that may have been compromised in the wild.\n"
+            "The creators came together when they realized they had a vast trove of data "
+            "that could be of great value to pen-testers seeking weaknesses in client passwords "
+            "and those concerned about which of their credentials have been leaked into the wild.\n"
+            "Always looking forward, Leak-Lookup invests all of its profits back into securing the "
+            "latest data breaches and leaks / dumps as they become available, ensuring that "
+            "as well as historical data, Leak-Lookup becomes a field leader in credential monitoring.",
         }
     }
 
@@ -107,8 +110,8 @@ class sfp_citadel(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug('Error processing JSON response: ' + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data

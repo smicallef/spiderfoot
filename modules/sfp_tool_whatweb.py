@@ -11,13 +11,14 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from subprocess import Popen, PIPE
 import json
 import os.path
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from subprocess import PIPE, Popen
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_tool_whatweb(SpiderFootPlugin):
-    """Tool - WhatWeb:Footprint,Investigate:Content Analysis:tool:Identify what software is in use on the specified website."""
 
     meta = {
         'name': "Tool - WhatWeb",
@@ -28,10 +29,10 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         'toolDetails': {
             'name': "WhatWeb",
             'description': "WhatWeb identifies websites. Its goal is to answer the question, \"What is that Website?\". "
-                                "WhatWeb recognises web technologies including content management systems (CMS), "
-                                "blogging platforms, statistic/analytics packages, JavaScript libraries, web servers, and embedded devices. "
-                                "WhatWeb has over 1800 plugins, each to recognise something different. "
-                                "WhatWeb also identifies version numbers, email addresses, account IDs, web framework modules, SQL errors, and more.",
+            "WhatWeb recognises web technologies including content management systems (CMS), "
+            "blogging platforms, statistic/analytics packages, JavaScript libraries, web servers, and embedded devices. "
+            "WhatWeb has over 1800 plugins, each to recognise something different. "
+            "WhatWeb also identifies version numbers, email addresses, account IDs, web framework modules, SQL errors, and more.",
             'website': 'https://github.com/urbanadventurer/whatweb',
             'repository': 'https://github.com/urbanadventurer/whatweb'
         },
@@ -77,18 +78,18 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already scanned.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if not self.opts['whatweb_path']:
-            self.sf.error("You enabled sfp_tool_whatweb but did not set a path to the tool!", False)
+            self.sf.error("You enabled sfp_tool_whatweb but did not set a path to the tool!")
             self.errorState = True
-            return None
+            return
 
         exe = self.opts['whatweb_path']
         if self.opts['whatweb_path'].endswith('/'):
@@ -96,14 +97,14 @@ class sfp_tool_whatweb(SpiderFootPlugin):
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
-            self.sf.error("File does not exist: " + exe, False)
+            self.sf.error("File does not exist: " + exe)
             self.errorState = True
-            return None
+            return
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
-            self.sf.error("Invalid input, refusing to run.", False)
-            return None
+            self.sf.error("Invalid input, refusing to run.")
+            return
 
         # Set aggression level
         try:
@@ -112,7 +113,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
                 aggression = 4
             if aggression < 1:
                 aggression = 1
-        except:
+        except Exception:
             aggression = 1
 
         # Run WhatWeb
@@ -129,27 +130,27 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         try:
             p = Popen(args, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
-        except BaseException as e:
-            self.sf.error("Unable to run WhatWeb: " + str(e), False)
-            return None
+        except Exception as e:
+            self.sf.error(f"Unable to run WhatWeb: {e}")
+            return
 
         if p.returncode != 0:
-            self.sf.error("Unable to read WhatWeb output.", False)
+            self.sf.error("Unable to read WhatWeb output.")
             self.sf.debug("Error running WhatWeb: " + stderr + ", " + stdout)
-            return None
+            return
 
         if not stdout:
-            self.sf.debug("WhatWeb returned no output for " + eventData)
-            return None
+            self.sf.debug(f"WhatWeb returned no output for {eventData}")
+            return
 
         try:
             result_json = json.loads(stdout)
-        except BaseException as e:
-            self.sf.error("Couldn't parse the JSON output of WhatWeb: " + str(e), False)
-            return None
+        except Exception as e:
+            self.sf.error(f"Couldn't parse the JSON output of WhatWeb: {e}")
+            return
 
         if len(result_json) == 0:
-            return None
+            return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(result_json), self.__name__, event)
         self.notifyListeners(evt)

@@ -12,10 +12,11 @@
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_emailrep(SpiderFootPlugin):
-    """EmailRep:Footprint,Investigate,Passive:Search Engines:apikey:Search EmailRep.io for email address reputation."""
 
     meta = {
         'name': "EmailRep",
@@ -30,17 +31,17 @@ class sfp_emailrep(SpiderFootPlugin):
                 "https://docs.emailrep.io/"
             ],
             'apiKeyInstructions': [
-                "Visit emailrep.io/free",
+                "Visit https://emailrep.io/free",
                 "Request a free API Key",
                 "The API key will be sent to registered email account on approval"
             ],
             'favIcon': "https://emailrep.io/assets/img/favicon.png",
             'logo': "https://emailrep.io/assets/img/logo-light.png",
             'description': "Illuminate the \"reputation\" behind an email address.\n"
-                                "EmailRep uses hundreds of factors like domain age, traffic rankings, "
-                                "presence on social media sites, professional networking sites, personal connections, "
-                                "public records, deliverability, data breaches, dark web credential leaks, "
-                                "phishing emails, threat actor emails, and more to answer these types of questions.",
+            "EmailRep uses hundreds of factors like domain age, traffic rankings, "
+            "presence on social media sites, professional networking sites, personal connections, "
+            "public records, deliverability, data breaches, dark web credential leaks, "
+            "phishing emails, threat actor emails, and more to answer these types of questions.",
         }
     }
 
@@ -92,29 +93,29 @@ class sfp_emailrep(SpiderFootPlugin):
             return None
 
         if res['code'] == '400':
-            self.sf.error('API error: Bad request', False)
+            self.sf.error('API error: Bad request')
             self.errorState = True
             return None
 
         if res['code'] == '401':
-            self.sf.error('API error: Invalid API key', False)
+            self.sf.error('API error: Invalid API key')
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error('API error: Too Many Requests', False)
+            self.sf.error('API error: Too Many Requests')
             self.errorState = True
             return None
 
         if res['code'] != '200':
-            self.sf.error('Unexpected reply from EmailRep.io: ' + res['code'], False)
+            self.sf.error('Unexpected reply from EmailRep.io: ' + res['code'])
             self.errorState = True
             return None
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data
@@ -132,7 +133,7 @@ class sfp_emailrep(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == '':
-            self.sf.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.", False)
+            self.sf.error("Warning: You enabled sfp_emailrep but did not set an API key! Queries will be rate limited.")
 
         res = self.query(eventData)
 

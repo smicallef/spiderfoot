@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        sfp_venmo
 # Purpose:     Gather user information from Venmo API.
 #
@@ -7,14 +7,15 @@
 # Created:     2019-07-16
 # Copyright:   (c) bcoles 2019
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_venmo(SpiderFootPlugin):
-    """Venmo:Footprint,Investigate,Passive:Social Media::Gather user information from Venmo API."""
 
     meta = {
         'name': "Venmo",
@@ -71,8 +72,8 @@ class sfp_venmo(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug('Error processing JSON response: ' + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         json_data = data.get('data')
@@ -90,7 +91,7 @@ class sfp_venmo(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -99,7 +100,7 @@ class sfp_venmo(SpiderFootPlugin):
         data = self.query(eventData)
 
         if not data:
-            return None
+            return
 
         e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)

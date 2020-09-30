@@ -10,10 +10,11 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress, IPNetwork
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from netaddr import IPAddress, IPNetwork
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 malchecks = {
     'cybercrime-tracker.net Malicious Submissions': {
@@ -26,7 +27,6 @@ malchecks = {
 
 
 class sfp_cybercrimetracker(SpiderFootPlugin):
-    """cybercrime-tracker.net:Investigate,Passive:Reputation Systems::Check if a host/domain or IP is malicious according to cybercrime-tracker.net."""
 
     meta = {
         'name': "cybercrime-tracker.net",
@@ -44,7 +44,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
             'favIcon': "http://cybercrime-tracker.net/favicon.ico",
             'logo': "http://cybercrime-tracker.net/favicon.ico",
             'description': "CyberCrime is a C&C panel tracker, in other words, "
-                                "it lists the administration interfaces of certain in-the-wild botnets.",
+            "it lists the administration interfaces of certain in-the-wild botnets.",
         }
     }
 
@@ -110,7 +110,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
                 if data['content'] is None:
                     data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
                     if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url, False)
+                        self.sf.error("Unable to fetch " + url)
                         return None
                     else:
                         self.sf.cachePut("sfmal_" + cid, data['content'])
@@ -128,7 +128,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
                         for line in data['content'].split('\n'):
                             grp = re.findall(pat, line)
                             if len(grp) > 0:
-                                #self.sf.debug("Adding " + grp[0] + " to list.")
+                                # self.sf.debug("Adding " + grp[0] + " to list.")
                                 iplist.append(grp[0])
                     else:
                         iplist = data['content'].split('\n')
@@ -140,11 +140,10 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
 
                         try:
                             if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(ip + " found within netblock/subnet " +
-                                              target + " in " + check)
+                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
                                 return url
                         except Exception as e:
-                            self.sf.debug("Error encountered parsing: " + str(e))
+                            self.sf.debug(f"Error encountered parsing: {e}")
                             continue
 
                     return None
@@ -165,7 +164,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
                                     re.match(rxTgt, line, re.IGNORECASE):
                                 self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
                                 return url
-                    except BaseException as e:
+                    except Exception as e:
                         self.sf.debug("Error encountered parsing 2: " + str(e))
                         continue
         return None
@@ -230,10 +229,8 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
 
             # Notify other modules of what you've found
             if url is not None:
-                text = check + " [" + eventData + "]\n" + "<SFURL>" + url + "</SFURL>"
+                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
                 evt = SpiderFootEvent(evtType, text, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_cybercrimetracker class

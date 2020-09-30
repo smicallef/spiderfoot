@@ -12,10 +12,10 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_names(SpiderFootPlugin):
-    """Human Name Extractor:Footprint,Passive:Content Analysis:errorprone:Attempt to identify human names in fetched content."""
 
     meta = {
         'name': "Human Name Extractor",
@@ -103,13 +103,13 @@ class sfp_names(SpiderFootPlugin):
                 self.notifyListeners(evt)
                 return None
 
-        # For RAW_RIR_DATA, there are only specific modules we 
+        # For RAW_RIR_DATA, there are only specific modules we
         # expect to see RELEVANT names within.
         if eventName == "RAW_RIR_DATA":
             if srcModuleName not in ["sfp_arin", "sfp_builtwith", "sfp_clearbit",
-                                      "sfp_fullcontact", "sfp_github", "sfp_hunter",
-                                      "sfp_opencorporates", "sfp_slideshare",
-                                      "sfp_twitter", "sfp_venmo", "sfp_instagram"]:
+                                     "sfp_fullcontact", "sfp_github", "sfp_hunter",
+                                     "sfp_opencorporates", "sfp_slideshare",
+                                     "sfp_twitter", "sfp_venmo", "sfp_instagram"]:
                 self.sf.debug("Ignoring RAW_RIR_DATA from untrusted module.")
                 return None
 

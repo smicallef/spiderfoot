@@ -11,13 +11,14 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 import codecs
+import re
 from hashlib import sha256
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_bitcoin(SpiderFootPlugin):
-    """Bitcoin Finder:Footprint,Investigate,Passive:Content Analysis::Identify bitcoin addresses in scraped webpages."""
 
     meta = {
         'name': "Bitcoin Finder",
@@ -52,7 +53,7 @@ class sfp_bitcoin(SpiderFootPlugin):
 
     def to_bytes(self, n, length):
         h = '%x' % n
-        s = codecs.decode(('0'*(len(h) % 2) + h).zfill(length*2), "hex")
+        s = codecs.decode(('0' * (len(h) % 2) + h).zfill(length * 2), "hex")
         return s
 
     def decode_base58(self, bc, length):
@@ -87,7 +88,5 @@ class sfp_bitcoin(SpiderFootPlugin):
             if self.check_bc(m):
                 evt = SpiderFootEvent("BITCOIN_ADDRESS", m, self.__name__, event)
                 self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_bitcoin class

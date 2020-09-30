@@ -11,11 +11,11 @@
 # -------------------------------------------------------------------------------
 
 import datetime
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_wikileaks(SpiderFootPlugin):
-    """Wikileaks:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Search Wikileaks for mentions of domain names and e-mail addresses."""
 
     meta = {
         'name': "Wikileaks",
@@ -33,8 +33,8 @@ class sfp_wikileaks(SpiderFootPlugin):
             'favIcon': "https://wikileaks.org/IMG/favicon.ico",
             'logo': "https://wikileaks.org/IMG/favicon.ico",
             'description': "WikiLeaks specializes in the analysis and publication of large datasets of censored "
-                                "or otherwise restricted official materials involving war, spying and corruption. "
-                                "It has so far published more than 10 million documents and associated analyses.",
+            "or otherwise restricted official materials involving war, spying and corruption. "
+            "It has so far published more than 10 million documents and associated analyses.",
         }
     }
 
@@ -81,29 +81,30 @@ class sfp_wikileaks(SpiderFootPlugin):
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if self.opts['external']:
             external = "True"
         else:
             external = ""
 
-        if self.opts['daysback'] != None and self.opts['daysback'] != 0:
+        if self.opts['daysback'] is not None and self.opts['daysback'] != 0:
             newDate = datetime.datetime.now() - datetime.timedelta(days=int(self.opts['daysback']))
             maxDate = newDate.strftime("%Y-%m-%d")
         else:
             maxDate = ""
 
         qdata = eventData.replace(" ", "+")
-        wlurl = "https://search.wikileaks.org/?query=%22" + qdata + "%22" + \
-              "&released_date_start=" + maxDate + "&include_external_sources=" + \
-              external + "&new_search=True&order_by=most_relevant#results"
-        res = self.sf.fetchUrl(wlurl)
+        wlurl = "query=%22" + qdata + "%22" + "&released_date_start=" + maxDate + "&include_external_sources=" + external + "&new_search=True&order_by=most_relevant#results"
+
+        res = self.sf.fetchUrl(
+            "https://search.wikileaks.org/?" + wlurl
+        )
         if res['content'] is None:
-            self.sf.error("Unable to fetch Wikileaks content.", False)
-            return None
+            self.sf.error("Unable to fetch Wikileaks content.")
+            return
 
         # Fetch the paste site content
         links = dict()
@@ -135,7 +136,7 @@ class sfp_wikileaks(SpiderFootPlugin):
                 else:
                     self.sf.debug("Found a link: " + link)
                     if self.checkForStop():
-                        return None
+                        return
 
                     # Wikileaks leak links will have a nested folder structure link
                     if link.count('/') >= 4:

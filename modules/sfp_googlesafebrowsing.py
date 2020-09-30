@@ -12,14 +12,14 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_googlesafebrowsing(SpiderFootPlugin):
-    """GoogleSafeBrowsing:Investigate,Passive:Reputation Systems:apikey:Check if the URL is included on any of the Safe Browsing lists"""
 
     meta = {
-        "name": "GoogleSafeBrowsing",
+        "name": "Google SafeBrowsing",
         "summary": "Check if the URL is included on any of the Safe Browsing lists.",
         "flags": ["slow", "apikey"],
         "useCases": ["Passive", "Investigate"],
@@ -45,8 +45,8 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
             "favIcon": "https://www.gstatic.com/devrel-devsite/prod/v1241c04ebcb2127897d6c18221acbd64e7ed5c46e5217fd83dd808e592c47bf6/developers/images/favicon.png",
             "logo": "https://developers.google.com/safe-browsing/images/SafeBrowsing_Icon.png",
             "description": "The Safe Browsing APIs (v4) let your client applications check URLs "
-                                "against Google's constantly updated lists of unsafe web resources. "
-                                "Any URL found on a Safe Browsing list is considered unsafe.",
+            "against Google's constantly updated lists of unsafe web resources. "
+            "Any URL found on a Safe Browsing list is considered unsafe.",
         },
     }
 
@@ -97,7 +97,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
             f":find?key={self.opts['api_key']}"
         )
         payload = {
-            "client": {"clientId": "SpiderFoot", "clientVersion": "3.2",},
+            "client": {"clientId": "SpiderFoot", "clientVersion": "3.2"},
             "threatInfo": {
                 "threatTypes": [
                     "THREAT_TYPE_UNSPECIFIED",
@@ -130,26 +130,25 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         )
 
         if res["code"] == "400":
-            self.sf.error("Invalid request payload on Google Safe Browsing API", False)
+            self.sf.error("Invalid request payload on Google Safe Browsing API")
             self.errorState = True
             return None
 
         if res["code"] == "429":
-            self.sf.error("Reaching rate limit on Google Safe Browsing API", False)
+            self.sf.error("Reaching rate limit on Google Safe Browsing API")
             self.errorState = True
             return None
 
         if res["code"] == "403":
             self.sf.error(
-                "Permission denied, invalid API key on Google Safe Browsing API", False
+                "Permission denied, invalid API key on Google Safe Browsing API"
             )
             self.errorState = True
             return None
 
         if res["code"] in ["500", "503", "504"]:
             self.sf.error(
-                "Google Safe Browsing API is having some troubles or unavailable.",
-                False,
+                "Google Safe Browsing API is having some troubles or unavailable."
             )
             self.errorState = True
             return None
@@ -161,7 +160,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
                 return None
 
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from SHODAN: {e}", False)
+            self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
 
         return info
@@ -178,7 +177,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
 
         if self.opts["api_key"] == "":
             self.sf.error(
-                "You enabled sfp_googlesafebrowsing but did not set an API key!", False
+                "You enabled sfp_googlesafebrowsing but did not set an API key!"
             )
             self.errorState = True
             return None
@@ -214,7 +213,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         self.notifyListeners(evt)
 
         evt = SpiderFootEvent(
-            evtType, "GoogleSafeBrowsing [" + eventData + "]", self.__name__, event
+            evtType, "Google SafeBrowsing [" + eventData + "]", self.__name__, event
         )
         self.notifyListeners(evt)
 

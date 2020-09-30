@@ -106,7 +106,30 @@
                 optdesc = opts['__modules__'][mod]['optdescs'][opt]
             %>
 
-            <tr><td>${optdesc}</td><td style='vertical-align: middle'>
+            <tr>
+              <td>${optdesc}
+                % if "api_key" in opt:
+                    <%
+                        import re
+                        instructions = ""
+                        if "dataSource" in opts['__modules__'][mod]['meta']:
+                            instructions = "<div><b>Website:</b> <a href='" + opts['__modules__'][mod]['meta']['dataSource']['website'] + "' target=_new>" + opts['__modules__'][mod]['meta']['dataSource']['website'] + "</a><br>"
+                            instructions += "<b>Module purpose:</b> " + opts['__modules__'][mod]['descr'] + "<br><br>"
+
+                            n = 0
+                            if "apiKeyInstructions" in opts['__modules__'][mod]['meta']['dataSource']:
+                                for step in opts['__modules__'][mod]['meta']['dataSource']['apiKeyInstructions']:
+                                    n += 1
+                                    if "https://" in step or "http://" in step:
+                                        step = re.sub(r'.*(https?://.[^ ]+).*', '<a target=_new href=\'\\1\'>\\1</a>', step)
+                                    instructions += str(n) + ". " + step + "<br>"
+
+                            instructions += "</div>"
+                    %>
+                    &nbsp;&nbsp;<a href='#' data-html="true" data-toggle="popover" data-trigger="focus" title="Instructions" data-content="${instructions}"><i class="glyphicon glyphicon-question-sign"></i></a>
+                % endif
+              </td>
+              <td style='vertical-align: middle'>
             % if type(modopts[opt]) is int:
                 <div class='input-group'>
                     <input id='${mod}:${opt}' class='form-control' type=text value="${modopts[opt]}">

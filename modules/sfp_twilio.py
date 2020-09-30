@@ -10,13 +10,14 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
 import base64
 import json
 
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
+
 class sfp_twilio(SpiderFootPlugin):
-    """Twilio:Footprint,Investigate,Passive:Search Engines:apikey:Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio."""
-        
+
     meta = {
         'name': "Twilio",
         'summary': "Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio.",
@@ -31,16 +32,16 @@ class sfp_twilio(SpiderFootPlugin):
                 "https://www.twilio.com/blog/what-does-twilio-do"
             ],
             'apiKeyInstructions': [
-                "Visit www.twilio.com",
+                "Visit https://www.twilio.com",
                 "Register a free account",
-                "Navigate to www.twilio.com/console",
+                "Navigate to https://www.twilio.com/console",
                 "The API key combination is listed under 'Account SID' and 'Auth Token'"
             ],
             'favIcon': "https://www.datasource.com/favicon.ico",
             'logo': "https://www.datasource.com/logo.gif",
             'description': "Twilio is a cloud communications platform as a service company based in San Francisco, California. "
-                                "Twilio allows software developers to programmatically make and receive phone calls, "
-                                "send and receive text messages, and perform other communication functions using its web service APIs.",
+            "Twilio allows software developers to programmatically make and receive phone calls, "
+            "send and receive text messages, and perform other communication functions using its web service APIs.",
         }
     }
 
@@ -67,14 +68,13 @@ class sfp_twilio(SpiderFootPlugin):
     def watchedEvents(self):
         return ["PHONE_NUMBER"]
 
-    # What events this module produces
     def producedEvents(self):
         return ["COMPANY_NAME", "RAW_RIR_DATA"]
 
     # When querying third parties, it's best to have a dedicated function
     # to do so and avoid putting it in handleEvent()
-    def queryPhoneNumber(self, phoneNumber):   
-        
+    def queryPhoneNumber(self, phoneNumber):
+
         token = (base64.b64encode(self.opts['api_key_account_sid'].encode('utf8') + ":".encode('utf-8') + self.opts['api_key_auth_token'].encode('utf-8'))).decode('utf-8')
 
         headers = {
@@ -83,30 +83,30 @@ class sfp_twilio(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://lookups.twilio.com/v1/PhoneNumbers/' + phoneNumber + "?Type=caller-name",
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            f"https://lookups.twilio.com/v1/PhoneNumbers/{phoneNumber}?Type=caller-name",
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         if res['code'] == '400':
-            self.sf.error("Bad request.", False)
+            self.sf.error("Bad request.")
             return None
-        
+
         if res['code'] == '404':
             self.sf.debug("Phone number not found.")
             return None
-        
+
         if res['code'] == '429':
-            self.sf.error("API usage limit reached.", False)
+            self.sf.error("API usage limit reached.")
             return None
 
         if res['code'] == '503':
-            self.sf.error("Service unavailable.", False)
+            self.sf.error("Service unavailable.")
             return None
 
         if not res['code'] == '200':
-            self.sf.error("Could not fetch data.", False)
+            self.sf.error("Could not fetch data.")
             return None
 
         return res.get('content')
@@ -118,42 +118,39 @@ class sfp_twilio(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key_account_sid'] == "" or self.opts['api_key_auth_token'] == "":
-            self.sf.error("You enabled sfp_twilio but did not set account sid/auth token", False)
+            self.sf.error("You enabled sfp_twilio but did not set account sid/auth token")
             self.errorState = True
-            return None
+            return
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         content = self.queryPhoneNumber(eventData)
-        
+
         if content is None:
-            return None
-        
+            return
+
         data = json.loads(content)
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
-        
+
         callerName = data.get('caller_name')
         if callerName:
             callerName = callerName.get('caller_name')
-        
+
         if callerName:
             evt = SpiderFootEvent("COMPANY_NAME", callerName, self.__name__, event)
-            self.notifyListeners(evt)   
+            self.notifyListeners(evt)
 
-        return None
-        
 # End of sfp_twilio class

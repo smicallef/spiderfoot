@@ -348,17 +348,18 @@
                         $('#ucounter').html(uniqueCount);
                         $('#tcounter').html(totalCount);
                         $('#scanstatusbadge').html(scanStatus);
+
+                        var statusy = "";
                         if (scanStatus == "FINISHED") {
                             statusy = "alert-success";
-                        }
-                        if (scanStatus.indexOf("ABORT") >= 0) {
+                        } else if (scanStatus.indexOf("ABORT") >= 0) {
                             statusy = "alert-warning";
-                        }
-                        if (scanStatus == "RUNNING" || scanStatus == "STARTED" || scanStatus == "STARTING" || scanStatus == "INITIALIZING") {
+                        } else if (scanStatus == "CREATED" || scanStatus == "RUNNING" || scanStatus == "STARTED" || scanStatus == "STARTING" || scanStatus == "INITIALIZING") {
                             statusy = "alert-info";
-                        }
-                        if (scanStatus.indexOf("FAILED") >= 0) {
+                        } else if (scanStatus.indexOf("FAILED") >= 0) {
                             statusy = "alert-danger";
+                        } else {
+                            statusy = "alert-info";
                         }
                         $('#scanstatusbadge').removeClass(["alert-info", "alert-warning", "alert-danger"]).addClass(statusy);
                         $('#status').html(scanStatus);
@@ -661,6 +662,7 @@
             }
 
             if (currentSection == "btn-graph") {
+                sf.log("Loading visualisation for scan: " + instanceId);
                 efr.src = '${docroot}/scanviz?id=' + instanceId + '&gexf=1';
             }
 
@@ -721,13 +723,25 @@
             });
         }
 
-        if ("${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "STARTED" || "${status}" == "UNKNOWN" || "${status}" == "INITIALIZING") {
+        if ("${status}" == "CREATED" || "${status}" == "RUNNING" || "${status}" == "STARTING" || "${status}" == "STARTED" || "${status}" == "UNKNOWN" || "${status}" == "INITIALIZING") {
             scanSummaryView("${id}");
         } else {
             browseEventList("${id}");
         }
 
-        setInterval(function() {
+        var refreshSummaryInterval;
+
+        refreshSummary = function() {
+            var status = document.getElementById("scanstatusbadge").innerHTML;
+
+            if (status == "ERROR-FAILED" || status == "FINISHED" || status == "ABORTED") {
+                sf.log("Scan is " + status);
+                clearInterval(refreshSummaryInterval);
+                return;
+            }
+
+            sf.log("Scan is " + status + ". Refreshing scan summary ...");
+
             for (var i = 0; i < dataloaders.length; i++) {
                 if (!loadersrunning) {
                     loadersrunning = true;
@@ -735,7 +749,9 @@
                     loadersrunning = false;
                 }
             }
-        }, 5000);
+        }
+
+        refreshSummaryInterval = setInterval(refreshSummary, 5000);
 
     </script>
 <iframe class="hidden" id='exportframe'>

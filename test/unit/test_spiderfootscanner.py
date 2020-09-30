@@ -1,7 +1,8 @@
 # test_spiderfootscanner.py
-from sfscan import SpiderFootScanner
 import unittest
 import uuid
+
+from sfscan import SpiderFootScanner
 
 
 class TestSpiderFootScanner(unittest.TestCase):
@@ -12,26 +13,20 @@ class TestSpiderFootScanner(unittest.TestCase):
         '_debug': False,
         '__logging': True,
         '__outputfilter': None,
-        '__blocknotif': False,
-        '_fatalerrors': False,
         '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',
         '_dnsserver': '',
         '_fetchtimeout': 5,
         '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
         '_internettlds_cache': 72,
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-        '__version__': '3.2-DEV',
+        '__version__': '3.3-DEV',
         '__database': 'spiderfoot.test.db',  # note: test database file
-        '__webaddr': '127.0.0.1',
-        '__webport': 5001,
-        '__docroot': '',
         '__modules__': None,
         '_socks1type': '',
         '_socks2addr': '',
         '_socks3port': '',
         '_socks4user': '',
         '_socks5pwd': '',
-        '_socks6dns': True,
         '_torctlport': 9051,
         '__logstdout': False
     }
@@ -171,7 +166,7 @@ class TestSpiderFootScanner(unittest.TestCase):
         module_list = list()
 
         with self.assertRaises(ValueError):
-            SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, dict(), start=False)
+            SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, self.default_options, start=False)
 
     def test_init_argument_globalOpts_of_invalid_type_should_raise_TypeError(self):
         """
@@ -221,6 +216,32 @@ class TestSpiderFootScanner(unittest.TestCase):
         status = sfscan.status
         self.assertIsInstance(status, str)
 
+    def test__setStatus_argument_status_of_invalid_type_should_raise_TypeError(self):
+        """
+        Test __setStatus(self, status, started=None, ended=None)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        scan_id = str(uuid.uuid4())
+        module_list = ['sfp__stor_db']
 
-if __name__ == '__main__':
-    unittest.main()
+        sfscan = SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, opts, start=False)
+
+        invalid_types = [None, list(), dict(), int()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                with self.assertRaises(TypeError):
+                    sfscan._SpiderFootScanner__setStatus(invalid_type)
+
+    def test__setStatus_argument_status_with_blank_value_should_raise_ValueError(self):
+        """
+        Test __setStatus(self, status, started=None, ended=None)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        scan_id = str(uuid.uuid4())
+        module_list = ['sfp__stor_db']
+
+        sfscan = SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, opts, start=False)
+        with self.assertRaises(ValueError):
+            sfscan._SpiderFootScanner__setStatus("example invalid scan status")

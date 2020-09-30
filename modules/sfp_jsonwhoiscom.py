@@ -12,11 +12,14 @@
 
 import json
 import time
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_jsonwhoiscom(SpiderFootPlugin):
-    """JsonWHOIS.com:Footprint,Investigate,Passive:Search Engines:apikey:Search JsonWHOIS.com for WHOIS records associated with a domain."""
 
     meta = {
         'name': "JsonWHOIS.com",
@@ -31,17 +34,17 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
                 "https://jsonwhois.com/docs"
             ],
             'apiKeyInstructions': [
-                "Visit jsonwhois.com",
+                "Visit https://jsonwhois.com",
                 "Sign up for a free account",
-                "Navigate to jsonwhois.com/dashboard",
+                "Navigate to https://jsonwhois.com/dashboard",
                 "The API key is listed under 'Api Key'"
             ],
             'favIcon': "https://jsonwhois.com/assets/fav.ico",
             'logo': "https://jsonwhois.com/assets/fav.ico",
             'description': "Get access to accurate Whois records for generic and country TLDs. "
-                                "Around 1000 gTLDs include .com, .org, .net, .us, .biz, .info, .mobi, .pro, .asia and many other new ones.\n"
-                                "Raw and parsed Whois data are both accessible for downloads in the form of "
-                                "MYSQL or MYSQL database dumps and Comma Separated Values (.CSV) files.",
+            "Around 1000 gTLDs include .com, .org, .net, .us, .biz, .info, .mobi, .pro, .asia and many other new ones.\n"
+            "Raw and parsed Whois data are both accessible for downloads in the form of "
+            "MYSQL or MYSQL database dumps and Comma Separated Values (.CSV) files.",
         }
     }
 
@@ -89,12 +92,12 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
             "Accept": "application/json",
             "Authorization": "Token token=" + self.opts["api_key"]
         }
-        
+
         res = self.sf.fetchUrl(
-          "https://jsonwhois.com/api/v1/whois?%s" % urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            "https://jsonwhois.com/api/v1/whois?%s" % urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         time.sleep(self.opts['delay'])
@@ -113,23 +116,23 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
             return None
 
         if res['code'] == "401":
-            self.sf.error("Invalid JsonWHOIS.com API key.", False)
+            self.sf.error("Invalid JsonWHOIS.com API key.")
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error("You are being rate-limited by JsonWHOIS.com", False)
+            self.sf.error("You are being rate-limited by JsonWHOIS.com")
             self.errorState = True
             return None
 
         if res['code'] == '503':
-            self.sf.error("JsonWHOIS.com service unavailable", False)
+            self.sf.error("JsonWHOIS.com service unavailable")
             self.errorState = True
             return None
 
         # Catch all other non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from JsonWHOIS.com", False)
+            self.sf.error("Failed to retrieve content from JsonWHOIS.com")
             self.errorState = True
             return None
 
@@ -157,7 +160,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_jsonwhoiscom but did not set an API key!", False)
+            self.sf.error("You enabled sfp_jsonwhoiscom but did not set an API key!")
             self.errorState = True
             return None
 
@@ -221,7 +224,8 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
                 phone = phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "").replace(".", "")
                 phones.append(phone)
 
-            location = ', '.join([_f for _f in [contact.get('address'), contact.get('city'), contact.get('state'), contact.get('zip'), contact.get('country_code')] if _f])
+            country = self.sf.countryNameFromCountryCode(contact.get('country_code'))
+            location = ', '.join([_f for _f in [contact.get('address'), contact.get('city'), contact.get('state'), contact.get('zip'), country] if _f])
             if location:
                 locations.append(location)
 

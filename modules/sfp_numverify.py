@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        sfp_numverify
 # Purpose:     SpiderFoot plug-in to search numverify.com API for a phone number
 #              and retrieve location and carrier information.
@@ -8,15 +8,18 @@
 # Created:     2019-05-25
 # Copyright:   (c) bcoles 2019
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
-import urllib.request, urllib.parse, urllib.error
 import time
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_numverify(SpiderFootPlugin):
-    """numverify:Footprint,Investigate,Passive:Real World:apikey:Lookup phone number location and carrier information from numverify.com."""
 
     meta = {
         'name': "numverify",
@@ -32,18 +35,18 @@ class sfp_numverify(SpiderFootPlugin):
                 "https://numverify.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit numverify.com",
+                "Visit https://numverify.com",
                 "Sign up for a free account",
-                "Navigate to numverify.com/dashboard",
+                "Navigate to https://numverify.com/dashboard",
                 "The API key is listed under 'Your API Access Key'"
             ],
             'favIcon': "https://numverify.com/images/icons/numverify_shortcut_icon.ico",
             'logo': "https://numverify.com/images/logos/numverify_header.png",
             'description': "Global Phone Number Validation & Lookup JSON API.\n"
-                            "NumVerify offers a full-featured yet simple RESTful JSON API for "
-                            "national and international phone number validation and information lookup for a total of 232 countries around the world.\n"
-                            "Requested numbers are processed in real-time, cross-checked with the latest international numbering plan databases "
-                            "and returned in handy JSON format enriched with useful carrier, geographical location and line type data.",
+            "NumVerify offers a full-featured yet simple RESTful JSON API for "
+            "national and international phone number validation and information lookup for a total of 232 countries around the world.\n"
+            "Requested numbers are processed in real-time, cross-checked with the latest international numbering plan databases "
+            "and returned in handy JSON format enriched with useful carrier, geographical location and line type data.",
         }
     }
 
@@ -62,7 +65,6 @@ class sfp_numverify(SpiderFootPlugin):
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.__dataSource__ = "numverify"
         self.results = self.tempStorage()
         self.errorState = False
 
@@ -101,28 +103,28 @@ class sfp_numverify(SpiderFootPlugin):
             return None
 
         if res['code'] == '101':
-            self.sf.error('API error: invalid API key', False)
+            self.sf.error('API error: invalid API key')
             self.errorState = True
             return None
 
         if res['code'] == '102':
-            self.sf.error('API error: user account deactivated', False)
+            self.sf.error('API error: user account deactivated')
             self.errorState = True
             return None
 
         if res['code'] == '104':
-            self.sf.error('API error: usage limit exceeded', False)
+            self.sf.error('API error: usage limit exceeded')
             self.errorState = True
             return None
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug('Error processing JSON response: ' + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         if data.get('error') is not None:
-            self.sf.error('API error: ' + str(data.get('error')), False)
+            self.sf.error('API error: ' + str(data.get('error')))
             return None
 
         return data
@@ -137,7 +139,7 @@ class sfp_numverify(SpiderFootPlugin):
             return None
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_numverify but did not set an API key!", False)
+            self.sf.error("You enabled sfp_numverify but did not set an API key!")
             self.errorState = True
             return None
 
@@ -157,14 +159,15 @@ class sfp_numverify(SpiderFootPlugin):
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
-        if data.get('country_code') is not None:
-            location = ', '.join([_f for _f in [data.get('location'), data.get('country_code')] if _f])
+        if data.get('country_code'):
+            country = self.sf.countryNameFromCountryCode(data.get('country_code'))
+            location = ', '.join([_f for _f in [data.get('location'), country] if _f])
             evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(evt)
         else:
             self.sf.debug("No location information found for " + eventData)
 
-        if data.get('carrier') is not None:
+        if data.get('carrier'):
             evt = SpiderFootEvent("PROVIDER_TELCO", data.get('carrier'), self.__name__, event)
             self.notifyListeners(evt)
         else:

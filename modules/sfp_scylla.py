@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        sfp_scylla
 # Purpose:     Gather breach data from Scylla API.
 #
@@ -7,16 +7,19 @@
 # Created:     2019-09-06
 # Copyright:   (c) bcoles 2019
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
+import base64
 import json
 import time
-import base64
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_scylla(SpiderFootPlugin):
-    """Scylla:Footprint,Investigate,Passive:Leaks, Dumps and Breaches::Gather breach data from Scylla API."""
 
     meta = {
         'name': "Scylla",
@@ -33,8 +36,8 @@ class sfp_scylla(SpiderFootPlugin):
             'favIcon': "",
             'logo': "",
             'description': "scylla.sh has two major goals. One is to have a community-oriented database leak community "
-                                "that is a useful tool for security researchers.\n"
-                                "The other major goal is to undercut those people that are selling databases.",
+            "that is a useful tool for security researchers.\n"
+            "The other major goal is to undercut those people that are selling databases.",
         }
     }
 
@@ -96,7 +99,7 @@ class sfp_scylla(SpiderFootPlugin):
         time.sleep(self.opts['pause'])
 
         if res['code'] != "200":
-            self.sf.error("Syclla.sh is having problems.", False)
+            self.sf.error("Syclla.sh is having problems.")
             self.errorState = True
             return None
 
@@ -106,8 +109,8 @@ class sfp_scylla(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.debug('Error processing JSON response: ' + str(e))
+        except Exception as e:
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data
@@ -119,10 +122,10 @@ class sfp_scylla(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -138,7 +141,7 @@ class sfp_scylla(SpiderFootPlugin):
 
         while position < (per_page * max_pages):
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
                 break
@@ -146,12 +149,12 @@ class sfp_scylla(SpiderFootPlugin):
             data = self.query(eventData, per_page, position)
 
             if not data:
-                return None
+                return
 
             position += per_page
 
-            #evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
-            #self.notifyListeners(evt)
+            # evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            # self.notifyListeners(evt)
 
             for result in data:
                 source = result.get('_source')

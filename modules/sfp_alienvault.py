@@ -11,14 +11,16 @@
 # -------------------------------------------------------------------------------
 
 import json
-from datetime import datetime
 import time
+from datetime import datetime
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_alienvault(SpiderFootPlugin):
-    """AlienVault OTX:Investigate,Passive:Reputation Systems:apikey:Obtain information from AlienVault Open Threat Exchange (OTX)"""
-        
+
     meta = {
         'name': "AlienVault OTX",
         'summary': "Obtain information from AlienVault Open Threat Exchange (OTX)",
@@ -37,24 +39,24 @@ class sfp_alienvault(SpiderFootPlugin):
                 "https://otx.alienvault.com/browse/"
             ],
             'apiKeyInstructions': [
-                "Visit otx.alienvault.com/",
+                "Visit https://otx.alienvault.com/",
                 "Sign up for a free account",
-                "Navigate to otx.alienvault.com/settings",
+                "Navigate to https://otx.alienvault.com/settings",
                 "The API key is listed under 'OTX Key'"
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://otx.alienvault.com/",
             'logo': "https://otx.alienvault.com/assets/images/otx-logo.svg",
             'description': "The World’s First Truly Open Threat Intelligence Community\n"
-                               "Open Threat Exchange is the neighborhood watch of the global intelligence community. "
-                               "It enables private companies, independent security researchers, and government agencies to "
-                               "openly collaborate and share the latest information about emerging threats, attack methods, "
-                               "and malicious actors, promoting greater security across the entire community.\n"
-                               "OTX changed the way the intelligence community creates and consumes threat data. "
-                               "In OTX, anyone in the security community can contribute, discuss, research, validate, "
-                               "and share threat data. You can integrate community-generated OTX threat data directly "
-                               "into your AlienVault and third-party security products, so that your threat detection defenses "
-                               "are always up to date with the latest threat intelligence. "
-                               "Today, 100,000 participants in 140 countries contribute over 19 million threat indicators daily."
+            "Open Threat Exchange is the neighborhood watch of the global intelligence community. "
+            "It enables private companies, independent security researchers, and government agencies to "
+            "openly collaborate and share the latest information about emerging threats, attack methods, "
+            "and malicious actors, promoting greater security across the entire community.\n"
+            "OTX changed the way the intelligence community creates and consumes threat data. "
+            "In OTX, anyone in the security community can contribute, discuss, research, validate, "
+            "and share threat data. You can integrate community-generated OTX threat data directly "
+            "into your AlienVault and third-party security products, so that your threat detection defenses "
+            "are always up to date with the latest threat intelligence. "
+            "Today, 100,000 participants in 140 countries contribute over 19 million threat indicators daily."
         }
     }
 
@@ -100,7 +102,7 @@ class sfp_alienvault(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", 
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
                 "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
@@ -125,11 +127,11 @@ class sfp_alienvault(SpiderFootPlugin):
             'Accept': 'application/json',
             'X-OTX-API-KEY': self.opts['api_key']
         }
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], 
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot", headers=headers)
 
         if res['code'] == "403":
-            self.sf.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+            self.sf.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -138,12 +140,12 @@ class sfp_alienvault(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from AlienVault OTX: {e}", False)
+            self.sf.error(f"Error processing JSON response from AlienVault OTX: {e}")
             return None
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -152,44 +154,44 @@ class sfp_alienvault(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_alienvault but did not set an API key/password!", False)
+            self.sf.error("You enabled sfp_alienvault but did not set an API key/password!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
         else:
             self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
-                    return None
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
+                    return
 
         if eventName == 'AFFILIATE_IPADDR' and not self.opts.get('checkaffiliates', False):
-            return None
+            return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
-                    return None
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxsubnet']))
+                    return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -219,14 +221,14 @@ class sfp_alienvault(SpiderFootPlugin):
                             if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
-                        except BaseException:
+                        except Exception:
                             self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
                         e = SpiderFootEvent(evtType, host, self.__name__, event)
                         self.notifyListeners(e)
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
                 evtType = 'MALICIOUS_IPADDR'
@@ -256,7 +258,7 @@ class sfp_alienvault(SpiderFootPlugin):
                             if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
                                 self.sf.debug("Record found but too old, skipping.")
                                 continue
-                        except BaseException:
+                        except Exception:
                             self.sf.debug("Couldn't parse date from AlienVault so assuming it's OK.")
 
                     # For netblocks, we need to create the IP address event so that

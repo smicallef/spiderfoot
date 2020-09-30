@@ -11,14 +11,18 @@
 # -------------------------------------------------------------------------------
 
 import json
-from datetime import datetime
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import datetime
+
 from netaddr import IPNetwork
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_pulsedive(SpiderFootPlugin):
-    """Pulsedive:Investigate,Passive:Reputation Systems:apikey:Obtain information from Pulsedive's API."""
 
     meta = {
         'name': "Pulsedive",
@@ -33,16 +37,16 @@ class sfp_pulsedive(SpiderFootPlugin):
                 "https://pulsedive.com/api/"
             ],
             'apiKeyInstructions': [
-                "Visit pulsedive.com",
+                "Visit https://pulsedive.com",
                 "Register a free account",
-                "Navigate to pulsedive.com/account",
+                "Navigate to https://pulsedive.com/account",
                 "The API key is listed under 'Your API Key'"
             ],
             'favIcon': "https://pulsedive.com/favicon.ico?v=3.9.72",
             'logo': "https://pulsedive.com/img/logo.svg",
             'description': "Why check 30 different solutions for varying snippets of data when you can just check one? "
-                                "Pulsedive enriches IOCs but also fetches article summaries from Wikipedia and "
-                                "even posts from Reddit and the infosec blogosphere to provide contextual information for threats.",
+            "Pulsedive enriches IOCs but also fetches article summaries from Wikipedia and "
+            "even posts from Reddit and the infosec blogosphere to provide contextual information for threats.",
         }
     }
 
@@ -109,7 +113,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         time.sleep(self.opts['delay'])
 
         if res['code'] == "403":
-            self.sf.error("Pulsedive API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+            self.sf.error("Pulsedive API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
             return None
 
@@ -119,7 +123,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         try:
             info = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Pulsedive: {e}", False)
+            self.sf.error(f"Error processing JSON response from Pulsedive: {e}")
             return None
 
         return info
@@ -136,7 +140,7 @@ class sfp_pulsedive(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_pulsedive but did not set an API key!", False)
+            self.sf.error("You enabled sfp_pulsedive but did not set an API key!")
             self.errorState = True
             return None
 
@@ -152,9 +156,9 @@ class sfp_pulsedive(SpiderFootPlugin):
                 return None
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxnetblock']))
+                self.sf.debug("Network size bigger than permitted: "
+                              + str(IPNetwork(eventData).prefixlen) + " > "
+                              + str(self.opts['maxnetblock']))
                 return None
 
         if eventName == 'NETBLOCK_MEMBER':
@@ -162,9 +166,9 @@ class sfp_pulsedive(SpiderFootPlugin):
                 return None
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: " +
-                              str(IPNetwork(eventData).prefixlen) + " > " +
-                              str(self.opts['maxsubnet']))
+                self.sf.debug("Network size bigger than permitted: "
+                              + str(IPNetwork(eventData).prefixlen) + " > "
+                              + str(self.opts['maxsubnet']))
                 return None
 
         qrylist = list()
@@ -226,7 +230,7 @@ class sfp_pulsedive(SpiderFootPlugin):
                     if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
                         self.sf.debug("Record found but too old, skipping.")
                         continue
-                except BaseException:
+                except Exception:
                     self.sf.debug("Couldn't parse date from Pulsedive so assuming it's OK.")
                 e = SpiderFootEvent(evtType, descr, self.__name__, event)
                 self.notifyListeners(e)

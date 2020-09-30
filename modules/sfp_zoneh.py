@@ -13,11 +13,10 @@
 
 import re
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_zoneh(SpiderFootPlugin):
-    """Zone-H Defacement Check:Investigate,Passive:Leaks, Dumps and Breaches::Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed."""
 
     meta = {
         'name': "Zone-H Defacement Check",
@@ -35,11 +34,11 @@ class sfp_zoneh(SpiderFootPlugin):
             'favIcon': "https://zone-h.org/images/logo.gif",
             'logo': "https://zone-h.org/images/logo.gif",
             'description': "Once a defaced website is submitted to Zone-H, it is mirrored on the Zone-H servers. "
-                                "The website is then moderated by the Zone-H staff to check if the defacement was fake. "
-                                "Sometimes, the hackers themselves submit their hacked pages to the site.\n"
-                                "It is an Internet security portal containing original IT security news, digital warfare news, "
-                                "geopolitics, proprietary and general advisories, analyses, forums, researches. "
-                                "Zone-H is the largest web intrusions archive. It is published in several languages.",
+            "The website is then moderated by the Zone-H staff to check if the defacement was fake. "
+            "Sometimes, the hackers themselves submit their hacked pages to the site.\n"
+            "It is an Internet security portal containing original IT security news, digital warfare news, "
+            "geopolitics, proprietary and general advisories, analyses, forums, researches. "
+            "Zone-H is the largest web intrusions archive. It is published in several languages.",
         }
     }
 
@@ -105,19 +104,19 @@ class sfp_zoneh(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
-            return None
+            return
         if eventName == 'AFFILIATE_INTERNET_NAME' or eventName == 'AFFILIATE_IPADDR' \
                 and not self.opts['checkaffiliates']:
-            return None
+            return
 
         evtType = 'DEFACED_INTERNET_NAME'
 
@@ -134,16 +133,16 @@ class sfp_zoneh(SpiderFootPlugin):
             evtType = 'DEFACED_AFFILIATE_IPADDR'
 
         if self.checkForStop():
-            return None
+            return
 
         url = "https://www.zone-h.org/rss/specialdefacements"
         content = self.sf.cacheGet("sfzoneh", 48)
         if content is None:
             data = self.sf.fetchUrl(url, useragent=self.opts['_useragent'])
             if data['content'] is None:
-                self.sf.error("Unable to fetch " + url, False)
+                self.sf.error("Unable to fetch " + url)
                 self.errorState = True
-                return None
+                return
             else:
                 self.sf.cachePut("sfzoneh", data['content'])
                 content = data['content']

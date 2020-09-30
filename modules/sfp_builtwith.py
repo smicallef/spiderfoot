@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:         sfp_builtwith
 # Purpose:      Query builtwith.com using their API.
 #
@@ -7,15 +7,15 @@
 # Created:     10/08/2017
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 import time
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_builtwith(SpiderFootPlugin):
-    """BuiltWith:Footprint,Investigate,Passive:Search Engines:apikey:Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more."""
 
     meta = {
         'name': "BuiltWith",
@@ -33,19 +33,19 @@ class sfp_builtwith(SpiderFootPlugin):
                 "https://builtwith.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit api.builtwith.com/free-api",
+                "Visit https://api.builtwith.com/free-api",
                 "Register a free account",
-                "Navigate to api.builtwith.com/free-api",
+                "Navigate to https://api.builtwith.com/free-api",
                 "The API key is listed under 'Your API Key'"
             ],
             'favIcon': "https://d28rh9vvmrd65v.cloudfront.net/favicon.ico",
             'logo': "https://d28rh9vvmrd65v.cloudfront.net/favicon.ico",
             'description': "Build lists of websites from our database of 38,701+ web technologies and over a quarter of a billion websites showing "
-                                "which sites use shopping carts, analytics, hosting and many more. "
-                                "Filter by location, traffic, vertical and more.\n"
-                                "Know your prospects platform before you talk to them. "
-                                "Improve your conversions with validated market adoption.\n"
-                                "Get advanced technology market share information and country based analytics for all web technologies.",
+            "which sites use shopping carts, analytics, hosting and many more. "
+            "Filter by location, traffic, vertical and more.\n"
+            "Know your prospects platform before you talk to them. "
+            "Improve your conversions with validated market adoption.\n"
+            "Get advanced technology market share information and country based analytics for all web technologies.",
         }
     }
 
@@ -85,7 +85,7 @@ class sfp_builtwith(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
-                "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME", 
+                "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME",
                 "CO_HOSTED_SITE", "IP_ADDRESS", "WEB_ANALYTICS_ID"]
 
     def queryRelationships(self, t):
@@ -102,7 +102,7 @@ class sfp_builtwith(SpiderFootPlugin):
         try:
             return json.loads(res['content'])['Relationships']
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from builtwith.com: {e}", False)
+            self.sf.error(f"Error processing JSON response from builtwith.com: {e}")
             return None
 
     def queryDomainInfo(self, t):
@@ -119,7 +119,7 @@ class sfp_builtwith(SpiderFootPlugin):
         try:
             return json.loads(res['content'])['Results'][0]
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from builtwith.com: {e}", False)
+            self.sf.error(f"Error processing JSON response from builtwith.com: {e}")
             return None
 
     # Handle events sent to this module
@@ -134,7 +134,7 @@ class sfp_builtwith(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_builtwith but did not set an API key!", False)
+            self.sf.error("You enabled sfp_builtwith but did not set an API key!")
             self.errorState = True
             return None
 
@@ -244,7 +244,7 @@ class sfp_builtwith(SpiderFootPlugin):
                             evttype = "INTERNET_NAME"
                         else:
                             evttype = "CO_HOSTED_SITE"
-    
+
                     # Create the name/co-host
                     e = SpiderFootEvent(evttype, val, self.__name__, event)
                     self.notifyListeners(e)

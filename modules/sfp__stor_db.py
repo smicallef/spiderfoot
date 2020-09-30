@@ -11,11 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin
+from spiderfoot import SpiderFootPlugin
 
 
 class sfp__stor_db(SpiderFootPlugin):
-    """Storage::::Stores scan results into the back-end SpiderFoot database. You will need this."""
 
     meta = {
         'name': "Storage",
@@ -50,16 +49,15 @@ class sfp__stor_db(SpiderFootPlugin):
     # Handle events sent to this module
     def handleEvent(self, sfEvent):
         if not self.opts['_store']:
-            return None
+            return
 
         if self.opts['maxstorage'] != 0:
             if len(sfEvent.data) > self.opts['maxstorage']:
                 self.sf.debug("Storing an event: " + sfEvent.eventType)
                 self.__sfdb__.scanEventStore(self.getScanId(), sfEvent, self.opts['maxstorage'])
-                return None
+                return
 
         self.sf.debug("Storing an event: " + sfEvent.eventType)
         self.__sfdb__.scanEventStore(self.getScanId(), sfEvent)
-
 
 # End of sfp__stor_db class

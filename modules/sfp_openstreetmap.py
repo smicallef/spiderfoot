@@ -11,14 +11,17 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
 import json
+import re
 import time
-import urllib.request, urllib.parse, urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_openstreetmap(SpiderFootPlugin):
-    """OpenStreetMap:Footprint,Investigate,Passive:Real World::Retrieves latitude/longitude coordinates for physical addresses from OpenStreetMap API."""
 
     meta = {
         'name': "OpenStreetMap",
@@ -82,7 +85,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
         try:
             data = json.loads(res['content'])
         except Exception as e:
-            self.sf.debug("Error processing JSON response: " + str(e))
+            self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
         return data
@@ -132,7 +135,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
             try:
                 lat = location.get('lat')
                 lon = location.get('lon')
-            except BaseException as e:
+            except Exception as e:
                 self.sf.debug("Failed to get lat/lon: " + str(e))
                 continue
 

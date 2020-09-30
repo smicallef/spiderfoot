@@ -11,12 +11,12 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
 import re
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_ahmia(SpiderFootPlugin):
-    """Ahmia:Footprint,Investigate:Search Engines::Search Tor 'Ahmia' search engine for mentions of the target domain."""
 
     meta = {
         'name': "Ahmia",
@@ -35,13 +35,13 @@ class sfp_ahmia(SpiderFootPlugin):
             'favIcon': "https://ahmia.fi/static/images/favicon.ico",
             'logo': "https://ahmia.fi/static/images/ahmiafi_black.png",
             'description': "Ahmia searches hidden services on the Tor network. To access these hidden services,"
-                                "you need the Tor browser bundle. Abuse material is not allowed on Ahmia. "
-                                "See our service blacklist and report abuse material if you find it in the index. "
-                                "It will be removed as soon as possible.\n"
-                                "Contributors to Ahmia believe that the Tor network is an important and "
-                                "resilient distributed platform for anonymity and privacy worldwide. "
-                                "By providing a search engine for what many call the \"deep web\" or \"dark net\", "
-                                "Ahmia makes hidden services accessible to a wide range of people, not just Tor network early adopters."
+            "you need the Tor browser bundle. Abuse material is not allowed on Ahmia. "
+            "See our service blacklist and report abuse material if you find it in the index. "
+            "It will be removed as soon as possible.\n"
+            "Contributors to Ahmia believe that the Tor network is an important and "
+            "resilient distributed platform for anonymity and privacy worldwide. "
+            "By providing a search engine for what many call the \"deep web\" or \"dark net\", "
+            "Ahmia makes hidden services accessible to a wide range of people, not just Tor network early adopters."
         }
     }
 
@@ -83,13 +83,13 @@ class sfp_ahmia(SpiderFootPlugin):
         eventData = event.data
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         # Sites hosted on the domain
         data = self.sf.fetchUrl("https://ahmia.fi/search/?q=" + eventData.replace(" ", "%20"),
@@ -97,12 +97,11 @@ class sfp_ahmia(SpiderFootPlugin):
                                 timeout=self.opts['_fetchtimeout'])
         if data is None or not data.get('content'):
             self.sf.info("No results returned from ahmia.fi.")
-            return None
+            return
 
         if "redirect_url=" in data['content']:
-            # Check if we've been asked to stop
             if self.checkForStop():
-                return None
+                return
 
             links = re.findall("redirect_url=(.[^\"]+)\"", data['content'], re.IGNORECASE | re.DOTALL)
 
@@ -115,7 +114,7 @@ class sfp_ahmia(SpiderFootPlugin):
                     self.sf.debug("Found a darknet mention: " + link)
                     if self.sf.urlFQDN(link).endswith(".onion"):
                         if self.checkForStop():
-                            return None
+                            return
                         if self.opts['fetchlinks']:
                             res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
                                                    useragent=self.opts['_useragent'],
@@ -135,7 +134,7 @@ class sfp_ahmia(SpiderFootPlugin):
                             try:
                                 startIndex = res['content'].index(eventData) - 120
                                 endIndex = startIndex + len(eventData) + 240
-                            except BaseException:
+                            except Exception:
                                 self.sf.debug("String not found in content.")
                                 continue
 
@@ -154,6 +153,5 @@ class sfp_ahmia(SpiderFootPlugin):
                 evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
                                       self.__name__, event)
                 self.notifyListeners(evt)
-
 
 # End of sfp_ahmia class

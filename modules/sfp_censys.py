@@ -10,25 +10,48 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import base64
-from datetime import datetime
+import json
 import time
+from datetime import datetime
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_censys(SpiderFootPlugin):
-    """Censys:Investigate,Passive:Search Engines:apikey:Obtain information from Censys.io"""
 
     meta = {
         'name': "Censys",
         'summary': "Obtain information from Censys.io",
         'flags': ["apikey"],
         'useCases': ["Investigate", "Passive"],
-        'categories': ["Search Engines"]
+        'categories': ["Search Engines"],
+        'dataSource': {
+            'website': "https://censys.io/",
+            'model': "FREE_AUTH_LIMITED",
+            'references': [
+                "https://censys.io/api",
+                "https://censys.io/product",
+                "https://censys.io/ipv4"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://censys.io/",
+                "Register a free account",
+                "Navigate to https://censys.io/account",
+                "Click on 'API'",
+                "The API key combination is listed under 'API ID' and 'Secret'"
+            ],
+            'favIcon': "https://censys.io/assets/favicon.png",
+            'logo': "https://censys.io/assets/logo.png",
+            'description': "Discover exposures and other common entry points for attackers.\n"
+            "Censys scans the entire internet constantly, including obscure ports. "
+            "We use a combination of banner grabs and deep protocol handshakes "
+            "to provide industry-leading visibility and an accurate depiction of what is live on the internet.",
+        }
     }
 
-    # Default options
     opts = {
         "censys_api_key_uid": "",
         "censys_api_key_secret": "",
@@ -36,7 +59,6 @@ class sfp_censys(SpiderFootPlugin):
         "age_limit_days": 90
     }
 
-    # Option descriptions
     optdescs = {
         "censys_api_key_uid": "Censys.io API UID.",
         "censys_api_key_secret": "Censys.io API Secret.",
@@ -44,8 +66,6 @@ class sfp_censys(SpiderFootPlugin):
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited."
     }
 
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
     results = None
     errorState = False
 
@@ -53,82 +73,125 @@ class sfp_censys(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "NETBLOCK_OWNER"]
 
-    # What events this module produces
     def producedEvents(self):
-        return ["BGP_AS_MEMBER", "TCP_PORT_OPEN", "OPERATING_SYSTEM", 
-                "WEBSERVER_HTTPHEADERS", "NETBLOCK_MEMBER", "GEOINFO",
-                'RAW_RIR_DATA']
+        return [
+            "BGP_AS_MEMBER",
+            "TCP_PORT_OPEN",
+            "OPERATING_SYSTEM",
+            "WEBSERVER_HTTPHEADERS",
+            "NETBLOCK_MEMBER",
+            "GEOINFO",
+            "RAW_RIR_DATA"
+        ]
 
-    # https://censys.io/api
-    # https://censys.io/api/v1/docs/view
-    def query(self, qry, querytype):
-        if querytype == "ip":
-            querytype = "ipv4/{0}"
-        if querytype == "host":
-            querytype = "websites/{0}"
-        
+    def queryIp(self, qry):
         secret = self.opts['censys_api_key_uid'] + ':' + self.opts['censys_api_key_secret']
-        b64_val = base64.b64encode(secret.encode('utf-8'))
+        auth = base64.b64encode(secret.encode('utf-8')).decode('utf-8')
 
         headers = {
-            'Authorization': 'Basic %s' % b64_val.decode('utf-8')
+            'Authorization': f"Basic {auth}"
         }
 
-        res = self.sf.fetchUrl('https://censys.io/api/v1/view/' + querytype.format(qry),
-                               timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot",
-                               headers=headers)
+        res = self.sf.fetchUrl(
+            f"https://censys.io/api/v1/view/ipv4/{qry}",
+            timeout=self.opts['_fetchtimeout'],
+            useragent="SpiderFoot",
+            headers=headers
+        )
 
         # API rate limit: 0.4 actions/second (120.0 per 5 minute interval)
         time.sleep(self.opts['delay'])
 
-        if res['code'] in ["400", "429", "500", "403"]:
-            self.sf.error("Censys.io API key seems to have been rejected or you have exceeded usage limits for the month.", False)
+        return self.parseApiResponse(res)
+
+    def queryHost(self, qry):
+        secret = self.opts['censys_api_key_uid'] + ':' + self.opts['censys_api_key_secret']
+        auth = base64.b64encode(secret.encode('utf-8')).decode('utf-8')
+
+        headers = {
+            'Authorization': f"Basic {auth}"
+        }
+
+        res = self.sf.fetchUrl(
+            f"https://censys.io/api/v1/view/websites/{qry}",
+            timeout=self.opts['_fetchtimeout'],
+            useragent="SpiderFoot",
+            headers=headers
+        )
+
+        # API rate limit: 0.4 actions/second (120.0 per 5 minute interval)
+        time.sleep(self.opts['delay'])
+
+        return self.parseApiResponse(res)
+
+    def parseApiResponse(self, res):
+        if not res:
+            return None
+
+        if res['code'] == "400":
+            self.sf.error("Invalid request.")
+            return None
+
+        if res['code'] == "404":
+            self.sf.info('Censys.io returned no resuls')
+            return None
+
+        if res['code'] == "403":
+            self.sf.error("Invalid API key.")
+            self.errorState = True
+            return None
+
+        if res['code'] == "429":
+            self.sf.error("Request rate limit exceeded.")
+            self.errorState = True
+            return None
+
+        # Catch all non-200 status codes, and presume something went wrong
+        if res['code'] != '200':
+            self.sf.error("Failed to retrieve content from Censys API")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.info("No Censys.io info found for " + qry)
+            self.sf.info('Censys.io returned no resuls')
             return None
 
         try:
-            info = json.loads(res['content'])
+            data = json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Censys.io: {e}", False)
+            self.sf.error(f"Error processing JSON response from Censys.io: {e}")
+
+        error_type = data.get('error_type')
+        if error_type:
+            self.sf.error(f"Censys returned an unexpected error: {error_type}")
             return None
 
-        #print(str(info))
-        return info
+        return data
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['censys_api_key_uid'] == "" or self.opts['censys_api_key_secret'] == "":
-            self.sf.error("You enabled sfp_censys but did not set an API uid/secret!", False)
+            self.sf.error("You enabled sfp_censys but did not set an API uid/secret!")
             self.errorState = True
-            return None
+            return
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -142,23 +205,14 @@ class sfp_censys(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if eventName in ["IP_ADDRESS", "NETBLOCK_OWNER"]:
-                qtype = "ip"
+                rec = self.queryIp(addr)
             else:
-                qtype = "host"
-
-            rec = self.query(addr, qtype)
+                rec = self.queryHost(addr)
 
             if rec is None:
-                continue
-
-            if 'error' in rec:
-                if rec['error_type'] == "unknown":
-                    self.sf.debug("Censys returned no data for " + addr)
-                else:
-                    self.sf.error("Censys returned an unexpected error: " + rec['error_type'], False)
                 continue
 
             self.sf.debug("Found results in Censys.io")
@@ -171,7 +225,7 @@ class sfp_censys(SpiderFootPlugin):
             else:
                 pevent = event
 
-            e = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, pevent)
+            e = SpiderFootEvent("RAW_RIR_DATA", json.dumps(rec), self.__name__, pevent)
             self.notifyListeners(e)
 
             try:
@@ -218,7 +272,7 @@ class sfp_censys(SpiderFootPlugin):
                         dat = rec['metadata']['os_description']
                         e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, pevent)
                         self.notifyListeners(e)
-            except BaseException as e:
-                self.sf.error("Error encountered processing record for " + eventData + " (" + str(e) + ")", False)
-        
+            except Exception as e:
+                self.sf.error(f"Error encountered processing record for {eventData} ({e})")
+
 # End of sfp_censys class

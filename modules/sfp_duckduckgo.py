@@ -11,10 +11,11 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_duckduckgo(SpiderFootPlugin):
-    """DuckDuckGo:Footprint,Investigate,Passive:Search Engines::Query DuckDuckGo's API for descriptive information about your target."""
 
     meta = {
         'name': "DuckDuckGo",
@@ -33,18 +34,18 @@ class sfp_duckduckgo(SpiderFootPlugin):
             'favIcon': "https://duckduckgo.com/favicon.ico",
             'logo': "https://duckduckgo.com/assets/icons/meta/DDG-icon_256x256.png",
             'description': "Our Instant Answer API gives you free access to many of our instant answers like: "
-                                "topic summaries , categories, disambiguation, and !bang redirects.",
+            "topic summaries , categories, disambiguation, and !bang redirects.",
         }
     }
 
     # Default options
     opts = {
-            "affiliatedomains": True
+        "affiliatedomains": True
     }
 
     # Option descriptions
     optdescs = {
-            "affiliatedomains": "For affiliates, look up the domain name, not the hostname. This will usually return more meaningful information about the affiliate."
+        "affiliatedomains": "For affiliates, look up the domain name, not the hostname. This will usually return more meaningful information about the affiliate."
     }
 
     results = None
@@ -69,7 +70,6 @@ class sfp_duckduckgo(SpiderFootPlugin):
                 "AFFILIATE_DESCRIPTION_CATEGORY",
                 "AFFILIATE_DESCRIPTION_ABSTRACT"]
 
-
     def handleEvent(self, event):
         eventName = event.eventType
         eventData = event.data
@@ -80,57 +80,63 @@ class sfp_duckduckgo(SpiderFootPlugin):
                 return None
 
         if eventData in self.results:
-            self.sf.debug("Already did a search for " + eventData + ", skipping.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         url = "https://api.duckduckgo.com/?q=" + eventData + "&format=json&pretty=1"
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                useragent="SpiderFoot")
 
-        if res['content'] == None:
-            self.sf.error("Unable to fetch " + url, False)
+        if res['content'] is None:
+            self.sf.error(f"Unable to fetch {url}")
             return None
 
         try:
             ret = json.loads(res['content'])
-        except BaseException as e:
-            self.sf.error(f"Error processing JSON response from DuckDuckGo: {e}", False)
+        except Exception as e:
+            self.sf.error(f"Error processing JSON response from DuckDuckGo: {e}")
             return None
 
-        if ret['Heading'] == "":
-            self.sf.debug("No DuckDuckGo information for " + eventData)
+        if not ret['Heading']:
+            self.sf.debug(f"No DuckDuckGo information for {eventData}")
             return None
 
-        # Submit the bing results for analysis
+        # Submit the DuckDuckGo results for analysis
         evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
                               self.__name__, event)
         self.notifyListeners(evt)
 
-        if 'AbstractText' in ret:
-            name = "DESCRIPTION_ABSTRACT"
-            if "AFFILIATE" in eventName:
-                name = "AFFILIATE_" + name
+        abstract_text = ret.get('AbstractText')
+        if abstract_text:
+            event_type = "DESCRIPTION_ABSTRACT"
 
-            evt = SpiderFootEvent(name, ret['AbstractText'],
-                                  self.__name__, event)
+            if "AFFILIATE" in eventName:
+                event_type = "AFFILIATE_" + event_type
+
+            evt = SpiderFootEvent(event_type, str(abstract_text), self.__name__, event)
             self.notifyListeners(evt)
 
-        if 'RelatedTopics' in ret:
-            name = "DESCRIPTION_CATEGORY"
-            if "AFFILIATE" in eventName:
-                name = "AFFILIATE_" + name
+        related_topics = ret.get('RelatedTopics')
+        if related_topics:
+            event_type = "DESCRIPTION_CATEGORY"
 
-            for item in ret['RelatedTopics']:
-                cat = None
-                if 'Text' in item:
-                    cat = item['Text']
-                if cat == None or cat == "":
+            if "AFFILIATE" in eventName:
+                event_type = "AFFILIATE_" + event_type
+
+            for topic in related_topics:
+                if not isinstance(topic, dict):
                     self.sf.debug("No category text found from DuckDuckGo.")
                     continue
 
-                evt = SpiderFootEvent(name, cat, self.__name__, event)
+                category = topic.get('Text')
+
+                if not category:
+                    self.sf.debug("No category text found from DuckDuckGo.")
+                    continue
+
+                evt = SpiderFootEvent(event_type, category, self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_duckduckgo class

@@ -14,10 +14,11 @@ import re
 
 import dns.query
 import dns.zone
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_dnszonexfer(SpiderFootPlugin):
-    """DNS Zone Transfer:Footprint,Investigate:DNS::Attempts to perform a full DNS zone transfer."""
 
     meta = {
         'name': "DNS Zone Transfer",
@@ -27,11 +28,9 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         'categories': ["DNS"]
     }
 
-    # Default options
     opts = {
     }
 
-    # Option descriptions
     optdescs = {
     }
 
@@ -45,17 +44,12 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ['PROVIDER_DNS']
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["RAW_DNS_RECORDS", "INTERNET_NAME"]
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -66,7 +60,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == "sfp_dnszonexfer":
-            self.sf.debug("Ignoring " + eventName + ", from self.")
+            self.sf.debug(f"Ignoring {eventName}, from self.")
             return None
 
         if eventDataHash in self.events:
@@ -93,8 +87,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                         nsip = n
                         break
             else:
-                self.sf.error("Couldn't resolve the name server, " + \
-                              "so not attempting zone transfer.", False)
+                self.sf.error("Couldn't resolve the name server, so not attempting zone transfer.")
                 return None
         else:
             nsip = eventData
@@ -123,12 +116,10 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                             else:
                                 strdata = strdata + "." + name
 
-                            evt = SpiderFootEvent("INTERNET_NAME", strdata,
-                                                  self.__name__, parentEvent)
+                            evt = SpiderFootEvent("INTERNET_NAME", strdata, self.__name__, parentEvent)
                             self.notifyListeners(evt)
 
-            except BaseException as e:
-                self.sf.info("Unable to perform DNS zone transfer for " + eventData +
-                              "(" + name + "): " + str(e))
+            except Exception as e:
+                self.sf.info(f"Unable to perform DNS zone transfer for {eventData} ({name}): {e}")
 
 # End of sfp_dnszonexfer class

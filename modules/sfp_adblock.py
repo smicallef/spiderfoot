@@ -12,11 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import adblockparser
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_adblock(SpiderFootPlugin):
-    """AdBlock Check:Investigate,Passive:Reputation Systems::Check if linked pages would be blocked by AdBlock Plus."""
 
     meta = {
         'name': "AdBlock Check",
@@ -34,14 +34,14 @@ class sfp_adblock(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://adblockplus.org/en/",
             'logo': "https://adblockplus.org/img/navbar-logo.svg",
             'description': "Adblock Plus is a free extension that allows you to customize your web experience."
-                                "You can block annoying ads, disable tracking and lots more."
-                                "It’s available for all major desktop browsers and for your mobile devices.\n" 
-                                "Block ads that interrupt your browsing experience."
-                                "Say goodbye to video ads, pop-ups, flashing banners and more."
-                                "Blocking these annoyances means pages load faster.\n"
-                                "With Adblock Plus avoiding tracking and malware is easy."
-                                "Blocking intrusive ads reduces the risk of \"malvertising\" infections."
-                                "Blocking tracking stops companies following your online activity."
+            "You can block annoying ads, disable tracking and lots more."
+            "It’s available for all major desktop browsers and for your mobile devices.\n"
+            "Block ads that interrupt your browsing experience."
+            "Say goodbye to video ads, pop-ups, flashing banners and more."
+            "Blocking these annoyances means pages load faster.\n"
+            "With Adblock Plus avoiding tracking and malware is easy."
+            "Blocking intrusive ads reduces the risk of \"malvertising\" infections."
+            "Blocking tracking stops companies following your online activity."
         }
     }
 
@@ -86,7 +86,7 @@ class sfp_adblock(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.rules is None:
             raw = self.sf.fetchUrl(self.opts['blocklist'], timeout=30)
@@ -95,12 +95,12 @@ class sfp_adblock(SpiderFootPlugin):
                 self.sf.debug("RULE LINES: " + str(len(lines)))
                 try:
                     self.rules = adblockparser.AdblockRules(lines)
-                except BaseException as e:
+                except Exception as e:
                     self.errorState = True
-                    self.sf.error("Parsing error handling AdBlock list: " + str(e), False)
+                    self.sf.error("Parsing error handling AdBlock list: " + str(e))
             else:
                 self.errorState = True
-                self.sf.error("Unable to download AdBlockPlus list: " + self.opts['blocklist'], False)
+                self.sf.error("Unable to download AdBlockPlus list: " + self.opts['blocklist'])
 
         if "_EXTERNAL" in eventName:
             pagetype = "_EXTERNAL"
@@ -111,17 +111,15 @@ class sfp_adblock(SpiderFootPlugin):
             self.results[eventData] = True
         else:
             self.sf.debug("Already checked this page for AdBlock matching, skipping.")
-            return None
+            return
 
         try:
             if self.rules and self.rules.should_block(eventData):
                 evt = SpiderFootEvent("URL_ADBLOCKED" + pagetype, eventData,
                                       self.__name__, event)
                 self.notifyListeners(evt)
-        except BaseException as e:
-            self.sf.error("Parsing error handling AdBlock list: " + str(e), False)
+        except Exception as e:
+            self.sf.error("Parsing error handling AdBlock list: " + str(e))
             self.errorState = True
-
-        return None
 
 # End of sfp_adblock class

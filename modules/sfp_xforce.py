@@ -11,15 +11,17 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import base64
-from datetime import datetime
+import json
 import time
+from datetime import datetime
+
 from netaddr import IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_xforce(SpiderFootPlugin):
-    """XForce Exchange:Investigate,Passive:Reputation Systems:apikey:Obtain information from IBM X-Force Exchange"""
 
     meta = {
         'name': "XForce Exchange",
@@ -35,9 +37,9 @@ class sfp_xforce(SpiderFootPlugin):
                 "https://exchange.xforce.ibmcloud.com/faq"
             ],
             'apiKeyInstructions': [
-                "Visit exchange.xforce.ibmcloud.com",
+                "Visit https://exchange.xforce.ibmcloud.com",
                 "Register a free account",
-                "Navigate to exchange.xforce.ibmcloud.com/settings",
+                "Navigate to https://exchange.xforce.ibmcloud.com/settings",
                 "Click on 'API Access'",
                 "Provide an API name, and click 'Generate'",
                 "The API key combination is listed under 'API Key' and 'API Password'"
@@ -45,10 +47,10 @@ class sfp_xforce(SpiderFootPlugin):
             'favIcon': "https://exchange.xforce.ibmcloud.com/images/shortcut-icons/apple-icon-57x57.png",
             'logo': "https://exchange.xforce.ibmcloud.com/images/shortcut-icons/apple-icon-57x57.png",
             'description': "IBM® X-Force Exchange is a cloud-based, threat intelligence sharing platform that you can use "
-                                "to rapidly research the latest global security threats, aggregate actionable intelligence, "
-                                "consult with experts and collaborate with peers. "
-                                "IBM X-Force Exchange, supported by human- and machine-generated intelligence, "
-                                "leverages the scale of IBM X-Force to help users stay ahead of emerging threats.",
+            "to rapidly research the latest global security threats, aggregate actionable intelligence, "
+            "consult with experts and collaborate with peers. "
+            "IBM X-Force Exchange, supported by human- and machine-generated intelligence, "
+            "leverages the scale of IBM X-Force to help users stay ahead of emerging threats.",
         }
     }
 
@@ -139,7 +141,7 @@ class sfp_xforce(SpiderFootPlugin):
             return None
 
         if res['code'] == '400':
-            self.sf.error("Bad request", False)
+            self.sf.error("Bad request")
             return None
 
         if res['code'] == '404':
@@ -147,37 +149,36 @@ class sfp_xforce(SpiderFootPlugin):
             return None
 
         if res['code'] == '401':
-            self.sf.error("X-Force Exchange API key seems to have been rejected.", False)
+            self.sf.error("X-Force Exchange API key seems to have been rejected.")
             self.errorState = True
             return None
 
         if res['code'] == '402':
-            self.sf.error("X-Force Exchange monthly quota exceeded", False)
+            self.sf.error("X-Force Exchange monthly quota exceeded")
             self.errorState = True
             return None
 
         if res['code'] == '403':
-            self.sf.error("Access denied", False)
+            self.sf.error("Access denied")
             self.errorState = True
             return None
 
         if res['code'] == '429':
-            self.sf.error("Rate limit exceeded", False)
+            self.sf.error("Rate limit exceeded")
             self.errorState = True
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from X-Force Exchange", False)
+            self.sf.error("Failed to retrieve content from X-Force Exchange")
             return None
 
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from X-Force Exchange: {e}", False)
-            return None
+            self.sf.error(f"Error processing JSON response from X-Force Exchange: {e}")
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -188,44 +189,44 @@ class sfp_xforce(SpiderFootPlugin):
         infield_sep = " ; "
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['xforce_api_key'] == "" or self.opts['xforce_api_key_password'] == "":
-            self.sf.error("You enabled sfp_xforce but did not set an API key/password!", False)
+            self.sf.error("You enabled sfp_xforce but did not set an API key/password!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxnetblock']))
-                    return None
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxnetblock']))
+                    return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: " +
-                                  str(IPNetwork(eventData).prefixlen) + " > " +
-                                  str(self.opts['maxsubnet']))
-                    return None
+                    self.sf.debug("Network size bigger than permitted: "
+                                  + str(IPNetwork(eventData).prefixlen) + " > "
+                                  + str(self.opts['maxsubnet']))
+                    return
 
         if eventName.startswith('AFFILIATE_') and not self.opts.get('checkaffiliates', False):
-            return None
+            return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -239,7 +240,7 @@ class sfp_xforce(SpiderFootPlugin):
         if eventName == "IP_ADDRESS":
             evtType = "CO_HOSTED_SITE"
             if self.cohostcount > self.opts['maxcohost']:
-                return None
+                return
 
             ret = self.query(eventData, "resolve")
             if ret is None:
@@ -266,7 +267,7 @@ class sfp_xforce(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
                 evtType = 'MALICIOUS_IPADDR'
@@ -302,13 +303,13 @@ class sfp_xforce(SpiderFootPlugin):
                         if int(score) < 2:
                             self.sf.debug("Non-malicious results, skipping.")
                             continue
+
                         if cats is not None:
                             for cat in cats:
                                 cats_description = cats_description + cat + " "
-                        entry = reason + infield_sep + \
-                                    str(score) + infield_sep + \
-                                    created  + infield_sep + \
-                                    cats_description
+
+                        # TODO: use join with infield_sep as delimeter
+                        entry = f"{reason}{infield_sep}{score}{infield_sep}{created}{infield_sep}{cats_description}"
                         e = SpiderFootEvent(evtType, entry, self.__name__, event)
                         self.notifyListeners(e)
 
@@ -330,29 +331,29 @@ class sfp_xforce(SpiderFootPlugin):
                         firstseen = result.get("first", "")
                         family = result.get("family", None)
                         family_description = ""
+
                         if family is not None:
                             for f in family:
                                 family_description = family_description + f + " "
-                        entry = origin + infield_sep + \
-                                    family_description + infield_sep + \
-                                    md5 + infield_sep + \
-                                    domain + infield_sep + \
-                                    uri + infield_sep + \
-                                    firstseen + infield_sep + \
-                                    lastseen
+
+                        # TODO: use join with infield_sep as delimeter
+                        entry = f"{origin}{infield_sep}{family_description}{infield_sep}{md5}{infield_sep}{domain}{infield_sep}{uri}{infield_sep}{firstseen}{infield_sep}{lastseen}"
 
                         last = rec.get("last", None)
+
                         if not last:
                             continue
+
                         last_dt = datetime.strptime(last, '%Y-%m-%dT%H:%M:%S.000Z')
                         last_ts = int(time.mktime(last_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                         host = rec['value']
+
                         if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
                             self.sf.debug("Record found but too old, skipping.")
                             continue
-                        else:
-                            e = SpiderFootEvent(evtType, entry, self.__name__, event)
-                            self.notifyListeners(e)
+
+                        e = SpiderFootEvent(evtType, entry, self.__name__, event)
+                        self.notifyListeners(e)
 
 # End of sfp_xforce class

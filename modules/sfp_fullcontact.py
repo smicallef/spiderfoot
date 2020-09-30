@@ -1,25 +1,26 @@
-#-------------------------------------------------------------------------------
-# Name:         sfp_fullcontact
-# Purpose:      Query fullcontact.com using their API.
+# -------------------------------------------------------------------------------
+# Name:        sfp_fullcontact
+# Purpose:     Gather domain and e-mail information from FullContact.com API.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
 # Created:     06/02/2018
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import json
 import time
 from datetime import datetime
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_fullcontact(SpiderFootPlugin):
-    """FullContact:Footprint,Investigate,Passive:Search Engines:apikey:Gather domain and e-mail information from fullcontact.com."""
 
     meta = {
         'name': "FullContact",
-        'summary': "Gather domain and e-mail information from fullcontact.com.",
+        'summary': "Gather domain and e-mail information from FullContact.com API.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Search Engines"],
@@ -34,9 +35,9 @@ class sfp_fullcontact(SpiderFootPlugin):
                 "https://www.fullcontact.com/faq/"
             ],
             'apiKeyInstructions': [
-                "Visit fullcontact.com",
+                "Visit https://fullcontact.com",
                 "Register a free account",
-                "Navigate to dashboard.fullcontact.com",
+                "Navigate to https://dashboard.fullcontact.com",
                 "Click on 'Get an API Key'",
                 "Verify your account using your contact number",
                 "The API Key will be listed under 'Your API Keys'"
@@ -44,28 +45,23 @@ class sfp_fullcontact(SpiderFootPlugin):
             'favIcon': "https://1a3asl4eps7u26kl661u3bi9-wpengine.netdna-ssl.com/wp-content/uploads/2019/11/cropped-full-contact-isologo-32x32.png",
             'logo': "https://1a3asl4eps7u26kl661u3bi9-wpengine.netdna-ssl.com/wp-content/themes/fc-theme/assets/images/common/full-contact-logo.svg?1574450351",
             'description': "Connecting data. Consolidating identities. Applying insights. Amplifying media reach. "
-                                "We provide person-centered identity resolution to improve your customer interactions with a simple, "
-                                "real-time API integration.\n"
-                                "FullContact is a privacy-safe Identity Resolution company building trust between people and brands. "
-                                "We deliver the capabilities needed to create tailored customer experiences by unifying data and "
-                                "applying insights in the moments that matter.",
+            "We provide person-centered identity resolution to improve your customer interactions with a simple, "
+            "real-time API integration.\n"
+            "FullContact is a privacy-safe Identity Resolution company building trust between people and brands. "
+            "We deliver the capabilities needed to create tailored customer experiences by unifying data and "
+            "applying insights in the moments that matter.",
         }
     }
 
-    # Default options
     opts = {
         "api_key": "",
         "max_age_days": "365"
     }
 
-    # Option descriptions
     optdescs = {
-        "api_key": "Fullcontact.com API key.",
+        "api_key": "FullContact.com API key.",
         "max_age_days": "Maximum number of age in days for a record before it's considered invalid and not reported."
     }
-
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
 
     results = None
     errorState = False
@@ -75,79 +71,94 @@ class sfp_fullcontact(SpiderFootPlugin):
         self.results = self.tempStorage()
         self.errorState = False
 
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
-
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ["DOMAIN_NAME", "EMAILADDR"]
 
-    # What events this module produces
     def producedEvents(self):
-        return ["EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
-                 "PHONE_NUMBER", "GEOINFO", "PHYSICAL_ADDRESS"]
+        return [
+            "EMAILADDR",
+            "EMAILADDR_GENERIC",
+            "RAW_RIR_DATA",
+            "PHONE_NUMBER",
+            "GEOINFO",
+            "PHYSICAL_ADDRESS"
+        ]
 
     def query(self, url, data, failcount=0):
-        header = "Bearer " + self.opts['api_key']
-        ret = None
+        headers = {
+            'Authorization': f"Bearer {self.opts['api_key']}"
+        }
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                               useragent="SpiderFoot", postData=json.dumps(data),
-                               headers={"Authorization": header})
+        res = self.sf.fetchUrl(
+            url,
+            timeout=self.opts['_fetchtimeout'],
+            useragent="SpiderFoot",
+            postData=json.dumps(data),
+            headers=headers
+        )
 
         if res['code'] in ["401", "400"]:
-            self.sf.error("API key rejected by fullcontact.com", False)
+            self.sf.error("API key rejected by FullContact")
             self.errorState = True
             return None
 
         if res['code'] == "403":
             if failcount == 3:
-                self.sf.error("Throttled or other blocking by fullcontact.com", False)
+                self.sf.error("Throttled or other blocking by FullContact")
                 return None
+
             time.sleep(2)
             failcount += 1
             return self.query(url, data, failcount)
 
         if not res['content']:
-            self.sf.error("No content returned from fullcontact.com", False)
+            self.sf.error("No content returned from FullContact")
             return None
 
         try:
             ret = json.loads(res['content'])
-            if "updated" in ret and int(self.opts['max_age_days']) > 0:
-                last_dt = datetime.strptime(ret['updated'], '%Y-%m-%d')
-                last_ts = int(time.mktime(last_dt.timetuple()))
-                age_limit_ts = int(time.time()) - (86400 * int(self.opts['max_age_days']))
-                if last_ts < age_limit_ts:
-                    self.sf.debug("Fullcontact.co record found but too old.")
-                    return None
         except Exception as e:
-            self.sf.error("Error processing JSON response from fullcontact.com: " + str(e), False)
+            self.sf.error(f"Error processing JSON response from FullContact: {e}")
             return None
+
+        if "updated" in ret and int(self.opts['max_age_days']) > 0:
+            last_dt = datetime.strptime(ret['updated'], '%Y-%m-%d')
+            last_ts = int(time.mktime(last_dt.timetuple()))
+            age_limit_ts = int(time.time()) - (86400 * int(self.opts['max_age_days']))
+
+            if last_ts < age_limit_ts:
+                self.sf.debug("FullContact record found but too old.")
+                return None
 
         return ret
 
     def queryCompany(self, domain):
         url = "https://api.fullcontact.com/v3/company.enrich"
-        return self.query(url, {"domain": domain})
 
-    def queryPerson(self, name=None, email=None):
-        url = "https://api.fullcontact.com/v3/person.enrich"
-        q = dict()
-        if not name and not email:
+        if not domain:
             return None
 
-        if name:
-            q['fullName'] = name
-        if email:
-            q['email'] = email
+        return self.query(url, {"domain": domain})
 
-        return self.query(url, q)
+    def queryPersonByEmail(self, email):
+        url = "https://api.fullcontact.com/v3/person.enrich"
 
-    # Handle events sent to this module
+        if not email:
+            return None
+
+        return self.query(url, {'email': email})
+
+    def queryPersonByName(self, name):
+        url = "https://api.fullcontact.com/v3/person.enrich"
+
+        if not name:
+            return None
+
+        return self.query(url, {'fullName': name})
+
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -156,71 +167,102 @@ class sfp_fullcontact(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_fullcontact but did not set an API key!", False)
+        if self.opts["api_key"] == "":
+            self.sf.error(
+                f"You enabled {self.__class__.__name__} but did not set an API key!"
+            )
             self.errorState = True
             return None
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == "EMAILADDR":
-            data = self.queryPerson(email=eventData)
+            data = self.queryPersonByEmail(eventData)
+
             if not data:
                 return None
-            if not data.get('fullName'):
-                return None
-            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
-                                data['fullName'], self.__name__, event)
-            self.notifyListeners(e)
-            return
+
+            full_name = data.get('fullName')
+
+            if full_name:
+                e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {full_name}", self.__name__, event)
+                self.notifyListeners(e)
+
+            return None
 
         if eventName == "DOMAIN_NAME":
             data = self.queryCompany(eventData)
+
             if not data:
                 return None
+
             if data.get("details"):
                 data = data['details']
+
             if data.get("emails"):
                 for r in data['emails']:
-                    if r['value'].split("@")[0] in self.opts['_genericusers'].split(","):
+                    email = r.get('value')
+
+                    if not email:
+                        continue
+
+                    if email.split("@")[0] in self.opts['_genericusers'].split(","):
                         evttype = "EMAILADDR_GENERIC"
                     else:
                         evttype = "EMAILADDR"
 
-                    e = SpiderFootEvent(evttype, r['value'], self.__name__, event)
+                    e = SpiderFootEvent(evttype, email, self.__name__, event)
                     self.notifyListeners(e)
 
             if data.get("phones"):
                 for r in data['phones']:
-                    e = SpiderFootEvent("PHONE_NUMBER", r['value'], self.__name__, event)
+                    phone = r.get('value')
+
+                    if not phone:
+                        continue
+
+                    e = SpiderFootEvent("PHONE_NUMBER", phone, self.__name__, event)
                     self.notifyListeners(e)
 
             if data.get("locations"):
                 for r in data['locations']:
-                    if r.get("city") and r.get("country"):
-                        e = SpiderFootEvent("GEOINFO", r['city'] + ", " + r['country'],
-                                            self.__name__, event)
+                    location = ', '.join([_f for _f in [r.get('city'), r.get('country')] if _f])
+                    if location:
+                        e = SpiderFootEvent(
+                            "GEOINFO",
+                            location,
+                            self.__name__,
+                            event
+                        )
                         self.notifyListeners(e)
+
                     if r.get("formatted"):
                         # Seems to contain some junk sometimes
                         if len(r['formatted']) > 10:
-                            e = SpiderFootEvent("PHYSICAL_ADDRESS", r['formatted'],
-                                                self.__name__, event)
+                            e = SpiderFootEvent(
+                                "PHYSICAL_ADDRESS",
+                                r['formatted'],
+                                self.__name__,
+                                event
+                            )
                             self.notifyListeners(e)
 
             if data.get("keyPeople"):
                 for r in data['keyPeople']:
-                    if r.get('fullName'):
-                        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + \
-                                            r['fullName'], self.__name__, event)
+                    full_name = r.get('fullName')
+                    if full_name:
+                        e = SpiderFootEvent(
+                            "RAW_RIR_DATA",
+                            f"Possible full name: {full_name}",
+                            self.__name__,
+                            event
+                        )
                         self.notifyListeners(e)
-
 
 # End of sfp_fullcontact class

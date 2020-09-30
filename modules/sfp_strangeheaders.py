@@ -12,20 +12,74 @@
 # -------------------------------------------------------------------------------
 
 import json
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 # Standard headers, taken from http://en.wikipedia.org/wiki/List_of_HTTP_header_fields
-headers = ["access-control-allow-origin", "accept-ranges", "age", "allow", "cache-control",
-           "connection", "content-encoding", "content-language", "content-length", "content-location",
-           "content-md5", "content-disposition", "content-range", "content-type", "date", "etag",
-           "expires", "last-modified", "link", "location", "p3p", "pragma", "proxy-authenticate",
-           "refresh", "retry-after", "server", "set-cookie", "status", "strict-transport-security",
-           "trailer", "transfer-encoding", "vary", "via", "warning", "www-authenticate",
-           "x-frame-options", "x-xss-protection", "content-security-policy", "x-content-security-policy",
-           "x-webkit-csp", "x-content-type-options", "x-powered-by", "x-ua-compatible"]
+headers = [
+    "accept-patch",
+    "accept-ranges",
+    "access-control-allow-credentials",
+    "access-control-allow-headers",
+    "access-control-allow-methods",
+    "access-control-allow-origin",
+    "access-control-expose-headers",
+    "access-control-max-age",
+    "age",
+    "allow",
+    "alt-svc",
+    "cache-control",
+    "connection",
+    "content-disposition",
+    "content-encoding",
+    "content-language",
+    "content-length",
+    "content-location",
+    "content-md5",
+    "content-range",
+    "content-security-policy",
+    "content-type",
+    "date",
+    "delta-base",
+    "etag",
+    "expires",
+    "im",
+    "last-modified",
+    "link",
+    "location",
+    "p3p",
+    "pragma",
+    "proxy-authenticate",
+    "public-key-pins",
+    "refresh",
+    "retry-after",
+    "server",
+    "set-cookie",
+    "status",
+    "strict-transport-security",
+    "timing-allow-origin",
+    "tk",
+    "trailer",
+    "transfer-encoding",
+    "upgrade",
+    "vary",
+    "via",
+    "warning",
+    "www-authenticate",
+    "x-content-duration",
+    "x-content-security-policy",
+    "x-content-type-options",
+    "x-correlation-id",
+    "x-frame-options",
+    "x-powered-by",
+    "x-request-id",
+    "x-ua-compatible",
+    "x-webkit-csp",
+    "x-xss-protection",
+]
+
 
 class sfp_strangeheaders(SpiderFootPlugin):
-    """Strange Header Identifier:Footprint,Passive:Content Analysis::Obtain non-standard HTTP headers returned by web servers."""
 
     meta = {
         'name': "Strange Header Identifier",
@@ -68,21 +122,21 @@ class sfp_strangeheaders(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
         if eventSource in self.results:
-            return None
-        else:
-            self.results[eventSource] = True
+            return
+
+        self.results[eventSource] = True
 
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
             self.sf.debug("Not collecting header information for external sites.")
-            return None
+            return
 
         try:
             jdata = json.loads(eventData)
-            if jdata == None:
-                return None
-        except BaseException:
-            self.sf.error("Received HTTP headers from another module in an unexpected format.", False)
-            return None
+            if jdata is None:
+                return
+        except Exception:
+            self.sf.error("Received HTTP headers from another module in an unexpected format.")
+            return
 
         for key in jdata:
             if key.lower() not in headers:

@@ -11,10 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_email(SpiderFootPlugin):
-    """E-Mail Address Extractor:Footprint,Investigate,Passive:Content Analysis::Identify e-mail addresses in any obtained data."""
 
     meta = {
         'name': "E-Mail Address Extractor",
@@ -98,7 +98,5 @@ class sfp_email(SpiderFootPlugin):
             else:
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
-
-        return None
 
 # End of sfp_email class

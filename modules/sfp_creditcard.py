@@ -11,10 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_creditcard(SpiderFootPlugin):
-    """Credit Card Number Extractor:Footprint,Investigate,Passive:Content Analysis::Identify Credit Card Numbers in any data"""
 
     meta = {
         'name': "Credit Card Number Extractor",
@@ -26,7 +26,6 @@ class sfp_creditcard(SpiderFootPlugin):
 
     # Default options.
     opts = {
-         # Options specific to this module
     }
 
     # Option descriptions.
@@ -80,14 +79,14 @@ class sfp_creditcard(SpiderFootPlugin):
         myres = list()
         for creditCard in creditCards:
             evttype = "CREDIT_CARD_NUMBER"
-            
+
             self.sf.info("Found credit card number : " + creditCard)
 
             if creditCard in myres:
                 self.sf.debug("Already found from this source")
                 continue
             myres.append(creditCard)
-            
+
             evt = SpiderFootEvent(evttype, creditCard, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
@@ -95,5 +94,4 @@ class sfp_creditcard(SpiderFootPlugin):
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
 
-        return None
 # End of sfp_creditcard class

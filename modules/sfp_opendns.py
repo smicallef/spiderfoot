@@ -12,11 +12,11 @@
 # -------------------------------------------------------------------------------
 
 import dns.resolver
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_opendns(SpiderFootPlugin):
-    """OpenDNS:Investigate,Passive:Reputation Systems::Check if a host would be blocked by OpenDNS DNS"""
 
     meta = {
         'name': "OpenDNS",
@@ -35,9 +35,9 @@ class sfp_opendns(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=https://www.opendns.com/",
             'logo': "https://d15ni2z53ptwz9.cloudfront.net/opendns-www/img/logo-opendns.png",
             'description': "Cisco Umbrella provides protection against threats on the internet such as "
-                                "malware, phishing, and ransomware.\n"
-                                "OpenDNS is a suite of consumer products aimed at "
-                                "making your internet faster, safer, and more reliable.",
+            "malware, phishing, and ransomware.\n"
+            "OpenDNS is a suite of consumer products aimed at "
+            "making your internet faster, safer, and more reliable.",
         }
     }
 
@@ -76,7 +76,7 @@ class sfp_opendns(SpiderFootPlugin):
         try:
             addrs = res.query(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
-        except BaseException:
+        except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
@@ -103,7 +103,7 @@ class sfp_opendns(SpiderFootPlugin):
         try:
             if self.sf.resolveHost(eventData):
                 resolved = True
-        except BaseException:
+        except Exception:
             return None
 
         if resolved:

@@ -13,13 +13,14 @@
 
 import re
 
-import dns.resolver
 import dns.query
 import dns.rdatatype
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import dns.resolver
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_dnsraw(SpiderFootPlugin):
-    """DNS Raw Records:Footprint,Investigate,Passive:DNS::Retrieves raw DNS records such as MX, TXT and others."""
 
     meta = {
         'name': "DNS Raw Records",
@@ -75,7 +76,7 @@ class sfp_dnsraw(SpiderFootPlugin):
 
         if eventDataHash in self.events:
             self.sf.debug("Skipping duplicate event for " + eventData)
-            return None
+            return
 
         self.events[eventDataHash] = True
 
@@ -93,7 +94,7 @@ class sfp_dnsraw(SpiderFootPlugin):
 
         for rec in list(recs.keys()):
             if self.checkForStop():
-                return None
+                return
 
             try:
                 req = dns.message.make_query(eventData, dns.rdatatype.from_text(rec))
@@ -108,8 +109,8 @@ class sfp_dnsraw(SpiderFootPlugin):
 
                 if not len(res.answer):
                     continue
-            except BaseException as e:
-                self.sf.error("Failed to obtain DNS response for %s (%s)" % (eventData, e), False)
+            except Exception as e:
+                self.sf.error("Failed to obtain DNS response for %s (%s)" % (eventData, e))
                 continue
 
             # Iterate through DNS answers
@@ -169,7 +170,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
             if self.opts['verify'] and not self.sf.resolveHost(domain):
-                self.sf.debug("Host " + domain + " could not be resolved")
+                self.sf.debug(f"Host {domain} could not be resolved")
                 evt_type += '_UNRESOLVED'
 
             evt = SpiderFootEvent(evt_type, domain, self.__name__, parentEvent)

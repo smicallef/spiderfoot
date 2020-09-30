@@ -14,14 +14,14 @@
 import json
 import re
 import time
-import urllib.request
-import urllib.parse
 import urllib.error
-from sflib import SpiderFootPlugin, SpiderFootEvent
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_flickr(SpiderFootPlugin):
-    """Flickr:Footprint,Investigate,Passive:Social Media::Search Flickr for domains, URLs and emails related to the specified domain."""
 
     meta = {
         'name': "Flickr",
@@ -128,7 +128,7 @@ class sfp_flickr(SpiderFootPlugin):
 
         try:
             data = json.loads(res['content'])
-        except BaseException as e:
+        except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
 
@@ -156,7 +156,7 @@ class sfp_flickr(SpiderFootPlugin):
         api_key = self.retrieveApiKey()
 
         if not api_key:
-            self.sf.error("Failed to obtain API key", False)
+            self.sf.error("Failed to obtain API key")
             return None
 
         self.sf.debug(f"Retrieved API key: {api_key}")

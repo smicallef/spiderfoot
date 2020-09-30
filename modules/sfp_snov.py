@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_snov
-# Purpose:      Spiderfoot plugin to search Snov.IO API for emails 
+# Purpose:      Spiderfoot plugin to search Snov.IO API for emails
 #               associated to target domain
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
@@ -11,12 +11,15 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
-import urllib.request, urllib.parse, urllib.error
 import json
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_snov(SpiderFootPlugin):
-    """Snov:Footprint,Investigate,Passive:Search Engines:apikey:Gather available email IDs from identified domains"""
 
     meta = {
         'name': "Snov",
@@ -31,16 +34,16 @@ class sfp_snov(SpiderFootPlugin):
                 "https://snov.io/api"
             ],
             'apiKeyInstructions': [
-                "Visit snov.io",
+                "Visit https://snov.io",
                 "Register a free account",
-                "Navigate to app.snov.io/api-setting",
+                "Navigate to https://app.snov.io/api-setting",
                 "The API key combination is listed under 'API User ID' and 'API Secret'"
             ],
             'favIcon': "https://snov.io/img/favicon/favicon-96x96.png",
             'logo': "https://cdn.snov.io/img/common/icon-logo.svg?cf6b11aa56fa13f6c94c969282424cfc",
             'description': "Snov.io API allows to get a list of all emails from a particular domain, "
-                                "find email addresses by name and domain, verify emails, add prospects to a list, "
-                                "change a recipient's status and more.",
+            "find email addresses by name and domain, verify emails, add prospects to a list, "
+            "change a recipient's status and more.",
         }
     }
 
@@ -56,7 +59,7 @@ class sfp_snov(SpiderFootPlugin):
     }
 
     results = None
-    errorState = False  
+    errorState = False
 
     # More than 100 per response is not supported by Snov API
     limit = 100
@@ -67,7 +70,6 @@ class sfp_snov(SpiderFootPlugin):
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-        
 
     # What events is this module interested in for input
     # For a list of all events, check sfdb.py.
@@ -77,7 +79,7 @@ class sfp_snov(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["EMAILADDR", "EMAILADDR_GENERIC"]
-    
+
     # Get Authentication token from Snov.IO API
     def queryAccessToken(self):
         params = {
@@ -89,7 +91,7 @@ class sfp_snov(SpiderFootPlugin):
         headers = {
             'Accept': "application/json",
         }
-        
+
         res = self.sf.fetchUrl(
             'https://api.snov.io/v1/oauth/access_token?' + urllib.parse.urlencode(params),
             headers=headers,
@@ -98,24 +100,24 @@ class sfp_snov(SpiderFootPlugin):
         )
 
         if not res['code'] == '200':
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
-            self.errorState = True 
+            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
+            self.errorState = True
             return None
         try:
             # Extract access token from response
             content = res.get('content')
             accessToken = json.loads(content).get('access_token')
-            
+
             if accessToken is None:
-                self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
+                self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
                 return None
 
             return str(accessToken)
-        except Exception: 
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
+        except Exception:
+            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return None
-        
+
     # Fetch email addresses related to target domain
     def queryDomainName(self, qry, accessToken, currentOffset):
         params = {
@@ -148,39 +150,39 @@ class sfp_snov(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        
+
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key_client_id'] == "" or self.opts['api_key_client_secret'] == "":
-            self.sf.error("You enabled sfp_snov but did not set a Client ID and/or Client Secret", False)
+            self.sf.error("You enabled sfp_snov but did not set a Client ID and/or Client Secret")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         # Get access token from Snov IO API
         accessToken = self.queryAccessToken()
         if accessToken is None or accessToken == '':
-            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret", False)
+            self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
-            return None
+            return
 
         currentOffset = 0
         nextPageHasData = True
 
         while nextPageHasData:
             if self.checkForStop():
-                return None
+                return
 
             data = self.queryDomainName(eventData, accessToken, currentOffset)
             if data is None:
@@ -189,15 +191,15 @@ class sfp_snov(SpiderFootPlugin):
 
             try:
                 data = json.loads(data)
-            except:
+            except Exception:
                 self.sf.debug("No email address found for target domain")
                 break
-            
+
             evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
 
             records = data.get('emails')
-            
+
             if records:
                 for record in records:
                     if record:
@@ -217,10 +219,9 @@ class sfp_snov(SpiderFootPlugin):
                             evt = SpiderFootEvent(evttype, email, self.__name__, event)
                             self.notifyListeners(evt)
 
-            # Determine whether the next offset can have data or not 
+            # Determine whether the next offset can have data or not
             if len(records) < self.limit:
                 nextPageHasData = False
             currentOffset += self.limit
 
-        return None
 # End of sfp_snov class

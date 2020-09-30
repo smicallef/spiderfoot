@@ -11,10 +11,11 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress, IPNetwork
-from sflib import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_cleantalk(SpiderFootPlugin):
-    """CleanTalk Spam List:Investigate,Passive:Reputation Systems::Check if a netblock or IP address is on CleanTalk.org's spam IP list."""
 
     meta = {
         'name': "CleanTalk Spam List",
@@ -38,11 +39,11 @@ class sfp_cleantalk(SpiderFootPlugin):
             'favIcon': "https://cleantalk.org/favicons/favicon-16x16.png",
             'logo': "https://cleantalk.org/favicons/favicon-16x16.png",
             'description': "CleanTalk is a Cloud-Based spam filtering service that allows you to protect your website from spam. "
-                                "CleanTalk provides spam protection that invisible to visitors "
-                                "without using captcha or other methods when visitors have to prove that they are real people.\n"
-                                "CleanTalk provides cloud anti-spam solutions for CMS and we developed plugins for the most of popular "
-                                "CMS: WordPress anti-spam plugin, Joomla anti-spam plugin, Drupal and etc. "
-                                "With our simple cloud spam checker, you can be sure your website is protected from spam bots, spam comments, and users.",
+            "CleanTalk provides spam protection that invisible to visitors "
+            "without using captcha or other methods when visitors have to prove that they are real people.\n"
+            "CleanTalk provides cloud anti-spam solutions for CMS and we developed plugins for the most of popular "
+            "CMS: WordPress anti-spam plugin, Joomla anti-spam plugin, Drupal and etc. "
+            "With our simple cloud spam checker, you can be sure your website is protected from spam bots, spam comments, and users.",
         }
     }
 
@@ -94,12 +95,12 @@ class sfp_cleantalk(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url, False)
+                self.sf.error("Unable to fetch %s" % url)
                 self.errorState = True
                 return None
 

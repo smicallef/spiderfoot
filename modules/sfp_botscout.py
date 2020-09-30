@@ -11,11 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_botscout(SpiderFootPlugin):
-    """BotScout:Passive,Investigate:Reputation Systems:apikey:Searches botscout.com's database of spam-bot IPs and e-mail addresses."""
 
     meta = {
         'name': "BotScout",
@@ -40,11 +39,11 @@ class sfp_botscout(SpiderFootPlugin):
             'favIcon': "https://www.google.com/s2/favicons?domain=http://botscout.com/",
             'logo': "http://botscout.com/image/bslogo.gif",
             'description': "BotScout helps prevent automated web scripts, known as \"bots\", "
-                                "from registering on forums, polluting databases, spreading spam, "
-                                "and abusing forms on web sites. We do this by tracking the names, IPs, "
-                                "and email addresses that bots use and logging them as unique signatures for future reference. "
-                                "We also provide a simple yet powerful API that you can use to test forms "
-                                "when they're submitted on your site.",
+            "from registering on forums, polluting databases, spreading spam, "
+            "and abusing forms on web sites. We do this by tracking the names, IPs, "
+            "and email addresses that bots use and logging them as unique signatures for future reference. "
+            "We also provide a simple yet powerful API that you can use to test forms "
+            "when they're submitted on your site.",
         }
     }
 
@@ -82,21 +81,21 @@ class sfp_botscout(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_botscout but did not set an API key!", False)
+            self.sf.error("You enabled sfp_botscout but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already searched.")
-            return None
-        else:
-            self.results[eventData] = True
+            return
+
+        self.results[eventData] = True
 
         if self.opts['api_key']:
             url = "http://botscout.com/test/?key=" + self.opts['api_key'] + "&all="
@@ -107,8 +106,8 @@ class sfp_botscout(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
         if res['content'] is None or "|" not in res['content']:
-            self.sf.error("Error encountered processing " + eventData, False)
-            return None
+            self.sf.error("Error encountered processing " + eventData)
+            return
 
         if res['content'].startswith("Y|"):
             self.sf.info("Found Botscout entry for " + eventData + ": " + res['content'])
@@ -119,7 +118,5 @@ class sfp_botscout(SpiderFootPlugin):
 
             evt = SpiderFootEvent(t, "Botscout [" + eventData + "]", self.__name__, event)
             self.notifyListeners(evt)
-
-            return None
 
 # End of sfp_botscout class

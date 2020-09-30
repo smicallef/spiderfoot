@@ -11,13 +11,17 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from sflib import SpiderFootPlugin, SpiderFootEvent
-from netaddr import IPNetwork
-import urllib.request, urllib.parse, urllib.error
 import json
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from netaddr import IPNetwork
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
 
 class sfp_badpackets(SpiderFootPlugin):
-    """Bad Packets:Investigate,Passive:Reputation Systems:apikey:Obtain information about any malicious activities involving IP addresses found"""
 
     meta = {
         'name': "Bad Packets",
@@ -32,7 +36,7 @@ class sfp_badpackets(SpiderFootPlugin):
                 "https://docs.badpackets.net/"
             ],
             'apiKeyInstructions': [
-                "Visit badpackets.net/pricing/",
+                "Visit https://badpackets.net/pricing/",
                 "Select a monthly plan",
                 "Fill out the contact form",
                 "BadPackets will reach out to you with your API key"
@@ -40,10 +44,10 @@ class sfp_badpackets(SpiderFootPlugin):
             'favIcon': "https://i1.wp.com/badpackets.net/wp-content/uploads/2019/04/cropped-512x512_logo.png?fit=32%2C32&ssl=1",
             'logo': "https://badpackets.net/wp-content/uploads/2019/05/badpackets-rgb-350x70.png",
             'description': "Bad Packets provides cyber threat intelligence on emerging threats, DDoS botnets and network abuse by continuously monitoring "
-                                "and detecting malicious activity. Our team of experienced security professionals conducts "
-                                "comprehensive and ethical research to ensure our data is of the highest quality and accuracy.\n"
-                                "Constant aggregation and analysis of relevant data allows us to empower our partners with "
-                                "actionable information to proactively defend against emerging security threats.",
+            "and detecting malicious activity. Our team of experienced security professionals conducts "
+            "comprehensive and ethical research to ensure our data is of the highest quality and accuracy.\n"
+            "Constant aggregation and analysis of relevant data allows us to empower our partners with "
+            "actionable information to proactively defend against emerging security threats.",
         }
     }
 
@@ -103,10 +107,10 @@ class sfp_badpackets(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-          'https://api.badpackets.net/v1/query?' + urllib.parse.urlencode(params),
-          headers=headers,
-          timeout=15,
-          useragent=self.opts['_useragent']
+            'https://api.badpackets.net/v1/query?' + urllib.parse.urlencode(params),
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
         )
 
         return self.parseAPIResponse(res)
@@ -119,31 +123,31 @@ class sfp_badpackets(SpiderFootPlugin):
 
         # Error codes as mentioned in Bad Packets Documentation
         if res['code'] == '400':
-            self.sf.error("Invalid IP Address", False)
+            self.sf.error("Invalid IP Address")
             return None
 
         if res['code'] == '401':
-            self.sf.error("Unauthorized API Key", False)
+            self.sf.error("Unauthorized API Key")
             return None
 
         if res['code'] == '403':
-            self.sf.error("Forbidden Request", False)
+            self.sf.error("Forbidden Request")
             return None
 
         # Catch all non-200 status codes, and presume something went wrong
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve content from Bad Packets", False)
+            self.sf.error("Failed to retrieve content from Bad Packets")
             return None
 
         # Always always always process external data with try/except since we cannot
         # trust the data is as intended.
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
-            self.sf.error(f"Error processing JSON response from Bad Packets: {e}", False)
+            self.sf.error(f"Error processing JSON response from Bad Packets: {e}")
             return None
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -152,39 +156,39 @@ class sfp_badpackets(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Always check if the API key is set and complain if it isn't, then set
         # self.errorState to avoid this being a continual complaint during the scan.
         if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_badpackets but did not set an API key!", False)
+            self.sf.error("You enabled sfp_badpackets but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {self.opts['maxnetblock']}")
-                return None
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                 self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {self.opts['maxsubnet']}")
-                return None
+                return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -194,14 +198,14 @@ class sfp_badpackets(SpiderFootPlugin):
         else:
             # If user has enabled affiliate checking
             if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
-                return None
+                return
             qrylist.append(eventData)
 
         for addr in qrylist:
 
             nextPageHasData = True
             if self.checkForStop():
-                return None
+                return
 
             currentOffset = 0
             while nextPageHasData:
@@ -238,7 +242,7 @@ class sfp_badpackets(SpiderFootPlugin):
                         maliciousIP = record.get('source_ip_address')
 
                         if maliciousIP != addr:
-                            self.sf.error("Reported address doesn't match requested, skipping.", False)
+                            self.sf.error("Reported address doesn't match requested, skipping.")
                             continue
 
                         if maliciousIP:
@@ -248,13 +252,14 @@ class sfp_badpackets(SpiderFootPlugin):
                                 category = record.get('tags')[0].get('category')
                                 if category:
                                     maliciousIPDesc += " - CATEGORY : " + str(category) + "\n"
-                            except:
+                            except Exception:
                                 self.sf.debug("No category found for target")
+
                             try:
                                 description = record.get('tags')[0].get('description')
                                 if description:
                                     maliciousIPDesc += " - DESCRIPTION : " + str(description) + "\n"
-                            except:
+                            except Exception:
                                 self.sf.debug("No description found for target")
 
                             maliciousIPDescHash = self.sf.hashstring(maliciousIPDesc)
@@ -276,5 +281,4 @@ class sfp_badpackets(SpiderFootPlugin):
                     nextPageHasData = False
                 currentOffset += self.limit
 
-        return None
 # End of sfp_badpackets class
