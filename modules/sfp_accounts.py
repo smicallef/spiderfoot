@@ -256,6 +256,9 @@ class sfp_accounts(SpiderFootPlugin):
             users.append(kw)
 
         if eventName == "EMAILADDR":
+            if not self.opts['userfromemail']:
+                continue
+
             name = eventData.split("@")[0].lower()
             users.append(name)
 
