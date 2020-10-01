@@ -69,10 +69,10 @@ class sfp_wikipediaedits(SpiderFootPlugin):
         return ["WIKIPEDIA_PAGE_EDIT"]
 
     def query(self, qry):
-        params = urllib.parse.urlencode({
+        params = {
             "action": "feedcontributions",
             "user": qry.encode('raw_unicode_escape').decode("ascii", errors='replace')
-        })
+        }
 
         if self.opts['days_limit'] != "0":
             dt = datetime.datetime.now() - datetime.timedelta(days=int(self.opts['days_limit']))
@@ -80,7 +80,7 @@ class sfp_wikipediaedits(SpiderFootPlugin):
             params["month"] = dt.strftime("%m")
 
         res = self.sf.fetchUrl(
-            f"https://en.wikipedia.org/w/api.php?{params}",
+            f"https://en.wikipedia.org/w/api.php?{urllib.parse.urlencode(params)}",
             timeout=self.opts['_fetchtimeout'],
             useragent="SpiderFoot"
         )
