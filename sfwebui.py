@@ -73,6 +73,7 @@ class SpiderFootWebUi:
         self.config = sf.configUnserialize(dbh.configGet(), self.defaultConfig)
 
         cherrypy.config.update({
+            'error_page.401': self.error_page_401,
             'error_page.404': self.error_page_404,
             'request.error_response': self.error_page
         })
@@ -97,6 +98,20 @@ class SpiderFootWebUi:
             cherrypy.response.body = _cperror.get_error_page(status=500, traceback=_cperror.format_exc())
         else:
             cherrypy.response.body = b"<html><body>Error</body></html>"
+
+    def error_page_401(self, status, message, traceback, version):
+        """Unauthorized eError page 401
+
+        Args:
+            status: TBD
+            message: TBD
+            traceback: TBD
+            version: TBD
+
+        Returns:
+            str: HTML response
+        """
+        return b""
 
     def error_page_404(self, status, message, traceback, version):
         """Error page 404
