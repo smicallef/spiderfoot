@@ -144,6 +144,7 @@ class SpiderFootDb:
         ['DOMAIN_WHOIS', 'Domain Whois', 1, 'DATA'],
         ['EMAILADDR', 'Email Address', 0, 'ENTITY'],
         ['EMAILADDR_COMPROMISED', 'Hacked Email Address', 0, 'DESCRIPTOR'],
+        ['EMAILADDR_DISPOSABLE', 'Disposable Email Address', 0, 'ENTITY'],
         ['EMAILADDR_GENERIC', 'Email Address - Generic', 0, 'ENTITY'],
         ['ERROR_MESSAGE', 'Error Message', 0, 'DATA'],
         ['ETHEREUM_ADDRESS', 'Ethereum Address', 0, 'ENTITY'],
