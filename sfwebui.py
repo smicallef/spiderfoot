@@ -100,7 +100,7 @@ class SpiderFootWebUi:
             cherrypy.response.body = b"<html><body>Error</body></html>"
 
     def error_page_401(self, status, message, traceback, version):
-        """Unauthorized eError page 401
+        """Unauthorized access HTTP 401 error page
 
         Args:
             status: TBD
