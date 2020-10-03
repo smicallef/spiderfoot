@@ -19,7 +19,7 @@ SpiderFoot has an embedded web-server for providing a clean and intuitive web-ba
 ### FEATURES
 
 - Web based UI or CLI
-- Over 190 modules (see below)
+- Over 200 modules (see below)
 - Python 3
 - CSV/JSON/GEXF export
 - API key export/import
@@ -48,7 +48,7 @@ You can target the following entities in a SpiderFoot scan:
  - Username
  - Person's name
  
-SpiderFoot's 190+ modules feed each other in a publisher/subscriber model to ensure maximum data extraction to do things like:
+SpiderFoot's 200+ modules feed each other in a publisher/subscriber model to ensure maximum data extraction to do things like:
 
 - [Host/sub-domain/TLD enumeration/extraction](https://asciinema.org/a/295912)
 - [Email address, phone number and human name extraction](https://asciinema.org/a/295947)
@@ -94,7 +94,7 @@ Check out the [documentation](https://www.spiderfoot.net/documentation) and our 
 
 ### MODULES / INTEGRATIONS
 
-SpiderFoot has over 190 modules, most of which *don't require API keys*, and many of those that do require API keys *have a free tier*.
+SpiderFoot has over 200 modules, most of which *don't require API keys*, and many of those that do require API keys *have a free tier*.
 
 | Name         | Description  | Link       |
 |:-------------| :------------| :----------|
