@@ -142,7 +142,7 @@ class sfp_archiveorg(SpiderFootPlugin):
         for daysback in self.opts['farback'].split(","):
             try:
                 newDate = datetime.datetime.now() - datetime.timedelta(days=int(daysback))
-            except Exception as e:
+            except Exception:
                 self.sf.error("Unable to parse option for number of days back to search.")
                 self.errorState = True
                 return

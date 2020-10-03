@@ -191,11 +191,11 @@ class sfp_riskiq(SpiderFootPlugin):
                             continue
                         if self.getTarget().matches(res['subjectCommonName'], includeChildren=True):
                             if self.sf.resolveHost(res['subjectCommonName']):
-                                e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'], 
-                                                   self.__name__, event)
+                                e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'],
+                                                    self.__name__, event)
                             else:
                                 e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", res['subjectCommonName'],
-                                                   self.__name__, event)
+                                                    self.__name__, event)
                             self.notifyListeners(e)
 
                             if self.sf.isDomain(res['subjectCommonName'], self.opts['_internettlds']):
