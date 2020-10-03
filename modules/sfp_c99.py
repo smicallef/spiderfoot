@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import json
-from spiderfoot import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from spiderfoot import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_c99(SpiderFootPlugin):
