@@ -20,7 +20,7 @@ class sfp_trumail(SpiderFootPlugin):
     meta = {
         'name': "Trumail",
         'summary': "Check whether an email is disposable",
-        'flags': ["apikey"],
+        'flags': [""],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {
