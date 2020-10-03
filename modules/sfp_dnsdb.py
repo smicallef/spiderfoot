@@ -89,6 +89,7 @@ class sfp_dnsdb(SpiderFootPlugin):
             "PROVIDER_MAIL",
             "IP_ADDRESS",
             "IPV6_ADDRESS",
+            "CO_HOSTED_SITE",
         ]
 
     def query(self, endpoint, queryType, query):
