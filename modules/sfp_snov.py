@@ -54,8 +54,8 @@ class sfp_snov(SpiderFootPlugin):
 
     # Option descriptions. Delete any options not applicable to this module.
     optdescs = {
-        'api_key_client_id': "Client ID for snov.io API",
-        'api_key_client_secret': "Client Secret for snov.io API"
+        'api_key_client_id': "Snov.io API Client ID",
+        'api_key_client_secret': "Snov.io API Client Secret"
     }
 
     results = None
@@ -119,13 +119,13 @@ class sfp_snov(SpiderFootPlugin):
             return None
 
     # Fetch email addresses related to target domain
-    def queryDomainName(self, qry, accessToken, currentOffset):
+    def queryDomainName(self, qry, accessToken, currentLastId):
         params = {
             'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'access_token': accessToken,
             'type': "all",
             'limit': str(self.limit),
-            'offset': str(currentOffset)
+            'lastId': str(currentLastId)
         }
 
         headers = {
@@ -133,8 +133,7 @@ class sfp_snov(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-            'https://api.snov.io/v1/get-domain-emails-with-info',
-            postData=params,
+            'https://api.snov.io/v2/domain-emails-with-info?' + urllib.parse.urlencode(params),
             headers=headers,
             timeout=30,
             useragent=self.opts['_useragent']
@@ -177,14 +176,14 @@ class sfp_snov(SpiderFootPlugin):
             self.errorState = True
             return
 
-        currentOffset = 0
+        currentLastId = 0
         nextPageHasData = True
 
         while nextPageHasData:
             if self.checkForStop():
                 return
 
-            data = self.queryDomainName(eventData, accessToken, currentOffset)
+            data = self.queryDomainName(eventData, accessToken, currentLastId)
             if data is None:
                 self.sf.debug("No email address found for target domain")
                 break
@@ -219,9 +218,9 @@ class sfp_snov(SpiderFootPlugin):
                             evt = SpiderFootEvent(evttype, email, self.__name__, event)
                             self.notifyListeners(evt)
 
-            # Determine whether the next offset can have data or not
+            # Determine whether another page of data exists
             if len(records) < self.limit:
                 nextPageHasData = False
-            currentOffset += self.limit
+            currentLastId = lastId
 
 # End of sfp_snov class
