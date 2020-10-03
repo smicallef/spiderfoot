@@ -140,6 +140,8 @@ class TestModuleErrors(unittest.TestCase):
             if str(event.data) != expected:
                 raise Exception(f"{event.data} != {expected}")
 
+            raise Exception("OK")
+
         module.notifyListeners = new_notifyListeners.__get__(module, sfp_errors)
 
         event_type = 'ROOT'
@@ -149,6 +151,7 @@ class TestModuleErrors(unittest.TestCase):
 
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
         result = module.handleEvent(evt)
+        self.assertIsNone(result)
 
         event_type = 'TARGET_WEB_CONTENT'
         event_data = 'example data Internal Server Error example data'
@@ -157,9 +160,11 @@ class TestModuleErrors(unittest.TestCase):
 
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
         evt.actualSource = 'https://spiderfoot.net/'
-        result = module.handleEvent(evt)
 
-        self.assertIsNone(result)
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
+
+        self.assertEqual("OK", str(cm.exception))
 
     def test_handleEvent_event_data_not_containing_error_string_should_not_return_event(self):
         sf = SpiderFoot(self.default_options)

@@ -75,6 +75,8 @@ class TestModuleHosting(unittest.TestCase):
             if str(event.data) != expected:
                 raise Exception(f"{event.data} != {expected}")
 
+            raise Exception("OK")
+
         module.notifyListeners = new_notifyListeners.__get__(module, sfp_hosting)
 
         event_type = 'ROOT'
@@ -83,9 +85,11 @@ class TestModuleHosting(unittest.TestCase):
         source_event = ''
 
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
-        result = module.handleEvent(evt)
 
-        self.assertIsNone(result)
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
+
+        self.assertEqual("OK", str(cm.exception))
 
     @unittest.skip("todo")
     def test_handleEvent_event_data_ip_address_not_hosted_should_not_return_event(self):
