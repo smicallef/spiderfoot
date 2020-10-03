@@ -11,6 +11,7 @@
 
 import base64
 import re
+import urllib.parse
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -58,10 +59,12 @@ class sfp_base64(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        decoded_data = urllib.parse.unquote(eventData)
+
         # Note: this will miss base64 encoded strings with no padding
         # (strings which do not end with '=' or '==')
         pat = re.compile(r"([A-Za-z0-9+\/]+={1,2})")
-        m = re.findall(pat, eventData)
+        m = re.findall(pat, decoded_data)
         for match in m:
             if self.checkForStop():
                 return
