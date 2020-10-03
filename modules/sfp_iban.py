@@ -19,7 +19,7 @@ class sfp_iban(SpiderFootPlugin):
     meta = {
         'name': "IBAN Number Extractor",
         'summary': "Identify IBAN Numbers in any data",
-        'flags': [""],
+        'flags': ["errorprone"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }

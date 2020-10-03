@@ -54,7 +54,7 @@ class TestModuleBase64(unittest.TestCase):
         module = sfp_base64()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent_event_data_containing_base64_string_should_return_event(self):
+    def test_handleEvent_event_data_url_containing_base64_string_should_return_event(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_base64()
@@ -77,7 +77,7 @@ class TestModuleBase64(unittest.TestCase):
         module.notifyListeners = new_notifyListeners.__get__(module, sfp_base64)
 
         event_type = 'ROOT'
-        event_data = 'example data U3BpZGVyRm9vdA== example data'
+        event_data = 'https://someurl/?somevar=example%20data%20U3BpZGVyRm9vdA%3d%3d%20example%20data'
         event_module = ''
         source_event = ''
 

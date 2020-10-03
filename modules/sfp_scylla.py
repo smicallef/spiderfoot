@@ -9,7 +9,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import base64
 import json
 import time
 import urllib.error
@@ -78,16 +77,12 @@ class sfp_scylla(SpiderFootPlugin):
     def query(self, qry, per_page=20, start=0):
         params = {
             'q': 'Email:@' + qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'num': str(per_page),
-            'from': str(start)
+            'size': str(per_page),
+            'start': str(start)
         }
 
-        b64_auth = base64.b64encode("sammy:BasicPassword!".encode("utf-8"))
         headers = {
-            'Accept': 'application/json',
-            # Provided by @_hyp3ri0n on Twitter, owner of the service and granted
-            # permission to hard-code these.
-            'Authorization': "Basic " + b64_auth.decode("utf-8")
+            'Accept': 'application/json'
         }
         res = self.sf.fetchUrl('https://scylla.sh/search?' + urllib.parse.urlencode(params),
                                headers=headers,
@@ -156,13 +151,13 @@ class sfp_scylla(SpiderFootPlugin):
             # evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             # self.notifyListeners(evt)
 
-            for result in data:
-                source = result.get('_source')
+            for row in data:
+                result = row.get('fields')
 
-                if not source:
+                if not result:
                     continue
 
-                email = source.get('Email')
+                email = result.get('email')
 
                 # A blank email result should not be possible, as we searched using the 'Email:' filter
                 if not email:
@@ -180,23 +175,18 @@ class sfp_scylla(SpiderFootPlugin):
                     self.sf.debug("Skipped address: " + email)
                     continue
 
-                breach = source.get('Domain')
-
-                if not breach:
-                    breach = 'Unknown'
-
+                breach = result.get('domain', 'Unknown')
                 emails.append(email + " [" + breach + "]")
-
-                pass_hash = source.get('PassHash')
+                pass_hash = result.get('passhash')
 
                 if pass_hash:
-                    pass_salt = source.get('PassSalt')
+                    pass_salt = result.get('passsalt')
                     if pass_salt:
                         hashes.append(email + ':' + pass_hash + " (Salt: " + pass_salt + ") [" + breach + "]")
                     else:
                         hashes.append(email + ':' + pass_hash + " [" + breach + "]")
 
-                password = source.get('Password')
+                password = result.get('password')
 
                 if password:
                     passwords.append(email + ':' + password + " [" + breach + "]")

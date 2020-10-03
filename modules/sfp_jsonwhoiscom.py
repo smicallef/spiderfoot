@@ -80,7 +80,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
     def producedEvents(self):
         return ["RAW_RIR_DATA", "DOMAIN_REGISTRAR", "DOMAIN_WHOIS", "PROVIDER_DNS",
                 "EMAILADDR", "EMAILADDR_GENERIC", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
-                "HUMAN_NAME", "AFFILIATE_DOMAIN_UNREGISTERED"]
+                "AFFILIATE_DOMAIN_UNREGISTERED"]
 
     # Query domain
     # https://jsonwhois.com/docs
@@ -260,7 +260,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             for name in set(names):
-                evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
+                evt = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name {name}", self.__name__, event)
                 self.notifyListeners(evt)
 
             for phone in set(phones):

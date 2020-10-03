@@ -67,8 +67,7 @@ class sfp_keybase(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "RAW_RIR_DATA", "SOCIAL_MEDIA", "USERNAME",
-            "HUMAN_NAME", "GEOINFO", "BITCOIN_ADDRESS",
-            "PGP_KEY"
+            "GEOINFO", "BITCOIN_ADDRESS", "PGP_KEY"
         ]
 
     def queryUsername(self, qry):
@@ -190,7 +189,8 @@ class sfp_keybase(SpiderFootPlugin):
             # Get and report full name of user
             fullName = profile.get('full_name')
             if fullName:
-                evt = SpiderFootEvent("HUMAN_NAME", fullName, self.__name__, event)
+                evt = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {fullName}",
+                                      self.__name__, event)
                 self.notifyListeners(evt)
 
             # Get and report location of user

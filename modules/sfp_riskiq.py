@@ -91,7 +91,7 @@ class sfp_riskiq(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
-                "DOMAIN_NAME", "AFFILIATE_DOMAIN_NAME",
+                "DOMAIN_NAME", "AFFILIATE_DOMAIN_NAME", "INTERNET_NAME_UNRESOLVED",
                 "CO_HOSTED_SITE", "NETBLOCK_OWNER"]
 
     def query(self, qry, qtype, opts=dict()):
@@ -190,9 +190,14 @@ class sfp_riskiq(SpiderFootPlugin):
                         if res['subjectCommonName'] == eventData:
                             continue
                         if self.getTarget().matches(res['subjectCommonName'], includeChildren=True):
-                            e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'],
-                                                self.__name__, event)
+                            if self.sf.resolveHost(res['subjectCommonName']):
+                                e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'],
+                                                    self.__name__, event)
+                            else:
+                                e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", res['subjectCommonName'],
+                                                    self.__name__, event)
                             self.notifyListeners(e)
+
                             if self.sf.isDomain(res['subjectCommonName'], self.opts['_internettlds']):
                                 e = SpiderFootEvent("DOMAIN_NAME", res['subjectCommonName'],
                                                     self.__name__, event)
@@ -257,8 +262,12 @@ class sfp_riskiq(SpiderFootPlugin):
 
                 if not self.opts['cohostsamedomain']:
                     if self.getTarget().matches(co, includeParents=True):
-                        e = SpiderFootEvent("INTERNET_NAME", co, self.__name__, event)
+                        if self.sf.resolveHost(co):
+                            e = SpiderFootEvent("INTERNET_NAME", co, self.__name__, event)
+                        else:
+                            e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", co, self.__name__, event)
                         self.notifyListeners(e)
+
                         if self.sf.isDomain(co, self.opts['_internettlds']):
                             e = SpiderFootEvent("DOMAIN_NAME", co, self.__name__, event)
                             self.notifyListeners(e)
