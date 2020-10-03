@@ -64,10 +64,6 @@ dbh = None
 
 
 def main():
-    if len(sys.argv) <= 1:
-        print("SpiderFoot requires -l <ip>:<port> to start the web server. Try --help for guidance.")
-        sys.exit(-1)
-
     # web server config
     sfWebUiConfig = {
         'host': '127.0.0.1',
@@ -160,34 +156,39 @@ def main():
         sys.exit(-1)
 
     for filename in os.listdir(mod_dir):
-        if filename.startswith("sfp_") and filename.endswith(".py"):
-            # Skip the module template and debugging modules
-            if filename in ('sfp_template.py', 'sfp_stor_print.py'):
-                continue
-            modName = filename.split('.')[0]
+        if not filename.endswith(".py"):
+            continue
+        if not filename.startswith("sfp_"):
+            continue
 
-            # Load and instantiate the module
-            sfModules[modName] = dict()
-            mod = __import__('modules.' + modName, globals(), locals(), [modName])
-            sfModules[modName]['object'] = getattr(mod, modName)()
-            try:
-                sfModules[modName]['name'] = sfModules[modName]['object'].meta['name']
-                sfModules[modName]['cats'] = sfModules[modName]['object'].meta.get('categories', list())
-                sfModules[modName]['group'] = sfModules[modName]['object'].meta.get('useCases', list())
-                if len(sfModules[modName]['cats']) > 1:
-                    raise ValueError(f"Module {modName} has multiple categories defined but only one is supported.")
-                sfModules[modName]['labels'] = sfModules[modName]['object'].meta.get('flags', list())
-                sfModules[modName]['descr'] = sfModules[modName]['object'].meta['summary']
-                sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
-                sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
-                sfModules[modName]['meta'] = sfModules[modName]['object'].meta
-                if hasattr(sfModules[modName]['object'], 'opts'):
-                    sfModules[modName]['opts'] = sfModules[modName]['object'].opts
-                if hasattr(sfModules[modName]['object'], 'optdescs'):
-                    sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
-            except BaseException as e:
-                log.critical(f"Failed to load {modName}: {e}")
-                sys.exit(-1)
+        # Skip the module template and debugging modules
+        if filename in ('sfp_template.py', 'sfp_stor_print.py'):
+            continue
+
+        modName = filename.split('.')[0]
+
+        # Load and instantiate the module
+        sfModules[modName] = dict()
+        mod = __import__('modules.' + modName, globals(), locals(), [modName])
+        sfModules[modName]['object'] = getattr(mod, modName)()
+        try:
+            sfModules[modName]['name'] = sfModules[modName]['object'].meta['name']
+            sfModules[modName]['cats'] = sfModules[modName]['object'].meta.get('categories', list())
+            sfModules[modName]['group'] = sfModules[modName]['object'].meta.get('useCases', list())
+            if len(sfModules[modName]['cats']) > 1:
+                raise ValueError(f"Module {modName} has multiple categories defined but only one is supported.")
+            sfModules[modName]['labels'] = sfModules[modName]['object'].meta.get('flags', list())
+            sfModules[modName]['descr'] = sfModules[modName]['object'].meta['summary']
+            sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
+            sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
+            sfModules[modName]['meta'] = sfModules[modName]['object'].meta
+            if hasattr(sfModules[modName]['object'], 'opts'):
+                sfModules[modName]['opts'] = sfModules[modName]['object'].opts
+            if hasattr(sfModules[modName]['object'], 'optdescs'):
+                sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
+        except BaseException as e:
+            log.critical(f"Failed to load {modName}: {e}")
+            sys.exit(-1)
 
     if not sfModules:
         log.critical(f"No modules found in modules directory: {mod_dir}")
@@ -197,6 +198,26 @@ def main():
     sfConfig['__modules__'] = sfModules
     # Add descriptions of the global config options
     sfConfig['__globaloptdescs__'] = sfOptdescs
+
+    if args.modules:
+        log.info("Modules available:")
+        for m in sorted(sfModules.keys()):
+            if "__" in m:
+                continue
+            print(('{0:25}  {1}'.format(m, sfModules[m]['descr'])))
+        sys.exit(0)
+
+    if args.types:
+        dbh = SpiderFootDb(sfConfig, init=True)
+        log.info("Types available:")
+        typedata = dbh.eventTypes()
+        types = dict()
+        for r in typedata:
+            types[r[1]] = r[0]
+
+        for t in sorted(types.keys()):
+            print(('{0:45}  {1}'.format(t, types[t])))
+        sys.exit(0)
 
     if args.l:
         try:
@@ -209,35 +230,24 @@ def main():
         sfWebUiConfig['port'] = port
 
         start_web_server(sfWebUiConfig, sfConfig)
-    else:
-        start_scan(sfConfig, sfModules, args)
+        exit(0)
+
+    start_scan(sfConfig, sfModules, args)
 
 
 def start_scan(sfConfig, sfModules, args):
+    """Start scan
+
+    Args:
+        sfConfig (dict): SpiderFoot config options
+        sfModules (dict): modules
+        args (argparse.Namespace): command line args
+    """
     global dbh
     global scanId
 
     dbh = SpiderFootDb(sfConfig, init=True)
     sf = SpiderFoot(sfConfig)
-
-    if args.modules:
-        log.info("Modules available:")
-        for m in sorted(sfModules.keys()):
-            if "__" in m:
-                continue
-            print(('{0:25}  {1}'.format(m, sfModules[m]['descr'])))
-        sys.exit(0)
-
-    if args.types:
-        log.info("Types available:")
-        typedata = dbh.eventTypes()
-        types = dict()
-        for r in typedata:
-            types[r[1]] = r[0]
-
-        for t in sorted(types.keys()):
-            print(('{0:45}  {1}'.format(t, types[t])))
-        sys.exit(0)
 
     if not args.s:
         log.error("You must specify a target when running in scan mode. Try --help for guidance.")
@@ -361,9 +371,9 @@ def start_scan(sfConfig, sfModules, args):
 
     modlist += ["sfp__stor_db", "sfp__stor_stdout"]
 
-    # Run the scan
     if sfConfig['__logging']:
         log.info(f"Modules enabled ({len(modlist)}): {','.join(modlist)}")
+
     cfg = sf.configUnserialize(dbh.configGet(), sfConfig)
 
     # Debug mode is a variable that gets stored to the DB, so re-apply it
@@ -469,13 +479,12 @@ def start_web_server(sfWebUiConfig, sfConfig):
         }
     }
 
+    secrets = dict()
     passwd_file = sf.dataPath() + '/passwd'
     if os.path.isfile(passwd_file):
         if not os.access(passwd_file, os.R_OK):
             log.error("Could not read passwd file. Permission denied.")
             sys.exit(-1)
-
-        secrets = dict()
 
         pw = open(passwd_file, 'r')
 
@@ -493,21 +502,17 @@ def start_web_server(sfWebUiConfig, sfConfig):
 
             secrets[u] = p
 
-        if secrets:
-            log.info("Enabling authentication based on supplied passwd file.")
-            conf['/'] = {
-                'tools.auth_digest.on': True,
-                'tools.auth_digest.realm': web_host,
-                'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(secrets),
-                'tools.auth_digest.key': random.SystemRandom().randint(0, 99999999)
-            }
-        else:
-            warn_msg = "\n********************************************************************\n"
-            warn_msg += "Warning: passwd file contains no passwords. Authentication disabled.\n"
-            warn_msg += "********************************************************************\n"
-            log.warning(warn_msg)
+    if secrets:
+        log.info("Enabling authentication based on supplied passwd file.")
+        conf['/'] = {
+            'tools.auth_digest.on': True,
+            'tools.auth_digest.realm': web_host,
+            'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(secrets),
+            'tools.auth_digest.key': random.SystemRandom().randint(0, 99999999)
+        }
     else:
         warn_msg = "\n********************************************************************\n"
+        warn_msg += "Warning: passwd file contains no passwords. Authentication disabled.\n"
         warn_msg += "Please consider adding authentication to protect this instance!\n"
         warn_msg += "Refer to https://www.spiderfoot.net/documentation/#security.\n"
         warn_msg += "********************************************************************\n"
@@ -565,6 +570,10 @@ def handle_abort(signal, frame):
 if __name__ == '__main__':
     if sys.version_info < (3, 6):
         print("SpiderFoot requires Python 3.6 or higher.")
+        sys.exit(-1)
+
+    if len(sys.argv) <= 1:
+        print("SpiderFoot requires -l <ip>:<port> to start the web server. Try --help for guidance.")
         sys.exit(-1)
 
     main()
