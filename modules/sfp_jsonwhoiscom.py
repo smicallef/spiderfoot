@@ -260,7 +260,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             for name in set(names):
-                evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name, self.__name__, event)
+                evt = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name {name}", self.__name__, event)
                 self.notifyListeners(evt)
 
             for phone in set(phones):

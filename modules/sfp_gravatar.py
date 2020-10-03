@@ -137,8 +137,9 @@ class sfp_gravatar(SpiderFootPlugin):
                 names = data.get('name')
 
             for name in names:
-                if name.get('formatted') is not None:
-                    evt = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {name.get('formatted')}", self.__name__, event)
+                full_name = name.get('formatted')
+                if full_name:
+                    evt = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {full_name}", self.__name__, event)
                     self.notifyListeners(evt)
 
         # TODO: re-enable once location validation is implemented
