@@ -6,7 +6,7 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-class TestModulespur(unittest.TestCase):
+class TestModulenameapi(unittest.TestCase):
     """
     Test modules.sfp_nameapi
     """
