@@ -101,11 +101,12 @@ class sfp_debounce(SpiderFootPlugin):
         if data is None:
             return
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
-        self.notifyListeners(evt)
-
         isDisposable = data.get('disposable')
+
         if isDisposable == "true":
+            evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+            self.notifyListeners(evt)
+
             evt = SpiderFootEvent("EMAILADDR_DISPOSABLE", eventData, self.__name__, event)
             self.notifyListeners(evt)
 
