@@ -22,7 +22,7 @@ class sfp_debounce(SpiderFootPlugin):
         'summary': "Check whether an email is disposable",
         'flags': [""],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Search Engines"],
+        'categories': ["Reputation Systems"],
         'dataSource': {
             'website': "https://debounce.io/",
             'model': "FREE_NOAUTH_UNLIMITED",
