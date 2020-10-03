@@ -73,7 +73,7 @@ class sfp_yandexdns(SpiderFootPlugin):
         res.nameservers = ["77.88.8.88", "77.88.8.2"]
 
         try:
-            addrs = res.query(qaddr)
+            addrs = res.resolve(qaddr)
             self.sf.debug(f"Addresses returned: {addrs}")
         except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")

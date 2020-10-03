@@ -72,7 +72,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         res.nameservers = ["1.1.1.2", "1.0.0.2"]
 
         try:
-            addrs = res.query(qaddr)
+            addrs = res.resolve(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
         except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")
