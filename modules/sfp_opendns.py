@@ -74,7 +74,7 @@ class sfp_opendns(SpiderFootPlugin):
         res.nameservers = ["208.67.222.222", "208.67.220.220"]
 
         try:
-            addrs = res.query(qaddr)
+            addrs = res.resolve(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
         except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")

@@ -71,7 +71,7 @@ class sfp_quad9(SpiderFootPlugin):
         res.nameservers = ["9.9.9.9"]
 
         try:
-            addrs = res.query(qry)
+            addrs = res.resolve(qry)
             self.sf.debug(f"Addresses returned: {addrs}")
         except Exception:
             self.sf.debug(f"Unable to resolve {qry}")

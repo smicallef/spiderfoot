@@ -59,7 +59,7 @@ class sfp_norton(SpiderFootPlugin):
         res.nameservers = ["199.85.126.20", "199.85.127.20"]
 
         try:
-            addrs = res.query(qaddr)
+            addrs = res.resolve(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
         except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")
