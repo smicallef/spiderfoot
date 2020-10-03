@@ -54,7 +54,6 @@ class TestModuledebounce(unittest.TestCase):
         module = sfp_debounce()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)
