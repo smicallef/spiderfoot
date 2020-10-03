@@ -74,6 +74,8 @@ class TestModuleCountryName(unittest.TestCase):
             if str(event.data) != expected:
                 raise Exception(f"{event.data} != {expected}")
 
+            raise Exception("OK")
+
         module.notifyListeners = new_notifyListeners.__get__(module, sfp_countryname)
 
         event_type = 'ROOT'
@@ -88,9 +90,10 @@ class TestModuleCountryName(unittest.TestCase):
         source_event = evt
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        result = module.handleEvent(evt)
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
 
-        self.assertIsNone(result)
+        self.assertEqual("OK", str(cm.exception))
 
     def test_handleEvent_domain_whois_event_data_not_containing_countryname_string_should_not_create_event(self):
         sf = SpiderFoot(self.default_options)
