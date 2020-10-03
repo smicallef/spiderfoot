@@ -14,6 +14,7 @@
 import json
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
+
 class sfp_debounce(SpiderFootPlugin):
 
     meta = {
