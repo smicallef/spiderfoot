@@ -198,6 +198,7 @@ class sfp_snov(SpiderFootPlugin):
             self.notifyListeners(evt)
 
             records = data.get('emails')
+            lastId = data.get('lastId')
 
             if records:
                 for record in records:
