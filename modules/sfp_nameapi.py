@@ -38,7 +38,9 @@ class sfp_nameapi(SpiderFootPlugin):
             'favIcon': "https://www.nameapi.org/fileadmin/favicon.ico",
             'logo': "https://www.nameapi.org/fileadmin/templates/nameprofiler/images/name-api-logo.png",
             'description': "The NameAPI DEA-Detector checks email addresses "
-            "against a list of known trash domains such as mailinator.com.",
+            "against a list of known trash domains such as mailinator.com.\n"
+            "It classifies those as disposable which operate as a time-limited, "
+            "web based way of receiving emails, for example, sign up confirmations.",
         }
     }
 
