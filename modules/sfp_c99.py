@@ -43,20 +43,26 @@ class sfp_c99(SpiderFootPlugin):
 
     opts = {
         "api_key": "",
-        "verify": True
+        "verify": True,
+        "cohostsamedomain": False,
+        "maxcohost": 100,
     }
 
     optdescs = {
         "api_key": "C99 API Key.",
         "verify": "Verify identified domains still resolve to the associated specified IP address.",
+        "maxcohost": "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
+        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
     }
 
     results = None
     errorState = False
+    cohostcount = 0
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.cohostcount = 0
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -85,6 +91,7 @@ class sfp_c99(SpiderFootPlugin):
             "ACCOUNT_EXTERNAL_OWNED",
             "WEBSERVER_TECHNOLOGY",
             "PROVIDER_HOSTING",
+            "CO_HOSTED_SITE"
         ]
 
     def query(self, path, queryParam, queryData):
@@ -113,6 +120,9 @@ class sfp_c99(SpiderFootPlugin):
         except Exception as e:
             self.errorState = True
             self.sf.error(f"Error processing response from C99: {e}")
+            return None
+
+        if not info.get('success', False):
             return None
 
         return info
@@ -155,28 +165,10 @@ class sfp_c99(SpiderFootPlugin):
             if self.checkForStop():
                 return None
 
-            subDomain = subDomainElem.get("subdomain")
+            subDomain = subDomainElem.get("subdomain", "").strip()
 
             if subDomain:
-                if self.opts["verify"] and not self.sf.resolveHost(subDomain):
-                    self.sf.debug(
-                        f"Host {subDomain} could not be resolved for {event.data}"
-                    )
-                    evt = SpiderFootEvent(
-                        "INTERNET_NAME_UNRESOLVED",
-                        subDomain,
-                        self.__name__,
-                        event,
-                    )
-                    self.notifyListeners(evt)
-                else:
-                    evt = SpiderFootEvent(
-                        "INTERNET_NAME",
-                        subDomain,
-                        self.__name__,
-                        event,
-                    )
-                    self.notifyListeners(evt)
+                self.emitHostname(subDomain, event)
 
     def emitDomainHistoryData(self, domainHistoryData, event):
         self.emitRawRirData(domainHistoryData, event)
@@ -187,7 +179,7 @@ class sfp_c99(SpiderFootPlugin):
 
             ip = domainHistoryElem.get("ip_address")
 
-            if ip:
+            if self.sf.validIP(ip):
                 evt = SpiderFootEvent(
                     "IP_ADDRESS",
                     ip,
@@ -228,25 +220,9 @@ class sfp_c99(SpiderFootPlugin):
                 if self.checkForStop():
                     return None
 
-                if self.opts["verify"] and not self.sf.resolveHost(domain):
-                    self.sf.debug(
-                        f"Host {domain} could not be resolved for {event.data}"
-                    )
-                    evt = SpiderFootEvent(
-                        "INTERNET_NAME_UNRESOLVED",
-                        domain,
-                        self.__name__,
-                        event,
-                    )
-                    self.notifyListeners(evt)
-                else:
-                    evt = SpiderFootEvent(
-                        "INTERNET_NAME",
-                        domain,
-                        self.__name__,
-                        event,
-                    )
-                    self.notifyListeners(evt)
+                domain = domain.strip()
+                if domain:
+                    self.emitHostname(domain, event)
 
     def emitProxyDetectionData(self, data, event):
         self.emitRawRirData(data, event)
@@ -264,25 +240,9 @@ class sfp_c99(SpiderFootPlugin):
     def emitGeoIPData(self, data, event):
         self.emitRawRirData(data, event)
 
-        hostName = data.get("hostname")
+        hostName = data.get("hostname", "").strip()
         if hostName:
-            if self.opts["verify"] and not self.sf.resolveHost(hostName):
-                self.sf.debug(f"Host {hostName} could not be resolved for {event.data}")
-                evt = SpiderFootEvent(
-                    "INTERNET_NAME_UNRESOLVED",
-                    hostName,
-                    self.__name__,
-                    event,
-                )
-                self.notifyListeners(evt)
-            else:
-                evt = SpiderFootEvent(
-                    "INTERNET_NAME",
-                    hostName,
-                    self.__name__,
-                    event,
-                )
-                self.notifyListeners(evt)
+            self.emitHostname(hostName, event)
 
         record = data.get("records")
 
@@ -313,7 +273,7 @@ class sfp_c99(SpiderFootPlugin):
                 )
                 self.notifyListeners(evt)
 
-            if country or region or city or postalCode:
+            if region or country or city or postalCode:
                 evt = SpiderFootEvent(
                     "GEOINFO",
                     f"Country: {country}, Region: {region}, City: {city}, Postal code: {postalCode}",
@@ -362,6 +322,44 @@ class sfp_c99(SpiderFootPlugin):
                 event,
             )
             self.notifyListeners(evt)
+
+    def emitHostname(self, data, event):
+        if not self.sf.validHost(data, self.opts['_internettlds']):
+            return None
+
+        if self.opts["verify"] and not self.sf.resolveHost(data):
+            self.sf.debug(
+                "Host {data} could not be resolved."
+            )
+            if self.getTarget().matches(data, includeParents=True):
+                evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", data, self.__name__, event)
+                self.notifyListeners(evt)
+            return
+
+        if self.getTarget().matches(data, includeParents=True):
+            evt = SpiderFootEvent('INTERNET_NAME', data, self.__name__, event)
+            self.notifyListeners(evt)
+            if self.sf.isDomain(data, self.opts['_internettlds']):
+                evt = SpiderFootEvent('DOMAIN_NAME', data, self.__name__, event)
+                self.notifyListeners(evt)
+            return
+
+        if self.cohostcount < self.opts['maxcohost']:
+            if self.opts["verify"] and not self.sf.validateIP(data, event.data):
+                self.sf.debug("Host no longer resolves to our IP.")
+                return
+
+            if not self.opts["cohostsamedomain"]:
+                if self.getTarget().matches(data, includeParents=True):
+                    self.sf.debug(
+                        f"Skipping {data} because it is on the same domain."
+                    )
+                    return
+
+            if self.cohostcount < self.opts["maxcohost"]:
+                evt = SpiderFootEvent("CO_HOSTED_SITE", data, self.__name__, event)
+                self.notifyListeners(evt)
+                self.cohostcount += 1
 
     def handleEvent(self, event):
         eventName = event.eventType
