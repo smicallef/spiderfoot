@@ -5,7 +5,7 @@
 #               using TextMagic API
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
-#
+#\
 # Created:     2020-10-05
 # Copyright:   (c) Steve Micallef
 # Licence:     GPL
@@ -22,7 +22,7 @@ class sfp_textmagic(SpiderFootPlugin):
         "summary": "Obtain phone number type fron TextMagic API",
         "flags": ["apikey"],
         "useCases": ["Passive"],
-        "categories": ["Passive DNS"],
+        "categories": ["Search Engines"],
         "dataSource": {
             "website": "https://www.textmagic.com/",
             "model": "FREE_AUTH_LIMITED",
