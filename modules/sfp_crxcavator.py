@@ -150,6 +150,9 @@ class sfp_crxcavator(SpiderFootPlugin):
         locations = list()
 
         for result in results:
+            if not isinstance(result, dict):
+                continue
+
             extension_id = result.get('extension_id')
 
             if not extension_id:

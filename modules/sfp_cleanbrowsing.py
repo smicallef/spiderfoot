@@ -80,7 +80,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
         res.nameservers = ["185.228.168.168", "185.228.168.169"]
 
         try:
-            addrs = res.query(qaddr)
+            addrs = res.resolve(qaddr)
             self.sf.debug(f"Addresses returned: {addrs}")
         except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")

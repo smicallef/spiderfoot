@@ -524,7 +524,7 @@ class SpiderFoot:
             else:
                 modName = mod.__name__
 
-        if self.dbh is None:
+        if self.dbh:
             self._dblog("DEBUG", message, modName)
 
         self.log.debug(f"{modName} : {message}")

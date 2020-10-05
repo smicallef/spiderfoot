@@ -75,7 +75,7 @@ class sfp_comodo(SpiderFootPlugin):
         res.nameservers = ["8.26.56.26", "8.20.247.20"]
 
         try:
-            addrs = res.query(qaddr)
+            addrs = res.resolve(qaddr)
             self.sf.debug("Addresses returned: " + str(addrs))
         except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")

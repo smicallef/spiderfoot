@@ -25,7 +25,7 @@ class sfp_xforce(SpiderFootPlugin):
 
     meta = {
         'name': "XForce Exchange",
-        'summary': "Obtain information from IBM X-Force Exchange",
+        'summary': "Obtain IP reputation and passive DNS information from IBM X-Force Exchange",
         'flags': ["apikey"],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
@@ -64,7 +64,9 @@ class sfp_xforce(SpiderFootPlugin):
         'subnetlookup': True,
         'maxsubnet': 24,
         'maxcohost': 100,
-        'checkaffiliates': True
+        'cohostsamedomain': False,
+        'checkaffiliates': True,
+        'verify': True,
     }
 
     # Option descriptions
@@ -77,7 +79,9 @@ class sfp_xforce(SpiderFootPlugin):
         'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'maxcohost': "Stop reporting co-hosted sites after this many are found, as it would likely indicate web hosting.",
-        'checkaffiliates': "Apply checks to affiliates?"
+        "cohostsamedomain": "Treat co-hosted sites on the same target domain as co-hosting?",
+        'checkaffiliates': "Apply checks to affiliates?",
+        'verify': "Verify identified domains still resolve to the associated specified IP address.",
     }
 
     # Be sure to completely clear any class variables in setup()
@@ -100,16 +104,13 @@ class sfp_xforce(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
-                "CO_HOSTED_SITE", "NETBLOCK_OWNER", "NETBLOCK_MEMBER",
-                "AFFILIATE_INTERNET_NAME"]
+        return ["IP_ADDRESS", "AFFILIATE_IPADDR",
+                "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_INTERNET_NAME",
-                "MALICIOUS_COHOST", "MALICIOUS_AFFILIATE_INTERNET_NAME",
-                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
-                "CO_HOSTED_SITE"]
+        return ["MALICIOUS_IPADDR", "CO_HOSTED_SITE",
+                "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK"]
 
     def query(self, qry, querytype):
         if querytype not in ["ipr/malware", "ipr/history", "resolve"]:
@@ -238,7 +239,6 @@ class sfp_xforce(SpiderFootPlugin):
 
         # For IP Addresses, do the additional passive DNS lookup
         if eventName == "IP_ADDRESS":
-            evtType = "CO_HOSTED_SITE"
             if self.cohostcount > self.opts['maxcohost']:
                 return
 
@@ -261,7 +261,17 @@ class sfp_xforce(SpiderFootPlugin):
                             self.sf.debug("Record found but too old, skipping.")
                             continue
                         else:
-                            e = SpiderFootEvent(evtType, host, self.__name__, event)
+                            if not self.opts["cohostsamedomain"]:
+                                if self.getTarget().matches(host, includeParents=True):
+                                    self.sf.debug(
+                                        "Skipping " + host + " because it is on the same domain."
+                                    )
+                                    continue
+
+                            if self.opts['verify'] and not self.sf.resolveHost(host):
+                                continue
+
+                            e = SpiderFootEvent("CO_HOSTED_SITE", host, self.__name__, event)
                             self.notifyListeners(e)
                             self.cohostcount += 1
 
@@ -273,12 +283,6 @@ class sfp_xforce(SpiderFootPlugin):
                 evtType = 'MALICIOUS_IPADDR'
             if eventName == "AFFILIATE_IPADDR":
                 evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-            if eventName == "INTERNET_NAME":
-                evtType = "MALICIOUS_INTERNET_NAME"
-            if eventName == 'AFFILIATE_INTERNET_NAME':
-                evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-            if eventName == 'CO_HOSTED_SITE':
-                evtType = 'MALICIOUS_COHOST'
 
             rec = self.query(addr, "ipr/history")
             if rec is not None:
@@ -312,10 +316,6 @@ class sfp_xforce(SpiderFootPlugin):
                         entry = f"{reason}{infield_sep}{score}{infield_sep}{created}{infield_sep}{cats_description}"
                         e = SpiderFootEvent(evtType, entry, self.__name__, event)
                         self.notifyListeners(e)
-
-            # ipr/malware doesn't support hostnames
-            if eventName in ["CO_HOSTED_SITE", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME"]:
-                continue
 
             rec = self.query(addr, "ipr/malware")
             if rec is not None:

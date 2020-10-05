@@ -77,11 +77,13 @@ class sfp_archiveorg(SpiderFootPlugin):
 
     results = None
     foundDates = list()
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
         self.foundDates = list()
+        self.errorState = False
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
@@ -107,6 +109,9 @@ class sfp_archiveorg(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
+
+        if self.errorState:
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -135,7 +140,13 @@ class sfp_archiveorg(SpiderFootPlugin):
         self.results[eventData] = True
 
         for daysback in self.opts['farback'].split(","):
-            newDate = datetime.datetime.now() - datetime.timedelta(days=int(daysback))
+            try:
+                newDate = datetime.datetime.now() - datetime.timedelta(days=int(daysback))
+            except Exception:
+                self.sf.error("Unable to parse option for number of days back to search.")
+                self.errorState = True
+                return
+
             maxDate = newDate.strftime("%Y%m%d")
 
             url = "https://archive.org/wayback/available?url=" + eventData + \

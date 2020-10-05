@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_base64
-# Purpose:      Identifies (best-effort) Base64-encoded strings in content and URLs.
+# Purpose:      Identifies (best-effort) Base64-encoded strings in URLs.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -11,6 +11,7 @@
 
 import base64
 import re
+import urllib.parse
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -19,7 +20,7 @@ class sfp_base64(SpiderFootPlugin):
 
     meta = {
         'name': "Base64 Decoder",
-        'summary': "Identify Base64-encoded strings in any content and URLs, often revealing interesting hidden information.",
+        'summary': "Identify Base64-encoded strings in URLs, often revealing interesting hidden information.",
         'flags': [""],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Content Analysis"]
@@ -44,7 +45,7 @@ class sfp_base64(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["LINKED_URL_INTERNAL", "TARGET_WEB_CONTENT"]
+        return ["LINKED_URL_INTERNAL"]
 
     # What events this module produces
     def producedEvents(self):
@@ -58,10 +59,12 @@ class sfp_base64(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        decoded_data = urllib.parse.unquote(eventData)
+
         # Note: this will miss base64 encoded strings with no padding
         # (strings which do not end with '=' or '==')
         pat = re.compile(r"([A-Za-z0-9+\/]+={1,2})")
-        m = re.findall(pat, eventData)
+        m = re.findall(pat, decoded_data)
         for match in m:
             if self.checkForStop():
                 return
