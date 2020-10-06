@@ -49,6 +49,9 @@ WORKDIR /home/spiderfoot
 # Place database and configs outside installation directory
 ENV SPIDERFOOT_DATA /var/lib/spiderfoot
 
+# Place logs outside installation directory
+ENV SPIDERFOOT_LOGS /var/log/spiderfoot
+
 # Run everything as one command so that only one layer is created
 RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpeg zlib openjpeg \
     && addgroup spiderfoot \
@@ -58,6 +61,8 @@ RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpe
     && rm -rf /lib/apk/db \
     && rm -rf /root/.cache \
     && mkdir $SPIDERFOOT_DATA \
+    && mkdir $SPIDERFOOT_LOGS \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS \
     && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA
 
 COPY --from=build /opt/venv /opt/venv

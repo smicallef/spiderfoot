@@ -39,8 +39,12 @@ console_handler = logging.StreamHandler(sys.stderr)
 console_handler.setFormatter(log_format)
 log.addHandler(console_handler)
 
+log_dir = os.environ.get('SPIDERFOOT_LOGS')
+if not log_dir:
+    log_dir = "log"
+
 debug_handler = handlers.TimedRotatingFileHandler(
-    "log/spiderfoot.debug.log",
+    f"{log_dir}/spiderfoot.debug.log",
     when="d",
     interval=1,
     backupCount=30
@@ -50,7 +54,7 @@ debug_handler.setFormatter(log_format)
 log.addHandler(debug_handler)
 
 error_handler = handlers.TimedRotatingFileHandler(
-    "log/spiderfoot.error.log",
+    f"{log_dir}/spiderfoot.error.log",
     when="d",
     interval=1,
     backupCount=30
