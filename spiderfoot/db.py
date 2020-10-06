@@ -182,6 +182,7 @@ class SpiderFootDb:
         ['LEAKSITE_CONTENT', 'Leak Site Content', 1, 'DATA'],
         ['PASSWORD_COMPROMISED', 'Compromised Password', 0, 'DATA'],
         ['PHONE_NUMBER', 'Phone Number', 0, 'ENTITY'],
+        ['PHONE_NUMBER_TYPE', 'Phone Number Type', 0, 'DESCRIPTOR'],
         ['PHYSICAL_ADDRESS', 'Physical Address', 0, 'ENTITY'],
         ['PHYSICAL_COORDINATES', 'Physical Coordinates', 0, 'ENTITY'],
         ['PGP_KEY', 'PGP Public Key', 0, 'DATA'],
