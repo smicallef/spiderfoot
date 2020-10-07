@@ -74,7 +74,8 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             "MALICIOUS_PHONE_NUMBER",
             "MALICIOUS_EMAILADDR",
             "MALICIOUS_IPADDR",
-            "MALICIOUS_DOMAIN_NAME"
+            "MALICIOUS_DOMAIN_NAME",
+            "RAW_RIR_DATA"
         ]
 
     def handle_error_response(self, qry, res):
