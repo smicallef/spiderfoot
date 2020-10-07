@@ -167,6 +167,7 @@ class SpiderFootDb:
         ['MALICIOUS_BITCOIN_ADDRESS', 'Malicious Bitcoin Address', 0, 'DESCRIPTOR'],
         ['MALICIOUS_IPADDR', 'Malicious IP Address', 0, 'DESCRIPTOR'],
         ['MALICIOUS_COHOST', 'Malicious Co-Hosted Site', 0, 'DESCRIPTOR'],
+        ['MALICIOUS_DOMAIN_NAME', 'Malicious Co-Hosted Site', 0, 'DESCRIPTOR'],
         ['MALICIOUS_EMAILADDR', 'Malicious E-mail Address', 0, 'DESCRIPTOR'],
         ['MALICIOUS_INTERNET_NAME', 'Malicious Internet Name', 0, 'DESCRIPTOR'],
         ['MALICIOUS_AFFILIATE_INTERNET_NAME', 'Malicious Affiliate', 0, 'DESCRIPTOR'],
