@@ -52,8 +52,6 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
                 sfModules[modName]['name'] = sfModules[modName]['object'].meta['name']
                 sfModules[modName]['cats'] = sfModules[modName]['object'].meta.get('categories', list())
                 sfModules[modName]['group'] = sfModules[modName]['object'].meta.get('useCases', list())
-                if len(sfModules[modName]['cats']) > 1:
-                    raise ValueError(f"Module {modName} has multiple categories defined but only one is supported.")
                 sfModules[modName]['labels'] = sfModules[modName]['object'].meta.get('flags', list())
                 sfModules[modName]['descr'] = sfModules[modName]['object'].meta['summary']
                 sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
