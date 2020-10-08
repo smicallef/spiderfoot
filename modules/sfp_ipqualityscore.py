@@ -21,7 +21,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         "name": "IPQualityScore",
         "summary": "Determine if target is malicious using IPQualityScore API",
         "flags": ["apikey"],
-        "useCases": ["Passive"],
+        "useCases": ["Investigate", "Passive"],
         "categories": ["Reputation Systems"],
         "dataSource": {
             "website": "https://www.ipqualityscore.com/",
@@ -46,10 +46,12 @@ class sfp_ipqualityscore(SpiderFootPlugin):
 
     opts = {
         "api_key": "",
+        "abuse_score_threshold": 85
     }
 
     optdescs = {
         "api_key": "IPQualityScore API Key",
+        "abuse_score_threshold": "Minimum abuse score for target to be considered malicious"
     }
 
     errorState = False
@@ -141,6 +143,9 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             self.errorState = True
             return None
 
+        if eventData in self.results:
+            self.sf.debug(f"Skipping {eventData} as already mapped.")
+            return None
         self.results[eventData] = True
 
         data = self.query(eventData, eventName)
@@ -151,21 +156,21 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         fraudScore = data.get('fraud_score')
         recentAbuse = data.get('recent_abuse')
         botStatus = data.get('bot_status')
-        if fraudScore >= 85 or recentAbuse or botStatus:
+        if fraudScore >= self.opts['abuse_score_threshold'] or recentAbuse or botStatus:
             evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
 
             if eventName == "PHONE_NUMBER":
-                evt = SpiderFootEvent("MALICIOUS_PHONE_NUMBER", eventData, self.__name__, event)
+                evt = SpiderFootEvent("MALICIOUS_PHONE_NUMBER", "IPQualityScore [ " + eventData + " ]", self.__name__, event)
                 self.notifyListeners(evt)
             elif eventName == "EMAILADDR":
-                evt = SpiderFootEvent("MALICIOUS_EMAILADDR", eventData, self.__name__, event)
+                evt = SpiderFootEvent("MALICIOUS_EMAILADDR", "IPQualityScore [ " + eventData + " ]", self.__name__, event)
                 self.notifyListeners(evt)
             elif eventName == "IP_ADDRESS":
-                evt = SpiderFootEvent("MALICIOUS_IPADDR", eventData, self.__name__, event)
+                evt = SpiderFootEvent("MALICIOUS_IPADDR", "IPQualityScore [ " + eventData + " ]", self.__name__, event)
                 self.notifyListeners(evt)
             elif eventName == "DOMAIN_NAME":
-                evt = SpiderFootEvent("MALICIOUS_INTERNET_NAME", eventData, self.__name__, event)
+                evt = SpiderFootEvent("MALICIOUS_INTERNET_NAME", "IPQualityScore [ " + eventData + " ]", self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_ipqualityscore class
