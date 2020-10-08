@@ -126,7 +126,7 @@ class sfp_textmagic(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        if self.opts["api_key"] == "" and self.opts["api_key_username"] == "":
+        if self.opts["api_key"] == "" or self.opts["api_key_username"] == "":
             self.sf.error(
                 f"You enabled {self.__class__.__name__} but did not set an API Username/Key!"
             )
