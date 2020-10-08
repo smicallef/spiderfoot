@@ -20,7 +20,7 @@ class sfp_pastebin(SpiderFootPlugin):
 
     meta = {
         'name': "PasteBin",
-        'summary': "PasteBin scraping (via Google) to identify related content.",
+        'summary': "PasteBin search (via Google Search API) to identify related content.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
