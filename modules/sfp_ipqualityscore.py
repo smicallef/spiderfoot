@@ -161,16 +161,16 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             self.notifyListeners(evt)
 
             if eventName == "PHONE_NUMBER":
-                evt = SpiderFootEvent("MALICIOUS_PHONE_NUMBER", "IPQualityScore [ " + eventData + " ]", self.__name__, event)
+                evt = SpiderFootEvent("MALICIOUS_PHONE_NUMBER", "IPQualityScore [" + eventData + "]", self.__name__, event)
                 self.notifyListeners(evt)
             elif eventName == "EMAILADDR":
-                evt = SpiderFootEvent("MALICIOUS_EMAILADDR", "IPQualityScore [ " + eventData + " ]", self.__name__, event)
+                evt = SpiderFootEvent("MALICIOUS_EMAILADDR", "IPQualityScore [" + eventData + "]", self.__name__, event)
                 self.notifyListeners(evt)
             elif eventName == "IP_ADDRESS":
-                evt = SpiderFootEvent("MALICIOUS_IPADDR", "IPQualityScore [ " + eventData + " ]", self.__name__, event)
+                evt = SpiderFootEvent("MALICIOUS_IPADDR", "IPQualityScore [" + eventData + "]", self.__name__, event)
                 self.notifyListeners(evt)
             elif eventName == "DOMAIN_NAME":
-                evt = SpiderFootEvent("MALICIOUS_INTERNET_NAME", "IPQualityScore [ " + eventData + " ]", self.__name__, event)
+                evt = SpiderFootEvent("MALICIOUS_INTERNET_NAME", "IPQualityScore [" + eventData + "]", self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_ipqualityscore class
