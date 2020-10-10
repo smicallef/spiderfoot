@@ -67,20 +67,22 @@ class sfp_ipqualityscore(SpiderFootPlugin):
 
     def watchedEvents(self):
         return [
-            "PHONE_NUMBER",
+            "DOMAIN_NAME",
             "EMAILADDR",
             "IP_ADDRESS",
-            "DOMAIN_NAME"
+            "PHONE_NUMBER",
         ]
 
     def producedEvents(self):
         return [
+            "EMAILADDR_DISPOSABLE",
+            "EMAILADDR_COMPROMISED",
+            "GEOINFO",
             "MALICIOUS_PHONE_NUMBER",
             "MALICIOUS_EMAILADDR",
             "MALICIOUS_IPADDR",
             "MALICIOUS_INTERNET_NAME",
-            "EMAILADDR_DISPOSABLE",
-            "EMAILADDR_COMPROMISED",
+            "PHONE_NUMBER_TYPE",
             "RAW_RIR_DATA"
         ]
 
@@ -130,6 +132,27 @@ class sfp_ipqualityscore(SpiderFootPlugin):
 
         return None
 
+    def getGeoInfo(self, data):
+        geoInfo = ""
+
+        city = data.get('city')
+        country = data.get('country')
+        if not country:
+            country = data.get('country_code')
+        zipcode = data.get('zip_code')
+        region = data.get('region')
+
+        if city:
+            geoInfo += city + ", "
+        if region:
+            geoInfo += region + ", "
+        if country:
+            geoInfo += country + " "
+        if zipcode:
+            geoInfo += zipcode
+
+        return geoInfo
+
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
@@ -167,35 +190,27 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
             malicious = True
-            maliciousDesc = f"IPQualityScore [ {eventData} ]\n"
+            maliciousDesc = f"IPQualityScore [{eventData}]\n"
 
         if eventName == "PHONE_NUMBER":
             if malicious:
-                maliciousDesc += f" - FRAUD SCORE : {data.get('fraud_score')}\n - ACTIVE : {data.get('active')}\n - RISKY : {data.get('risky')}\n - RECENT ABUSE : {data.get('recent_abuse')}"
+                maliciousDesc += f" - FRAUD SCORE : {fraudScore}\n - ACTIVE : {data.get('active')}\n - RISKY : {data.get('risky')}\n - RECENT ABUSE : {recentAbuse}"
                 evt = SpiderFootEvent("MALICIOUS_PHONE_NUMBER", maliciousDesc, self.__name__, event)
                 self.notifyListeners(evt)
 
-            geoInfo = ""
-            city = data.get('city')
-            country = data.get('country')
-            zipcode = data.get('zip_code')
-            region = data.get('region')
+            phoneNumberType = data.get('line_type')
+            if phoneNumberType:
+                evt = SpiderFootEvent("PHONE_NUMBER_TYPE", phoneNumberType, self.__name__, event)
+                self.notifyListeners(evt)
 
-            if city:
-                geoInfo += city + ", "
-            if region:
-                geoInfo += region + ", "
-            if country:
-                geoInfo += country + " "
-            if zipcode:
-                geoInfo += zipcode + ". "
-
-            evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, event)
-            self.notifyListeners(evt)
+            geoInfo = self.getGeoInfo(data)
+            if geoInfo:
+                evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, event)
+                self.notifyListeners(evt)
 
         elif eventName == "EMAILADDR":
             if malicious:
-                maliciousDesc += f" - FRAUD SCORE : {data.get('fraud_score')}\n - HONEYPOT : {data.get('honeypot')}\n - SPAM TRAP SCORE : {data.get('spam_trap_score')}\n - RECENT ABUSE : {data.get('recent_abuse')}"
+                maliciousDesc += f" - FRAUD SCORE : {fraudScore}\n - HONEYPOT : {data.get('honeypot')}\n - SPAM TRAP SCORE : {data.get('spam_trap_score')}\n - RECENT ABUSE : {recentAbuse}"
                 evt = SpiderFootEvent("MALICIOUS_EMAILADDR", maliciousDesc, self.__name__, event)
                 self.notifyListeners(evt)
 
@@ -204,30 +219,22 @@ class sfp_ipqualityscore(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             if data.get('leaked'):
-                evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [ {data.get('suggested_domain')} ]", self.__name__, event)
+                evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [{data.get('suggested_domain')}]", self.__name__, event)
                 self.notifyListeners(evt)
+
         elif eventName == "IP_ADDRESS" or eventName == "DOMAIN_NAME":
             if malicious:
-                maliciousDesc += f" - FRAUD SCORE : {data.get('fraud_score')}\n - BOT STATUS : {data.get('bot_status')}\n - RECENT ABUSE : {data.get('recent_abuse')}\n - ABUSE VELOCITY : {data.get('abuse_velocity')}\n - VPN : {data.get('vpn')}\n - ACTIVE VPN : {data.get('active_vpn')}\n - TOR : {data.get('tor')}\n - ACTIVE TOR : {data.get('active_t')}"
+                maliciousDesc += f" - FRAUD SCORE : {fraudScore}\n - BOT STATUS : {botStatus}\n - RECENT ABUSE : {recentAbuse}\n - ABUSE VELOCITY : {data.get('abuse_velocity')}\n - VPN : {data.get('vpn')}\n - ACTIVE VPN : {data.get('active_vpn')}\n - TOR : {data.get('tor')}\n - ACTIVE TOR : {data.get('active_tor')}"
+
                 if eventName == "IP_ADDRESS":
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousDesc, self.__name__, event)
                 elif eventName == "DOMAIN_NAME":
                     evt = SpiderFootEvent("MALICIOUS_INTERNET_NAME", maliciousDesc, self.__name__, event)
                 self.notifyListeners(evt)
 
-            geoInfo = ""
-            city = data.get('city')
-            country = data.get('country_code')
-            region = data.get('region')
-
-            if city:
-                geoInfo += city + ", "
-            if region:
-                geoInfo += region + ", "
-            if country:
-                geoInfo += country + " "
-
-            evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, event)
-            self.notifyListeners(evt)
+            geoInfo = self.getGeoInfo(data)
+            if geoInfo:
+                evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_ipqualityscore class
