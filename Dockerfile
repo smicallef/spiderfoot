@@ -60,6 +60,12 @@ RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpe
     && mkdir $SPIDERFOOT_DATA \
     && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA
 
+COPY . .
+
+# fix permissions on logs directory
+ENV SPIDERFOOT_LOGS /home/spiderfoot/log
+RUN chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS
+
 COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
@@ -70,5 +76,3 @@ EXPOSE 5001
 # Run the application.
 ENTRYPOINT ["/opt/venv/bin/python"]
 CMD ["sf.py", "-l", "0.0.0.0:5001"]
-
-COPY . .
