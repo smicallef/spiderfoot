@@ -1,0 +1,114 @@
+2020-10-09 18:44:24,108 [WARNING] 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2020-10-09 18:45:11,126 [ERROR] Failed to connect to https://ipqualityscore.com/api/json/email/XVKhAabt50zsOdptiRYS4i485z8qmK5K/958002011925@cmmail.com?strictness=0
+2020-10-09 18:45:11,127 [ERROR] Module (modules.sfp_ipqualityscore) encountered an error: the JSON object must be str, bytes or bytearray, not NoneType
+Traceback (most recent call last):
+  File "/home/krishnasis/spiderfoot/spiderfoot/plugin.py", line 259, in notifyListeners
+    listener.handleEvent(sfEvent)
+  File "/home/krishnasis/spiderfoot/modules/sfp_ipqualityscore.py", line 153, in handleEvent
+    data = self.query(eventData, eventName)
+  File "/home/krishnasis/spiderfoot/modules/sfp_ipqualityscore.py", line 115, in query
+    success = json.loads(res["content"]).get("success")
+  File "/usr/lib/python3.8/json/__init__.py", line 341, in loads
+    raise TypeError(f'the JSON object must be str, bytes or bytearray, '
+TypeError: the JSON object must be str, bytes or bytearray, not NoneType
+2020-10-09 18:45:58,819 [ERROR] Module (modules.sfp_ipqualityscore) encountered an error: name 'malicious' is not defined
+Traceback (most recent call last):
+  File "/home/krishnasis/spiderfoot/spiderfoot/plugin.py", line 259, in notifyListeners
+    listener.handleEvent(sfEvent)
+  File "/home/krishnasis/spiderfoot/modules/sfp_ipqualityscore.py", line 191, in handleEvent
+    if malicious:
+NameError: name 'malicious' is not defined
+2020-10-09 18:45:58,858 [ERROR] Module (modules.sfp_ipqualityscore) encountered an error: name 'malicious' is not defined
+Traceback (most recent call last):
+  File "/home/krishnasis/spiderfoot/spiderfoot/plugin.py", line 259, in notifyListeners
+    listener.handleEvent(sfEvent)
+  File "/home/krishnasis/spiderfoot/modules/sfp_ipqualityscore.py", line 191, in handleEvent
+    if malicious:
+NameError: name 'malicious' is not defined
+2020-10-09 18:48:53,149 [ERROR] Module (modules.sfp_ipqualityscore) encountered an error: name 'malicious' is not defined
+Traceback (most recent call last):
+  File "/home/krishnasis/spiderfoot/spiderfoot/plugin.py", line 259, in notifyListeners
+    listener.handleEvent(sfEvent)
+  File "/home/krishnasis/spiderfoot/modules/sfp_ipqualityscore.py", line 191, in handleEvent
+    if malicious:
+NameError: name 'malicious' is not defined
+2020-10-09 18:49:55,633 [WARNING] 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2020-10-09 18:52:52,230 [WARNING] 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2020-10-09 18:53:51,240 [WARNING] 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2020-10-09 19:45:28,590 [WARNING] 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2020-10-09 20:43:41,581 [WARNING] 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2020-10-09 20:43:53,155 [ERROR] Failed to load module: example module
+2020-10-09 20:43:59,912 [ERROR] Could not determine target type. Invalid target: .
+2020-10-09 20:44:10,497 [ERROR] Failed to load module: invalid module
+2020-10-09 20:44:12,853 [ERROR] Based on your criteria, no modules were enabled.
+2020-10-09 20:44:14,511 [ERROR] You must specify a target when running in scan mode. Try --help for guidance.
+2020-10-09 20:44:16,177 [ERROR] You must specify a target when running in scan mode. Try --help for guidance.
+2020-10-09 21:01:45,187 [WARNING] 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2020-10-09 21:06:14,103 [WARNING] 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2020-10-09 21:16:45,768 [ERROR] Failed to load module: example module
+2020-10-09 21:16:52,887 [ERROR] Could not determine target type. Invalid target: .
+2020-10-09 21:17:06,045 [ERROR] Failed to load module: invalid module
+2020-10-09 21:17:09,013 [ERROR] Based on your criteria, no modules were enabled.
+2020-10-09 21:17:11,101 [ERROR] You must specify a target when running in scan mode. Try --help for guidance.
+2020-10-09 21:17:13,270 [ERROR] You must specify a target when running in scan mode. Try --help for guidance.
+2020-10-10 17:44:18,638 [WARNING] 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2020-10-10 17:46:26,831 [ERROR] Failed to load module: example module
+2020-10-10 17:46:33,488 [ERROR] Could not determine target type. Invalid target: .
+2020-10-10 17:46:44,126 [ERROR] Failed to load module: invalid module
+2020-10-10 17:46:46,629 [ERROR] Based on your criteria, no modules were enabled.
+2020-10-10 17:46:48,323 [ERROR] You must specify a target when running in scan mode. Try --help for guidance.
+2020-10-10 17:46:49,989 [ERROR] You must specify a target when running in scan mode. Try --help for guidance.

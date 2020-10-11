@@ -219,7 +219,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             if data.get('leaked'):
-                evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [{data.get('suggested_domain')}]", self.__name__, event)
+                evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [Unknown]", self.__name__, event)
                 self.notifyListeners(evt)
 
         elif eventName == "IP_ADDRESS" or eventName == "DOMAIN_NAME":
