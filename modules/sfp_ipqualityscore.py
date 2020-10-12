@@ -116,17 +116,16 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             useragent="SpiderFoot",
         )
 
-        success = json.loads(res["content"]).get("success")
-        if res["code"] != "200" or not success:
-            self.handle_error_response(qry, res)
-            return None
-
-        if res['content'] is None:
+        if not res['content']:
             self.sf.info(f"No IPQualityScore info found for {qry}")
             return None
 
         try:
-            return json.loads(res['content'])
+            r = json.loads(res['content'])
+            if res["code"] != "200" or not r.get("success"):
+                self.handle_error_response(qry, res)
+                return None
+            return r
         except Exception as e:
             self.sf.error(f"Error processing JSON response from IPQualityScore: {e}")
 
@@ -176,8 +175,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         self.results[eventData] = True
 
         data = self.query(eventData, eventName)
-
-        if data is None:
+        if not data:
             return
 
         fraudScore = data.get('fraud_score')
@@ -194,7 +192,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
 
         if eventName == "PHONE_NUMBER":
             if malicious:
-                maliciousDesc += f" - FRAUD SCORE : {fraudScore}\n - ACTIVE : {data.get('active')}\n - RISKY : {data.get('risky')}\n - RECENT ABUSE : {recentAbuse}"
+                maliciousDesc += f" - FRAUD SCORE: {fraudScore}\n - ACTIVE: {data.get('active')}\n - RISKY: {data.get('risky')}\n - RECENT ABUSE: {recentAbuse}"
                 evt = SpiderFootEvent("MALICIOUS_PHONE_NUMBER", maliciousDesc, self.__name__, event)
                 self.notifyListeners(evt)
 
@@ -210,7 +208,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
 
         elif eventName == "EMAILADDR":
             if malicious:
-                maliciousDesc += f" - FRAUD SCORE : {fraudScore}\n - HONEYPOT : {data.get('honeypot')}\n - SPAM TRAP SCORE : {data.get('spam_trap_score')}\n - RECENT ABUSE : {recentAbuse}"
+                maliciousDesc += f" - FRAUD SCORE: {fraudScore}\n - HONEYPOT: {data.get('honeypot')}\n - SPAM TRAP SCORE: {data.get('spam_trap_score')}\n - RECENT ABUSE: {recentAbuse}"
                 evt = SpiderFootEvent("MALICIOUS_EMAILADDR", maliciousDesc, self.__name__, event)
                 self.notifyListeners(evt)
 
@@ -224,7 +222,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
 
         elif eventName == "IP_ADDRESS" or eventName == "DOMAIN_NAME":
             if malicious:
-                maliciousDesc += f" - FRAUD SCORE : {fraudScore}\n - BOT STATUS : {botStatus}\n - RECENT ABUSE : {recentAbuse}\n - ABUSE VELOCITY : {data.get('abuse_velocity')}\n - VPN : {data.get('vpn')}\n - ACTIVE VPN : {data.get('active_vpn')}\n - TOR : {data.get('tor')}\n - ACTIVE TOR : {data.get('active_tor')}"
+                maliciousDesc += f" - FRAUD SCORE: {fraudScore}\n - BOT STATUS: {botStatus}\n - RECENT ABUSE: {recentAbuse}\n - ABUSE VELOCITY: {data.get('abuse_velocity')}\n - VPN: {data.get('vpn')}\n - ACTIVE VPN: {data.get('active_vpn')}\n - TOR: {data.get('tor')}\n - ACTIVE TOR: {data.get('active_tor')}"
 
                 if eventName == "IP_ADDRESS":
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousDesc, self.__name__, event)
