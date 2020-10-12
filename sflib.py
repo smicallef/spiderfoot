@@ -734,12 +734,15 @@ class SpiderFoot:
                     returnOpts[opt] = True
                 else:
                     returnOpts[opt] = False
+                continue
 
             if isinstance(referencePoint[opt], str):
                 returnOpts[opt] = str(opts[opt])
+                continue
 
             if isinstance(referencePoint[opt], int):
                 returnOpts[opt] = int(opts[opt])
+                continue
 
             if isinstance(referencePoint[opt], list):
                 if isinstance(referencePoint[opt][0], int):
@@ -769,12 +772,15 @@ class SpiderFoot:
                             returnOpts['__modules__'][modName]['opts'][opt] = True
                         else:
                             returnOpts['__modules__'][modName]['opts'][opt] = False
+                        continue
 
                     if isinstance(ref_mod, str):
                         returnOpts['__modules__'][modName]['opts'][opt] = str(opts[modName + ":" + opt])
+                        continue
 
                     if isinstance(ref_mod, int):
                         returnOpts['__modules__'][modName]['opts'][opt] = int(opts[modName + ":" + opt])
+                        continue
 
                     if isinstance(ref_mod, list):
                         if isinstance(ref_mod[0], int):
