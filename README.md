@@ -96,8 +96,8 @@ Check out the [documentation](https://www.spiderfoot.net/documentation) and our 
 
 SpiderFoot has over 200 modules, most of which *don't require API keys*, and many of those that do require API keys *have a free tier*.
 
-| Name         | Description  | Link       | Type      |
-|:-------------| :------------| :----------|:----------|
+| Name     | Description | Link       | Type   |
+|:---------| :-----------| :----------|:-------|
 abuse.ch|Check if a host/domain, IP or netblock is malicious according to abuse.ch.|[https://www.abuse.ch](https://www.abuse.ch)|Free API
 AbuseIPDB|Check if an IP address is malicious according to AbuseIPDB.com blacklist.|[https://www.abuseipdb.com](https://www.abuseipdb.com)|Tiered API
 Account Finder|Look for possible associated accounts on nearly 200 websites like Ebay, Slashdot, reddit, etc.|N/A|Internal
