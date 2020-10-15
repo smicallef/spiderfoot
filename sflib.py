@@ -1753,7 +1753,6 @@ class SpiderFoot:
         for match in matches:
 
             if int(match) == 0:
-                self.debug("Skipped invalid credit card number: " + match)
                 continue
 
             ccNumber = match
@@ -1772,8 +1771,6 @@ class SpiderFoot:
             if ccNumberTotal % 10 == 0:
                 self.debug("Found credit card number: " + match)
                 creditCards.add(match)
-            else:
-                self.debug("Skipped invalid credit card number: " + match)
         return list(creditCards)
 
     def getCountryCodeDict(self):
@@ -2151,11 +2148,9 @@ class SpiderFoot:
             countryCode = iban[0:2]
 
             if countryCode not in ibanCountryLengths.keys():
-                self.debug("Skipped invalid IBAN (invalid country code): %s" % iban)
                 continue
 
             if len(iban) != ibanCountryLengths[countryCode]:
-                self.debug("Skipped invalid IBAN (invalid length): %s" % iban)
                 continue
 
             # Convert IBAN to integer format.
@@ -2168,7 +2163,6 @@ class SpiderFoot:
 
             # Check IBAN integer mod 97 for remainder
             if int(iban_int) % 97 != 1:
-                self.debug("Skipped invalid IBAN: %s" % iban)
                 continue
 
             self.debug("Found IBAN: %s" % iban)
@@ -2749,10 +2743,15 @@ class SpiderFoot:
             if dontMangle:
                 result['content'] = res.content
             else:
-                try:
-                    result['content'] = res.content.decode("utf-8")
-                except UnicodeDecodeError:
-                    result['content'] = res.content.decode("ascii")
+                for encoding in ("utf-8", "ascii"):
+                    try:
+                        result["content"] = res.content.decode(encoding)
+                    except UnicodeDecodeError:
+                        pass
+                    else:
+                        break
+                else:
+                    result["content"] = res.content
 
             if fatal:
                 try:
