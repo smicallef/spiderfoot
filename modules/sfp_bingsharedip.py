@@ -33,7 +33,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
                 "Visit https://azure.microsoft.com/en-in/services/cognitive-services/bing-web-search-api/",
                 "Register a free account",
                 "Select on Bing Custom Search",
-                "The API keys are listed under 'Key1', 'Key2'"
+                "The API keys are listed under 'Key1' and 'Key2' (both should work)"
             ],
             'favIcon': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
             'logo': "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
