@@ -19,6 +19,6 @@ secure>=0.2.1
 pyOpenSSL>=17.5.0
 python-docx>=0.8.10
 python-pptx>=0.6.18
-networkx==2.3
+networkx>=2.5
 cryptography>=2.5
 publicsuffixlist>=0.7.3
