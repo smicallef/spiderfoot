@@ -30,6 +30,13 @@ class sfp_leakix(SpiderFootPlugin):
             'references': [
                 "https://leakix.net/api-documentation"
             ],
+            'apiKeyInstructions': [
+                "Visit https://leakix.net/",
+                "Register a free account",
+                "Go to your 'Settings'",
+                "Click on 'API key'",
+                "Click on 'Reset key' to generate a new key"
+            ],
             'favIcon': "https://leakix.net/public/img/favicon.png",
             'logo': "https://leakix.net/public/img/logoleakix-v1.png",
             'description': "LeakIX provides insights into devices and servers that are compromised "
