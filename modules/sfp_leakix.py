@@ -21,7 +21,7 @@ class sfp_leakix(SpiderFootPlugin):
     meta = {
         'name': "LeakIX",
         'summary': "Search LeakIX for host data leaks, open ports, software and geoip.",
-        'flags': [""],
+        'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
@@ -46,6 +46,7 @@ class sfp_leakix(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
+        'api_key': "LeakIX API key",
         'delay': 'Delay between requests, in seconds.',
     }
 
