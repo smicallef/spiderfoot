@@ -34,6 +34,7 @@ from datetime import datetime
 import cryptography
 import dns.resolver
 import netaddr
+import phonenumbers
 import OpenSSL
 import requests
 import urllib3
@@ -804,6 +805,7 @@ class SpiderFoot:
         if not target:
             return None
 
+        # NOTE: the regex order is important
         regexToType = [
             {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$": "IP_ADDRESS"},
             {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/\d+$": "NETBLOCK_OWNER"},
@@ -1310,15 +1312,32 @@ class SpiderFoot:
         if len(email) < 6:
             return False
 
-        # Handle messed up encodings
+        # Skip strings with messed up URL encoding
         if "%" in email:
             return False
 
-        # Handle truncated emails
+        # Skip strings which may have been truncated
         if "..." in email:
             return False
 
         return True
+
+    def validPhoneNumber(self, phone):
+        """Check if the provided string is a valid phone number.
+
+        Args:
+            phone (str): The phone number to check.
+
+        Returns:
+            bool: string is a valid phone number
+        """
+        if not isinstance(phone, str):
+            return False
+
+        try:
+            return phonenumbers.is_valid_number(phonenumbers.parse(phone))
+        except Exception:
+            return False
 
     def sanitiseInput(self, cmd):
         """Verify input command is safe to execute
