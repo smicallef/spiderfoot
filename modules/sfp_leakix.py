@@ -21,14 +21,21 @@ class sfp_leakix(SpiderFootPlugin):
     meta = {
         'name': "LeakIX",
         'summary': "Search LeakIX for host data leaks, open ports, software and geoip.",
-        'flags': [""],
+        'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://leakix.net/",
-            'model': "FREE_NOAUTH_UNLIMITED",
+            'model': "FREE_AUTH_UNLIMITED",
             'references': [
                 "https://leakix.net/api-documentation"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://leakix.net/",
+                "Register a free account",
+                "Go to your 'Settings'",
+                "Click on 'API key'",
+                "Click on 'Reset key' to generate a new key"
             ],
             'favIcon': "https://leakix.net/public/img/favicon.png",
             'logo': "https://leakix.net/public/img/logoleakix-v1.png",
@@ -40,11 +47,13 @@ class sfp_leakix(SpiderFootPlugin):
 
     # Default options
     opts = {
+        'api_key': "",
         'delay': 1,
     }
 
     # Option descriptions
     optdescs = {
+        'api_key': "LeakIX API key",
         'delay': 'Delay between requests, in seconds.',
     }
 
@@ -74,7 +83,8 @@ class sfp_leakix(SpiderFootPlugin):
     # https://leakix.net/api-documentation
     def queryHost(self, qry):
         headers = {
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "api-key": self.opts["api_key"]
         }
         res = self.sf.fetchUrl(
             'https://leakix.net/host/' + qry,
@@ -130,6 +140,8 @@ class sfp_leakix(SpiderFootPlugin):
 
         self.results[eventData] = True
 
+        if self.opts['api_key'] == "":
+            self.sf.debug("You enabled sfp_leakix but did not set an API key, results are limited")
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ["IP_ADDRESS"]:
