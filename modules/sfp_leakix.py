@@ -26,7 +26,7 @@ class sfp_leakix(SpiderFootPlugin):
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://leakix.net/",
-            'model': "FREE_NOAUTH_UNLIMITED",
+            'model': "FREE_AUTH_UNLIMITED",
             'references': [
                 "https://leakix.net/api-documentation"
             ],
@@ -40,6 +40,7 @@ class sfp_leakix(SpiderFootPlugin):
 
     # Default options
     opts = {
+        'api_key': "",
         'delay': 1,
     }
 
@@ -74,7 +75,8 @@ class sfp_leakix(SpiderFootPlugin):
     # https://leakix.net/api-documentation
     def queryHost(self, qry):
         headers = {
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "api-key": self.opts["api_key"]
         }
         res = self.sf.fetchUrl(
             'https://leakix.net/host/' + qry,
@@ -130,6 +132,8 @@ class sfp_leakix(SpiderFootPlugin):
 
         self.results[eventData] = True
 
+        if self.opts['api_key'] == "":
+            self.sf.debug("You enabled sfp_leakix but did not set an API key, results are limited")
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName in ["IP_ADDRESS"]:
