@@ -178,8 +178,11 @@ class sfp_onyphe(SpiderFootPlugin):
 
     def emitDomainData(self, response, eventData, event):
         domains = set()
-        if response.get("domain") is not None:
-            domains.add(response["domain"])
+        if response.get("domain") is not None and isinstance(
+            response['domain'], list
+        ):
+            for dom in response['domain']:
+                domains.add(dom)
 
         if response.get("subdomains") is not None and isinstance(
             response["subdomains"], list
