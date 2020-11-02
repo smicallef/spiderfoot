@@ -191,7 +191,7 @@ class sfp_onyphe(SpiderFootPlugin):
                 domains.add(subDomain)
 
         for domain in domains:
-            if self.getTarget().matches(domain, includeParents=True):
+            if self.getTarget().matches(domain):
                 if self.opts['verify'] and self.sf.resolveHost(domain):
                     evt = SpiderFootEvent('INTERNET_NAME', domain, self.__name__, event)
                 else:
