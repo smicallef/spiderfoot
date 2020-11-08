@@ -49,6 +49,7 @@ You can target the following entities in a SpiderFoot scan:
  - Phone number
  - Username
  - Person's name
+ - Bitcoin address
  
 SpiderFoot's 200+ modules feed each other in a publisher/subscriber model to ensure maximum data extraction to do things like:
 
