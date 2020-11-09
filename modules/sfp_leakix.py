@@ -49,12 +49,14 @@ class sfp_leakix(SpiderFootPlugin):
     opts = {
         'api_key': "",
         'delay': 1,
+        "verify": True,
     }
 
     # Option descriptions
     optdescs = {
         'api_key': "LeakIX API key",
         'delay': 'Delay between requests, in seconds.',
+        "verify": "Verify discovered hostnames are valid by checking if they still resolve.",
     }
 
     results = None
@@ -71,23 +73,23 @@ class sfp_leakix(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS"]
+        return ["IP_ADDRESS", "DOMAIN_NAME"]
 
     # What events this module produces
     def producedEvents(self):
         return ["RAW_RIR_DATA", "GEOINFO", "TCP_PORT_OPEN",
                 "OPERATING_SYSTEM", "SOFTWARE_USED", "WEBSERVER_BANNER",
-                "LEAKSITE_CONTENT"]
+                "LEAKSITE_CONTENT", "INTERNET_NAME"]
 
     # Query host
     # https://leakix.net/api-documentation
-    def queryHost(self, qry):
+    def queryApi(self, qryType, qry):
         headers = {
             "Accept": "application/json",
             "api-key": self.opts["api_key"]
         }
         res = self.sf.fetchUrl(
-            'https://leakix.net/host/' + qry,
+            'https://leakix.net/' + qryType + '/' + qry,
             headers=headers,
             timeout=15,
             useragent=self.opts['_useragent']
@@ -144,8 +146,11 @@ class sfp_leakix(SpiderFootPlugin):
             self.sf.debug("You enabled sfp_leakix but did not set an API key, results are limited")
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        if eventName in ["IP_ADDRESS"]:
-            data = self.queryHost(eventData)
+        if eventName in ["IP_ADDRESS", "DOMAIN_NAME"]:
+            if eventName == "IP_ADDRESS":
+                data = self.queryApi("host", eventData)
+            if eventName == "DOMAIN_NAME":
+                data = self.queryApi("domain", eventData)
 
             if data is None:
                 self.sf.debug("No information found for host " + eventData)
@@ -158,11 +163,22 @@ class sfp_leakix(SpiderFootPlugin):
 
             if services:
                 for service in services:
+                    ip = service.get('ip')
+                    if ip and eventName != "IP_ADDRESS" and self.sf.validIP(ip):
+                        evt = SpiderFootEvent("IP_ADDRESS", ip, self.__name__, event)
+                        self.notifyListeners(evt)
                     port = service.get('port')
                     if port:
                         evt = SpiderFootEvent("TCP_PORT_OPEN", eventData + ':' + port, self.__name__, event)
                         self.notifyListeners(evt)
-
+                    hostname = service.get('hostname')
+                    if hostname and eventName == "DOMAIN_NAME" and self.getTarget().matches(hostname):
+                        if self.opts["verify"] and not self.sf.resolveHost(hostname):
+                            self.sf.debug(f"Host {hostname} could not be resolved")
+                            evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", hostname, self.__name__, event)
+                        else:
+                            evt = SpiderFootEvent("INTERNET_NAME", hostname, self.__name__, event)
+                        self.notifyListeners(evt)
                     headers = service.get('headers')
                     if headers:
                         servers = headers.get('Server')
@@ -195,6 +211,12 @@ class sfp_leakix(SpiderFootPlugin):
 
             if leaks:
                 for leak in leaks:
+                    leak_protocol = leak.get('type')
+                    hostname = leak.get('hostname')
+                    # If protocol is web, our hostname not empty and is not an IP ,
+                    # and doesn't belong to our target, discard ( happens when sharing Hosting/CDN IPs )
+                    if leak_protocol == "web" and hostname and not self.sf.validIP(hostname) and not self.getTarget().matches(hostname):
+                        continue
                     leak_data = leak.get('data')
                     if leak_data:
                         evt = SpiderFootEvent("LEAKSITE_CONTENT", leak_data, self.__name__, event)
