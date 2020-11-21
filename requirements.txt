@@ -2,6 +2,7 @@ adblockparser>=0.7
 dnspython>=1.16.0
 exifread>=2.1.2
 CherryPy>=18.0
+cherrypy-cors>=1.6
 Mako>=1.0.4
 beautifulsoup4>=4.4.1
 lxml>=4.6.1
