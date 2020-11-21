@@ -1,6 +1,7 @@
 # SpiderFoot specific #
 #######################
 /cache/
+/log/
 /spiderfoot.db*
 passwd
 spiderfoot.crt
