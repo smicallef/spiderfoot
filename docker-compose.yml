@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  spiderfoot:
+    build:
+       context: ./
+    image: spiderfoot
+    container_name: spiderfoot
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
