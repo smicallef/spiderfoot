@@ -148,6 +148,10 @@ class sfp_virustotal(SpiderFootPlugin):
             useragent="SpiderFoot"
         )
 
+        if res['code'] == "204":
+            self.sf.error("Your request to VirusTotal was throttled.")
+            return None
+
         # Public API is limited to 4 queries per minute
         if self.opts['publicapi']:
             time.sleep(15)
