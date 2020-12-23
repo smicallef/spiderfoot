@@ -14,6 +14,7 @@ import json
 import urllib.error
 import urllib.parse
 import urllib.request
+import time
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -103,6 +104,10 @@ class sfp_citadel(SpiderFootPlugin):
                                postData=urllib.parse.urlencode(params),
                                timeout=self.opts['timeout'],
                                useragent=self.opts['_useragent'])
+
+        if res['code'] == "429":
+            time.sleep(10)
+            return self.queryEmail(email)
 
         if res['content'] is None:
             self.sf.debug('No response from Leak-Lookup.com')
