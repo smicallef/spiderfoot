@@ -439,7 +439,7 @@ class SpiderFootCli(cmd.Cmd):
 
         return ret
 
-    # Send the command output to the user, proessing the pipes
+    # Send the command output to the user, processing the pipes
     # that may have been used.
     def send_output(self, data, cmd, titles=None, total=True, raw=False):
         totalrec = 0
