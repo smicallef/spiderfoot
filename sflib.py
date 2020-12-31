@@ -599,7 +599,7 @@ class SpiderFoot:
             elif isinstance(data, bytes):
                 fp.write(data.decode('utf-8'))
             else:
-                fp.write(data)
+                fp.write(data or "")
 
     def cacheGet(self, label, timeoutHrs):
         """Retreive data from the cache
