@@ -117,6 +117,10 @@ class sfp_portscan_tcp(SpiderFootPlugin):
         except Exception:
             sock.close()
             return
+        else:
+            if not self.portResults[peer]:
+                # No banner, but port is open
+                self.portResults[peer] = True
 
         sock.close()
 
@@ -154,7 +158,7 @@ class sfp_portscan_tcp(SpiderFootPlugin):
                 self.sf.info("TCP Port " + cp + " found to be OPEN.")
                 evt = SpiderFootEvent("TCP_PORT_OPEN", cp, self.__name__, srcEvent)
                 self.notifyListeners(evt)
-                if resArray[cp] != "" and resArray[cp] is not True:
+                if resArray[cp] is not True:
                     banner = str(resArray[cp], 'utf-8', errors='replace')
                     bevt = SpiderFootEvent("TCP_PORT_OPEN_BANNER", banner,
                                            self.__name__, evt)
