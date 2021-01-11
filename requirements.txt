@@ -5,6 +5,7 @@ CherryPy>=18.0
 cherrypy-cors>=1.6
 Mako>=1.0.4
 beautifulsoup4>=4.4.1
+idna>=3.1
 lxml>=4.6.2
 netaddr>=0.7.18
 pysocks>=1.7.1
