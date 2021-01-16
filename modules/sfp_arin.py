@@ -83,7 +83,7 @@ class sfp_arin(SpiderFootPlugin):
             head = {"Accept": "application/json"}
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'], headers=head)
-            if res['content'] is not None:
+            if res['content'] is not None and res['code'] != "404":
                 self.memCache[url] = res
                 evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__,
                                       self.currentEventSrc)

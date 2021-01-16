@@ -34,6 +34,7 @@ from datetime import datetime
 import cryptography
 import dns.resolver
 import netaddr
+import phonenumbers
 import OpenSSL
 import requests
 import urllib3
@@ -734,12 +735,15 @@ class SpiderFoot:
                     returnOpts[opt] = True
                 else:
                     returnOpts[opt] = False
+                continue
 
             if isinstance(referencePoint[opt], str):
                 returnOpts[opt] = str(opts[opt])
+                continue
 
             if isinstance(referencePoint[opt], int):
                 returnOpts[opt] = int(opts[opt])
+                continue
 
             if isinstance(referencePoint[opt], list):
                 if isinstance(referencePoint[opt][0], int):
@@ -769,12 +773,15 @@ class SpiderFoot:
                             returnOpts['__modules__'][modName]['opts'][opt] = True
                         else:
                             returnOpts['__modules__'][modName]['opts'][opt] = False
+                        continue
 
                     if isinstance(ref_mod, str):
                         returnOpts['__modules__'][modName]['opts'][opt] = str(opts[modName + ":" + opt])
+                        continue
 
                     if isinstance(ref_mod, int):
                         returnOpts['__modules__'][modName]['opts'][opt] = int(opts[modName + ":" + opt])
+                        continue
 
                     if isinstance(ref_mod, list):
                         if isinstance(ref_mod[0], int):
@@ -798,6 +805,7 @@ class SpiderFoot:
         if not target:
             return None
 
+        # NOTE: the regex order is important
         regexToType = [
             {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$": "IP_ADDRESS"},
             {r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/\d+$": "NETBLOCK_OWNER"},
@@ -1304,15 +1312,32 @@ class SpiderFoot:
         if len(email) < 6:
             return False
 
-        # Handle messed up encodings
+        # Skip strings with messed up URL encoding
         if "%" in email:
             return False
 
-        # Handle truncated emails
+        # Skip strings which may have been truncated
         if "..." in email:
             return False
 
         return True
+
+    def validPhoneNumber(self, phone):
+        """Check if the provided string is a valid phone number.
+
+        Args:
+            phone (str): The phone number to check.
+
+        Returns:
+            bool: string is a valid phone number
+        """
+        if not isinstance(phone, str):
+            return False
+
+        try:
+            return phonenumbers.is_valid_number(phonenumbers.parse(phone))
+        except Exception:
+            return False
 
     def sanitiseInput(self, cmd):
         """Verify input command is safe to execute
@@ -1747,7 +1772,6 @@ class SpiderFoot:
         for match in matches:
 
             if int(match) == 0:
-                self.debug("Skipped invalid credit card number: " + match)
                 continue
 
             ccNumber = match
@@ -1766,8 +1790,6 @@ class SpiderFoot:
             if ccNumberTotal % 10 == 0:
                 self.debug("Found credit card number: " + match)
                 creditCards.add(match)
-            else:
-                self.debug("Skipped invalid credit card number: " + match)
         return list(creditCards)
 
     def getCountryCodeDict(self):
@@ -2145,11 +2167,9 @@ class SpiderFoot:
             countryCode = iban[0:2]
 
             if countryCode not in ibanCountryLengths.keys():
-                self.debug("Skipped invalid IBAN (invalid country code): %s" % iban)
                 continue
 
             if len(iban) != ibanCountryLengths[countryCode]:
-                self.debug("Skipped invalid IBAN (invalid length): %s" % iban)
                 continue
 
             # Convert IBAN to integer format.
@@ -2162,7 +2182,6 @@ class SpiderFoot:
 
             # Check IBAN integer mod 97 for remainder
             if int(iban_int) % 97 != 1:
-                self.debug("Skipped invalid IBAN: %s" % iban)
                 continue
 
             self.debug("Found IBAN: %s" % iban)
@@ -2743,10 +2762,15 @@ class SpiderFoot:
             if dontMangle:
                 result['content'] = res.content
             else:
-                try:
-                    result['content'] = res.content.decode("utf-8")
-                except UnicodeDecodeError:
-                    result['content'] = res.content.decode("ascii")
+                for encoding in ("utf-8", "ascii"):
+                    try:
+                        result["content"] = res.content.decode(encoding)
+                    except UnicodeDecodeError:
+                        pass
+                    else:
+                        break
+                else:
+                    result["content"] = res.content
 
             if fatal:
                 try:

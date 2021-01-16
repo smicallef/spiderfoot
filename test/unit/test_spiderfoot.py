@@ -806,6 +806,31 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(valid_email, bool)
         self.assertTrue(valid_email)
 
+    def test_validPhoneNumber_should_return_a_boolean(self):
+        """
+        Test validPhoneNumber(self, phone)
+        """
+        sf = SpiderFoot(dict())
+
+        invalid_types = [None, "", list(), dict(), int()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                valid_phone = sf.validPhoneNumber(invalid_type)
+                self.assertIsInstance(valid_phone, bool)
+                self.assertFalse(valid_phone)
+
+        valid_phone = sf.validPhoneNumber('+1234567890')
+        self.assertIsInstance(valid_phone, bool)
+        self.assertFalse(valid_phone)
+
+        valid_phone = sf.validPhoneNumber('+12345678901234567890')
+        self.assertIsInstance(valid_phone, bool)
+        self.assertFalse(valid_phone)
+
+        valid_phone = sf.validPhoneNumber('+12345678901')
+        self.assertIsInstance(valid_phone, bool)
+        self.assertTrue(valid_phone)
+
     def test_normalize_dns(self):
         """
         Test normalizeDNS(self, res)

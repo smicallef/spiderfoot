@@ -126,6 +126,10 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             self.events[sip] = True
             ev = self.processHost(sip, parentEvent, affil)
 
+            if not ev:
+                s += 1
+                continue
+
             for addr in addrs:
                 if self.checkForStop():
                     return None

@@ -24,6 +24,7 @@ from copy import deepcopy
 from logging import handlers
 
 import cherrypy
+import cherrypy_cors
 from cherrypy.lib import auth_digest
 
 from sflib import SpiderFoot
@@ -451,6 +452,10 @@ def start_web_server(sfWebUiConfig, sfConfig):
     web_port = sfWebUiConfig.get('port', 5001)
     web_root = sfWebUiConfig.get('root', '/')
 
+    # Place your whitelisted CORS origins here
+    # Example: cors_origins = ['http://example.com']
+    cors_origins = []
+
     cherrypy.config.update({
         'log.screen': False,
         'server.socket_host': web_host,
@@ -516,11 +521,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
         warn_msg += "********************************************************************\n"
         log.warning(warn_msg)
 
-    if web_host == "0.0.0.0":  # nosec
-        url = f"http://<IP of this host>:{web_port}{web_root}"
-    else:
-        url = f"http://{web_host}:{web_port}{web_root}"
-
+    using_ssl = False
     key_path = sf.dataPath() + '/spiderfoot.key'
     crt_path = sf.dataPath() + '/spiderfoot.crt'
     if os.path.isfile(key_path) and os.path.isfile(crt_path):
@@ -536,8 +537,28 @@ def start_web_server(sfWebUiConfig, sfConfig):
         cherrypy.server.ssl_module = 'builtin'
         cherrypy.server.ssl_certificate = crt_path
         cherrypy.server.ssl_private_key = key_path
+        using_ssl = True
 
-        url = url.replace("http://", "https://")
+    if using_ssl:
+        url = "https://"
+        cors_origins.append(f"https://{web_host}:{web_port}")
+    else:
+        url = "http://"
+        cors_origins.append(f"http://{web_host}:{web_port}")
+
+    if web_host == "0.0.0.0":  # nosec
+        url = f"{url}<IP of this host>"
+    else:
+        url = f"{url}{web_host}"
+
+    url = f"{url}:{web_port}{web_root}"
+
+    cherrypy_cors.install()
+    cherrypy.config.update({
+        'cors.expose.on': True,
+        'cors.expose.origins': cors_origins,
+        'cors.preflight.origins': cors_origins
+    })
 
     print("")
     print("*************************************************************")

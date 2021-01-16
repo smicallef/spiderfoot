@@ -147,6 +147,9 @@ class sfp_hostio(SpiderFootPlugin):
         ipinfo = data.get("ipinfo")
         if ipinfo and isinstance(ipinfo, dict):
             for address, ip_data in data["ipinfo"].items():
+                # Not supporting co-hosted sites yet
+                if not self.sf.validIP(address):
+                    continue
                 evt = SpiderFootEvent("IP_ADDRESS", address, self.__name__, event)
                 self.notifyListeners(evt)
                 found = True

@@ -61,11 +61,17 @@ class sfp_socialprofiles(SpiderFootPlugin):
                 "https://cse.google.com/cse"
             ],
             'apiKeyInstructions': [
+                "If using Google:",
                 "Visit https://developers.google.com/custom-search/v1/introduction",
                 "Register a free Google account",
                 "Click on 'Get A Key'",
                 "Connect a Project",
-                "The API Key will be listed under 'YOUR API KEY'"
+                "The API Key will be listed under 'YOUR API KEY'",
+                "If using Bing:",
+                "Visit https://azure.microsoft.com/en-in/services/cognitive-services/bing-web-search-api/",
+                "Register a free account",
+                "Select on Bing Custom Search",
+                "The API keys are listed under 'Key1' and 'Key2' (both should work)"
             ],
             'favIcon': "https://www.gstatic.com/devrel-devsite/prod/v2210deb8920cd4a55bd580441aa58e7853afc04b39a9d9ac4198e1cd7fbe04ef/developers/images/favicon.png",
             'logo': "https://www.gstatic.com/devrel-devsite/prod/v2210deb8920cd4a55bd580441aa58e7853afc04b39a9d9ac4198e1cd7fbe04ef/developers/images/favicon.png",

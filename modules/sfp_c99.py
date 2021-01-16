@@ -331,12 +331,12 @@ class sfp_c99(SpiderFootPlugin):
             self.sf.debug(
                 "Host {data} could not be resolved."
             )
-            if self.getTarget().matches(data, includeParents=True):
+            if self.getTarget().matches(data):
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", data, self.__name__, event)
                 self.notifyListeners(evt)
             return
 
-        if self.getTarget().matches(data, includeParents=True):
+        if self.getTarget().matches(data):
             evt = SpiderFootEvent('INTERNET_NAME', data, self.__name__, event)
             self.notifyListeners(evt)
             if self.sf.isDomain(data, self.opts['_internettlds']):
