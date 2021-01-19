@@ -11,9 +11,6 @@
 
 import json
 import time
-import urllib.error
-import urllib.parse
-import urllib.request
 import base64
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
