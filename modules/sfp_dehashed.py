@@ -78,8 +78,10 @@ class sfp_dehashed(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return [
+            'EMAILADDR',
             'EMAILADDR_COMPROMISED',
             'PASSWORD_COMPROMISED',
+            'HASH_COMPROMISED',
             'RAW_RIR_DATA'
         ]
 
