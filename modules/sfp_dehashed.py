@@ -12,7 +12,6 @@
 import json
 import time
 import base64
-
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -124,12 +123,10 @@ class sfp_dehashed(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
-
-        return data
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -200,8 +197,8 @@ class sfp_dehashed(SpiderFootPlugin):
                         self.notifyListeners(evt)
 
                     if passwordHash:
-                            evt = SpiderFootEvent('HASH_COMPROMISED', f"{email} : {passwordHash} [{leakSource}]", self.__name__, pevent)
-                            self.notifyListeners(evt)
+                        evt = SpiderFootEvent('HASH_COMPROMISED', f"{email} : {passwordHash} [{leakSource}]", self.__name__, pevent)
+                        self.notifyListeners(evt)
 
                     evt = SpiderFootEvent('RAW_RIR_DATA', str(row), self.__name__, pevent)
                     self.notifyListeners(evt)
