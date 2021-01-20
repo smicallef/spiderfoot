@@ -45,7 +45,7 @@ class sfp_dehashed(SpiderFootPlugin):
         'api_key_username': '',
         'api_key': '',
         'per_page': 10000,
-        'max_pages': 1,
+        'max_pages': 2,
         'pause': 1
     }
 
@@ -206,5 +206,8 @@ class sfp_dehashed(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
             currentPage += 1
+
+            if data.get('total') < self.opts['per_page']:
+                return None
 
 # End of sfp_dehashed class
