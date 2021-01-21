@@ -53,7 +53,7 @@ class sfp_dehashed(SpiderFootPlugin):
     optdescs = {
         'api_key_username': 'Username for api key',
         'api_key': 'Token for api key',
-        'per_page': 'Maximum number of results per page.',
+        'per_page': 'Maximum number of results per page.(Max: 10000)',
         'max_pages': 'Maximum number of pages to fetch(Max: 10 pages)',
         'pause': 'Amount of time to wait before each API call'
     }
@@ -86,7 +86,7 @@ class sfp_dehashed(SpiderFootPlugin):
         ]
 
     # Query Dehashed
-    def query(self, event, per_page=20, start=0):
+    def query(self, event, per_page, start):
         if event.eventType == "EMAILADDR":
             queryString = f"https://api.dehashed.com/search?query=email:\"{event.data}\"&page={start}&size={self.opts['per_page']}"
         if event.eventType == "DOMAIN_NAME":
