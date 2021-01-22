@@ -51,11 +51,11 @@ class sfp_dehashed(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key_username': 'Username for api key',
-        'api_key': 'Token for api key',
+        'api_key_username': 'Dehashed username.',
+        'api_key': 'Dehashed API key.',
         'per_page': 'Maximum number of results per page.(Max: 10000)',
         'max_pages': 'Maximum number of pages to fetch(Max: 10 pages)',
-        'pause': 'Amount of time to wait before each API call'
+        'pause': 'Number of seconds to wait between each API call.'
     }
 
     results = None
@@ -102,13 +102,14 @@ class sfp_dehashed(SpiderFootPlugin):
                                headers=headers,
                                timeout=15,
                                useragent=self.opts['_useragent'],
-                               verify=False)
+                               verify=True)
 
         time.sleep(self.opts['pause'])
 
         if res['code'] == "400":
             self.sf.error("Too many requests were performed in a small amount of time. Please wait a bit before querying the API.")
-            return None
+            time.sleep(5)
+            res = self.sf.fetchUrl(queryString, headers=headers, timeout=15, useragent=self.opts['_useragent'], verify=True)
 
         if res['code'] == "401":
             self.sf.error("Invalid API credentials")
@@ -177,11 +178,11 @@ class sfp_dehashed(SpiderFootPlugin):
                         self.notifyListeners(evt)
 
                         if password:
-                            evt = SpiderFootEvent('PASSWORD_COMPROMISED', f"{email} : {password} [{leakSource}]", self.__name__, event)
+                            evt = SpiderFootEvent('PASSWORD_COMPROMISED', f"{email}:{password} [{leakSource}]", self.__name__, event)
                             self.notifyListeners(evt)
 
                         if passwordHash:
-                            evt = SpiderFootEvent('HASH_COMPROMISED', f"{email} : {passwordHash} [{leakSource}]", self.__name__, event)
+                            evt = SpiderFootEvent('HASH_COMPROMISED', f"{email}:{passwordHash} [{leakSource}]", self.__name__, event)
                             self.notifyListeners(evt)
 
                         evt = SpiderFootEvent('RAW_RIR_DATA', str(row), self.__name__, event)
@@ -195,11 +196,11 @@ class sfp_dehashed(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
                     if password:
-                        evt = SpiderFootEvent('PASSWORD_COMPROMISED', f"{email} : {password} [{leakSource}]", self.__name__, pevent)
+                        evt = SpiderFootEvent('PASSWORD_COMPROMISED', f"{email}:{password} [{leakSource}]", self.__name__, pevent)
                         self.notifyListeners(evt)
 
                     if passwordHash:
-                        evt = SpiderFootEvent('HASH_COMPROMISED', f"{email} : {passwordHash} [{leakSource}]", self.__name__, pevent)
+                        evt = SpiderFootEvent('HASH_COMPROMISED', f"{email}:{passwordHash} [{leakSource}]", self.__name__, pevent)
                         self.notifyListeners(evt)
 
                     evt = SpiderFootEvent('RAW_RIR_DATA', str(row), self.__name__, pevent)
