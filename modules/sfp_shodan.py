@@ -98,7 +98,11 @@ class sfp_shodan(SpiderFootPlugin):
             return None
 
         try:
-            return json.loads(res['content'])
+            r = json.loads(res['content'])
+            if "error" in r:
+                self.sf.error("Error returned form SHODAN: {r['error']}")
+                return None
+            return r
         except Exception as e:
             self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
@@ -115,7 +119,11 @@ class sfp_shodan(SpiderFootPlugin):
             return None
 
         try:
-            return json.loads(res['content'])
+            r = json.loads(res['content'])
+            if "error" in r:
+                self.sf.error("Error returned form SHODAN: {r['error']}")
+                return None
+            return r
         except Exception as e:
             self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None
@@ -136,7 +144,14 @@ class sfp_shodan(SpiderFootPlugin):
             return None
 
         try:
-            return json.loads(res['content'])
+            r = json.loads(res['content'])
+            if "error" in r:
+                self.sf.error("Error returned form SHODAN: {r['error']}")
+                return None
+            if r.get('total', 0) == 0:
+                self.sf.info("No SHODAN info found for {qry}")
+                return None
+            return r
         except Exception as e:
             self.sf.error(f"Error processing JSON response from SHODAN: {e}")
             return None

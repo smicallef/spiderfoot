@@ -85,6 +85,15 @@ class sfp_pageinfo(SpiderFootPlugin):
             self.sf.debug("Not gathering page info for external site " + eventSource)
             return
 
+        # Ignore javascript and CSS
+        if ".css?" in eventSource or eventSource.endswith(".css"):
+            self.sf.debug("Not attempting to match CSS content.")
+            return
+
+        if ".js?" in eventSource or eventSource.endswith(".js"):
+            self.sf.debug("Not attempting to match JS content.")
+            return
+
         if eventSource in self.results:
             self.sf.debug("Already checked this page for a page type, skipping.")
             return
