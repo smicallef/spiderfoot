@@ -161,6 +161,8 @@ class sfp_s3bucket(SpiderFootPlugin):
         if eventName == "LINKED_URL_EXTERNAL":
             if ".amazonaws.com" in eventData:
                 b = self.sf.urlFQDN(eventData)
+                if b in self.opts['endpoints']:
+                    b += "/" + eventData.split(b + "/")[1].split("/")[0]
                 evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", b, self.__name__, event)
                 self.notifyListeners(evt)
             return None

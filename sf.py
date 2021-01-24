@@ -85,7 +85,7 @@ def main():
         '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
         '_internettlds_cache': 72,
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-        '__version__': '3.3-DEV',
+        '__version__': '3.3',
         '__database': 'spiderfoot.db',
         '__modules__': None,  # List of modules. Will be set after start-up.
         '_socks1type': '',
@@ -115,7 +115,7 @@ def main():
 
     # Legacy way to run the server
     args = None
-    p = argparse.ArgumentParser(description='SpiderFoot 3.3-DEV: Open Source Intelligence Automation.')
+    p = argparse.ArgumentParser(description='SpiderFoot 3.3: Open Source Intelligence Automation.')
     p.add_argument("-d", "--debug", action='store_true', help="Enable debug output.")
     p.add_argument("-l", metavar="IP:port", help="IP and port to listen on.")
     p.add_argument("-m", metavar="mod1,mod2,...", type=str, help="Modules to enable.")

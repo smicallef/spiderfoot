@@ -136,7 +136,7 @@ class sfp_spider(SpiderFootPlugin):
                                    self.getTarget().getNames())
 
         if not links:
-            self.sf.info(f"No links found at {url}")
+            self.sf.debug(f"No links found at {url}")
             return None
 
         # Notify modules about the links found
@@ -301,7 +301,7 @@ class sfp_spider(SpiderFootPlugin):
         if spiderTarget is None:
             return None
 
-        self.sf.info("Initiating spider of " + spiderTarget + " from " + srcModuleName)
+        self.sf.debug("Initiating spider of " + spiderTarget + " from " + srcModuleName)
 
         # Link the spidered URL to the event that triggered it
         self.urlEvents[spiderTarget] = event
@@ -368,7 +368,7 @@ class sfp_spider(SpiderFootPlugin):
                         break
 
             nextLinks = self.cleanLinks(links)
-            self.sf.info(f"Found links: {nextLinks}")
+            self.sf.debug(f"Found links: {nextLinks}")
 
             # We've scanned through another layer of the site
             levelsTraversed += 1
@@ -379,7 +379,7 @@ class sfp_spider(SpiderFootPlugin):
 
             # We've reached the end of our journey..
             if len(nextLinks) == 0:
-                self.sf.info("No more links found to spider, finishing..")
+                self.sf.debug("No more links found to spider, finishing..")
                 keepSpidering = False
 
             # We've been asked to stop scanning
