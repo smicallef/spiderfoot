@@ -5,6 +5,7 @@ language: python
 python:
   - "3.6"
   - "3.8"
+  - "3.9"
 
 cache: pip
 
