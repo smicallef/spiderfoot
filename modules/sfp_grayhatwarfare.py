@@ -40,7 +40,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
     # Default options
     opts = {
         'api_key': '',
-        'per_page': 10000,
+        'per_page': 1000,
         'max_pages': 2,
         'pause': 1
     }
@@ -48,7 +48,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'api_key': 'Grayhat Warfare API key.',
-        'per_page': 'Maximum number of results per page.',
+        'per_page': 'Maximum number of results per page (Max: 1000).',
         'max_pages': 'Maximum number of pages to fetch.',
         'pause': 'Number of seconds to wait between each API call.'
     }
