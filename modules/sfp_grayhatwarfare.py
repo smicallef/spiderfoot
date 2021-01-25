@@ -11,7 +11,6 @@
 
 import json
 import time
-import base64
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -94,12 +93,12 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
         time.sleep(self.opts['pause'])
 
         if res['code'] != "200":
-            self.sf.error("Unable to fetch data from Greyhat Warfare.")
+            self.sf.error("Unable to fetch data from Grayhat Warfare API.")
             self.errorState = True
             return None
 
         if res['content'] is None:
-            self.sf.debug('No response from Dehashed')
+            self.sf.debug('No response from Grayhat Warfare API.')
             return None
 
         try:
@@ -157,7 +156,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
 
                     evt = SpiderFootEvent('RAW_RIR_DATA', str(row), self.__name__, event)
                     self.notifyListeners(evt)
-                    
+
             currentPage += 1
             if data.get('buckets_count') < perPage:
                 break
