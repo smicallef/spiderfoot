@@ -148,6 +148,7 @@ class SpiderFootDb:
         ['EMAILADDR_GENERIC', 'Email Address - Generic', 0, 'ENTITY'],
         ['ERROR_MESSAGE', 'Error Message', 0, 'DATA'],
         ['ETHEREUM_ADDRESS', 'Ethereum Address', 0, 'ENTITY'],
+        ['ETHEREUM_BALANCE', 'Ethereum Balance', 0, 'DESCRIPTOR'],
         ['GEOINFO', 'Physical Location', 0, 'DESCRIPTOR'],
         ['HASH', 'Hash', 0, 'DATA'],
         ['HASH_COMPROMISED', 'Compromised Password Hash', 0, 'DATA'],
