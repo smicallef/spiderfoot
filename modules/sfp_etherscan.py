@@ -12,6 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
+import time
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -47,11 +48,13 @@ class sfp_etherscan(SpiderFootPlugin):
     # Default options
     opts = {
         'api_key': '',
+        'pause': 1
     }
 
     # Option descriptions
     optdescs = {
         'api_key': "API Key for etherscan.io",
+        'pause': 'Amount of time to wait before each API call'
     }
 
     results = None
@@ -85,6 +88,8 @@ class sfp_etherscan(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
+        time.sleep(self.opts['pause'])
+
         if res['content'] is None:
             self.sf.info(f"No Etherscan data found for {qry}")
             return None
@@ -110,7 +115,7 @@ class sfp_etherscan(SpiderFootPlugin):
             self.results[eventData] = True
 
         data = self.query(eventData)
-        balance = float(data.get('result')) / 100000000
+        balance = float(data.get('result')) / 1000000000000000000
 
         evt = SpiderFootEvent("ETHEREUM_BALANCE", f"{str(balance)} ETH", self.__name__, event)
         self.notifyListeners(evt)
