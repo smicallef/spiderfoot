@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_etherscan
-# Purpose:      SpiderFoot plug-in to look up a bitcoin wallet's balance by
+# Purpose:      SpiderFoot plug-in to look up a ethereum wallet's balance by
 #               querying etherscan.io.
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
@@ -20,7 +20,7 @@ class sfp_etherscan(SpiderFootPlugin):
 
     meta = {
         'name': "Etherscan",
-        'summary': "Queries etherscan.io to find the balance of identified bitcoin wallet addresses.",
+        'summary': "Queries etherscan.io to find the balance of identified ethereum wallet addresses.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
@@ -67,35 +67,32 @@ class sfp_etherscan(SpiderFootPlugin):
     def watchedEvents(self):
         return [
             "ETHEREUM_ADDRESS"
-            ]
+        ]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
         return [
-            "ETHEREUM_ADDRESS",
+            "ETHEREUM_BALANCE",
             "RAW_RIR_DATA"
         ]
-
 
     def query(self, qry):
         queryString = f"https://api.etherscan.io/api?module=account&action=balance&address={qry}&tag=latest&apikey={self.opts['api_key']}"
         # Wallet balance
         res = self.sf.fetchUrl(queryString,
-                               timeout=self.opts['_fetchtimeout'], 
+                               timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
         if res['content'] is None:
             self.sf.info(f"No Etherscan data found for {qry}")
             return None
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
-
-        return data
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -112,10 +109,10 @@ class sfp_etherscan(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        data = query(eventData)
+        data = self.query(eventData)
         balance = float(data.get('result')) / 100000000
 
-        evt = SpiderFootEvent("ETHEREUM_ADDRESS", f"{str(balance)} ETH", self.__name__, event)
+        evt = SpiderFootEvent("ETHEREUM_BALANCE", f"{str(balance)} ETH", self.__name__, event)
         self.notifyListeners(evt)
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
