@@ -88,8 +88,6 @@ class sfp_ipapicom(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
 
-        time.sleep(self.opts['pause'])
-
         if res['content'] is None:
             self.sf.info(f"No ipapi.com data found for {qry}")
             return None
@@ -120,5 +118,15 @@ class sfp_ipapicom(SpiderFootPlugin):
             self.results[eventData] = True
 
         data = self.query(eventData)
+
+        if data.get('country_name'):
+            location = ', '.join(filter(None, [data.get('city'), data.get('region_name'), data.get('region_code'), data.get('country_name'), data.get('country_code')]))
+            location += f"\n-Latitude: {data.get('latitude')}\n-Longitude: {data.get('longitude')}"
+            evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
+            self.notifyListeners(evt)
+
+            evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            self.notifyListeners(evt)
+
 
 # End of sfp_ipapicom class
