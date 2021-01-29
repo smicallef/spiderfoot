@@ -150,6 +150,11 @@ class sfp_dehashed(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        if self.opts['api_key'] == "" or self.opts['api_key_username'] == "":
+            self.sf.error("You enabled sfp_dehashed but did not set an API key/API Key Username!")
+            self.errorState = True
+            return
+
         currentPage = 1
         maxPages = self.opts['max_pages']
         perPage = self.opts['per_page']
