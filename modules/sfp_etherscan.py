@@ -107,6 +107,11 @@ class sfp_etherscan(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_etherscan but did not set an API key!")
+            self.errorState = True
+            return
+
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
