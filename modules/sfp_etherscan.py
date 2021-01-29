@@ -54,7 +54,7 @@ class sfp_etherscan(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'api_key': "API Key for etherscan.io",
-        'pause': 'Amount of time to wait before each API call'
+        'pause': "Number of seconds to wait between each API call."
     }
 
     results = None
