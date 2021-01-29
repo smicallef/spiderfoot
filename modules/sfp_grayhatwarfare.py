@@ -123,6 +123,11 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_grayhatwarfare but did not set an API key!")
+            self.errorState = True
+            return
+
         currentIndex = 0
         currentPage = 0
         maxPages = self.opts['max_pages']
