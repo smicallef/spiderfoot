@@ -87,7 +87,12 @@ class sfp_ipapicom(SpiderFootPlugin):
         res = self.sf.fetchUrl(queryString,
                                timeout=self.opts['_fetchtimeout'],
                                useragent=self.opts['_useragent'])
+        time.sleep(1.5)
 
+        if res['code'] == "429":
+            self.sf.error("You are being rate-limited by IP-API.com.")
+            self.errorState = True
+            return None
         if res['content'] is None:
             self.sf.info(f"No ipapi.com data found for {qry}")
             return None
