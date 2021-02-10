@@ -113,7 +113,10 @@ class sfp_ipapicom(SpiderFootPlugin):
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_ipapicom but did not set an API key!")
             self.errorState = True
-            return
+            return None
+
+        if self.errorState:
+            return None
 
         # Don't look up stuff twice
         if eventData in self.results:
