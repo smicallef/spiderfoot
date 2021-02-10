@@ -171,11 +171,19 @@ class sfp_dehashed(SpiderFootPlugin):
             if not data:
                 return None
 
+            breachResults = set()
+            emailResults = set()
+
             for row in data.get('entries'):
                 email = row.get('email')
                 password = row.get('password')
                 passwordHash = row.get('hashed_password')
                 leakSource = row.get('database_name', 'Unknown')
+
+                if f"{email} [{leakSource}]" in breachResults:
+                    continue
+
+                breachResults.add(f"{email} [{leakSource}]")
 
                 if eventName == "EMAILADDR":
                     if email == eventData:
@@ -195,7 +203,9 @@ class sfp_dehashed(SpiderFootPlugin):
 
                 if eventName == "DOMAIN_NAME":
                     pevent = SpiderFootEvent("EMAILADDR", email, self.__name__, event)
-                    self.notifyListeners(pevent)
+                    if email not in emailResults:
+                        self.notifyListeners(pevent)
+                        emailResults.add(email)
 
                     evt = SpiderFootEvent('EMAILADDR_COMPROMISED', f"{email} [{leakSource}]", self.__name__, pevent)
                     self.notifyListeners(evt)
