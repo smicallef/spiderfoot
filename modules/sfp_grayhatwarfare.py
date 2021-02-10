@@ -78,17 +78,22 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
 
     # Query Grayhat Warfare
     def query(self, keyword, start):
-        queryString = f"https://buckets.grayhatwarfare.com/api/v1/buckets/{start}/{self.opts['per_page']}?access_token={self.opts['api_key']}&keywords={keyword}"
+        params = urllib.parse.urlencode({
+            'keywords': keyword.encode('raw_unicode_escape'),
+            'access_token': self.opts['api_key']
+        })
 
         headers = {
             'Accept': 'application/json',
         }
 
-        res = self.sf.fetchUrl(queryString,
-                               headers=headers,
-                               timeout=15,
-                               useragent=self.opts['_useragent'],
-                               verify=True)
+        res = self.sf.fetchUrl(
+            f"https://buckets.grayhatwarfare.com/api/v1/buckets/{start}/{self.opts['per_page']}?{params}",
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent'],
+            verify=True
+        )
 
         time.sleep(self.opts['pause'])
 
