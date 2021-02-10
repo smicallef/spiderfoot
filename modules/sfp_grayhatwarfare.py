@@ -11,6 +11,7 @@
 
 import json
 import time
+import urllib
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
