@@ -124,9 +124,10 @@ class sfp_etherscan(SpiderFootPlugin):
 
         data = self.query(eventData)
         if data is None:
-            self.sf.info(f"No Etherscan data found for {qry}")
+            self.sf.info(f"No Etherscan data found for {eventData}")
             return None
 
+        # Value returned by etherscan was too large in comparison to actual wallet balance
         balance = float(data.get('result')) / 1000000000000000000
 
         evt = SpiderFootEvent("ETHEREUM_BALANCE", f"{str(balance)} ETH", self.__name__, event)
