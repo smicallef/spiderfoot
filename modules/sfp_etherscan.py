@@ -112,6 +112,9 @@ class sfp_etherscan(SpiderFootPlugin):
             self.errorState = True
             return
 
+        if self.errorState:
+            return None
+
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
@@ -120,6 +123,10 @@ class sfp_etherscan(SpiderFootPlugin):
             self.results[eventData] = True
 
         data = self.query(eventData)
+        if data is None:
+            self.sf.info(f"No Etherscan data found for {qry}")
+            return None
+
         balance = float(data.get('result')) / 1000000000000000000
 
         evt = SpiderFootEvent("ETHEREUM_BALANCE", f"{str(balance)} ETH", self.__name__, event)
