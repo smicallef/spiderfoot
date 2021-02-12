@@ -20,7 +20,7 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_seon(SpiderFootPlugin):
 
     meta = {
-        'name': "https://seon.io/",
+        'name': "Seon",
         'summary': "Queries seon.io to gather intelligence about IP Addresses, email addresses, and phone numbers",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
@@ -41,13 +41,13 @@ class sfp_seon(SpiderFootPlugin):
     # Default options
     opts = {
         'api_key': '',
-        'fraud_threshold': 10,
+        'fraud_threshold': 80,
     }
 
     # Option descriptions
     optdescs = {
         'api_key': "API Key for seon.io",
-        'fraud_threshold': 'Minimum fraud score for target to be marked as malicious(Seon.io considers anything 10+ as risky)',
+        'fraud_threshold': 'Minimum fraud score for target to be marked as malicious(0-100)',
     }
 
     results = None
@@ -90,7 +90,7 @@ class sfp_seon(SpiderFootPlugin):
         ]
 
     def query(self, qry, eventName):
-        if eventName == "IP_ADDRESS" or eventName = "IPV6_ADDRESS":
+        if eventName == "IP_ADDRESS" or eventName == "IPV6_ADDRESS":
             queryString = f"https://api.seon.io/SeonRestService/ip-api/v1.0/{qry}"
         elif eventName == "EMAILADDR":
             queryString = f"https://api.seon.io/SeonRestService/email-api/v2.0/{qry}"
@@ -109,10 +109,7 @@ class sfp_seon(SpiderFootPlugin):
             useragent=self.opts['_useragent']
         )
 
-        if res['code'] != 200:
-            return None
-
-        return res['content']
+        return json.loads(res['content'])
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -127,6 +124,9 @@ class sfp_seon(SpiderFootPlugin):
             self.errorState = True
             return
 
+        if self.errorState:
+            return None
+
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
@@ -134,7 +134,7 @@ class sfp_seon(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        if eventName == "IP_ADDRESS" or eventName = "IPV6_ADDRESS":
+        if eventName == "IP_ADDRESS" or eventName == "IPV6_ADDRESS":
             data = self.query(eventData, eventName)
             if data is None:
                 return None
@@ -142,6 +142,53 @@ class sfp_seon(SpiderFootPlugin):
             data = self.query(eventData, eventName)
             if data is None:
                 return None
+            
+            resultSet = data.get('data')
+            if resultSet:
+                if resultSet.get('score') >= self.opts['fraud_threshold']:
+                    maliciousDesc = f"SEON [{eventData}]\n - FRAUD SCORE: {fraudScore}"
+                    evt = SpiderFootEvent("MALICIOUS_EMAILADDR", maliciousDesc, self.__name__, event)
+                    self.notifyListeners(evt)
+                
+                if resultSet.get('deliverable'):
+                    evt = SpiderFootEvent("EMAILADDR_DELIVERABLE", eventData, self.__name__, event)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent("EMAILADDR_UNDELIVERABLE", eventData, self.__name__, event)
+                    self.notifyListeners(evt)
+
+                if resultSet.get('domain_details'):
+                    if resultSet.get('domain_details').get('disposable'):
+                        evt = SpiderFootEvent("EMAILADDR_DISPOSABLE", eventData, self.__name__, event)
+                        self.notifyListeners(evt)
+                
+                if resultSet.get('account_details'):
+                    socialMediaList = resultSet.get('account_details').keys()
+                    for site in socialMediaList:
+                        if resultSet.get('account_details').get(site):
+                            if resultSet.get('account_details').get(site).get('url'):
+                                evt = SpiderFootEvent("SOCIAL_MEDIA", f"{site}: <SFURL> {resultSet.get('account_details').get(site).get('url')} </SFURL>", self.__name__, event)
+                                self.notifyListeners(evt)
+                            elif resultSet.get('account_details').get(site).get('registered'):
+                                evt = SpiderFootEvent("SOCIAL_MEDIA", f"Registered on {site}", self.__name__, event)
+                                self.notifyListeners(evt)
+                        
+                            if site == 'linkedin':
+                                if resultSet.get('account_details').get(site).get('company'):
+                                    evt = SpiderFootEvent("COMPANY_NAME", resultSet.get('account_details').get(site).get('company'), self.__name__, event)
+                                    self.notifyListeners(evt)
+
+                                if resultSet.get('account_details').get(site).get('name'):
+                                    evt = SpiderFootEvent("HUMAN_NAME", resultSet.get('account_details').get(site).get('name'), self.__name__, event)
+                                    self.notifyListeners(evt)
+                
+                if resultSet.get('breach_details').get('breaches'):
+                    breachList = resultSet.get('breach_details').get('breaches')
+                    for breachSet in breachList:
+                        evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [{breachSet.get('name')}]", self.__name__, event)
+                        self.notifyListeners(evt)
+                                                        
+
         elif eventName == "PHONE_NUMBER":
             data = self.query(eventData, eventName)
             if data is None:
