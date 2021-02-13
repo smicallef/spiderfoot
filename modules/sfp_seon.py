@@ -108,7 +108,7 @@ class sfp_seon(SpiderFootPlugin):
             timeout=15,
             useragent=self.opts['_useragent']
         )
-        self.sf.debug(str(res['content']))
+
         return json.loads(res['content'])
 
     # Handle events sent to this module
