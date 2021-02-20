@@ -46,7 +46,7 @@ class sfp_seon(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'api_key': "API Key for seon.io",
-        'fraud_threshold': 'Minimum fraud score for target to be marked as malicious(0-100)',
+        'fraud_threshold': 'Minimum fraud score for target to be marked as malicious (0-100)',
     }
 
     results = None
@@ -78,7 +78,7 @@ class sfp_seon(SpiderFootPlugin):
             "MALICIOUS_EMAILADDR",
             "EMAILADDR_DELIVERABLE",
             "EMAILADDR_UNDELIVERABLE",
-            "SOCIAL_MEDIAL",
+            "SOCIAL_MEDIA",
             "HUMAN_NAME",
             "COMPANY_NAME",
             "EMAILADDR_COMPROMISED",
@@ -146,6 +146,22 @@ class sfp_seon(SpiderFootPlugin):
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", maliciousDesc, self.__name__, event)
                     self.notifyListeners(evt)
 
+                    if resultSet.get('tor'):
+                        evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is TOR node: {resultSet.get('tor')}", self.__name__, event)
+                        self.notifyListeners(evt)
+
+                    if resultSet.get('vpn'):
+                        evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is VPN: {resultSet.get('vpn')}", self.__name__, event)
+                        self.notifyListeners(evt)
+
+                    if resultSet.get('web_proxy'):
+                        evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is Web Proxy: {resultSet.get('web_proxy')}", self.__name__, event)
+                        self.notifyListeners(evt)
+
+                    if resultSet.get('public_proxy'):
+                        evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is Public Proxy: {resultSet.get('public_proxy')}", self.__name__, event)
+                        self.notifyListeners(evt)
+
                 if resultSet.get('country'):
                     location = ', '.join(filter(None, [resultSet.get('city'), resultSet.get('state_prov'), resultSet.get('country')]))
                     location += f"\n-Latitude: {resultSet.get('latitude')}\n-Longitude: {resultSet.get('longitude')}"
@@ -157,21 +173,8 @@ class sfp_seon(SpiderFootPlugin):
                         evt = SpiderFootEvent('TCP_PORT_OPEN', f"{eventData}:{port}", self.__name__, event)
                         self.notifyListeners(evt)
 
-                if resultSet.get('tor'):
-                    evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is TOR node: {resultSet.get('tor')}", self.__name__, event)
-                    self.notifyListeners(evt)
-
-                if resultSet.get('vpn'):
-                    evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is VPN: {resultSet.get('vpn')}", self.__name__, event)
-                    self.notifyListeners(evt)
-
-                if resultSet.get('web_proxy'):
-                    evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is Web Proxy: {resultSet.get('web_proxy')}", self.__name__, event)
-                    self.notifyListeners(evt)
-
-                if resultSet.get('public_proxy'):
-                    evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", f"Server is Public Proxy: {resultSet.get('public_proxy')}", self.__name__, event)
-                    self.notifyListeners(evt)
+                evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                self.notifyListeners(evt)
 
         elif eventName == "EMAILADDR":
             data = self.query(eventData, eventName)
@@ -202,7 +205,7 @@ class sfp_seon(SpiderFootPlugin):
                     for site in socialMediaList:
                         if resultSet.get('account_details').get(site):
                             if resultSet.get('account_details').get(site).get('url'):
-                                evt = SpiderFootEvent("SOCIAL_MEDIA", f"{site}: <SFURL> {resultSet.get('account_details').get(site).get('url')} </SFURL>", self.__name__, event)
+                                evt = SpiderFootEvent("SOCIAL_MEDIA", f"{site}: <SFURL>{resultSet.get('account_details').get(site).get('url')}</SFURL>", self.__name__, event)
                                 self.notifyListeners(evt)
                             elif resultSet.get('account_details').get(site).get('registered'):
                                 evt = SpiderFootEvent("SOCIAL_MEDIA", f"Registered on {site}", self.__name__, event)
@@ -222,6 +225,9 @@ class sfp_seon(SpiderFootPlugin):
                     for breachSet in breachList:
                         evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [{breachSet.get('name')}]", self.__name__, event)
                         self.notifyListeners(evt)
+
+                evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                self.notifyListeners(evt)
 
         elif eventName == "PHONE_NUMBER":
             data = self.query(eventData, eventName)
@@ -250,7 +256,7 @@ class sfp_seon(SpiderFootPlugin):
                     evt = SpiderFootEvent("PROVIDER_TELCO", resultSet.get('carrier'), self.__name__, event)
                     self.notifyListeners(evt)
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
-            self.notifyListeners(evt)
+                evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_seon class
