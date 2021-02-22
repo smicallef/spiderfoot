@@ -107,7 +107,7 @@ class sfp_ipapico(SpiderFootPlugin):
         data = self.query(eventData)
 
         if data.get('country'):
-            location = ', '.join(filter(None, [data.get('city'), data.get('region'), data.get('region_code'), data.get('country_name'), data.get('country'), data.get('postal')]))
+            location = ', '.join(filter(None, [data.get('city'), data.get('region'), data.get('region_code'), data.get('country_name'), data.get('country')]))
             evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
             self.notifyListeners(evt)
 
