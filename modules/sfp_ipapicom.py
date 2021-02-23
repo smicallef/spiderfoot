@@ -110,12 +110,12 @@ class sfp_ipapicom(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        if self.errorState:
+            return None
+
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_ipapicom but did not set an API key!")
             self.errorState = True
-            return None
-
-        if self.errorState:
             return None
 
         # Don't look up stuff twice
@@ -129,9 +129,12 @@ class sfp_ipapicom(SpiderFootPlugin):
 
         if data.get('country_name'):
             location = ', '.join(filter(None, [data.get('city'), data.get('region_name'), data.get('region_code'), data.get('country_name'), data.get('country_code')]))
-            location += f"\n-Latitude: {data.get('latitude')}\n-Longitude: {data.get('longitude')}"
             evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
             self.notifyListeners(evt)
+
+            if data.get('latitude') and data.get('longitude'):
+                evt = SpiderFootEvent("PHYSICAL_COORDINATES", f"{data.get('latitude')}, {data.get('longitude')}", self.__name__, event)
+                self.notifyListeners(evt)
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
