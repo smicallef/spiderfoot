@@ -93,7 +93,7 @@ class sfp_sociallinks(SpiderFootPlugin):
             timeout=15,
             useragent=self.opts['_useragent']
         )
-
+        self.sf.debug(str(res['content']))
         return json.loads(res['content'])
 
     def queryFlickr(self, qry, eventName):
@@ -111,7 +111,7 @@ class sfp_sociallinks(SpiderFootPlugin):
             timeout=15,
             useragent=self.opts['_useragent']
         )
-
+        self.sf.debug(str(res['content']))
         return json.loads(res['content'])
     
     def querySkype(self, qry, eventName):
@@ -129,6 +129,7 @@ class sfp_sociallinks(SpiderFootPlugin):
             timeout=15,
             useragent=self.opts['_useragent']
         )
+        self.sf.debug(str(res['content']))
 
         return json.loads(res['content'])
 
@@ -147,6 +148,7 @@ class sfp_sociallinks(SpiderFootPlugin):
             timeout=15,
             useragent=self.opts['_useragent']
         )
+        self.sf.debug(str(res['content']))
 
         return json.loads(res['content'])
 
@@ -172,5 +174,90 @@ class sfp_sociallinks(SpiderFootPlugin):
             return None
         else:
             self.results[eventData] = True
+
+        if eventName == "PHONE_NUMBER":
+            data = self.queryTelegram(eventData, eventName)
+            if data is None:
+                return None
+            
+            resultSet = data.get('result')
+            if resultSet:
+                if resultSet.get('first_name') and resultSet.get('last_name'):
+                    evt = SpiderFootEvent("HUMAN_NAME", f"{resultSet.get('first_name')} {resultSet.get('last_name')}", self.__name__, event)
+                    self.notifyListeners(evt)
+                if resultSet.get('username'):
+                    evt = SpiderFootEvent("USERNAME", resultSet.get('username'), self.__name__, event)
+                    self.notifyListeners(evt)
+
+        elif eventName == "USERNAME":
+            data = self.queryTelegram(eventData, eventName)
+            if data is None:
+                return None
+
+            resultSet = data.get('result')
+            if resultSet:
+                if resultSet.get('first_name') and resultSet.get('last_name'):
+                    evt = SpiderFootEvent("HUMAN_NAME", f"{resultSet.get('first_name')} {resultSet.get('last_name')}", self.__name__, event)
+                    self.notifyListeners(evt)
+                if resultSet.get('phone_number'):
+                    evt = SpiderFootEvent("PHONE_NUMBER", resultSet.get('phone_number'), self.__name__, event)
+                    self.notifyListeners(evt)
+
+        elif eventName == "EMAILADDR":
+            totalModules = 3
+            failedModules = 0
+            data = self.queryFlickr(eventData, eventName)
+            if data is None:
+                failedModules += 1
+
+            if data:
+                resultSet = data.get('result')
+                if resultSet:
+                    if resultSet.get('first_name'):
+                        evt = SpiderFootEvent("HUMAN_NAME", f"{resultSet.get('displayName')}", self.__name__, event)
+                        self.notifyListeners(evt)
+                    if resultSet.get('location'):
+                        evt = SpiderFootEvent("GEOINFO", resultSet.get('location'), self.__name__, event)
+                        self.notifyListeners(evt)
+                    if resultSet.get('url'):
+                        evt = SpiderFootEvent("SOCIAL_MEDIA", resultSet.get('url'), self.__name__, event)
+                        self.notifyListeners(evt)
+
+            data = self.querySkype(eventData, eventName)
+            if data is None:
+                failedModules +=1
+            
+            if data:
+                resultSet = data.get('result')
+                if resultSet:
+                    if resultSet.get('first_name') and resultSet.get('last_name'):
+                        evt = SpiderFootEvent("HUMAN_NAME", f"{resultSet.get('first_name')} {resultSet.get('last_name')}", self.__name__, event)
+                        self.notifyListeners(evt)
+                    if resultSet.get('username'):
+                        evt = SpiderFootEvent("USERNAME", resultSet.get('username'), self.__name__, event)
+                        self.notifyListeners(evt)
+            
+            data = self.queryLinkedin(eventData, eventName)
+            if data is None:
+                failedModules += 1
+
+            if data:
+                resultSet = data.get('result')
+                if resultSet:
+                    if resultSet.get('displayName'):
+                        evt = SpiderFootEvent("HUMAN_NAME", f"{resultSet.get('displayName')}", self.__name__, event)
+                        self.notifyListeners(evt)
+                    if resultSet.get('location'):
+                        evt = SpiderFootEvent("GEOINFO", resultSet.get('location'), self.__name__, event)
+                        self.notifyListeners(evt)
+                    if resultSet.get('companyName'):
+                        evt = SpiderFootEvent("COMPANY_NAME", resultSet.get('companyName'), self.__name__, event)
+                        self.notifyListeners(evt)
+                    if resultSet.get('headline'):
+                        evt = SpiderFootEvent("JOB_TITLE", resultSet.get('headline'), self.__name__, event)
+                        self.notifyListeners(evt)
+            
+            if failedModules == 3:
+                return None
 
 # End of sfp_sociallinks class
