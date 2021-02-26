@@ -73,6 +73,8 @@ class sfp_sociallinks(SpiderFootPlugin):
             "SOCIAL_MEDIA",
             "HUMAN_NAME",
             "JOB_TITLE",
+            "COMPANY_NAME",
+            "PHONE_NUMBER",
             "RAW_RIR_DATA"
         ]
 
@@ -93,7 +95,6 @@ class sfp_sociallinks(SpiderFootPlugin):
             timeout=15,
             useragent=self.opts['_useragent']
         )
-        self.sf.debug(str(res['content']))
         return json.loads(res['content'])
 
     def queryFlickr(self, qry, eventName):
@@ -111,9 +112,12 @@ class sfp_sociallinks(SpiderFootPlugin):
             timeout=15,
             useragent=self.opts['_useragent']
         )
-        self.sf.debug(str(res['content']))
+
+        if res['content'] is None:
+            return None
+
         return json.loads(res['content'])
-    
+
     def querySkype(self, qry, eventName):
         if eventName == "EMAILADDR":
             queryString = f"https://osint.rest/api/skype/search/v2?query={qry}"
@@ -129,7 +133,9 @@ class sfp_sociallinks(SpiderFootPlugin):
             timeout=15,
             useragent=self.opts['_useragent']
         )
-        self.sf.debug(str(res['content']))
+
+        if res['content'] is None:
+            return None
 
         return json.loads(res['content'])
 
@@ -145,10 +151,12 @@ class sfp_sociallinks(SpiderFootPlugin):
         res = self.sf.fetchUrl(
             queryString,
             headers=headers,
-            timeout=15,
+            timeout=30,
             useragent=self.opts['_useragent']
         )
-        self.sf.debug(str(res['content']))
+
+        if res['content'] is None:
+            return None
 
         return json.loads(res['content'])
 
@@ -160,13 +168,13 @@ class sfp_sociallinks(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        if self.errorState:
+            return None
+
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_sociallinks but did not set an API key!")
             self.errorState = True
             return
-
-        if self.errorState:
-            return None
 
         # Don't look up stuff twice
         if eventData in self.results:
@@ -179,7 +187,7 @@ class sfp_sociallinks(SpiderFootPlugin):
             data = self.queryTelegram(eventData, eventName)
             if data is None:
                 return None
-            
+
             resultSet = data.get('result')
             if resultSet:
                 if resultSet.get('first_name') and resultSet.get('last_name'):
@@ -188,6 +196,9 @@ class sfp_sociallinks(SpiderFootPlugin):
                 if resultSet.get('username'):
                     evt = SpiderFootEvent("USERNAME", resultSet.get('username'), self.__name__, event)
                     self.notifyListeners(evt)
+
+                evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                self.notifyListeners(evt)
 
         elif eventName == "USERNAME":
             data = self.queryTelegram(eventData, eventName)
@@ -203,61 +214,77 @@ class sfp_sociallinks(SpiderFootPlugin):
                     evt = SpiderFootEvent("PHONE_NUMBER", resultSet.get('phone_number'), self.__name__, event)
                     self.notifyListeners(evt)
 
+                evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                self.notifyListeners(evt)
+
         elif eventName == "EMAILADDR":
-            totalModules = 3
             failedModules = 0
             data = self.queryFlickr(eventData, eventName)
+            humanNames = set()
+            geoInfos = set()
             if data is None:
                 failedModules += 1
-
-            if data:
-                resultSet = data.get('result')
+            else:
+                resultSet = data[0].get('entities')[0].get('data')
                 if resultSet:
-                    if resultSet.get('first_name'):
-                        evt = SpiderFootEvent("HUMAN_NAME", f"{resultSet.get('displayName')}", self.__name__, event)
+                    if resultSet.get('realname').get('_content'):
+                        humanNames.add(resultSet.get('realname').get('_content'))
+                    if resultSet.get('location').get('_content'):
+                        geoInfos.add(resultSet.get('location').get('_content'))
+                    if resultSet.get('profileurl').get('_content'):
+                        evt = SpiderFootEvent("SOCIAL_MEDIA", f"Flickr: <SFURL>{resultSet.get('profileurl').get('_content')}</SFURL>", self.__name__, event)
                         self.notifyListeners(evt)
-                    if resultSet.get('location'):
-                        evt = SpiderFootEvent("GEOINFO", resultSet.get('location'), self.__name__, event)
-                        self.notifyListeners(evt)
-                    if resultSet.get('url'):
-                        evt = SpiderFootEvent("SOCIAL_MEDIA", resultSet.get('url'), self.__name__, event)
-                        self.notifyListeners(evt)
+
+                    evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                    self.notifyListeners(evt)
 
             data = self.querySkype(eventData, eventName)
             if data is None:
-                failedModules +=1
-            
-            if data:
+                failedModules += 1
+            else:
                 resultSet = data.get('result')
                 if resultSet:
-                    if resultSet.get('first_name') and resultSet.get('last_name'):
-                        evt = SpiderFootEvent("HUMAN_NAME", f"{resultSet.get('first_name')} {resultSet.get('last_name')}", self.__name__, event)
+                    resultSet = data.get('result')[0].get('nodeProfileData')
+                    if resultSet.get('name'):
+                        humanNames.add(resultSet.get('name'))
+                    if resultSet.get('skypeId'):
+                        evt = SpiderFootEvent("USERNAME", resultSet.get('skypeId'), self.__name__, event)
                         self.notifyListeners(evt)
-                    if resultSet.get('username'):
-                        evt = SpiderFootEvent("USERNAME", resultSet.get('username'), self.__name__, event)
-                        self.notifyListeners(evt)
-            
+
+                    evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                    self.notifyListeners(evt)
+
             data = self.queryLinkedin(eventData, eventName)
             if data is None:
                 failedModules += 1
-
-            if data:
+            else:
                 resultSet = data.get('result')
                 if resultSet:
+                    resultSet = data.get('result')[0]
                     if resultSet.get('displayName'):
-                        evt = SpiderFootEvent("HUMAN_NAME", f"{resultSet.get('displayName')}", self.__name__, event)
-                        self.notifyListeners(evt)
+                        humanNames.add(resultSet.get('displayName'))
                     if resultSet.get('location'):
-                        evt = SpiderFootEvent("GEOINFO", resultSet.get('location'), self.__name__, event)
-                        self.notifyListeners(evt)
+                        geoInfos.add(resultSet.get('location'))
                     if resultSet.get('companyName'):
                         evt = SpiderFootEvent("COMPANY_NAME", resultSet.get('companyName'), self.__name__, event)
                         self.notifyListeners(evt)
                     if resultSet.get('headline'):
                         evt = SpiderFootEvent("JOB_TITLE", resultSet.get('headline'), self.__name__, event)
                         self.notifyListeners(evt)
-            
+
+                    evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                    self.notifyListeners(evt)
+
+            for humanName in humanNames:
+                evt = SpiderFootEvent("HUMAN_NAME", humanName, self.__name__, event)
+                self.notifyListeners(evt)
+
+            for geoInfo in geoInfos:
+                evt = SpiderFootEvent("GEOINFO", geoInfo, self.__name__, event)
+                self.notifyListeners(evt)
+
             if failedModules == 3:
+                self.sf.info(f"No data found for {eventData}")
                 return None
 
 # End of sfp_sociallinks class
