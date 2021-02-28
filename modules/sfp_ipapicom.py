@@ -53,7 +53,7 @@ class sfp_ipapicom(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': "API Key for ipapi.com",
+        'api_key': "ipapi.com API Key.",
     }
 
     results = None
