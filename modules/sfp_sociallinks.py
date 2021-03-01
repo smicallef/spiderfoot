@@ -30,8 +30,8 @@ class sfp_sociallinks(SpiderFootPlugin):
             'references': [
                 "https://docs.osint.rest/"
             ],
-            'favIcon': "https://seon.io/assets/favicons/favicon-16x16.png",
-            'logo': "https://seon.io/assets/favicons/apple-touch-icon-152.png",
+            'favIcon': "view-source:https://static.tildacdn.com/tild6563-6633-4533-b362-663333656461/favicon.ico",
+            'logo': "https://static.tildacdn.com/tild3935-6136-4330-b561-643034663032/LogoSL.svg",
             'description': "Social Links provides instruments for OSINT methods "
             "that are used by the world's leading investigation and law enforcement agencies",
         }
@@ -44,7 +44,7 @@ class sfp_sociallinks(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': "API Key for mtg-bi.com",
+        'api_key': "mtg-bi.com API Key",
     }
 
     results = None
@@ -75,8 +75,26 @@ class sfp_sociallinks(SpiderFootPlugin):
             "JOB_TITLE",
             "COMPANY_NAME",
             "PHONE_NUMBER",
+            "ACCOUNT_EXTERNAL_OWNED",
             "RAW_RIR_DATA"
         ]
+
+    def query(self, queryString):
+        headers = {
+            'Accept': "application/json",
+            'Authorization': self.opts['api_key']
+        }
+
+        res = self.sf.fetchUrl(
+            queryString,
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
+        )
+
+        if res['content'] is None:
+            return None
+        return json.loads(res['content'])
 
     def queryTelegram(self, qry, eventName):
         if eventName == "PHONE_NUMBER":
@@ -84,81 +102,25 @@ class sfp_sociallinks(SpiderFootPlugin):
         elif eventName == "USERNAME":
             queryString = f"https://osint.rest/api/telegram/user_by_alias?query={qry}"
 
-        headers = {
-            'Accept': "application/json",
-            'Authorization': self.opts['api_key']
-        }
-
-        res = self.sf.fetchUrl(
-            queryString,
-            headers=headers,
-            timeout=15,
-            useragent=self.opts['_useragent']
-        )
-        return json.loads(res['content'])
+        return self.query(queryString)
 
     def queryFlickr(self, qry, eventName):
         if eventName == "EMAILADDR":
             queryString = f"https://osint.rest/api/flickr/email?email={qry}"
 
-        headers = {
-            'Accept': "application/json",
-            'Authorization': self.opts['api_key']
-        }
-
-        res = self.sf.fetchUrl(
-            queryString,
-            headers=headers,
-            timeout=15,
-            useragent=self.opts['_useragent']
-        )
-
-        if res['content'] is None:
-            return None
-
-        return json.loads(res['content'])
+        return self.query(queryString)
 
     def querySkype(self, qry, eventName):
         if eventName == "EMAILADDR":
             queryString = f"https://osint.rest/api/skype/search/v2?query={qry}"
 
-        headers = {
-            'Accept': "application/json",
-            'Authorization': self.opts['api_key']
-        }
-
-        res = self.sf.fetchUrl(
-            queryString,
-            headers=headers,
-            timeout=15,
-            useragent=self.opts['_useragent']
-        )
-
-        if res['content'] is None:
-            return None
-
-        return json.loads(res['content'])
+        return self.query(queryString)
 
     def queryLinkedin(self, qry, eventName):
         if eventName == "EMAILADDR":
             queryString = f"https://osint.rest/api/linkedin/lookup_by_email/v2?query={qry}"
 
-        headers = {
-            'Accept': "application/json",
-            'Authorization': self.opts['api_key']
-        }
-
-        res = self.sf.fetchUrl(
-            queryString,
-            headers=headers,
-            timeout=30,
-            useragent=self.opts['_useragent']
-        )
-
-        if res['content'] is None:
-            return None
-
-        return json.loads(res['content'])
+        return self.query(queryString)
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -248,6 +210,8 @@ class sfp_sociallinks(SpiderFootPlugin):
                     if resultSet.get('name'):
                         humanNames.add(resultSet.get('name'))
                     if resultSet.get('skypeId'):
+                        evt = SpiderFootEvent("ACCOUNT_EXTERNAL_OWNED", f"Skype [{resultSet.get('skypeId')}]", self.__name__, event)
+                        self.notifyListeners(evt)
                         evt = SpiderFootEvent("USERNAME", resultSet.get('skypeId'), self.__name__, event)
                         self.notifyListeners(evt)
 
