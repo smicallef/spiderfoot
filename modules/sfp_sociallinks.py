@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------------------
 # Name:         sfp_sociallinks
 # Purpose:      Spiderfoot plugin to query mtg-bi.com to gather intelligence from
-#               social media platforms and dark web
+#               social media platforms and dark web.
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
