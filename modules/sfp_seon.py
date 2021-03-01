@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------------------
 # Name:         sfp_seon
 # Purpose:      Spiderfoot plugin to query seon.io to gather intelligence about
-#               IP Addresses, email addresses, and phone numbers
+#               IP Addresses, email addresses, and phone numbers.
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
