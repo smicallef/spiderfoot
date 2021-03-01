@@ -45,7 +45,7 @@ class sfp_seon(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': "API Key for seon.io",
+        'api_key': "seon.io API Key",
         'fraud_threshold': 'Minimum fraud score for target to be marked as malicious (0-100)',
     }
 
@@ -119,13 +119,13 @@ class sfp_seon(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        if self.errorState:
+            return None
+
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_seon but did not set an API key!")
             self.errorState = True
             return
-
-        if self.errorState:
-            return None
 
         # Don't look up stuff twice
         if eventData in self.results:
@@ -164,10 +164,11 @@ class sfp_seon(SpiderFootPlugin):
 
                 if resultSet.get('country'):
                     location = ', '.join(filter(None, [resultSet.get('city'), resultSet.get('state_prov'), resultSet.get('country')]))
-                    location += f"\n-Latitude: {resultSet.get('latitude')}\n-Longitude: {resultSet.get('longitude')}"
                     evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
                     self.notifyListeners(evt)
 
+                    evt = SpiderFootEvent('PHYSICAL_COORDINATES', f"{resultSet.get('latitude')}, {resultSet.get('longitude')}", self.__name__, event)
+                    self.notifyListeners(evt)
                 if resultSet.get('open_ports'):
                     for port in resultSet.get('open_ports'):
                         evt = SpiderFootEvent('TCP_PORT_OPEN', f"{eventData}:{port}", self.__name__, event)

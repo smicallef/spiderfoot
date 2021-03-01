@@ -146,6 +146,7 @@ class SpiderFootDb:
         ['EMAILADDR_COMPROMISED', 'Hacked Email Address', 0, 'DESCRIPTOR'],
         ['EMAILADDR_DISPOSABLE', 'Disposable Email Address', 0, 'DESCRIPTOR'],
         ['EMAILADDR_GENERIC', 'Email Address - Generic', 0, 'ENTITY'],
+        ['EMAILADDR_UNDELIVERABLE', 'Undeliverable Email Address', 0, 'DESCRIPTOR'],
         ['ERROR_MESSAGE', 'Error Message', 0, 'DATA'],
         ['ETHEREUM_ADDRESS', 'Ethereum Address', 0, 'ENTITY'],
         ['GEOINFO', 'Physical Location', 0, 'DESCRIPTOR'],
