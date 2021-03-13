@@ -92,6 +92,21 @@ class sfp_sociallinks(SpiderFootPlugin):
             useragent=self.opts['_useragent']
         )
 
+        if res['code'] == '429':
+            self.sf.error("You are being rate-limited by seon.io")
+            self.errorState = True
+            return None
+
+        if res['code'] != "200":
+            self.sf.error("Error retrieving search results from seon.io")
+            self.errorState = True
+            return None
+
+        if res['code'] == '404':
+            self.sf.error("API Endpoint not found")
+            self.errorState = True
+            return None
+
         if res['content'] is None:
             return None
         return json.loads(res['content'])
@@ -104,21 +119,18 @@ class sfp_sociallinks(SpiderFootPlugin):
 
         return self.query(queryString)
 
-    def queryFlickr(self, qry, eventName):
-        if eventName == "EMAILADDR":
-            queryString = f"https://osint.rest/api/flickr/email?email={qry}"
+    def queryFlickr(self, qry):
+        queryString = f"https://osint.rest/api/flickr/email?email={qry}"
 
         return self.query(queryString)
 
-    def querySkype(self, qry, eventName):
-        if eventName == "EMAILADDR":
-            queryString = f"https://osint.rest/api/skype/search/v2?query={qry}"
+    def querySkype(self, qry):
+        queryString = f"https://osint.rest/api/skype/search/v2?query={qry}"
 
         return self.query(queryString)
 
-    def queryLinkedin(self, qry, eventName):
-        if eventName == "EMAILADDR":
-            queryString = f"https://osint.rest/api/linkedin/lookup_by_email/v2?query={qry}"
+    def queryLinkedin(self, qry):
+        queryString = f"https://osint.rest/api/linkedin/lookup_by_email/v2?query={qry}"
 
         return self.query(queryString)
 
@@ -181,7 +193,7 @@ class sfp_sociallinks(SpiderFootPlugin):
 
         elif eventName == "EMAILADDR":
             failedModules = 0
-            data = self.queryFlickr(eventData, eventName)
+            data = self.queryFlickr(eventData)
             humanNames = set()
             geoInfos = set()
             if data is None:
@@ -200,7 +212,7 @@ class sfp_sociallinks(SpiderFootPlugin):
                     evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
                     self.notifyListeners(evt)
 
-            data = self.querySkype(eventData, eventName)
+            data = self.querySkype(eventData)
             if data is None:
                 failedModules += 1
             else:
@@ -218,7 +230,7 @@ class sfp_sociallinks(SpiderFootPlugin):
                     evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
                     self.notifyListeners(evt)
 
-            data = self.queryLinkedin(eventData, eventName)
+            data = self.queryLinkedin(eventData)
             if data is None:
                 failedModules += 1
             else:
