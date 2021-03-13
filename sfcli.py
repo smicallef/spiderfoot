@@ -902,8 +902,7 @@ class SpiderFootCli(cmd.Cmd):
             "scantarget": target,
             "modulelist": mods,
             "typelist": types,
-            "usecase": usecase,
-            "cli": "1"
+            "usecase": usecase
         }
         d = self.request(self.ownopts['cli.server_baseurl'] + "/startscan",
                          post=post)
