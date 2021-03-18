@@ -111,17 +111,14 @@ class sfp_seon(SpiderFootPlugin):
 
         if res['code'] == '429':
             self.sf.error("You are being rate-limited by seon.io")
-            self.errorState = True
             return None
 
         if res['code'] != "200":
             self.sf.error("Error retrieving search results from seon.io")
-            self.errorState = True
             return None
 
         if res['code'] == '404':
             self.sf.error("API Endpoint not found")
-            self.errorState = True
             return None
 
         return json.loads(res['content'])
