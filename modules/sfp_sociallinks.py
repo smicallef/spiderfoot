@@ -44,7 +44,7 @@ class sfp_sociallinks(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': "mtg-bi.com API Key",
+        'api_key': "Social Links (mtg-bi.com) API Key",
     }
 
     results = None
