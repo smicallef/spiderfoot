@@ -162,6 +162,7 @@ class SpiderFootDb:
         ['INTERNET_NAME_UNRESOLVED', 'Internet Name - Unresolved', 0, 'ENTITY'],
         ['IP_ADDRESS', 'IP Address', 0, 'ENTITY'],
         ['IPV6_ADDRESS', 'IPv6 Address', 0, 'ENTITY'],
+        ['JOB_TITLE', 'Job Title', 0, 'DESCRIPTOR'],
         ['LINKED_URL_INTERNAL', 'Linked URL - Internal', 0, 'SUBENTITY'],
         ['LINKED_URL_EXTERNAL', 'Linked URL - External', 0, 'SUBENTITY'],
         ['MALICIOUS_ASN', 'Malicious AS', 0, 'DESCRIPTOR'],
