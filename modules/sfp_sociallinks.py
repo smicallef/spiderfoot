@@ -88,7 +88,7 @@ class sfp_sociallinks(SpiderFootPlugin):
         res = self.sf.fetchUrl(
             queryString,
             headers=headers,
-            timeout=15,
+            timeout=60,
             useragent=self.opts['_useragent']
         )
 
@@ -225,6 +225,8 @@ class sfp_sociallinks(SpiderFootPlugin):
                         self.notifyListeners(evt)
                         evt = SpiderFootEvent("USERNAME", resultSet.get('skypeId'), self.__name__, event)
                         self.notifyListeners(evt)
+                    if resultSet.get('address'):
+                        geoInfos.add(resultSet.get('address'))
 
                     evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
                     self.notifyListeners(evt)
@@ -246,6 +248,9 @@ class sfp_sociallinks(SpiderFootPlugin):
                     if resultSet.get('headline'):
                         evt = SpiderFootEvent("JOB_TITLE", resultSet.get('headline'), self.__name__, event)
                         self.notifyListeners(evt)
+
+                    evt = SpiderFootEvent("SOCIAL_MEDIA", f"LinkedIn: <SFURL>{resultSet.get('linkedInUrl')}</SFURL>", self.__name__, event)
+                    self.notifyListeners(evt)
 
                     evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
                     self.notifyListeners(evt)
