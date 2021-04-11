@@ -316,7 +316,6 @@ Wikileaks|Search Wikileaks for mentions of domain names and e-mail addresses.|[h
 Wikipedia Edits|Identify edits to Wikipedia articles made from a given IP address or username.|[https://www.wikipedia.org/](https://www.wikipedia.org/)|Free API
 XForce Exchange|Obtain IP reputation and passive DNS information from IBM X-Force Exchange|[https://exchange.xforce.ibmcloud.com/](https://exchange.xforce.ibmcloud.com/)|Tiered API
 Yandex DNS|Check if a host would be blocked by Yandex DNS|[https://yandex.com/](https://yandex.com/)|Free API
-You must specify a target when running in scan mode. Try --help for guidance.
 Zetalytics|Query the Zetalytics database for hosts on your target domain(s).|[https://zetalytics.com/](https://zetalytics.com/)|Tiered API
 Zone-H Defacement Check|Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed.|[https://zone-h.org/](https://zone-h.org/)|Free API
 
