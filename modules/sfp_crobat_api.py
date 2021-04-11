@@ -26,7 +26,14 @@ class sfp_crobat_api(SpiderFootPlugin):
         'summary': "Search Crobat API for subdomains.",
         'flags': [""],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Passive DNS"]
+        'categories': ["Passive DNS"],
+        'dataSource': {
+            'website': "https://sonar.omnisint.io/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'logo': "https://sonar.omnisint.io/img/crobat.png",
+            'description': "The entire Rapid7 Sonar DNS dataset indexed,"
+                " available at your fingertips.",
+        }
     }
 
     opts = {

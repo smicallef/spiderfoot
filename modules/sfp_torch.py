@@ -23,7 +23,17 @@ class sfp_torch(SpiderFootPlugin):
         'summary': "Search Tor 'TORCH' search engine for mentions of the target domain.",
         'flags': ["errorprone"],
         'useCases': ["Footprint", "Investigate"],
-        'categories': ["Search Engines"]
+        'categories': ["Search Engines"],
+        'dataSource': {
+            'website': "https://torchsearch.wordpress.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'description': "Torch or TorSearch is the best search engine "
+                "for the hidden part of the internet. They're also the "
+                "oldest and longest running search engine on Tor.\n"
+                "Torch claims to have over one billion dark net pages indexed. "
+                "They also don't censor search results or track what you "
+                "search for.",
+        }
     }
 
     opts = {

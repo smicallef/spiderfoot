@@ -22,7 +22,15 @@ class sfp_cinsscore(SpiderFootPlugin):
         'summary': "Check if a netblock or IP address is malicious according to cinsscore.com's Army List.",
         'flags': [""],
         'useCases': ["Investigate", "Passive"],
-        'categories': ["Reputation Systems"]
+        'categories': ["Reputation Systems"],
+        'dataSource': {
+            'website': "https://cinsscore.com/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'description': "Leveraging data from our network of Sentinel "
+                "devices and other trusted InfoSec sources, CINS is a "
+                "Threat Intelligence database that provides an accurate "
+                "and timely score for any IP address in the world.",
+        }
     }
 
     # Default options

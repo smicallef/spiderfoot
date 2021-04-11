@@ -29,8 +29,12 @@ class sfp_crxcavator(SpiderFootPlugin):
         'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://crxcavator.io/",
+            'model': "FREE_NOAUTH_UNLIMITED",
             'favIcon': "https://crxcavator.io/favicon-32x32.png",
             'logo': "https://crxcavator.io/apple-touch-icon.png",
+            'description': "CRXcavator automatically scans the entire Chrome Web "
+                "Store every 3 hours and produces a quantified risk score for "
+                "each Chrome Extension based on several factors.",
         }
     }
 
