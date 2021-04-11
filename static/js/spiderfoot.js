@@ -107,3 +107,12 @@ sf.log = function(message) {
       console.log('[' + datetime + '] ' + message);
     }
 }
+
+// Toggler for theme
+window.addEventListener("load", () => {
+    const themeToggler = document.getElementById("theme-toggler");
+
+    themeToggler.addEventListener("click", () => {
+        document.body.classList.toggle("dark-theme");
+    })
+})

@@ -1,12 +1,13 @@
 body {
   padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+  transition: background 0.2s linear;
 }
 
 .navbar-brand {
-  image-rendering:   -o-crisp-edges;         /* Opera */
-  image-rendering: -webkit-optimize-contrast;/* Webkit (non-standard naming) */
+  image-rendering: -o-crisp-edges; /* Opera */
+  image-rendering: -webkit-optimize-contrast; /* Webkit (non-standard naming) */
   image-rendering: crisp-edges;
-  -ms-interpolation-mode: nearest-neighbor;  /* IE (non-standard property) */
+  -ms-interpolation-mode: nearest-neighbor; /* IE (non-standard property) */
 }
 
 .brand-logo {
@@ -74,47 +75,215 @@ a.link:hover {
 }
 
 .dend-node circle {
-fill: #fff;
-stroke: steelblue;
-stroke-width: 1.5px;
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
 }
 
 .dend-node {
-font: 10px sans-serif;
+  font: 10px sans-serif;
 }
 
 .dend-link {
-fill: none;
-stroke: #ccc;
-stroke-width: 1.5px;
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
 }
 
 .axis path,
 .axis line {
-fill: none;
-stroke: #000;
-shape-rendering: crispEdges;
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
 }
 
 .bar {
-fill: orange;
+  fill: orange;
 }
 
 .bar:hover {
-fill: orangered ;
+  fill: orangered;
 }
 
 .x.axis path {
-display: none;
+  display: none;
 }
 
 .fade.in {
-   background: #fff;
+  background: #fff;
 }
 
-input[type=checkbox] {
-    width: 14px;
-    height: 14px;
-    margin: 0px;
-    display: inline;
+input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0px;
+  display: inline;
+}
+
+.dark {
+  display: none;
+}
+
+/* THEME TOGGLER PROPERTIES */
+#toggler-text {
+  float: left;
+  position: absolute;
+  right: 18rem;
+  top: 29%;
+  color: #777777;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 21px;
+  margin-top: 1.3rem;
+  right: 100%;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #059CD7;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #059CD7;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(20px);
+  -ms-transform: translateX(20px);
+  transform: translateX(20px);
+}
+
+.slider.round {
+  border-radius: 31px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* DARK THEME PROPERTIES */
+body.dark-theme {
+  background-color: #1B1B1B;
+  color: #fff;
+  transition: background 0.2s linear;
+}
+
+body.dark-theme button {
+  background-color: #059CD7;
+  border: none;
+}
+
+body.dark-theme button:hover {
+  background-color: #037eaf;
+}
+
+body.dark-theme .navbar-default {
+  border-color: #373737;
+  background: #171717;
+}
+
+body.dark-theme .navbar-default a {
+  color: #fff;
+}
+
+body.dark-theme input {
+  background: #3A3A3A;
+  border-color: #828181;
+}
+
+body.dark-theme .panel-default {
+  background-color: #3A3A3A !important;
+  border-color: #828181 !important;
+}
+
+body.dark-theme tr {
+  background-color: #3A3A3A !important;
+}
+
+body.dark-theme tr:nth-child(even) {
+  background-color: #555 !important;
+}
+
+.dark-theme a {
+  color: #059CD7;
+}
+
+.dark-theme #toggler-text {
+  color: #fff;
+}
+
+.dark-theme .active a{
+  background-color: #3A3A3A !important;
+  color: #fff !important;
+}
+
+.dark-theme .alert-info {
+  border-color: #828181;
+  background-color: #3A3A3A;
+  color: #fff;
+}
+
+.dark-theme #btn-save-changes {
+  background-color: #337ab7 !important;
+  border-color: #2e6da4 !important;
+}
+
+.dark-theme #btn-save-changes:hover {
+  background-color: #265b8a !important;
+}
+
+.dark-theme #btn-reset-settings {
+  background-color: #c9302c !important;
+  border-color: #ac2925 !important;
+}
+
+.dark-theme #btn-reset-settings:hover {
+  background-color: #ac2b26 !important;
+}
+
+.dark-theme .form-control {
+  background: #3A3A3A;
+  border-color: #828181;
+  color: #fff !important;
+}
+
+.dark-theme .dark {
+  display: inline;
+}
+
+.dark-theme .light {
+  display: none;
 }
