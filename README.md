@@ -118,7 +118,7 @@ Apple iTunes|Search Apple iTunes for mobile apps.|[https://itunes.apple.com/](ht
 Archive.org|Identifies historic versions of interesting files/pages from the Wayback Machine.|[https://archive.org/](https://archive.org/)|Free API
 ARIN|Queries ARIN registry for contact information.|[https://www.arin.net/](https://www.arin.net/)|Free API
 Azure Blob Finder|Search for potential Azure blobs associated with the target and attempt to list their contents.|[https://azure.microsoft.com/en-in/services/storage/blobs/](https://azure.microsoft.com/en-in/services/storage/blobs/)|Free API
-Bad Packets|Obtain information about any malicious activities involving IP addresses found|[https://badpackets.net](https://badpackets.net)|Internal
+Bad Packets|Obtain information about any malicious activities involving IP addresses found|[https://badpackets.net](https://badpackets.net)|Commercial API
 badips.com|Check if an IP address is malicious according to BadIPs.com.|[https://www.badips.com/](https://www.badips.com/)|Free API
 Bambenek C&C List|Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.|[http://www.bambenekconsulting.com/](http://www.bambenekconsulting.com/)|Free API
 Base64 Decoder|Identify Base64-encoded strings in URLs, often revealing interesting hidden information.|N/A|Internal
@@ -133,13 +133,13 @@ BitcoinAbuse|Check Bitcoin addresses against the bitcoinabuse.com database of su
 Blockchain|Queries blockchain.info to find the balance of identified bitcoin wallet addresses.|[https://www.blockchain.com/](https://www.blockchain.com/)|Free API
 blocklist.de|Check if a netblock or IP is malicious according to blocklist.de.|[http://www.blocklist.de/en/index.html](http://www.blocklist.de/en/index.html)|Free API
 BotScout|Searches botscout.com's database of spam-bot IPs and e-mail addresses.|[http://botscout.com/](http://botscout.com/)|Tiered API
-botvrij.eu|Check if a domain is malicious according to botvrij.eu.|N/A|Internal
+botvrij.eu|Check if a domain is malicious according to botvrij.eu.|[https://botvrij.eu/](https://botvrij.eu/)|Free API
 BuiltWith|Query BuiltWith.com's Domain API for information about your target's web technology stack, e-mail addresses and more.|[https://builtwith.com/](https://builtwith.com/)|Tiered API
-C99|Queries the C99 API which offers various data (geo location, proxy detection, phone lookup, etc).|[https://api.c99.nl/](https://api.c99.nl/)|Internal
+C99|Queries the C99 API which offers various data (geo location, proxy detection, phone lookup, etc).|[https://api.c99.nl/](https://api.c99.nl/)|Commercial API
 CallerName|Lookup US phone number location and reputation information.|[http://callername.com/](http://callername.com/)|Free API
 Censys|Obtain information from Censys.io|[https://censys.io/](https://censys.io/)|Tiered API
 Certificate Transparency|Gather hostnames from historical certificates in crt.sh.|[https://crt.sh/](https://crt.sh/)|Free API
-CINS Army List|Check if a netblock or IP address is malicious according to cinsscore.com's Army List.|N/A|Internal
+CINS Army List|Check if a netblock or IP address is malicious according to cinsscore.com's Army List.|[https://cinsscore.com/](https://cinsscore.com/)|Free API
 CIRCL.LU|Obtain information from CIRCL.LU's Passive DNS and Passive SSL databases.|[https://www.circl.lu/](https://www.circl.lu/)|Free API
 CleanBrowsing.org|Check if a host would be blocked by CleanBrowsing.org DNS|[https://cleanbrowsing.org/](https://cleanbrowsing.org/)|Free API
 CleanTalk Spam List|Check if a netblock or IP address is on CleanTalk.org's spam IP list.|[https://cleantalk.org](https://cleantalk.org)|Free API
@@ -152,13 +152,14 @@ Company Name Extractor|Identify company names in any obtained data.|N/A|Internal
 Cookie Extractor|Extract Cookies from HTTP headers.|N/A|Internal
 Country Name Extractor|Identify country names in any obtained data.|N/A|Internal
 Credit Card Number Extractor|Identify Credit Card Numbers in any data|N/A|Internal
-Crobat API|Search Crobat API for subdomains.|N/A|Internal
+Crobat API|Search Crobat API for subdomains.|[https://sonar.omnisint.io/](https://sonar.omnisint.io/)|Free API
 Cross-Referencer|Identify whether other domains are associated ('Affiliates') of the target by looking for links back to the target site(s).|N/A|Internal
-CRXcavator|Search CRXcavator for Chrome extensions.|[https://crxcavator.io/](https://crxcavator.io/)|Internal
+CRXcavator|Search CRXcavator for Chrome extensions.|[https://crxcavator.io/](https://crxcavator.io/)|Free API
 Custom Threat Feed|Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed.|N/A|Internal
 cybercrime-tracker.net|Check if a host/domain or IP is malicious according to cybercrime-tracker.net.|[http://cybercrime-tracker.net/](http://cybercrime-tracker.net/)|Free API
 Darksearch|Search the Darksearch.io Tor search engine for mentions of the target domain.|[https://darksearch.io/](https://darksearch.io/)|Free API
 Debounce|Check whether an email is disposable|[https://debounce.io/](https://debounce.io/)|Free API
+Dehashed|Gather breach data from Dehashed API.|[https://www.dehashed.com/](https://www.dehashed.com/)|Commercial API
 Digital Ocean Space Finder|Search for potential Digital Ocean Spaces associated with the target and attempt to list their contents.|[https://www.digitalocean.com/products/spaces/](https://www.digitalocean.com/products/spaces/)|Free API
 DNS Brute-forcer|Attempts to identify hostnames through brute-forcing common names and iterations.|N/A|Internal
 DNS Common SRV|Attempts to identify hostnames through brute-forcing common DNS SRV records.|N/A|Internal
@@ -177,7 +178,8 @@ EmailRep|Search EmailRep.io for email address reputation.|[https://emailrep.io/]
 Emerging Threats|Check if a netblock or IP is malicious according to emergingthreats.net.|[https://rules.emergingthreats.net/](https://rules.emergingthreats.net/)|Free API
 Error String Extractor|Identify common error messages in content like SQL errors, etc.|N/A|Internal
 Ethereum Address Extractor|Identify ethereum addresses in scraped webpages.|N/A|Internal
-F-Secure Riddler.io|Obtain network information from F-Secure Riddler.io API.|[https://riddler.io/](https://riddler.io/)|Internal
+Etherscan|Queries etherscan.io to find the balance of identified ethereum wallet addresses.|[https://etherscan.io](https://etherscan.io)|Free API
+F-Secure Riddler.io|Obtain network information from F-Secure Riddler.io API.|[https://riddler.io/](https://riddler.io/)|Commercial API
 File Metadata Extractor|Extracts meta data from documents and images.|N/A|Internal
 Flickr|Search Flickr for domains, URLs and emails related to the specified domain.|[https://www.flickr.com/](https://www.flickr.com/)|Free API
 Fortiguard.com|Check if an IP is malicious according to Fortiguard.com.|[https://fortiguard.com/](https://fortiguard.com/)|Free API
@@ -190,13 +192,14 @@ Google Object Storage Finder|Search for potential Google Object Storage buckets 
 Google SafeBrowsing|Check if the URL is included on any of the Safe Browsing lists.|[https://developers.google.com/safe-browsing/v4/lookup-api](https://developers.google.com/safe-browsing/v4/lookup-api)|Free API
 Google|Obtain information from the Google Custom Search API to identify sub-domains and links.|[https://developers.google.com/custom-search](https://developers.google.com/custom-search)|Tiered API
 Gravatar|Retrieve user information from Gravatar API.|[https://secure.gravatar.com/](https://secure.gravatar.com/)|Free API
+Grayhat Warfare|Find bucket names matching the keyword extracted from a domain from Grayhat API.|[https://buckets.grayhatwarfare.com/](https://buckets.grayhatwarfare.com/)|Tiered API
 Greensnow|Check if a netblock or IP address is malicious according to greensnow.co.|[https://greensnow.co/](https://greensnow.co/)|Free API
 grep.app|Search grep.app API for links and emails related to the specified domain.|[https://grep.app/](https://grep.app/)|Free API
 Greynoise|Obtain information from Greynoise.io's Enterprise API.|[https://greynoise.io/](https://greynoise.io/)|Tiered API
 HackerOne (Unofficial)|Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed.|[http://www.nobbd.de/](http://www.nobbd.de/)|Free API
 HackerTarget|Search HackerTarget.com for hosts sharing the same IP.|[https://hackertarget.com/](https://hackertarget.com/)|Free API
 Hash Extractor|Identify MD5 and SHA hashes in web content, files and more.|N/A|Internal
-HaveIBeenPwned|Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches.|[https://haveibeenpwned.com/](https://haveibeenpwned.com/)|Internal
+HaveIBeenPwned|Check HaveIBeenPwned.com for hacked e-mail addresses identified in breaches.|[https://haveibeenpwned.com/](https://haveibeenpwned.com/)|Commercial API
 Honeypot Checker|Query the projecthoneypot.org database for entries.|[https://www.projecthoneypot.org/](https://www.projecthoneypot.org/)|Free API
 Host.io|Obtain information about domain names from host.io.|[https://host.io](https://host.io)|Tiered API
 Hosting Provider Identifier|Find out if any IP addresses identified fall within known 3rd party hosting ranges, e.g. Amazon, Azure, etc.|N/A|Internal
@@ -209,6 +212,8 @@ Instagram|Gather information from Instagram profiles.|[https://www.instagram.com
 IntelligenceX|Obtain information from IntelligenceX about identified IP addresses, domains, e-mail addresses and phone numbers.|[https://intelx.io/](https://intelx.io/)|Tiered API
 Interesting File Finder|Identifies potential files of interest, e.g. office documents, zip files.|N/A|Internal
 Internet Storm Center|Check if an IP is malicious according to SANS ISC.|[https://isc.sans.edu](https://isc.sans.edu)|Free API
+ipapi.com|Queries ipapi.com to identify geolocation of IP Addresses using ipapi.com API|[https://ipapi.com/](https://ipapi.com/)|Tiered API
+ipapi.co|Queries ipapi.co to identify geolocation of IP Addresses using ipapi.co API|[https://ipapi.co/](https://ipapi.co/)|Tiered API
 IPInfo.io|Identifies the physical location of IP addresses identified using ipinfo.io.|[https://ipinfo.io](https://ipinfo.io)|Tiered API
 IPQualityScore|Determine if target is malicious using IPQualityScore API|[https://www.ipqualityscore.com/](https://www.ipqualityscore.com/)|Tiered API
 ipregistry|Query the ipregistry.co database for reputation and geo-location.|[https://ipregistry.co/](https://ipregistry.co/)|Tiered API
@@ -230,7 +235,6 @@ MySpace|Gather username and location from MySpace.com profiles.|[https://myspace
 NameAPI|Check whether an email is disposable|[https://www.nameapi.org/](https://www.nameapi.org/)|Tiered API
 NetworksDB|Search NetworksDB.io API for IP address and domain information.|[https://networksdb.io/](https://networksdb.io/)|Tiered API
 NeutrinoAPI|Search NeutrinoAPI for IP address info and check IP reputation.|[https://www.neutrinoapi.com/](https://www.neutrinoapi.com/)|Tiered API
-Norton ConnectSafe|Check if a host would be blocked by Norton ConnectSafe DNS|N/A|Internal
 numverify|Lookup phone number location and carrier information from numverify.com.|[http://numverify.com/](http://numverify.com/)|Tiered API
 Onion.link|Search Tor 'Onion City' search engine for mentions of the target domain.|[https://onion.link/](https://onion.link/)|Free API
 Onionsearchengine.com|Search Tor onionsearchengine.com for mentions of the target domain.|[https://as.onionsearchengine.com](https://as.onionsearchengine.com)|Free API
@@ -248,7 +252,7 @@ PhishStats|Determine if an IP Address is malicious|[https://phishstats.info/](ht
 PhishTank|Check if a host/domain is malicious according to PhishTank.|[https://phishtank.com/](https://phishtank.com/)|Free API
 Phone Number Extractor|Identify phone numbers in scraped webpages.|N/A|Internal
 Port Scanner - TCP|Scans for commonly open TCP ports on Internet-facing systems.|N/A|Internal
-ProjectDiscovery Chaos|Search for hosts/subdomains using chaos.projectdiscovery.io|[https://chaos.projectdiscovery.io](https://chaos.projectdiscovery.io)|Internal
+ProjectDiscovery Chaos|Search for hosts/subdomains using chaos.projectdiscovery.io|[https://chaos.projectdiscovery.io](https://chaos.projectdiscovery.io)|Commercial API
 Psbdmp|Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.|[https://psbdmp.cc/](https://psbdmp.cc/)|Free API
 Pulsedive|Obtain information from Pulsedive's API.|[https://pulsedive.com/](https://pulsedive.com/)|Tiered API
 Quad9|Check if a host would be blocked by Quad9|[https://quad9.net/](https://quad9.net/)|Free API
@@ -256,19 +260,21 @@ Recon.dev|Search Recon.dev for subdomains.|[https://recon.dev](https://recon.dev
 RIPE|Queries the RIPE registry (includes ARIN data) to identify netblocks and other info.|[https://www.ripe.net/](https://www.ripe.net/)|Free API
 RiskIQ|Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases.|[https://community.riskiq.com/](https://community.riskiq.com/)|Tiered API
 Robtex|Search Robtex.com for hosts sharing the same IP.|[https://www.robtex.com/](https://www.robtex.com/)|Free API
-Scylla|Gather breach data from Scylla API.|[https://scylla.sh/](https://scylla.sh/)|Free API
+Scylla|Gather breach data from Scylla API.|[https://scylla.so/](https://scylla.so/)|Free API
 SecurityTrails|Obtain Passive DNS and other information from SecurityTrails|[https://securitytrails.com/](https://securitytrails.com/)|Tiered API
+Seon|Queries seon.io to gather intelligence about IP Addresses, email addresses, and phone numbers|[https://seon.io/](https://seon.io/)|Commercial API
 SHODAN|Obtain information from SHODAN about identified IP addresses.|[https://www.shodan.io/](https://www.shodan.io/)|Tiered API
 Similar Domain Finder|Search various sources to identify similar looking domain names, for instance squatted domains.|N/A|Internal
 Skymem|Look up e-mail addresses on Skymem.|[http://www.skymem.info/](http://www.skymem.info/)|Free API
 SlideShare|Gather name and location from SlideShare profiles.|[https://www.slideshare.net](https://www.slideshare.net)|Free API
 Snov|Gather available email IDs from identified domains|[https://snov.io/](https://snov.io/)|Tiered API
+Social Links|Queries mtg-bi.com to gather intelligence from social media platforms and dark web|[https://mtg-bi.com/](https://mtg-bi.com/)|Commercial API
 Social Media Profile Finder|Tries to discover the social media profiles for human names identified.|[https://developers.google.com/custom-search](https://developers.google.com/custom-search)|Tiered API
 Social Network Identifier|Identify presence on social media networks such as LinkedIn, Twitter and others.|N/A|Internal
 SORBS|Query the SORBS database for open relays, open proxies, vulnerable servers, etc.|[http://www.sorbs.net/](http://www.sorbs.net/)|Free API
 SpamCop|Query various spamcop databases for open relays, open proxies, vulnerable servers, etc.|[https://www.spamcop.net/](https://www.spamcop.net/)|Free API
 Spamhaus|Query the Spamhaus databases for open relays, open proxies, vulnerable servers, etc.|[https://www.spamhaus.org/](https://www.spamhaus.org/)|Free API
-spur.us|Obtain information about any malicious activities involving IP addresses found|[https://spur.us/](https://spur.us/)|Internal
+spur.us|Obtain information about any malicious activities involving IP addresses found|[https://spur.us/](https://spur.us/)|Commercial API
 SpyOnWeb|Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code.|[http://spyonweb.com/](http://spyonweb.com/)|Tiered API
 Spyse|SpiderFoot plug-in to search Spyse API for IP address and domain information.|[https://spyse.com](https://spyse.com)|Tiered API
 SSL Certificate Analyzer|Gather information about SSL certificates used by the target's HTTPS sites.|N/A|Internal
@@ -279,12 +285,12 @@ TextMagic|Obtain phone number type from TextMagic API|[https://www.textmagic.com
 ThreatCrowd|Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses.|[https://www.threatcrowd.org](https://www.threatcrowd.org)|Free API
 ThreatMiner|Obtain information from ThreatMiner's database for passive DNS and threat intelligence.|[https://www.threatminer.org/](https://www.threatminer.org/)|Free API
 TLD Searcher|Search all Internet TLDs for domains with the same name as the target (this can be very slow.)|N/A|Internal
-Tool - CMSeeK|Identify what Content Management System (CMS) might be used.|[https://github.com/Tuhinshubhra/CMSeeK](https://github.com/Tuhinshubhra/CMSeeK)|Internal
-Tool - DNSTwist|Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation.|[https://github.com/elceef/dnstwist](https://github.com/elceef/dnstwist)|Internal
-Tool - Nmap|Identify what Operating System might be used.|[https://nmap.org/](https://nmap.org/)|Internal
-Tool - WhatWeb|Identify what software is in use on the specified website.|[https://github.com/urbanadventurer/whatweb](https://github.com/urbanadventurer/whatweb)|Internal
+Tool - CMSeeK|Identify what Content Management System (CMS) might be used.|[https://github.com/Tuhinshubhra/CMSeeK](https://github.com/Tuhinshubhra/CMSeeK)|Tool
+Tool - DNSTwist|Identify bit-squatting, typo and other similar domains to the target using a local DNSTwist installation.|[https://github.com/elceef/dnstwist](https://github.com/elceef/dnstwist)|Tool
+Tool - Nmap|Identify what Operating System might be used.|[https://nmap.org/](https://nmap.org/)|Tool
+Tool - WhatWeb|Identify what software is in use on the specified website.|[https://github.com/urbanadventurer/whatweb](https://github.com/urbanadventurer/whatweb)|Tool
 TOR Exit Nodes|Check if an IP or netblock appears on the torproject.org exit node list.|N/A|Internal
-TORCH|Search Tor 'TORCH' search engine for mentions of the target domain.|N/A|Internal
+TORCH|Search Tor 'TORCH' search engine for mentions of the target domain.|[https://torchsearch.wordpress.com/](https://torchsearch.wordpress.com/)|Free API
 TotalHash.com|Check if a host/domain or IP is malicious according to TotalHash.com.|[https://totalhash.cymru.com/](https://totalhash.cymru.com/)|Free API
 Trumail|Check whether an email is disposable|[https://trumail.io/](https://trumail.io/)|Free API
 Twilio|Obtain information from Twilio about phone numbers. Ensure you have the Caller Name add-on installed in Twilio.|[https://www.twilio.com/](https://www.twilio.com/)|Tiered API
@@ -302,14 +308,15 @@ Web Framework Identifier|Identify the usage of popular web frameworks like jQuer
 Web Server Identifier|Obtain web server banners to identify versions of web servers being used.|N/A|Internal
 Web Spider|Spidering of web-pages to extract content for searching.|N/A|Internal
 WhatCMS|Check web technology using WhatCMS.org API.|[https://whatcms.org/](https://whatcms.org/)|Tiered API
-Whoisology|Reverse Whois lookups using Whoisology.com.|[https://whoisology.com/](https://whoisology.com/)|Internal
+Whoisology|Reverse Whois lookups using Whoisology.com.|[https://whoisology.com/](https://whoisology.com/)|Commercial API
 Whois|Perform a WHOIS look-up on domain names and owned netblocks.|N/A|Internal
-Whoxy|Reverse Whois lookups using Whoxy.com.|[https://www.whoxy.com/](https://www.whoxy.com/)|Internal
+Whoxy|Reverse Whois lookups using Whoxy.com.|[https://www.whoxy.com/](https://www.whoxy.com/)|Commercial API
 WiGLE|Query WiGLE to identify nearby WiFi access points.|[https://wigle.net/](https://wigle.net/)|Free API
 Wikileaks|Search Wikileaks for mentions of domain names and e-mail addresses.|[https://wikileaks.org/](https://wikileaks.org/)|Free API
 Wikipedia Edits|Identify edits to Wikipedia articles made from a given IP address or username.|[https://www.wikipedia.org/](https://www.wikipedia.org/)|Free API
 XForce Exchange|Obtain IP reputation and passive DNS information from IBM X-Force Exchange|[https://exchange.xforce.ibmcloud.com/](https://exchange.xforce.ibmcloud.com/)|Tiered API
 Yandex DNS|Check if a host would be blocked by Yandex DNS|[https://yandex.com/](https://yandex.com/)|Free API
+You must specify a target when running in scan mode. Try --help for guidance.
 Zetalytics|Query the Zetalytics database for hosts on your target domain(s).|[https://zetalytics.com/](https://zetalytics.com/)|Tiered API
 Zone-H Defacement Check|Check if a hostname/domain appears on the zone-h.org 'special defacements' RSS feed.|[https://zone-h.org/](https://zone-h.org/)|Free API
 
