@@ -9,51 +9,93 @@
 // Licence:     GPL
 //-------------------------------------------------------------------------------
 
-var sf = {}
+// Toggler for theme
+document.addEventListener("DOMContentLoaded", () => {
+  const themeToggler = document.getElementById("theme-toggler");
+  const head = document.getElementsByTagName("HEAD")[0];
+  let link = document.createElement("link");
 
-sf.genericError = function(message) {
-    sf.log(message);
-    alert("Failure: " + message);
-}
+  themeToggler.addEventListener("click", () => {
+    if (localStorage.getItem("theme") === "dark-theme") {
+      localStorage.removeItem("theme");
 
-sf.replace_sfurltag = function(data) {
-    if (data.toLowerCase().indexOf("&lt;sfurl&gt;") >= 0) {
-        data = data.replace(RegExp("&lt;sfurl&gt;(.*)&lt;/sfurl&gt;", "img"), "<a target=_new href='\$1'>\$1</a>");
+      link.rel = "stylesheet";
+      link.type = "text/css";
+      link.href = "${docroot}/static/css/spiderfoot.css";
+
+      head.appendChild(link);
+      location.reload();
+    } else {
+      localStorage.setItem("theme", "dark-theme");
+
+      link.rel = "stylesheet";
+      link.type = "text/css";
+      link.href = "${docroot}/static/css/dark.css";
+
+      head.appendChild(link);
+      location.reload();
     }
-    if (data.toLowerCase().indexOf("<sfurl>") >= 0) {
-        data = data.replace(RegExp("<sfurl>(.*)</sfurl>", "img"), "<a target=_new href='\$1'>\$1</a>");
-    }
-    return data;
-}
+  });
+});
 
-sf.remove_sfurltag = function(data) {
-    if (data.toLowerCase().indexOf("&lt;sfurl&gt;") >= 0) {
-        data = data.toLowerCase().replace("&lt;sfurl&gt;", "").replace("&lt;/sfurl&gt;", "");
-    }
-    if (data.toLowerCase().indexOf("<sfurl>") >= 0) {
-        data = data.toLowerCase().replace("<sfurl>", "").replace("</sfurl>", "");
-    }
-    return data;
-}
+var sf = {};
 
-sf.search = function(scan_id, value, type, postFunc) {
-    sf.fetchData("/search", { id: scan_id, eventType: type, value: value }, postFunc);
-}
+sf.genericError = function (message) {
+  sf.log(message);
+  alert("Failure: " + message);
+};
 
-sf.fetchData = function(url, postData, postFunc) {
-    var req = $.ajax({
-        type: "POST",
-        url: url,
-        data: postData,
-        cache: false,
-        dataType: "json"
-    });
+sf.replace_sfurltag = function (data) {
+  if (data.toLowerCase().indexOf("&lt;sfurl&gt;") >= 0) {
+    data = data.replace(
+      RegExp("&lt;sfurl&gt;(.*)&lt;/sfurl&gt;", "img"),
+      "<a target=_new href='$1'>$1</a>"
+    );
+  }
+  if (data.toLowerCase().indexOf("<sfurl>") >= 0) {
+    data = data.replace(
+      RegExp("<sfurl>(.*)</sfurl>", "img"),
+      "<a target=_new href='$1'>$1</a>"
+    );
+  }
+  return data;
+};
 
-    req.done(postFunc);
-    req.fail(function(hr, status) {
-            sf.genericError("AJAX Error: " + status)
-    });
-}
+sf.remove_sfurltag = function (data) {
+  if (data.toLowerCase().indexOf("&lt;sfurl&gt;") >= 0) {
+    data = data
+      .toLowerCase()
+      .replace("&lt;sfurl&gt;", "")
+      .replace("&lt;/sfurl&gt;", "");
+  }
+  if (data.toLowerCase().indexOf("<sfurl>") >= 0) {
+    data = data.toLowerCase().replace("<sfurl>", "").replace("</sfurl>", "");
+  }
+  return data;
+};
+
+sf.search = function (scan_id, value, type, postFunc) {
+  sf.fetchData(
+    "/search",
+    { id: scan_id, eventType: type, value: value },
+    postFunc
+  );
+};
+
+sf.fetchData = function (url, postData, postFunc) {
+  var req = $.ajax({
+    type: "POST",
+    url: url,
+    data: postData,
+    cache: false,
+    dataType: "json",
+  });
+
+  req.done(postFunc);
+  req.fail(function (hr, status) {
+    sf.genericError("AJAX Error: " + status);
+  });
+};
 
 /*
 sf.simpleTable = function(id, data, cols, linkcol=null, linkstring=null, sortable=true, rowfunc=null) {
@@ -86,33 +128,32 @@ sf.simpleTable = function(id, data, cols, linkcol=null, linkstring=null, sortabl
 
 */
 
-sf.updateTooltips = function() {
-    $(document).ready(function () {
-        if ($("[rel=tooltip]").length) {
-            $('[rel=tooltip]').tooltip({container: 'body'});
-        }
-    });
-}
-
-sf.log = function(message) {
-    if (typeof console == "object" && typeof console.log == "function") {
-      var currentdate = new Date();
-      var pad = function(n){return ("0" + n).slice(-2);}
-      var datetime = currentdate.getFullYear() + "-"
-      + pad(currentdate.getMonth()+1)  + "-"
-      + pad(currentdate.getDate()) + " "
-      + pad(currentdate.getHours()) + ":"
-      + pad(currentdate.getMinutes()) + ":"
-      + pad(currentdate.getSeconds());
-      console.log('[' + datetime + '] ' + message);
+sf.updateTooltips = function () {
+  $(document).ready(function () {
+    if ($("[rel=tooltip]").length) {
+      $("[rel=tooltip]").tooltip({ container: "body" });
     }
-}
+  });
+};
 
-// Toggler for theme
-window.addEventListener("load", () => {
-    const themeToggler = document.getElementById("theme-toggler");
-
-    themeToggler.addEventListener("click", () => {
-        document.body.classList.toggle("dark-theme");
-    })
-})
+sf.log = function (message) {
+  if (typeof console == "object" && typeof console.log == "function") {
+    var currentdate = new Date();
+    var pad = function (n) {
+      return ("0" + n).slice(-2);
+    };
+    var datetime =
+      currentdate.getFullYear() +
+      "-" +
+      pad(currentdate.getMonth() + 1) +
+      "-" +
+      pad(currentdate.getDate()) +
+      " " +
+      pad(currentdate.getHours()) +
+      ":" +
+      pad(currentdate.getMinutes()) +
+      ":" +
+      pad(currentdate.getSeconds());
+    console.log("[" + datetime + "] " + message);
+  }
+};

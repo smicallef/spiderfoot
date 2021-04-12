@@ -11,9 +11,25 @@
     <script type='text/javascript' src='${docroot}/static/js/spiderfoot.js'></script>
     <script type='text/javascript' src='${docroot}/static/js/viz.js'></script>
 
+    <link href="${docroot}/static/css/spiderfoot.css" rel="stylesheet">
     <link href="${docroot}/static/css/bootstrap.min.css" rel="stylesheet">
     <link href='${docroot}/static/css/tablesorter-theme.default.min.css' rel="stylesheet">
-    <link href="${docroot}/static/css/spiderfoot.css" rel="stylesheet">
+
+    <script>
+        // Executes the fastes and preloads the stylesheet before the body loads
+        var head = document.getElementsByTagName('HEAD')[0]; 
+        var link = document.createElement('link');
+  
+        // set the attributes for link element 
+        link.rel = 'stylesheet'; 
+        link.type = 'text/css';
+      
+        if (localStorage.getItem("theme") === "dark-theme") {
+            link.href = "${docroot}/static/css/dark.css"; 
+        }
+        
+        head.appendChild(link); 
+    </script>
   </head>
 
   <body>
