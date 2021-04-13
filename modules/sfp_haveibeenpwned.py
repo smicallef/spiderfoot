@@ -70,7 +70,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["EMAILADDR_COMPROMISED"]
+        return ["EMAILADDR_COMPROMISED", "LEAKSITE_CONTENT", "LEAKSITE_URL"]
 
     def query(self, qry):
         ret = None
