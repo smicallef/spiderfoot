@@ -63,6 +63,10 @@ table pre {
   font-size: 90%;
 }
 
+#scanlist {
+  margin-top: 1rem;
+}
+
 .vertical-align-top {
   vertical-align: top;
 }

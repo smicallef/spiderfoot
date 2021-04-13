@@ -190,3 +190,8 @@ tr.danger {
 .nav-tabs {
   border-bottom: none;
 }
+
+.popover-title {
+  background-color: #555;
+  color: #fff;
+}
