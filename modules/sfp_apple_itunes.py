@@ -31,6 +31,8 @@ class sfp_apple_itunes(SpiderFootPlugin):
             'website': "https://itunes.apple.com/",
             'favIcon': "https://itunes.apple.com/favicon.ico",
             'logo': "https://itunes.apple.com/favicon.ico",
+            'description': "The Apple iTunes store is a store for downloading "
+                "and purchasing apps for Apple devices.",
         }
     }
 

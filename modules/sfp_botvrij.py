@@ -33,7 +33,16 @@ class sfp_botvrij(SpiderFootPlugin):
         'summary': "Check if a domain is malicious according to botvrij.eu.",
         'flags': [""],
         'useCases': ["Investigate", "Passive"],
-        'categories': ["Reputation Systems"]
+        'categories': ["Reputation Systems"],
+        'dataSource': {
+            'website': "https://botvrij.eu/",
+            'model': "FREE_NOAUTH_UNLIMITED",
+            'description': "Botvrij.eu provides different sets "
+                " of open source IOCs that you can use in your "
+                " security devices to detect possible malicious activity.\n"
+                "The information contains network info (IPs), file hashes,"
+                " file paths, domain names, URLs.",
+        }
     }
 
     # Default options

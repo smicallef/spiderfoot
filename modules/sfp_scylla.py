@@ -27,14 +27,14 @@ class sfp_scylla(SpiderFootPlugin):
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
-            'website': "https://scylla.sh/",
+            'website': "https://scylla.so/",
             'model': "FREE_NOAUTH_UNLIMITED",
             'references': [
-                "https://scylla.sh/crowdsource"
+                "https://scylla.so/crowdsource"
             ],
             'favIcon': "",
             'logo': "",
-            'description': "scylla.sh has two major goals. One is to have a community-oriented database leak community "
+            'description': "scylla.so has two major goals. One is to have a community-oriented database leak community "
             "that is a useful tool for security researchers.\n"
             "The other major goal is to undercut those people that are selling databases.",
         }
@@ -76,7 +76,7 @@ class sfp_scylla(SpiderFootPlugin):
     # Query Scylla API
     def query(self, qry, per_page=20, start=0):
         params = {
-            'q': 'Email:@' + qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
+            'q': 'email:@' + qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
             'size': str(per_page),
             'start': str(start)
         }
@@ -84,7 +84,7 @@ class sfp_scylla(SpiderFootPlugin):
         headers = {
             'Accept': 'application/json'
         }
-        res = self.sf.fetchUrl('https://scylla.sh/search?' + urllib.parse.urlencode(params),
+        res = self.sf.fetchUrl('https://scylla.so/search?' + urllib.parse.urlencode(params),
                                headers=headers,
                                timeout=15,
                                useragent=self.opts['_useragent'],
@@ -99,7 +99,7 @@ class sfp_scylla(SpiderFootPlugin):
             return None
 
         if res['content'] is None:
-            self.sf.debug('No response from Scylla.sh')
+            self.sf.debug('No response from Scylla.so')
             return None
 
         try:

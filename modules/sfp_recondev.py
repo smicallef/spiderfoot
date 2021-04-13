@@ -33,6 +33,9 @@ class sfp_recondev(SpiderFootPlugin):
                 "Register an account",
                 "Visit https://recon.dev/account and use the authentication token provided",
             ],
+            "description": "At Recon.Dev our mission is to build an easy "
+            "to use platform for hackers to easily discover a targets "
+            "assets across the entire public internet.",
         }
     }
 

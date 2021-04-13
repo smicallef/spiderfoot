@@ -438,6 +438,10 @@ class sfp_binaryedge(SpiderFootPlugin):
 
                         try:
                             banner = prec['result']['data']['service']['banner']
+                            if '\\r\\n\\r\\n' in banner and "HTTP/" in banner:
+                                # We don't want the content after HTTP banners
+                                banner = banner.split('\\r\\n\\r\\n')[0]
+                                banner = banner.replace("\\r\\n", "\n")
                         except Exception:
                             self.sf.debug("No banner information found.")
                             continue

@@ -1,14 +1,14 @@
-# test_sfp_norton.py
+# test_sfp_sociallinks.py
 import unittest
 
-from modules.sfp_norton import sfp_norton
+from modules.sfp_sociallinks import sfp_sociallinks
 from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
-class TestModulenorton(unittest.TestCase):
+class TestModulesociallinks(unittest.TestCase):
     """
-    Test modules.sfp_norton
+    Test modules.sfp_sociallinks
     """
 
     default_options = {
@@ -34,7 +34,7 @@ class TestModulenorton(unittest.TestCase):
     }
 
     def test_opts(self):
-        module = sfp_norton()
+        module = sfp_sociallinks()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
@@ -43,45 +43,29 @@ class TestModulenorton(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_norton()
+        module = sfp_sociallinks()
         module.setup(sf, dict())
 
     def test_watchedEvents_should_return_list(self):
-        module = sfp_norton()
+        module = sfp_sociallinks()
         self.assertIsInstance(module.watchedEvents(), list)
 
     def test_producedEvents_should_return_list(self):
-        module = sfp_norton()
+        module = sfp_sociallinks()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_queryAddr_should_resolve_host(self):
-        """
-        Test queryAddr(self, qaddr)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        module = sfp_norton()
-        module.setup(sf, dict())
-
-        target_value = 'spiderfoot.net'
-        target_type = 'INTERNET_NAME'
-        target = SpiderFootTarget(target_value, target_type)
-        module.setTarget(target)
-
-        resolved = module.queryAddr('norton.com')
-        self.assertTrue(resolved)
-
+    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_norton()
+        module = sfp_sociallinks()
         module.setup(sf, dict())
 
         target_value = 'example target value'
-        target_type = 'IP_ADDRESS'
+        target_type = 'EMAILADDR'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
 

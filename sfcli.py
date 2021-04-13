@@ -53,7 +53,7 @@ class bcolors:
 
 
 class SpiderFootCli(cmd.Cmd):
-    version = "3.3-DEV"
+    version = "3.3"
     pipecmd = None
     output = None
     modules = []
@@ -902,8 +902,7 @@ class SpiderFootCli(cmd.Cmd):
             "scantarget": target,
             "modulelist": mods,
             "typelist": types,
-            "usecase": usecase,
-            "cli": "1"
+            "usecase": usecase
         }
         d = self.request(self.ownopts['cli.server_baseurl'] + "/startscan",
                          post=post)
