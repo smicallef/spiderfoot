@@ -13,11 +13,22 @@
 document.addEventListener("DOMContentLoaded", () => {
   const themeToggler = document.getElementById("theme-toggler");
   const head = document.getElementsByTagName("HEAD")[0];
+  const togglerText = document.getElementById("toggler-text");
   let link = document.createElement("link");
 
+  if (localStorage.getItem("mode") === "Dark Mode") {
+    togglerText.innerText = "Dark Mode";
+  } else {
+    togglerText.innerText = "Light Mode";
+  }
+
+
   themeToggler.addEventListener("click", () => {
+    togglerText.innerText = "Light Mode";
+
     if (localStorage.getItem("theme") === "dark-theme") {
       localStorage.removeItem("theme");
+      localStorage.setItem("mode", "Dark Mode");
 
       link.rel = "stylesheet";
       link.type = "text/css";
@@ -27,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
       location.reload();
     } else {
       localStorage.setItem("theme", "dark-theme");
+      localStorage.setItem("mode", "Light Mode");
 
       link.rel = "stylesheet";
       link.type = "text/css";
