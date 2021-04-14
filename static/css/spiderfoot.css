@@ -3,10 +3,11 @@ body {
 }
 
 .navbar-brand {
-  image-rendering:   -o-crisp-edges;         /* Opera */
-  image-rendering: -webkit-optimize-contrast;/* Webkit (non-standard naming) */
+  image-rendering: -o-crisp-edges; /* Opera */
+  image-rendering: -webkit-optimize-contrast; /* Webkit (non-standard naming) */
   image-rendering: crisp-edges;
-  -ms-interpolation-mode: nearest-neighbor;  /* IE (non-standard property) */
+  -ms-interpolation-mode: nearest-neighbor; /* IE (non-standard property) */
+  margin-top: -10px;
 }
 
 .brand-logo {
@@ -61,6 +62,10 @@ table pre {
   font-size: 90%;
 }
 
+#scanlist {
+  margin-top: 1rem;
+}
+
 .vertical-align-top {
   vertical-align: top;
 }
@@ -74,47 +79,122 @@ a.link:hover {
 }
 
 .dend-node circle {
-fill: #fff;
-stroke: steelblue;
-stroke-width: 1.5px;
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
 }
 
 .dend-node {
-font: 10px sans-serif;
+  font: 10px sans-serif;
 }
 
 .dend-link {
-fill: none;
-stroke: #ccc;
-stroke-width: 1.5px;
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
 }
 
 .axis path,
 .axis line {
-fill: none;
-stroke: #000;
-shape-rendering: crispEdges;
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
 }
 
 .bar {
-fill: orange;
+  fill: orange;
 }
 
 .bar:hover {
-fill: orangered ;
+  fill: orangered;
 }
 
 .x.axis path {
-display: none;
+  display: none;
 }
 
 .fade.in {
-   background: #fff;
+  background: #fff;
 }
 
-input[type=checkbox] {
-    width: 14px;
-    height: 14px;
-    margin: 0px;
-    display: inline;
+input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0px;
+  display: inline;
 }
+
+.dark {
+  display: none;
+}
+
+/* THEME TOGGLER PROPERTIES */
+#toggler-text {
+  float: left;
+  position: absolute;
+  right: 18rem;
+  top: 29%;
+  color: #777777;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 21px;
+  margin-top: 1.3rem;
+  right: 100%;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #059CD7;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #059CD7;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(20px);
+  -ms-transform: translateX(20px);
+  transform: translateX(20px);
+}
+
+.slider.round {
+  border-radius: 31px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
