@@ -13,6 +13,7 @@
 
 import json
 import base64
+import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -21,17 +22,20 @@ class sfp_trashpanda(SpiderFootPlugin):
 
     meta = {
         'name': "Trashpanda",
-        'summary': "Queries got-hacked.wtf to gather intelligence about metions of target in pastesites",
+        'summary': "Queries Trashpanda to gather intelligence about mentions of target in pastesites",
         'flags': ["apikey"],
-        'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Real World"],
+        'useCases': ["Investigate", "Passive"],
+        'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
             'website': "https://got-hacked.wtf",
-            'model': "COMMERCIAL_ONLY",
+            'model': "FREE_AUTH_LIMITED",
             'references': [
                 "http://api.got-hacked.wtf:5580/help"
             ],
-            'favIcon': "https://seon.io/assets/favicons/favicon-16x16.png",
+            'apiKeyInstructions': [
+                "Follow the guide at https://got-hacked.wtf/"
+            ],
+            'favIcon': "https://got-hacked.wtf/wp-content/uploads/2020/07/cropped-IMG_7619.jpg",
             'logo': "https://got-hacked.wtf/wp-content/uploads/2020/07/cropped-IMG_7619.jpg",
             'description': "The bot searches different paste sites for leaked credentials."
             "The API itself gives access to all unique credentials the bot ever detected.",
@@ -46,8 +50,8 @@ class sfp_trashpanda(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key_username': "got-hacked.wtf API Key Username",
-        'api_key_password': 'got-hacked.wtf API Key Password',
+        'username': "Trashpanda API Username",
+        'password': 'Trashpanda API Password',
     }
 
     results = None
@@ -141,7 +145,37 @@ class sfp_trashpanda(SpiderFootPlugin):
             leaksiteUrls.add(row.get("paste"))
 
         for leaksiteUrl in leaksiteUrls:
-            evt = SpiderFootEvent("LEAKSITE_URL", leaksiteUrl, self.__name__, event)
-            self.notifyListeners(evt)
+            try:
+                self.sf.debug("Found a link: " + leaksiteUrl)
+
+                if self.checkForStop():
+                    return None
+
+                res = self.sf.fetchUrl(leaksiteUrl, timeout=self.opts['_fetchtimeout'],
+                                       useragent=self.opts['_useragent'])
+
+                if res['content'] is None:
+                    self.sf.debug(f"Ignoring {leaksiteUrl} as no data returned")
+                    continue
+
+                # Sometimes pastes search results false positives
+                if eventData.lower() not in str(res['content']).lower():
+                    self.sf.debug("String not found in pastes content.")
+                    continue
+
+                if re.search(
+                    r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) + r"[^a-zA-Z\-\_0-9]",
+                    res['content'],
+                    re.IGNORECASE
+                ) is None:
+                    continue
+
+                evt = SpiderFootEvent("LEAKSITE_URL", leaksiteUrl, self.__name__, event)
+                self.notifyListeners(evt)
+
+                evt = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, evt)
+                self.notifyListeners(evt)
+            except Exception as e:
+                self.sf.debug(f"Error while fetching leaksite content : {str(e)}")
 
 # End of sfp_trashpanda class
