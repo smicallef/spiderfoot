@@ -11,6 +11,7 @@
 
 import json
 import time
+import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -119,9 +120,6 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
     def queryPaste(self, qry):
         ret = None
 
-        if not self.opts['api_key']:
-            return None
-
         url = f"https://haveibeenpwned.com/api/v3/pasteaccount/{qry}"
         headers = {
             'Accept': "application/json",
@@ -169,6 +167,11 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
         if self.errorState:
             return None
 
+        if self.opts['api_key'] == "":
+            self.sf.error("You enabled sfp_haveibeenpwned but did not set an API key!")
+            self.errorState = True
+            return None
+
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
@@ -182,17 +185,13 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
         if data is not None:
             for n in data:
                 try:
-                    if not self.opts['api_key']:
-                        site = n["Title"]
-                    else:
-                        site = n["Name"]
+                    site = n["Name"]
                 except Exception as e:
                     self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
                     continue
 
-                evt = eventName + "_COMPROMISED"
                 # Notify other modules of what you've found
-                e = SpiderFootEvent(evt, eventData + " [" + site + "]",
+                e = SpiderFootEvent("EMAILADDR_COMPROMISED", eventData + " [" + site + "]",
                                     self.__name__, event)
                 self.notifyListeners(e)
 
@@ -202,31 +201,53 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
         sites = {
             "Pastebin": "https://pastebin.com/",
-            "Pastie": "http://pastie.org/",
-            "Slexy": "https://slexy.org/",
-            "Ghostbin": "https://ghostbin.com/",
-            "QuickLeak": "http://www.quickleak.net/",
+            "Pastie": "http://pastie.org/p/",
+            "Slexy": "https://slexy.org/view/",
+            "Ghostbin": "https://ghostbin.com/paste/",
             "JustPaste": "https://justpaste.it/",
         }
-
+        links = set()
         for n in pasteData:
             try:
                 source = n.get("Source")
                 site = source
                 if source in sites.keys():
-                    site = sites[n.get("Source")]
-
-                if not n.get("Source") is None:
-                    e = SpiderFootEvent("LEAKSITE_URL", site, self.__name__, event)
-                    self.notifyListeners(e)
-
-                if not n.get("Title") is None:
-                    e = SpiderFootEvent("LEAKSITE_CONTENT", n.get("Title"), self.__name__, event)
-                    self.notifyListeners(e)
+                    site = f"{sites[n.get('Source')]}{n.get('Id')}"
+                    links.add(site)
 
             except Exception as e:
                 self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
                 continue
 
+        for link in links:
+            try:
+                self.sf.debug("Found a link: " + link)
+
+                if self.checkForStop():
+                    return None
+
+                res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+
+                if res['content'] is None:
+                    self.sf.debug(f"Ignoring {link} as no data returned")
+                    continue
+
+                # Sometimes pastes search results false positives
+                if eventData.lower() not in str(res['content']).lower():
+                    self.sf.debug("String not found in pastes content.")
+                    continue
+
+                if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
+                    continue
+
+                evt1 = SpiderFootEvent("LEAKSITE_URL", link, self.__name__, event)
+                self.notifyListeners(evt1)
+
+                evt2 = SpiderFootEvent("LEAKSITE_CONTENT", res['content'], self.__name__, evt1)
+                self.notifyListeners(evt2)
+
+            except Exception as e:
+                self.sf.debug(f"Unable to parse result from HaveIBeenPwned?: {e}")
+                continue
 
 # End of sfp_haveibeenpwned class
