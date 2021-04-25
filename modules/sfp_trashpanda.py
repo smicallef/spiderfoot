@@ -44,8 +44,8 @@ class sfp_trashpanda(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'api_key_username': '',
-        'api_key_password': '',
+        'username': '',
+        'password': '',
     }
 
     # Option descriptions
