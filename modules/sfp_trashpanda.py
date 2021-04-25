@@ -82,7 +82,7 @@ class sfp_trashpanda(SpiderFootPlugin):
         ]
 
     def query(self, qry, eventName):
-        secret = self.opts['api_key_username'] + ':' + self.opts['api_key_password']
+        secret = self.opts['username'] + ':' + self.opts['password']
         auth = base64.b64encode(secret.encode('utf-8')).decode('utf-8')
 
         queryString = ""
@@ -120,7 +120,7 @@ class sfp_trashpanda(SpiderFootPlugin):
         if self.errorState:
             return None
 
-        if self.opts['api_key_username'] == "" or self.opts['api_key_password'] == "":
+        if self.opts['username'] == "" or self.opts['password'] == "":
             self.sf.error("You enabled sfp_trashpanda but did not set an API username / password!")
             self.errorState = True
             return
