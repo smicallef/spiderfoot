@@ -122,11 +122,6 @@ class sfp_psbdmp(SpiderFootPlugin):
                 self.sf.debug(f"Ignoring {n} as no data returned")
                 continue
 
-            # Sometimes pastes search results false positives
-            if eventData.lower() not in str(res['content']).lower():
-                self.sf.debug(f"{eventData} not found in pastes content.")
-                continue
-
             if re.search(
                 r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) + r"[^a-zA-Z\-\_0-9]",
                 res['content'],
