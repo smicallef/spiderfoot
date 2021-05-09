@@ -163,7 +163,7 @@
                 buttons += "</div>";
 
                 buttons += "</div>";
-                var table = "<table id='scanlist' class='table table-bordered table-striped tablesorter'>";
+                var table = "<table id='scanlist' class='table table-bordered table-striped'>";
                 table += "<thead><tr><th class='sorter-false text-center'><input id='checkall' type='checkbox'></th> <th>Name</th> <th>Target</th> <th>Started</th> <th >Finished</th> <th class='text-center'>Status</th> <th class='text-center'>Elements</th><th class='sorter-false text-center'>Action</th> </tr></thead><tbody>";
                 filtered = 0;
                 for (var i = 0; i < data.length; i++) {

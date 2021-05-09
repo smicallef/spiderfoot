@@ -235,11 +235,6 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                     self.sf.debug(f"Ignoring {link} as no data returned")
                     continue
 
-                # Sometimes pastes search results false positives
-                if eventData.lower() not in str(res['content']).lower():
-                    self.sf.debug("String not found in pastes content.")
-                    continue
-
                 if re.search(r"[^a-zA-Z\-\_0-9]" + re.escape(eventData) + r"[^a-zA-Z\-\_0-9]", res['content'], re.IGNORECASE) is None:
                     continue
 
