@@ -199,6 +199,9 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                                         self.__name__, event)
                 self.notifyListeners(e)
 
+        # This API endpoint doesn't support phone numbers
+        if eventName == "PHONE_NUMBER":
+            return None
         pasteData = self.queryPaste(eventData)
         if pasteData is None:
             return None
