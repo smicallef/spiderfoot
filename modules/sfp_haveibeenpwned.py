@@ -67,11 +67,11 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["EMAILADDR"]
+        return ["EMAILADDR", "PHONE_NUMBER"]
 
     # What events this module produces
     def producedEvents(self):
-        return ["EMAILADDR_COMPROMISED", "LEAKSITE_CONTENT", "LEAKSITE_URL"]
+        return ["EMAILADDR_COMPROMISED", "PHONE_NUMBER_COMPROMISED", "LEAKSITE_CONTENT", "LEAKSITE_URL"]
 
     def query(self, qry):
         ret = None
@@ -191,10 +191,17 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                     continue
 
                 # Notify other modules of what you've found
-                e = SpiderFootEvent("EMAILADDR_COMPROMISED", eventData + " [" + site + "]",
-                                    self.__name__, event)
+                if eventName == 'EMAILADDR':
+                    e = SpiderFootEvent("EMAILADDR_COMPROMISED", eventData + " [" + site + "]",
+                                        self.__name__, event)
+                else:
+                    e = SpiderFootEvent("PHONE_NUMBER_COMPROMISED", eventData + " [" + site + "]",
+                                        self.__name__, event)
                 self.notifyListeners(e)
 
+        # This API endpoint doesn't support phone numbers
+        if eventName == "PHONE_NUMBER":
+            return None
         pasteData = self.queryPaste(eventData)
         if pasteData is None:
             return None
