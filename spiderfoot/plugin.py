@@ -324,7 +324,6 @@ class SpiderFootPlugin():
 
         return
 
-
     class ThreadPool:
         """
         A spiderfoot-integrated threading pool
@@ -350,15 +349,19 @@ class SpiderFootPlugin():
             self.name = name
             self.result_queue = queue.Queue()
 
-
         @staticmethod
         def execute(func, result_queue, entry, args=(), kwargs={}):
-            """
-            Executes given function and places return value in result queue
+            """Executes given function and places return value in result queue
+
+            Args:
+                func: the function to call (the callback)
+                result_queue: queue in which to place the return value
+                entry: first argument to callback function
+                args: additional arguments to pass to callback function
+                kwargs: keyword arguments to pass to callback function
             """
 
             result_queue.put(func(entry, *args, **kwargs))
-
 
         def map(self, iterable, callback, args=None, kwargs=None, name=""):
             """
@@ -367,7 +370,7 @@ class SpiderFootPlugin():
                 callback: the function to thread
                 args: additional arguments to pass to callback function
                 kwargs: keyword arguments to pass to callback function
-                name: 
+                name: base name to use for all the threads
 
             Yields:
                 return values from completed callback function
@@ -383,13 +386,13 @@ class SpiderFootPlugin():
 
                 started = False
                 while not started and not self.sfp.checkForStop():
-                    for i,t in enumerate(self.pool):
+                    for i, t in enumerate(self.pool):
 
                         for result in self.results:
                             yield result
 
                         if t is None or not t.is_alive():
-                            extended_args=(callback, self.result_queue, entry) + args
+                            extended_args = (callback, self.result_queue, entry) + args
                             self.pool[i] = threading.Thread(target=self.execute, args=extended_args, kwargs=kwargs, name=f"{self.name}_{name}")
                             self.pool[i].start()
                             started = True
@@ -397,7 +400,8 @@ class SpiderFootPlugin():
 
             # wait for threads to finish
             while 1:
-                if self.sfp.checkForStop(): return
+                if self.sfp.checkForStop():
+                    return
 
                 for result in self.results:
                     yield result
@@ -408,7 +412,6 @@ class SpiderFootPlugin():
 
             for result in self.results:
                 yield result
-
 
         @property
         def results(self):
@@ -421,26 +424,21 @@ class SpiderFootPlugin():
                     sleep(.01)
                     break
 
-
         def __enter__(self):
 
             return self
 
-
         def __exit__(self, exception_type, exception_value, traceback):
-            """
-            Make sure the queue is empty before exiting
-            """
 
+            # Make sure the queue is empty before exiting
             try:
                 while 1:
                     try:
                         self.result_queue.get_nowait()
                     except queue.Empty:
                         break
-            except:
+            except Exception:
                 pass
-
 
     def threadPool(self, *args, **kwargs):
 
