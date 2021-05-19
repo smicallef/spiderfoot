@@ -10,8 +10,6 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-
-import re
 import random
 import threading
 import dns.resolver
@@ -79,8 +77,6 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.resolvers = []
         nameservers = list(set([x.strip().lower() for x in open(self.sf.myPath() + "/dicts/resolvers.txt", "r").readlines()]))
         self.verifyNameservers(nameservers)
-        #self.verifyNameservers(["8.8.8.8"])
-
 
     def resolve(self, host, tries=10, nameserver=None):
 
@@ -104,18 +100,23 @@ class sfp_dnsbrute(SpiderFootPlugin):
                 self.sf.debug(f"Error resolving \"{host}\": {e.__class__.__name__}: {e}")
                 if tries > 0:
                     self.sf.debug(f"Retrying \"{host}\"")
-                    return self.resolve(host, tries=tries-1)
+                    return self.resolve(host, tries=tries - 1)
                 else:
                     self.sf.debug(f"Max retries ({tries:,}) exceeded for \"{host}\"")
-                    return (host,[])
+                    return (host, [])
 
         return (host, list(ips))
 
-
     def isWildcard(self, target, ips):
-        """
-        Checks if a target resulted from a wildcard DNS configuration
+        """Checks if host+ips came from a wildcard DNS configuration
         Note: allows the first result through, so one entry is preserved
+
+        Args:
+            target (str): hostname
+            ips (list): resolved IP addresses of hostname
+
+        Returns:
+            boolean: whether the host came from a wildcard DNS configuration
         """
 
         wildcard = False
@@ -130,13 +131,11 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         return wildcard
 
-
     def getWildcardIPs(self, domain):
 
         randpool = "bcdfghjklmnpqrstvwxyz3456789"
         randhost = "".join([random.SystemRandom().choice(randpool) for x in range(10)]) + "." + domain
         return list(set([str(s) for s in self.resolve(randhost)[-1]]))
-
 
     def getResolver(self):
 
@@ -144,14 +143,19 @@ class sfp_dnsbrute(SpiderFootPlugin):
             self.iteration += 1
             return self.resolvers[self.iteration % len(self.resolvers)]
 
-
     def verifyNameservers(self, nameservers, timeout=2):
-        """
-        Check each resolver to make sure it can actually resolve DNS names
+        """Check each resolver to make sure it can actually resolve DNS names
+
+        Args:
+            nameservers (list): nameservers to verify
+            timeout (int): timeout for dns query
+
+        Returns:
+            boolean: whether any of the nameservers are valid
         """
 
         for nameserver in nameservers:
-            threading.Thread(name=f"sfp_dnsbrute_{nameserver}", target=self.verifyNameserver, args=(nameserver,timeout)).start()
+            threading.Thread(name=f"sfp_dnsbrute_{nameserver}", target=self.verifyNameserver, args=(nameserver, timeout)).start()
         sleep(timeout)
         if len(self.resolvers) > 0:
             self.sf.debug(f"Using {len(self.resolvers):,} valid nameservers")
@@ -159,10 +163,15 @@ class sfp_dnsbrute(SpiderFootPlugin):
         else:
             return False
 
-
     def verifyNameserver(self, nameserver, timeout=2):
-        """
-        Tests to make sure a nameserver is functional by resolving www.google.com with a 2-second timeout
+        """Validate a nameserver by making a sample query and a garbage query
+
+        Args:
+            nameserver (str): nameserver to verify
+            timeout (int): timeout for dns query
+
+        Returns:
+            boolean: whether the nameserver is valid
         """
 
         valid = True
@@ -175,7 +184,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         # first, make sure it can resolve google.com
         try:
             resolver.query("www.google.com", "A")
-        except:
+        except Exception:
             valid = False
 
         # then, make sure it isn't feeding us garbage data
@@ -195,30 +204,29 @@ class sfp_dnsbrute(SpiderFootPlugin):
                 self.resolvers.append(resolver)
         else:
             self.sf.debug(f"Invalid nameserver: {nameserver}")
-            
+
         return valid
 
-
     def watchedEvents(self):
-        """
-        Event types this modules consumes
-        """
+
         ret = ["DOMAIN_NAME"]
         if not self.opts["domainonly"] or self.opts["numbersuffix"] or self.opts["alphamutation"]:
             ret += ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
         return ret
 
-
     def producedEvents(self):
-        """
-        Event types this module produces
-        """
+
         return ["INTERNET_NAME"]
 
-
     def isValidHost(self, host, ips):
-        """
-        Verify that the host is valid, not a duplicate, and not resulting from wildcard DNS
+        """Verify that the record is valid, not a duplicate, and not resulting from wildcard DNS
+
+        Args:
+            host (str): host to validate
+            ips (list): IP addresses for hostname
+
+        Returns:
+            boolean: whether the record is valid
         """
 
         # make double-sure that this host actually exists
@@ -229,7 +237,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
             return False
 
         # if we haven't seen the host before
-        if not host in self.state["valid_hosts"]:
+        if host not in self.state["valid_hosts"]:
             # and it isn"t a wildcard
             if not self.isWildcard(host, ips):
                 return True
@@ -240,11 +248,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         return False
 
-
     def sendEvent(self, source, host, ips, method=None):
-        """
-        Store the result internally and notify listening modules
-        """
 
         if method is None:
             method = ""
@@ -257,28 +261,25 @@ class sfp_dnsbrute(SpiderFootPlugin):
             e = SpiderFootEvent("INTERNET_NAME", host, self.__name__, source)
             self.notifyListeners(e)
 
-    
     def brute_alphamutation(self, host):
 
         with self.threadPool(threads=self.opts["_maxthreads"], name='sfp_dnsbrute_alphamutation') as pool:
-            for new_host,ips in pool.map(
-                    self.get_alphamutation(host),
-                    self.resolve
-                ):
+            for new_host, ips in pool.map(
+                self.get_alphamutation(host),
+                self.resolve
+            ):
                 if ips:
                     yield (new_host, ips)
-      
 
     def brute_numbersuffix(self, host, num=10):
 
         with self.threadPool(threads=self.opts["_maxthreads"], name='sfp_dnsbrute_numbersuffix') as pool:
-            for new_host,ips in pool.map(
-                    self.get_numbersuffixes(host, num=num),
-                    self.resolve
-                ):
+            for new_host, ips in pool.map(
+                self.get_numbersuffixes(host, num=num),
+                self.resolve
+            ):
                 if ips:
                     yield (new_host, ips)
-
 
     def get_numbersuffixes(self, host, num=10):
 
@@ -286,7 +287,6 @@ class sfp_dnsbrute(SpiderFootPlugin):
         for a in ["", "0", "00", "-", "-0", "-00"]:
             for i in range(num):
                 yield f"{host}{a}{i}.{domain}"
-
 
     def get_alphamutation(self, host):
 
@@ -298,24 +298,19 @@ class sfp_dnsbrute(SpiderFootPlugin):
             yield f"{m}{host}.{domain}"
             yield f"{m}-{host}.{domain}"
 
-
     def brute_subdomains(self, host):
 
         self.sf.debug("Iterating through possible subdomains.")
 
         with self.threadPool(threads=self.opts["_maxthreads"], name='sfp_dnsbrute_subdomains') as pool:
-            for hostname,ips in pool.map(
-                    [f"{sub}.{host}" for sub in self.state["sub_wordlist"]],
-                    self.resolve, 
-                ):
+            for hostname, ips in pool.map(
+                [f"{sub}.{host}" for sub in self.state["sub_wordlist"]],
+                self.resolve,
+            ):
                 if ips:
                     yield (hostname, ips)
 
-
     def handleEvent(self, event):
-        """
-        Handle events sent to this module
-        """
 
         if not self.resolvers:
             self.sf.error("No valid DNS resolvers")
@@ -335,17 +330,16 @@ class sfp_dnsbrute(SpiderFootPlugin):
         # if this isn't the main target, we can still do numeric suffixes
         if event.eventType in ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"] and not self.getTarget().matches(event.data, includeChildren=False):
             if self.opts["numbersuffix"]:
-                for hostname,ips in self.brute_numbersuffix(host):
+                for hostname, ips in self.brute_numbersuffix(host):
                     self.sendEvent(event, hostname, ips, "number suffix brute")
 
             if self.opts["alphamutation"]:
-                for hostname,ips in self.brute_alphamutation(host):
+                for hostname, ips in self.brute_alphamutation(host):
                     self.sendEvent(event, hostname, ips, "alpha mutation brute")
-
 
         # if this is the main target or we're brute-forcing subdomains of subdomains
         if self.getTarget().matches(event.data, includeChildren=False) or not self.opts["domainonly"]:
 
             # subdomain brute force
-            for hostname,ips in self.brute_subdomains(host):
+            for hostname, ips in self.brute_subdomains(host):
                 self.sendEvent(event, hostname, ips, "subdomain brute")
