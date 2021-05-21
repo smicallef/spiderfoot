@@ -59,10 +59,10 @@ class sfp_sublist3r(SpiderFootPlugin):
 
         url = f"https://api.sublist3r.com/search.php?domain={domain}"
         ret = []
-        # mirror sublist3r's headers because yes
         res = self.sf.fetchUrl(
             url,
-            useragent="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
+            useragent=self.opts.get("_useragent", "Spiderfoot"),
+            # mirror sublist3r's headers
             headers={
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.8",
@@ -103,7 +103,7 @@ class sfp_sublist3r(SpiderFootPlugin):
         self.state["events"].append(eventDataHash)
 
         for hostname in self.query(domain):
-            if hostname.endswith(domain):
+            if hostname.endswith(domain) and not hostname == domain:
                 self.sendEvent(event, hostname)
             else:
                 self.sf.debug(f"Invalid subdomain: {hostname}")
