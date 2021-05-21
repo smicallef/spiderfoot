@@ -5,6 +5,9 @@ qa
 dr
 ua
 uat
+db
+app
+demo
 staging
 prod
 www
@@ -19,5 +22,4 @@ new
 old
 backup
 bak
-ext
 secure
