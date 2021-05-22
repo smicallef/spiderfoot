@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import re
 import random
 import threading
 import dns.resolver
@@ -55,7 +56,8 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.state.update({
             "sub_wordlist": [],
             "valid_hosts": [],
-            "events": [],
+            "sent_events": [],
+            "handled_events": [],
             "wildcards": dict()
         })
         self.__dataSource__ = "DNS"
@@ -63,6 +65,8 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.iteration = 0
 
         self.opts.update(userOpts)
+
+        self.word_regex = re.compile(r'[^\d\W_]+')
 
         if self.opts["top10000"]:
             with open(self.sf.myPath() + "/dicts/subdomains-10000.txt", "r") as f:
@@ -254,6 +258,14 @@ class sfp_dnsbrute(SpiderFootPlugin):
             method = ""
 
         host = host.lower()
+
+        # skip if we've already sent this event
+        eventDataHash = self.sf.hashstring(host)
+        if eventDataHash in self.state["sent_events"]:
+            self.sf.debug("Skipping already-sent event")
+            return
+        self.state["sent_events"].append(eventDataHash)
+
         if ips and self.isValidHost(host, ips):
             self.state["valid_hosts"].append(host)
             self.sf.info(f"Found subdomain via {method}: {host}")
@@ -292,11 +304,18 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         host, domain = host.split(".", 1)
 
+        # host-dev, www-host, etc.
         for m in self.state["alpha_mutation_wordlist"]:
             yield f"{host}{m}.{domain}"
             yield f"{host}-{m}.{domain}"
             yield f"{m}{host}.{domain}"
             yield f"{m}-{host}.{domain}"
+
+        # here if the input is "host-api", it tries "host" and "api"
+        # or if the input is "host01", it tries "host"
+        for m in self.word_regex.findall(host):
+            if m != host:
+                yield f"{m}.{domain}"
 
     def brute_subdomains(self, host):
 
@@ -322,10 +341,10 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         # skip if we've already processed this event
         eventDataHash = self.sf.hashstring(event.data)
-        if eventDataHash in self.state["events"]:
+        if eventDataHash in self.state["handled_events"]:
             self.sf.debug(f"Skipping already-processed event, {event.eventType}, from {event.module}")
             return
-        self.state["events"].append(eventDataHash)
+        self.state["handled_events"].append(eventDataHash)
 
         # if this isn't the main target, we can still do numeric suffixes
         if event.eventType in ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"] and not self.getTarget().matches(event.data, includeChildren=False):
