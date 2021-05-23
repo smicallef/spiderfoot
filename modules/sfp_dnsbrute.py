@@ -33,7 +33,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         "domainonly": True,
         "commons": True,
         "top10000": False,
-        "numbersuffix": True,
+        "numbermutation": True,
         "alphamutation": True,
         "_maxthreads": 100
     }
@@ -42,8 +42,8 @@ class sfp_dnsbrute(SpiderFootPlugin):
     optdescs = {
         "domainonly": "Only attempt to brute-force names on domain names, not hostnames (some hostnames are also sub-domains).",
         "commons": "Try a list of about 750 common hostnames/sub-domains.",
-        "top10000": "Try a further 10,000 common hostnames/sub-domains. Will make the scan much slower.",
-        "numbersuffix": "For any host found, try appending 1, 01, 001, -1, -01, -001, 2, 02, etc. (up to 10)",
+        "top10000": "Try a further 10,000 common hostnames/sub-domains.",
+        "numbermutation": "For any host found, increment/decrement existing numbers (if any) and try appending 1, 01, 001, -1, -01, -001, 2, 02, etc. (up to 10)",
         "alphamutation": "For any host found, try common mutations such as -test, -old, etc.",
         "_maxthreads": "Maximum threads"
     }
@@ -67,6 +67,8 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.opts.update(userOpts)
 
         self.word_regex = re.compile(r'[^\d\W_]+')
+        self.word_num_regex = re.compile(r'[^\W_]+')
+        self.num_regex = re.compile(r'\d+')
 
         if self.opts["top10000"]:
             with open(self.sf.myPath() + "/dicts/subdomains-10000.txt", "r") as f:
@@ -214,7 +216,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
     def watchedEvents(self):
 
         ret = ["DOMAIN_NAME"]
-        if not self.opts["domainonly"] or self.opts["numbersuffix"] or self.opts["alphamutation"]:
+        if not self.opts["domainonly"] or self.opts["numbermutation"] or self.opts["alphamutation"]:
             ret += ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
         return ret
 
@@ -277,45 +279,70 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         with self.threadPool(threads=self.opts["_maxthreads"], name='sfp_dnsbrute_alphamutation') as pool:
             for new_host, ips in pool.map(
-                self.get_alphamutation(host),
+                self.get_alphamutations(host),
                 self.resolve
             ):
                 if ips:
                     yield (new_host, ips)
 
-    def brute_numbersuffix(self, host, num=10):
+    def brute_numbermutation(self, host, num=10):
 
-        with self.threadPool(threads=self.opts["_maxthreads"], name='sfp_dnsbrute_numbersuffix') as pool:
+        with self.threadPool(threads=self.opts["_maxthreads"], name='sfp_dnsbrute_numbermutation') as pool:
             for new_host, ips in pool.map(
-                self.get_numbersuffixes(host, num=num),
+                self.get_numbermutations(host, num=num),
                 self.resolve
             ):
                 if ips:
                     yield (new_host, ips)
 
-    def get_numbersuffixes(self, host, num=10):
+    def get_numbermutations(self, host, num=10):
 
+        subdomains = set()
         host, domain = host.split(".", 1)
+
+        # detects numbers in subdomains and increments/decrements them
+        # e.g. for "host003", it would try "host000" - "host013"
+        for match in self.num_regex.finditer(host):
+            span = match.span()
+            before = host[:span[0]]
+            after = host[span[-1]:]
+            number = host[span[0]:span[-1]]
+            numlen = len(number)
+            maxnum = min(int("9" * numlen), int(number) + num)
+            minnum = max(0, int(number) - num)
+            for i in range(minnum, maxnum + 1):
+                subdomains.add(f"{before}{str(i).zfill(numlen)}{after}.{domain}")
+
         for a in ["", "0", "00", "-", "-0", "-00"]:
             for i in range(num):
-                yield f"{host}{a}{i}.{domain}"
+                subdomains.add(f"{host}{a}{i}.{domain}")
 
-    def get_alphamutation(self, host):
+        return list(subdomains)
 
+    def get_alphamutations(self, host):
+
+        subdomains = set()
         host, domain = host.split(".", 1)
 
-        # host-dev, www-host, etc.
-        for m in self.state["alpha_mutation_wordlist"]:
-            yield f"{host}{m}.{domain}"
-            yield f"{host}-{m}.{domain}"
-            yield f"{m}{host}.{domain}"
-            yield f"{m}-{host}.{domain}"
-
-        # here if the input is "host-api", it tries "host" and "api"
+        # if the input is "host01-www", it tries "host" and "www"
         # or if the input is "host01", it tries "host"
         for m in self.word_regex.findall(host):
             if m != host:
-                yield f"{m}.{domain}"
+                subdomains.add(f"{m}.{domain}")
+        # same thing but including numbers
+        # if the input is "host01-www", it tries "host01" and "www"
+        for m in self.word_num_regex.findall(host):
+            if m != host:
+                subdomains.add(f"{m}.{domain}")
+
+        # host-dev, www-host, etc.
+        for m in self.state["alpha_mutation_wordlist"]:
+            subdomains.add(f"{host}{m}.{domain}")
+            subdomains.add(f"{host}-{m}.{domain}")
+            subdomains.add(f"{m}{host}.{domain}")
+            subdomains.add(f"{m}-{host}.{domain}")
+
+        return list(subdomains)
 
     def brute_subdomains(self, host):
 
@@ -348,8 +375,8 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         # if this isn't the main target, we can still do numeric suffixes
         if event.eventType in ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"] and not self.getTarget().matches(event.data, includeChildren=False):
-            if self.opts["numbersuffix"]:
-                for hostname, ips in self.brute_numbersuffix(host):
+            if self.opts["numbermutation"]:
+                for hostname, ips in self.brute_numbermutation(host):
                     self.sendEvent(event, hostname, ips, "number suffix brute")
 
             if self.opts["alphamutation"]:
