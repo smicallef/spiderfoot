@@ -336,6 +336,12 @@ class sfp_dnsbrute(SpiderFootPlugin):
             for i in range(num):
                 subdomains.add(f"{host}{s}{i}.{domain}")
 
+        # ensure we aren't including the source subdomain
+        try:
+            subdomains.remove(host)
+        except KeyError:
+            pass
+
         return list(subdomains)
 
     def get_alphamutations(self, host):
@@ -360,6 +366,12 @@ class sfp_dnsbrute(SpiderFootPlugin):
             subdomains.add(f"{host}-{m}.{domain}")
             subdomains.add(f"{m}{host}.{domain}")
             subdomains.add(f"{m}-{host}.{domain}")
+
+        # ensure we aren't including the source subdomain
+        try:
+            subdomains.remove(host)
+        except KeyError:
+            pass
 
         return list(subdomains)
 
