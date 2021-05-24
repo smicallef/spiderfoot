@@ -300,9 +300,12 @@ class sfp_dnsbrute(SpiderFootPlugin):
         subdomains = set()
         host, domain = host.split(".", 1)
 
-        # detects numbers in subdomains and increments/decrements them
-        # e.g. for "host003", it would try "host000" - "host013"
-        for match in self.num_regex.finditer(host):
+        # detects numbers and increments/decrements them
+        # e.g. for "host2-p013", we would try:
+        # - "host0-p013" through "host12-p013"
+        # - "host2-p003" through "host2-p023"
+        # limited to three iterations for sanity's sake
+        for match in list(self.num_regex.finditer(host))[-3:]:
             span = match.span()
             before = host[:span[0]]
             after = host[span[-1]:]
@@ -312,10 +315,26 @@ class sfp_dnsbrute(SpiderFootPlugin):
             minnum = max(0, int(number) - num)
             for i in range(minnum, maxnum + 1):
                 subdomains.add(f"{before}{str(i).zfill(numlen)}{after}.{domain}")
+                if not number.startswith("0"):
+                    subdomains.add(f"{before}{i}{after}.{domain}")
 
-        for a in ["", "0", "00", "-", "-0", "-00"]:
+        # appends numbers after each word
+        # e.g., for "host-www", we would try:
+        # - "host1-www", "host2-www", etc.
+        # - "host-www1", "host-www2", etc.
+        # limited to three iterations for sanity's sake
+        suffixes = ["", "0", "00", "-", "-0", "-00"]
+        for match in list(self.word_regex.finditer(host))[-3:]:
+            for s in suffixes:
+                for i in range(num):
+                    span = match.span()
+                    before = host[:span[-1]]
+                    after = host[span[-1]:]
+                    subdomains.add(f"{before}{s}{i}{after}.{domain}")
+        # basic case so we don't miss anything
+        for s in suffixes:
             for i in range(num):
-                subdomains.add(f"{host}{a}{i}.{domain}")
+                subdomains.add(f"{host}{s}{i}.{domain}")
 
         return list(subdomains)
 
