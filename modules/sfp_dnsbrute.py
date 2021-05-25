@@ -266,6 +266,9 @@ class sfp_dnsbrute(SpiderFootPlugin):
         if eventDataHash in self.state["sent_events"]:
             self.sf.debug("Skipping already-sent event")
             return
+        elif eventDataHash in self.state["handled_events"]:
+            self.sf.debug("Not sending already-handled event")
+            return
         self.state["sent_events"].append(eventDataHash)
 
         if ips and self.isValidHost(host, ips):
