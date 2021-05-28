@@ -9,6 +9,11 @@ dr
 ua
 uat
 db
+ws
+rs
+rest
+cm
+cms
 app
 demo
 staging
