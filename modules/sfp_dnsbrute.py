@@ -401,7 +401,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
 
         # skip if we've already processed this event
-        eventDataHash = self.sf.hashstring(event.data)
+        eventDataHash = self.sf.hashstring(host)
         if eventDataHash in self.state["handled_events"]:
             self.sf.debug(f"Skipping already-processed event, {event.eventType}, from {event.module}")
             return
