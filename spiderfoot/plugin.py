@@ -2,7 +2,6 @@ import logging
 import threading
 import queue
 from time import sleep
-from spiderfoot import SpiderFootDb
 
 
 class SpiderFootPlugin():
@@ -343,6 +342,7 @@ class SpiderFootPlugin():
 
         try:
             # create new database handle since we're in our own thread
+            from spiderfoot import SpiderFootDb
             self.setDbh(SpiderFootDb(self.opts))
 
             if not (self.incomingEventQueue and self.outgoingEventQueue):
