@@ -13,7 +13,6 @@ import socket
 import sys
 import time
 import queue
-import threading
 import traceback
 from time import sleep
 from copy import deepcopy
@@ -230,7 +229,11 @@ class SpiderFootScanner():
         self.__dbh.scanInstanceSet(self.__scanId, started, ended, status)
 
     def __startScan(self, threaded=True):
-        """Start running a scan."""
+        """Start running a scan.
+
+        Args:
+            threaded (bool): whether to thread modules
+        """
 
         aborted = False
 
@@ -302,7 +305,7 @@ class SpiderFootScanner():
             if not threaded:
                 # Register listener modules and then start all modules sequentially
                 for module in list(self.__moduleInstances.values()):
-                    
+
                     for listenerModule in list(self.__moduleInstances.values()):
                         # Careful not to register twice or you will get duplicate events
                         if listenerModule in module._listenerModules:
@@ -329,7 +332,6 @@ class SpiderFootScanner():
                 for mod in list(self.__moduleInstances.values()):
                     if mod.watchedEvents() is not None:
                         psMod.registerListener(mod)
-
 
             # Create the "ROOT" event which un-triggered modules will link events to
             rootEvent = SpiderFootEvent("ROOT", self.__targetValue, "", None)
@@ -407,25 +409,27 @@ class SpiderFootScanner():
                         if self.threadsFinished(log_status):
                             break
                     else:
+                        # save on CPU
                         sleep(.01)
-                        continue
+                    continue
 
                 if not isinstance(sfEvent, SpiderFootEvent):
                     raise TypeError(f"sfEvent is {type(sfEvent)}; expected SpiderFootEvent")
 
                 # for every module
                 for mod in self.__moduleInstances.values():
-                    # check if it's been aborted
+                    # if it's been aborted
                     if mod._stopScanning:
-                        self.__sf.status(f"Scan [{self.__scanId}] aborted.")
-                        break
-                    # send the new event if applicable
+                        # break out of the while loop
+                        raise AssertionError(f"{mod.__name__} requested stop")
+
+                    # send it the new event if applicable
                     watchedEvents = mod.watchedEvents()
                     if sfEvent.eventType in watchedEvents or "*" in watchedEvents:
                         mod.incomingEventQueue.put(deepcopy(sfEvent))
 
-        except KeyboardInterrupt:
-            self.__sf.status(f"Scan [{self.__scanId}] aborted.")
+        except (KeyboardInterrupt, AssertionError) as e:
+            self.__sf.status(f"Scan [{self.__scanId}] aborted, {e}.")
 
         finally:
             # tell the modules to stop
@@ -434,16 +438,16 @@ class SpiderFootScanner():
 
     def threadsFinished(self, log_status=False):
 
-        if not self.eventQueue:
-            return
+        if self.eventQueue is None:
+            return True
 
         modules_waiting = {m.__name__: m.incomingEventQueue.qsize() for m in self.__moduleInstances.values()}
         modules_waiting = sorted(modules_waiting.items(), key=lambda x: x[-1], reverse=True)
         modules_running = [m.__name__ for m in self.__moduleInstances.values() if m.running]
-        queues_empty = [qsize == 0 for m,qsize in modules_waiting]
+        queues_empty = [qsize == 0 for m, qsize in modules_waiting]
 
         if not modules_running and not queues_empty:
-            self.__sf.debug(f"Clearing queues for stalled/aborted modules.")
+            self.__sf.debug("Clearing queues for stalled/aborted modules.")
             for mod in self.__moduleInstances.values():
                 try:
                     while True:
@@ -452,13 +456,10 @@ class SpiderFootScanner():
                     pass
 
         if log_status and modules_running:
-            self.__sf.info(
-                f"Events queued: " + \
-                ", ".join([
-                    f"{mod}: {qsize:,}" for mod,qsize in modules_waiting[:5] if qsize > 0
-                ])
-            )
+            events_queued = ", ".join([f"{mod}: {qsize:,}" for mod, qsize in modules_waiting[:5] if qsize > 0])
+            if events_queued:
+                self.__sf.info(f"Events queued: {events_queued}")
 
-        if self.eventQueue.empty() and all(queues_empty) and not modules_running:
+        if all(queues_empty) and not modules_running:
             return True
         return False

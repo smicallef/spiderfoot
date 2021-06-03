@@ -346,7 +346,7 @@ class SpiderFootPlugin():
             self.setDbh(SpiderFootDb(self.opts))
 
             if not (self.incomingEventQueue and self.outgoingEventQueue):
-                self.log.error(f"Please set up queues before starting module as thread")
+                self.log.error("Please set up queues before starting module as thread")
                 return
 
             while not self.checkForStop():
