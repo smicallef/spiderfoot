@@ -7,6 +7,7 @@
 # Author:      TheTechromancer
 #
 # Created:     05/21/2021
+# Copyright:   (c) Steve Micallef 2021
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
@@ -36,7 +37,6 @@ class sfp_sublist3r(SpiderFootPlugin):
     optdescs = {}
 
     def setup(self, sfc, userOpts=dict()):
-
         self.sf = sfc
         self.sf.debug("Setting up sfp_sublist3r")
         self.state = self.tempStorage()
@@ -48,15 +48,12 @@ class sfp_sublist3r(SpiderFootPlugin):
         self.opts.update(userOpts)
 
     def watchedEvents(self):
-
         return ["DOMAIN_NAME"]
 
     def producedEvents(self):
-
         return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
 
     def query(self, domain):
-
         url = f"https://api.sublist3r.com/search.php?domain={domain}"
         ret = []
         res = self.sf.fetchUrl(
@@ -82,7 +79,6 @@ class sfp_sublist3r(SpiderFootPlugin):
         return list(set(ret))
 
     def sendEvent(self, source, host):
-
         if self.sf.resolveHost(host):
             e = SpiderFootEvent("INTERNET_NAME", host, self.__name__, source)
         else:
@@ -90,7 +86,6 @@ class sfp_sublist3r(SpiderFootPlugin):
         self.notifyListeners(e)
 
     def handleEvent(self, event):
-
         domain = str(event.data).lower()
 
         self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
