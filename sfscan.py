@@ -234,7 +234,6 @@ class SpiderFootScanner():
         Args:
             threaded (bool): whether to thread modules
         """
-
         aborted = False
 
         self.__setStatus("STARTING", time.time() * 1000, None)
@@ -380,7 +379,6 @@ class SpiderFootScanner():
         self.__dbh.close()
 
     def waitForThreads(self):
-
         counter = 0
 
         try:
@@ -437,7 +435,6 @@ class SpiderFootScanner():
                 mod._stopScanning = True
 
     def threadsFinished(self, log_status=False):
-
         if self.eventQueue is None:
             return True
 

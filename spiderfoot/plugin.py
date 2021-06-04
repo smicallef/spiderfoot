@@ -334,12 +334,10 @@ class SpiderFootPlugin():
         return
 
     def start(self):
-
         self.thread = threading.Thread(target=self.threadWorker)
         self.thread.start()
 
     def threadWorker(self):
-
         try:
             # create new database handle since we're in our own thread
             from spiderfoot import SpiderFootDb
