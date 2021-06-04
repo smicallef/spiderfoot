@@ -7,6 +7,7 @@
 # Author:      TheTechromancer
 #
 # Created:     05/21/2021
+# Copyright:   (c) Steve Micallef 2021
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
@@ -37,7 +38,6 @@ class sfp_dnsdumpster(SpiderFootPlugin):
     optdescs = {}
 
     def setup(self, sfc, userOpts=dict()):
-
         self.sf = sfc
         self.sf.debug("Setting up sfp_dnsdumpster")
         self.state = self.tempStorage()
@@ -49,17 +49,13 @@ class sfp_dnsdumpster(SpiderFootPlugin):
         self.opts.update(userOpts)
 
     def watchedEvents(self):
-
         return ["DOMAIN_NAME"]
 
     def producedEvents(self):
-
         return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
 
     def query(self, domain):
-
         ret = []
-
         # first, get the CSRF tokens
         url = "https://dnsdumpster.com"
         res1 = self.sf.fetchUrl(
@@ -121,7 +117,6 @@ class sfp_dnsdumpster(SpiderFootPlugin):
         return list(subdomains)
 
     def sendEvent(self, source, host):
-
         if self.sf.resolveHost(host):
             e = SpiderFootEvent("INTERNET_NAME", host, self.__name__, source)
         else:
@@ -129,7 +124,6 @@ class sfp_dnsdumpster(SpiderFootPlugin):
         self.notifyListeners(e)
 
     def handleEvent(self, event):
-
         domain = str(event.data).lower()
 
         self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
