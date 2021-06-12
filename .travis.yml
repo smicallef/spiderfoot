@@ -17,7 +17,7 @@ install:
   - python -m pip install codecov -r requirements_test.txt
 
 script:
-  - python -m pytest --flake8 --durations=5 --cov-report term --cov=. .
+  - python -m pytest --flake8 -n auto --dist loadfile --durations=5 --cov-report term --cov=. .
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
