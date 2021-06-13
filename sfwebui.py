@@ -27,6 +27,7 @@ from mako.template import Template
 from secure import SecureHeaders
 
 from spiderfoot import SpiderFootDb
+from spiderfoot import __version__
 from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
 
@@ -1038,7 +1039,7 @@ class SpiderFootWebUi:
 
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
 
-        return json.dumps(["SUCCESS", self.config['__version__']]).encode('utf-8')
+        return json.dumps(["SUCCESS", __version__]).encode('utf-8')
 
     ping.exposed = True
 
