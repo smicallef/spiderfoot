@@ -1,5 +1,18 @@
+.git/
+
+build
+dist
+*.egg-info
+*.egg/
+*.pyc
+*.swp
+
 venv/
 cache/
+log/
 spiderfoot.db*
+spiderfoot.test.db
 
-*.log
+__pycache__
+htmlcov/
+docs/
