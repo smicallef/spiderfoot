@@ -104,10 +104,10 @@ class SpiderFootWebUi:
         """Unauthorized access HTTP 401 error page
 
         Args:
-            status: TBD
-            message: TBD
-            traceback: TBD
-            version: TBD
+            status (str): HTTP response status code and message
+            message (str): Error message
+            traceback (str): Error stack trace
+            version (str): CherryPy version
 
         Returns:
             str: HTML response
@@ -118,17 +118,18 @@ class SpiderFootWebUi:
         """Error page 404
 
         Args:
-            status: TBD
-            message: TBD
-            traceback: TBD
-            version: TBD
+            status (str): HTTP response status code and message
+            message (str): Error message
+            traceback (str): Error stack trace
+            version (str): CherryPy version
 
         Returns:
             str: HTTP response template
         """
+        print(message)
 
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
-        return templ.render(message='Not Found', docroot=self.docroot, status=status)
+        return templ.render(message='Not Found', docroot=self.docroot, status=status, version=__version__)
 
     def cleanUserInput(self, inputList):
         """Sanitize user input, poorly.
@@ -541,7 +542,7 @@ class SpiderFootWebUi:
                 time.sleep(1)
 
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(rerunscans=True, docroot=self.docroot, pageid="SCANLIST")
+        return templ.render(rerunscans=True, docroot=self.docroot, pageid="SCANLIST", version=__version__)
 
     rerunscanmulti.exposed = True
 
@@ -557,7 +558,7 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
                             modules=self.config['__modules__'], scanname="",
-                            selectedmods="", scantarget="")
+                            selectedmods="", scantarget="", version=__version__)
 
     newscan.exposed = True
 
@@ -599,7 +600,7 @@ class SpiderFootWebUi:
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
                             modules=self.config['__modules__'], selectedmods=modlist,
                             scanname=str(scanname),
-                            scantarget=str(scantarget))
+                            scantarget=str(scantarget), version=__version__)
 
     clonescan.exposed = True
 
@@ -611,7 +612,7 @@ class SpiderFootWebUi:
         """
 
         templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
-        return templ.render(pageid='SCANLIST', docroot=self.docroot)
+        return templ.render(pageid='SCANLIST', docroot=self.docroot, version=__version__)
 
     index.exposed = True
 
@@ -631,7 +632,7 @@ class SpiderFootWebUi:
             return self.error("Scan ID not found.")
 
         templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup, input_encoding='utf-8')
-        return templ.render(id=id, name=html.escape(res[0]), status=res[5], docroot=self.docroot,
+        return templ.render(id=id, name=html.escape(res[0]), status=res[5], docroot=self.docroot, version=__version__,
                             pageid="SCANLIST")
 
     scaninfo.exposed = True
@@ -648,7 +649,7 @@ class SpiderFootWebUi:
 
         templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
         self.token = random.SystemRandom().randint(0, 99999999)
-        return templ.render(opts=self.config, pageid='SETTINGS', token=self.token,
+        return templ.render(opts=self.config, pageid='SETTINGS', token=self.token, version=__version__,
                             updated=updated, docroot=self.docroot)
 
     opts.exposed = True
@@ -721,7 +722,7 @@ class SpiderFootWebUi:
         """
 
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
-        return templ.render(message=message, docroot=self.docroot)
+        return templ.render(message=message, docroot=self.docroot, version=__version__)
 
     def scandelete(self, id, confirm=None):
         """Delete a scan
@@ -757,7 +758,7 @@ class SpiderFootWebUi:
             raise cherrypy.HTTPRedirect(f"{self.docroot}/")
 
         templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-        return templ.render(id=id, name=str(res[0]),
+        return templ.render(id=id, name=str(res[0]), version=__version__,
                             names=list(), ids=list(),
                             pageid="SCANLIST", docroot=self.docroot)
 
@@ -798,7 +799,7 @@ class SpiderFootWebUi:
 
         templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
         return templ.render(id=None, name=None, ids=ids.split(','), names=names,
-                            pageid="SCANLIST", docroot=self.docroot)
+                            pageid="SCANLIST", docroot=self.docroot, version=__version__)
 
     scandeletemulti.exposed = True
 
