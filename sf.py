@@ -497,6 +497,9 @@ def start_web_server(sfWebUiConfig, sfConfig):
         pw = open(passwd_file, 'r')
 
         for line in pw.readlines():
+            if line.strip() == '':
+                continue
+
             if ':' not in line:
                 log.error("Incorrect format of passwd file, must be username:password on each line.")
                 sys.exit(-1)
