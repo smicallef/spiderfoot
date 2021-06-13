@@ -12,7 +12,7 @@
 # Usage:
 #
 #   sudo docker build -t spiderfoot .
-#   sudo docker run -p 5001:5001 spiderfoot
+#   sudo docker run -p 5001:5001 --security-opt no-new-privileges spiderfoot
 #
 # Using Docker volume for spiderfoot data
 #
@@ -49,7 +49,7 @@ RUN pip3 install -r "$REQUIREMENTS"
 
 
 
-FROM alpine:3.12.4
+FROM alpine:3.13.0
 WORKDIR /home/spiderfoot
 ENV SPIDERFOOT_LOGS /home/spiderfoot/log
 
