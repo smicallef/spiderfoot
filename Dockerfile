@@ -12,7 +12,7 @@
 # Usage:
 #
 #   sudo docker build -t spiderfoot .
-#   sudo docker run -p 5001:5001 spiderfoot
+#   sudo docker run -p 5001:5001 --security-opt no-new-privileges spiderfoot
 #
 # Using Docker volume for spiderfoot data
 #
