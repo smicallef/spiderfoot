@@ -49,7 +49,7 @@ RUN pip3 install -r "$REQUIREMENTS"
 
 
 
-FROM alpine:3.12.4
+FROM alpine:3.13.0
 WORKDIR /home/spiderfoot
 ENV SPIDERFOOT_LOGS /home/spiderfoot/log
 
