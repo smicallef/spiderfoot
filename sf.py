@@ -30,6 +30,7 @@ from cherrypy.lib import auth_digest
 from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
 from sfwebui import SpiderFootWebUi
+from spiderfoot import SpiderFootHelpers
 from spiderfoot import SpiderFootDb
 from spiderfoot import __version__
 
@@ -284,7 +285,7 @@ def start_scan(sfConfig, sfModules, args):
         target = f"\"{target}\""
     if "." not in target and not target.startswith("+") and '"' not in target:
         target = f"\"{target}\""
-    targetType = sf.targetType(target)
+    targetType = SpiderFootHelpers.targetType(target)
 
     if not targetType:
         log.error(f"Could not determine target type. Invalid target: {target}")

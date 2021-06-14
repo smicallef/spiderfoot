@@ -27,6 +27,7 @@ from mako.template import Template
 from secure import SecureHeaders
 
 from spiderfoot import SpiderFootDb
+from spiderfoot import SpiderFootHelpers
 from spiderfoot import __version__
 from sflib import SpiderFoot
 from sfscan import SpiderFootScanner
@@ -348,7 +349,6 @@ class SpiderFootWebUi:
     # Export entities from scan results for visualising
     def scanviz(self, id, gexf="0"):
         dbh = SpiderFootDb(self.config)
-        sf = SpiderFoot(self.config)
         data = dbh.scanResultEvent(id, filterFp=True)
         scan = dbh.scanInstanceGet(id)
         root = scan[1]
@@ -356,16 +356,15 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.gexf"
             cherrypy.response.headers['Content-Type'] = "application/gexf"
             cherrypy.response.headers['Pragma'] = "no-cache"
-            return sf.buildGraphGexf([root], "SpiderFoot Export", data)
+            return SpiderFootHelpers.buildGraphGexf([root], "SpiderFoot Export", data)
         else:
-            return sf.buildGraphJson([root], data)
+            return SpiderFootHelpers.buildGraphJson([root], data)
 
     scanviz.exposed = True
 
     # Export entities results from multiple scans in GEXF format
     def scanvizmulti(self, ids, gexf="1"):
         dbh = SpiderFootDb(self.config)
-        sf = SpiderFoot(self.config)
         data = list()
         roots = list()
         for id in ids.split(','):
@@ -376,7 +375,7 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.gexf"
             cherrypy.response.headers['Content-Type'] = "application/gexf"
             cherrypy.response.headers['Pragma'] = "no-cache"
-            return sf.buildGraphGexf(roots, "SpiderFoot Export", data)
+            return SpiderFootHelpers.buildGraphGexf(roots, "SpiderFoot Export", data)
         else:
             # Not implemented yet
             return None
@@ -462,12 +461,12 @@ class SpiderFootWebUi:
         if "sfp__stor_stdout" in modlist:
             modlist.remove("sfp__stor_stdout")
 
-        targetType = sf.targetType(scantarget)
+        targetType = SpiderFootHelpers.targetType(scantarget)
         if not targetType:
             # It must then be a name, as a re-run scan should always have a clean
             # target. Put quotes around the target value and try to determine the
             # target type again.
-            targetType = sf.targetType(f'"{scantarget}"')
+            targetType = SpiderFootHelpers.targetType(f'"{scantarget}"')
 
         if targetType not in ["HUMAN_NAME", "BITCOIN_ADDRESS"]:
             scantarget = scantarget.lower()
@@ -521,7 +520,7 @@ class SpiderFootWebUi:
             if "sfp__stor_stdout" in modlist:
                 modlist.remove("sfp__stor_stdout")
 
-            targetType = sf.targetType(scantarget)
+            targetType = SpiderFootHelpers.targetType(scantarget)
             if targetType is None:
                 # Should never be triggered for a re-run scan..
                 return self.error("Invalid target type. Could not recognize it as a target SpiderFoot supports.")
@@ -573,7 +572,6 @@ class SpiderFootWebUi:
             None
         """
 
-        sf = SpiderFoot(self.config)
         dbh = SpiderFootDb(self.config)
         types = dbh.eventTypes()
         info = dbh.scanInstanceGet(id)
@@ -589,7 +587,7 @@ class SpiderFootWebUi:
         if scanname == "" or scantarget == "" or len(scanconfig) == 0:
             return self.error("Something went wrong internally.")
 
-        targetType = sf.targetType(scantarget)
+        targetType = SpiderFootHelpers.targetType(scantarget)
         if targetType is None:
             # It must be a name, so wrap quotes around it
             scantarget = "&quot;" + scantarget + "&quot;"
@@ -1153,7 +1151,7 @@ class SpiderFootWebUi:
             modlist.append("sfp__stor_db")
         modlist.sort()
 
-        targetType = sf.targetType(scantarget)
+        targetType = SpiderFootHelpers.targetType(scantarget)
         if targetType is None:
             if cherrypy.request.headers and 'application/json' in cherrypy.request.headers.get('Accept'):
                 cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
@@ -1566,7 +1564,6 @@ class SpiderFootWebUi:
 
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
 
-        sf = SpiderFoot(self.config)
         dbh = SpiderFootDb(self.config)
         pc = dict()
         datamap = dict()
@@ -1578,7 +1575,7 @@ class SpiderFootWebUi:
         # Delete the ROOT key as it adds no value from a viz perspective
         del pc['ROOT']
         retdata = dict()
-        retdata['tree'] = sf.dataParentChildToTree(pc)
+        retdata['tree'] = SpiderFootHelpers.dataParentChildToTree(pc)
         retdata['data'] = datamap
 
         return json.dumps(retdata).encode('utf-8')
