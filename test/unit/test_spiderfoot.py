@@ -106,48 +106,6 @@ class TestSpiderFoot(unittest.TestCase):
                 opt_data = sf.optValueToData(invalid_type)
                 self.assertEqual(opt_data, None)
 
-    def test_buildGraphData_should_return_a_set(self):
-        """
-        Test buildGraphData(self, data, flt=list())
-        """
-        sf = SpiderFoot(dict())
-
-        graph_data = sf.buildGraphData('', '')
-        self.assertIsInstance(graph_data, set)
-
-        graph_data = sf.buildGraphData(None, None)
-        self.assertIsInstance(graph_data, set)
-
-        self.assertEqual('TBD', 'TBD')
-
-    def test_buildGraphGexf_should_return_bytes(self):
-        """
-        Test buildGraphGexf(self, root, title, data, flt=[])
-        """
-        sf = SpiderFoot(dict())
-
-        gexf = sf.buildGraphGexf(None, None, None)
-        self.assertIsInstance(gexf, bytes)
-
-        gexf = sf.buildGraphGexf('', '', '')
-        self.assertIsInstance(gexf, bytes)
-
-        self.assertEqual('TBD', 'TBD')
-
-    def test_build_graph_json_should_return_a_string(self):
-        """
-        Test buildGraphJson(self, root, data, flt=list())
-        """
-        sf = SpiderFoot(dict())
-
-        json = sf.buildGraphJson(None, None)
-        self.assertIsInstance(json, str)
-
-        json = sf.buildGraphJson('', '')
-        self.assertIsInstance(json, str)
-
-        self.assertEqual('TBD', 'TBD')
-
     def test_genScanInstanceId_should_return_a_string(self):
         """
         Test genScanInstanceId(self)
@@ -328,48 +286,6 @@ class TestSpiderFoot(unittest.TestCase):
 
         cache_get = sf.cacheGet('', None)
         self.assertEqual(None, cache_get)
-
-    def test_target_type(self):
-        """
-        Test targetType(self, target)
-        """
-        sf = SpiderFoot(dict())
-
-        target_type = sf.targetType("0.0.0.0")
-        self.assertEqual('IP_ADDRESS', target_type)
-        target_type = sf.targetType("noreply@spiderfoot.net")
-        self.assertEqual('EMAILADDR', target_type)
-        target_type = sf.targetType("0.0.0.0/0")
-        self.assertEqual('NETBLOCK_OWNER', target_type)
-        target_type = sf.targetType("+1234567890")
-        self.assertEqual('PHONE_NUMBER', target_type)
-        target_type = sf.targetType('"Human Name"')
-        self.assertEqual('HUMAN_NAME', target_type)
-        target_type = sf.targetType('"abc123"')
-        self.assertEqual('USERNAME', target_type)
-        target_type = sf.targetType("1234567890")
-        self.assertEqual('BGP_AS_OWNER', target_type)
-        target_type = sf.targetType("::1")
-        self.assertEqual('IPV6_ADDRESS', target_type)
-        target_type = sf.targetType("spiderfoot.net")
-        self.assertEqual('INTERNET_NAME', target_type)
-        target_type = sf.targetType("1HesYJSP1QqcyPEjnQ9vzBL1wujruNGe7R")
-        self.assertEqual('BITCOIN_ADDRESS', target_type)
-
-    def test_target_type_invalid_seed_should_return_none(self):
-        """
-        Test targetType(self, target)
-        """
-        sf = SpiderFoot(dict())
-
-        target_type = sf.targetType(None)
-        self.assertEqual(None, target_type)
-
-        target_type = sf.targetType("")
-        self.assertEqual(None, target_type)
-
-        target_type = sf.targetType('""')
-        self.assertEqual(None, target_type)
 
     def test_modulesProducing_argument_events_should_return_a_list(self):
         """
@@ -881,21 +797,6 @@ class TestSpiderFoot(unittest.TestCase):
 
         dict_names = sf.dictnames()
         self.assertIsInstance(dict_names, list)
-
-    def test_dataParentChildToTree_should_return_dict(self):
-        """
-        Test dataParentChildToTree(self, data)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        invalid_types = [None, "", list(), int()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                tree = sf.dataParentChildToTree(invalid_type)
-                self.assertIsInstance(tree, dict)
-
-        tree = sf.dataParentChildToTree(dict())
-        self.assertIsInstance(tree, dict)
 
     def test_resolve_host_should_return_list(self):
         """
