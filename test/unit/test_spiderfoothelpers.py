@@ -121,3 +121,22 @@ class TestSpiderFootHelpers(unittest.TestCase):
 
         tree = SpiderFootHelpers.dataParentChildToTree({"test": {"123": "456"}})
         self.assertIsInstance(tree, dict)
+
+    def test_validLEI_should_return_a_boolean(self):
+        """
+        Test validLEI(self, lei)
+        """
+        invalid_types = [None, "", list(), dict(), int()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                valid_phone = SpiderFootHelpers.validLEI(invalid_type)
+                self.assertIsInstance(valid_phone, bool)
+                self.assertFalse(valid_phone)
+
+        valid_lei = SpiderFootHelpers.validLEI('7ZW8QJWVPR4P1J1KQYZZ')
+        self.assertIsInstance(valid_lei, bool)
+        self.assertFalse(valid_lei)
+
+        valid_lei = SpiderFootHelpers.validLEI('7ZW8QJWVPR4P1J1KQY45')
+        self.assertIsInstance(valid_lei, bool)
+        self.assertTrue(valid_lei)
