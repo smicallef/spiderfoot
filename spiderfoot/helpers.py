@@ -280,3 +280,24 @@ class SpiderFootHelpers():
             return {}
 
         return {"name": root, "children": get_children(root, data)}
+
+    def validLEI(lei):
+        """Check if the provided string is a valid Legal Entity Identifier (LEI).
+
+        Args:
+            lei (str): The LEI number to check.
+
+        Returns:
+            bool: string is a valid LEI
+
+        Note:
+            ISO 17442 has been withdrawn and is not accurate
+            https://www.gleif.org/en/about-lei/iso-17442-the-lei-code-structure
+        """
+        if not isinstance(lei, str):
+            return False
+
+        if not re.match(r'^[A-Z0-9]{18}[0-9]{2}$', lei, re.IGNORECASE):
+            return False
+
+        return True
