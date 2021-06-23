@@ -60,7 +60,7 @@
 
                 if (ids != false) {
                     sf.log("Deleting scans: " + ids.join(','));
-                    window.location.href = docroot + '/scandeletemulti?ids=' + ids.join(',');
+                    window.location.href = docroot + '/scandelete?id=' + ids.join(',');
                 }
             }
 
