@@ -31,7 +31,7 @@
 #
 # Running spiderfoot unit tests in container
 #
-#   sudo docker build -t spiderfoot-test --build-arg REQUIREMENTS=requirements_test.txt .
+#   sudo docker build -t spiderfoot-test --build-arg REQUIREMENTS=test/requirements.txt .
 #   sudo docker run --rm spiderfoot-test -m pytest --flake8 .
 
 FROM alpine:3.12.4 AS build
