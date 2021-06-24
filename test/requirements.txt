@@ -1,4 +1,4 @@
--r requirements.txt
+-r ../requirements.txt
 darglint==1.5.4
 dlint==0.10.3
 flake8==3.9.2
