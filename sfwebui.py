@@ -723,31 +723,38 @@ class SpiderFootWebUi:
         return templ.render(message=message, docroot=self.docroot, version=__version__)
 
     def scandelete(self, id, confirm=None):
-        """Delete a scan
+        """Delete scan(s)
 
         Args:
-            id (str): scan ID
+            id (str): comma separated list of scan IDs
             confirm (str): specify any value (except None) to confirm deletion of the scan
 
         Returns:
-            None
+            str: JSON response
 
         Raises:
             HTTPRedirect: redirect to scan list page
         """
 
         dbh = SpiderFootDb(self.config)
-        res = dbh.scanInstanceGet(id)
+        names = list()
+        ids = id.split(',')
 
-        if res is None:
-            if cherrypy.request.headers and 'application/json' in cherrypy.request.headers.get('Accept'):
-                cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
-                return json.dumps(["ERROR", "Scan ID not found."]).encode('utf-8')
+        for scan_id in ids:
+            res = dbh.scanInstanceGet(scan_id)
+            if res is None:
+                if cherrypy.request.headers and 'application/json' in cherrypy.request.headers.get('Accept'):
+                    cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
+                    return json.dumps(["ERROR", "Scan ID not found."]).encode('utf-8')
+                return self.error("Scan ID not found.")
+            names.append(str(res[0]))
 
-            return self.error("Scan ID not found.")
+            if res[5] in ["RUNNING", "STARTING", "STARTED"]:
+                return self.error("You cannot delete running scans.")
 
         if confirm:
-            dbh.scanInstanceDelete(id)
+            for scan_id in ids:
+                dbh.scanInstanceDelete(scan_id)
 
             if cherrypy.request.headers and 'application/json' in cherrypy.request.headers.get('Accept'):
                 cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
@@ -756,50 +763,9 @@ class SpiderFootWebUi:
             raise cherrypy.HTTPRedirect(f"{self.docroot}/")
 
         templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-        return templ.render(id=id, name=str(res[0]), version=__version__,
-                            names=list(), ids=list(),
-                            pageid="SCANLIST", docroot=self.docroot)
+        return templ.render(id=ids, names=names, pageid="SCANLIST", docroot=self.docroot, version=__version__)
 
     scandelete.exposed = True
-
-    def scandeletemulti(self, ids, confirm=None):
-        """Delete a scan
-
-        Args:
-            ids (str): comma separated list of scan IDs
-            confirm: TBD
-
-        Returns:
-            None
-
-        Raises:
-            HTTPRedirect: redirect to scan list page
-        """
-
-        dbh = SpiderFootDb(self.config)
-        names = list()
-
-        for id in ids.split(','):
-            res = dbh.scanInstanceGet(id)
-            if not res:
-                continue
-            names.append(str(res[0]))
-            if res is None:
-                return self.error("Scan ID not found (" + id + ").")
-
-            if res[5] in ["RUNNING", "STARTING", "STARTED"]:
-                return self.error("You cannot delete running scans.")
-
-        if confirm:
-            for id in ids.split(','):
-                dbh.scanInstanceDelete(id)
-            raise cherrypy.HTTPRedirect(f"{self.docroot}/")
-
-        templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-        return templ.render(id=None, name=None, ids=ids.split(','), names=names,
-                            pageid="SCANLIST", docroot=self.docroot, version=__version__)
-
-    scandeletemulti.exposed = True
 
     def savesettings(self, allopts, token, configFile=None):
         """Save settings, also used to completely reset them to default

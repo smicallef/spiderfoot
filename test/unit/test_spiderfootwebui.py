@@ -273,16 +273,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_delete = sfwebui.scandelete("example scan id", None)
         self.assertIsInstance(scan_delete, str)
-
-    @unittest.skip("todo")
-    def test_scandeletemulti(self):
-        """
-        Test scandeletemulti(self, ids, confirm=None)
-        """
-        opts = self.default_options
-        opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        scan_delete = sfwebui.scandeletemulti("example scan id", None)
+        scan_delete = sfwebui.scandelete("example scan id", 1)
         self.assertIsInstance(scan_delete, str)
 
     @unittest.skip("todo")
