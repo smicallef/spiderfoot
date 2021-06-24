@@ -850,8 +850,10 @@ class TestSpiderFoot(unittest.TestCase):
         addrs = sf.resolveHost6('one.one.one.one')
         self.assertIsInstance(addrs, list)
         self.assertTrue(addrs)
-        self.assertIn('2606:4700:4700::1001', addrs)
-        self.assertIn('2606:4700:4700::1111', addrs)
+        # TODO: Re-enable this once GitHub runners support IPv6
+        # https://github.com/actions/virtual-environments/issues/668
+        # self.assertIn('2606:4700:4700::1001', addrs)
+        # self.assertIn('2606:4700:4700::1111', addrs)
 
         addrs = sf.resolveHost6(None)
         self.assertFalse(addrs)
