@@ -127,6 +127,8 @@ class TestModulePhone(unittest.TestCase):
             if str(event.data) != expected:
                 raise Exception(f"{event.data} != {expected}")
 
+            raise Exception("OK")
+
         module.notifyListeners = new_notifyListeners.__get__(module, sfp_phone)
 
         event_type = 'ROOT'
@@ -141,6 +143,7 @@ class TestModulePhone(unittest.TestCase):
         source_event = evt
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        result = module.handleEvent(evt)
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
 
-        self.assertIsNone(result)
+        self.assertEqual("OK", str(cm.exception))
