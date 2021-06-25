@@ -153,8 +153,8 @@ class sfp_digitaloceanspace(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 

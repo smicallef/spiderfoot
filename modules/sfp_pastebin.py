@@ -97,8 +97,8 @@ class sfp_pastebin(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         for dom in list(self.domains.keys()):
             target = self.domains[dom]

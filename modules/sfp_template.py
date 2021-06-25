@@ -270,11 +270,12 @@ class sfp_template(SpiderFootPlugin):
         if self.errorState:
             return
 
-        # Don't look up stuff twice
+        # Check if the module has already analysed this event data.
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return
 
+        # Add the event data to results dictionary to prevent duplicate queries.
         # If eventData might be something large, set the key to a hash
         # of the value instead of the value, to avoid memory abuse.
         self.results[eventData] = True

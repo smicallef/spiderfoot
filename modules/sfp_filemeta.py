@@ -74,8 +74,8 @@ class sfp_filemeta(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         for fileExt in self.opts['fileexts']:
             if self.checkForStop():

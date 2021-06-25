@@ -121,12 +121,11 @@ class sfp_hunter(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_hunter but did not set an API key!")

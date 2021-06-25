@@ -93,8 +93,8 @@ class sfp_junkfiles(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if host in self.skiphosts:
             self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
