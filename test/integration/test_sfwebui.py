@@ -41,30 +41,33 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
         sf = SpiderFoot(default_config)
         mod_dir = sf.myPath() + '/modules/'
         for filename in os.listdir(mod_dir):
-            if filename.startswith("sfp_") and filename.endswith(".py"):
-                # Skip the module template and debugging modules
-                if filename == "sfp_template.py" or filename == 'sfp_stor_print.py':
-                    continue
-                modName = filename.split('.')[0]
+            if not filename.startswith("sfp_"):
+                continue
+            if not filename.endswith(".py"):
+                continue
+            # Skip the module template and debugging modules
+            if filename in ('sfp_template.py', 'sfp_stor_print.py'):
+                continue
+            modName = filename.split('.')[0]
 
-                # Load and instantiate the module
-                sfModules[modName] = dict()
-                mod = __import__('modules.' + modName, globals(), locals(), [modName])
-                sfModules[modName]['object'] = getattr(mod, modName)()
-                sfModules[modName]['name'] = sfModules[modName]['object'].meta['name']
-                sfModules[modName]['cats'] = sfModules[modName]['object'].meta.get('categories', list())
-                sfModules[modName]['group'] = sfModules[modName]['object'].meta.get('useCases', list())
-                if len(sfModules[modName]['cats']) > 1:
-                    raise ValueError(f"Module {modName} has multiple categories defined but only one is supported.")
-                sfModules[modName]['labels'] = sfModules[modName]['object'].meta.get('flags', list())
-                sfModules[modName]['descr'] = sfModules[modName]['object'].meta['summary']
-                sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
-                sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
-                sfModules[modName]['meta'] = sfModules[modName]['object'].meta
-                if hasattr(sfModules[modName]['object'], 'opts'):
-                    sfModules[modName]['opts'] = sfModules[modName]['object'].opts
-                if hasattr(sfModules[modName]['object'], 'optdescs'):
-                    sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
+            # Load and instantiate the module
+            sfModules[modName] = dict()
+            mod = __import__('modules.' + modName, globals(), locals(), [modName])
+            sfModules[modName]['object'] = getattr(mod, modName)()
+            sfModules[modName]['name'] = sfModules[modName]['object'].meta['name']
+            sfModules[modName]['cats'] = sfModules[modName]['object'].meta.get('categories', list())
+            sfModules[modName]['group'] = sfModules[modName]['object'].meta.get('useCases', list())
+            if len(sfModules[modName]['cats']) > 1:
+                raise ValueError(f"Module {modName} has multiple categories defined but only one is supported.")
+            sfModules[modName]['labels'] = sfModules[modName]['object'].meta.get('flags', list())
+            sfModules[modName]['descr'] = sfModules[modName]['object'].meta['summary']
+            sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
+            sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
+            sfModules[modName]['meta'] = sfModules[modName]['object'].meta
+            if hasattr(sfModules[modName]['object'], 'opts'):
+                sfModules[modName]['opts'] = sfModules[modName]['object'].opts
+            if hasattr(sfModules[modName]['object'], 'optdescs'):
+                sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
 
         default_config['__modules__'] = sfModules
 
@@ -90,187 +93,142 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
         self.getPage("/static/img/spiderfoot-header.png")
         self.assertStatus('200 OK')
 
-    @unittest.skip("todo")
-    def test_scaneventresultexport(self):
-        self.getPage("/scaneventresultexport")
+    def test_scaneventresultexport_invalid_scan_id_returns_200(self):
+        self.getPage("/scaneventresultexport?id=doesnotexist&type=doesnotexist")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_scaneventresultexportmulti(self):
-        self.getPage("/scaneventresultexportmulti")
+        self.getPage("/scaneventresultexportmulti?ids=doesnotexist")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_scansearchresultexport(self):
-        self.getPage("/scansearchresultexport")
+        self.getPage("/scansearchresultexport?id=doesnotexist")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_scanexportjsonmulti(self):
-        self.getPage("/scanexportjsonmulti")
+        self.getPage("/scanexportjsonmulti?ids=doesnotexist")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_scanviz(self):
-        self.getPage("/scanviz")
+        self.getPage("/scanviz?id=doesnotexist")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_scanvizmulti(self):
-        self.getPage("/scanvizmulti")
+        self.getPage("/scanvizmulti?ids=doesnotexist")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
 
     def test_scanopts_invalid_scan_returns_200(self):
         self.getPage("/scanopts?id=doesnotexist")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
     def test_rerunscan(self):
         self.getPage("/rerunscan?id=doesnotexist")
         self.assertStatus('200 OK')
+        self.assertInBody("Invalid scan ID.")
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
-    def test_rerunscanmulti(self):
-        self.getPage("/rerunscanmulti?id=doesnotexist")
+    def test_rerunscanmulti_invalid_scan_id_returns_200(self):
+        self.getPage("/rerunscanmulti?ids=doesnotexist")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
+        self.assertInBody("Invalid scan ID.")
 
     def test_newscan_returns_200(self):
         self.getPage("/newscan")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
+        self.assertInBody("Scan Name")
+        self.assertInBody("Scan Target")
 
     def test_clonescan(self):
         self.getPage("/clonescan?id=doesnotexist")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
+        self.assertInBody("Invalid scan ID.")
 
     def test_index_returns_200(self):
         self.getPage("/")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
     def test_scaninfo_invalid_scan_returns_200(self):
         self.getPage("/scaninfo?id=doesnotexist")
         self.assertStatus('200 OK')
+        self.assertInBody("Scan ID not found.")
 
     @unittest.skip("todo")
     def test_opts_returns_200(self):
         self.getPage("/opts")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_optsexport(self):
         self.getPage("/optsexport")
         self.assertStatus('200 OK')
+        self.getPage("/optsexport?pattern=api_key")
+        self.assertStatus('200 OK')
+        self.assertHeader("Content-Disposition", "attachment; filename=\"SpiderFoot.cfg\"")
+        self.assertInBody(":api_key=")
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_optsraw(self):
         self.getPage("/optsraw")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
-    def test_scandelete_invalid_scan_returns_200(self):
+    def test_scandelete_invalid_scan_id_returns_200(self):
         self.getPage("/scandelete?id=doesnotexist")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
-    def test_scandeletemulti(self):
-        self.getPage("/scandeletemulti?ids=doesnotexist")
-        self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
 
     @unittest.skip("todo")
     def test_savesettings(self):
         self.getPage("/savesettings")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
     @unittest.skip("todo")
     def test_savesettingsraw(self):
         self.getPage("/savesettingsraw")
         self.assertStatus('200 OK')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_resultsetfp(self):
         self.getPage("/resultsetfp?id=doesnotexist&resultids=doesnotexist&fp=1")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
+        self.assertInBody("No IDs supplied.")
 
     def test_eventtypes(self):
         self.getPage("/eventtypes")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
+        self.assertInBody('"DOMAIN_NAME"')
 
     def test_modules(self):
         self.getPage("/modules")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
+        self.assertInBody('"name":')
 
     def test_ping_returns_200(self):
         self.getPage("/ping")
         self.assertStatus('200 OK')
+        self.assertInBody('"SUCCESS"')
 
     def test_query_returns_200(self):
-        self.getPage("/query?query=anything")
+        self.getPage("/query?query=SELECT+1")
         self.assertStatus('200 OK')
+        self.assertInBody('[{"1": 1}]')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_startscan(self):
-        self.getPage("/startscan")
+        self.getPage("/startscan?scanname=&scantarget=&modulelist=&typelist=&usecase=")
         self.assertStatus('200 OK')
+        self.assertInBody('Invalid request: scan name or target was not specified.')
 
-        self.assertEqual('TBD', 'TBD')
+        self.getPage("/startscan?scanname=example-scan&scantarget=invalid-target&modulelist=&typelist=&usecase=")
+        self.assertStatus('200 OK')
+        self.assertInBody('Invalid request: no modules specified for scan.')
 
-    @unittest.skip("todo")
+        self.getPage("/startscan?scanname=example-scan&scantarget=invalid-target&modulelist=doesnotexist&typelist=doesnotexist&usecase=doesnotexist")
+        self.assertStatus('200 OK')
+        self.assertInBody('Invalid target type. Could not recognize it as a target SpiderFoot supports.')
+
     def test_stopscanmulti(self):
-        self.getPage("/stopscanmulti")
+        self.getPage("/stopscanmulti?ids=doesnotexist")
         self.assertStatus('200 OK')
+        self.assertInBody('Invalid scan ID.')
 
-        self.assertEqual('TBD', 'TBD')
-
-    @unittest.skip("todo")
     def test_stopscan(self):
-        self.getPage("/stopscan")
+        self.getPage("/stopscan?id=doesnotexist")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
+        self.assertInBody('Invalid scan ID.')
 
     def test_scanlog_invalid_scan_returns_200(self):
         self.getPage("/scanlog?id=doesnotexist")
@@ -301,16 +259,13 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
         self.assertStatus('200 OK')
 
     def test_search_returns_200(self):
-        self.getPage("/search")
+        self.getPage("/search?id=doesnotexist&eventType=doesnotexist&value=doesnotexist")
         self.assertStatus('200 OK')
 
     def test_scanhistory_invalid_scan_returns_200(self):
         self.getPage("/scanhistory?id=doesnotexist")
         self.assertStatus('200 OK')
 
-    @unittest.skip("todo")
-    def test_scanelementtypediscovery_invalid_scan_returns_200(self):
+    def test_scanelementtypediscovery_invalid_scan_id_returns_200(self):
         self.getPage("/scanelementtypediscovery?id=doesnotexist&eventType=anything")
         self.assertStatus('200 OK')
-
-        self.assertEqual('TBD', 'TBD')
