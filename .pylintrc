@@ -18,7 +18,7 @@ ignore-patterns=
 #init-hook=
 
 # Use multiple processes to speed up Pylint.
-jobs=1
+jobs=4
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
@@ -55,6 +55,18 @@ confidence=
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
 disable=invalid-name,
+        no-self-use,
+        too-few-public-methods,
+        too-many-ancestors,
+        too-many-arguments,
+        too-many-boolean-expressions,
+        too-many-branches,
+        too-many-instance-attributes,
+        too-many-locals,
+        too-many-nested-blocks,
+        too-many-public-methods,
+        too-many-return-statements,
+        too-many-statements,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -103,90 +115,55 @@ never-returning-functions=optparse.Values,sys.exit
 
 [BASIC]
 
-# Naming style matching correct argument names
-argument-naming-style=camelCase
-
 # Regular expression matching correct argument names. Overrides argument-
 # naming-style
-#argument-rgx=
-
-# Naming style matching correct attribute names
-attr-naming-style=camelCase
+argument-rgx=^[a-z][a-z0-9_]*$
 
 # Regular expression matching correct attribute names. Overrides attr-naming-
 # style
-#attr-rgx=
+attr-rgx=^_{0,2}[a-z][a-z0-9_]*$
 
 # Bad variable names which should always be refused, separated by a comma
-bad-names=foo,
-          bar,
-          baz,
-          toto,
-          tutu,
-          tata
-
-# Naming style matching correct class attribute names
-class-attribute-naming-style=any
+bad-names=
 
 # Regular expression matching correct class attribute names. Overrides class-
 # attribute-naming-style
-#class-attribute-rgx=
-
-# Naming style matching correct class names
-class-naming-style=PascalCase
+class-attribute-rgx=^(_?[A-Z][A-Z0-9_]*|__[a-z0-9_]+__|_?[a-z][a-z0-9_]*)$
 
 # Regular expression matching correct class names. Overrides class-naming-style
-#class-rgx=
+class-rgx=^_?[A-Z][a-zA-Z0-9]*$
 
 # Naming style matching correct constant names
 const-naming-style=UPPER_CASE
-
-# Regular expression matching correct constant names. Overrides const-naming-
-# style
-#const-rgx=
 
 # Minimum line length for functions/classes that require docstrings, shorter
 # ones are exempt.
 docstring-min-length=-1
 
-# Naming style matching correct function names
-function-naming-style=camelCase
-
 # Regular expression matching correct function names. Overrides function-
 # naming-style
-#function-rgx=
+function-rgx=^(?:(?P<exempt>setUp|tearDown|setUpModule|tearDownModule)|(?P<camel_case>_?[A-Z][a-zA-Z0-9]*)|(?P<snake_case>_?[a-z][a-z0-9_]*))$
+
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i,
-           j,
-           k,
-           e,
+good-names=main,
            sf,
            _
 
 # Include a hint for the correct naming format with invalid-name
 include-naming-hint=no
 
-# Naming style matching correct inline iteration names
-inlinevar-naming-style=any
-
 # Regular expression matching correct inline iteration names. Overrides
 # inlinevar-naming-style
-#inlinevar-rgx=
-
-# Naming style matching correct method names
-method-naming-style=camelCase
+inlinevar-rgx=^[a-z][a-z0-9_]*$
 
 # Regular expression matching correct method names. Overrides method-naming-
 # style
-#method-rgx=
-
-# Naming style matching correct module names
-module-naming-style=camelCase
+method-rgx=(?x)^(?:(?P<exempt>_[a-z0-9_]+__|runTest|setUp|tearDown|setUpTestCase|tearDownTestCase|setupSelf|tearDownClass|setUpClass|(test|assert)_*[A-Z0-9][a-zA-Z0-9_]*|next)|(?P<camel_case>_{0,2}[A-Z][a-zA-Z0-9_]*)|(?P<snake_case>_{0,2}[a-z][a-z0-9_]*))$
 
 # Regular expression matching correct module names. Overrides module-naming-
 # style
-#module-rgx=
+module-rgx=^(_?[a-z][a-z0-9_]*|__init__)$
 
 # Colon-delimited sets of names that determine each other's naming style when
 # the name regexes allow several styles.
@@ -198,14 +175,11 @@ no-docstring-rgx=^_
 
 # List of decorators that produce properties, such as abc.abstractproperty. Add
 # to this list to register other decorators that produce valid properties.
-property-classes=abc.abstractproperty
-
-# Naming style matching correct variable names
-variable-naming-style=camelCase
+property-classes=abc.abstractproperty,cached_property.cached_property,cached_property.threaded_cached_property,cached_property.cached_property_with_ttl,cached_property.threaded_cached_property_with_ttl
 
 # Regular expression matching correct variable names. Overrides variable-
 # naming-style
-#variable-rgx=
+variable-rgx=^[a-z][a-z0-9_]*$
 
 
 [SIMILARITIES]
@@ -256,7 +230,9 @@ logging-modules=logging
 expected-line-ending-format=
 
 # Regexp for a line that is allowed to be longer than the limit.
-ignore-long-lines=^\s*(# )?<?https?://\S+>?$
+ignore-long-lines=(?x)(
+  ^\s*(\#\ )?<?https?://\S+>?$|
+  ^\s*(from\s+\S+\s+)?import\s+.+$)
 
 # Number of spaces of indent required inside a hanging  or continued line.
 indent-after-paren=4
@@ -421,7 +397,8 @@ exclude-protected=_asdict,
                   _make
 
 # List of valid names for the first argument in a class method.
-valid-classmethod-first-arg=cls
+valid-classmethod-first-arg=cls,
+                            class_
 
 # List of valid names for the first argument in a metaclass class method.
 valid-metaclass-classmethod-first-arg=mcs
@@ -441,7 +418,8 @@ analyse-fallback-blocks=no
 deprecated-modules=regsub,
                    TERMIOS,
                    Bastion,
-                   rexec
+                   rexec,
+                   sets
 
 # Create a graph of external dependencies in the given file (report RP0402 must
 # not be disabled)
@@ -467,4 +445,5 @@ known-third-party=enchant
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "Exception"
-overgeneral-exceptions=Exception
+overgeneral-exceptions=Exception,
+                       BaseException,
