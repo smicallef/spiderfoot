@@ -920,26 +920,6 @@ class TestSpiderFoot(unittest.TestCase):
         sf.safeSSLSocket(None, None, None, None)
         self.assertEqual('TBD', 'TBD')
 
-    def test_parse_robots_txt_should_return_list(self):
-        """
-        Test parseRobotsTxt(self, robotsTxtData)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        invalid_types = [None, "", list(), dict()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                robots_txt = sf.parseRobotsTxt(invalid_type)
-                self.assertIsInstance(robots_txt, list)
-
-        robots_txt = sf.parseRobotsTxt("disallow:")
-        self.assertIsInstance(robots_txt, list)
-        self.assertFalse(robots_txt)
-
-        robots_txt = sf.parseRobotsTxt("disallow: /disallowed/path\n")
-        self.assertIsInstance(robots_txt, list)
-        self.assertIn("/disallowed/path", robots_txt)
-
     def test_parseHashes_should_return_a_list(self):
         """
         Test parseHashes(self, data)

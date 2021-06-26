@@ -124,7 +124,7 @@ class TestSpiderFootHelpers(unittest.TestCase):
 
     def test_validLEI_should_return_a_boolean(self):
         """
-        Test validLEI(self, lei)
+        Test validLEI(lei)
         """
         invalid_types = [None, "", list(), dict(), int()]
         for invalid_type in invalid_types:
@@ -140,3 +140,21 @@ class TestSpiderFootHelpers(unittest.TestCase):
         valid_lei = SpiderFootHelpers.validLEI('7ZW8QJWVPR4P1J1KQY45')
         self.assertIsInstance(valid_lei, bool)
         self.assertTrue(valid_lei)
+
+    def test_parse_robots_txt_should_return_list(self):
+        """
+        Test parseRobotsTxt(robotsTxtData)
+        """
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                robots_txt = SpiderFootHelpers.parseRobotsTxt(invalid_type)
+                self.assertIsInstance(robots_txt, list)
+
+        robots_txt = SpiderFootHelpers.parseRobotsTxt("disallow:")
+        self.assertIsInstance(robots_txt, list)
+        self.assertFalse(robots_txt)
+
+        robots_txt = SpiderFootHelpers.parseRobotsTxt("disallow: /disallowed/path\n")
+        self.assertIsInstance(robots_txt, list)
+        self.assertIn("/disallowed/path", robots_txt)

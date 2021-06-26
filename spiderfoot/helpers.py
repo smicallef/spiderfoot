@@ -8,6 +8,7 @@ from networkx.readwrite.gexf import GEXFWriter
 class SpiderFootHelpers():
     """SpiderFoot helper functions."""
 
+    @staticmethod
     def targetType(target):
         """Return the scan target seed data type for the specified scan target input.
 
@@ -42,6 +43,7 @@ class SpiderFootHelpers():
 
         return None
 
+    @staticmethod
     def buildGraphGexf(root, title, data, flt=[]):
         """Convert supplied raw data into GEXF format (e.g. for Gephi)
 
@@ -93,6 +95,7 @@ class SpiderFootHelpers():
         gexf = GEXFWriter(graph=graph)
         return str(gexf).encode('utf-8')
 
+    @staticmethod
     def buildGraphJson(root, data, flt=[]):
         """Convert supplied raw data into JSON format for SigmaJS.
 
@@ -165,6 +168,7 @@ class SpiderFootHelpers():
 
         return json.dumps(ret)
 
+    @staticmethod
     def buildGraphData(data, flt=list()):
         """Return a format-agnostic collection of tuples to use as the
         basis for building graphs in various formats.
@@ -230,6 +234,7 @@ class SpiderFootHelpers():
                             mapping.add((entity, next_parent))
         return mapping
 
+    @staticmethod
     def dataParentChildToTree(data):
         """Converts a dictionary of k -> array to a nested
         tree that can be digested by d3 for visualizations.
@@ -281,6 +286,7 @@ class SpiderFootHelpers():
 
         return {"name": root, "children": get_children(root, data)}
 
+    @staticmethod
     def validLEI(lei):
         """Check if the provided string is a valid Legal Entity Identifier (LEI).
 
@@ -301,3 +307,31 @@ class SpiderFootHelpers():
             return False
 
         return True
+
+    def parseRobotsTxt(robotsTxtData):
+        """Parse the contents of robots.txt.
+
+        Args:
+            robotsTxtData (str): robots.txt file contents
+
+        Returns:
+            list: list of patterns which should not be followed
+
+        Todo:
+            Check and parse User-Agent.
+
+            Fix whitespace parsing; ie, " " is not a valid disallowed path
+        """
+
+        returnArr = list()
+
+        if not isinstance(robotsTxtData, str):
+            return returnArr
+
+        for line in robotsTxtData.splitlines():
+            if line.lower().startswith('disallow:'):
+                m = re.match(r'disallow:\s*(.[^ #]*)', line, re.IGNORECASE)
+                if m:
+                    returnArr.append(m.group(1))
+
+        return returnArr
