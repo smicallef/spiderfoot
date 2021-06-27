@@ -34,7 +34,7 @@ class TestModulesocialprofiles(unittest.TestCase):
         module = sfp_socialprofiles()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent(self):
+    def test_handleEvent_no_api_key_should_set_errorState(self):
         """
         Test handleEvent(self, event)
         """
@@ -44,7 +44,7 @@ class TestModulesocialprofiles(unittest.TestCase):
         module.setup(sf, dict())
 
         target_value = 'example target value'
-        target_type = 'IP_ADDRESS'
+        target_type = 'HUMAN_NAME'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
 
@@ -57,3 +57,4 @@ class TestModulesocialprofiles(unittest.TestCase):
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)
+        self.assertTrue(module.errorState)

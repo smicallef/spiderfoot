@@ -30,7 +30,7 @@ class TestModuleProjectdiscovery(unittest.TestCase):
         module = sfp_projectdiscovery()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent(self):
+    def test_handleEvent_no_api_key_should_set_errorState(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_projectdiscovery()
@@ -50,3 +50,4 @@ class TestModuleProjectdiscovery(unittest.TestCase):
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)
+        self.assertTrue(module.errorState)
