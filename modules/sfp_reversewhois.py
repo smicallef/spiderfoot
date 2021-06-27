@@ -112,12 +112,11 @@ class sfp_reversewhois(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         domains, registrars = self.query(eventData)
 

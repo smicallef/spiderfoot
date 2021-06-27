@@ -107,11 +107,11 @@ class sfp_adblock(SpiderFootPlugin):
         else:
             pagetype = "_INTERNAL"
 
-        if eventData not in self.results:
-            self.results[eventData] = True
-        else:
+        if eventData in self.results:
             self.sf.debug("Already checked this page for AdBlock matching, skipping.")
             return
+
+        self.results[eventData] = True
 
         try:
             if self.rules and self.rules.should_block(eventData):
