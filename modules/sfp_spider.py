@@ -14,7 +14,7 @@
 import json
 import time
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
 
 class sfp_spider(SpiderFootPlugin):
@@ -323,7 +323,7 @@ class sfp_spider(SpiderFootPlugin):
                                          verify=False)
             if robotsTxt['content'] is not None:
                 self.sf.debug('robots.txt contents: ' + robotsTxt['content'])
-                self.robotsRules[targetBase] = self.sf.parseRobotsTxt(robotsTxt['content'])
+                self.robotsRules[targetBase] = SpiderFootHelpers.parseRobotsTxt(robotsTxt['content'])
 
         if self.checkForStop():
             return
