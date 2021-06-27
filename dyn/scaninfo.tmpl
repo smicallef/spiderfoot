@@ -103,7 +103,7 @@
         function setFp(flag) {
             sel = getSelected();
             if (sel.length == 0) {
-                alert("You need to select at least one record.");
+                alertify.error("You need to select at least one record.");
                 return false;
             }
             data = JSON.stringify(sel);
@@ -115,11 +115,11 @@
                     return;
                 }
                 if (ret[0] == "WARNING") {
-                    alert(ret[1]);
+                    alertify.error(ret[1]);
                     return;
                 }
                 if (ret[0] == "ERROR") {
-                    alert("There was an error setting false positives because: " + ret[1] + "\nIf you believe this to be an error, please log out and log back in, and if the problem repeats, report this as a bug.");
+                    alertify.error("There was an error setting false positives because: " + ret[1] + "<br/>If you believe this to be an error, please log out and log back in, and if the problem repeats, report this as a bug.");
                 }
             });
         }
