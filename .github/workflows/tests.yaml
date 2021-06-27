@@ -28,12 +28,11 @@ jobs:
           pip install -r test/requirements.txt
       - name: Lint with flake8
         run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --statistics
+          # stop the build if there are Python Flake8 violations
+          flake8 . --count --show-source --statistics
       - name: Test with pytest
         run: |
-          python -m pytest --flake8 -n auto --dist loadfile --durations=5 --cov-report term --cov=. .
+          python -m pytest -n auto --dist loadfile --durations=5 --cov-report term --cov=. .
       - uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
