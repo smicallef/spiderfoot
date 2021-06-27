@@ -1160,7 +1160,7 @@ class SpiderFoot:
 
         for d in dicts:
             try:
-                with io.open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r', encoding='utf8', errors='ignore') as wdct:
+                with io.open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r', encoding='utf8', errors='ignore') as wdct:
                     dlines = wdct.readlines()
             except BaseException as e:
                 self.debug(f"Could not read dictionary: {e}")
@@ -1185,7 +1185,7 @@ class SpiderFoot:
 
         for d in dicts:
             try:
-                wdct = open(self.myPath() + "/dicts/ispell/" + d + ".dict", 'r')
+                wdct = open(f"{self.myPath()}/spiderfoot/dicts/ispell/{d}.dict", 'r')
                 dlines = wdct.readlines()
                 wdct.close()
             except BaseException as e:
