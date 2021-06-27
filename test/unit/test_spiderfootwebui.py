@@ -264,17 +264,16 @@ class TestSpiderFootWebUi(unittest.TestCase):
         self.assertIsInstance(scan_error, str)
         self.assertIn("example message", scan_error)
 
-    def test_scandelete(self):
+    def test_scandelete_invalid_scanid_should_return_an_error(self):
         """
-        Test scandelete(self, id, confirm=None)
+        Test scandelete(self, id)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        scan_delete = sfwebui.scandelete("example scan id", None)
-        self.assertIsInstance(scan_delete, str)
-        scan_delete = sfwebui.scandelete("example scan id", 1)
-        self.assertIsInstance(scan_delete, str)
+        scan_delete = sfwebui.scandelete("example scan id")
+        self.assertIsInstance(scan_delete, dict)
+        self.assertEqual("Scan example scan id does not exist", scan_delete.get('error').get('message'))
 
     @unittest.skip("todo")
     def test_savesettings(self):

@@ -37,11 +37,8 @@
                     }
                 });
 
-                if (ids.length == 0) {
-                    sf.log("You need to select at least one scan.");
-                    alert("You need to select at least one scan.");
+                if (ids.length == 0)
                     return false;
-                }
 
                 return ids;
             }
@@ -55,22 +52,35 @@
                 }
             }
 
+            function deleteScan(id) {
+                alertify.confirm("Are you sure you wish to delete this scan?",
+                function(){
+                    sf.deleteScan(id);
+                }).set({title:"Delete scan?"});
+            }
+
             function deleteSelected() {
                 ids = getSelected();
-
-                if (ids != false) {
-                    sf.log("Deleting scans: " + ids.join(','));
-                    window.location.href = docroot + '/scandelete?id=' + ids.join(',');
+                if (!ids) {
+                    alertify.message("Could not delete scans. No scans selected.");
+                    return;
                 }
+
+                alertify.confirm("Are you sure you wish to delete these " + ids.length + " scans?<br/><br/>" + ids.join("<br/>"),
+                function(){
+                    sf.deleteScan(ids.join(','));
+                }).set({title:"Delete scans?"});
             }
 
             function rerunSelected() {
                 ids = getSelected();
-
-                if (ids != false) {
-                    sf.log("Re-running scans: " + ids.join(','));
-                    window.location.href = docroot + '/rerunscanmulti?ids=' + ids.join(',');
+                if (!ids) {
+                    alertify.message("Could not re-run scan. No scans selected.");
+                    return;
                 }
+
+                sf.log("Re-running scans: " + ids.join(','));
+                window.location.href = docroot + '/rerunscanmulti?ids=' + ids.join(',');
             }
 
             function exportSelected(type) {
@@ -196,7 +206,7 @@
                     if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED" || data[i][6] == "INITIALIZING") {
                         table += "<a rel='tooltip' title='Stop Scan' href=" + docroot + "/stopscan?id=" + data[i][0] +"><i class='glyphicon glyphicon-stop text-muted'></i></a>";
                     } else {
-                        table += "<a rel='tooltip' title='Delete Scan' href=" + docroot + "/scandelete?id=" + data[i][0] + "><i class='glyphicon glyphicon-trash text-muted'></i></a>";
+                        table += "<a rel='tooltip' title='Delete Scan' href='javascript:deleteScan(\"" + data[i][0] + "\");'><i class='glyphicon glyphicon-trash text-muted'></i></a>";
                         table += "&nbsp;&nbsp;<a rel='tooltip' title='Re-run Scan' href=" + docroot + "/rerunscan?id=" + data[i][0] + "><i class='glyphicon glyphicon-repeat text-muted'></i></a>";
                     }
                     table += "&nbsp;&nbsp;<a rel='tooltip' title='Clone Scan' href=" + docroot + "/clonescan?id=" + data[i][0] + "><i class='glyphicon glyphicon-plus-sign text-muted'></i></a>";

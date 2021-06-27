@@ -168,9 +168,9 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
         self.getPage("/optsraw")
         self.assertStatus('200 OK')
 
-    def test_scandelete_invalid_scan_id_returns_200(self):
+    def test_scandelete_invalid_scan_id_returns_404(self):
         self.getPage("/scandelete?id=doesnotexist")
-        self.assertStatus('200 OK')
+        self.assertStatus('404 Not Found')
 
     @unittest.skip("todo")
     def test_savesettings(self):

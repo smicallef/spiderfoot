@@ -1038,15 +1038,8 @@ class SpiderFootCli(cmd.Cmd):
             self.edprint("Invalid syntax.")
             return
 
-        d = self.request(self.ownopts['cli.server_baseurl'] + f"/scandelete?confirm=1&raw=1&id={id}")
-        if not d:
-            return
-
-        s = json.loads(d)
-        if s[0] == "SUCCESS":
-            self.dprint("Successfully deleted scan.")
-        else:
-            self.dprint("Something odd happened: " + str(s[1]))
+        self.request(self.ownopts['cli.server_baseurl'] + f"/scandelete?id={id}")
+        self.dprint(f"Successfully deleted scan {id}.")
 
     # Override the default help
     def print_topics(self, header, cmds, cmdlen, maxcol):

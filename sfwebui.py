@@ -132,6 +132,39 @@ class SpiderFootWebUi:
         templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
         return templ.render(message='Not Found', docroot=self.docroot, status=status, version=__version__)
 
+    def jsonify_error(self, status, message):
+        """JSONify error response.
+
+        Args:
+            status (str): HTTP response status code and message
+            message (str): Error message
+
+        Returns:
+            str: HTTP response template
+        """
+
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        cherrypy.response.status = status
+        return {
+            'error': {
+                'http_status': status,
+                'message': message,
+            }
+        }
+
+    def error(self, message):
+        """Generic error, but not exposed as not called directly
+
+        Args:
+            message (str): error message
+
+        Returns:
+            None
+        """
+
+        templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
+        return templ.render(message=message, docroot=self.docroot, version=__version__)
+
     def cleanUserInput(self, inputList):
         """Sanitize user input, poorly.
 
@@ -768,63 +801,35 @@ class SpiderFootWebUi:
 
     optsraw.exposed = True
 
-    def error(self, message):
-        """Generic error, but not exposed as not called directly
-
-        Args:
-            message (str): error message
-
-        Returns:
-            None
-        """
-
-        templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
-        return templ.render(message=message, docroot=self.docroot, version=__version__)
-
-    def scandelete(self, id, confirm=None):
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def scandelete(self, id):
         """Delete scan(s)
 
         Args:
             id (str): comma separated list of scan IDs
-            confirm (str): specify any value (except None) to confirm deletion of the scan
 
         Returns:
             str: JSON response
-
-        Raises:
-            HTTPRedirect: redirect to scan list page
         """
+        if not id:
+            return self.jsonify_error('404', "No scan specified")
 
         dbh = SpiderFootDb(self.config)
-        names = list()
         ids = id.split(',')
 
         for scan_id in ids:
             res = dbh.scanInstanceGet(scan_id)
-            if res is None:
-                if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
-                    cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
-                    return json.dumps(["ERROR", "Scan ID not found."]).encode('utf-8')
-                return self.error("Scan ID not found.")
-            names.append(str(res[0]))
+            if not res:
+                return self.jsonify_error('404', f"Scan {id} does not exist")
 
             if res[5] in ["RUNNING", "STARTING", "STARTED"]:
-                return self.error("You cannot delete running scans.")
+                return self.jsonify_error('400', f"Scan {id} is {res[5]}. You cannot delete running scans.")
 
-        if confirm:
-            for scan_id in ids:
-                dbh.scanInstanceDelete(scan_id)
+        for scan_id in ids:
+            dbh.scanInstanceDelete(scan_id)
 
-            if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
-                cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
-                return json.dumps(["SUCCESS", ""]).encode('utf-8')
-
-            raise cherrypy.HTTPRedirect(f"{self.docroot}/")
-
-        templ = Template(filename='dyn/scandelete.tmpl', lookup=self.lookup)
-        return templ.render(id=ids, names=names, pageid="SCANLIST", docroot=self.docroot, version=__version__)
-
-    scandelete.exposed = True
+        return b""
 
     def savesettings(self, allopts, token, configFile=None):
         """Save settings, also used to completely reset them to default
