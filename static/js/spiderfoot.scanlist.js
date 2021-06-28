@@ -43,19 +43,33 @@
                 return ids;
             }
 
+            function stopScan(id) {
+                alertify.confirm("Are you sure you wish to stop this scan?",
+                function(){
+                    sf.stopScan(id);
+                    reload();
+                }).set({title:"Stop scan?"});
+            }
+
             function stopSelected() {
                 ids = getSelected();
-
-                if (ids != false) {
-                    sf.log("Stopping scans: " + ids.join(','));
-                    window.location.href = docroot + '/stopscanmulti?ids=' + ids.join(',');
+                if (!ids) {
+                    alertify.message("Could not stop scans. No scans selected.");
+                    return;
                 }
+
+                alertify.confirm("Are you sure you wish to stop these " + ids.length + " scans?<br/><br/>" + ids.join("<br/>"),
+                function(){
+                    sf.stopScan(ids.join(','));
+                    reload();
+                }).set({title:"Stop scans?"});
             }
 
             function deleteScan(id) {
                 alertify.confirm("Are you sure you wish to delete this scan?",
                 function(){
                     sf.deleteScan(id);
+                    reload();
                 }).set({title:"Delete scan?"});
             }
 
@@ -69,6 +83,7 @@
                 alertify.confirm("Are you sure you wish to delete these " + ids.length + " scans?<br/><br/>" + ids.join("<br/>"),
                 function(){
                     sf.deleteScan(ids.join(','));
+                    reload();
                 }).set({title:"Delete scans?"});
             }
 
@@ -204,7 +219,7 @@
                     table += "<td class='text-center'>" + data[i][7] + "</td>";
                     table += "<td class='text-center'>";
                     if (data[i][6] == "RUNNING" || data[i][6] == "STARTING" || data[i][6] == "STARTED" || data[i][6] == "INITIALIZING") {
-                        table += "<a rel='tooltip' title='Stop Scan' href=" + docroot + "/stopscan?id=" + data[i][0] +"><i class='glyphicon glyphicon-stop text-muted'></i></a>";
+                        table += "<a rel='tooltip' title='Stop Scan' href='javascript:stopScan(\"" + data[i][0] + "\");'><i class='glyphicon glyphicon-stop text-muted'></i></a>";
                     } else {
                         table += "<a rel='tooltip' title='Delete Scan' href='javascript:deleteScan(\"" + data[i][0] + "\");'><i class='glyphicon glyphicon-trash text-muted'></i></a>";
                         table += "&nbsp;&nbsp;<a rel='tooltip' title='Re-run Scan' href=" + docroot + "/rerunscan?id=" + data[i][0] + "><i class='glyphicon glyphicon-repeat text-muted'></i></a>";

@@ -1225,96 +1225,43 @@ class SpiderFootWebUi:
 
     startscan.exposed = True
 
-    def stopscanmulti(self, ids):
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def stopscan(self, id):
         """Stop a scan
 
         Args:
-            ids (str): comma separated list of scan IDs
-
-        Note:
-            Unnecessary for now given that only one simultaneous scan is permitted
+            id (str): comma separated list of scan IDs
 
         Returns:
-            str: stop scan status as JSON
-
-        Raises:
-            HTTPRedirect: redirect to home page
+            str: JSON response
         """
+        if not id:
+            return self.jsonify_error('404', "No scan specified")
 
         dbh = SpiderFootDb(self.config)
-        error = list()
+        ids = id.split(',')
 
-        for id in ids.split(","):
-            scaninfo = dbh.scanInstanceGet(id)
+        for scan_id in ids:
+            res = dbh.scanInstanceGet(scan_id)
+            if not res:
+                return self.jsonify_error('404', f"Scan {id} does not exist")
 
-            if not scaninfo:
-                return self.error("Invalid scan ID.")
+            scan_status = res[5]
 
-            scanname = str(scaninfo[0])
-            scanstatus = scaninfo[5]
+            if scan_status == "FINISHED":
+                return self.jsonify_error('400', f"Scan {id} has already finished.")
 
-            if scanstatus == "FINISHED":
-                error.append(f"Scan '{scanname}' is in a finished state. <a href='/scandelete?id={id}&confirm=1'>Maybe you want to delete it instead?</a>")
-                continue
+            if scan_status == "ABORTED":
+                return self.jsonify_error('400', f"Scan {id} has already aborted.")
 
-            if scanstatus == "ABORTED":
-                error.append(f"Scan '{scanname}' is already aborted.")
-                continue
+            if scan_status != "RUNNING":
+                return self.jsonify_error('400', f"The running scan is currently in the state '{scan_status}', please try again later or restart SpiderFoot.")
 
-            dbh.scanInstanceSet(id, status="ABORT-REQUESTED")
+        for scan_id in ids:
+            dbh.scanInstanceSet(scan_id, status="ABORT-REQUESTED")
 
-        raise cherrypy.HTTPRedirect(f"{self.docroot}/")
-
-    stopscanmulti.exposed = True
-
-    def stopscan(self, id):
-        """Stop a scan.
-
-        Args:
-            id (str): scan ID
-
-        Returns:
-            str: stop scan status as JSON
-
-        Raises:
-            HTTPRedirect: redirect to home page
-        """
-
-        dbh = SpiderFootDb(self.config)
-        scaninfo = dbh.scanInstanceGet(id)
-
-        if not scaninfo:
-            if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
-                cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
-                return json.dumps(["ERROR", "Invalid scan ID."]).encode('utf-8')
-
-            return self.error("Invalid scan ID.")
-
-        scanstatus = scaninfo[5]
-
-        if scanstatus == "ABORTED":
-            if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
-                cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
-                return json.dumps(["ERROR", "Scan already aborted."]).encode('utf-8')
-
-            return self.error("The scan is already aborted.")
-
-        if not scanstatus == "RUNNING":
-            if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
-                cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
-                return json.dumps(["ERROR", "Scan in an invalid state for stopping."]).encode('utf-8')
-
-            return self.error(f"The running scan is currently in the state '{scanstatus}', please try again later or restart SpiderFoot.")
-
-        dbh.scanInstanceSet(id, status="ABORT-REQUESTED")
-
-        if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
-            cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
-            return json.dumps(["SUCCESS", ""]).encode('utf-8')
-
-        raise cherrypy.HTTPRedirect(f"{self.docroot}/")
-
-    stopscan.exposed = True
+        return b""
 
     #
     # DATA PROVIDERS
