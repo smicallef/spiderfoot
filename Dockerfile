@@ -12,7 +12,7 @@
 # Usage:
 #
 #   sudo docker build -t spiderfoot .
-#   sudo docker run -p 5001:5001 spiderfoot
+#   sudo docker run -p 5001:5001 --security-opt no-new-privileges spiderfoot
 #
 # Using Docker volume for spiderfoot data
 #
@@ -26,8 +26,12 @@
 #
 #   sudo docker run --rm spiderfoot sf.py -h
 #
+# Running a shell in the container for maintenance
+#   sudo docker run -it --entrypoint /bin/sh spiderfoot
+#
 # Running spiderfoot unit tests in container
-#   sudo docker build -t spiderfoot-test --build-arg REQUIREMENTS=requirements_test.txt .
+#
+#   sudo docker build -t spiderfoot-test --build-arg REQUIREMENTS=test/requirements.txt .
 #   sudo docker run --rm spiderfoot-test -m pytest --flake8 .
 
 FROM alpine:3.12.4 AS build
@@ -45,8 +49,10 @@ RUN pip3 install -r "$REQUIREMENTS"
 
 
 
-FROM alpine:3.12.4
+FROM alpine:3.13.0
 WORKDIR /home/spiderfoot
+ENV SPIDERFOOT_LOGS /home/spiderfoot/log
+
 # Place database and configs outside installation directory
 ENV SPIDERFOOT_DATA /var/lib/spiderfoot
 
@@ -59,14 +65,11 @@ RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpe
     && rm -rf /lib/apk/db \
     && rm -rf /root/.cache \
     && mkdir $SPIDERFOOT_DATA \
+    && mkdir $SPIDERFOOT_LOGS \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS \
     && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA
 
 COPY . .
-
-# fix permissions on logs directory
-ENV SPIDERFOOT_LOGS /home/spiderfoot/log
-RUN chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS
-
 COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 

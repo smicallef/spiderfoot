@@ -149,12 +149,11 @@ class sfp_sociallinks(SpiderFootPlugin):
             self.errorState = True
             return
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == "PHONE_NUMBER":
             data = self.queryTelegram(eventData, eventName)

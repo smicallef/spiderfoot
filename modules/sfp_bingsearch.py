@@ -90,8 +90,8 @@ class sfp_bingsearch(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         # Sites hosted on the domain
 

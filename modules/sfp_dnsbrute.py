@@ -64,24 +64,26 @@ class sfp_dnsbrute(SpiderFootPlugin):
         self.lock = threading.Lock()
         self.iteration = 0
 
-        self.opts.update(userOpts)
+        for opt in list(userOpts.keys()):
+            self.opts[opt] = userOpts[opt]
 
         self.word_regex = re.compile(r'[^\d\W_]+')
         self.word_num_regex = re.compile(r'[^\W_]+')
         self.num_regex = re.compile(r'\d+')
 
+        dicts_dir = f"{self.sf.myPath()}/spiderfoot/dicts/"
         if self.opts["top10000"]:
-            with open(self.sf.myPath() + "/dicts/subdomains-10000.txt", "r") as f:
+            with open(f"{dicts_dir}/subdomains-10000.txt", "r") as f:
                 self.state["sub_wordlist"] = list(set([x.strip().lower() for x in f.readlines()]))
         elif self.opts["commons"]:
-            with open(self.sf.myPath() + "/dicts/subdomains.txt", "r") as f:
+            with open(f"{dicts_dir}/subdomains.txt", "r") as f:
                 self.state["sub_wordlist"] = list(set([x.strip().lower() for x in f.readlines()]))
-        with open(self.sf.myPath() + "/dicts/subdomain_mutations_alpha.txt", "r") as f:
+        with open(f"{dicts_dir}/subdomain_mutations_alpha.txt", "r") as f:
             if self.opts["alphamutation"]:
                 self.state["alpha_mutation_wordlist"] = list(set([x.strip().lower() for x in f.readlines()]))
 
         self.resolvers = []
-        nameservers = list(set([x.strip().lower() for x in open(self.sf.myPath() + "/dicts/resolvers.txt", "r").readlines()]))
+        nameservers = list(set([x.strip().lower() for x in open(f"{dicts_dir}/resolvers.txt", "r").readlines()]))
         self.verifyNameservers(nameservers)
 
     def resolve(self, host, tries=10, nameserver=None):
@@ -207,6 +209,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         return valid
 
+    # What events is this module interested in for input
     def watchedEvents(self):
         ret = ["DOMAIN_NAME"]
         if not self.opts["domainonly"] or self.opts["numbermutation"] or self.opts["alphamutation"]:

@@ -127,12 +127,11 @@ class sfp_whoisology(SpiderFootPlugin):
             self.errorState = True
             return
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         rec = self.query(eventData, "email")
         myres = list()

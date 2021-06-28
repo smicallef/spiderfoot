@@ -101,10 +101,14 @@ class sfp_ipapico(SpiderFootPlugin):
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         data = self.query(eventData)
+
+        if data is None:
+            self.sf.info("No results returned from ipapi.co")
+            return None
 
         if data.get('country'):
             location = ', '.join(filter(None, [data.get('city'), data.get('region'), data.get('region_code'), data.get('country_name'), data.get('country')]))

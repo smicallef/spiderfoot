@@ -35,10 +35,6 @@ class sfp_creditcard(SpiderFootPlugin):
     # Tracking results can be helpful to avoid reporting/processing duplicates
     results = None
 
-    # Tracking the error state of the module can be useful to detect when a third party
-    # has failed and you don't wish to process any more events.
-    errorState = False
-
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
@@ -66,11 +62,6 @@ class sfp_creditcard(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        # Once we are in this state, return immediately.
-        if self.errorState:
-            return None
-
-        # event was received.
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Extract Credit Card numbers

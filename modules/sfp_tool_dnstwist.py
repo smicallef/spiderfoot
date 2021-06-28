@@ -82,7 +82,6 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
         if self.errorState:
             return
 
-        # Don't look up stuff twice, check IP == IP here
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already scanned.")
             return

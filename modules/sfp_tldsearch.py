@@ -152,8 +152,8 @@ class sfp_tldsearch(SpiderFootPlugin):
 
         if eventData in self.results:
             return
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         keyword = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
         self.sf.debug("Keyword extracted from " + eventData + ": " + keyword)
@@ -161,8 +161,8 @@ class sfp_tldsearch(SpiderFootPlugin):
 
         if keyword in self.results:
             return
-        else:
-            self.results[keyword] = True
+
+        self.results[keyword] = True
 
         # Look through all TLDs for the existence of this target keyword
         for tld in self.opts['_internettlds']:

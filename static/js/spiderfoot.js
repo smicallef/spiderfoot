@@ -52,11 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 var sf = {};
 
-sf.genericError = function (message) {
-  sf.log(message);
-  alert("Failure: " + message);
-};
-
 sf.replace_sfurltag = function (data) {
   if (data.toLowerCase().indexOf("&lt;sfurl&gt;") >= 0) {
     data = data.replace(
@@ -94,6 +89,17 @@ sf.search = function (scan_id, value, type, postFunc) {
   );
 };
 
+sf.deleteScan = function(scan_id) {
+    var req = $.ajax({
+      type: "GET",
+      url: "/scandelete?id=" + scan_id
+    });
+    req.done(alertify.success('Scan ' + scan_id + ' deleted'));
+    req.fail(function (hr, status) {
+      alertify.error("Error: " + status);
+    });
+};
+
 sf.fetchData = function (url, postData, postFunc) {
   var req = $.ajax({
     type: "POST",
@@ -105,7 +111,7 @@ sf.fetchData = function (url, postData, postFunc) {
 
   req.done(postFunc);
   req.fail(function (hr, status) {
-    sf.genericError("AJAX Error: " + status);
+    alertify.error("AJAX Error: " + status);
   });
 };
 

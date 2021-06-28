@@ -1,30 +1,17 @@
 # test_spiderfootcli.py
 import io
+import pytest
 import sys
 import unittest
 
 from sfcli import SpiderFootCli
 
 
+@pytest.mark.usefixtures
 class TestSpiderFootCli(unittest.TestCase):
     """
     Test TestSpiderFootCli
     """
-
-    default_options = {
-        "cli.debug": False,
-        "cli.silent": False,
-        "cli.color": True,
-        "cli.output": "pretty",
-        "cli.history": True,
-        "cli.history_file": "",
-        "cli.spool": False,
-        "cli.spool_file": "",
-        "cli.ssl_verify": True,
-        "cli.username": "",
-        "cli.password": "",
-        "cli.server_baseurl": "http://127.0.0.1:5001"
-    }
 
     def test_default(self):
         """
@@ -132,7 +119,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         Test do_debug(self, line)
         """
-        sfcli = SpiderFootCli(self.default_options)
+        sfcli = SpiderFootCli(self.cli_default_options)
 
         sfcli.do_debug(0)
         initial_debug_state = sfcli.ownopts['cli.debug']
@@ -162,7 +149,7 @@ class TestSpiderFootCli(unittest.TestCase):
         """
         Test do_history(self, line)
         """
-        sfcli = SpiderFootCli(self.default_options)
+        sfcli = SpiderFootCli(self.cli_default_options)
 
         sfcli.do_history(None)
 
