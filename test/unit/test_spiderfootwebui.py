@@ -344,18 +344,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    def test_stopscanmulti(self):
-        """
-        Test stopscanmulti(self, ids)
-        """
-        opts = self.default_options
-        opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        stop_scan = sfwebui.stopscanmulti("example scan id")
-        self.assertIsInstance(stop_scan, str)
-
-    @unittest.skip("todo")
-    def test_stopscan(self):
+    def test_stopscan_invalid_scanid_should_return_an_error(self):
         """
         Test stopscan(self, id)
         """
@@ -363,7 +352,8 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         stop_scan = sfwebui.stopscan("example scan id")
-        self.assertIsInstance(stop_scan, str)
+        self.assertIsInstance(stop_scan, dict)
+        self.assertEqual("Scan example scan id does not exist", stop_scan.get('error').get('message'))
 
     def test_scanlog_should_return_bytes(self):
         """

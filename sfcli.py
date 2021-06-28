@@ -932,15 +932,8 @@ class SpiderFootCli(cmd.Cmd):
             self.edprint("Invalid syntax.")
             return
 
-        d = self.request(self.ownopts['cli.server_baseurl'] + "/stopscan?id=" + id)
-        if not d:
-            return
-
-        s = json.loads(d)
-        if s[0] == "SUCCESS":
-            self.dprint("Successfully requested scan to stop. This could take some minutes to complete.")
-        else:
-            self.dprint("Unable to stop scan: " + str(s[1]))
+        self.request(self.ownopts['cli.server_baseurl'] + f"/stopscan?id={id}")
+        self.dprint(f"Successfully requested scan {id} to stop. This could take some minutes to complete.")
 
     # Search for data, alias to find
     def do_search(self, line):

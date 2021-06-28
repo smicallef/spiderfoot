@@ -171,6 +171,7 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
     def test_scandelete_invalid_scan_id_returns_404(self):
         self.getPage("/scandelete?id=doesnotexist")
         self.assertStatus('404 Not Found')
+        self.assertInBody('Scan doesnotexist does not exist')
 
     @unittest.skip("todo")
     def test_savesettings(self):
@@ -220,15 +221,10 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
         self.assertStatus('200 OK')
         self.assertInBody('Invalid target type. Could not recognize it as a target SpiderFoot supports.')
 
-    def test_stopscanmulti(self):
-        self.getPage("/stopscanmulti?ids=doesnotexist")
-        self.assertStatus('200 OK')
-        self.assertInBody('Invalid scan ID.')
-
-    def test_stopscan(self):
+    def test_stopscan_invalid_scan_id_returns_404(self):
         self.getPage("/stopscan?id=doesnotexist")
-        self.assertStatus('200 OK')
-        self.assertInBody('Invalid scan ID.')
+        self.assertStatus('404 Not Found')
+        self.assertInBody('Scan doesnotexist does not exist')
 
     def test_scanlog_invalid_scan_returns_200(self):
         self.getPage("/scanlog?id=doesnotexist")
