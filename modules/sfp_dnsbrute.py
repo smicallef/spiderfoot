@@ -16,6 +16,7 @@ import random
 import threading
 import dns.resolver
 from time import sleep
+from csv import DictReader
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -48,6 +49,8 @@ class sfp_dnsbrute(SpiderFootPlugin):
         "alphamutation": "For any host found, try common mutations such as -test, -old, etc.",
         "_maxthreads": "Maximum threads"
     }
+
+    _ipRegex = re.compile(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -82,8 +85,31 @@ class sfp_dnsbrute(SpiderFootPlugin):
             if self.opts["alphamutation"]:
                 self.state["alpha_mutation_wordlist"] = list(set([x.strip().lower() for x in f.readlines()]))
 
+        # set up nameservers
         self.resolvers = []
-        nameservers = list(set([x.strip().lower() for x in open(f"{dicts_dir}/resolvers.txt", "r").readlines()]))
+        nameservers = set()
+        nameservers_url = "https://public-dns.info/nameservers.csv"
+        nameservers_dict = self.sf.myPath() + "/dicts/resolvers.txt"
+        # get every valid nameserver with 95% or higher reliability
+        fetched_nameservers = str(self.sf.fetchUrl(
+            nameservers_url,
+            useragent=self.opts.get("useragent", "Spiderfoot")
+        )["content"])
+        for line in DictReader(fetched_nameservers.splitlines()):
+            ip_address = str(line.get("ip_address", "")).strip()
+            try:
+                reliability = float(line.get("reliability", 0))
+            except ValueError:
+                continue
+            if reliability >= .95 and self._ipRegex.match(ip_address):
+                nameservers.add(ip_address)
+        # fall back to local dict if necessary
+        if not nameservers:
+            self.sf.debug(f"Failed to retrieve nameservers from {nameservers_url}")
+            nameservers = set(self._ipRegex.findall(open(nameservers_dict, "r").read()))
+            self.sf.debug(f"Loaded {len(nameservers):,} nameservers from {nameservers_dict}")
+        else:
+            self.sf.debug(f"Loaded {len(nameservers):,} nameservers from {nameservers_url}")
         self.verifyNameservers(nameservers)
 
     def resolve(self, host, tries=10, nameserver=None):
@@ -107,7 +133,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
                 self.sf.debug(f"Error resolving \"{host}\": {e.__class__.__name__}: {e}")
                 if tries > 0:
                     self.sf.debug(f"Retrying \"{host}\"")
-                    return self.resolve(host, tries=tries - 1)
+                    return self.resolve(host, tries=tries - 1, nameserver=nameserver)
                 else:
                     self.sf.debug(f"Max retries ({tries:,}) exceeded for \"{host}\"")
                     return (host, [])
@@ -233,13 +259,14 @@ class sfp_dnsbrute(SpiderFootPlugin):
         ips_google = self.resolve(host, nameserver="8.8.8.8")[1]
         ips_cloudflare = self.resolve(host, nameserver="1.1.1.1")[1]
         if not ips_google or not ips_cloudflare:
-            self.sf.debug(f"Incorrectly-reported subdomain: {host}")
+            self.sf.debug(f"Incorrectly-reported subdomain {host} does not exist.")
             return False
 
         # if we haven't seen the host before
         if host not in self.state["valid_hosts"]:
-            # and it isn"t a wildcard
+            # and it isn't a wildcard
             if not self.isWildcard(host, ips):
+                # then we're good
                 return True
             else:
                 self.sf.debug(f"Invalid wildcard host: {host}")
