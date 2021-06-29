@@ -40,16 +40,15 @@ class sfp_dnsdumpster(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.sf.debug("Setting up sfp_dnsdumpster")
-        self.state = self.tempStorage()
-        self.state.update({
-            "events": [],
+        self.results = self.tempStorage()
+        self.results.update({
+            "handledEvents": [],
         })
-        self.__dataSource__ = "DNS"
 
         self.opts.update(userOpts)
 
     def watchedEvents(self):
-        return ["DOMAIN_NAME"]
+        return ["DOMAIN_NAME", "INTERNET_NAME"]
 
     def producedEvents(self):
         return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
@@ -124,19 +123,23 @@ class sfp_dnsdumpster(SpiderFootPlugin):
         self.notifyListeners(e)
 
     def handleEvent(self, event):
-        domain = str(event.data).lower()
+        query = str(event.data).lower()
 
         self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
 
-        # skip if we've already processed this event
-        eventDataHash = self.sf.hashstring(event.data)
-        if eventDataHash in self.state["events"]:
+        # skip if we've already processed this event (or its parent domain/subdomain)
+        target = self.getTarget()
+        eventDataHash = self.sf.hashstring(query)
+        if eventDataHash in self.results["handledEvents"] or \
+                (target.matches(query, includeParents=True) and not
+                 target.matches(query, includeChildren=False)):
             self.sf.debug(f"Skipping already-processed event, {event.eventType}, from {event.module}")
             return
-        self.state["events"].append(eventDataHash)
+        self.results["handledEvents"].append(eventDataHash)
 
-        for hostname in self.query(domain):
-            if hostname.endswith(domain) and not hostname == domain:
+        for hostname in self.query(query):
+            if self.getTarget().matches(hostname, includeParents=True) and not \
+                    self.getTarget().matches(hostname, includeChildren=False):
                 self.sendEvent(event, hostname)
             else:
                 self.sf.debug(f"Invalid subdomain: {hostname}")
