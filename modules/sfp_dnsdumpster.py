@@ -41,10 +41,6 @@ class sfp_dnsdumpster(SpiderFootPlugin):
         self.sf = sfc
         self.sf.debug("Setting up sfp_dnsdumpster")
         self.results = self.tempStorage()
-        self.results.update({
-            "handledEvents": [],
-        })
-
         self.opts.update(userOpts)
 
     def watchedEvents(self):
@@ -130,16 +126,16 @@ class sfp_dnsdumpster(SpiderFootPlugin):
         # skip if we've already processed this event (or its parent domain/subdomain)
         target = self.getTarget()
         eventDataHash = self.sf.hashstring(query)
-        if eventDataHash in self.results["handledEvents"] or \
+        if eventDataHash in self.results or \
                 (target.matches(query, includeParents=True) and not
                  target.matches(query, includeChildren=False)):
             self.sf.debug(f"Skipping already-processed event, {event.eventType}, from {event.module}")
             return
-        self.results["handledEvents"].append(eventDataHash)
+        self.results[eventDataHash] = True
 
         for hostname in self.query(query):
-            if self.getTarget().matches(hostname, includeParents=True) and not \
-                    self.getTarget().matches(hostname, includeChildren=False):
+            if target.matches(hostname, includeParents=True) and not \
+                    target.matches(hostname, includeChildren=False):
                 self.sendEvent(event, hostname)
             else:
                 self.sf.debug(f"Invalid subdomain: {hostname}")
