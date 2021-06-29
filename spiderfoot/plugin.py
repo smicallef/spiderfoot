@@ -375,7 +375,8 @@ class SpiderFootPlugin():
 
             for i in range(self.threads):
                 t = ThreadPoolWorker(self.sfp, target=callback, args=args, kwargs=kwargs,
-                    inputQueue=self.inputQueue, outputQueue=self.outputQueue, name=f"{self.name}_{name}")
+                                     inputQueue=self.inputQueue, outputQueue=self.outputQueue,
+                                     name=f"{self.name}_{name}")
                 t.start()
                 self.pool[i] = t
 
@@ -436,13 +437,14 @@ class SpiderFootPlugin():
             return self
 
         def __exit__(self, exception_type, exception_value, traceback):
-            # Make sure the queue is empty before exiting
+            # Make sure queues are empty before exiting
             try:
-                while 1:
-                    try:
-                        self.outputQueue.get_nowait()
-                    except queue.Empty:
-                        break
+                for q in (self.outputQueue, self.inputQueue):
+                    while 1:
+                        try:
+                            q.get_nowait()
+                        except queue.Empty:
+                            break
             except Exception:
                 pass
 
@@ -451,10 +453,11 @@ class SpiderFootPlugin():
 
 # end of SpiderFootPlugin class
 
+
 class ThreadPoolWorker(threading.Thread):
 
     def __init__(self, sfp, inputQueue, outputQueue, group=None, target=None,
-        name=None, args=None, kwargs=None, verbose=None):
+                 name=None, args=None, kwargs=None, verbose=None):
         if args is None:
             args = tuple()
 
