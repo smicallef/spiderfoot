@@ -62,6 +62,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
             'INTERNET_NAME',
             'LINKED_URL_INTERNAL',
             'AFFILIATE_INTERNET_NAME',
+            'RAW_RIR_DATA'
         ]
 
     def query(self, qry, limit=100):
