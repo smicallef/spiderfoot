@@ -43,7 +43,6 @@ class sfp_apple_itunes(SpiderFootPlugin):
     }
 
     results = None
-    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -102,9 +101,6 @@ class sfp_apple_itunes(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-
-        if self.errorState:
-            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
