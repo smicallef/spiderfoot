@@ -25,7 +25,7 @@ class sfp_darksearch(SpiderFootPlugin):
     meta = {
         'name': "Darksearch",
         'summary': "Search the Darksearch.io Tor search engine for mentions of the target domain.",
-        'flags': [""],
+        'flags': ["tor"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
