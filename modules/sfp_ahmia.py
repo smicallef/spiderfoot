@@ -23,6 +23,7 @@ class sfp_ahmia(SpiderFootPlugin):
 
     meta = {
         'name': "Ahmia",
+        'flags': ["tor"],
         'summary': "Search Tor 'Ahmia' search engine for mentions of the target.",
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
