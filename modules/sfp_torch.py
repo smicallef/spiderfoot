@@ -21,7 +21,7 @@ class sfp_torch(SpiderFootPlugin):
     meta = {
         'name': "TORCH",
         'summary': "Search Tor 'TORCH' search engine for mentions of the target domain.",
-        'flags': ["errorprone"],
+        'flags': ["errorprone", "tor"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {

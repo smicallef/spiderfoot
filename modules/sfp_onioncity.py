@@ -21,7 +21,7 @@ class sfp_onioncity(SpiderFootPlugin):
     meta = {
         'name': "Onion.link",
         'summary': "Search Tor 'Onion City' search engine for mentions of the target domain.",
-        'flags': ["apikey"],
+        'flags': ["apikey", "tor"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
