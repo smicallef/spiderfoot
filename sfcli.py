@@ -174,8 +174,8 @@ class SpiderFootCli(cmd.Cmd):
 
         if self.ownopts['cli.spool_file']:
             return self.do_set("cli.spool = " + val)
-        else:
-            self.edprint("You haven't set cli.spool_file. Set that before enabling spooling.")
+
+        self.edprint("You haven't set cli.spool_file. Set that before enabling spooling.")
 
         return None
 
@@ -191,10 +191,12 @@ class SpiderFootCli(cmd.Cmd):
                 self.dprint(readline.get_history_item(i), plain=True)
                 i += 1
             return None
+
         if self.ownopts['cli.history']:
             val = "0"
         else:
             val = "1"
+
         return self.do_set("cli.history = " + val)
 
     # Run before all commands to handle history and spooling
@@ -410,6 +412,10 @@ class SpiderFootCli(cmd.Cmd):
     # [[ 'blahblah test' ], [[ 'top', '10' ], [ 'grep', 'foo']]]
     def myparseline(self, cmdline, replace=True):
         ret = [list(), list()]
+
+        if not cmdline:
+            return ret
+
         s = shlex.split(cmdline)
         for c in s:
             if c == '|':
@@ -816,12 +822,13 @@ class SpiderFootCli(cmd.Cmd):
                              post={'id': sid, 'limit': '1'})
             if not d:
                 return
+
             j = json.loads(d)
             if len(j) < 1:
                 self.dprint("No logs (yet?).")
                 return
-            else:
-                rowid = j[0][4]
+
+            rowid = j[0][4]
 
             try:
                 if not limit:
@@ -1085,10 +1092,24 @@ class SpiderFootCli(cmd.Cmd):
                 self.edprint("Invalid syntax.")
                 return
 
+        # Local CLI config
+        if val and (cfg in self.ownopts or cfg.startswith('$')):
+            if not cfg.startswith('$'):
+                if type(self.ownopts[cfg]) == bool:
+                    if val.lower() == "false" or val == "0":
+                        val = False
+                    else:
+                        val = True
+
+            self.ownopts[cfg] = val
+            self.dprint(f"{cfg} set to {val}")
+            return
+
         # Get the server-side config
         d = self.request(self.ownopts['cli.server_baseurl'] + "/optsraw")
         if not d:
             return
+
         j = list()
         serverconfig = dict()
         token = ""  # nosec
@@ -1099,9 +1120,8 @@ class SpiderFootCli(cmd.Cmd):
             if j[0] == "ERROR":
                 self.edprint("Error fetching SpiderFoot server-side config.")
                 return
-            else:
-                serverconfig = j[1]['data']
-                token = j[1]['token']
+            serverconfig = j[1]['data']
+            token = j[1]['token']
 
         self.ddprint(str(serverconfig))
 
@@ -1142,63 +1162,53 @@ class SpiderFootCli(cmd.Cmd):
             return
 
         if val:
-            # Local CLI config
-            if cfg in self.ownopts or cfg.startswith('$'):
-                if not cfg.startswith('$'):
-                    if type(self.ownopts[cfg]) == bool:
-                        if val.lower() == "false" or val == "0":
-                            val = False
-                        else:
-                            val = True
+            # submit all non-CLI vars to the SF server
+            confdata = dict()
+            found = False
+            for k in serverconfig:
+                if k == cfg:
+                    serverconfig[k] = val
+                    found = True
 
-                self.ownopts[cfg] = val
-                self.dprint(cfg + " set to " + str(val))
+            if not found:
+                self.edprint("Variable not found, so not set.")
                 return
-            # Server-side config
-            else:
-                # submit all non-CLI vars to the SF server
-                confdata = dict()
-                found = False
-                for k in serverconfig:
-                    if k == cfg:
-                        serverconfig[k] = val
-                        found = True
 
-                if not found:
-                    self.edprint("Variable not found, so not set.")
-                    return
+            # Sanitize the data before sending it to the server
+            for k in serverconfig:
+                optstr = ":".join(k.split(".")[1:])
+                if type(serverconfig[k]) == bool:
+                    if serverconfig[k]:
+                        confdata[optstr] = "1"
+                    else:
+                        confdata[optstr] = "0"
+                if type(serverconfig[k]) == list:
+                    # If set by the user, it must already be a
+                    # string, not a list
+                    confdata[optstr] = ','.join(serverconfig[k])
+                if type(serverconfig[k]) == int:
+                    confdata[optstr] = str(serverconfig[k])
+                if type(serverconfig[k]) == str:
+                    confdata[optstr] = serverconfig[k]
 
-                # Sanitize the data before sending it to the server
-                for k in serverconfig:
-                    optstr = ":".join(k.split(".")[1:])
-                    if type(serverconfig[k]) == bool:
-                        if not serverconfig[k]:
-                            confdata[optstr] = "0"
-                        else:
-                            confdata[optstr] = "1"
-                    if type(serverconfig[k]) == list:
-                        # If set by the user, it must already be a
-                        # string, not a list
-                        confdata[optstr] = ','.join(serverconfig[k])
-                    if type(serverconfig[k]) == int:
-                        confdata[optstr] = str(serverconfig[k])
-                    if type(serverconfig[k]) == str:
-                        confdata[optstr] = serverconfig[k]
+            self.ddprint(str(confdata))
+            d = self.request(
+                self.ownopts['cli.server_baseurl'] + "/savesettingsraw",
+                post={'token': token, 'allopts': json.dumps(confdata)}
+            )
+            j = list()
 
-                self.ddprint(str(confdata))
-                d = self.request(self.ownopts['cli.server_baseurl'] + "/savesettingsraw",
-                                 post={'token': token, 'allopts': json.dumps(confdata)})
-                j = list()
-                if not d:
-                    self.edprint("Unable to set SpiderFoot server-side config.")
-                    return
-                else:
-                    j = json.loads(d)
-                    if j[0] == "ERROR":
-                        self.edprint("Error setting SpiderFoot server-side config: " + str(j[1]))
-                        return
-                    self.dprint(cfg + " set to " + str(val))
-                    return
+            if not d:
+                self.edprint("Unable to set SpiderFoot server-side config.")
+                return
+
+            j = json.loads(d)
+            if j[0] == "ERROR":
+                self.edprint("Error setting SpiderFoot server-side config: " + str(j[1]))
+                return
+
+            self.dprint(f"{cfg} set to {val}")
+            return
 
         if cfg not in self.ownopts:
             self.edprint("Variable not found, so not set. Did you mean to use a $ variable?")
