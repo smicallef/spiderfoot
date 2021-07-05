@@ -9,7 +9,7 @@ class SpiderFootHelpers():
     """SpiderFoot helper functions."""
 
     @staticmethod
-    def targetType(target):
+    def targetTypeFromString(target):
         """Return the scan target seed data type for the specified scan target input.
 
         Args:
