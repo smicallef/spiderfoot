@@ -40,8 +40,6 @@ import requests
 import urllib3
 from bs4 import BeautifulSoup, SoupStrainer
 from publicsuffixlist import PublicSuffixList
-from stem import Signal
-from stem.control import Controller
 
 # For hiding the SSL warnings coming from the requests lib
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # noqa: DUO131
@@ -145,24 +143,6 @@ class SpiderFoot:
             socksProxy (str): SOCKS proxy
         """
         self._socksProxy = socksProxy
-
-    def refreshTorIdent(self):
-        """Tell TOR to re-circuit."""
-
-        if self.opts['_socks1type'] != "TOR":
-            return
-
-        try:
-            self.info("Re-circuiting TOR...")
-            with Controller.from_port(address=self.opts['_socks2addr'],
-                                      port=self.opts['_torctlport']) as controller:
-                controller.authenticate()
-                controller.signal(Signal.NEWNYM)
-                time.sleep(10)
-        except BaseException as e:
-            self.fatal(f"Unable to re-circuit TOR: {e}")
-
-        return
 
     def optValueToData(self, val):
         """Supplied an option value, return the data based on what the
