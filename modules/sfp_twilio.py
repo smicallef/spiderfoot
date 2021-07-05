@@ -69,7 +69,7 @@ class sfp_twilio(SpiderFootPlugin):
         return ["PHONE_NUMBER"]
 
     def producedEvents(self):
-        return ["COMPANY_NAME", "RAW_RIR_DATA"]
+        return ["COMPANY_NAME", "RAW_API_DATA"]
 
     # When querying third parties, it's best to have a dedicated function
     # to do so and avoid putting it in handleEvent()
@@ -142,7 +142,7 @@ class sfp_twilio(SpiderFootPlugin):
 
         data = json.loads(content)
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+        evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
         callerName = data.get('caller_name')

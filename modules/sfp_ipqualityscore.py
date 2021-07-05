@@ -83,7 +83,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             "MALICIOUS_IPADDR",
             "MALICIOUS_INTERNET_NAME",
             "PHONE_NUMBER_TYPE",
-            "RAW_RIR_DATA"
+            "RAW_API_DATA"
         ]
 
     def handle_error_response(self, qry, res):
@@ -185,7 +185,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         maliciousDesc = ""
 
         if fraudScore >= self.opts['abuse_score_threshold'] or recentAbuse or botStatus:
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+            evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
             malicious = True
             maliciousDesc = f"IPQualityScore [{eventData}]\n"

@@ -86,7 +86,7 @@ class sfp_networksdb(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["INTERNET_NAME", "IP_ADDRESS", "IPV6_ADDRESS", "NETBLOCK_MEMBER",
-                "CO_HOSTED_SITE", "GEOINFO", "RAW_RIR_DATA"]
+                "CO_HOSTED_SITE", "GEOINFO", "RAW_API_DATA"]
 
     # Query IP Address Info
     # https://networksdb.io/api/docs#ipinfo
@@ -274,7 +274,7 @@ class sfp_networksdb(SpiderFootPlugin):
             if data is None:
                 self.sf.debug("No IP address information found for " + eventData)
             else:
-                evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+                evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
                 self.notifyListeners(evt)
 
                 network = data.get('network')
@@ -289,7 +289,7 @@ class sfp_networksdb(SpiderFootPlugin):
             if data is None:
                 self.sf.debug("No IP geolocation information found for " + eventData)
             else:
-                evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+                evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
                 self.notifyListeners(evt)
 
                 if data.get('country'):
@@ -304,7 +304,7 @@ class sfp_networksdb(SpiderFootPlugin):
             if data is None:
                 self.sf.debug("No reverse DNS results for " + eventData)
             else:
-                evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+                evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
                 self.notifyListeners(evt)
 
                 results = data.get('results')
@@ -350,7 +350,7 @@ class sfp_networksdb(SpiderFootPlugin):
                 self.sf.debug("No forward DNS results for " + eventData)
                 return None
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', str(res), self.__name__, event)
             self.notifyListeners(evt)
 
             for ip in res:

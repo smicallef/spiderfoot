@@ -198,7 +198,7 @@ class SpiderFootDb:
         ['PROVIDER_HOSTING', 'Hosting Provider', 0, 'ENTITY'],
         ['PROVIDER_TELCO', 'Telecommunications Provider', 0, 'ENTITY'],
         ['PUBLIC_CODE_REPO', 'Public Code Repository', 0, 'ENTITY'],
-        ['RAW_RIR_DATA', 'Raw Data from RIRs/APIs', 1, 'DATA'],
+        ['RAW_API_DATA', 'Raw Data from APIs', 1, 'DATA'],
         ['RAW_DNS_RECORDS', 'Raw DNS Records', 1, 'DATA'],
         ['RAW_FILE_META_DATA', 'Raw File Meta Data', 1, 'DATA'],
         ['SEARCH_ENGINE_WEB_CONTENT', 'Search Engine''s Web Content', 1, 'DATA'],

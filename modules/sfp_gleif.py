@@ -58,7 +58,7 @@ class sfp_gleif(SpiderFootPlugin):
         return ["COMPANY_NAME", "LEI"]
 
     def producedEvents(self):
-        return ["COMPANY_NAME", "LEI", "PHYSICAL_ADDRESS", "RAW_RIR_DATA"]
+        return ["COMPANY_NAME", "LEI", "PHYSICAL_ADDRESS", "RAW_API_DATA"]
 
     def searchLegalName(self, qry):
         """Fuzzy search for legal entity by name
@@ -207,7 +207,7 @@ class sfp_gleif(SpiderFootPlugin):
                 self.sf.debug(f"Found no results for {eventData}")
                 return
 
-            e = SpiderFootEvent("RAW_RIR_DATA", str(res), self.__name__, event)
+            e = SpiderFootEvent("RAW_API_DATA", str(res), self.__name__, event)
             self.notifyListeners(e)
 
             for record in res:

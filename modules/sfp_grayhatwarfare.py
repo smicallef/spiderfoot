@@ -74,7 +74,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
         return [
             'CLOUD_STORAGE_BUCKET',
             'CLOUD_STORAGE_BUCKET_OPEN',
-            'RAW_RIR_DATA'
+            'RAW_API_DATA'
         ]
 
     # Query Grayhat Warfare
@@ -165,7 +165,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
                     evt = SpiderFootEvent('CLOUD_STORAGE_BUCKET_OPEN', f"{bucketName}: {row.get('fileCount')} files found.", self.__name__, event)
                     self.notifyListeners(evt)
 
-                    evt = SpiderFootEvent('RAW_RIR_DATA', str(row), self.__name__, event)
+                    evt = SpiderFootEvent('RAW_API_DATA', str(row), self.__name__, event)
                     self.notifyListeners(evt)
 
             currentPage += 1

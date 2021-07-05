@@ -87,7 +87,7 @@ class sfp_censys(SpiderFootPlugin):
             "WEBSERVER_HTTPHEADERS",
             "NETBLOCK_MEMBER",
             "GEOINFO",
-            "RAW_RIR_DATA"
+            "RAW_API_DATA"
         ]
 
     def queryIp(self, qry):
@@ -225,7 +225,7 @@ class sfp_censys(SpiderFootPlugin):
             else:
                 pevent = event
 
-            e = SpiderFootEvent("RAW_RIR_DATA", json.dumps(rec), self.__name__, pevent)
+            e = SpiderFootEvent("RAW_API_DATA", json.dumps(rec), self.__name__, pevent)
             self.notifyListeners(e)
 
             try:

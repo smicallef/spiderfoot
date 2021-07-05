@@ -81,7 +81,7 @@ class sfp_dnsdb(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return [
-            "RAW_RIR_DATA",
+            "RAW_API_DATA",
             "INTERNET_NAME",
             "INTERNET_NAME_UNRESOLVED",
             "PROVIDER_DNS",
@@ -173,7 +173,7 @@ class sfp_dnsdb(SpiderFootPlugin):
             if rrsetRecords is None:
                 return
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(rrsetRecords), self.__name__, event)
+            evt = SpiderFootEvent("RAW_API_DATA", str(rrsetRecords), self.__name__, event)
             self.notifyListeners(evt)
 
             for record in rrsetRecords:
@@ -254,7 +254,7 @@ class sfp_dnsdb(SpiderFootPlugin):
             if rdataRecords is None:
                 return
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(rdataRecords), self.__name__, event)
+            evt = SpiderFootEvent("RAW_API_DATA", str(rdataRecords), self.__name__, event)
             self.notifyListeners(evt)
 
             for record in rdataRecords:
@@ -280,7 +280,7 @@ class sfp_dnsdb(SpiderFootPlugin):
             if rdataRecords is None:
                 return
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(rdataRecords), self.__name__, event)
+            evt = SpiderFootEvent("RAW_API_DATA", str(rdataRecords), self.__name__, event)
             self.notifyListeners(evt)
 
             for record in rdataRecords:

@@ -129,6 +129,6 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
             r = self.generate_events(data, event)
 
             if r:
-                self.emit("RAW_RIR_DATA", json.dumps(data), event)
+                self.emit("RAW_API_DATA", json.dumps(data), event)
 
 # End of sfp_bitcoinwhoswho class

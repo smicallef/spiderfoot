@@ -78,7 +78,7 @@ class sfp_apility(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ['MALICIOUS_IPADDR', 'MALICIOUS_INTERNET_NAME',
-                'IP_ADDRESS', 'PROVIDER_MAIL', 'PROVIDER_DNS', 'RAW_RIR_DATA']
+                'IP_ADDRESS', 'PROVIDER_MAIL', 'PROVIDER_DNS', 'RAW_API_DATA']
 
     # Query baddomain REST API
     # https://apility.io/apidocs/#domain-check
@@ -227,7 +227,7 @@ class sfp_apility(SpiderFootPlugin):
                 self.sf.debug("No matches found for " + eventData)
                 return
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', str(res), self.__name__, event)
             self.notifyListeners(evt)
 
             if res.get('ip'):

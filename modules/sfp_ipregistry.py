@@ -65,7 +65,7 @@ class sfp_ipregistry(SpiderFootPlugin):
         return ["IP_ADDRESS", "IPV6_ADDRESS"]
 
     def producedEvents(self):
-        return ["GEOINFO", "MALICIOUS_IPADDR", "PHYSICAL_COORDINATES", "RAW_RIR_DATA"]
+        return ["GEOINFO", "MALICIOUS_IPADDR", "PHYSICAL_COORDINATES", "RAW_API_DATA"]
 
     def query(self, qry):
         qs = urllib.parse.urlencode({"key": self.opts["api_key"]})
@@ -164,4 +164,4 @@ class sfp_ipregistry(SpiderFootPlugin):
             data = self.query(event.data)
             self.generate_events(data, event)
 
-            self.emit("RAW_RIR_DATA", json.dumps(data), event)
+            self.emit("RAW_API_DATA", json.dumps(data), event)

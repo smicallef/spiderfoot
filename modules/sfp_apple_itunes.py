@@ -62,7 +62,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
             'INTERNET_NAME',
             'LINKED_URL_INTERNAL',
             'AFFILIATE_INTERNET_NAME',
-            'RAW_RIR_DATA'
+            'RAW_API_DATA'
         ]
 
     def query(self, qry, limit=100):
@@ -196,7 +196,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
             found = True
 
         if found:
-            evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(data), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', json.dumps(data), self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_apple_itunes class

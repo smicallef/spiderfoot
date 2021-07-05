@@ -193,7 +193,7 @@ class sfp_snov(SpiderFootPlugin):
                 self.sf.debug("No email address found for target domain")
                 break
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+            evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
 
             records = data.get('emails')

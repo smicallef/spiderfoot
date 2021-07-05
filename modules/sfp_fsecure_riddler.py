@@ -78,7 +78,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
                 'INTERNET_NAME_UNRESOLVED', 'AFFILIATE_INTERNET_NAME_UNRESOLVED',
                 'DOMAIN_NAME', 'AFFILIATE_DOMAIN_NAME',
                 'IP_ADDRESS',
-                'PHYSICAL_COORDINATES', 'RAW_RIR_DATA']
+                'PHYSICAL_COORDINATES', 'RAW_API_DATA']
 
     # https://riddler.io/help/api
     def login(self):
@@ -198,7 +198,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             self.sf.info("No results found for " + eventData)
             return None
 
-        e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        e = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)
 
         hosts = list()

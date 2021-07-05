@@ -73,7 +73,7 @@ class sfp_darksearch(SpiderFootPlugin):
         return ['DOMAIN_NAME', 'HUMAN_NAME', 'EMAILADDR']
 
     def producedEvents(self):
-        return ['DARKNET_MENTION_URL', 'DARKNET_MENTION_CONTENT', 'RAW_RIR_DATA']
+        return ['DARKNET_MENTION_URL', 'DARKNET_MENTION_CONTENT', 'RAW_API_DATA']
 
     # https://darksearch.io/apidoc
     def query(self, qry, page):
@@ -212,7 +212,7 @@ class sfp_darksearch(SpiderFootPlugin):
                     self.notifyListeners(evt)
 
             if found:
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(query_results), self.__name__, event)
+                evt = SpiderFootEvent("RAW_API_DATA", str(query_results), self.__name__, event)
                 self.notifyListeners(evt)
 
 # End of sfp_darksearch class

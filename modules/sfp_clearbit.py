@@ -82,7 +82,7 @@ class sfp_clearbit(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
+        return ["RAW_API_DATA", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
                 "AFFILIATE_INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC"]
 
     def query(self, t):
@@ -142,7 +142,7 @@ class sfp_clearbit(SpiderFootPlugin):
             # Get the name associated with the e-mail
             if "person" in data:
                 name = data['person']['name']['fullName']
-                evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name,
+                evt = SpiderFootEvent("RAW_API_DATA", "Possible full name: " + name,
                                       self.__name__, event)
                 self.notifyListeners(evt)
         except Exception:

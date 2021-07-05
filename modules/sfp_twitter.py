@@ -56,7 +56,7 @@ class sfp_twitter(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "GEOINFO"]
+        return ["RAW_API_DATA", "GEOINFO"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -98,7 +98,7 @@ class sfp_twitter(SpiderFootPlugin):
                                 res['content'], re.MULTILINE)
 
         if human_name:
-            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0],
+            e = SpiderFootEvent("RAW_API_DATA", "Possible full name: " + human_name[0],
                                 self.__name__, event)
             self.notifyListeners(e)
 

@@ -68,7 +68,7 @@ class sfp_projectdiscovery(SpiderFootPlugin):
         return ["DOMAIN_NAME"]
 
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
+        return ["RAW_API_DATA", "INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
 
     def query(self, qry):
         headers = {"Accept": "application/json", "Authorization": self.opts["api_key"]}
@@ -129,7 +129,7 @@ class sfp_projectdiscovery(SpiderFootPlugin):
         if not isinstance(subdomains, list):
             return None
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(result), self.__name__, event)
+        evt = SpiderFootEvent("RAW_API_DATA", str(result), self.__name__, event)
         self.notifyListeners(evt)
 
         resultsSet = set()

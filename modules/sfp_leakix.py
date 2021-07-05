@@ -77,7 +77,7 @@ class sfp_leakix(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "GEOINFO", "TCP_PORT_OPEN",
+        return ["RAW_API_DATA", "GEOINFO", "TCP_PORT_OPEN",
                 "OPERATING_SYSTEM", "SOFTWARE_USED", "WEBSERVER_BANNER",
                 "LEAKSITE_CONTENT", "INTERNET_NAME"]
 
@@ -163,7 +163,7 @@ class sfp_leakix(SpiderFootPlugin):
                 self.sf.debug("No information found for host " + eventData)
                 return None
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
 
             services = data.get("Services")

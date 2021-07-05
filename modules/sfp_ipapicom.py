@@ -78,7 +78,7 @@ class sfp_ipapicom(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "GEOINFO",
-            "RAW_RIR_DATA"
+            "RAW_API_DATA"
         ]
 
     def query(self, qry):
@@ -135,7 +135,7 @@ class sfp_ipapicom(SpiderFootPlugin):
                 evt = SpiderFootEvent("PHYSICAL_COORDINATES", f"{data.get('latitude')}, {data.get('longitude')}", self.__name__, event)
                 self.notifyListeners(evt)
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
 
 

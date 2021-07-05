@@ -82,7 +82,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["CO_HOSTED_SITE", "IP_ADDRESS", "RAW_RIR_DATA"]
+        return ["CO_HOSTED_SITE", "IP_ADDRESS", "RAW_API_DATA"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -177,7 +177,7 @@ class sfp_bingsharedip(SpiderFootPlugin):
 
             if urls:
                 evt = SpiderFootEvent(
-                    "RAW_RIR_DATA", str(res), self.__name__, event
+                    "RAW_API_DATA", str(res), self.__name__, event
                 )
                 self.notifyListeners(evt)
 

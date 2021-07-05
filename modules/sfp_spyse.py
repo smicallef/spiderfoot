@@ -93,7 +93,7 @@ class sfp_spyse(SpiderFootPlugin):
     def producedEvents(self):
         return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED", "DOMAIN_NAME",
                 "IP_ADDRESS", "IPV6_ADDRESS", "CO_HOSTED_SITE",
-                "RAW_RIR_DATA", "TCP_PORT_OPEN", "OPERATING_SYSTEM",
+                "RAW_API_DATA", "TCP_PORT_OPEN", "OPERATING_SYSTEM",
                 "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS"]
 
     def querySubdomains(self, qry, currentOffset):
@@ -352,7 +352,7 @@ class sfp_spyse(SpiderFootPlugin):
                         for record in records:
                             domain = record.get('name')
                             if domain:
-                                evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
+                                evt = SpiderFootEvent('RAW_API_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
 
                                 cohosts.append(domain)
@@ -412,7 +412,7 @@ class sfp_spyse(SpiderFootPlugin):
                         for record in records:
                             port = record.get('port')
                             if port:
-                                evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
+                                evt = SpiderFootEvent('RAW_API_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
 
                                 ports.append(str(eventData) + ":" + str(port))
@@ -457,7 +457,7 @@ class sfp_spyse(SpiderFootPlugin):
                         for record in records:
                             domain = record.get('name')
                             if domain:
-                                evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
+                                evt = SpiderFootEvent('RAW_API_DATA', str(record), self.__name__, event)
                                 self.notifyListeners(evt)
 
                                 domains.append(domain)

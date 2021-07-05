@@ -100,7 +100,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             "TARGET_WEB_CONTENT", "BASE64_DATA", "AFFILIATE_DOMAIN_WHOIS",
             "CO_HOSTED_SITE_DOMAIN_WHOIS", "DOMAN_WHOIS", "NETBLOCK_WHOIS",
             "LEAKSITE_CONTENT", "RAW_DNS_RECORDS", "RAW_FILE_META_DATA",
-            "RAW_RIR_DATA", "SEARCH_ENGINE_WEB_CONTENT", "SIMILARDOMAIN_WHOIS",
+            "RAW_API_DATA", "SEARCH_ENGINE_WEB_CONTENT", "SIMILARDOMAIN_WHOIS",
             "SSL_CERTIFICATE_RAW", "SSL_CERTIFICATE_ISSUED", "TCP_PORT_OPEN_BANNER",
             "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS"
         ]
@@ -161,9 +161,9 @@ class sfp_dnsresolve(SpiderFootPlugin):
                              "NETBLOCK_OWNER", "IP_ADDRESS", "IPV6_ADDRESS",
                              "INTERNET_NAME", "AFFILIATE_IPADDR"]:
             data = urllib.parse.unquote(eventData).lower()
-            # We get literal \n from RAW_RIR_DATA in cases where JSON responses
+            # We get literal \n from RAW_API_DATA in cases where JSON responses
             # have been str()'d, breaking interpretation of hostnames.
-            if eventName == 'RAW_RIR_DATA':
+            if eventName == 'RAW_API_DATA':
                 data = re.sub(r'(\\x[0-f]{2}|\\n|\\r)', '\n', data)
 
             for name in self.getTarget().getNames():

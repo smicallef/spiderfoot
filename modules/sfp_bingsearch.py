@@ -70,7 +70,7 @@ class sfp_bingsearch(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["LINKED_URL_INTERNAL", "RAW_RIR_DATA"]
+        return ["LINKED_URL_INTERNAL", "RAW_API_DATA"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -126,7 +126,7 @@ class sfp_bingsearch(SpiderFootPlugin):
 
         if internal_links:
             evt = SpiderFootEvent(
-                "RAW_RIR_DATA", str(res), self.__name__, event
+                "RAW_API_DATA", str(res), self.__name__, event
             )
             self.notifyListeners(evt)
 

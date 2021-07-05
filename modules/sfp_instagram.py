@@ -55,7 +55,7 @@ class sfp_instagram(SpiderFootPlugin):
         return ['SOCIAL_MEDIA']
 
     def producedEvents(self):
-        return ['RAW_RIR_DATA']
+        return ['RAW_API_DATA']
 
     def extractJson(self, html):
         m = r'<script type="application/ld\+json">(.+?)</script>'
@@ -114,7 +114,7 @@ class sfp_instagram(SpiderFootPlugin):
             self.sf.debug(f"{url} is not a valid Instagram profile")
             return None
 
-        e = SpiderFootEvent('RAW_RIR_DATA', str(json_data), self.__name__, event)
+        e = SpiderFootEvent('RAW_API_DATA', str(json_data), self.__name__, event)
         self.notifyListeners(e)
 
 # End of sfp_instagram class

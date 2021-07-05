@@ -66,7 +66,7 @@ class sfp_keybase(SpiderFootPlugin):
 
     def producedEvents(self):
         return [
-            "RAW_RIR_DATA", "SOCIAL_MEDIA", "USERNAME",
+            "RAW_API_DATA", "SOCIAL_MEDIA", "USERNAME",
             "GEOINFO", "BITCOIN_ADDRESS", "PGP_KEY"
         ]
 
@@ -153,7 +153,7 @@ class sfp_keybase(SpiderFootPlugin):
             self.sf.debug("No data found for username")
             return None
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(content), self.__name__, event)
+        evt = SpiderFootEvent("RAW_API_DATA", str(content), self.__name__, event)
         self.notifyListeners(evt)
 
         if eventName == "LINKED_URL_EXTERNAL":
@@ -188,7 +188,7 @@ class sfp_keybase(SpiderFootPlugin):
             # Get and report full name of user
             fullName = profile.get('full_name')
             if fullName:
-                evt = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {fullName}",
+                evt = SpiderFootEvent("RAW_API_DATA", f"Possible full name: {fullName}",
                                       self.__name__, event)
                 self.notifyListeners(evt)
 

@@ -70,7 +70,7 @@ class sfp_onioncity(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT",
-                "RAW_RIR_DATA"]
+                "RAW_API_DATA"]
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -126,7 +126,7 @@ class sfp_onioncity(SpiderFootPlugin):
         )
         if response['code'] in ["200", "201", "202"]:
             evt = SpiderFootEvent(
-                "RAW_RIR_DATA", response["content"], self.__name__, event
+                "RAW_API_DATA", response["content"], self.__name__, event
             )
             self.notifyListeners(evt)
         else:

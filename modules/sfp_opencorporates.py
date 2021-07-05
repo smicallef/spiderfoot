@@ -63,7 +63,7 @@ class sfp_opencorporates(SpiderFootPlugin):
         return ["COMPANY_NAME"]
 
     def producedEvents(self):
-        return ["COMPANY_NAME", "PHYSICAL_ADDRESS", "RAW_RIR_DATA"]
+        return ["COMPANY_NAME", "PHYSICAL_ADDRESS", "RAW_API_DATA"]
 
     def searchCompany(self, qry):
         """Search for company name
@@ -184,7 +184,7 @@ class sfp_opencorporates(SpiderFootPlugin):
                 n = officer.get('name')
                 if n:
                     self.sf.info("Found company officer: " + n)
-                    e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + n, self.__name__, sevt)
+                    e = SpiderFootEvent("RAW_API_DATA", "Possible full name: " + n, self.__name__, sevt)
                     self.notifyListeners(e)
 
     def handleEvent(self, event):

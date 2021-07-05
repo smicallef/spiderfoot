@@ -219,7 +219,7 @@ class sfp_template(SpiderFootPlugin):
             "DEVICE_TYPE",
             "TCP_PORT_OPEN",
             "TCP_PORT_OPEN_BANNER",
-            'RAW_RIR_DATA',
+            'RAW_API_DATA',
             'GEOINFO',
             'VULNERABILITY'
         ]
@@ -335,13 +335,13 @@ class sfp_template(SpiderFootPlugin):
                 pevent = event
 
             # When querying a third party API, always ensure to generate
-            # a RAW_RIR_DATA event. Note that here we are seeing the pevent
+            # a RAW_API_DATA event. Note that here we are seeing the pevent
             # event as the source for this, since the IP address is actually
             # what was queried against the third party, not the netblock.
             # So now we have NETBLOCK_OWNER (event we received) -> IP_ADDRESS
-            # (event we generated above) -> RAW_RIR_DATA (event from the third
+            # (event we generated above) -> RAW_API_DATA (event from the third
             # party about the IP Address we queried).
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, pevent)
+            evt = SpiderFootEvent("RAW_API_DATA", str(rec), self.__name__, pevent)
             self.notifyListeners(evt)
 
             # Whenever operating in a loop, call this to check whether the user

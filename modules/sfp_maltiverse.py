@@ -79,7 +79,7 @@ class sfp_maltiverse(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_RIR_DATA",
+        return ["IP_ADDRESS", "MALICIOUS_IPADDR", "RAW_API_DATA",
                 "MALICIOUS_AFFILIATE_IPADDR"]
 
     # Check whether the IP Address is malicious using Maltiverse API
@@ -197,10 +197,10 @@ class sfp_maltiverse(SpiderFootPlugin):
                 self.notifyListeners(ipEvt)
 
             if eventName.startswith("NETBLOCK_"):
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, ipEvt)
+                evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, ipEvt)
                 self.notifyListeners(evt)
             else:
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
                 self.notifyListeners(evt)
 
             maliciousIPDesc = f"Maltiverse [{maliciousIP}]\n"

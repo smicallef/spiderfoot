@@ -125,7 +125,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
             self.sf.info("No DNS records found for " + eventData)
             return None
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
         self.notifyListeners(evt)
 
         domains = list()

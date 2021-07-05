@@ -86,7 +86,7 @@ class sfp_shodan(SpiderFootPlugin):
     def producedEvents(self):
         return ["OPERATING_SYSTEM", "DEVICE_TYPE",
                 "TCP_PORT_OPEN", "TCP_PORT_OPEN_BANNER",
-                'RAW_RIR_DATA', 'GEOINFO', 'VULNERABILITY']
+                'RAW_API_DATA', 'GEOINFO', 'VULNERABILITY']
 
     def query(self, qry):
         res = self.sf.fetchUrl("https://api.shodan.io/shodan/host/" + qry
@@ -185,7 +185,7 @@ class sfp_shodan(SpiderFootPlugin):
             if hosts is None:
                 return
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(hosts), self.__name__, event)
+            evt = SpiderFootEvent("RAW_API_DATA", str(hosts), self.__name__, event)
             self.notifyListeners(evt)
 
         if eventName == 'WEB_ANALYTICS_ID':
@@ -205,7 +205,7 @@ class sfp_shodan(SpiderFootPlugin):
             if rec is None:
                 return
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
+            evt = SpiderFootEvent("RAW_API_DATA", str(rec), self.__name__, event)
             self.notifyListeners(evt)
             return
 
@@ -240,7 +240,7 @@ class sfp_shodan(SpiderFootPlugin):
             else:
                 pevent = event
 
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, pevent)
+            evt = SpiderFootEvent("RAW_API_DATA", str(rec), self.__name__, pevent)
             self.notifyListeners(evt)
 
             if self.checkForStop():

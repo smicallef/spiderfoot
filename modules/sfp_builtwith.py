@@ -84,7 +84,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC", "RAW_RIR_DATA",
+        return ["INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC", "RAW_API_DATA",
                 "WEBSERVER_TECHNOLOGY", "PHONE_NUMBER", "DOMAIN_NAME",
                 "CO_HOSTED_SITE", "IP_ADDRESS", "WEB_ANALYTICS_ID"]
 
@@ -149,7 +149,7 @@ class sfp_builtwith(SpiderFootPlugin):
             if "Meta" in data:
                 if data['Meta'].get("Names", []):
                     for nb in data['Meta']['Names']:
-                        e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + nb['Name'],
+                        e = SpiderFootEvent("RAW_API_DATA", "Possible full name: " + nb['Name'],
                                             self.__name__, event)
                         self.notifyListeners(e)
                         if nb.get('Email', None):

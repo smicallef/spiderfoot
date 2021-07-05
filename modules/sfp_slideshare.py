@@ -60,7 +60,7 @@ class sfp_slideshare(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "GEOINFO"]
+        return ["RAW_API_DATA", "GEOINFO"]
 
     # Extract meta property contents from HTML
     def extractMeta(self, meta_property, html):
@@ -107,7 +107,7 @@ class sfp_slideshare(SpiderFootPlugin):
             self.sf.debug(f"{url} is not a valid SlideShare profile")
             return None
 
-        e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {human_name[0]}", self.__name__, event)
+        e = SpiderFootEvent("RAW_API_DATA", f"Possible full name: {human_name[0]}", self.__name__, event)
         self.notifyListeners(e)
 
         # Retrieve location (country)

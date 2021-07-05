@@ -71,7 +71,7 @@ class sfp_scylla(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['EMAILADDR_COMPROMISED', 'PASSWORD_COMPROMISED', 'HASH_COMPROMISED', 'RAW_RIR_DATA']
+        return ['EMAILADDR_COMPROMISED', 'PASSWORD_COMPROMISED', 'HASH_COMPROMISED', 'RAW_API_DATA']
 
     # Query Scylla API
     def query(self, qry, per_page=20, start=0):
@@ -148,7 +148,7 @@ class sfp_scylla(SpiderFootPlugin):
 
             position += per_page
 
-            # evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            # evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
             # self.notifyListeners(evt)
 
             for row in data:

@@ -68,7 +68,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
         return ['INTERNET_NAME']
 
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'WEBSERVER_BANNER', 'WEBSERVER_TECHNOLOGY']
+        return ['RAW_API_DATA', 'WEBSERVER_BANNER', 'WEBSERVER_TECHNOLOGY']
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -187,7 +187,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
                 found = True
 
         if found:
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(result_json), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', str(result_json), self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_tool_whatweb class

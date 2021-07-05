@@ -74,7 +74,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         return ["IP_ADDRESS", "DOMAIN_NAME"]
 
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "INTERNET_NAME", "DOMAIN_NAME", "LINKED_URL_INTERNAL"]
+        return ["RAW_API_DATA", "INTERNET_NAME", "DOMAIN_NAME", "LINKED_URL_INTERNAL"]
 
     def queryDomain(self, qry):
         """Query a domain
@@ -230,7 +230,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             self.sf.debug("No information found for %s" % eventData)
             return None
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
         self.notifyListeners(evt)
 
         results = data.get("result")
@@ -260,7 +260,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
                 self.sf.debug("No information found for hash %s" % hash)
                 continue
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', str(results), self.__name__, event)
             self.notifyListeners(evt)
 
             for result in results:

@@ -78,7 +78,7 @@ class sfp_c99(SpiderFootPlugin):
 
     def producedEvents(self):
         return [
-            "RAW_RIR_DATA",
+            "RAW_API_DATA",
             "GEOINFO",
             "INTERNET_NAME",
             "INTERNET_NAME_UNRESOLVED",
@@ -128,7 +128,7 @@ class sfp_c99(SpiderFootPlugin):
         return info
 
     def emitRawRirData(self, data, event):
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+        evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
     def emitPhoneData(self, phoneData, event):

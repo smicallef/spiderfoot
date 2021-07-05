@@ -66,7 +66,7 @@ class sfp_fringeproject(SpiderFootPlugin):
 
     def producedEvents(self):
         return ['INTERNET_NAME', 'LINKED_URL_INTERNAL', 'DOMAIN_NAME',
-                'TCP_PORT_OPEN', 'SOFTWARE_USED', 'RAW_RIR_DATA',
+                'TCP_PORT_OPEN', 'SOFTWARE_USED', 'RAW_API_DATA',
                 'INTERNET_NAME_UNRESOLVED']
 
     def query(self, qry):
@@ -123,7 +123,7 @@ class sfp_fringeproject(SpiderFootPlugin):
             self.sf.info("No results found for " + eventData)
             return None
 
-        e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        e = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)
 
         hosts = list()

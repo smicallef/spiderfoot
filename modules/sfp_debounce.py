@@ -62,7 +62,7 @@ class sfp_debounce(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "EMAILADDR_DISPOSABLE",
-            "RAW_RIR_DATA"
+            "RAW_API_DATA"
         ]
 
     def queryEmailAddr(self, qry):
@@ -104,7 +104,7 @@ class sfp_debounce(SpiderFootPlugin):
         isDisposable = data.get('disposable')
 
         if isDisposable == "true":
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+            evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
 
             evt = SpiderFootEvent("EMAILADDR_DISPOSABLE", eventData, self.__name__, event)

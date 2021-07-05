@@ -68,7 +68,7 @@ class sfp_ipapico(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "GEOINFO",
-            "RAW_RIR_DATA"
+            "RAW_API_DATA"
         ]
 
     def query(self, qry):
@@ -115,7 +115,7 @@ class sfp_ipapico(SpiderFootPlugin):
             evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
             self.notifyListeners(evt)
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
 
 

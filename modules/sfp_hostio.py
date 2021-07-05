@@ -67,7 +67,7 @@ class sfp_hostio(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "IP_ADDRESS",
-            "RAW_RIR_DATA",
+            "RAW_API_DATA",
             "EMAILADDR",
             "WEB_ANALYTICS_ID",
             "WEBSERVER_TECHNOLOGY",
@@ -212,6 +212,6 @@ class sfp_hostio(SpiderFootPlugin):
 
         if found:
             evt = SpiderFootEvent(
-                "RAW_RIR_DATA", json.dumps(data), self.__name__, event
+                "RAW_API_DATA", json.dumps(data), self.__name__, event
             )
             self.notifyListeners(evt)

@@ -62,7 +62,7 @@ class sfp_github(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "GEOINFO", "PUBLIC_CODE_REPO"]
+        return ["RAW_API_DATA", "GEOINFO", "PUBLIC_CODE_REPO"]
 
     # Build up repo info for use as an event
     def buildRepoInfo(self, item):
@@ -141,7 +141,7 @@ class sfp_github(SpiderFootPlugin):
                 self.sf.debug(f"{username} is not a valid GitHub profile")
                 return None
 
-            e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: {full_name}", self.__name__, event)
+            e = SpiderFootEvent("RAW_API_DATA", "Possible full name: {full_name}", self.__name__, event)
             self.notifyListeners(e)
 
             location = json_data.get('location')

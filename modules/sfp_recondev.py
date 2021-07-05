@@ -66,7 +66,7 @@ class sfp_recondev(SpiderFootPlugin):
         return ["DOMAIN_NAME"]
 
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "INTERNET_NAME"]
+        return ["RAW_API_DATA", "INTERNET_NAME"]
 
     def queryDomain(self, qry):
         """Query a domain
@@ -165,7 +165,7 @@ class sfp_recondev(SpiderFootPlugin):
             self.sf.debug(f"No information found for domain {eventData}")
             return
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
         self.notifyListeners(evt)
 
         domains = []

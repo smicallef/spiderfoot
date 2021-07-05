@@ -78,7 +78,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'MALICIOUS_IPADDR', 'GEOINFO']
+        return ['RAW_API_DATA', 'MALICIOUS_IPADDR', 'GEOINFO']
 
     # Query the phone-validate REST API
     # https://www.neutrinoapi.com/api/phone-validate/
@@ -196,7 +196,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
 
                     evt = SpiderFootEvent("GEOINFO", location, self.__name__, event)
                     self.notifyListeners(evt)
-                    evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                    evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
                     self.notifyListeners(evt)
 
         if eventName == 'IP_ADDRESS':
@@ -218,7 +218,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
                 if data.get('is-listed'):
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", "NeutrinoAPI [" + eventData + "]", self.__name__, event)
                     self.notifyListeners(evt)
-                    evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                    evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
                     self.notifyListeners(evt)
 
             data = self.queryHostReputation(eventData)
@@ -229,7 +229,7 @@ class sfp_neutrinoapi(SpiderFootPlugin):
                 if data.get('is-listed'):
                     evt = SpiderFootEvent("MALICIOUS_IPADDR", "NeutrinoAPI [" + eventData + "]", self.__name__, event)
                     self.notifyListeners(evt)
-                    evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                    evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
                     self.notifyListeners(evt)
 
 # End of sfp_neutrinoapi class

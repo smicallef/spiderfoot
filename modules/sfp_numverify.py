@@ -77,7 +77,7 @@ class sfp_numverify(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'GEOINFO', 'PROVIDER_TELCO']
+        return ['RAW_API_DATA', 'GEOINFO', 'PROVIDER_TELCO']
 
     # Query numverify API for the specified phone number
     # https://numverify.com/documentation
@@ -156,7 +156,7 @@ class sfp_numverify(SpiderFootPlugin):
             self.sf.debug("No phone information found for " + eventData)
             return None
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+        evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
         if data.get('country_code'):

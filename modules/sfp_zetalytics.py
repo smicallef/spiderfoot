@@ -216,4 +216,4 @@ class sfp_zetalytics(SpiderFootPlugin):
             return
 
         if events_generated and not self.checkForStop():
-            self.emit("RAW_RIR_DATA", json.dumps(data), event)
+            self.emit("RAW_API_DATA", json.dumps(data), event)

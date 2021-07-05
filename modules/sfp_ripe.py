@@ -76,7 +76,7 @@ class sfp_ripe(SpiderFootPlugin):
     # produced.
     def producedEvents(self):
         return ["NETBLOCK_MEMBER", "NETBLOCK_OWNER", "BGP_AS_MEMBER",
-                "RAW_RIR_DATA", "BGP_AS_OWNER"]
+                "RAW_API_DATA", "BGP_AS_OWNER"]
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
@@ -303,7 +303,7 @@ class sfp_ripe(SpiderFootPlugin):
                         evt = SpiderFootEvent("NETBLOCK_OWNER", netblock,
                                               self.__name__, event)
                         self.notifyListeners(evt)
-                    evt = SpiderFootEvent("RAW_RIR_DATA", self.lastContent, self.__name__,
+                    evt = SpiderFootEvent("RAW_API_DATA", self.lastContent, self.__name__,
                                           event)
                     self.notifyListeners(evt)
 
@@ -320,7 +320,7 @@ class sfp_ripe(SpiderFootPlugin):
             if eventName == "NETBLOCK_OWNER" and self.ownsAs(asn):
                 asevt = SpiderFootEvent("BGP_AS_OWNER", asn, self.__name__, event)
                 self.notifyListeners(asevt)
-                evt = SpiderFootEvent("RAW_RIR_DATA", self.lastContent, self.__name__,
+                evt = SpiderFootEvent("RAW_API_DATA", self.lastContent, self.__name__,
                                       event)
                 self.notifyListeners(evt)
             else:

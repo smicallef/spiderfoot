@@ -70,7 +70,7 @@ class sfp_textmagic(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "PHONE_NUMBER_TYPE",
-            "RAW_RIR_DATA"
+            "RAW_API_DATA"
         ]
 
     def handle_error_response(self, qry, res):
@@ -142,7 +142,7 @@ class sfp_textmagic(SpiderFootPlugin):
 
         phoneNumberType = data.get("type")
         if phoneNumberType is not None:
-            evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+            evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
             self.notifyListeners(evt)
 
             evt = SpiderFootEvent("PHONE_NUMBER_TYPE", phoneNumberType, self.__name__, event)

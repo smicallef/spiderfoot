@@ -86,7 +86,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
             "MALICIOUS_AFFILIATE_IPADDR",
             "MALICIOUS_AFFILIATE_INTERNET_NAME",
             "MALICIOUS_COHOST",
-            "RAW_RIR_DATA",
+            "RAW_API_DATA",
         ]
 
     def query(self, qry):
@@ -208,7 +208,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         if rec is None:
             return None
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
+        evt = SpiderFootEvent("RAW_API_DATA", str(rec), self.__name__, event)
         self.notifyListeners(evt)
 
         evt = SpiderFootEvent(

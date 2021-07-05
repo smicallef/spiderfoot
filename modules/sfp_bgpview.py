@@ -58,7 +58,7 @@ class sfp_bgpview(SpiderFootPlugin):
 
     def producedEvents(self):
         return ['BGP_AS_MEMBER', 'NETBLOCK_MEMBER',
-                'PHYSICAL_ADDRESS', 'RAW_RIR_DATA']
+                'PHYSICAL_ADDRESS', 'RAW_API_DATA']
 
     def queryAsn(self, qry):
         res = self.sf.fetchUrl("https://api.bgpview.io/asn/" + qry.replace('AS', ''),
@@ -167,7 +167,7 @@ class sfp_bgpview(SpiderFootPlugin):
                 self.sf.info("No results found for ASN " + eventData)
                 return None
 
-            e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            e = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
             self.notifyListeners(e)
 
             address = data.get('owner_address')
@@ -185,7 +185,7 @@ class sfp_bgpview(SpiderFootPlugin):
                 self.sf.info("No results found for netblock " + eventData)
                 return None
 
-            e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            e = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
             self.notifyListeners(e)
 
             address = data.get('owner_address')
@@ -203,7 +203,7 @@ class sfp_bgpview(SpiderFootPlugin):
                 self.sf.info("No results found for IP address " + eventData)
                 return None
 
-            e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            e = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
             self.notifyListeners(e)
 
             prefixes = data.get('prefixes')

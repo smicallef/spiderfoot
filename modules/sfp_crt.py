@@ -66,7 +66,7 @@ class sfp_crt(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["SSL_CERTIFICATE_RAW", "RAW_RIR_DATA",
+        return ["SSL_CERTIFICATE_RAW", "RAW_API_DATA",
                 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED', 'DOMAIN_NAME',
                 'AFFILIATE_INTERNET_NAME', 'AFFILIATE_INTERNET_NAME_UNRESOLVED',
                 'AFFILIATE_DOMAIN_NAME']
@@ -106,7 +106,7 @@ class sfp_crt(SpiderFootPlugin):
         if data is None or len(data) == 0:
             return None
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+        evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
         domains = list()

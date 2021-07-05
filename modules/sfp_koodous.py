@@ -134,7 +134,7 @@ class sfp_koodous(SpiderFootPlugin):
                 self.errorState = True
                 return
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(data), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', json.dumps(data), self.__name__, event)
             self.notifyListeners(evt)
 
             results = data.get('results')

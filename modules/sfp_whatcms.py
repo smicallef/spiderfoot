@@ -83,7 +83,7 @@ class sfp_whatcms(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'WEBSERVER_TECHNOLOGY']
+        return ['RAW_API_DATA', 'WEBSERVER_TECHNOLOGY']
 
     # Query WhatCMS API for the CMS used by the specified URL
     # https://whatcms.org/Documentation
@@ -221,7 +221,7 @@ class sfp_whatcms(SpiderFootPlugin):
             self.sf.debug('No web technology found for ' + eventData)
             return
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
+        evt = SpiderFootEvent('RAW_API_DATA', str(results), self.__name__, event)
         self.notifyListeners(evt)
 
         for result in results:

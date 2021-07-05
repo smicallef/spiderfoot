@@ -83,7 +83,7 @@ class sfp_phishstats(SpiderFootPlugin):
         return [
             "IP_ADDRESS",
             "MALICIOUS_IPADDR",
-            "RAW_RIR_DATA",
+            "RAW_API_DATA",
             "MALICIOUS_AFFILIATE_IPADDR"
         ]
 
@@ -194,10 +194,10 @@ class sfp_phishstats(SpiderFootPlugin):
                 self.notifyListeners(ipEvt)
 
             if eventName.startswith("NETBLOCK_"):
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, ipEvt)
+                evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, ipEvt)
                 self.notifyListeners(evt)
             else:
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
                 self.notifyListeners(evt)
 
             maliciousIPDesc = f"Phishstats [{maliciousIP}]\n"

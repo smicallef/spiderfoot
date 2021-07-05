@@ -69,7 +69,7 @@ class sfp_grep_app(SpiderFootPlugin):
 
     def producedEvents(self):
         return ["EMAILADDR", "EMAILADDR_GENERIC", "DOMAIN_NAME",
-                "INTERNET_NAME", "RAW_RIR_DATA",
+                "INTERNET_NAME", "RAW_API_DATA",
                 "INTERNET_NAME_UNRESOLVED", "LINKED_URL_INTERNAL"]
 
     def query(self, qry, page):
@@ -162,7 +162,7 @@ class sfp_grep_app(SpiderFootPlugin):
                 if result is None:
                     continue
 
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(result), self.__name__, event)
+                evt = SpiderFootEvent("RAW_API_DATA", str(result), self.__name__, event)
                 self.notifyListeners(evt)
 
                 content = result.get('content')

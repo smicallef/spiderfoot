@@ -63,7 +63,7 @@ class sfp_crobat_api(SpiderFootPlugin):
         return ["DOMAIN_NAME"]
 
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
+        return ["RAW_API_DATA", "INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
 
     def queryDomain(self, qry, page=0):
         headers = {
@@ -148,7 +148,7 @@ class sfp_crobat_api(SpiderFootPlugin):
                 self.sf.debug(f"No information found for domain {eventData} (page: {page})")
                 return None
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
 
             page += 1

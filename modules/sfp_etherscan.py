@@ -78,7 +78,7 @@ class sfp_etherscan(SpiderFootPlugin):
     def producedEvents(self):
         return [
             "ETHEREUM_BALANCE",
-            "RAW_RIR_DATA"
+            "RAW_API_DATA"
         ]
 
     def query(self, qry):
@@ -132,7 +132,7 @@ class sfp_etherscan(SpiderFootPlugin):
         evt = SpiderFootEvent("ETHEREUM_BALANCE", f"{str(balance)} ETH", self.__name__, event)
         self.notifyListeners(evt)
 
-        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+        evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
 
 # End of sfp_etherscan class

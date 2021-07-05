@@ -78,7 +78,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ["RAW_RIR_DATA", "DOMAIN_REGISTRAR", "DOMAIN_WHOIS", "PROVIDER_DNS",
+        return ["RAW_API_DATA", "DOMAIN_REGISTRAR", "DOMAIN_WHOIS", "PROVIDER_DNS",
                 "EMAILADDR", "EMAILADDR_GENERIC", "PHONE_NUMBER", "PHYSICAL_ADDRESS",
                 "AFFILIATE_DOMAIN_UNREGISTERED"]
 
@@ -174,7 +174,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
             self.sf.debug("No information found for domain %s" % eventData)
             return None
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
+        evt = SpiderFootEvent('RAW_API_DATA', str(res), self.__name__, event)
         self.notifyListeners(evt)
 
         dns_providers = list()
@@ -260,7 +260,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
             for name in set(names):
-                evt = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name {name}", self.__name__, event)
+                evt = SpiderFootEvent("RAW_API_DATA", f"Possible full name {name}", self.__name__, event)
                 self.notifyListeners(evt)
 
             for phone in set(phones):

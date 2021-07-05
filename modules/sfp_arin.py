@@ -73,7 +73,7 @@ class sfp_arin(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["RAW_RIR_DATA"]
+        return ["RAW_API_DATA"]
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
@@ -85,7 +85,7 @@ class sfp_arin(SpiderFootPlugin):
                                    useragent=self.opts['_useragent'], headers=head)
             if res['content'] is not None and res['code'] != "404":
                 self.memCache[url] = res
-                evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__,
+                evt = SpiderFootEvent("RAW_API_DATA", res['content'], self.__name__,
                                       self.currentEventSrc)
                 self.notifyListeners(evt)
         return res
@@ -162,7 +162,7 @@ class sfp_arin(SpiderFootPlugin):
                         # the names are separated in the content and sfp_names
                         # won't recognise it. So we submit this and see if it
                         # really is considered a name.
-                        evt = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + name,
+                        evt = SpiderFootEvent("RAW_API_DATA", "Possible full name: " + name,
                                               self.__name__, self.currentEventSrc)
                         self.notifyListeners(evt)
 

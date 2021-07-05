@@ -68,7 +68,7 @@ class sfp_urlscan(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['GEOINFO', 'LINKED_URL_INTERNAL', 'RAW_RIR_DATA',
+        return ['GEOINFO', 'LINKED_URL_INTERNAL', 'RAW_API_DATA',
                 'DOMAIN_NAME', 'INTERNET_NAME', 'INTERNET_NAME_UNRESOLVED',
                 'BGP_AS_MEMBER', 'WEBSERVER_BANNER']
 
@@ -125,7 +125,7 @@ class sfp_urlscan(SpiderFootPlugin):
         if not results:
             return
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(results), self.__name__, event)
+        evt = SpiderFootEvent('RAW_API_DATA', str(results), self.__name__, event)
         self.notifyListeners(evt)
 
         urls = list()

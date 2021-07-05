@@ -86,7 +86,7 @@ class sfp_seon(SpiderFootPlugin):
             "PROVIDER_TELCO",
             "PHONE_NUMBER_TYPE",
             "WEBSERVER_TECHNOLOGY",
-            "RAW_RIR_DATA"
+            "RAW_API_DATA"
         ]
 
     def query(self, qry, eventName):
@@ -193,7 +193,7 @@ class sfp_seon(SpiderFootPlugin):
                         self.notifyListeners(evt)
                         dataFound = True
                 if dataFound:
-                    evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                    evt = SpiderFootEvent('RAW_API_DATA', str(resultSet), self.__name__, event)
                     self.notifyListeners(evt)
 
         elif eventName == "EMAILADDR":
@@ -255,7 +255,7 @@ class sfp_seon(SpiderFootPlugin):
                         dataFound = True
 
                 if dataFound:
-                    evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                    evt = SpiderFootEvent('RAW_API_DATA', str(resultSet), self.__name__, event)
                     self.notifyListeners(evt)
 
         elif eventName == "PHONE_NUMBER":
@@ -290,7 +290,7 @@ class sfp_seon(SpiderFootPlugin):
                     dataFound = True
 
                 if dataFound:
-                    evt = SpiderFootEvent('RAW_RIR_DATA', str(resultSet), self.__name__, event)
+                    evt = SpiderFootEvent('RAW_API_DATA', str(resultSet), self.__name__, event)
                     self.notifyListeners(evt)
 
 # End of sfp_seon class

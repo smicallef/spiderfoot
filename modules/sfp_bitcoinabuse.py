@@ -126,6 +126,6 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
                         self.notifyListeners(evt)
 
                         rirevt = SpiderFootEvent(
-                            "RAW_RIR_DATA", json.dumps(rec), self.__name__, event
+                            "RAW_API_DATA", json.dumps(rec), self.__name__, event
                         )
                         self.notifyListeners(rirevt)

@@ -146,7 +146,7 @@ class sfp_crxcavator(SpiderFootPlugin):
             self.sf.info(f"No results found for {domain_keyword}")
             return
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(results), self.__name__, event)
+        evt = SpiderFootEvent('RAW_API_DATA', json.dumps(results), self.__name__, event)
         self.notifyListeners(evt)
 
         urls = list()
@@ -170,7 +170,7 @@ class sfp_crxcavator(SpiderFootPlugin):
             if not extensions:
                 continue
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(extensions), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', json.dumps(extensions), self.__name__, event)
             self.notifyListeners(evt)
 
             for extension in extensions:

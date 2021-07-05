@@ -71,7 +71,7 @@ class sfp_googlemaps(SpiderFootPlugin):
         return ['DOMAIN_NAME', 'PHYSICAL_ADDRESS']
 
     def producedEvents(self):
-        return ["PHYSICAL_ADDRESS", "PHYSICAL_COORDINATES", "RAW_RIR_DATA"]
+        return ["PHYSICAL_ADDRESS", "PHYSICAL_COORDINATES", "RAW_API_DATA"]
 
     def query(self, address):
         params = urllib.parse.urlencode({
@@ -121,7 +121,7 @@ class sfp_googlemaps(SpiderFootPlugin):
             return None
 
         evt = SpiderFootEvent(
-            "RAW_RIR_DATA",
+            "RAW_API_DATA",
             res['content'],
             self.__name__,
             event

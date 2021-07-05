@@ -99,7 +99,7 @@ class sfp_greynoise(SpiderFootPlugin):
         return ["MALICIOUS_IPADDR", "MALICIOUS_ASN", "MALICIOUS_SUBNET",
                 "MALICIOUS_AFFILIATE_IPADDR", "MALICIOUS_NETBLOCK",
                 "COMPANY_NAME", "GEOINFO", "BGP_AS_MEMBER", "OPERATING_SYSTEM",
-                "RAW_RIR_DATA"]
+                "RAW_API_DATA"]
 
     def queryIP(self, qry):
         header = {"key": self.opts['api_key']}
@@ -207,7 +207,7 @@ class sfp_greynoise(SpiderFootPlugin):
                         if met.get("os", "unknown") != "unknown":
                             e = SpiderFootEvent("OPERATING_SYSTEM", met.get("os"), self.__name__, event)
                             self.notifyListeners(e)
-                        e = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
+                        e = SpiderFootEvent("RAW_API_DATA", str(rec), self.__name__, event)
                         self.notifyListeners(e)
 
                     if rec.get("classification"):

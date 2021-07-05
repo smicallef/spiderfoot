@@ -91,7 +91,7 @@ class sfp_onyphe(SpiderFootPlugin):
             "MALICIOUS_IPADDR",
             "LEAKSITE_CONTENT",
             "VULNERABILITY",
-            "RAW_RIR_DATA",
+            "RAW_API_DATA",
             "INTERNET_NAME",
             "INTERNET_NAME_UNRESOLVED",
             "PHYSICAL_COORDINATES",
@@ -267,7 +267,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
         if geoLocDataArr is not None:
             evt = SpiderFootEvent(
-                "RAW_RIR_DATA", str(geoLocDataArr), self.__name__, event
+                "RAW_API_DATA", str(geoLocDataArr), self.__name__, event
             )
             self.notifyListeners(evt)
 
@@ -317,7 +317,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
         if pastriesDataArr is not None:
             evt = SpiderFootEvent(
-                "RAW_RIR_DATA", str(pastriesDataArr), self.__name__, event
+                "RAW_API_DATA", str(pastriesDataArr), self.__name__, event
             )
             self.notifyListeners(evt)
 
@@ -347,7 +347,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
         if threatListDataArr is not None:
             evt = SpiderFootEvent(
-                "RAW_RIR_DATA", str(threatListDataArr), self.__name__, event
+                "RAW_API_DATA", str(threatListDataArr), self.__name__, event
             )
             self.notifyListeners(evt)
 
@@ -381,7 +381,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
         if vulnerabilityDataArr is not None:
             evt = SpiderFootEvent(
-                "RAW_RIR_DATA", str(vulnerabilityDataArr), self.__name__, event
+                "RAW_API_DATA", str(vulnerabilityDataArr), self.__name__, event
             )
             self.notifyListeners(evt)
 

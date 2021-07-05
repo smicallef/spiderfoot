@@ -56,7 +56,7 @@ class sfp_venmo(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['RAW_RIR_DATA']
+        return ['RAW_API_DATA']
 
     # Query Venmo API
     def query(self, qry):
@@ -102,13 +102,13 @@ class sfp_venmo(SpiderFootPlugin):
         if not data:
             return
 
-        e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        e = SpiderFootEvent('RAW_API_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)
 
         display_name = data.get('display_name')
 
         if display_name:
-            evt = SpiderFootEvent('RAW_RIR_DATA',
+            evt = SpiderFootEvent('RAW_API_DATA',
                                   'Possible full name: ' + display_name,
                                   self.__name__, event)
             self.notifyListeners(evt)

@@ -92,7 +92,7 @@ class sfp_spur(SpiderFootPlugin):
         return [
             "IP_ADDRESS",
             "MALICIOUS_IPADDR",
-            "RAW_RIR_DATA",
+            "RAW_API_DATA",
             "GEO_INFO",
             "COMPANY_NAME",
             "MALICIOUS_AFFILIATE_IPADDR"
@@ -201,10 +201,10 @@ class sfp_spur(SpiderFootPlugin):
             if eventName.startswith("NETBLOCK_"):
                 ipEvt = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
                 self.notifyListeners(ipEvt)
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, ipEvt)
+                evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, ipEvt)
                 self.notifyListeners(evt)
             else:
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+                evt = SpiderFootEvent("RAW_API_DATA", str(data), self.__name__, event)
                 self.notifyListeners(evt)
 
             geoTag = data.get('geoLite')

@@ -82,7 +82,7 @@ class sfp_dehashed(SpiderFootPlugin):
             'EMAILADDR_COMPROMISED',
             'PASSWORD_COMPROMISED',
             'HASH_COMPROMISED',
-            'RAW_RIR_DATA'
+            'RAW_API_DATA'
         ]
 
     # Query Dehashed
@@ -198,7 +198,7 @@ class sfp_dehashed(SpiderFootPlugin):
                             evt = SpiderFootEvent('HASH_COMPROMISED', f"{email}:{passwordHash} [{leakSource}]", self.__name__, event)
                             self.notifyListeners(evt)
 
-                        evt = SpiderFootEvent('RAW_RIR_DATA', str(row), self.__name__, event)
+                        evt = SpiderFootEvent('RAW_API_DATA', str(row), self.__name__, event)
                         self.notifyListeners(evt)
 
                 if eventName == "DOMAIN_NAME":
@@ -218,7 +218,7 @@ class sfp_dehashed(SpiderFootPlugin):
                         evt = SpiderFootEvent('HASH_COMPROMISED', f"{email}:{passwordHash} [{leakSource}]", self.__name__, pevent)
                         self.notifyListeners(evt)
 
-                    evt = SpiderFootEvent('RAW_RIR_DATA', str(row), self.__name__, pevent)
+                    evt = SpiderFootEvent('RAW_API_DATA', str(row), self.__name__, pevent)
                     self.notifyListeners(evt)
 
             currentPage += 1

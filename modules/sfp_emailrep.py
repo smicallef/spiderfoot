@@ -68,7 +68,7 @@ class sfp_emailrep(SpiderFootPlugin):
         return ['EMAILADDR']
 
     def producedEvents(self):
-        return ['RAW_RIR_DATA', 'EMAILADDR_COMPROMISED', 'MALICIOUS_EMAILADDR']
+        return ['RAW_API_DATA', 'EMAILADDR_COMPROMISED', 'MALICIOUS_EMAILADDR']
 
     # https://emailrep.io/docs/
     def query(self, qry):
@@ -156,7 +156,7 @@ class sfp_emailrep(SpiderFootPlugin):
             self.notifyListeners(evt)
 
         if malicious_activity or credentials_leaked:
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
+            evt = SpiderFootEvent('RAW_API_DATA', str(res), self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_emailrep class

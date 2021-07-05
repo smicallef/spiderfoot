@@ -81,7 +81,7 @@ class sfp_fullcontact(SpiderFootPlugin):
         return [
             "EMAILADDR",
             "EMAILADDR_GENERIC",
-            "RAW_RIR_DATA",
+            "RAW_API_DATA",
             "PHONE_NUMBER",
             "GEOINFO",
             "PHYSICAL_ADDRESS"
@@ -191,7 +191,7 @@ class sfp_fullcontact(SpiderFootPlugin):
             full_name = data.get('fullName')
 
             if full_name:
-                e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {full_name}", self.__name__, event)
+                e = SpiderFootEvent("RAW_API_DATA", f"Possible full name: {full_name}", self.__name__, event)
                 self.notifyListeners(e)
 
             return None
@@ -258,7 +258,7 @@ class sfp_fullcontact(SpiderFootPlugin):
                     full_name = r.get('fullName')
                     if full_name:
                         e = SpiderFootEvent(
-                            "RAW_RIR_DATA",
+                            "RAW_API_DATA",
                             f"Possible full name: {full_name}",
                             self.__name__,
                             event
