@@ -129,7 +129,7 @@ class SpiderFootWebUi:
         Returns:
             str: HTTP response template
         """
-        templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
+        templ = Template(filename='templates/error.tmpl', lookup=self.lookup)
         return templ.render(message='Not Found', docroot=self.docroot, status=status, version=__version__)
 
     def jsonify_error(self, status, message):
@@ -162,7 +162,7 @@ class SpiderFootWebUi:
             None
         """
 
-        templ = Template(filename='dyn/error.tmpl', lookup=self.lookup)
+        templ = Template(filename='templates/error.tmpl', lookup=self.lookup)
         return templ.render(message=message, docroot=self.docroot, version=__version__)
 
     def cleanUserInput(self, inputList):
@@ -628,7 +628,7 @@ class SpiderFootWebUi:
                 self.log.info("Waiting for the scan to initialize...")
                 time.sleep(1)
 
-        templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
+        templ = Template(filename='templates/scanlist.tmpl', lookup=self.lookup)
         return templ.render(rerunscans=True, docroot=self.docroot, pageid="SCANLIST", version=__version__)
 
     @cherrypy.expose
@@ -641,7 +641,7 @@ class SpiderFootWebUi:
 
         dbh = SpiderFootDb(self.config)
         types = dbh.eventTypes()
-        templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
+        templ = Template(filename='templates/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
                             modules=self.config['__modules__'], scanname="",
                             selectedmods="", scantarget="", version=__version__)
@@ -680,7 +680,7 @@ class SpiderFootWebUi:
 
         modlist = scanconfig['_modulesenabled'].split(',')
 
-        templ = Template(filename='dyn/newscan.tmpl', lookup=self.lookup)
+        templ = Template(filename='templates/newscan.tmpl', lookup=self.lookup)
         return templ.render(pageid='NEWSCAN', types=types, docroot=self.docroot,
                             modules=self.config['__modules__'], selectedmods=modlist,
                             scanname=str(scanname),
@@ -694,7 +694,7 @@ class SpiderFootWebUi:
             None
         """
 
-        templ = Template(filename='dyn/scanlist.tmpl', lookup=self.lookup)
+        templ = Template(filename='templates/scanlist.tmpl', lookup=self.lookup)
         return templ.render(pageid='SCANLIST', docroot=self.docroot, version=__version__)
 
     @cherrypy.expose
@@ -713,7 +713,7 @@ class SpiderFootWebUi:
         if res is None:
             return self.error("Scan ID not found.")
 
-        templ = Template(filename='dyn/scaninfo.tmpl', lookup=self.lookup, input_encoding='utf-8')
+        templ = Template(filename='templates/scaninfo.tmpl', lookup=self.lookup, input_encoding='utf-8')
         return templ.render(id=id, name=html.escape(res[0]), status=res[5], docroot=self.docroot, version=__version__,
                             pageid="SCANLIST")
 
@@ -728,7 +728,7 @@ class SpiderFootWebUi:
             None
         """
 
-        templ = Template(filename='dyn/opts.tmpl', lookup=self.lookup)
+        templ = Template(filename='templates/opts.tmpl', lookup=self.lookup)
         self.token = random.SystemRandom().randint(0, 99999999)
         return templ.render(opts=self.config, pageid='SETTINGS', token=self.token, version=__version__,
                             updated=updated, docroot=self.docroot)

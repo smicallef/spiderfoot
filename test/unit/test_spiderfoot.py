@@ -74,15 +74,6 @@ class TestSpiderFoot(unittest.TestCase):
         sf.socksProxy = 'new socket'
         self.assertEqual('new socket', sf.socksProxy)
 
-    def test_refresh_tor_ident_should_return_none(self):
-        """
-        Test refreshTorIdent(self)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        res = sf.refreshTorIdent()
-        self.assertEqual(None, res)
-
     def test_optValueToData_should_return_data_as_string(self):
         """
         Test optValueToData(self, val)

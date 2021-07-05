@@ -14,7 +14,6 @@ ipaddr>=2.2.0
 phonenumbers>=8.12.9
 pygexf>=0.2.2
 PyPDF2>=1.26.0
-stem>=1.7.1
 python-whois>=0.7.1
 secure>=0.2.1,<0.3.0
 pyOpenSSL>=17.5.0
