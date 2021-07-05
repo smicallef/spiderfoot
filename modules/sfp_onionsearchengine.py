@@ -24,7 +24,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
     meta = {
         'name': "Onionsearchengine.com",
         'summary': "Search Tor onionsearchengine.com for mentions of the target domain.",
-        'flags': [""],
+        'flags': ["tor"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {

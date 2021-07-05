@@ -76,8 +76,8 @@ class sfp_bitcoin(SpiderFootPlugin):
 
         if sourceData in self.results:
             return None
-        else:
-            self.results[sourceData] = True
+
+        self.results[sourceData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 

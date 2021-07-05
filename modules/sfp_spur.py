@@ -148,7 +148,6 @@ class sfp_spur(SpiderFootPlugin):
             self.errorState = True
             return
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return

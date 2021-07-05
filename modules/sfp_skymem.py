@@ -71,8 +71,8 @@ class sfp_skymem(SpiderFootPlugin):
 
         if eventData in self.results:
             return
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 

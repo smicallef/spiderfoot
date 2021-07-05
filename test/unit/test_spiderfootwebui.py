@@ -1,38 +1,15 @@
 # test_spiderfootwebui.py
+import pytest
 import unittest
 
 from sfwebui import SpiderFootWebUi
 
 
+@pytest.mark.usefixtures
 class TestSpiderFootWebUi(unittest.TestCase):
     """
     Test SpiderFootWebUi
     """
-    default_options = {
-        '_debug': False,
-        '__logging': True,
-        '__outputfilter': None,
-        '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',
-        '_dnsserver': '',
-        '_fetchtimeout': 5,
-        '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
-        '_internettlds_cache': 72,
-        '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-        '__version__': '3.3',
-        '__database': 'spiderfoot.test.db',  # note: test database file
-        '__modules__': None,
-        '_socks1type': '',
-        '_socks2addr': '',
-        '_socks3port': '',
-        '_socks4user': '',
-        '_socks5pwd': '',
-        '_torctlport': 9051,
-        '__logstdout': False
-    }
-
-    default_web_options = {
-        'root': '/'
-    }
 
     def test_init_no_options_should_raise(self):
         """
@@ -48,21 +25,30 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         Test __init__(self, config)
         """
-        sfwebui = SpiderFootWebUi(self.default_web_options, self.default_options)
+        opts = self.default_options
+        opts['__modules__'] = dict()
+
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         self.assertIsInstance(sfwebui, SpiderFootWebUi)
 
     def test_error_page(self):
         """
         Test error_page(self)
         """
-        sfwebui = SpiderFootWebUi(self.default_web_options, self.default_options)
+        opts = self.default_options
+        opts['__modules__'] = dict()
+
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         sfwebui.error_page()
 
     def test_error_page_404(self):
         """
         Test error_page_404(self, status, message, traceback, version)
         """
-        sfwebui = SpiderFootWebUi(self.default_web_options, self.default_options)
+        opts = self.default_options
+        opts['__modules__'] = dict()
+
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         error_page_404 = sfwebui.error_page_404(None, None, None, None)
         self.assertIsInstance(error_page_404, str)
 
@@ -72,7 +58,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         clean_user_input = sfwebui.cleanUserInput(list())
         self.assertIsInstance(clean_user_input, list)
 
@@ -82,7 +68,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
 
         invalid_types = [None, "", dict()]
         for invalid_type in invalid_types:
@@ -96,7 +82,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         search_results = sfwebui.searchBase(None, None, None)
         self.assertIsInstance(search_results, list)
 
@@ -109,7 +95,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         search_results = sfwebui.scaneventresultexport("", "", "excel")
         self.assertIsInstance(search_results, bytes)
 
@@ -119,7 +105,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         search_results = sfwebui.scaneventresultexport("", "", "excel")
         self.assertIsInstance(search_results, bytes)
 
@@ -130,7 +116,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         search_results = sfwebui.scansearchresultexport("", "", "excel")
         self.assertIsInstance(search_results, bytes)
 
@@ -141,7 +127,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         search_results = sfwebui.scanexportjsonmulti(None)
         self.assertIsInstance(search_results, bytes)
 
@@ -152,7 +138,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_viz = sfwebui.scanviz(None, None)
         self.assertIsInstance(scan_viz, str)
 
@@ -163,7 +149,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_viz_multi = sfwebui.scanvizmulti(None, None)
         self.assertIsInstance(scan_viz_multi, str)
 
@@ -174,7 +160,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_opts = sfwebui.scanopts("example scan instance")
         self.assertIsInstance(scan_opts, str)
 
@@ -186,7 +172,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         rerunscan = sfwebui.rerunscan("example scan instance")
         self.assertIsInstance(rerunscan, str)
 
@@ -197,7 +183,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         rerunscanmulti = sfwebui.rerunscanmulti("example scan instance")
         self.assertIsInstance(rerunscanmulti, str)
 
@@ -214,7 +200,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         clone_scan = sfwebui.clonescan("example scan instance")
         self.assertIsInstance(clone_scan, str)
 
@@ -224,7 +210,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         index = sfwebui.index()
         self.assertIsInstance(index, str)
 
@@ -234,7 +220,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_info = sfwebui.scaninfo("example scan instance")
         self.assertIsInstance(scan_info, str)
 
@@ -251,19 +237,20 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         opts_export = sfwebui.optsexport(None)
         self.assertIsInstance(opts_export, str)
 
-    def test_optsraw_should_return_bytes(self):
+    def test_optsraw_should_return_a_list(self):
         """
         Test optsraw(self)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         opts_raw = sfwebui.optsraw()
-        self.assertIsInstance(opts_raw, bytes)
+        self.assertIsInstance(opts_raw, list)
+        self.assertEqual(opts_raw[0], 'SUCCESS')
 
     def test_error(self):
         """
@@ -271,33 +258,23 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
 
         message = "example message"
         scan_error = sfwebui.error(message)
         self.assertIsInstance(scan_error, str)
         self.assertIn("example message", scan_error)
 
-    def test_scandelete(self):
+    def test_scandelete_invalid_scanid_should_return_an_error(self):
         """
-        Test scandelete(self, id, confirm=None)
-        """
-        opts = self.default_options
-        opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
-        scan_delete = sfwebui.scandelete("example scan id", None)
-        self.assertIsInstance(scan_delete, str)
-
-    @unittest.skip("todo")
-    def test_scandeletemulti(self):
-        """
-        Test scandeletemulti(self, ids, confirm=None)
+        Test scandelete(self, id)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
-        scan_delete = sfwebui.scandeletemulti("example scan id", None)
-        self.assertIsInstance(scan_delete, str)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        scan_delete = sfwebui.scandelete("example scan id")
+        self.assertIsInstance(scan_delete, dict)
+        self.assertEqual("Scan example scan id does not exist", scan_delete.get('error').get('message'))
 
     @unittest.skip("todo")
     def test_savesettings(self):
@@ -320,173 +297,272 @@ class TestSpiderFootWebUi(unittest.TestCase):
         """
         self.assertEqual('TBD', 'TBD')
 
-    def test_eventtypes_should_return_bytes(self):
+    def test_eventtypes_should_return_list(self):
         """
         Test eventtypes(self)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         event_types = sfwebui.eventtypes()
-        self.assertIsInstance(event_types, bytes)
+        self.assertIsInstance(event_types, list)
 
-    def test_modules_should_return_bytes(self):
+    def test_modules_should_return_list(self):
         """
         Test modules(self)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         modules = sfwebui.eventtypes()
-        self.assertIsInstance(modules, bytes)
+        self.assertIsInstance(modules, list)
 
-    def test_ping_should_return_bytes(self):
+    def test_ping_should_return_list(self):
         """
         Test ping(self)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         ping = sfwebui.ping()
-        self.assertIsInstance(ping, bytes)
+        self.assertIsInstance(ping, list)
+        self.assertEqual(ping[0], 'SUCCESS')
 
-    def test_query_should_perform_a_sql_query(self):
+    def test_query_should_perform_sql_query(self):
         """
         Test query(self, query)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
-        query = sfwebui.query("SELECT 12345")
-        self.assertIsInstance(query, bytes)
-        self.assertIn(b"12345", query)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
 
-    @unittest.skip("todo")
-    def test_start_scan(self):
-        """
-        Test startscan(self, scanname, scantarget, modulelist, typelist, usecase)
-        """
-        self.assertEqual('TBD', 'TBD')
+        select = "12345"
+        query = sfwebui.query(f"SELECT {select}")
+        self.assertIsInstance(query, list)
+        self.assertEqual(len(query), 1)
+        self.assertEqual(str(query[0].get(select)), str(select))
 
-    def test_stopscanmulti(self):
+    def test_query_invalid_query_should_return_error(self):
         """
-        Test stopscanmulti(self, ids)
+        Test query(self, query)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
-        stop_scan = sfwebui.stopscanmulti("example scan id")
-        self.assertIsInstance(stop_scan, str)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+
+        query = sfwebui.query(None)
+        self.assertIsInstance(query, dict)
+        self.assertEqual("Invalid query.", query.get('error').get('message'))
+
+        query = sfwebui.query("UPDATE 1")
+        self.assertIsInstance(query, dict)
+        self.assertEqual("Non-SELECTs are unpredictable and not recommended.", query.get('error').get('message'))
 
     @unittest.skip("todo")
-    def test_stopscan(self):
+    def test_start_scan_should_start_a_scan(self):
+        """
+        Test startscan(self, scanname, scantarget, modulelist, typelist, usecase)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        start_scan = sfwebui.startscan('example scan name', 'spiderfoot.net', 'example module list', None, None)
+        self.assertEqual(start_scan, start_scan)
+        self.assertEqual('TBD', 'TBD')
+
+    def test_start_scan_invalid_scanname_should_return_error(self):
+        """
+        Test startscan(self, scanname, scantarget, modulelist, typelist, usecase)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        start_scan = sfwebui.startscan(None, 'example scan target', None, None, None)
+        self.assertIn('Invalid request: scan name was not specified.', start_scan)
+        start_scan = sfwebui.startscan('', 'example scan target', None, None, None)
+        self.assertIn('Invalid request: scan name was not specified.', start_scan)
+
+    def test_start_scan_invalid_scantarget_should_return_error(self):
+        """
+        Test startscan(self, scanname, scantarget, modulelist, typelist, usecase)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        start_scan = sfwebui.startscan('example scan name', None, None, None, None)
+        self.assertIn('Invalid request: scan target was not specified.', start_scan)
+        start_scan = sfwebui.startscan('example scan name', '', None, None, None)
+        self.assertIn('Invalid request: scan target was not specified.', start_scan)
+
+    def test_start_scan_unrecognized_scantarget_type_should_return_error(self):
+        """
+        Test startscan(self, scanname, scantarget, modulelist, typelist, usecase)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        start_scan = sfwebui.startscan('example scan name', 'example scan target', 'example module list', None, None)
+        self.assertIn('Invalid target type. Could not recognize it as a target SpiderFoot supports.', start_scan)
+
+    def test_start_scan_invalid_modules_should_return_error(self):
+        """
+        Test startscan(self, scanname, scantarget, modulelist, typelist, usecase)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        start_scan = sfwebui.startscan('example scan name', 'spiderfoot.net', None, None, None)
+        self.assertIn('Invalid request: no modules specified for scan.', start_scan)
+        start_scan = sfwebui.startscan('example scan name', 'spiderfoot.net', '', '', '')
+        self.assertIn('Invalid request: no modules specified for scan.', start_scan)
+
+    def test_start_scan_invalid_typelist_should_return_error(self):
+        """
+        Test startscan(self, scanname, scantarget, modulelist, typelist, usecase)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        start_scan = sfwebui.startscan('example scan name', 'spiderfoot.net', None, 'invalid type list', None)
+        self.assertIn('Invalid request: no modules specified for scan.', start_scan)
+        start_scan = sfwebui.startscan('example scan name', 'spiderfoot.net', '', 'invalid type list', '')
+        self.assertIn('Invalid request: no modules specified for scan.', start_scan)
+
+    def test_stopscan_invalid_scanid_should_return_an_error(self):
         """
         Test stopscan(self, id)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         stop_scan = sfwebui.stopscan("example scan id")
-        self.assertIsInstance(stop_scan, str)
+        self.assertIsInstance(stop_scan, dict)
+        self.assertEqual("Scan example scan id does not exist", stop_scan.get('error').get('message'))
 
-    def test_scanlog_should_return_bytes(self):
+    def test_scanlog_should_return_a_list(self):
         """
         Test scanlog(self, id, limit=None, rowId=None, reverse=None)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_log = sfwebui.scanlog(None, None, None, None)
-        self.assertIsInstance(scan_log, bytes)
+        self.assertIsInstance(scan_log, list)
+        scan_log = sfwebui.scanlog('', '', '', '')
+        self.assertIsInstance(scan_log, list)
 
-    def test_scanerrors_should_return_bytes(self):
+    def test_scanerrors_should_return_a_list(self):
         """
         Test scanerrors(self, id, limit=None)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_errors = sfwebui.scanerrors(None, None)
-        self.assertIsInstance(scan_errors, bytes)
+        self.assertIsInstance(scan_errors, list)
+        scan_errors = sfwebui.scanerrors('', '')
+        self.assertIsInstance(scan_errors, list)
 
-    def test_scanlist_should_return_bytes(self):
+    def test_scanlist_should_return_a_list(self):
         """
         Test scanlist(self)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_list = sfwebui.scanlist()
-        self.assertIsInstance(scan_list, bytes)
+        self.assertIsInstance(scan_list, list)
 
-    def test_scanstatus_should_return_bytes(self):
+    def test_scanstatus_should_return_a_list(self):
         """
         Test scanstatus(self, id)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_status = sfwebui.scanstatus("example scan instance")
-        self.assertIsInstance(scan_status, bytes)
+        self.assertIsInstance(scan_status, list)
 
-    def test_scansummary_should_return_bytes(self):
+    def test_scansummary_should_return_a_list(self):
         """
         Test scansummary(self, id, by)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_summary = sfwebui.scansummary(None, None)
-        self.assertIsInstance(scan_summary, bytes)
+        self.assertIsInstance(scan_summary, list)
+        scan_summary = sfwebui.scansummary('', '')
+        self.assertIsInstance(scan_summary, list)
 
-    def test_scaneventresults_should_return_bytes(self):
+    def test_scaneventresults_should_return_a_list(self):
         """
         Test scaneventresults(self, id, eventType, filterfp=False)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_results = sfwebui.scaneventresults(None, None, None)
-        self.assertIsInstance(scan_results, bytes)
+        self.assertIsInstance(scan_results, list)
+        scan_results = sfwebui.scaneventresults('', '', '')
+        self.assertIsInstance(scan_results, list)
 
-    @unittest.skip("todo")
-    def test_scaneventresultsunique_should_return_a_string(self):
+    def test_scaneventresultsunique_should_return_a_list(self):
         """
         Test scaneventresultsunique(self, id, eventType, filterfp=False)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_results = sfwebui.scaneventresultsunique(None, None, None)
-        self.assertIsInstance(scan_results, str)
+        self.assertIsInstance(scan_results, list)
+        scan_results = sfwebui.scaneventresultsunique('', '', '')
+        self.assertIsInstance(scan_results, list)
 
-    def test_search_should_return_bytes(self):
+    def test_search_should_return_a_list(self):
         """
         Test search(self, id=None, eventType=None, value=None)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         search_results = sfwebui.search(None, None, None)
-        self.assertIsInstance(search_results, bytes)
+        self.assertIsInstance(search_results, list)
+        search_results = sfwebui.search('', '', '')
+        self.assertIsInstance(search_results, list)
 
-    def test_scan_history_should_return_bytes(self):
+    def test_scan_history_missing_scanid_should_return_error(self):
         """
         Test scanhistory(self, id)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
-        scan_history = sfwebui.scanhistory(None)
-        self.assertIsInstance(scan_history, bytes)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
 
-    @unittest.skip("todo")
-    def test_scan_element_type_discovery_should_return_a_string(self):
+        scan_history = sfwebui.scanhistory(None)
+        self.assertIsInstance(scan_history, dict)
+        self.assertEqual("No scan specified", scan_history.get('error').get('message'))
+        scan_history = sfwebui.scanhistory("example scan id")
+        self.assertIsInstance(scan_history, list)
+
+    def test_scan_history_should_return_a_list(self):
+        """
+        Test scanhistory(self, id)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        scan_history = sfwebui.scanhistory("example scan id")
+        self.assertIsInstance(scan_history, list)
+
+    def test_scan_element_type_discovery_should_return_a_dict(self):
         """
         Test scanelementtypediscovery(self, id, eventType)
         """
         opts = self.default_options
         opts['__modules__'] = dict()
-        sfwebui = SpiderFootWebUi(self.default_web_options, opts)
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         scan_element_type_discovery = sfwebui.scanelementtypediscovery(None, None)
-        self.assertIsInstance(scan_element_type_discovery, str)
+        self.assertIsInstance(scan_element_type_discovery, dict)
+        scan_element_type_discovery = sfwebui.scanelementtypediscovery('', '')
+        self.assertIsInstance(scan_element_type_discovery, dict)

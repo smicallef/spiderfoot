@@ -25,7 +25,7 @@ class sfp_darksearch(SpiderFootPlugin):
     meta = {
         'name': "Darksearch",
         'summary': "Search the Darksearch.io Tor search engine for mentions of the target domain.",
-        'flags': [""],
+        'flags': ["tor"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -109,26 +109,29 @@ class sfp_darksearch(SpiderFootPlugin):
             return None
 
         if eventData in self.results:
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         page = 1
         pages = self.opts['max_pages']
         while page <= pages:
+            found = False
+
             if self.checkForStop():
                 return None
 
-            res = self.query(eventData, page)
+            query_results = self.query(eventData, page)
 
-            if res is None:
+            if query_results is None:
                 return None
 
             page += 1
 
-            last_page = res.get('last_page')
+            last_page = query_results.get('last_page')
 
             if last_page is None:
                 pages = 0
@@ -136,7 +139,7 @@ class sfp_darksearch(SpiderFootPlugin):
             if last_page < pages:
                 pages = last_page
 
-            data = res.get('data')
+            data = query_results.get('data')
 
             if data is None:
                 return None
@@ -144,9 +147,6 @@ class sfp_darksearch(SpiderFootPlugin):
             for result in data:
                 if result is None:
                     continue
-
-                evt = SpiderFootEvent("RAW_RIR_DATA", str(result), self.__name__, event)
-                self.notifyListeners(evt)
 
                 link = result.get('link')
 
@@ -178,6 +178,7 @@ class sfp_darksearch(SpiderFootPlugin):
 
                     evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                     self.notifyListeners(evt)
+                    found = True
 
                     # extract content excerpt
                     try:
@@ -197,6 +198,7 @@ class sfp_darksearch(SpiderFootPlugin):
                 else:
                     evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                     self.notifyListeners(evt)
+                    found = True
 
                     if result.get('title') is None and result.get('description') is None:
                         self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
@@ -208,5 +210,9 @@ class sfp_darksearch(SpiderFootPlugin):
                                           self.__name__,
                                           event)
                     self.notifyListeners(evt)
+
+            if found:
+                evt = SpiderFootEvent("RAW_RIR_DATA", str(query_results), self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_darksearch class

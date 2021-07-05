@@ -150,12 +150,11 @@ class sfp_circllu(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName in ['IP_ADDRESS', 'NETBLOCK_OWNER']:
             # CIRCL.LU limit the maximum subnet size to 23
