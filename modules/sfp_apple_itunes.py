@@ -121,11 +121,9 @@ class sfp_apple_itunes(SpiderFootPlugin):
             self.sf.info(f"No results found for {eventData}")
             return
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(data), self.__name__, event)
-        self.notifyListeners(evt)
-
         urls = list()
         hosts = list()
+        found = False
 
         for result in data:
             bundleId = result.get('bundleId')
@@ -163,6 +161,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
 
             evt = SpiderFootEvent('APPSTORE_ENTRY', app_data, self.__name__, event)
             self.notifyListeners(evt)
+            found = True
 
             sellerUrl = result.get('sellerUrl')
 
@@ -180,6 +179,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
             if self.getTarget().matches(host, includeChildren=True, includeParents=True):
                 evt = SpiderFootEvent('LINKED_URL_INTERNAL', url, self.__name__, event)
                 self.notifyListeners(evt)
+                found = True
 
             hosts.append(host)
 
@@ -193,5 +193,10 @@ class sfp_apple_itunes(SpiderFootPlugin):
             else:
                 evt = SpiderFootEvent('AFFILIATE_INTERNET_NAME', host, self.__name__, event)
                 self.notifyListeners(evt)
+            found = True
+
+        if found:
+            evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(data), self.__name__, event)
+            self.notifyListeners(evt)
 
 # End of sfp_apple_itunes class
