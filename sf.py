@@ -419,7 +419,7 @@ def start_scan(sfConfig, sfModules, args):
 
     # Start running a new scan
     scanName = target
-    scanId = sf.genScanInstanceId()
+    scanId = SpiderFootHelpers.genScanInstanceId()
     try:
         p = mp.Process(target=SpiderFootScanner, args=(scanName, scanId, target, targetType, modlist, cfg))
         p.daemon = True

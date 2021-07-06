@@ -97,15 +97,6 @@ class TestSpiderFoot(unittest.TestCase):
                 opt_data = sf.optValueToData(invalid_type)
                 self.assertEqual(opt_data, None)
 
-    def test_genScanInstanceId_should_return_a_string(self):
-        """
-        Test genScanInstanceId(self)
-        """
-        sf = SpiderFoot(dict())
-
-        scan_instance_id = sf.genScanInstanceId()
-        self.assertIsInstance(scan_instance_id, str)
-
     def test_dblog_invalid_dbh_should_raise(self):
         """
         Test _dblog(self, level, message, component=None)
