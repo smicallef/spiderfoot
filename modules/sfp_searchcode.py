@@ -165,8 +165,13 @@ class sfp_searchcode(SpiderFootPlugin):
                 self.notifyListeners(evt)
                 self.results[email] = True
 
-            links = self.sf.extractUrls(str(results))
-            for link in links:
+            links = set()
+            for result in results:
+                if 'lines' in result:
+                    for line in result['lines']:
+                        links.update(self.sf.extractUrls(result['lines'][line]))
+
+            for link in list(links):
                 if link in self.results:
                     continue
 
