@@ -547,12 +547,12 @@ class SpiderFootWebUi:
         if "sfp__stor_stdout" in modlist:
             modlist.remove("sfp__stor_stdout")
 
-        targetType = SpiderFootHelpers.targetType(scantarget)
+        targetType = SpiderFootHelpers.targetTypeFromString(scantarget)
         if not targetType:
             # It must then be a name, as a re-run scan should always have a clean
             # target. Put quotes around the target value and try to determine the
             # target type again.
-            targetType = SpiderFootHelpers.targetType(f'"{scantarget}"')
+            targetType = SpiderFootHelpers.targetTypeFromString(f'"{scantarget}"')
 
         if targetType not in ["HUMAN_NAME", "BITCOIN_ADDRESS"]:
             scantarget = scantarget.lower()
@@ -608,7 +608,7 @@ class SpiderFootWebUi:
             if "sfp__stor_stdout" in modlist:
                 modlist.remove("sfp__stor_stdout")
 
-            targetType = SpiderFootHelpers.targetType(scantarget)
+            targetType = SpiderFootHelpers.targetTypeFromString(scantarget)
             if targetType is None:
                 # Should never be triggered for a re-run scan..
                 return self.error("Invalid target type. Could not recognize it as a target SpiderFoot supports.")
@@ -673,7 +673,7 @@ class SpiderFootWebUi:
         if scanname == "" or scantarget == "" or len(scanconfig) == 0:
             return self.error("Something went wrong internally.")
 
-        targetType = SpiderFootHelpers.targetType(scantarget)
+        targetType = SpiderFootHelpers.targetTypeFromString(scantarget)
         if targetType is None:
             # It must be a name, so wrap quotes around it
             scantarget = "&quot;" + scantarget + "&quot;"
@@ -1118,7 +1118,7 @@ class SpiderFootWebUi:
 
             return self.error("Invalid request: no modules specified for scan.")
 
-        targetType = SpiderFootHelpers.targetType(scantarget)
+        targetType = SpiderFootHelpers.targetTypeFromString(scantarget)
         if targetType is None:
             if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
                 cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"

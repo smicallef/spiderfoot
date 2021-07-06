@@ -283,7 +283,7 @@ def start_scan(sfConfig, sfModules, args):
         target = f"\"{target}\""
     if "." not in target and not target.startswith("+") and '"' not in target:
         target = f"\"{target}\""
-    targetType = SpiderFootHelpers.targetType(target)
+    targetType = SpiderFootHelpers.targetTypeFromString(target)
 
     if not targetType:
         log.error(f"Could not determine target type. Invalid target: {target}")

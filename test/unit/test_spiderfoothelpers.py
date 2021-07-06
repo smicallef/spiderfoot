@@ -15,38 +15,38 @@ class TestSpiderFootHelpers(unittest.TestCase):
         """
         Test targetType(target)
         """
-        target_type = SpiderFootHelpers.targetType("0.0.0.0")
+        target_type = SpiderFootHelpers.targetTypeFromString("0.0.0.0")
         self.assertEqual('IP_ADDRESS', target_type)
-        target_type = SpiderFootHelpers.targetType("noreply@spiderfoot.net")
+        target_type = SpiderFootHelpers.targetTypeFromString("noreply@spiderfoot.net")
         self.assertEqual('EMAILADDR', target_type)
-        target_type = SpiderFootHelpers.targetType("0.0.0.0/0")
+        target_type = SpiderFootHelpers.targetTypeFromString("0.0.0.0/0")
         self.assertEqual('NETBLOCK_OWNER', target_type)
-        target_type = SpiderFootHelpers.targetType("+1234567890")
+        target_type = SpiderFootHelpers.targetTypeFromString("+1234567890")
         self.assertEqual('PHONE_NUMBER', target_type)
-        target_type = SpiderFootHelpers.targetType('"Human Name"')
+        target_type = SpiderFootHelpers.targetTypeFromString('"Human Name"')
         self.assertEqual('HUMAN_NAME', target_type)
-        target_type = SpiderFootHelpers.targetType('"abc123"')
+        target_type = SpiderFootHelpers.targetTypeFromString('"abc123"')
         self.assertEqual('USERNAME', target_type)
-        target_type = SpiderFootHelpers.targetType("1234567890")
+        target_type = SpiderFootHelpers.targetTypeFromString("1234567890")
         self.assertEqual('BGP_AS_OWNER', target_type)
-        target_type = SpiderFootHelpers.targetType("::1")
+        target_type = SpiderFootHelpers.targetTypeFromString("::1")
         self.assertEqual('IPV6_ADDRESS', target_type)
-        target_type = SpiderFootHelpers.targetType("spiderfoot.net")
+        target_type = SpiderFootHelpers.targetTypeFromString("spiderfoot.net")
         self.assertEqual('INTERNET_NAME', target_type)
-        target_type = SpiderFootHelpers.targetType("1HesYJSP1QqcyPEjnQ9vzBL1wujruNGe7R")
+        target_type = SpiderFootHelpers.targetTypeFromString("1HesYJSP1QqcyPEjnQ9vzBL1wujruNGe7R")
         self.assertEqual('BITCOIN_ADDRESS', target_type)
 
     def test_target_type_invalid_seed_should_return_none(self):
         """
         Test targetType(target)
         """
-        target_type = SpiderFootHelpers.targetType(None)
+        target_type = SpiderFootHelpers.targetTypeFromString(None)
         self.assertEqual(None, target_type)
 
-        target_type = SpiderFootHelpers.targetType("")
+        target_type = SpiderFootHelpers.targetTypeFromString("")
         self.assertEqual(None, target_type)
 
-        target_type = SpiderFootHelpers.targetType('""')
+        target_type = SpiderFootHelpers.targetTypeFromString('""')
         self.assertEqual(None, target_type)
 
     def test_buildGraphData_should_return_a_set(self):
