@@ -53,13 +53,11 @@ class sfp_arin(SpiderFootPlugin):
 
     results = None
     currentEventSrc = None
-    memCache = dict()
     keywords = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-        self.memCache = dict()
         self.currentEventSrc = None
 
         for opt in list(userOpts.keys()):
@@ -77,18 +75,12 @@ class sfp_arin(SpiderFootPlugin):
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
-        if url in self.memCache:
-            res = self.memCache[url]
-        else:
-            head = {"Accept": "application/json"}
-            res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
-                                   useragent=self.opts['_useragent'], headers=head)
-            if res['content'] is not None and res['code'] != "404":
-                self.memCache[url] = res
-                evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__,
-                                      self.currentEventSrc)
-                self.notifyListeners(evt)
-        return res
+        head = {"Accept": "application/json"}
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
+                               useragent=self.opts['_useragent'], headers=head)
+        if res['content'] is not None and res['code'] != "404":
+            return res
+        return None
 
     # Owner information about an AS
     def query(self, qtype, value):
@@ -113,12 +105,15 @@ class sfp_arin(SpiderFootPlugin):
             url = value
 
         res = self.fetchRir(url)
-        if res['content'] is None:
+        if not res:
             self.sf.debug("No info found/available for " + value + " at ARIN.")
             return None
 
         try:
             j = json.loads(res['content'])
+            evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__,
+                                  self.currentEventSrc)
+            self.notifyListeners(evt)
             return j
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")

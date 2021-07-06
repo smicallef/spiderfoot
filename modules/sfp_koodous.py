@@ -122,6 +122,7 @@ class sfp_koodous(SpiderFootPlugin):
         max_pages = int(self.opts['max_pages'])
         page = 1
         cursor = ''
+        found = False
         while page <= max_pages:
             if self.checkForStop():
                 return
@@ -133,9 +134,6 @@ class sfp_koodous(SpiderFootPlugin):
             if not data:
                 self.errorState = True
                 return
-
-            evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(data), self.__name__, event)
-            self.notifyListeners(evt)
 
             results = data.get('results')
 
@@ -174,6 +172,11 @@ class sfp_koodous(SpiderFootPlugin):
                 app_data = f"{app_full_name}\n<SFURL>https://koodous.com/apks/{sha256}</SFURL>"
 
                 evt = SpiderFootEvent('APPSTORE_ENTRY', app_data, self.__name__, event)
+                self.notifyListeners(evt)
+                found = True
+
+            if found:
+                evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(data), self.__name__, event)
                 self.notifyListeners(evt)
 
             if not data.get('next'):

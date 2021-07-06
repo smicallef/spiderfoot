@@ -177,8 +177,6 @@ class sfp_zetalytics(SpiderFootPlugin):
         if self.checkForStop():
             return None
 
-        events_generated = False
-
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
@@ -196,24 +194,18 @@ class sfp_zetalytics(SpiderFootPlugin):
         if eventName == "INTERNET_NAME":
             data = self.query_hostname(eventData)
             if self.generate_hostname_events(data, event):
-                events_generated = True
+                self.emit("RAW_RIR_DATA", json.dumps(data), event)
 
         elif eventName == "DOMAIN_NAME":
             data = self.query_subdomains(eventData)
             if self.generate_subdomains_events(data, event):
-                events_generated = True
+                self.emit("RAW_RIR_DATA", json.dumps(data), event)
 
             data = self.query_email_domain(eventData)
             if self.generate_email_domain_events(data, event):
-                events_generated = True
+                self.emit("RAW_RIR_DATA", json.dumps(data), event)
 
         elif eventName == "EMAILADDR":
             data = self.query_email_address(eventData)
             if self.generate_email_events(data, event):
-                events_generated = True
-
-        else:
-            return
-
-        if events_generated and not self.checkForStop():
-            self.emit("RAW_RIR_DATA", json.dumps(data), event)
+                self.emit("RAW_RIR_DATA", json.dumps(data), event)
