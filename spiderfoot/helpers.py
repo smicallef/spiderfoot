@@ -1,6 +1,7 @@
 import json
 import random
 import re
+import uuid
 from networkx import nx
 from networkx.readwrite.gexf import GEXFWriter
 
@@ -308,6 +309,17 @@ class SpiderFootHelpers():
 
         return True
 
+    @staticmethod
+    def genScanInstanceId():
+        """Generate an globally unique ID for this scan.
+
+        Returns:
+            str: scan instance unique ID
+        """
+
+        return str(uuid.uuid4()).split("-")[0].upper()
+
+    @staticmethod
     def parseRobotsTxt(robotsTxtData):
         """Parse the contents of robots.txt.
 

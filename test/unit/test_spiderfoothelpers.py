@@ -122,6 +122,13 @@ class TestSpiderFootHelpers(unittest.TestCase):
         tree = SpiderFootHelpers.dataParentChildToTree({"test": {"123": "456"}})
         self.assertIsInstance(tree, dict)
 
+    def test_genScanInstanceId_should_return_a_string(self):
+        """
+        Test genScanInstanceId()
+        """
+        scan_instance_id = SpiderFootHelpers.genScanInstanceId()
+        self.assertIsInstance(scan_instance_id, str)
+
     def test_validLEI_should_return_a_boolean(self):
         """
         Test validLEI(lei)

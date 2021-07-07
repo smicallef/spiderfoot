@@ -529,7 +529,6 @@ class SpiderFootWebUi:
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
         modlist = list()
-        sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
         info = dbh.scanInstanceGet(id)
 
@@ -558,7 +557,7 @@ class SpiderFootWebUi:
             scantarget = scantarget.lower()
 
         # Start running a new scan
-        scanId = sf.genScanInstanceId()
+        scanId = SpiderFootHelpers.genScanInstanceId()
         try:
             p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True
@@ -588,7 +587,6 @@ class SpiderFootWebUi:
         # Snapshot the current configuration to be used by the scan
         cfg = deepcopy(self.config)
         modlist = list()
-        sf = SpiderFoot(cfg)
         dbh = SpiderFootDb(cfg)
 
         for id in ids.split(","):
@@ -614,7 +612,7 @@ class SpiderFootWebUi:
                 return self.error("Invalid target type. Could not recognize it as a target SpiderFoot supports.")
 
             # Start running a new scan
-            scanId = sf.genScanInstanceId()
+            scanId = SpiderFootHelpers.genScanInstanceId()
             try:
                 p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
                 p.daemon = True
@@ -1189,7 +1187,7 @@ class SpiderFootWebUi:
             scantarget = scantarget.lower()
 
         # Start running a new scan
-        scanId = sf.genScanInstanceId()
+        scanId = SpiderFootHelpers.genScanInstanceId()
         try:
             p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True

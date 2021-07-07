@@ -21,7 +21,7 @@ from collections import OrderedDict
 import dns.resolver
 
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget
+from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget, SpiderFootHelpers
 
 
 class SpiderFootScanner():
@@ -112,7 +112,7 @@ class SpiderFootScanner():
         if scanId:
             self.__scanId = scanId
         else:
-            self.__scanId = self.__sf.genScanInstanceId()
+            self.__scanId = SpiderFootHelpers.genScanInstanceId()
 
         self.__sf.scanId = self.__scanId
         self.__dbh.scanInstanceCreate(self.__scanId, self.__scanName, self.__targetValue)
