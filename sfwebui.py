@@ -15,6 +15,7 @@ import json
 import logging
 import multiprocessing as mp
 import random
+import secure
 import time
 from copy import deepcopy
 from io import StringIO
@@ -24,7 +25,6 @@ import cherrypy
 from cherrypy import _cperror
 from mako.lookup import TemplateLookup
 from mako.template import Template
-from secure import SecureHeaders
 
 from spiderfoot import SpiderFootDb
 from spiderfoot import SpiderFootHelpers
@@ -82,15 +82,27 @@ class SpiderFootWebUi:
             'request.error_response': self.error_page
         })
 
-        secure_headers = SecureHeaders(
-            server="server",
-            cache=False,
-            csp="default-src 'self' ; script-src 'self' 'unsafe-inline' blob: ; style-src 'self' 'unsafe-inline' ; img-src 'self' data:"
+        csp = (
+            secure.ContentSecurityPolicy()
+            .default_src("'self'")
+            .script_src("'self'", "'unsafe-inline'", "blob:")
+            .style_src("'self'", "'unsafe-inline'")
+            .base_uri("'self'")
+            .connect_src("'self'", "data:")
+            .frame_src("'self'", 'data:')
+            .img_src("'self'", "data:")
+        )
+
+        secure_headers = secure.Secure(
+            server=secure.Server().set("server"),
+            cache=secure.CacheControl().must_revalidate(),
+            csp=csp,
+            referrer=secure.ReferrerPolicy().no_referrer(),
         )
 
         cherrypy.config.update({
             "tools.response_headers.on": True,
-            "tools.response_headers.headers": secure_headers.cherrypy()
+            "tools.response_headers.headers": secure_headers.framework.cherrypy()
         })
 
     def error_page(self):
