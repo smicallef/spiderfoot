@@ -131,31 +131,52 @@ class SpiderFootScanner():
 
         # Process global options that point to other places for data
 
-        # If a SOCKS server was specified, set it up
-        if self.__config['_socks1type']:
-            socksAddr = self.__config['_socks2addr']
-            socksPort = int(self.__config['_socks3port'])
-            socksUsername = self.__config['_socks4user'] or ''
-            socksPassword = self.__config['_socks5pwd'] or ''
-
-            proxy = f"{socksAddr}:{socksPort}"
-
-            if socksUsername or socksPassword:
-                proxy = "%s:%s@%s" % (socksUsername, socksPassword, proxy)
-
-            if self.__config['_socks1type'] == '4':
-                proxy = 'socks4://' + proxy
-            elif self.__config['_socks1type'] == '5':
-                proxy = 'socks5://' + proxy
-            elif self.__config['_socks1type'] == 'HTTP':
-                proxy = 'http://' + proxy
-            elif self.__config['_socks1type'] == 'TOR':
-                proxy = 'socks5h://' + proxy
+        # If a proxy server was specified, set it up
+        proxy_type = self.__config.get('_socks1type')
+        if proxy_type:
+            # TODO: allow DNS lookup to be configurable when using a proxy
+            # - proxy DNS lookup: socks5h:// and socks4a://
+            # - local DNS lookup: socks5:// and socks4://
+            if proxy_type == '4':
+                proxy_proto = 'socks4://'
+            elif proxy_type == '5':
+                proxy_proto = 'socks5://'
+            elif proxy_type == 'HTTP':
+                proxy_proto = 'http://'
+            elif proxy_type == 'TOR':
+                proxy_proto = 'socks5h://'
             else:
-                raise ValueError(f"Invalid SOCKS proxy type: {self.__config['_socks1ttype']}")
+                self.__sf.status(f"Scan [{self.__scanId}] failed: Invalid proxy type: {proxy_type}")
+                self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
+                raise ValueError(f"Invalid proxy type: {proxy_type}")
 
-            self.__sf.debug(f"SOCKS: {socksAddr}:{socksPort} ({socksUsername}:{socksPassword})")
+            proxy_host = self.__config.get('_socks2addr', '')
 
+            if not proxy_host:
+                self.__sf.status(f"Scan [{self.__scanId}] failed: Proxy type is set ({proxy_type}) but proxy address value is blank")
+                self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
+                raise ValueError(f"Proxy type is set ({proxy_type}) but proxy address value is blank")
+
+            proxy_port = int(self.__config.get('_socks3port') or 0)
+
+            if not proxy_port:
+                if proxy_type == '4' or proxy_type == '5':
+                    proxy_port = 1080
+                elif proxy_type.upper() == 'HTTP':
+                    proxy_port = 8080
+                elif proxy_type.upper() == 'TOR':
+                    proxy_port = 9050
+
+            proxy_username = self.__config.get('_socks4user', '')
+            proxy_password = self.__config.get('_socks5pwd', '')
+
+            if proxy_username or proxy_password:
+                proxy_auth = f"{proxy_username}:{proxy_password}"
+                proxy = f"{proxy_proto}{proxy_auth}@{proxy_host}:{proxy_port}"
+            else:
+                proxy = f"{proxy_proto}{proxy_host}:{proxy_port}"
+
+            self.__sf.debug(f"Using proxy: {proxy}")
             self.__sf.socksProxy = proxy
         else:
             self.__sf.socksProxy = None
