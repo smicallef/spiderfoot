@@ -238,7 +238,6 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 addrs = self.sf.resolveIP(ipaddr)
                 if addrs:
                     self.sf.debug(f"Found a reversed hostname from {ipaddr} ({addrs})")
-                    # TODO: review why addr is not used in this loop. should `ipaddr` instead be `addr` ?
                     for addr in addrs:
                         # Generate an event for the IP, then
                         # let the handling by this module take
