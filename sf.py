@@ -71,7 +71,8 @@ def main():
     sfWebUiConfig = {
         'host': '127.0.0.1',
         'port': 5001,
-        'root': '/'
+        'root': '/',
+        'cors_origins': [],
     }
 
     # 'Global' configuration options
@@ -455,10 +456,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
     web_host = sfWebUiConfig.get('host', '127.0.0.1')
     web_port = sfWebUiConfig.get('port', 5001)
     web_root = sfWebUiConfig.get('root', '/')
-
-    # Place your whitelisted CORS origins here
-    # Example: cors_origins = ['http://example.com']
-    cors_origins = []
+    cors_origins = sfWebUiConfig.get('cors_origins', [])
 
     cherrypy.config.update({
         'log.screen': False,
@@ -467,9 +465,6 @@ def start_web_server(sfWebUiConfig, sfConfig):
     })
 
     log.info(f"Starting web server at {web_host}:{web_port} ...")
-
-    # Disable auto-reloading of content
-    cherrypy.engine.autoreload.unsubscribe()
 
     sf = SpiderFoot(sfConfig)
 
@@ -482,7 +477,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
         '/static': {
             'tools.staticdir.on': True,
             'tools.staticdir.dir': 'static',
-            'tools.staticdir.root': sf.myPath()
+            'tools.staticdir.root': f"{sf.myPath()}/spiderfoot"
         }
     }
 
@@ -548,17 +543,14 @@ def start_web_server(sfWebUiConfig, sfConfig):
 
     if using_ssl:
         url = "https://"
-        cors_origins.append(f"https://{web_host}:{web_port}")
     else:
         url = "http://"
-        cors_origins.append(f"http://{web_host}:{web_port}")
 
     if web_host == "0.0.0.0":  # nosec
-        url = f"{url}<IP of this host>"
+        url = f"{url}127.0.0.1:{web_port}"
     else:
-        url = f"{url}{web_host}"
-
-    url = f"{url}:{web_port}{web_root}"
+        url = f"{url}{web_host}:{web_port}{web_root}"
+        cors_origins.append(url)
 
     cherrypy_cors.install()
     cherrypy.config.update({
@@ -573,6 +565,9 @@ def start_web_server(sfWebUiConfig, sfConfig):
     print(f" browse to {url}")
     print("*************************************************************")
     print("")
+
+    # Disable auto-reloading of content
+    cherrypy.engine.autoreload.unsubscribe()
 
     cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig), script_name=web_root, config=conf)
 
