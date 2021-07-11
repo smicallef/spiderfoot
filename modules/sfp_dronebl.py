@@ -57,13 +57,8 @@ class sfp_dronebl(SpiderFootPlugin):
         'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
-    # Target
     results = None
 
-    # Whole bunch here:
-    # http://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists
-    # Check out:
-    # http://www.blocklist.de/en/rbldns.html
     checks = {
         "dnsbl.dronebl.org": {
             "127.0.0.3": "dronebl.org - IRC Drone",
@@ -73,10 +68,15 @@ class sfp_dronebl(SpiderFootPlugin):
             "127.0.0.8": "dronebl.org - SOCKS Proxy",
             "127.0.0.9": "dronebl.org - HTTP Proxy",
             "127.0.0.10": "dronebl.org - ProxyChain",
+            "127.0.0.11": "dronebl.org - Web Page Proxy",
+            "127.0.0.12": "dronebl.org - Open DNS Resolver",
             "127.0.0.13": "dronebl.org - Brute force attackers",
             "127.0.0.14": "dronebl.org - Open Wingate Proxy",
             "127.0.0.15": "dronebl.org - Compromised router / gateway",
+            "127.0.0.16": "dronebl.org - Autorooting worms",
             "127.0.0.17": "dronebl.org - Automatically determined botnet IPs (experimental)",
+            "127.0.0.18": "dronebl.org - Possibly compromised DNS/MX",
+            "127.0.0.19": "dronebl.org - Abused VPN Service",
             "127.0.0.255": "dronebl.org - Unknown"
         }
     }
@@ -94,8 +94,6 @@ class sfp_dronebl(SpiderFootPlugin):
                 'NETBLOCK_MEMBER']
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["BLACKLISTED_IPADDR", "BLACKLISTED_AFFILIATE_IPADDR",
                 "BLACKLISTED_SUBNET", "BLACKLISTED_NETBLOCK"]
@@ -113,10 +111,12 @@ class sfp_dronebl(SpiderFootPlugin):
 
             try:
                 lookup = self.reverseAddr(qaddr) + "." + domain
-                self.sf.debug("Checking Blacklist: " + lookup)
+                self.sf.debug(f"Checking Blacklist: {lookup}")
                 addrs = self.sf.resolveHost(lookup)
+
                 if not addrs:
                     continue
+
                 self.sf.debug("Addresses returned: " + str(addrs))
 
                 text = None
@@ -124,14 +124,14 @@ class sfp_dronebl(SpiderFootPlugin):
                     if type(self.checks[domain]) is str:
                         text = self.checks[domain] + " (" + qaddr + ")"
                         break
-                    else:
-                        if str(addr) not in list(self.checks[domain].keys()):
-                            self.sf.debug("Return code not found in list: " + str(addr))
-                            continue
 
-                        k = str(addr)
-                        text = self.checks[domain][k] + " (" + qaddr + ")"
-                        break
+                    if str(addr) not in list(self.checks[domain].keys()):
+                        self.sf.debug("Return code not found in list: " + str(addr))
+                        continue
+
+                    k = str(addr)
+                    text = self.checks[domain][k] + " (" + qaddr + ")"
+                    break
 
                 if text is not None:
                     if eventName == "AFFILIATE_IPADDR":
@@ -161,34 +161,32 @@ class sfp_dronebl(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
 
-            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: "
-                              + str(IPNetwork(eventData).prefixlen) + " > "
-                              + str(self.opts['maxnetblock']))
-                return None
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
 
-            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: "
-                              + str(IPNetwork(eventData).prefixlen) + " > "
-                              + str(self.opts['maxsubnet']))
-                return None
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
 
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):
                 if self.checkForStop():
-                    return None
+                    return
                 self.queryAddr(str(addr), parentEvent)
         else:
             self.queryAddr(eventData, parentEvent)
