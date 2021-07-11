@@ -78,7 +78,7 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
             '/static': {
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': 'static',
-                'tools.staticdir.root': sf.myPath()
+                'tools.staticdir.root': f"{sf.myPath()}/spiderfoot",
             }
         }
 
