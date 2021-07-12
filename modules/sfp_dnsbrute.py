@@ -409,7 +409,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
                 subdomains.update(alphaMutations)
             method = "mutation"
             base = host.split(".", 1)[-1]
-            threads = min(int(len(subdomains) / 3), self.opts["_maxthreads"])
+            threads = min(int(len(subdomains) / 3)+1, self.opts["_maxthreads"])
         # if this is the main target or we're brute-forcing subdomains of subdomains
         if self.getTarget().matches(event.data, includeChildren=False) or not self.opts["domainonly"]:
             subdomains.update(set(self.state["sub_wordlist"]))
