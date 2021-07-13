@@ -22,7 +22,6 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_spyse(SpiderFootPlugin):
-
     meta = {
         'name': "Spyse",
         'summary': "SpiderFoot plug-in to search Spyse API for IP address and domain information.",
@@ -44,10 +43,10 @@ class sfp_spyse(SpiderFootPlugin):
             'favIcon': "https://spyse.com/favicon/favicon-32x32.png",
             'logo': "https://spyse.com/favicon/favicon-32x32.png",
             'description': " Spyse Search can explore entire countries, various types of infrastructures and "
-            "everything down to the smallest particles of the web. "
-            "Use the plethora of search parameters at your disposal to achieve the most accurate results.\n"
-            "Spyse Scoring has been designed to quickly evaluate the "
-            "security status of different elements of a network - IPs and domains.",
+                           "everything down to the smallest particles of the web. "
+                           "Use the plethora of search parameters at your disposal to achieve the most accurate results.\n"
+                           "Spyse Scoring has been designed to quickly evaluate the "
+                           "security status of different elements of a network - IPs and domains.",
         }
     }
 
@@ -99,7 +98,7 @@ class sfp_spyse(SpiderFootPlugin):
     def querySubdomains(self, qry, currentOffset):
         """Query subdomains of domain
 
-        https://spyse.com/v3/data/tools/api#/domain/subdomain
+        https://spyse-dev.readme.io/reference/domains#domain_search
 
         Args:
             qry (str): domain name
@@ -109,51 +108,55 @@ class sfp_spyse(SpiderFootPlugin):
             dict: JSON formatted results
         """
 
-        params = {
-            'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.limit,
-            'offset': currentOffset
-        }
         headers = {
             'Accept': "application/json",
+            'Content-Type': "application/json",
             'Authorization': "Bearer " + self.opts['api_key']
+        }
+        body = {
+            "search_params": [
+                {
+                    "name": {
+                        "operator": "ends",
+                        "value": f".{qry.encode('raw_unicode_escape').decode('ascii', errors='replace')}"
+                    }
+                }
+            ],
+            "limit": self.limit,
+            "offset": currentOffset
         }
 
         res = self.sf.fetchUrl(
-            'https://api.spyse.com/v3/data/domain/subdomain?' + urllib.parse.urlencode(params),
+            'https://api.spyse.com/v4/data/domain/search',
             headers=headers,
             timeout=15,
-            useragent=self.opts['_useragent']
+            useragent=self.opts['_useragent'],
+            postData=json.dumps(body)
         )
 
         time.sleep(self.opts['delay'])
 
         return self.parseAPIResponse(res)
 
-    def queryIPPort(self, qry, currentOffset):
+    def queryIPPort(self, qry):
         """Query IP port lookup
 
-        https://spyse.com/v3/data/tools/api#/ip/port_by_ip
+        https://spyse-dev.readme.io/reference/ips#ip_details
 
         Args:
             qry (str): IP address
-            currentOffset (int): start from this search result offset
 
         Returns:
             dict: JSON formatted results
         """
 
-        params = {
-            'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.limit,
-            'offset': currentOffset
-        }
+
         headers = {
             'Accept': "application/json",
             'Authorization': "Bearer " + self.opts['api_key']
         }
         res = self.sf.fetchUrl(
-            'https://api.spyse.com/v3/data/ip/port?' + urllib.parse.urlencode(params),
+            f'https://api.spyse.com/v4/data/ip/{qry.encode("raw_unicode_escape").decode("ascii", errors="replace")}',
             headers=headers,
             timeout=15,
             useragent=self.opts['_useragent']
@@ -166,7 +169,7 @@ class sfp_spyse(SpiderFootPlugin):
     def queryDomainsOnIP(self, qry, currentOffset):
         """Query domains on IP
 
-        https://spyse.com/v3/data/tools/api#/ip/domain_by_ip
+        https://spyse-dev.readme.io/reference/domains#domain_search
 
         Args:
             qry (str): IP address
@@ -176,17 +179,27 @@ class sfp_spyse(SpiderFootPlugin):
             dict: JSON formatted results
         """
 
-        params = {
-            'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.limit,
-            'offset': currentOffset
-        }
+
         headers = {
             'Accept': "application/json",
+            'Content-Type': "application/json",
             'Authorization': "Bearer " + self.opts['api_key']
         }
+        body = {
+            "search_params": [
+                {
+                    "dns_a": {
+                        "operator": "eq",
+                        "value": f"{qry.encode('raw_unicode_escape').decode('ascii', errors='replace')}"
+                    }
+                }
+            ],
+            "limit": self.limit,
+            "offset": currentOffset
+        }
         res = self.sf.fetchUrl(
-            'https://api.spyse.com/v3/data/ip/domain?' + urllib.parse.urlencode(params),
+            'https://api.spyse.com/v4/data/domain/search',
+            postData=json.dumps(body),
             headers=headers,
             timeout=15,
             useragent=self.opts['_useragent']
@@ -319,6 +332,7 @@ class sfp_spyse(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
+
         if eventData in self.results:
             return
 
@@ -389,39 +403,27 @@ class sfp_spyse(SpiderFootPlugin):
         # Query open ports for source IP Address
         if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             ports = list()
-            currentOffset = 0
-            nextPageHasData = True
 
-            while nextPageHasData:
-                if self.checkForStop():
-                    return
-                data = self.queryIPPort(eventData, currentOffset)
-                if not data:
-                    nextPageHasData = False
-                    break
-
+            if self.checkForStop():
+                return
+            data = self.queryIPPort(eventData)
+            if data:
                 data = data.get("data")
 
                 if data is None:
                     self.sf.debug("No open ports found for IP " + eventData)
-                    nextPageHasData = False
-                    break
                 else:
                     records = data.get('items')
                     if records:
                         for record in records:
-                            port = record.get('port')
-                            if port:
-                                evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
-                                self.notifyListeners(evt)
+                            for port_data in record["ports"]:
+                                port = port_data.get('port')
+                                if port:
+                                    evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
+                                    self.notifyListeners(evt)
 
-                                ports.append(str(eventData) + ":" + str(port))
-                                self.reportExtraData(record, event)
-
-                    # Calculate if there are any records in the next offset (page)
-                    if len(records) < self.limit:
-                        nextPageHasData = False
-                    currentOffset += self.limit
+                                    ports.append(str(eventData) + ":" + str(port))
+                                    self.reportExtraData(record, event)
 
                 for port in ports:
                     if port in self.results:
@@ -430,12 +432,14 @@ class sfp_spyse(SpiderFootPlugin):
 
                     evt = SpiderFootEvent('TCP_PORT_OPEN', str(port), self.__name__, event)
                     self.notifyListeners(evt)
-
         # Query subdomains
         if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:
             currentOffset = 0
             nextPageHasData = True
             domains = list()
+
+            if event.module == "sfp_spyse" and (self.getTarget().targetValue in event.data):
+                return
 
             while nextPageHasData:
                 if self.checkForStop():
