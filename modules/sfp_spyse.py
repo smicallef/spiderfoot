@@ -24,15 +24,15 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_spyse(SpiderFootPlugin):
     meta = {
         'name': "Spyse",
-        'summary': "SpiderFoot plug-in to search Spyse API for IP address and domain information.",
+        'summary': "Search Spyse.com Internet assets registry for information about domains, IPv4 hosts, potential vulnerabilities, passive DNS, etc.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Passive DNS"],
+        'categories': ["Search Engines", "Real World", "Passive DNS"],
         'dataSource': {
             'website': "https://spyse.com",
             'model': "FREE_AUTH_LIMITED",
             'references': [
-                "https://spyse.com/tools/api"
+                "https://spyse.com/api"
             ],
             'apiKeyInstructions': [
                 "Visit https://spyse.com",
@@ -42,11 +42,14 @@ class sfp_spyse(SpiderFootPlugin):
             ],
             'favIcon': "https://spyse.com/favicon/favicon-32x32.png",
             'logo': "https://spyse.com/favicon/favicon-32x32.png",
-            'description': " Spyse Search can explore entire countries, various types of infrastructures and "
-                           "everything down to the smallest particles of the web. "
-                           "Use the plethora of search parameters at your disposal to achieve the most accurate results.\n"
-                           "Spyse Scoring has been designed to quickly evaluate the "
-                           "security status of different elements of a network - IPs and domains.",
+            'description': "Spyse is a platform that collects, analyzes, and delivers data about devices and websites "
+                           "available on the Internet. It regularly probes every public IP address, crawls every "
+                           "website, curates and enriches the resulting data, and makes it intelligible through an "
+                           "interactive search engine and API.\n"
+                           "Supported data models: IPv4 hosts, open ports, WHOIS, domains, websites, passive DNS, "
+                           "potential vulnerabilities, autonomous systems, technologies, subnets, emails, IP "
+                           "reputation, organization, etc."
+
         }
     }
 
