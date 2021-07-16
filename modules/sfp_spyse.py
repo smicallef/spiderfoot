@@ -14,9 +14,6 @@
 
 import json
 import time
-import urllib.error
-import urllib.parse
-import urllib.request
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -89,7 +86,7 @@ class sfp_spyse(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "IPV6_ADDRESS", "DOMAIN_NAME", "INTERNET_NAME"]
+        return ["IP_ADDRESS", "DOMAIN_NAME", "INTERNET_NAME"]
 
     # What events this module produces
     def producedEvents(self):
@@ -141,6 +138,33 @@ class sfp_spyse(SpiderFootPlugin):
 
         return self.parseAPIResponse(res)
 
+    def queryDomainDetails(self, qry):
+        """Query domain details
+
+        https://spyse-dev.readme.io/reference/domains#domain_details
+
+        Args:
+            qry (str): Domain name
+
+        Returns:
+            dict: JSON formatted results
+        """
+
+        headers = {
+            'Accept': "application/json",
+            'Authorization': "Bearer " + self.opts['api_key']
+        }
+        res = self.sf.fetchUrl(
+            f'https://api.spyse.com/v4/data/domain/{qry.encode("raw_unicode_escape").decode("ascii", errors="replace")}',
+            headers=headers,
+            timeout=15,
+            useragent=self.opts['_useragent']
+        )
+
+        time.sleep(self.opts['delay'])
+
+        return self.parseAPIResponse(res)
+
     def queryIPPort(self, qry):
         """Query IP port lookup
 
@@ -152,7 +176,6 @@ class sfp_spyse(SpiderFootPlugin):
         Returns:
             dict: JSON formatted results
         """
-
 
         headers = {
             'Accept': "application/json",
@@ -181,7 +204,6 @@ class sfp_spyse(SpiderFootPlugin):
         Returns:
             dict: JSON formatted results
         """
-
 
         headers = {
             'Accept': "application/json",
@@ -212,48 +234,10 @@ class sfp_spyse(SpiderFootPlugin):
 
         return self.parseAPIResponse(res)
 
-    def queryDomainsAsMX(self, qry, currentOffset):
-        """Query domains using domain as MX server
-
-        https://spyse.com/v3/data/apidocs#/Domain%20related%20information/get_domains_using_as_mx
-
-        Note:
-            currently unused
-
-        Args:
-            qry (str): IP address
-            currentOffset (int): start from this search result offset
-
-        Returns:
-            dict: JSON formatted results
-        """
-
-        params = {
-            'ip': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
-            'limit': self.limit,
-            'offset': currentOffset
-        }
-
-        headers = {
-            'Accept': "application/json",
-            'Authorization': "Bearer " + self.opts['api_key']
-        }
-
-        res = self.sf.fetchUrl(
-            'https://api.spyse.com/v3/data/ip/mx?' + urllib.parse.urlencode(params),
-            headers=headers,
-            timeout=15,
-            useragent=self.opts['_useragent']
-        )
-
-        time.sleep(self.opts['delay'])
-
-        return self.parseAPIResponse(res)
-
     def parseAPIResponse(self, res):
         """Parse API response
 
-        https://spyse.com/v3/data/apidocs
+        https://spyse-dev.readme.io/reference/quick-start
 
         Args:
             res: TBD
@@ -330,11 +314,9 @@ class sfp_spyse(SpiderFootPlugin):
             self.sf.error("You enabled sfp_spyse but did not set an API key!")
             self.errorState = True
             return
-
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-
 
         if eventData in self.results:
             return
@@ -344,7 +326,7 @@ class sfp_spyse(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Query cohosts
-        if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
+        if eventName in ["IP_ADDRESS"]:
             cohosts = list()
             currentOffset = 0
             nextPageHasData = True
@@ -404,7 +386,7 @@ class sfp_spyse(SpiderFootPlugin):
                     self.cohostcount += 1
 
         # Query open ports for source IP Address
-        if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
+        if eventName in ["IP_ADDRESS"]:
             ports = list()
 
             if self.checkForStop():
@@ -418,15 +400,38 @@ class sfp_spyse(SpiderFootPlugin):
                 else:
                     records = data.get('items')
                     if records:
-                        for record in records:
-                            for port_data in record["ports"]:
-                                port = port_data.get('port')
-                                if port:
-                                    evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
-                                    self.notifyListeners(evt)
 
-                                    ports.append(str(eventData) + ":" + str(port))
-                                    self.reportExtraData(record, event)
+                        for record in records:
+                            if record.get("ports"):
+
+                                for port_data in record["ports"]:
+
+                                    port = port_data.get('port')
+                                    if port:
+                                        evt = SpiderFootEvent('RAW_RIR_DATA', str(record), self.__name__, event)
+                                        self.notifyListeners(evt)
+
+                                        ports.append(str(eventData) + ":" + str(port))
+                                        self.reportExtraData(record, event)
+                            if record.get("geo_info"):
+                                country = record["geo_info"].get("country")
+                                if country:
+                                    evt = SpiderFootEvent('COUNTRY_NAME', country, self.__name__, event)
+                                    self.notifyListeners(evt)
+                            if record.get("cve_list"):
+                                for cve in record["cve_list"]:
+                                    evt = SpiderFootEvent('VULNERABILITY', cve["id"], self.__name__, event)
+                                    self.notifyListeners(evt)
+                            if record.get("technologies"):
+                                for tech in record["technologies"]:
+                                    if tech.get("version"):
+                                        evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY',
+                                                              f"{tech['name']} {tech['version']}",
+                                                              self.__name__, event)
+                                    else:
+                                        evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', tech['name'], self.__name__,
+                                                              event)
+                                    self.notifyListeners(evt)
 
                 for port in ports:
                     if port in self.results:
@@ -437,12 +442,141 @@ class sfp_spyse(SpiderFootPlugin):
                     self.notifyListeners(evt)
         # Query subdomains
         if eventName in ["DOMAIN_NAME", "INTERNET_NAME"]:
+
             currentOffset = 0
             nextPageHasData = True
             domains = list()
 
             if event.module == "sfp_spyse" and (self.getTarget().targetValue in event.data):
                 return
+
+            domain_details = self.queryDomainDetails(eventData)
+            if domain_details:
+                domain_details_data = domain_details.get("data", {}).get("items", [])
+                if len(domain_details_data) > 0:
+                    domain_item = domain_details_data[0]
+                    if domain_item.get("organizations"):
+                        for org in domain_item.get("organizations", []):
+                            if org.get("crunchbase"):
+                                if org.get("crunchbase").get("is_primary", False):
+                                    org_name = org["crunchbase"].get("legal_name")
+                                    if not org_name:
+                                        org_name = org["crunchbase"].get("name")
+                                    if org_name:
+                                        evt = SpiderFootEvent('COMPANY_NAME', org_name, self.__name__, event)
+                                        self.notifyListeners(evt)
+
+                    domain_dns = domain_item.get("dns_records")
+                    if domain_dns:
+                        domain_dns_a_records = domain_dns.get("A")
+                        if domain_dns_a_records:
+                            for dns_A in domain_dns_a_records:
+                                evt = SpiderFootEvent('IP_ADDRESS', dns_A, self.__name__, event)
+                                self.notifyListeners(evt)
+
+                        domain_dns_aaaa_records = domain_dns.get("AAAA")
+                        if domain_dns_aaaa_records:
+                            for dns_AAAA in domain_dns_aaaa_records:
+                                evt = SpiderFootEvent('IPV6_ADDRESS', dns_AAAA, self.__name__, event)
+                                self.notifyListeners(evt)
+
+                        domain_dns_spf_records = domain_dns.get("SPF")
+                        if domain_dns_spf_records:
+                            for dns_spf in domain_dns_spf_records:
+                                if dns_spf.get("raw"):
+                                    evt = SpiderFootEvent('DNS_SPF', dns_spf["raw"], self.__name__, event)
+                                    self.notifyListeners(evt)
+
+                        domain_dns_txt_records = domain_dns.get("TXT")
+                        if domain_dns_txt_records:
+                            for dns_txt in domain_dns_txt_records:
+                                evt = SpiderFootEvent('DNS_TEXT', dns_txt, self.__name__, event)
+                                self.notifyListeners(evt)
+
+                        domain_dns_ns_records = domain_dns.get("NS")
+                        if domain_dns_ns_records:
+                            for dns_ns in domain_dns_ns_records:
+                                evt = SpiderFootEvent('PROVIDER_DNS', dns_ns, self.__name__, event)
+                                self.notifyListeners(evt)
+
+                        domain_dns_mx_records = domain_dns.get("MX")
+                        if domain_dns_mx_records:
+                            for dns_mx in domain_dns_mx_records:
+                                evt = SpiderFootEvent('PROVIDER_MAIL', dns_mx, self.__name__, event)
+                                self.notifyListeners(evt)
+
+                    hosts_enrichment = domain_item.get("hosts_enrichment")
+                    if hosts_enrichment:
+                        for host_enrichment in hosts_enrichment:
+                            if host_enrichment.get("country"):
+                                evt = SpiderFootEvent('COUNTRY_NAME', host_enrichment["country"], self.__name__, event)
+                                self.notifyListeners(evt)
+
+                    domain_technologies = domain_item.get("technologies")
+                    if domain_technologies:
+                        for tech in domain_technologies:
+                            if tech.get("version"):
+                                evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', f"{tech['name']} {tech['version']}",
+                                                      self.__name__, event)
+                            else:
+                                evt = SpiderFootEvent('WEBSERVER_TECHNOLOGY', tech['name'], self.__name__, event)
+
+                            self.notifyListeners(evt)
+
+                    domain_cves = domain_item.get("cve_list")
+                    if domain_cves:
+                        for cve in domain_cves:
+                            evt = SpiderFootEvent('VULNERABILITY', cve["id"], self.__name__, event)
+                            self.notifyListeners(evt)
+
+                    domain_whois = domain_item.get("whois_parsed")
+                    if domain_whois:
+                        domain_whois_registrar = domain_whois.get("registrar")
+                        if domain_whois_registrar:
+                            if domain_whois_registrar.get("registrar_name"):
+                                evt = SpiderFootEvent('DOMAIN_REGISTRAR',
+                                                      domain_whois_registrar["registrar_name"], self.__name__,
+                                                      event)
+                                self.notifyListeners(evt)
+
+                    domain_http_extract = domain_item.get("http_extract")
+                    if domain_http_extract:
+
+                        if domain_http_extract.get("http_status_code"):
+                            evt = SpiderFootEvent('HTTP_CODE', str(domain_http_extract["http_status_code"]),
+                                                  self.__name__, event)
+                            self.notifyListeners(evt)
+
+                        domain_emails = domain_http_extract.get("emails")
+                        if domain_emails:
+                            for email in domain_emails:
+                                evt = SpiderFootEvent('EMAILADDR', email, self.__name__, event)
+                                self.notifyListeners(evt)
+
+                    domain_cert_summary = domain_item.get("cert_summary")
+                    if domain_cert_summary:
+                        domain_cert_summary_subject = domain_cert_summary.get("subject")
+                        if domain_cert_summary_subject:
+                            if domain_cert_summary_subject.get("organization"):
+                                evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUED',
+                                                      domain_cert_summary_subject["organization"], self.__name__,
+                                                      event)
+                                self.notifyListeners(evt)
+
+                        domain_cert_summary_issuer = domain_cert_summary.get("issuer")
+                        if domain_cert_summary_issuer:
+                            if domain_cert_summary_issuer.get("organization"):
+                                evt = SpiderFootEvent('SSL_CERTIFICATE_ISSUER',
+                                                      domain_cert_summary_issuer["organization"], self.__name__,
+                                                      event)
+                                self.notifyListeners(evt)
+
+                    domain_trackers = domain_item.get("trackers")
+                    if domain_trackers:
+                        if domain_trackers.get("google_analytics_key"):
+                            evt = SpiderFootEvent('WEB_ANALYTICS_ID', domain_trackers["google_analytics_key"],
+                                                  self.__name__, event)
+                            self.notifyListeners(evt)
 
             while nextPageHasData:
                 if self.checkForStop():
