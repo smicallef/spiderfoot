@@ -574,8 +574,7 @@ class sfp_spyse(SpiderFootPlugin):
                     domain_trackers = domain_item.get("trackers")
                     if domain_trackers:
                         if domain_trackers.get("google_analytics_key"):
-                            evt = SpiderFootEvent('WEB_ANALYTICS_ID', domain_trackers["google_analytics_key"],
-                                                  self.__name__, event)
+                            evt = SpiderFootEvent("WEB_ANALYTICS_ID", f"Google Analytics: {domain_trackers.get("google_analytics_key")}", self.__name__, event)
                             self.notifyListeners(evt)
 
             while nextPageHasData:
