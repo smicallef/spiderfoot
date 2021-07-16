@@ -34,6 +34,25 @@ SpiderFoot has an embedded web-server for providing a clean and intuitive web-ba
 - Can call other tools like DNSTwist, Whatweb, Nmap and CMSeeK
 - Actively developed since 2012!
 
+### WANT MORE?
+
+Need more from SpiderFoot? Check out [SpiderFoot HX](https://www.spiderfoot.net/hx) for:
+- 100% Cloud-based and managed for you
+- Attack Surface Monitoring with change notifications by email, REST and Slack
+- Multiple targets per scan
+- Multi-user collaboration
+- Authenticated and 2FA
+- Correlations
+- Investigations
+- Customer support
+- Third party tools pre-installed & configured
+- Drive it with a fully RESTful API
+- TOR integration built-in
+- Screenshotting
+- Feed scan data to Splunk, ElasticSearch and REST endpoints
+
+See the full set of differences between SpiderFoot HX and the open source version [here](https://www.spiderfoot.net/open-source-vs-hx/).
+
 ### USES
 
 SpiderFoot can be used offensively (e.g. in a red team exercise or penetration test) for reconnaissance of your target or defensively to gather information about what you or your organisation might have exposed over the Internet.
