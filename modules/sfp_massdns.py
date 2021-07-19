@@ -36,6 +36,7 @@ class sfp_massdns(SpiderFootPlugin):
         "domainonly": True,
         "numbermutation": True,
         "alphamutation": True,
+        "large_wordlist": False,
         "concurrent_resolvers": 1000
     }
 
@@ -44,6 +45,7 @@ class sfp_massdns(SpiderFootPlugin):
         "domainonly": "Only brute-force subdomains for the main target (non-recursive).",
         "numbermutation": "For any host found, increment/decrement existing numbers (if any) and try appending 1, 01, 001, -1, -01, -001, 2, 02, etc. (up to 10)",
         "alphamutation": "For any host found, try common mutations such as -test, -old, etc.",
+        "large_wordlist": "Use a 1.2M wordlist instead of the default 110K. Takes roughly 20 minutes at 1000 threads.",
         "concurrent_resolvers": "Maximum concurrent lookup threads. Bandwidth cost is ~1Mbps per 100 resolvers."
     }
 
@@ -69,7 +71,11 @@ class sfp_massdns(SpiderFootPlugin):
         self.num_regex = re.compile(r'\d+')
 
         dicts_dir = f"{self.sf.myPath()}/spiderfoot/dicts"
-        with open(f"{dicts_dir}/massdns-subdomains.txt", "r") as f:
+        if self.opts["large_wordlist"]:
+            subdomain_dict = f"{dicts_dir}/massdns-subdomains-1.2M.txt"
+        else:
+            subdomain_dict = f"{dicts_dir}/massdns-subdomains-110K.txt"
+        with open(subdomain_dict, "r") as f:
             self.state["sub_wordlist"] = list(set([x.strip().lower() for x in f.readlines()]))
         with open(f"{dicts_dir}/subdomain-mutations.txt", "r") as f:
             if self.opts["alphamutation"]:
