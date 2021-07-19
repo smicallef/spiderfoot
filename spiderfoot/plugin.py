@@ -635,4 +635,171 @@ class ThreadPoolWorker(threading.Thread):
             finally:
                 self.busy = False
 
+    class ThreadPool:
+        """
+        A spiderfoot-integrated threading pool
+
+        Example:
+
+            with self.threadPool(self.opts["_maxthreads"]) as pool:
+                for result in pool.map(
+                        ['a', 'b', 'c', 'd'],
+                        self.functionToThread
+                    ):
+                    yield result
+        """
+
+        def __init__(self, sfp, threads=100, name=None):
+            if name is None:
+                name = ""
+
+            self.sfp = sfp
+            self.threads = int(threads)
+            self.pool = [None] * self.threads
+            self.name = name
+            self.inputThread = None
+            self.inputQueue = queue.Queue(self.threads)
+            self.outputQueue = queue.Queue()
+            self.stop = False
+
+        def map(self, iterable, callback, args=None, kwargs=None, name=""):
+            """
+            Args:
+                iterable: each entry will be passed as the first argument to the function
+                callback: the function to thread
+                args: additional arguments to pass to callback function
+                kwargs: keyword arguments to pass to callback function
+                name: base name to use for all the threads
+
+            Yields:
+                return values from completed callback function
+            """
+
+            if args is None:
+                args = tuple()
+
+            if kwargs is None:
+                kwargs = dict()
+
+            self.inputThread = threading.Thread(target=self.feedQueue, args=(iterable, self.inputQueue))
+            self.inputThread.start()
+
+            for i in range(self.threads):
+                t = ThreadPoolWorker(self.sfp, target=callback, args=args, kwargs=kwargs,
+                                     inputQueue=self.inputQueue, outputQueue=self.outputQueue,
+                                     name=f"{self.name}_{name}")
+                t.start()
+                self.pool[i] = t
+
+            # wait for threads to finish
+            while not self.finished and not self.sfp.checkForStop():
+                for result in self.results:
+                    yield result
+
+            self.stop = True
+            for t in self.pool:
+                t.stop = True
+
+            # make sure input queue is empty
+            while 1:
+                try:
+                    self.inputQueue.get_nowait()
+                except queue.Empty:
+                    break
+
+            for result in self.results:
+                yield result
+
+        @property
+        def results(self):
+            while 1:
+                try:
+                    yield self.outputQueue.get_nowait()
+                except queue.Empty:
+                    # sleep briefly to save CPU
+                    sleep(.01)
+                    break
+
+        def feedQueue(self, iterable, q):
+            for i in iterable:
+                if self.stop:
+                    break
+                while 1:
+                    try:
+                        q.put_nowait(i)
+                        break
+                    except queue.Full:
+                        sleep(.1)
+                        continue
+
+        @property
+        def finished(self):
+            if self.sfp.checkForStop():
+                return True
+            else:
+                finishedThreads = [not t.busy for t in self.pool]
+                try:
+                    inputThreadAlive = self.inputThread.is_alive()
+                except AttributeError:
+                    inputThreadAlive = False
+                return not inputThreadAlive and self.inputQueue.empty() and all(finishedThreads)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exception_type, exception_value, traceback):
+            # Make sure queues are empty before exiting
+            try:
+                for q in (self.outputQueue, self.inputQueue):
+                    while 1:
+                        try:
+                            q.get_nowait()
+                        except queue.Empty:
+                            break
+            except Exception:
+                pass
+
+    def threadPool(self, *args, **kwargs):
+        return self.ThreadPool(self, *args, **kwargs)
+
+
+class ThreadPoolWorker(threading.Thread):
+
+    def __init__(self, sfp, inputQueue, outputQueue, group=None, target=None,
+                 name=None, args=None, kwargs=None, verbose=None):
+        if args is None:
+            args = tuple()
+
+        if kwargs is None:
+            kwargs = dict()
+
+        self.sfp = sfp
+        self.inputQueue = inputQueue
+        self.outputQueue = outputQueue
+        self.busy = False
+        self.stop = False
+
+        # group=None, target=None, name=None, args=(), kwargs={}
+        super().__init__(group, target, name, args, kwargs)
+
+    def run(self):
+        while not self.stop:
+            try:
+                entry = self.inputQueue.get_nowait()
+                self.busy = True
+                try:
+                    result = self._target(entry, *self._args, **self._kwargs)
+                except Exception:
+                    import traceback
+                    self.sfp.sf.error(traceback.format_exc())
+                    break
+                self.outputQueue.put(result)
+            except queue.Empty:
+                self.busy = False
+                # sleep briefly to save CPU
+                sleep(.1)
+                break
+            finally:
+                self.busy = False
+
 # end of SpiderFootPlugin class
