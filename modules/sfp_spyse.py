@@ -24,7 +24,7 @@ class sfp_spyse(SpiderFootPlugin):
         'summary': "Search Spyse.com Internet assets registry for information about domains, IPv4 hosts, potential vulnerabilities, passive DNS, etc.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Search Engines", "Real World", "Passive DNS"],
+        'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://spyse.com",
             'model': "FREE_AUTH_LIMITED",
