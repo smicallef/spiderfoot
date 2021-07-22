@@ -295,7 +295,7 @@ SpamCop|Query various spamcop databases for open relays, open proxies, vulnerabl
 Spamhaus|Query the Spamhaus databases for open relays, open proxies, vulnerable servers, etc.|[https://www.spamhaus.org/](https://www.spamhaus.org/)|Free API
 spur.us|Obtain information about any malicious activities involving IP addresses found|[https://spur.us/](https://spur.us/)|Commercial API
 SpyOnWeb|Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code.|[http://spyonweb.com/](http://spyonweb.com/)|Tiered API
-Spyse|SpiderFoot plug-in to search Spyse API for IP address and domain information.|[https://spyse.com](https://spyse.com)|Tiered API
+Spyse|Search Spyse.com Internet assets registry for information about domains, IPv4 hosts, potential vulnerabilities, passive DNS, etc.|[https://spyse.com](https://spyse.com)|Tiered API
 SSL Certificate Analyzer|Gather information about SSL certificates used by the target's HTTPS sites.|N/A|Internal
 Strange Header Identifier|Obtain non-standard HTTP headers returned by web servers.|N/A|Internal
 Subdomain Takeover Checker|Check if affiliated subdomains are vulnerable to takeover.|N/A|Internal
