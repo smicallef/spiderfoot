@@ -93,7 +93,12 @@ class sfp_spyse(SpiderFootPlugin):
         return ["INTERNET_NAME", "INTERNET_NAME_UNRESOLVED", "DOMAIN_NAME",
                 "IP_ADDRESS", "IPV6_ADDRESS", "CO_HOSTED_SITE",
                 "RAW_RIR_DATA", "TCP_PORT_OPEN", "OPERATING_SYSTEM",
-                "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS"]
+                "WEBSERVER_BANNER", "WEBSERVER_HTTPHEADERS",
+                "COMPANY_NAME", "WEBSERVER_TECHNOLOGY", "PROVIDER_MAIL",
+                "PROVIDER_DNS", "DNS_TEXT", "DNS_SPF", "COUNTRY_NAME",
+                "WEB_ANALYTICS_ID", "VULNERABILITY", "SSL_CERTIFICATE_ISSUED",
+                "SSL_CERTIFICATE_ISSUER" "EMAILADDR", "DOMAIN_REGISTRAR",
+                "HTTP_CODE"]
 
     def querySubdomains(self, qry, currentOffset):
         """Query subdomains of domain
