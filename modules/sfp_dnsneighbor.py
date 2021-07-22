@@ -11,7 +11,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from netaddr import IPAddress
+import ipaddress
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -28,14 +28,14 @@ class sfp_dnsneighbor(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'lookasidecount': 10,
+        'lookasidebits': 4,
         'validatereverse': True
     }
 
     # Option descriptions
     optdescs = {
         'validatereverse': "Validate that reverse-resolved hostnames still resolve back to that IP before considering them as aliases of your target.",
-        'lookasidecount': "If look-aside is enabled, the number of IPs on each 'side' of the IP to look up"
+        'lookasidebits': "If look-aside is enabled, the netmask size (in CIDR notation) to check. Default is 4 bits (16 hosts)."
     }
 
     events = None
@@ -79,36 +79,27 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         self.events[eventDataHash] = True
 
         try:
-            ip = IPAddress(eventData)
-        except Exception:
+            address = ipaddress.ip_address(eventData)
+            netmask = address.max_prefixlen - min(address.max_prefixlen, max(1, int(self.opts.get("lookasidebits"))))
+            network = ipaddress.ip_network(f"{eventData}/{netmask}", strict=False)
+        except ValueError:
             self.sf.error(f"Invalid IP address received: {eventData}")
             return None
 
-        try:
-            minip = IPAddress(int(ip) - self.opts['lookasidecount'])
-            maxip = IPAddress(int(ip) + self.opts['lookasidecount'])
-        except Exception:
-            self.sf.error(f"Received an invalid IP address: {eventData}")
-            return None
+        self.sf.debug(f"Lookaside max: {network.network_address}, min: {network.broadcast_address}")
 
-        self.sf.debug("Lookaside max: " + str(maxip) + ", min: " + str(minip))
-        s = int(minip)
-        c = int(maxip)
-
-        while s <= c:
-            sip = str(IPAddress(s))
+        for ip in network:
+            sip = str(ip)
             self.sf.debug("Attempting look-aside lookup of: " + sip)
             if self.checkForStop():
                 return None
 
             if sip in self.hostresults or sip == eventData:
-                s += 1
                 continue
 
             addrs = self.sf.resolveIP(sip)
             if not addrs:
                 self.sf.debug("Look-aside resolve for " + sip + " failed.")
-                s += 1
                 continue
 
             # Report addresses that resolve to hostnames on the same
@@ -127,7 +118,6 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             ev = self.processHost(sip, parentEvent, affil)
 
             if not ev:
-                s += 1
                 continue
 
             for addr in addrs:
@@ -149,7 +139,6 @@ class sfp_dnsneighbor(SpiderFootPlugin):
                     self.processHost(addr, parent, False)
                 else:
                     self.processHost(addr, parent, True)
-            s += 1
 
     def processHost(self, host, parentEvent, affiliate=None):
         parentHash = self.sf.hashstring(parentEvent.data)
