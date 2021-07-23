@@ -377,7 +377,6 @@ class sfp_massdns(SpiderFootPlugin):
             self.sf.cachePut("resolverlist", list(nameservers))
         return nameservers
 
-
     def resolve(self, host, tries=10, nameserver=None):
         if nameserver is None:
             resolver = self.getResolver()
