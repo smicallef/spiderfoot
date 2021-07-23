@@ -82,35 +82,8 @@ class sfp_massdns(SpiderFootPlugin):
                 self.state["alpha_mutation_wordlist"] = list(set([x.strip().lower() for x in f.readlines()]))
 
         # set up nameservers
-        self.resolvers = []
-        min_reliability = .99
-        nameservers = set()
-        nameservers_url = "https://public-dns.info/nameserver/nameservers.json"
-        nameservers_dict = self.sf.myPath() + "/dicts/resolvers.txt"
-        # get every valid nameserver
-        try:
-            fetched_nameservers = json.loads(self.sf.fetchUrl(
-                nameservers_url,
-                useragent=self.opts.get("_useragent", "Spiderfoot")
-            )["content"])
-        except ValueError:
-            fetched_nameservers = []
-        for entry in fetched_nameservers:
-            ip_address = str(entry.get("ip", "")).strip()
-            try:
-                reliability = float(entry.get("reliability", 0))
-            except ValueError:
-                continue
-            if reliability >= min_reliability and self._ipRegex.match(ip_address):
-                nameservers.add(ip_address)
-        # fall back to local dict if necessary
-        if not nameservers:
-            self.sf.debug(f"Failed to retrieve nameservers from {nameservers_url}")
-            nameservers = set(self._ipRegex.findall(open(nameservers_dict, "r").read()))
-            self.sf.debug(f"Loaded {len(nameservers):,} nameservers from {nameservers_dict}")
-        else:
-            self.sf.debug(f"Loaded {len(nameservers):,} nameservers from {nameservers_url}")
-        self.resolvers = self.verifyNameservers(nameservers)
+        self.resolvers = self.fetchResolvers(minReliability=.99)
+        self.resolvers = self.verifyNameservers(self.resolvers)
         self.sf.info(f"Using {len(self.resolvers):,} valid nameservers")
 
     def watchedEvents(self):
@@ -375,6 +348,35 @@ class sfp_massdns(SpiderFootPlugin):
             pass
 
         return subdomains
+
+    def fetchResolvers(self, minReliability):
+        resolverlist = self.sf.cacheGet("resolverlist", 72)
+        if resolverlist is not None:
+            nameservers = self._ipRegex.findall(resolverlist)
+            self.sf.debug(f"Loaded {len(nameservers):,} nameservers from cache")
+        else:
+            nameservers = set()
+            nameservers_url = "https://public-dns.info/nameserver/nameservers.json"
+            # get every valid nameserver
+            try:
+                for entry in json.loads(self.sf.fetchUrl(
+                    nameservers_url,
+                    useragent=self.opts.get("_useragent", "Spiderfoot")
+                )["content"]):
+                    ip_address = str(entry.get("ip", "")).strip()
+                    try:
+                        reliability = float(entry.get("reliability", 0))
+                    except ValueError:
+                        continue
+                    if reliability >= minReliability and self._ipRegex.match(ip_address):
+                        nameservers.add(ip_address)
+            except ValueError as e:
+                self.sf.debug(f"Failed to fetch nameservers from public-dns.info: {e}")
+                pass
+            self.sf.debug(f"Loaded {len(nameservers):,} nameservers from {nameservers_url}")
+            self.sf.cachePut("resolverlist", list(nameservers))
+        return nameservers
+
 
     def resolve(self, host, tries=10, nameserver=None):
         if nameserver is None:
