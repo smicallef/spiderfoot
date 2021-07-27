@@ -112,7 +112,6 @@ class sfp_projectdiscovery(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None

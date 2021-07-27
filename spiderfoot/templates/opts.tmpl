@@ -90,41 +90,60 @@
 </table>
 </div>
 % for mod in sorted(opts['__modules__'].keys()):
-    <% modopts = opts['__modules__'][mod]['opts'] %>
+    <%
+        summary = opts['__modules__'][mod].get('descr') or 'No summary available.'
+        categories = opts['__modules__'][mod].get('cats') or []
+        labels = opts['__modules__'][mod].get('labels') or []
+        meta = opts['__modules__'][mod].get('meta')
+        modopts = opts['__modules__'][mod].get('opts')
+        optdescs = opts['__modules__'][mod].get('optdescs')
+        data_source = meta.get('dataSource') or {}
+        website = data_source.get('website') or ''
+        description = data_source.get('description') or ''
+        apiKeyInstructions = data_source.get('apiKeyInstructions') or ''
+    %>
     <div id='optsect_${mod}' class="tab-pane" style="display: none">
-    <h4>${mod} Settings</h4>
+    <h4>${opts['__modules__'][mod]['name']} (${mod})</h4>
+
     <table class='table table-bordered table-striped'>
-    <thead><tr> <th>Option</th> <th>Value</th></tr></thead>
+    <tbody>
+    <tr><td>Summary</td><td>${summary}<br/><br/>${description}</td></tr>
+
+    % if categories:
+    <tr><td>Categories:</td><td>${', '.join(categories)}</td><tr>
+    % endif
+
+    % if labels:
+    <tr><td>Tags:</td><td>${', '.join(labels)}</td><tr>
+    % endif
+
+    % if website:
+    <tr><td>Website:</td><td><a href="${website}" target=_new>${website}</a></td></tr>
+    % endif
+
+    </tbody>
+    </table>
+
+    <h4>Settings</h4>
+    <table class='table table-bordered table-striped'>
+    <thead><tr><th>Option</th> <th>Value</th></tr></thead>
     <tbody>
 
-    % for opt in sorted(opts['__modules__'][mod]['opts'].keys()):
+    % for opt in sorted(modopts.keys()):
         % if not opt.startswith("_"):
-            <%
-            if not opts['__modules__'][mod].get('optdescs'):
-                optdesc = "No description available."
-            else:
-                optdesc = opts['__modules__'][mod]['optdescs'][opt]
-            %>
-
             <tr>
-              <td>${optdesc}
+              <td>${optdescs.get(opt) or "No description available."}
                 % if "api_key" in opt:
                     <%
                         import re
-                        instructions = ""
-                        if "dataSource" in opts['__modules__'][mod]['meta']:
-                            instructions = "<div><b>Website:</b> <a href='" + opts['__modules__'][mod]['meta']['dataSource']['website'] + "' target=_new>" + opts['__modules__'][mod]['meta']['dataSource']['website'] + "</a><br>"
-                            instructions += "<b>Module purpose:</b> " + opts['__modules__'][mod]['descr'] + "<br><br>"
-
+                        if apiKeyInstructions:
                             n = 0
-                            if "apiKeyInstructions" in opts['__modules__'][mod]['meta']['dataSource']:
-                                for step in opts['__modules__'][mod]['meta']['dataSource']['apiKeyInstructions']:
-                                    n += 1
-                                    if "https://" in step or "http://" in step:
-                                        step = re.sub(r'.*(https?://.[^ ]+).*', '<a target=_new href=\'\\1\'>\\1</a>', step)
-                                    instructions += str(n) + ". " + step + "<br>"
-
-                            instructions += "</div>"
+                            instructions = ""
+                            for step in apiKeyInstructions:
+                                n += 1
+                                if "https://" in step or "http://" in step:
+                                    step = re.sub(r'.*(https?://.[^ ]+).*', '<a target=_new href=\'\\1\'>\\1</a>', step)
+                                instructions += str(n) + ". " + step + "<br>"
                     %>
                     &nbsp;&nbsp;<a href='#' data-html="true" data-toggle="popover" data-trigger="focus" title="Instructions" data-content="${instructions}"><i class="glyphicon glyphicon-question-sign"></i></a>
                 % endif

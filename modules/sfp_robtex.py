@@ -104,7 +104,6 @@ class sfp_robtex(SpiderFootPlugin):
             self.sf.debug("Ignoring " + eventName + ", from self.")
             return
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return

@@ -1,4 +1,5 @@
 # test_sfp_webanalytics.py
+import pytest
 import unittest
 
 from modules.sfp_webanalytics import sfp_webanalytics
@@ -6,32 +7,11 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
+@pytest.mark.usefixtures
 class TestModuleWebAnalytics(unittest.TestCase):
     """
     Test modules.sfp_webanalytics
     """
-
-    default_options = {
-        '_debug': False,  # Debug
-        '__logging': True,  # Logging in general
-        '__outputfilter': None,  # Event types to filter from modules' output
-        '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
-        '_dnsserver': '',  # Override the default resolver
-        '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
-        '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
-        '_internettlds_cache': 72,
-        '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-        '__version__': '3.3',
-        '__database': 'spiderfoot.test.db',  # note: test database file
-        '__modules__': None,  # List of modules. Will be set after start-up.
-        '_socks1type': '',
-        '_socks2addr': '',
-        '_socks3port': '',
-        '_socks4user': '',
-        '_socks5pwd': '',
-        '_torctlport': 9051,
-        '__logstdout': False
-    }
 
     def test_opts(self):
         module = sfp_webanalytics()
@@ -54,24 +34,146 @@ class TestModuleWebAnalytics(unittest.TestCase):
         module = sfp_webanalytics()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent(self):
-        """
-        Test handleEvent(self, event)
-        """
+    def test_handleEvent_event_data_target_web_content_containing_web_analytics_string_should_return_event(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_webanalytics()
         module.setup(sf, dict())
 
-        target_value = 'example target value'
-        target_type = 'IP_ADDRESS'
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
+
+        def new_notifyListeners(self, event):
+            expected = 'WEB_ANALYTICS_ID'
+            if str(event.eventType) != expected:
+                raise Exception(f"{event.eventType} != {expected}")
+
+            expected = "Google Analytics: ua-1111111111-123"
+            if str(event.data) != expected:
+                raise Exception(f"{event.data} != {expected}")
+
+            raise Exception("OK")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_webanalytics)
 
         event_type = 'ROOT'
         event_data = 'example data'
         event_module = ''
         source_event = ''
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        event_type = 'TARGET_WEB_CONTENT'
+        event_data = '<p>example data ua-1111111111-123 example data</p>'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
+
+        self.assertEqual("OK", str(cm.exception))
+
+    def test_handleEvent_event_data_target_web_content_not_containing_web_analytics_string_should_not_create_event(self):
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_webanalytics()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        def new_notifyListeners(self, event):
+            raise Exception(f"Raised event {event.eventType}: {event.data}")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_webanalytics)
+
+        event_type = 'ROOT'
+        event_data = 'example data'
+        event_module = ''
+        source_event = ''
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        event_type = 'TARGET_WEB_CONTENT'
+        event_data = 'example data'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        result = module.handleEvent(evt)
+
+        self.assertIsNone(result)
+
+    def test_handleEvent_event_dns_text_containing_web_analytics_string_should_return_event(self):
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_webanalytics()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        def new_notifyListeners(self, event):
+            expected = 'WEB_ANALYTICS_ID'
+            if str(event.eventType) != expected:
+                raise Exception(f"{event.eventType} != {expected}")
+
+            expected = "Google Site Verification: abcdefghijklmnopqrstuvwxyz1234567890abc_def"
+            if str(event.data) != expected:
+                raise Exception(f"{event.data} != {expected}")
+
+            raise Exception("OK")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_webanalytics)
+
+        event_type = 'ROOT'
+        event_data = 'example data'
+        event_module = ''
+        source_event = ''
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        event_type = 'DNS_TEXT'
+        event_data = 'google-site-verification=abcdefghijklmnopqrstuvwxyz1234567890abc_def'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
+
+        self.assertEqual("OK", str(cm.exception))
+
+    def test_handleEvent_event_data_dns_text_not_containing_web_analytics_string_should_not_create_event(self):
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_webanalytics()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        def new_notifyListeners(self, event):
+            raise Exception(f"Raised event {event.eventType}: {event.data}")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_webanalytics)
+
+        event_type = 'ROOT'
+        event_data = 'example data'
+        event_module = ''
+        source_event = ''
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        event_type = 'DNS_TEXT'
+        event_data = 'example data'
+        event_module = 'example module'
+        source_event = evt
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
         result = module.handleEvent(evt)

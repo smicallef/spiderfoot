@@ -90,9 +90,8 @@ class sfp_botscout(SpiderFootPlugin):
             self.errorState = True
             return
 
-        # Don't look up stuff twice
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already searched.")
+            self.sf.debug(f"Skipping {eventData} as already searched.")
             return
 
         self.results[eventData] = True

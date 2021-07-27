@@ -82,26 +82,26 @@ class sfp_names(SpiderFootPlugin):
                     self.sf.debug("Ignoring web content from CSS/JS.")
                     return None
 
+        # Find names in email addresses in "<firstname>.<lastname>@<domain>" format
         if eventName == "EMAILADDR" and self.opts['emailtoname']:
-            if "." in eventData.split("@")[0]:
-                if type(eventData) == str:
-                    name = " ".join(map(str.capitalize, eventData.split("@")[0].split(".")))
-                else:
-                    name = " ".join(map(str.capitalize, eventData.split("@")[0].split(".")))
-                    name = str(name)
+            potential_name = eventData.split("@")[0]
 
-                # Names don't have numbers
-                if re.match("[0-9]*", name):
-                    return None
-
-                # Notify other modules of what you've found
-                evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
-                if event.moduleDataSource:
-                    evt.moduleDataSource = event.moduleDataSource
-                else:
-                    evt.moduleDataSource = "Unknown"
-                self.notifyListeners(evt)
+            if "." not in potential_name:
                 return None
+
+            name = " ".join(map(str.capitalize, potential_name.split(".")))
+
+            # Names usually do not contain numbers
+            if re.search("[0-9]", name):
+                return None
+
+            evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
+            if event.moduleDataSource:
+                evt.moduleDataSource = event.moduleDataSource
+            else:
+                evt.moduleDataSource = "Unknown"
+            self.notifyListeners(evt)
+            return None
 
         # For RAW_RIR_DATA, there are only specific modules we
         # expect to see RELEVANT names within.

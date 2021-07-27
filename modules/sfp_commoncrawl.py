@@ -143,8 +143,8 @@ class sfp_commoncrawl(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if len(self.indexBase) == 0:
             self.indexBase = self.getLatestIndexes()

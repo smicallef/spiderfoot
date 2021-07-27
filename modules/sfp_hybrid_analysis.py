@@ -230,9 +230,6 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             self.sf.debug("No information found for %s" % eventData)
             return None
 
-        evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
-        self.notifyListeners(evt)
-
         results = data.get("result")
 
         if not results:
@@ -249,6 +246,9 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             return None
 
         self.sf.info("Found %s results for %s" % (len(hashes), eventData))
+
+        evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
+        self.notifyListeners(evt)
 
         urls = []
         domains = []

@@ -194,3 +194,13 @@ tr.danger {
   background-color: #555;
   color: #fff;
 }
+
+/* Modal overrides */
+.ajs-dimmer {
+  background-color: #000 !important;
+  opacity: .75 !important;
+}
+
+.ajs-dialog, .ajs-header, .ajs-body, .ajs-footer {
+  background-color: #3a3a3a !important;
+}

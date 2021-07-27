@@ -1,4 +1,5 @@
 # test_sfp_dnsresolve.py
+import pytest
 import unittest
 
 from modules.sfp_dnsresolve import sfp_dnsresolve
@@ -6,32 +7,11 @@ from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
+@pytest.mark.usefixtures
 class TestModuleDnsResolve(unittest.TestCase):
     """
     Test modules.sfp_dnsresolve
     """
-
-    default_options = {
-        '_debug': False,  # Debug
-        '__logging': True,  # Logging in general
-        '__outputfilter': None,  # Event types to filter from modules' output
-        '_useragent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0) Gecko/20100101 Firefox/62.0',  # User-Agent to use for HTTP requests
-        '_dnsserver': '',  # Override the default resolver
-        '_fetchtimeout': 5,  # number of seconds before giving up on a fetch
-        '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
-        '_internettlds_cache': 72,
-        '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-        '__version__': '3.3',
-        '__database': 'spiderfoot.test.db',  # note: test database file
-        '__modules__': None,  # List of modules. Will be set after start-up.
-        '_socks1type': '',
-        '_socks2addr': '',
-        '_socks3port': '',
-        '_socks4user': '',
-        '_socks5pwd': '',
-        '_torctlport': 9051,
-        '__logstdout': False
-    }
 
     def test_opts(self):
         module = sfp_dnsresolve()
@@ -63,8 +43,8 @@ class TestModuleDnsResolve(unittest.TestCase):
         module = sfp_dnsresolve()
         module.setup(sf, dict())
 
-        target_value = 'example target value'
-        target_type = 'IP_ADDRESS'
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
 
@@ -74,9 +54,16 @@ class TestModuleDnsResolve(unittest.TestCase):
         source_event = ''
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
+        event_type = 'RAW_RIR_DATA'
+        event_data = 'example data spiderfoot.net example data'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)
+        self.assertEqual('TODO', 'TODO')
 
     def test_enrichTarget_should_return_SpiderFootTarget(self):
         """
@@ -93,8 +80,9 @@ class TestModuleDnsResolve(unittest.TestCase):
 
         result = module.enrichTarget(target)
         self.assertIsInstance(result, SpiderFootTarget)
+        self.assertEqual(result.targetType, target_type)
+        self.assertEqual(result.targetValue, target_value)
 
-    @unittest.skip("todo - test fails due to m._priority = None")
     def test_processDomain_should_return_None(self):
         """
         Test processDomain(self, domainName, parentEvent, affil=False, host=None)
@@ -107,7 +95,7 @@ class TestModuleDnsResolve(unittest.TestCase):
         module = sfp_dnsresolve()
         module.setup(sf, dict())
 
-        target_value = 'example.local'
+        target_value = 'spiderfoot.net'
         target_type = 'INTERNET_NAME'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
@@ -121,9 +109,9 @@ class TestModuleDnsResolve(unittest.TestCase):
         result = module.processDomain('www.example.local', parent_event, None, None)
 
         self.assertIsNone(result)
+        self.assertEqual('TODO', 'TODO')
 
-    @unittest.skip("todo - test fails due to m._priority = None")
-    def test_processHost_should_return_SpiderFootEvent(self):
+    def test_processHost_ip_address_should_return_ip_address_event(self):
         """
         Test processHost(self, host, parentEvent, affiliate=None)
         """
@@ -143,8 +131,77 @@ class TestModuleDnsResolve(unittest.TestCase):
         source_event = ''
         parent_event = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        result = module.processHost("127.0.0.1", parent_event, None)
+        host = '127.0.0.1'
+        result = module.processHost(host, parent_event, False)
 
         self.assertIsInstance(result, SpiderFootEvent)
+        self.assertEqual(result.data, host)
+        self.assertEqual(result.eventType, 'IP_ADDRESS')
 
-        self.assertIsNone(result)
+    def test_processHost_affiliate_ip_address_should_return_affiliate_ip_address_event(self):
+        """
+        Test processHost(self, host, parentEvent, affiliate=None)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_dnsresolve()
+        module.setup(sf, dict())
+
+        target_value = '127.0.0.1'
+        target_type = 'IP_ADDRESS'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        event_type = 'ROOT'
+        event_data = 'example data'
+        event_module = 'example module'
+        source_event = ''
+        parent_event = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        host = '127.0.0.1'
+        result = module.processHost(host, parent_event, True)
+
+        self.assertIsInstance(result, SpiderFootEvent)
+        self.assertEqual(result.data, host)
+        self.assertEqual(result.eventType, 'AFFILIATE_IPADDR')
+
+    def test_handleEvent_event_data_affiliate_ip_address_should_return_affiliate_internet_name_event(self):
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_dnsresolve()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        def new_notifyListeners(self, event):
+            expected = 'AFFILIATE_INTERNET_NAME'
+            if str(event.eventType) != expected:
+                raise Exception(f"{event.eventType} != {expected}")
+
+            expected = "one.one.one.one"
+            if str(event.data) != expected:
+                raise Exception(f"{event.data} != {expected}")
+
+            raise Exception("OK")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_dnsresolve)
+
+        event_type = 'ROOT'
+        event_data = 'example data'
+        event_module = ''
+        source_event = ''
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        event_type = 'IP_ADDRESS'
+        event_data = '1.1.1.1'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
+
+        self.assertEqual("OK", str(cm.exception))

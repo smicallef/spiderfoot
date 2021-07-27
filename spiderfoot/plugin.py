@@ -1,4 +1,8 @@
 import logging
+import threading
+import queue
+from time import sleep
+from copy import copy
 
 
 class SpiderFootPlugin():
@@ -47,10 +51,18 @@ class SpiderFootPlugin():
     errorState = False
     # SOCKS proxy
     socksProxy = None
+    # Queue for incoming events
+    incomingEventQueue = None
+    # Queue for produced events
+    outgoingEventQueue = None
 
     def __init__(self):
         """Not really needed in most cases."""
-        pass
+
+        # Whether the module is currently executing
+        self.running = False
+        # Holds the thread object when module threading is enabled
+        self.thread = None
 
     def _updateSocket(self, socksProxy):
         """Hack to override module's use of socket, replacing it with
@@ -194,6 +206,7 @@ class SpiderFootPlugin():
         Raises:
             TypeError: sfEvent argument was invalid type
         """
+
         from spiderfoot import SpiderFootEvent
 
         if not isinstance(sfEvent, SpiderFootEvent):
@@ -239,26 +252,31 @@ class SpiderFootPlugin():
                     break
             prevEvent = prevEvent.sourceEvent
 
-        self._listenerModules.sort(key=lambda m: m._priority)
+        # output to queue if applicable
+        if self.outgoingEventQueue is not None:
+            self.outgoingEventQueue.put(sfEvent)
+        # otherwise, call other modules directly
+        else:
+            self._listenerModules.sort(key=lambda m: m._priority)
 
-        for listener in self._listenerModules:
-            if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
-                continue
+            for listener in self._listenerModules:
+                if eventName not in listener.watchedEvents() and '*' not in listener.watchedEvents():
+                    continue
 
-            if storeOnly and "__stor" not in listener.__module__:
-                continue
+                if storeOnly and "__stor" not in listener.__module__:
+                    continue
 
-            listener._currentEvent = sfEvent
+                listener._currentEvent = sfEvent
 
-            # Check if we've been asked to stop in the meantime, so that
-            # notifications stop triggering module activity.
-            if self.checkForStop():
-                return
+                # Check if we've been asked to stop in the meantime, so that
+                # notifications stop triggering module activity.
+                if self.checkForStop():
+                    return
 
-            try:
-                listener.handleEvent(sfEvent)
-            except Exception as e:
-                self.log.exception(f"Module ({listener.__module__}) encountered an error: {e}")
+                try:
+                    listener.handleEvent(sfEvent)
+                except Exception as e:
+                    self.log.exception(f"Module ({listener.__module__}) encountered an error: {e}")
 
     def checkForStop(self):
         """For modules to use to check for when they should give back control.
@@ -266,18 +284,21 @@ class SpiderFootPlugin():
         Returns:
             bool
         """
-        if not self.__scanId__:
+        if self.outgoingEventQueue and self.incomingEventQueue:
+            return self._stopScanning
+        else:
+            if not self.__scanId__:
+                return False
+
+            scanstatus = self.__sfdb__.scanInstanceGet(self.__scanId__)
+
+            if not scanstatus:
+                return False
+
+            if scanstatus[5] == "ABORT-REQUESTED":
+                return True
+
             return False
-
-        scanstatus = self.__sfdb__.scanInstanceGet(self.__scanId__)
-
-        if not scanstatus:
-            return False
-
-        if scanstatus[5] == "ABORT-REQUESTED":
-            return True
-
-        return False
 
     def watchedEvents(self):
         """What events is this module interested in for input. The format is a list
@@ -314,11 +335,40 @@ class SpiderFootPlugin():
         return
 
     def start(self):
-        """Kick off the work (for some modules nothing will happen here, but instead
-        the work will start from the handleEvent() method.
-        Will usually be overriden by the implementer.
-        """
+        self.thread = threading.Thread(target=self.threadWorker)
+        self.thread.start()
 
-        return
+    def threadWorker(self):
+        try:
+            # create new database handle since we're in our own thread
+            from spiderfoot import SpiderFootDb
+            self.setDbh(SpiderFootDb(self.opts))
+            self.sf = copy(self.sf)
+            self.sf._dbh = self.__sfdb__
+
+            if not (self.incomingEventQueue and self.outgoingEventQueue):
+                self.log.error("Please set up queues before starting module as thread")
+                return
+
+            while not self.checkForStop():
+                try:
+                    sfEvent = self.incomingEventQueue.get_nowait()
+                    self.log.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
+                    self.running = True
+                    self.handleEvent(sfEvent)
+                    self.running = False
+                except queue.Empty:
+                    sleep(.3)
+                    continue
+        except KeyboardInterrupt:
+            self.log.warning(f"Interrupted module {self.__name__}.")
+            self._stopScanning = True
+        except Exception as e:
+            import traceback
+            self.log.error(f"Exception ({e.__class__.__name__}) in module {self.__name__}."
+                           + traceback.format_exc())
+            self.errorState = True
+        finally:
+            self.running = False
 
 # end of SpiderFootPlugin class

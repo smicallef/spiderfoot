@@ -64,9 +64,10 @@ class sfp_dnsbrute(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
+        dicts_dir = f"{self.sf.myPath()}/spiderfoot/dicts/"
         cslines = list()
         if self.opts['commons']:
-            cs = open(self.sf.myPath() + "/dicts/subdomains.txt", 'r')
+            cs = open(f"{dicts_dir}/subdomains.txt", 'r')
             cslines = cs.readlines()
             for s in cslines:
                 s = s.strip()
@@ -74,7 +75,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
         ttlines = list()
         if self.opts['top10000']:
-            tt = open(self.sf.myPath() + "/dicts/subdomains-10000.txt", 'r')
+            tt = open(f"{dicts_dir}/subdomains-10000.txt", 'r')
             ttlines = tt.readlines()
             for s in ttlines:
                 s = s.strip()

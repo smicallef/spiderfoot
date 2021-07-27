@@ -63,8 +63,8 @@ class sfp_intfiles(SpiderFootPlugin):
 
         if eventData in self.results:
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         for fileExt in self.opts['fileexts']:
             if "." + fileExt.lower() in eventData.lower():

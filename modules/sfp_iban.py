@@ -35,10 +35,6 @@ class sfp_iban(SpiderFootPlugin):
     # Tracking results can be helpful to avoid reporting/processing duplicates
     results = None
 
-    # Tracking the error state of the module can be useful to detect when a third party
-    # has failed and you don't wish to process any more events.
-    errorState = False
-
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
@@ -67,11 +63,6 @@ class sfp_iban(SpiderFootPlugin):
         srcModuleName = event.module
         eventData = event.data
 
-        # Once we are in this state, return immediately.
-        if self.errorState:
-            return None
-
-        # event was received.
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Extract IBAN Card numbers

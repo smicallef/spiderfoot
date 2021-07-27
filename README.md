@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.6+-green)](https://www.python.org)
 [![Stable Release](https://img.shields.io/badge/version-3.3-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v3.3)
-[![CI Status](https://img.shields.io/travis/smicallef/spiderfoot)](https://travis-ci.com/github/smicallef/spiderfoot)
+[![CI status](https://github.com/smicallef/spiderfoot/workflows/Tests/badge.svg)](https://github.com/smicallef/spiderfoot/actions?query=workflow%3A"Tests")
 [![Last Commit](https://img.shields.io/github/last-commit/smicallef/spiderfoot)](https://github.com/smicallef/spiderfoot/commits/master)
 [![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/github/smicallef/spiderfoot)](https://libraries.io/github/smicallef/spiderfoot)
 [![Codecov](https://codecov.io/github/smicallef/spiderfoot/coverage.svg)](https://codecov.io/github/smicallef/spiderfoot)
@@ -33,6 +33,25 @@ SpiderFoot has an embedded web-server for providing a clean and intuitive web-ba
 - Dockerfile for Docker-based deployments
 - Can call other tools like DNSTwist, Whatweb, Nmap and CMSeeK
 - Actively developed since 2012!
+
+### WANT MORE?
+
+Need more from SpiderFoot? Check out [SpiderFoot HX](https://www.spiderfoot.net/hx) for:
+- 100% Cloud-based and managed for you
+- Attack Surface Monitoring with change notifications by email, REST and Slack
+- Multiple targets per scan
+- Multi-user collaboration
+- Authenticated and 2FA
+- Correlations
+- Investigations
+- Customer support
+- Third party tools pre-installed & configured
+- Drive it with a fully RESTful API
+- TOR integration built-in
+- Screenshotting
+- Feed scan data to Splunk, ElasticSearch and REST endpoints
+
+See the full set of differences between SpiderFoot HX and the open source version [here](https://www.spiderfoot.net/open-source-vs-hx/).
 
 ### USES
 
@@ -276,7 +295,7 @@ SpamCop|Query various spamcop databases for open relays, open proxies, vulnerabl
 Spamhaus|Query the Spamhaus databases for open relays, open proxies, vulnerable servers, etc.|[https://www.spamhaus.org/](https://www.spamhaus.org/)|Free API
 spur.us|Obtain information about any malicious activities involving IP addresses found|[https://spur.us/](https://spur.us/)|Commercial API
 SpyOnWeb|Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code.|[http://spyonweb.com/](http://spyonweb.com/)|Tiered API
-Spyse|SpiderFoot plug-in to search Spyse API for IP address and domain information.|[https://spyse.com](https://spyse.com)|Tiered API
+Spyse|Search Spyse.com Internet assets registry for information about domains, IPv4 hosts, potential vulnerabilities, passive DNS, etc.|[https://spyse.com](https://spyse.com)|Tiered API
 SSL Certificate Analyzer|Gather information about SSL certificates used by the target's HTTPS sites.|N/A|Internal
 Strange Header Identifier|Obtain non-standard HTTP headers returned by web servers.|N/A|Internal
 Subdomain Takeover Checker|Check if affiliated subdomains are vulnerable to takeover.|N/A|Internal

@@ -136,12 +136,11 @@ class sfp_greynoise(SpiderFootPlugin):
             self.errorState = True
             return None
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
@@ -217,7 +216,7 @@ class sfp_greynoise(SpiderFootPlugin):
                             descr += ", Tags: " + ", ".join(rec.get("tags"))
                         else:
                             descr += "\n - " + "Raw data: " + str(rec.get("raw_data"))
-                        descr += "\n<SFURL>https://viz.greynoise.io/ip/" + eventData + "</SFURL>"
+                        descr += "\n<SFURL>https://viz.greynoise.io/query/?gnql=" + eventData + "</SFURL>"
                         e = SpiderFootEvent(evtType, descr, self.__name__, event)
                         self.notifyListeners(e)
 

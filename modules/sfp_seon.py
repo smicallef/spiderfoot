@@ -139,12 +139,11 @@ class sfp_seon(SpiderFootPlugin):
             self.errorState = True
             return
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return None
-        else:
-            self.results[eventData] = True
+
+        self.results[eventData] = True
 
         dataFound = False
         if eventName == "IP_ADDRESS" or eventName == "IPV6_ADDRESS":

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_ahmia
-# Purpose:      Searches the Tor search engine 'Ahmia' for content related
-#               to the domain in question.
+# Name:        sfp_ahmia
+# Purpose:     Searches the Tor search engine 'Ahmia' for content related to the
+#              target.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -12,6 +12,9 @@
 # -------------------------------------------------------------------------------
 
 import re
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -20,7 +23,8 @@ class sfp_ahmia(SpiderFootPlugin):
 
     meta = {
         'name': "Ahmia",
-        'summary': "Search Tor 'Ahmia' search engine for mentions of the target domain.",
+        'flags': ["tor"],
+        'summary': "Search Tor 'Ahmia' search engine for mentions of the target.",
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -47,7 +51,6 @@ class sfp_ahmia(SpiderFootPlugin):
 
     # Default options
     opts = {
-        # We don't bother with pagination as ahmia seems fairly limited in coverage
         'fetchlinks': True,
         'fullnames': True
     }
@@ -58,7 +61,6 @@ class sfp_ahmia(SpiderFootPlugin):
         'fullnames': "Search for human names?"
     }
 
-    # Target
     results = None
 
     def setup(self, sfc, userOpts=dict()):
@@ -73,85 +75,113 @@ class sfp_ahmia(SpiderFootPlugin):
         return ["DOMAIN_NAME", "HUMAN_NAME", "EMAILADDR"]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["DARKNET_MENTION_URL", "DARKNET_MENTION_CONTENT", "SEARCH_ENGINE_WEB_CONTENT"]
 
     def handleEvent(self, event):
         eventName = event.eventType
+        srcModuleName = event.module
         eventData = event.data
 
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
+            self.sf.debug(f"Skipping HUMAN_NAME: {eventData}")
             return
 
         if eventData in self.results:
-            self.sf.debug("Already did a search for " + eventData + ", skipping.")
+            self.sf.debug(f"Skipping {eventData}, already checked.")
             return
 
         self.results[eventData] = True
 
-        # Sites hosted on the domain
-        data = self.sf.fetchUrl("https://ahmia.fi/search/?q=" + eventData.replace(" ", "%20"),
-                                useragent=self.opts['_useragent'],
-                                timeout=self.opts['_fetchtimeout'])
-        if data is None or not data.get('content'):
-            self.sf.info("No results returned from ahmia.fi.")
+        params = urllib.parse.urlencode({
+            'q': eventData
+        })
+
+        data = self.sf.fetchUrl(
+            f"https://ahmia.fi/search/?{params}",
+            useragent=self.opts['_useragent'],
+            timeout=15
+        )
+
+        if not data:
+            self.sf.info(f"No results for {eventData} returned from Ahmia.fi.")
             return
 
-        if "redirect_url=" in data['content']:
+        content = data.get('content')
+
+        if not content:
+            self.sf.info(f"No results for {eventData} returned from Ahmia.fi.")
+            return
+
+        # We don't bother with pagination as Ahmia seems fairly limited in coverage
+        # and displays hundreds of results per page
+        links = re.findall("redirect_url=(.[^\"]+)\"", content, re.IGNORECASE | re.DOTALL)
+
+        if not links:
+            self.sf.info(f"No results for {eventData} returned from Ahmia.fi.")
+            return
+
+        reported = False
+        for link in links:
             if self.checkForStop():
                 return
 
-            links = re.findall("redirect_url=(.[^\"]+)\"", data['content'], re.IGNORECASE | re.DOTALL)
+            if link in self.results:
+                continue
 
-            reported = False
-            for link in links:
-                if link in self.results:
-                    continue
-                else:
-                    self.results[link] = True
-                    self.sf.debug("Found a darknet mention: " + link)
-                    if self.sf.urlFQDN(link).endswith(".onion"):
-                        if self.checkForStop():
-                            return
-                        if self.opts['fetchlinks']:
-                            res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'],
-                                                   useragent=self.opts['_useragent'],
-                                                   verify=False)
+            self.results[link] = True
 
-                            if res['content'] is None:
-                                self.sf.debug("Ignoring " + link + " as no data returned")
-                                continue
+            self.sf.debug(f"Found a darknet mention: {link}")
 
-                            if eventData not in res['content']:
-                                self.sf.debug("Ignoring " + link + " as no mention of " + eventData)
-                                continue
-                            evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
-                            self.notifyListeners(evt)
-                            reported = True
+            if not self.sf.urlFQDN(link).endswith(".onion"):
+                continue
 
-                            try:
-                                startIndex = res['content'].index(eventData) - 120
-                                endIndex = startIndex + len(eventData) + 240
-                            except Exception:
-                                self.sf.debug("String not found in content.")
-                                continue
-
-                            wdata = res['content'][startIndex:endIndex]
-                            evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", "..." + wdata + "...",
-                                                  self.__name__, evt)
-                            self.notifyListeners(evt)
-                            reported = True
-                        else:
-                            evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
-                            self.notifyListeners(evt)
-                            reported = True
-
-            if reported:
-                # Submit the search results for analysis
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", data['content'],
-                                      self.__name__, event)
+            if not self.opts['fetchlinks']:
+                evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
                 self.notifyListeners(evt)
+                reported = True
+                continue
+
+            res = self.sf.fetchUrl(
+                link,
+                timeout=self.opts['_fetchtimeout'],
+                useragent=self.opts['_useragent'],
+                verify=False
+            )
+
+            if res['content'] is None:
+                self.sf.debug(f"Ignoring {link} as no data returned")
+                continue
+
+            if eventData not in res['content']:
+                self.sf.debug(f"Ignoring {link} as no mention of {eventData}")
+                continue
+
+            evt = SpiderFootEvent("DARKNET_MENTION_URL", link, self.__name__, event)
+            self.notifyListeners(evt)
+            reported = True
+
+            try:
+                startIndex = res['content'].index(eventData) - 120
+                endIndex = startIndex + len(eventData) + 240
+            except Exception:
+                self.sf.debug(f"String '{eventData}' not found in content.")
+                continue
+
+            wdata = res['content'][startIndex:endIndex]
+            evt = SpiderFootEvent("DARKNET_MENTION_CONTENT", f"...{wdata}...", self.__name__, evt)
+            self.notifyListeners(evt)
+
+        if reported:
+            # Submit the search results for analysis
+            evt = SpiderFootEvent(
+                "SEARCH_ENGINE_WEB_CONTENT",
+                content,
+                self.__name__,
+                event
+            )
+            self.notifyListeners(evt)
 
 # End of sfp_ahmia class
