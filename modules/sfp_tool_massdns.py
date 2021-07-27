@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_dnsbrute
+# Name:         sfp_tool_massdns
 # Purpose:      SpiderFoot plug-in for attempting to resolve through brute-forcing
 #               common hostnames.
 #
@@ -17,11 +17,12 @@ import random
 import tempfile
 import subprocess
 import dns.resolver
+from shutil import which
 from pathlib import Path
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
-class sfp_massdns(SpiderFootPlugin):
+class sfp_tool_massdns(SpiderFootPlugin):
 
     meta = {
         'name': "MassDNS",
@@ -37,7 +38,9 @@ class sfp_massdns(SpiderFootPlugin):
         "numbermutation": True,
         "alphamutation": True,
         "large_wordlist": False,
-        "concurrent_resolvers": 1000
+        "concurrent_resolvers": 1000,
+        "shuffledns_path": "",
+        "massdns_path": ""
     }
 
     # Option descriptions
@@ -46,14 +49,16 @@ class sfp_massdns(SpiderFootPlugin):
         "numbermutation": "For any host found, increment/decrement existing numbers (if any) and try appending 1, 01, 001, -1, -01, -001, 2, 02, etc. (up to 10)",
         "alphamutation": "For any host found, try common mutations such as -test, -old, etc.",
         "large_wordlist": "Use a 1.2M wordlist instead of the default 110K. Takes roughly 20 minutes at 1000 threads.",
-        "concurrent_resolvers": "Maximum concurrent lookup threads. Bandwidth cost is ~1Mbps per 100 resolvers."
+        "concurrent_resolvers": "Maximum concurrent lookup threads. Bandwidth cost is ~1Mbps per 100 resolvers.",
+        "shuffledns_path": "Path to ShuffleDNS executable. Optional.",
+        "massdns_path": "Path to MassDNS executable. Optional."
     }
 
     _ipRegex = re.compile(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}")
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
-        self.sf.debug("Setting up sfp_massdns")
+        self.sf.debug("Setting up sfp_tool_massdns")
         self.state = self.tempStorage()
         self.state.update({
             "sub_wordlist": [],
@@ -65,6 +70,11 @@ class sfp_massdns(SpiderFootPlugin):
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
+
+        if not self.opts["shuffledns_path"]:
+            self.opts["shuffledns_path"] = which("shuffledns") or ""
+        if not self.opts["massdns_path"]:
+            self.opts["massdns_path"] = which("massdns") or ""
 
         self.word_regex = re.compile(r'[^\d\W_]+')
         self.word_num_regex = re.compile(r'[^\W_]+')
@@ -95,6 +105,16 @@ class sfp_massdns(SpiderFootPlugin):
     def handleEvent(self, event):
         if not self.resolvers:
             self.sf.error("No valid DNS resolvers")
+            self.errorState = True
+            return
+        try:
+            assert (self.opts["shuffledns_path"] and Path(self.opts["shuffledns_path"]).is_file()),\
+                "Unable to find shuffledns, please set path"
+            assert (self.opts["massdns_path"] and Path(self.opts["massdns_path"]).is_file()),\
+                "Unable to find massdns, please set path"
+        except Exception as e:
+            self.sf.error(f"Error determining executable paths: {e}")
+            self.errorState = True
             return
 
         host = str(event.data).lower()
@@ -143,12 +163,13 @@ class sfp_massdns(SpiderFootPlugin):
 
         # shuffledns is a massdns wrapper that handles subdomains and wildcards
         shufflednsCommand = (
-            "shuffledns",
+            str(self.opts["shuffledns_path"]),
             "-nC",
             "-r", resolversFile.name,
             "-w", subdomainsFile.name,
             "-silent",
-            "-t", str(concurrentResolvers)
+            "-t", str(concurrentResolvers),
+            "-massdns", str(self.opts["massdns_path"])
         )
         self.sf.debug(f"Running ShuffleDNS: {' '.join(shufflednsCommand)}")
 
@@ -192,7 +213,7 @@ class sfp_massdns(SpiderFootPlugin):
             boolean: whether any of the nameservers are valid
         """
         validResolvers = []
-        with self.threadPool(threads=100, name='sfp_massdns_verify_nameservers') as pool:
+        with self.threadPool(threads=100, name='sfp_tool_massdns_verify_nameservers') as pool:
             for resolver, error in pool.map(nameservers, self.verifyNameserver):
                 if not error:
                     validResolvers.append(resolver)
@@ -219,7 +240,7 @@ class sfp_massdns(SpiderFootPlugin):
 
         # first, make sure it can resolve google.com
         try:
-            resolver.query("www.google.com", "A")
+            resolver.resolve("www.google.com", "A")
         except Exception:
             error = f"Nameserver {nameserver} failed to resolve basic query within {timeout} seconds."
 
@@ -227,7 +248,7 @@ class sfp_massdns(SpiderFootPlugin):
         randpool = "bcdfghjklmnpqrstvwxyz3456789"
         randhost = "".join([random.SystemRandom().choice(randpool) for x in range(10)]) + ".google.com"
         try:
-            results = list(resolver.query(randhost, "A"))
+            results = list(resolver.resolve(randhost, "A"))
             if results:
                 error = f"Nameserver {nameserver} returned garbage data."
         except Exception:
@@ -245,7 +266,7 @@ class sfp_massdns(SpiderFootPlugin):
 
         hosts = [h for h in hosts if h not in self.state["sent_events"]]
         validHosts = []
-        with self.threadPool(threads=100, name='sfp_massdns_validate_hosts') as pool:
+        with self.threadPool(threads=100, name='sfp_tool_massdns_validate_hosts') as pool:
             for h, valid in pool.map(hosts, self.isValidHost):
                 if valid:
                     validHosts.append(h)

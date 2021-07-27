@@ -1,20 +1,20 @@
-# test_sfp_massdns.py
+# test_sfp_tool_massdns.py
 import pytest
 import unittest
 
-from modules.sfp_massdns import sfp_massdns
+from modules.sfp_tool_massdns import sfp_tool_massdns
 from sflib import SpiderFoot
 from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 
 @pytest.mark.usefixtures
-class TestModulemassdns(unittest.TestCase):
+class TestModuletool_massdns(unittest.TestCase):
     """
-    Test modules.sfp_massdns
+    Test modules.sfp_tool_massdns
     """
 
     def test_opts(self):
-        module = sfp_massdns()
+        module = sfp_tool_massdns()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
@@ -23,24 +23,25 @@ class TestModulemassdns(unittest.TestCase):
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_massdns()
+        module = sfp_tool_massdns()
         module.setup(sf, dict())
 
     def test_watchedEvents_should_return_list(self):
-        module = sfp_massdns()
+        module = sfp_tool_massdns()
         self.assertIsInstance(module.watchedEvents(), list)
 
     def test_producedEvents_should_return_list(self):
-        module = sfp_massdns()
+        module = sfp_tool_massdns()
         self.assertIsInstance(module.producedEvents(), list)
 
+    @unittest.skip("todo")
     def test_handleEvent(self):
         """
         Test handleEvent(self, event)
         """
         sf = SpiderFoot(self.default_options)
 
-        module = sfp_massdns()
+        module = sfp_tool_massdns()
         module.setup(sf, dict())
 
         target_value = 'example target value'
