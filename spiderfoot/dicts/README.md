@@ -1,4 +1,4 @@
-# Spiderfoot Dictionaries / Wordlists
+# SpiderFoot Dictionaries / Wordlists
 
 ## `massdns-subdomains-1.2M.txt`
 `httparchive_subdomains_2021_06_28.txt` downloaded from https://wordlists.assetnote.io/ on 2021-07-19.
