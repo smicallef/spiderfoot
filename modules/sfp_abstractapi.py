@@ -166,7 +166,7 @@ class sfp_abstractapi(SpiderFootPlugin):
             return None
 
         if data.get('country'):
-            location = ', '.join(filter(None, [data.get('city'), data.get('region'), data.get('region_iso_code'), data.get('country'), data.get('country_code')]))
+            location = ', '.join(filter(None, [data.get('city'), data.get('region'), data.get('region_iso_code'), data.get('country'), data.get('country_code'), data.get('continent'), data.get('continent_code')]))
             evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
             self.notifyListeners(evt)
 
