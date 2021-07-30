@@ -57,6 +57,34 @@ ENV SPIDERFOOT_DATA /var/lib/spiderfoot
 ENV SPIDERFOOT_LOGS /var/lib/spiderfoot/log
 ENV SPIDERFOOT_CACHE /var/lib/spiderfoot/cache
 
+# Nmap
+ARG nmap_ver=7.91
+# Nmap dependencies
+RUN apk add --update --no-cache ca-certificates libpcap libgcc libstdc++ libressl \
+   && update-ca-certificates \
+   && rm -rf /var/cache/apk/*
+# Compile and install Nmap from sources
+RUN apk add --update --no-cache --virtual .build-deps \
+      libpcap-dev libressl-dev lua-dev linux-headers \
+      autoconf g++ libtool make curl \
+   && curl -fL -o /tmp/nmap.tar.bz2 \
+      https://nmap.org/dist/nmap-${nmap_ver}.tar.bz2 \
+   && tar -xjf /tmp/nmap.tar.bz2 -C /tmp \
+   && cd /tmp/nmap* \
+   && ./configure \
+      --prefix=/usr \
+      --sysconfdir=/etc \
+      --mandir=/usr/share/man \
+      --infodir=/usr/share/info \
+      --without-zenmap \
+      --without-nmap-update \
+      --with-openssl=/usr/lib \
+      --with-liblua=/usr/include \
+   && make \
+   && make install \
+   && apk del .build-deps \
+   && rm -rf /var/cache/apk/* /tmp/nmap*
+
 # Run everything as one command so that only one layer is created
 RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpeg zlib openjpeg \
     && addgroup spiderfoot \
