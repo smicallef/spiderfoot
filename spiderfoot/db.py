@@ -221,6 +221,7 @@ class SpiderFootDb:
         ['TARGET_WEB_CONTENT_TYPE', 'Web Content Type', 0, 'DESCRIPTOR'],
         ['TARGET_WEB_COOKIE', 'Cookies', 0, 'DATA'],
         ['TCP_PORT_OPEN', 'Open TCP Port', 0, 'SUBENTITY'],
+        ['TCP_PORT_OPEN_SSL', 'Open TCP Port (SSL/TLS)', 0, 'DATA'],
         ['TCP_PORT_OPEN_BANNER', 'Open TCP Port Banner', 0, 'DATA'],
         ['UDP_PORT_OPEN', 'Open UDP Port', 0, 'SUBENTITY'],
         ['UDP_PORT_OPEN_INFO', 'Open UDP Port Information', 0, 'DATA'],

@@ -59,7 +59,7 @@ class sfp_sslcert(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "LINKED_URL_INTERNAL", "IP_ADDRESS"]
+        return ["INTERNET_NAME", "LINKED_URL_INTERNAL", "IP_ADDRESS", "TCP_PORT_OPEN_SSL"]
 
     # What events this module produces
     # This is to support the end user in selecting modules based on events
@@ -83,7 +83,6 @@ class sfp_sslcert(SpiderFootPlugin):
         if eventName == "LINKED_URL_INTERNAL":
             if not eventData.lower().startswith("https://") and not self.opts['tryhttp']:
                 return
-
             try:
                 # Handle URLs containing port numbers
                 u = urlparse(eventData)
@@ -94,16 +93,19 @@ class sfp_sslcert(SpiderFootPlugin):
             except Exception:
                 self.sf.debug("Couldn't parse URL: " + eventData)
                 return
+        elif eventName == "TCP_PORT_OPEN_SSL":
+            fqdn, port = eventData.split(":")
+            port = int(port)
         else:
             fqdn = eventData
             port = 443
 
-        if fqdn not in self.results:
-            self.results[fqdn] = True
+        if f"{fqdn}:{port}" not in self.results:
+            self.results[f"{fqdn}:{port}"] = True
         else:
             return
 
-        self.sf.debug("Testing SSL for: " + fqdn + ':' + str(port))
+        self.sf.debug(f"Testing SSL for: {fqdn}:{port}")
         # Re-fetch the certificate from the site and process
         try:
             sock = self.sf.safeSSLSocket(fqdn, port, self.opts['ssltimeout'])
