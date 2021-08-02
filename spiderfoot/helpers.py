@@ -2,7 +2,7 @@ import json
 import random
 import re
 import uuid
-from networkx import nx
+import networkx as nx
 from networkx.readwrite.gexf import GEXFWriter
 
 
