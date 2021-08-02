@@ -70,12 +70,22 @@ class sfp_tool_nmap(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-        self.ports = []
+        self.ports = ""
         if self.opts["ports"]:
             try:
-                self.ports = list(set([max(0, min(65535, int(p))) for p in self.opts["ports"].split(",")]))
-            except Exception as e:
-                self.sf.error(f"Error parsing \"ports\" setting: {e}. Defaulting to top ports.")
+                for s in self.opts["ports"].split(","):
+                    try:
+                        # port should either be an int
+                        port = int(s)
+                        assert 0 <= port <= 65535
+                    except ValueError:
+                        # or an int range
+                        high, low = s.split('-', 1)
+                        high, low = int(high), int(low)
+                        assert high >= low and all([0 <= x <= 65535 for x in (high, low)])
+                self.ports = str(self.opts["ports"])
+            except Exception:
+                self.sf.error("Invalid \"ports\" setting. Defaulting to top ports.")
 
         # Normalize path
         if self.opts["nmappath"]:
@@ -111,7 +121,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
             '--version-light'
         )
         if self.ports:
-            self.args += ("-p", ",".join(self.ports))
+            self.args += ("-p", self.ports)
         else:
             self.args += ("--top-ports", str(int(self.opts["topports"])))
         # if we're root, enable OS detection
