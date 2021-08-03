@@ -273,7 +273,8 @@ class SpiderFootWebUi:
     def buildExcel(self, data, columnNames, sheetNameIndex=0):
         rowNums = dict()
         workbook = openpyxl.Workbook()
-        workbook.remove(workbook.active)
+        defaultSheet = workbook.active
+        columnNames.pop(sheetNameIndex)
         allowed_sheet_chars = string.ascii_uppercase + string.digits + '_'
         for row in data:
             sheetName = "".join([c for c in str(row.pop(sheetNameIndex)) if c.upper() in allowed_sheet_chars])
@@ -297,7 +298,7 @@ class SpiderFootWebUi:
             rowNums[sheetName] += 1
 
         if rowNums:
-            columnNames.pop(sheetNameIndex)
+            workbook.remove(defaultSheet)
 
         # Sort sheets alphabetically
         workbook._sheets.sort(key=lambda ws: ws.title)

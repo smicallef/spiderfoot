@@ -137,7 +137,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        search_results = sfwebui.scaneventresultexportmultiexcel("", "")
+        search_results = sfwebui.scaneventresultexportmultiexcel("")
         self.assertIsInstance(search_results, bytes)
 
     def test_scan_search_result_export_excel(self):
@@ -148,7 +148,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         search_results = sfwebui.scansearchresultexportexcel("", "")
-        self.assertIsInstance(search_results, bytes)
+        self.assertIs(search_results, None)
 
     @unittest.skip("todo")
     def test_scan_export_json_multi(self):
