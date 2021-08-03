@@ -589,8 +589,8 @@ def handle_abort(signal, frame):
 
 
 if __name__ == '__main__':
-    if sys.version_info < (3, 6):
-        print("SpiderFoot requires Python 3.6 or higher.")
+    if sys.version_info < (3, 7):
+        print("SpiderFoot requires Python 3.7 or higher.")
         sys.exit(-1)
 
     if len(sys.argv) <= 1:
