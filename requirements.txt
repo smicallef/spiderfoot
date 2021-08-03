@@ -22,3 +22,4 @@ python-pptx>=0.6.18,<0.7
 networkx>=2.6.2,<2.7
 cryptography>=3.4.7,<4
 publicsuffixlist>=0.7.8,<0.8
+openpyxl>=3.0.7
