@@ -2,7 +2,7 @@
 
 
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE)
-[![Python Version](https://img.shields.io/badge/python-3.6+-green)](https://www.python.org)
+[![Python Version](https://img.shields.io/badge/python-3.7+-green)](https://www.python.org)
 [![Stable Release](https://img.shields.io/badge/version-3.3-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v3.3)
 [![CI status](https://github.com/smicallef/spiderfoot/workflows/Tests/badge.svg)](https://github.com/smicallef/spiderfoot/actions?query=workflow%3A"Tests")
 [![Last Commit](https://img.shields.io/github/last-commit/smicallef/spiderfoot)](https://github.com/smicallef/spiderfoot/commits/master)
@@ -91,7 +91,7 @@ SpiderFoot's 200+ modules feed each other in a publisher/subscriber model to ens
 
 ### INSTALLING & RUNNING
 
-To install and run SpiderFoot, you need at least Python 3.6 and a number of Python libraries which you can install with `pip`. We recommend you install a packaged release since master will often have bleeding edge features and modules that aren't fully tested.
+To install and run SpiderFoot, you need at least Python 3.7 and a number of Python libraries which you can install with `pip`. We recommend you install a packaged release since master will often have bleeding edge features and modules that aren't fully tested.
 
 #### Stable build (packaged release):
 
