@@ -43,7 +43,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
     # Default options
     opts = {
         'nmappath': "",
-        'topports': 100,
+        'topports': 1000,
         'ports': '',
         'netblockscan': True,
         'netblockscanmax': 24
