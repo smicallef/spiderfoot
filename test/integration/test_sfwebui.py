@@ -104,6 +104,18 @@ class TestSpiderFootWebUiRoutes(helper.CPWebCase):
         self.getPage("/scansearchresultexport?id=doesnotexist")
         self.assertStatus('200 OK')
 
+    def test_scaneventresultexportexcel_invalid_scan_id_returns_200(self):
+        self.getPage("/scaneventresultexportexcel?id=doesnotexist&type=doesnotexist")
+        self.assertStatus('200 OK')
+
+    def test_scaneventresultexportmultiexcel(self):
+        self.getPage("/scaneventresultexportmultiexcel?ids=doesnotexist")
+        self.assertStatus('200 OK')
+
+    def test_scansearchresultexportexcel(self):
+        self.getPage("/scansearchresultexportexcel?id=doesnotexist")
+        self.assertStatus('200 OK')
+
     def test_scanexportjsonmulti(self):
         self.getPage("/scanexportjsonmulti?ids=doesnotexist")
         self.assertStatus('200 OK')

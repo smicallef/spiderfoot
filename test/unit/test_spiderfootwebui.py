@@ -120,6 +120,36 @@ class TestSpiderFootWebUi(unittest.TestCase):
         search_results = sfwebui.scansearchresultexport("", "", "excel")
         self.assertIsInstance(search_results, bytes)
 
+    def test_scan_event_result_export_excel_should_return_bytes(self):
+        """
+        Test scaneventresultexportexcel(self, id, type)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        search_results = sfwebui.scaneventresultexportexcel("", "")
+        self.assertIsInstance(search_results, bytes)
+
+    def test_scan_event_result_export_multi_excel(self):
+        """
+        Test scaneventresultexportmultiexcel(self, ids)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        search_results = sfwebui.scaneventresultexportmultiexcel("", "")
+        self.assertIsInstance(search_results, bytes)
+
+    def test_scan_search_result_export_excel(self):
+        """
+        Test scansearchresultexport(self, id, eventType=None, value=None)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        search_results = sfwebui.scansearchresultexportexcel("", "")
+        self.assertIsInstance(search_results, bytes)
+
     @unittest.skip("todo")
     def test_scan_export_json_multi(self):
         """
