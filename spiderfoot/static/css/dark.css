@@ -9,7 +9,7 @@ body button {
   border: none;
 }
 
-body button:hover {
+body button:hover, .dropdown-menu > li > a:hover {
   background-color: #037eaf;
 }
 

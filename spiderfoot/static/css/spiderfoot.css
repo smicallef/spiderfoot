@@ -202,3 +202,6 @@ input:checked + .slider:before {
   padding: 10px;
 }
 
+.download-button {
+  padding: 6px 12px !important;
+}

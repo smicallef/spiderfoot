@@ -34,7 +34,11 @@
     </div>
         <div class="btn-group pull-right" role="group">
             <button id='btn-refresh' rel="tooltip" title="Refresh" class="btn btn-success btn-default" onClick='refresh()'><i class='glyphicon glyphicon-refresh glyphicon glyphicon-white'></i></button>
-            <button id='btn-export' rel="tooltip" title="Export Data" class="btn btn-success btn-default" onClick='exportEventData("${id}", currentType)'><i class='glyphicon glyphicon-download-alt glyphicon glyphicon-white'></i></button>
+            <a id='btn-export' rel="tooltip" data-title="Export Data" class="btn btn-default dropdown-toggle download-button" data-toggle="dropdown"><i class='glyphicon glyphicon-download-alt glyphicon glyphicon-white'></i></a>
+            <ul class="dropdown-menu">
+              <li><a class='link' onClick='exportEventData("${id}", currentType, "csv")'>CSV</a></li>
+              <li><a class='link' onClick='exportEventData("${id}", currentType, "excel")'>Excel</a></li>
+            </ul>
         </div> 
         <div id='customtabview' role="group" class="btn-group pull-right">
          <a id='btn-fullview' rel="tooltip" data-title="Full Data View" class="btn btn-default active" onClick='browseUpdate("full")'><i class='glyphicon glyphicon-th glyphicon glyphicon-white'></i></a>
@@ -645,7 +649,7 @@
         }
 
         // Download the data currently being viewed
-        function exportEventData(instanceId, eventType) {
+        function exportEventData(instanceId, eventType, fileType) {
             $("#loader").show();
             var efr = document.getElementById('exportframe');
             if (currentSection == "btn-search") {
@@ -654,11 +658,21 @@
                 } else {
                     type = lastSearchType;
                 }
-                efr.src = '${docroot}/scansearchresultexport?id=' + instanceId + '&eventType=' + type + "&value=" + lastSearchQuery;
+                if (fileType == "excel") {
+                    var urlBase = '${docroot}/scansearchresultexport?filetype=excel&id=';
+                } else {
+                    var urlBase = '${docroot}/scansearchresultexport?id=';
+                }
+                efr.src = urlBase + instanceId + '&eventType=' + type + "&value=" + lastSearchQuery;
             }
 
             if (currentSection == "btn-browse") {
-                efr.src = '${docroot}/scaneventresultexport?id=' + instanceId + '&type=' + eventType;
+                if (fileType == "excel") {
+                    var urlBase = '${docroot}/scaneventresultexport?filetype=excel&id=';
+                } else {
+                    var urlBase = '${docroot}/scaneventresultexport?id=';
+                }
+                efr.src = urlBase + instanceId + '&type=' + eventType;
             }
 
             if (currentSection == "btn-graph") {
