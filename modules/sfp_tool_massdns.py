@@ -348,15 +348,19 @@ class sfp_tool_massdns(SpiderFootPlugin):
         for m in self.word_regex.findall(host):
             if m != host:
                 subdomains.add(m)
+            if m not in self.state["alpha_mutation_wordlist"]:
+                self.state["alpha_mutation_wordlist"].append(m)
         # same thing but including numbers
         # if the input is "host01-www", it tries "host01" and "www"
         for m in self.word_num_regex.findall(host):
             if m != host:
                 subdomains.add(m)
+            if m not in self.state["alpha_mutation_wordlist"]:
+                self.state["alpha_mutation_wordlist"].append(m)
 
         # host-www, www-host, etc.
         for m in self.state["alpha_mutation_wordlist"]:
-            subdomains.add(f"{host}{m}")
+            subdomains.add(f"{host}.{m}")
             subdomains.add(f"{host}-{m}")
             subdomains.add(f"{m}{host}")
             subdomains.add(f"{m}-{host}")
