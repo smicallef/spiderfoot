@@ -279,11 +279,11 @@ class SpiderFootWebUi:
         for row in data:
             sheetName = "".join([c for c in str(row.pop(sheetNameIndex)) if c.upper() in allowed_sheet_chars])
             try:
-                sheet = workbook.get_sheet_by_name(sheetName)
+                sheet = workbook[sheetName]
             except KeyError:
                 # Create sheet
                 workbook.create_sheet(sheetName)
-                sheet = workbook.get_sheet_by_name(sheetName)
+                sheet = workbook[sheetName]
                 # Write headers
                 for col_num, column_title in enumerate(columnNames, 1):
                     cell = sheet.cell(row=1, column=col_num)
