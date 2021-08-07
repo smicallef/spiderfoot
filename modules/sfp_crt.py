@@ -41,10 +41,12 @@ class sfp_crt(SpiderFootPlugin):
 
     opts = {
         'verify': True,
+        'fetchcerts': True,
     }
 
     optdescs = {
-        'verify': 'Verify certificate subject alternative names resolve.'
+        'verify': 'Verify certificate subject alternative names resolve.',
+        'fetchcerts': 'Fetch each certificate found, for processing by other modules.',
     }
 
     results = None
@@ -121,7 +123,8 @@ class sfp_crt(SpiderFootPlugin):
                     continue
                 self.cert_ids[cert_id] = True
 
-            fetch_certs.append(cert_id)
+            if self.opts['fetchcerts']:
+                fetch_certs.append(cert_id)
 
             domain = cert_info.get('name_value')
             if '\n' in domain:
