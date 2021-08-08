@@ -12,6 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import re
+from bs4 import BeautifulSoup
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -38,15 +39,13 @@ class sfp_emailformat(SpiderFootPlugin):
         }
     }
 
-    results = None
-
-    # Default options
     opts = {
     }
 
-    # Option descriptions
     optdescs = {
     }
+
+    results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
@@ -55,49 +54,55 @@ class sfp_emailformat(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
         return ['INTERNET_NAME', "DOMAIN_NAME"]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["EMAILADDR", "EMAILADDR_GENERIC"]
 
-    # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Get e-mail addresses on this domain
-        res = self.sf.fetchUrl("https://www.email-format.com/d/" + eventData + "/", timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
+        res = self.sf.fetchUrl(f"https://www.email-format.com/d/{eventData}/", timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
         if res['content'] is None:
-            return None
+            return
 
-        emails = self.sf.parseEmails(res['content'])
+        html = BeautifulSoup(res["content"], features="lxml")
+        if not html:
+            return
+
+        tbody = html.find('tbody')
+        if tbody:
+            data = str(tbody.contents)
+        else:
+            # fall back to raw page contents
+            data = res["content"]
+
+        emails = self.sf.parseEmails(data)
         for email in emails:
             # Skip unrelated emails
             mailDom = email.lower().split('@')[1]
             if not self.getTarget().matches(mailDom):
-                self.sf.debug("Skipped address: " + email)
+                self.sf.debug(f"Skipped address: {email}")
                 continue
 
             # Skip masked emails
             if re.match(r"^[0-9a-f]{8}\.[0-9]{7}@", email):
-                self.sf.debug("Skipped address: " + email)
+                self.sf.debug(f"Skipped address: {email}")
                 continue
 
-            self.sf.info("Found e-mail address: " + email)
+            self.sf.info(f"Found e-mail address: {email}")
             if email.split("@")[0] in self.opts['_genericusers'].split(","):
                 evttype = "EMAILADDR_GENERIC"
             else:
