@@ -9,7 +9,7 @@ lxml>=4.6.3,<5
 netaddr>=0.8.0,<1
 pysocks>=1.7.1,<2
 requests>=2.26.0,<3
-ipwhois==1.0.0
+ipwhois>=1.1.0,<1.2.0
 ipaddr>=2.2.0,<3
 phonenumbers>=8.12.28,<9
 pygexf>=0.2.2,<0.3
