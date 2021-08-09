@@ -14,6 +14,7 @@
 import re
 import json
 import random
+import datetime
 import tempfile
 import subprocess
 import dns.resolver
@@ -48,7 +49,7 @@ class sfp_tool_massdns(SpiderFootPlugin):
         "domainonly": "Only brute-force subdomains for the main target (non-recursive).",
         "numbermutation": "For any host found, increment/decrement existing numbers (if any) and try appending 1, 01, 001, -1, -01, -001, 2, 02, etc. (up to 10)",
         "alphamutation": "For any host found, try common mutations such as -test, -old, etc.",
-        "large_wordlist": "Use a 1.2M wordlist instead of the default 110K. Takes roughly 20 minutes at 1000 threads.",
+        "large_wordlist": "Use a larger wordlist instead of the default ~110K. Takes roughly 20 minutes at 1000 threads.",
         "concurrent_resolvers": "Maximum concurrent lookup threads. Bandwidth cost is ~1Mbps per 100 resolvers.",
         "shuffledns_path": "Path to ShuffleDNS executable. Optional.",
         "massdns_path": "Path to MassDNS executable. Optional."
@@ -82,11 +83,10 @@ class sfp_tool_massdns(SpiderFootPlugin):
 
         dicts_dir = f"{self.sf.myPath()}/spiderfoot/dicts"
         if self.opts["large_wordlist"]:
-            subdomain_dict = f"{dicts_dir}/massdns-subdomains-1.2M.txt"
-        else:
-            subdomain_dict = f"{dicts_dir}/massdns-subdomains-110K.txt"
-        with open(subdomain_dict, "r") as f:
-            self.state["sub_wordlist"] = list(set([x.strip().lower() for x in f.readlines()]))
+            self.state["sub_wordlist"] = self.fetchLargeWordlist()
+        if not self.state["sub_wordlist"] or not self.opts["large_wordlist"]:
+            self.sf.debug(f"Using small subdomain wordlist")
+            self.state["sub_wordlist"] = self.fetchSmallWordlist()
         with open(f"{dicts_dir}/subdomain-mutations.txt", "r") as f:
             if self.opts["alphamutation"]:
                 self.state["alpha_mutation_wordlist"] = list(set([x.strip().lower() for x in f.readlines()]))
@@ -401,6 +401,76 @@ class sfp_tool_massdns(SpiderFootPlugin):
             self.sf.debug(f"Loaded {len(nameservers):,} nameservers from {nameservers_url}")
             self.sf.cachePut("resolverlist", list(nameservers))
         return nameservers
+
+    def fetchSmallWordlist(self):
+        subdomains = []
+        subdomainsList = self.sf.cacheGet("massdns_subdomains_small", 672)
+
+        if subdomainsList is not None:
+            subdomains = subdomainsList.splitlines()
+            self.sf.debug(f"Loaded small subdomain wordlist ({len(subdomains):,} entries) from cache")
+        else:
+            wordlist_url = f"https://github.com/danielmiessler/SecLists/raw/master/Discovery/DNS/subdomains-top1million-110000.txt"
+            self.sf.debug(f"Fetching small subdomain wordlist from {wordlist_url}")
+            response = self.sf.fetchUrl(
+                wordlist_url,
+                useragent=self.opts.get("_useragent", "Spiderfoot")
+            )
+            if response.get("code", None) == "200":
+                wordlist = response["content"]
+                if wordlist:
+                    subdomains = wordlist.splitlines()
+                    self.sf.debug(f"Fetched small subdomain wordlist ({len(subdomains):,} entries) from {wordlist_url}")
+            if subdomains:
+                self.sf.cachePut("massdns_subdomains_small", subdomains)
+            else:
+                self.sf.debug(f"Failed to fetch small wordlist from {wordlist_url}, falling back to local copy")
+                filename = f"{self.sf.myPath()}/spiderfoot/dicts/massdns-subdomains-110K.txt"
+                with open(filename) as f:
+                    subdomains = f.readlines()
+                self.sf.debug(f"Loaded small subdomain wordlist ({len(subdomains):,} entries) from local copy")
+
+        return subdomains
+
+    def fetchLargeWordlist(self):
+        subdomains = []
+        subdomainsList = self.sf.cacheGet("massdns_subdomains_large", 672)
+
+        if subdomainsList is not None:
+            subdomains = subdomainsList.splitlines()
+            self.sf.debug(f"Loaded large subdomain wordlist ({len(subdomains):,} entries) from cache")
+        else:
+            today = datetime.datetime.now()
+            day = 28
+            month = int(today.month)
+            year = int(today.year)
+
+            for i in range(12):
+                filename = f"httparchive_subdomains_{year:02d}_{month:02d}_{day:02d}.txt"
+                wordlist_url = f"https://wordlists-cdn.assetnote.io/data/automated/{filename}"
+                self.sf.debug(f"Fetching large subdomain wordlist from {wordlist_url}")
+                response = self.sf.fetchUrl(
+                    wordlist_url,
+                    useragent=self.opts.get("_useragent", "Spiderfoot")
+                )
+                if response.get("code", None) == "200":
+                    wordlist = response.get("content", None)
+                    break
+                else:
+                    self.sf.debug(f"Wordlist not found at {wordlist_url}")
+                    month -= 1
+                    if month < 0:
+                        year -= 1
+                        month = 12
+            if not wordlist:
+                self.sf.debug(f"Failed to fetch large wordlist from assetnote.io")
+            else:
+                subdomains = wordlist.splitlines()
+                self.sf.debug(f"Fetched large subdomain wordlist ({len(subdomains):,} entries) from {wordlist_url}")
+            if subdomains:
+                self.sf.cachePut("massdns_subdomains_large", subdomains)
+
+        return subdomains
 
     def resolve(self, host, tries=10, nameserver=None):
         if nameserver is None:
