@@ -112,7 +112,6 @@ class sfp_abstractapi(SpiderFootPlugin):
 
         if res['code'] == '429':
             self.sf.error("Too many requests")
-            self.errorState = True
             return None
 
         if res['code'] == '500' or res['code'] == '503':
