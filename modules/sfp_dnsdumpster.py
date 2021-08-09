@@ -91,7 +91,8 @@ class sfp_dnsdumpster(SpiderFootPlugin):
             },
             postData={
                 "csrfmiddlewaretoken": csrfmiddlewaretoken,
-                "targetip": str(domain).lower()
+                "targetip": str(domain).lower(),
+                "user": "free"
             },
             headers={
                 "origin": "https://dnsdumpster.com",
