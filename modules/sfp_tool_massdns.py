@@ -85,7 +85,7 @@ class sfp_tool_massdns(SpiderFootPlugin):
         if self.opts["large_wordlist"]:
             self.state["sub_wordlist"] = self.fetchLargeWordlist()
         if not self.state["sub_wordlist"] or not self.opts["large_wordlist"]:
-            self.sf.debug(f"Using small subdomain wordlist")
+            self.sf.debug("Using small subdomain wordlist")
             self.state["sub_wordlist"] = self.fetchSmallWordlist()
         with open(f"{dicts_dir}/subdomain-mutations.txt", "r") as f:
             if self.opts["alphamutation"]:
@@ -410,7 +410,7 @@ class sfp_tool_massdns(SpiderFootPlugin):
             subdomains = subdomainsList.splitlines()
             self.sf.debug(f"Loaded small subdomain wordlist ({len(subdomains):,} entries) from cache")
         else:
-            wordlist_url = f"https://github.com/danielmiessler/SecLists/raw/master/Discovery/DNS/subdomains-top1million-110000.txt"
+            wordlist_url = "https://github.com/danielmiessler/SecLists/raw/master/Discovery/DNS/subdomains-top1million-110000.txt"
             self.sf.debug(f"Fetching small subdomain wordlist from {wordlist_url}")
             response = self.sf.fetchUrl(
                 wordlist_url,
@@ -445,7 +445,7 @@ class sfp_tool_massdns(SpiderFootPlugin):
             month = int(today.month)
             year = int(today.year)
 
-            for i in range(12):
+            for _ in range(12):
                 filename = f"httparchive_subdomains_{year:02d}_{month:02d}_{day:02d}.txt"
                 wordlist_url = f"https://wordlists-cdn.assetnote.io/data/automated/{filename}"
                 self.sf.debug(f"Fetching large subdomain wordlist from {wordlist_url}")
@@ -463,7 +463,7 @@ class sfp_tool_massdns(SpiderFootPlugin):
                         year -= 1
                         month = 12
             if not wordlist:
-                self.sf.debug(f"Failed to fetch large wordlist from assetnote.io")
+                self.sf.debug("Failed to fetch large subdomain wordlist from assetnote.io")
             else:
                 subdomains = wordlist.splitlines()
                 self.sf.debug(f"Fetched large subdomain wordlist ({len(subdomains):,} entries) from {wordlist_url}")
