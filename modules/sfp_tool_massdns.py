@@ -67,15 +67,15 @@ class sfp_tool_massdns(SpiderFootPlugin):
             "handled_events": []
         })
         self.__dataSource__ = "DNS"
-        self.iteration = 0
+        self.errorState = False
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
         if not self.opts["shuffledns_path"]:
-            self.opts["shuffledns_path"] = which("shuffledns") or ""
+            self.opts["shuffledns_path"] = which("shuffledns") or "shuffledns"
         if not self.opts["massdns_path"]:
-            self.opts["massdns_path"] = which("massdns") or ""
+            self.opts["massdns_path"] = which("massdns") or "massdns"
 
         self.word_regex = re.compile(r'[^\d\W_]+')
         self.word_num_regex = re.compile(r'[^\W_]+')
@@ -96,17 +96,12 @@ class sfp_tool_massdns(SpiderFootPlugin):
         self.resolvers = self.verifyNameservers(self.resolvers)
         self.sf.info(f"Using {len(self.resolvers):,} valid nameservers")
 
-    def watchedEvents(self):
-        return ["DOMAIN_NAME", "INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
-
-    def producedEvents(self):
-        return ["INTERNET_NAME"]
-
-    def handleEvent(self, event):
+        # ensure we have resolvers
         if not self.resolvers:
             self.sf.error("No valid DNS resolvers")
             self.errorState = True
-            return
+
+        # ensure we have valid binaries
         try:
             assert (self.opts["shuffledns_path"] and Path(self.opts["shuffledns_path"]).is_file()),\
                 "Unable to find shuffledns, please set path"
@@ -115,11 +110,21 @@ class sfp_tool_massdns(SpiderFootPlugin):
         except Exception as e:
             self.sf.error(f"Error determining executable paths: {e}")
             self.errorState = True
-            return
 
+    def watchedEvents(self):
+        return ["DOMAIN_NAME", "INTERNET_NAME", "INTERNET_NAME_UNRESOLVED"]
+
+    def producedEvents(self):
+        return ["INTERNET_NAME"]
+
+    def handleEvent(self, event):
         host = str(event.data).lower()
 
-        self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
+        if self.errorState:
+            self.sf.debug(f"Module is in error state, skipping event {event.eventType} from {event.module}")
+            return
+        else:
+            self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
 
         # skip if we've already processed this event
         eventDataHash = self.sf.hashstring(host)
@@ -256,11 +261,6 @@ class sfp_tool_massdns(SpiderFootPlugin):
             pass
 
         return resolver, error
-
-    def getResolver(self):
-        with self.lock:
-            self.iteration += 1
-            return self.resolvers[self.iteration % len(self.resolvers)]
 
     def validateHosts(self, hosts):
 
@@ -474,10 +474,9 @@ class sfp_tool_massdns(SpiderFootPlugin):
 
     def resolve(self, host, tries=10, nameserver=None):
         if nameserver is None:
-            resolver = self.getResolver()
-        else:
-            resolver = dns.resolver.Resolver()
-            resolver.nameservers = [nameserver]
+            nameserver = "8.8.8.8"
+        resolver = dns.resolver.Resolver()
+        resolver.nameservers = [nameserver]
 
         self.sf.debug(f"Resolving {host} using nameserver {resolver.nameservers[0]}")
 
