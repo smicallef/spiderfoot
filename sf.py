@@ -123,7 +123,7 @@ def main():
     p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
     p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect (modules selected automatically).")
     p.add_argument("-T", "--types", action='store_true', help="List available event types.")
-    p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default. If using json, -q is enforced.")
+    p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
     p.add_argument("-H", action='store_true', help="Don't print field headers, just data.")
     p.add_argument("-n", action='store_true', help="Strip newlines from data.")
     p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
