@@ -127,7 +127,7 @@ class SpiderFootWebUi:
         Returns:
             str: HTML response
         """
-        return b""
+        return ""
 
     def error_page_404(self, status, message, traceback, version):
         """Error page 404
@@ -816,15 +816,15 @@ class SpiderFootWebUi:
         for scan_id in ids:
             res = dbh.scanInstanceGet(scan_id)
             if not res:
-                return self.jsonify_error('404', f"Scan {id} does not exist")
+                return self.jsonify_error('404', f"Scan {scan_id} does not exist")
 
             if res[5] in ["RUNNING", "STARTING", "STARTED"]:
-                return self.jsonify_error('400', f"Scan {id} is {res[5]}. You cannot delete running scans.")
+                return self.jsonify_error('400', f"Scan {scan_id} is {res[5]}. You cannot delete running scans.")
 
         for scan_id in ids:
             dbh.scanInstanceDelete(scan_id)
 
-        return b""
+        return ""
 
     @cherrypy.expose
     def savesettings(self, allopts, token, configFile=None):
@@ -1240,15 +1240,15 @@ class SpiderFootWebUi:
         for scan_id in ids:
             res = dbh.scanInstanceGet(scan_id)
             if not res:
-                return self.jsonify_error('404', f"Scan {id} does not exist")
+                return self.jsonify_error('404', f"Scan {scan_id} does not exist")
 
             scan_status = res[5]
 
             if scan_status == "FINISHED":
-                return self.jsonify_error('400', f"Scan {id} has already finished.")
+                return self.jsonify_error('400', f"Scan {scan_id} has already finished.")
 
             if scan_status == "ABORTED":
-                return self.jsonify_error('400', f"Scan {id} has already aborted.")
+                return self.jsonify_error('400', f"Scan {scan_id} has already aborted.")
 
             if scan_status != "RUNNING":
                 return self.jsonify_error('400', f"The running scan is currently in the state '{scan_status}', please try again later or restart SpiderFoot.")
@@ -1256,7 +1256,7 @@ class SpiderFootWebUi:
         for scan_id in ids:
             dbh.scanInstanceSet(scan_id, status="ABORT-REQUESTED")
 
-        return b""
+        return ""
 
     #
     # DATA PROVIDERS

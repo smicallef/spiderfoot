@@ -89,23 +89,29 @@ sf.search = function (scan_id, value, type, postFunc) {
   );
 };
 
-sf.deleteScan = function(scan_id) {
+sf.deleteScan = function(scan_id, callback) {
     var req = $.ajax({
       type: "GET",
       url: "/scandelete?id=" + scan_id
     });
-    req.done(alertify.success('Scan ' + scan_id + ' deleted'));
+    req.done(function() {
+        alertify.success('Scan ' + scan_id + ' deleted')
+        callback();
+    });
     req.fail(function (hr, textStatus, errorThrown) {
       alertify.error("Error: " + hr.responseText);
     });
 };
 
-sf.stopScan = function(scan_id) {
+sf.stopScan = function(scan_id, callback) {
     var req = $.ajax({
       type: "GET",
       url: "/stopscan?id=" + scan_id
     });
-    req.done(alertify.success('Scan ' + scan_id + ' aborted'));
+    req.done(function() {
+        alertify.success('Scan ' + scan_id + ' aborted');
+        callback();
+    });
     req.fail(function (hr, textStatus, errorThrown) {
       alertify.error("Error: " + hr.responseText);
     });
