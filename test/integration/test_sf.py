@@ -79,6 +79,11 @@ class TestSf(unittest.TestCase):
         self.assertIn(b"modules.sfp__stor_db : Storing an event: ROOT", err)
         self.assertEqual(0, code)
 
+    def test_quiet_arg_should_hide_debug_output(self):
+        out, err, code = self.execute([sys.executable, "sf.py", "-q", "-m", "example module", "-s", "spiderfoot.net"])
+        self.assertNotIn(b"[INFO]", err)
+        self.assertEqual(0, code)
+
     def test_run_scan_invalid_target_should_exit(self):
         invalid_target = '.'
         out, err, code = self.execute([sys.executable, "sf.py", "-s", invalid_target])

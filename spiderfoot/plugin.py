@@ -2,7 +2,6 @@ import logging
 import threading
 import queue
 from time import sleep
-from copy import copy
 
 
 class SpiderFootPlugin():
@@ -55,6 +54,10 @@ class SpiderFootPlugin():
     incomingEventQueue = None
     # Queue for produced events
     outgoingEventQueue = None
+    # SpiderFoot object, set in each module's setup() function
+    sf = None
+    # Configuration, set in each module's setup() function
+    opts = dict()
 
     def __init__(self):
         """Not really needed in most cases."""
@@ -276,7 +279,7 @@ class SpiderFootPlugin():
                 try:
                     listener.handleEvent(sfEvent)
                 except Exception as e:
-                    self.log.exception(f"Module ({listener.__module__}) encountered an error: {e}")
+                    self.sf.error(f"Module ({listener.__module__}) encountered an error: {e}")
 
     def checkForStop(self):
         """For modules to use to check for when they should give back control.
@@ -343,17 +346,16 @@ class SpiderFootPlugin():
             # create new database handle since we're in our own thread
             from spiderfoot import SpiderFootDb
             self.setDbh(SpiderFootDb(self.opts))
-            self.sf = copy(self.sf)
             self.sf._dbh = self.__sfdb__
 
             if not (self.incomingEventQueue and self.outgoingEventQueue):
-                self.log.error("Please set up queues before starting module as thread")
+                self.sf.error("Please set up queues before starting module as thread")
                 return
 
             while not self.checkForStop():
                 try:
                     sfEvent = self.incomingEventQueue.get_nowait()
-                    self.log.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
+                    self.sf.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
                     self.running = True
                     self.handleEvent(sfEvent)
                     self.running = False
@@ -361,12 +363,12 @@ class SpiderFootPlugin():
                     sleep(.3)
                     continue
         except KeyboardInterrupt:
-            self.log.warning(f"Interrupted module {self.__name__}.")
+            self.sf.debug(f"Interrupted module {self.__name__}.")
             self._stopScanning = True
         except Exception as e:
             import traceback
-            self.log.error(f"Exception ({e.__class__.__name__}) in module {self.__name__}."
-                           + traceback.format_exc())
+            self.sf.error(f"Exception ({e.__class__.__name__}) in module {self.__name__}."
+                          + traceback.format_exc())
             self.errorState = True
         finally:
             self.running = False

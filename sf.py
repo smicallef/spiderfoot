@@ -58,6 +58,10 @@ error_handler.setLevel(logging.WARN)
 error_handler.setFormatter(log_format)
 log.addHandler(error_handler)
 
+console_handler = logging.StreamHandler(sys.stderr)
+console_handler.setFormatter(log_format)
+log.addHandler(console_handler)
+
 scanId = None
 dbh = None
 
@@ -146,10 +150,6 @@ def main():
     if args.q or args.o == "json":
         log.setLevel(logging.NOTSET)
         sfConfig['__logging'] = False
-    else:
-        console_handler = logging.StreamHandler(sys.stderr)
-        console_handler.setFormatter(log_format)
-        log.addHandler(console_handler)
 
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
