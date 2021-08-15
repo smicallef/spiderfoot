@@ -3,7 +3,7 @@
 
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.7+-green)](https://www.python.org)
-[![Stable Release](https://img.shields.io/badge/version-3.3-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v3.3)
+[![Stable Release](https://img.shields.io/badge/version-3.4-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v3.4)
 [![CI status](https://github.com/smicallef/spiderfoot/workflows/Tests/badge.svg)](https://github.com/smicallef/spiderfoot/actions?query=workflow%3A"Tests")
 [![Last Commit](https://img.shields.io/github/last-commit/smicallef/spiderfoot)](https://github.com/smicallef/spiderfoot/commits/master)
 [![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/github/smicallef/spiderfoot)](https://libraries.io/github/smicallef/spiderfoot)
@@ -96,8 +96,8 @@ To install and run SpiderFoot, you need at least Python 3.7 and a number of Pyth
 #### Stable build (packaged release):
 
 ```
-$ wget https://github.com/smicallef/spiderfoot/archive/v3.3.tar.gz
-$ tar zxvf v3.3.tar.gz
+$ wget https://github.com/smicallef/spiderfoot/archive/v3.4.tar.gz
+$ tar zxvf v3.4.tar.gz
 $ cd spiderfoot
 $ pip3 install -r requirements.txt
 $ python3 ./sf.py -l 127.0.0.1:5001
