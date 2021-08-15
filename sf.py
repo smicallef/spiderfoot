@@ -38,10 +38,6 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
 
-console_handler = logging.StreamHandler(sys.stderr)
-console_handler.setFormatter(log_format)
-log.addHandler(console_handler)
-
 debug_handler = handlers.TimedRotatingFileHandler(
     "log/spiderfoot.debug.log",
     when="d",
@@ -150,6 +146,10 @@ def main():
     if args.q or args.o == "json":
         log.setLevel(logging.NOTSET)
         sfConfig['__logging'] = False
+    else:
+        console_handler = logging.StreamHandler(sys.stderr)
+        console_handler.setFormatter(log_format)
+        log.addHandler(console_handler)
 
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
