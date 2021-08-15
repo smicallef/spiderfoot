@@ -138,7 +138,6 @@ Archive.org|Identifies historic versions of interesting files/pages from the Way
 ARIN|Queries ARIN registry for contact information.|[https://www.arin.net/](https://www.arin.net/)|Free API
 Azure Blob Finder|Search for potential Azure blobs associated with the target and attempt to list their contents.|[https://azure.microsoft.com/en-in/services/storage/blobs/](https://azure.microsoft.com/en-in/services/storage/blobs/)|Free API
 Bad Packets|Obtain information about any malicious activities involving IP addresses found|[https://badpackets.net](https://badpackets.net)|Commercial API
-badips.com|Check if an IP address is malicious according to BadIPs.com.|[https://www.badips.com/](https://www.badips.com/)|Free API
 Bambenek C&C List|Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.|[http://www.bambenekconsulting.com/](http://www.bambenekconsulting.com/)|Free API
 Base64 Decoder|Identify Base64-encoded strings in URLs, often revealing interesting hidden information.|N/A|Internal
 BGPView|Obtain network information from BGPView API.|[https://bgpview.io/](https://bgpview.io/)|Free API
@@ -328,7 +327,6 @@ ViewDNS.info|Reverse Whois lookups using ViewDNS.info.|[https://viewdns.info/](h
 VirusTotal|Obtain information from VirusTotal about identified IP addresses.|[https://www.virustotal.com/](https://www.virustotal.com/)|Tiered API
 VoIPBL OpenPBX IPs|Check if an IP or netblock is an open PBX according to VoIPBL OpenPBX IPs.|[http://www.voipbl.org/](http://www.voipbl.org/)|Free API
 VXVault.net|Check if a domain or IP is malicious according to VXVault.net.|[http://vxvault.net/](http://vxvault.net/)|Free API
-Watchguard|Check if an IP is malicious according to Watchguard's reputationauthority.org.|[http://reputationauthority.org/](http://reputationauthority.org/)|Free API
 Web Analytics Extractor|Identify web analytics IDs in scraped webpages and DNS TXT records.|N/A|Internal
 Web Framework Identifier|Identify the usage of popular web frameworks like jQuery, YUI and others.|N/A|Internal
 Web Server Identifier|Obtain web server banners to identify versions of web servers being used.|N/A|Internal
