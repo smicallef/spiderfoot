@@ -476,7 +476,7 @@ class SpiderFootScanner():
         if log_status and modules_running:
             events_queued = ", ".join([f"{mod}: {qsize:,}" for mod, qsize in modules_waiting[:5] if qsize > 0])
             if events_queued:
-                self.__sf.info(f"Events queued: {events_queued}")
+                self.__sf.debug(f"Events queued: {events_queued}")
 
         if all(queues_empty) and not modules_running:
             return True
