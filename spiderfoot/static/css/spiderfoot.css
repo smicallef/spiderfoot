@@ -198,3 +198,7 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
+.footer {
+  padding: 10px;
+}
+
