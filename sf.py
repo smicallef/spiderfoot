@@ -147,7 +147,7 @@ def main():
         log.setLevel(logging.INFO)
         sfConfig['_debug'] = False
 
-    if args.q or args.o == "json":
+    if args.q:
         log.setLevel(logging.NOTSET)
         sfConfig['__logging'] = False
 
@@ -341,6 +341,9 @@ def start_scan(sfConfig, sfModules, args):
         sfp__stor_stdout_opts['_requested'] = args.F.split(",")
         sfp__stor_stdout_opts['_showonlyrequested'] = True
     if args.o:
+        if args.o not in ["tab", "csv", "json"]:
+            log.error("Invalid output format selected. Must be 'tab', 'csv' or 'json'.")
+            sys.exit(-1)
         sfp__stor_stdout_opts['_format'] = args.o
     if args.t:
         sfp__stor_stdout_opts['_requested'] = args.t.split(",")
