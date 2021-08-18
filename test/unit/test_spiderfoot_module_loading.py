@@ -56,13 +56,11 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             self.assertTrue(m.get('object'))
             self.assertTrue(m.get('name'))
             self.assertTrue(m.get('meta'))
-            self.assertIsInstance(m.get('cats'), list)
-            # self.assertTrue(m.get('group'))
-            self.assertIsInstance(m.get('labels'), list)
             self.assertTrue(m.get('descr'))
-            # self.assertTrue(m.get('provides'))
-            self.assertIsInstance(m.get('provides'), list)
             self.assertTrue(m.get('consumes'))
+            self.assertIsInstance(m.get('cats'), list)
+            self.assertIsInstance(m.get('labels'), list)
+            self.assertIsInstance(m.get('provides'), list)
             self.assertIsInstance(m.get('consumes'), list)
             self.assertIsInstance(m.get('meta'), dict)
 
@@ -70,14 +68,20 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             if module in ["sfp__stor_db", "sfp__stor_stdout"]:
                 continue
 
-            for cat in m.get('group', list()):
-                self.assertIn(cat, valid_use_cases)
+            self.assertTrue(m.get('group'))
+            self.assertTrue(m.get('provides'))
+
+            for group in m.get('group', list()):
+                self.assertIn(group, valid_use_cases)
 
             for cat in m.get('cats', list()):
                 self.assertIn(cat, valid_categories)
 
-            self.assertTrue(m.get('name'))
-            self.assertTrue(m.get('descr'))
+            meta = m.get('meta')
+
+            if 'dataSource' in meta and 'apikey' in m.get('labels'):
+                self.assertIsInstance(meta.get('dataSource').get('apiKeyInstructions'), list)
+                # self.assertTrue(meta.get('dataSource').get('apiKeyInstructions'))
 
             # check len(options) == len(option descriptions)
             if m.get('opts'):

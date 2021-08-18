@@ -29,6 +29,8 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
             'references': [
                 "https://buckets.grayhatwarfare.com/docs/api/v1"
             ],
+            'apiKeyInstructions': [
+            ],
             'favIcon': "https://buckets.grayhatwarfare.com/assets/template/images/favicon.png",
             'logo': "https://buckets.grayhatwarfare.com/assets/images/logo/logo-sm.png",
             'description': "It is a searchable database of open buckets."

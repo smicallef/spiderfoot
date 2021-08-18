@@ -29,6 +29,8 @@ class sfp_dehashed(SpiderFootPlugin):
             'references': [
                 "https://www.dehashed.com/docs"
             ],
+            'apiKeyInstructions': [
+            ],
             'favIcon': "https://www.dehashed.com/assets/img/favicon.ico",
             'logo': "https://www.dehashed.com/assets/img/logo.png",
             'description': "Have you been compromised? "
