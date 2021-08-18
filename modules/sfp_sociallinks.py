@@ -30,7 +30,9 @@ class sfp_sociallinks(SpiderFootPlugin):
             'references': [
                 "https://docs.osint.rest/"
             ],
-            'favIcon': "view-source:https://static.tildacdn.com/tild6563-6633-4533-b362-663333656461/favicon.ico",
+            'apiKeyInstructions': [
+            ],
+            'favIcon': "https://static.tildacdn.com/tild6563-6633-4533-b362-663333656461/favicon.ico",
             'logo': "https://static.tildacdn.com/tild3935-6136-4330-b561-643034663032/LogoSL.svg",
             'description': "Social Links provides instruments for OSINT methods "
             "that are used by the world's leading investigation and law enforcement agencies",

@@ -27,6 +27,8 @@ class sfp_onioncity(SpiderFootPlugin):
         'dataSource': {
             'website': "https://onion.link/",
             'model': "FREE_NOAUTH_UNLIMITED",
+            'apiKeyInstructions': [
+            ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://onion.link",
             'logo': "https://onion.link/images/OC.png",
             'description': "Enabling search and global access to Tor's onionsites.",

@@ -30,6 +30,8 @@ class sfp_seon(SpiderFootPlugin):
             'references': [
                 "https://developers.seon.io/"
             ],
+            'apiKeyInstructions': [
+            ],
             'favIcon': "https://seon.io/assets/favicons/favicon-16x16.png",
             'logo': "https://seon.io/assets/favicons/apple-touch-icon-152.png",
             'description': "SEON Fraud Prevention tools help organisations reduce "
