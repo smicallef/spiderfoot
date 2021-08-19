@@ -80,9 +80,8 @@ class sfp_tool_cmseek(SpiderFootPlugin):
         if self.errorState:
             return
 
-        # Don't look up stuff twice, check IP == IP here
         if eventData in self.results:
-            self.sf.debug("Skipping " + eventData + " as already scanned.")
+            self.sf.debug(f"Skipping {eventData} as already scanned.")
             return
 
         self.results[eventData] = True
@@ -105,7 +104,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
 
         # If tool is not found, abort
         if not os.path.isfile(exe):
-            self.sf.error("File does not exist: " + exe)
+            self.sf.error(f"File does not exist: {exe}")
             self.errorState = True
             return
 
@@ -117,27 +116,39 @@ class sfp_tool_cmseek(SpiderFootPlugin):
         try:
             p = Popen([self.opts['pythonpath'], exe, "--follow-redirect", "-u", eventData], stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
-            if p.returncode == 0:
-                content = stdout
-            else:
-                self.sf.error("Unable to read CMSeeK content.")
-                self.sf.debug("Error running CMSeeK: " + stderr + ", " + stdout)
-                return
-
-            if "CMS Detection failed" in content:
-                self.sf.debug("Couldn't detect the CMS for " + eventData)
-                return
-
-            try:
-                f = io.open(resultpath + "/" + eventData + "/cms.json", encoding='utf-8')
-                j = json.loads(f.read())
-                evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", j['cms_name'],
-                                      self.__name__, event)
-                self.notifyListeners(evt)
-            except Exception as e:
-                self.sf.error("Couldn't parse the JSON output of CMSeeK: " + str(e))
-                return
         except Exception as e:
-            self.sf.error("Unable to run CMSeeK: " + str(e))
+            self.sf.error(f"Unable to run CMSeeK: {e}")
+            return
+
+        if p.returncode != 0:
+            self.sf.error(f"Unable to read CMSeeK output\nstderr: {stderr}\nstdout: {stdout}")
+            return
+
+        if b"CMS Detection failed" in stdout:
+            self.sf.debug(f"Could not detect the CMS for {eventData}")
+            return
+
+        try:
+            log_path = f"{resultpath}/{eventData}/cms.json"
+            f = io.open(log_path, encoding='utf-8')
+            j = json.loads(f.read())
+        except Exception as e:
+            self.sf.error(f"Could not parse CMSeeK output file {log_path} as JSON: {e}")
+            return
+
+        cms_name = j.get('cms_name')
+
+        if not cms_name:
+            return
+
+        cms_version = j.get('cms_version')
+
+        software = ' '.join(filter(None, [cms_name, cms_version]))
+
+        if not software:
+            return
+
+        evt = SpiderFootEvent("WEBSERVER_TECHNOLOGY", software, self.__name__, event)
+        self.notifyListeners(evt)
 
 # End of sfp_tool_cmseek class
