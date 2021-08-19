@@ -22,7 +22,7 @@ class sfp_opencorporates(SpiderFootPlugin):
     meta = {
         'name': "OpenCorporates",
         'summary': "Look up company information from OpenCorporates.",
-        'flags': [""],
+        'flags': ["apikey"],
         'useCases': ["Passive", "Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -30,6 +30,14 @@ class sfp_opencorporates(SpiderFootPlugin):
             'model': "FREE_NOAUTH_LIMITED",
             'references': [
                 "https://api.opencorporates.com/documentation/API-Reference"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://opencorporates.com/api_accounts/new"
+                "Register a new account with an email",
+                "Navigate to https://opencorporates.com/users/account and select 'Get Account'",
+                "Select the plan required",
+                "Navigate to https://opencorporates.com/users/account",
+                "The API key is listed under 'API Account'",
             ],
             'favIcon': "https://opencorporates.com/assets/favicons/favicon.png",
             'logo': "https://opencorporates.com/contents/ui/theme/img/oc-logo.svg",
@@ -47,7 +55,7 @@ class sfp_opencorporates(SpiderFootPlugin):
 
     optdescs = {
         'confidence': "Confidence that the search result objects are correct (numeric value between 0 and 100).",
-        'api_key': 'OpenCorporates.com API key.'
+        'api_key': 'OpenCorporates.com API key. Without this you will be limited to 50 look-ups per day.'
     }
 
     results = None
@@ -199,6 +207,9 @@ class sfp_opencorporates(SpiderFootPlugin):
         self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+
+        if self.opts['api_key'] == '':
+            self.sf.error("Warning: You enabled {self.__class__.__name__} but did not set an API key! Queries will be limited to 50 per day and 200 per month.")
 
         res = self.searchCompany(f"{eventData}*")
 
