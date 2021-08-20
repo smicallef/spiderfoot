@@ -23,7 +23,7 @@ class sfp_robtex(SpiderFootPlugin):
     meta = {
         'name': "Robtex",
         'summary': "Search Robtex.com for hosts sharing the same IP.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         'dataSource': {

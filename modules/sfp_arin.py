@@ -21,7 +21,7 @@ class sfp_arin(SpiderFootPlugin):
     meta = {
         'name': "ARIN",
         'summary': "Queries ARIN registry for contact information.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
         'dataSource': {

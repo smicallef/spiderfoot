@@ -21,7 +21,7 @@ class sfp_quad9(SpiderFootPlugin):
     meta = {
         'name': "Quad9",
         'summary': "Check if a host would be blocked by Quad9",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

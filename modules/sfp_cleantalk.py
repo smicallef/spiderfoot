@@ -20,7 +20,7 @@ class sfp_cleantalk(SpiderFootPlugin):
     meta = {
         'name': "CleanTalk Spam List",
         'summary': "Check if a netblock or IP address is on CleanTalk.org's spam IP list.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

@@ -31,7 +31,7 @@ class sfp_customfeed(SpiderFootPlugin):
     meta = {
         'name': "Custom Threat Feed",
         'summary': "Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"]
     }

@@ -21,7 +21,7 @@ class sfp_zetalytics(SpiderFootPlugin):
     meta = {
         "name": "Zetalytics",
         "summary": "Query the Zetalytics database for hosts on your target domain(s).",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Passive DNS"],
         "dataSource": {

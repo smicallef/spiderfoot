@@ -25,7 +25,7 @@ class sfp_fringeproject(SpiderFootPlugin):
     meta = {
         'name': "Fringe Project",
         'summary': "Obtain network information from Fringe Project API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {

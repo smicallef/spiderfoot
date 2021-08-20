@@ -21,7 +21,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
     meta = {
         'name': "DNS Look-aside",
         'summary': "Attempt to reverse-resolve the IP addresses next to your target to see if they are related.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["DNS"]
     }

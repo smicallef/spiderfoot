@@ -22,7 +22,7 @@ class sfp_ipapico(SpiderFootPlugin):
     meta = {
         'name': "ipapi.co",
         'summary': "Queries ipapi.co to identify geolocation of IP Addresses using ipapi.co API",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Real World"],
         'dataSource': {

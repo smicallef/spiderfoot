@@ -20,7 +20,7 @@ class sfp_psbdmp(SpiderFootPlugin):
     meta = {
         'name': "Psbdmp",
         'summary': "Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {

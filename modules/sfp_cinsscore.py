@@ -20,7 +20,7 @@ class sfp_cinsscore(SpiderFootPlugin):
     meta = {
         'name': "CINS Army List",
         'summary': "Check if a netblock or IP address is malicious according to cinsscore.com's Army List.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

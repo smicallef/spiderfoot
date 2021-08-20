@@ -20,7 +20,7 @@ class sfp_instagram(SpiderFootPlugin):
     meta = {
         'name': "Instagram",
         'summary': "Gather information from Instagram profiles.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {

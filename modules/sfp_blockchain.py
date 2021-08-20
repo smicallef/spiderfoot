@@ -21,7 +21,7 @@ class sfp_blockchain(SpiderFootPlugin):
     meta = {
         'name': "Blockchain",
         'summary': "Queries blockchain.info to find the balance of identified bitcoin wallet addresses.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
         'dataSource': {

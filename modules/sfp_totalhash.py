@@ -30,7 +30,7 @@ class sfp_totalhash(SpiderFootPlugin):
     meta = {
         'name': "TotalHash.com",
         'summary': "Check if a host/domain or IP is malicious according to TotalHash.com.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

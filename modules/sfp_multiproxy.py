@@ -31,7 +31,7 @@ class sfp_multiproxy(SpiderFootPlugin):
     meta = {
         'name': "multiproxy.org Open Proxies",
         'summary': "Check if an IP is an open proxy according to multiproxy.org' open proxy list.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Secondary Networks"],
         'dataSource': {

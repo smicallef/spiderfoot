@@ -31,7 +31,7 @@ class sfp_torexits(SpiderFootPlugin):
     meta = {
         'name': "TOR Exit Nodes",
         'summary': "Check if an IP or netblock appears on the torproject.org exit node list.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Secondary Networks"]
     }

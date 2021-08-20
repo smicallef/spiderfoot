@@ -21,7 +21,7 @@ class sfp_opendns(SpiderFootPlugin):
     meta = {
         'name': "OpenDNS",
         'summary': "Check if a host would be blocked by OpenDNS DNS",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

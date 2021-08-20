@@ -27,7 +27,7 @@ class sfp_filemeta(SpiderFootPlugin):
     meta = {
         'name': "File Metadata Extractor",
         'summary': "Extracts meta data from documents and images.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint"],
         'categories': ["Content Analysis"]
     }

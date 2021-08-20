@@ -31,7 +31,7 @@ class sfp_voipbl(SpiderFootPlugin):
     meta = {
         'name': "VoIPBL OpenPBX IPs",
         'summary': "Check if an IP or netblock is an open PBX according to VoIPBL OpenPBX IPs.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

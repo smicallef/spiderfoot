@@ -21,7 +21,7 @@ class sfp_skymem(SpiderFootPlugin):
     meta = {
         'name': "Skymem",
         'summary': "Look up e-mail addresses on Skymem.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {

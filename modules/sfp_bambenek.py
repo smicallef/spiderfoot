@@ -37,7 +37,7 @@ class sfp_bambenek(SpiderFootPlugin):
     meta = {
         'name': "Bambenek C&C List",
         'summary': "Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

@@ -30,7 +30,7 @@ class sfp_isc(SpiderFootPlugin):
     meta = {
         'name': "Internet Storm Center",
         'summary': "Check if an IP is malicious according to SANS ISC.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

@@ -22,7 +22,7 @@ class sfp_ripe(SpiderFootPlugin):
     meta = {
         'name': "RIPE",
         'summary': "Queries the RIPE registry (includes ARIN data) to identify netblocks and other info.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
         'dataSource': {

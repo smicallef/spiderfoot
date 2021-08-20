@@ -31,7 +31,7 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
     meta = {
         'name': "cybercrime-tracker.net",
         'summary': "Check if a host/domain or IP is malicious according to cybercrime-tracker.net.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

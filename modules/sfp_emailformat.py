@@ -22,7 +22,7 @@ class sfp_emailformat(SpiderFootPlugin):
     meta = {
         'name': "EmailFormat",
         'summary': "Look up e-mail addresses on email-format.com.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {

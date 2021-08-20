@@ -24,7 +24,7 @@ class sfp_phone(SpiderFootPlugin):
     meta = {
         'name': "Phone Number Extractor",
         'summary': "Identify phone numbers in scraped webpages.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Passive", "Footprint", "Investigate"],
         'categories': ["Content Analysis"]
     }

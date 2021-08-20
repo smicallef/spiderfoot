@@ -20,7 +20,7 @@ class sfp_punkspider(SpiderFootPlugin):
     meta = {
         'name': "PunkSpider",
         'summary': "Check the QOMPLX punkspider.io service to see if the target is listed as vulnerable.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {

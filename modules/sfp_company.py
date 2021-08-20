@@ -21,7 +21,7 @@ class sfp_company(SpiderFootPlugin):
     meta = {
         'name': "Company Name Extractor",
         'summary': "Identify company names in any obtained data.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }

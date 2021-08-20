@@ -30,7 +30,7 @@ class sfp_fortinet(SpiderFootPlugin):
     meta = {
         'name': "Fortiguard.com",
         'summary': "Check if an IP is malicious according to Fortiguard.com.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

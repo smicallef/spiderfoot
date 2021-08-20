@@ -20,7 +20,7 @@ class sfp_greensnow(SpiderFootPlugin):
     meta = {
         'name': "Greensnow",
         'summary': "Check if a netblock or IP address is malicious according to greensnow.co.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

@@ -37,7 +37,7 @@ class sfp_coinblocker(SpiderFootPlugin):
     meta = {
         'name': "CoinBlocker Lists",
         'summary': "Check if a host/domain or IP appears on CoinBlocker lists.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

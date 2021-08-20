@@ -18,7 +18,7 @@ class sfp_intfiles(SpiderFootPlugin):
     meta = {
         'name': "Interesting File Finder",
         'summary': "Identifies potential files of interest, e.g. office documents, zip files.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Crawling and Scanning"]
     }

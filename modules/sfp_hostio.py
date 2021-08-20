@@ -19,7 +19,7 @@ class sfp_hostio(SpiderFootPlugin):
     meta = {
         "name": "Host.io",
         "summary": "Obtain information about domain names from host.io.",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Passive DNS"],
         "dataSource": {

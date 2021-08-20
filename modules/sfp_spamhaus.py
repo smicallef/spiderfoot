@@ -22,7 +22,7 @@ class sfp_spamhaus(SpiderFootPlugin):
     meta = {
         'name': "Spamhaus",
         'summary': "Query the Spamhaus databases for open relays, open proxies, vulnerable servers, etc.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

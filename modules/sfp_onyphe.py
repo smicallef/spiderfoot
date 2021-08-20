@@ -23,7 +23,7 @@ class sfp_onyphe(SpiderFootPlugin):
     meta = {
         "name": "Onyphe",
         "summary": "Check Onyphe data (threat list, geo-location, pastries, vulnerabilities)  about a given IP.",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Footprint", "Passive", "Investigate"],
         "categories": ["Reputation Systems"],
         "dataSource": {

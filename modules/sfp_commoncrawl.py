@@ -22,7 +22,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
     meta = {
         'name': "CommonCrawl",
         'summary': "Searches for URLs found through CommonCrawl.org.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {

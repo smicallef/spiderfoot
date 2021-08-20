@@ -26,7 +26,7 @@ class sfp_phishstats(SpiderFootPlugin):
     meta = {
         'name': "PhishStats",
         'summary': "Determine if an IP Address is malicious",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

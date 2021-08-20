@@ -20,7 +20,7 @@ class sfp_ipregistry(SpiderFootPlugin):
     meta = {
         "name": "ipregistry",
         "summary": "Query the ipregistry.co database for reputation and geo-location.",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive", "Footprint", "Investigate"],
         "categories": ["Reputation Systems"],
         "dataSource": {
