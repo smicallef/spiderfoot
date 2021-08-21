@@ -24,7 +24,7 @@ class sfp_maltiverse(SpiderFootPlugin):
     meta = {
         'name': "Maltiverse",
         'summary': "Obtain information about any malicious activities involving IP addresses",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

@@ -21,7 +21,7 @@ class sfp_bgpview(SpiderFootPlugin):
     meta = {
         'name': "BGPView",
         'summary': "Obtain network information from BGPView API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {

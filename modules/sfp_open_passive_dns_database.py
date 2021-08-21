@@ -25,7 +25,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
     meta = {
         'name': "Open Passive DNS Database",
         'summary': "Obtain passive DNS information from pdns.daloo.de Open passive DNS database.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         'dataSource': {

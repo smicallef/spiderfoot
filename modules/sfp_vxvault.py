@@ -31,7 +31,7 @@ class sfp_vxvault(SpiderFootPlugin):
     meta = {
         'name': "VXVault.net",
         'summary': "Check if a domain or IP is malicious according to VXVault.net.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

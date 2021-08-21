@@ -23,7 +23,7 @@ class sfp_gravatar(SpiderFootPlugin):
     meta = {
         'name': "Gravatar",
         'summary': "Retrieve user information from Gravatar API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {

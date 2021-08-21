@@ -30,7 +30,7 @@ class sfp_talosintel(SpiderFootPlugin):
     meta = {
         'name': "Talos Intelligence",
         'summary': "Check if a netblock or IP is malicious according to talosintelligence.com.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

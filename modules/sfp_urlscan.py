@@ -23,7 +23,7 @@ class sfp_urlscan(SpiderFootPlugin):
     meta = {
         'name': "URLScan.io",
         'summary': "Search URLScan.io cache for domain information.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {

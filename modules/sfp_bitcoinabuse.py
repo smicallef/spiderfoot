@@ -20,7 +20,7 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
     meta = {
         "name": "BitcoinAbuse",
         "summary": "Check Bitcoin addresses against the bitcoinabuse.com database of suspect/malicious addresses.",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive", "Investigate"],
         "categories": ["Reputation Systems"],
         "dataSource": {

@@ -21,7 +21,7 @@ class sfp_comodo(SpiderFootPlugin):
     meta = {
         'name': "Comodo",
         'summary': "Check if a host would be blocked by Comodo DNS",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

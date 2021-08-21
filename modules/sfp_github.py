@@ -21,7 +21,7 @@ class sfp_github(SpiderFootPlugin):
     meta = {
         'name': "Github",
         'summary': "Identify associated public code repositories on Github.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {

@@ -22,7 +22,7 @@ class sfp_pgp(SpiderFootPlugin):
     meta = {
         'name': "PGP Key Servers",
         'summary': "Look up e-mail addresses in PGP public key servers.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"]
     }

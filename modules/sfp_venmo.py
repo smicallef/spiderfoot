@@ -20,7 +20,7 @@ class sfp_venmo(SpiderFootPlugin):
     meta = {
         'name': "Venmo",
         'summary': "Gather user information from Venmo API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {

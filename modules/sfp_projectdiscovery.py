@@ -19,7 +19,7 @@ class sfp_projectdiscovery(SpiderFootPlugin):
     meta = {
         "name": "ProjectDiscovery Chaos",
         "summary": "Search for hosts/subdomains using chaos.projectdiscovery.io",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive", "Footprint", "Investigate"],
         "categories": ["Passive DNS"],
         "dataSource": {

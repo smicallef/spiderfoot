@@ -21,7 +21,7 @@ class sfp_webanalytics(SpiderFootPlugin):
     meta = {
         'name': "Web Analytics Extractor",
         'summary': "Identify web analytics IDs in scraped webpages and DNS TXT records.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }

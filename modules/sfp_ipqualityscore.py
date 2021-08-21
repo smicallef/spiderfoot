@@ -20,7 +20,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
     meta = {
         "name": "IPQualityScore",
         "summary": "Determine if target is malicious using IPQualityScore API",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Investigate", "Passive"],
         "categories": ["Reputation Systems"],
         "dataSource": {

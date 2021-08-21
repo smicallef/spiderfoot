@@ -23,7 +23,7 @@ class sfp_s3bucket(SpiderFootPlugin):
     meta = {
         'name': "Amazon S3 Bucket Finder",
         'summary': "Search for potential Amazon S3 buckets associated with the target and attempt to list their contents.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Crawling and Scanning"],
         'dataSource': {

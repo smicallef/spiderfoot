@@ -24,7 +24,7 @@ class sfp_crxcavator(SpiderFootPlugin):
     meta = {
         'name': "CRXcavator",
         'summary': "Search CRXcavator for Chrome extensions.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {

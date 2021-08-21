@@ -21,7 +21,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
     meta = {
         'name': "CloudFlare Malware DNS",
         'summary': "Check if a host would be blocked by CloudFlare Malware-blocking DNS",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

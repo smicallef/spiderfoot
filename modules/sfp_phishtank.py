@@ -31,7 +31,7 @@ class sfp_phishtank(SpiderFootPlugin):
     meta = {
         'name': "PhishTank",
         'summary': "Check if a host/domain is malicious according to PhishTank.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

@@ -19,7 +19,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
     meta = {
         'name': "HackerOne (Unofficial)",
         'summary': "Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {

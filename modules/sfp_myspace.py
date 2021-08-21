@@ -19,7 +19,7 @@ class sfp_myspace(SpiderFootPlugin):
     meta = {
         'name': "MySpace",
         'summary': "Gather username and location from MySpace.com profiles.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {

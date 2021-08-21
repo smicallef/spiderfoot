@@ -20,7 +20,7 @@ class sfp_emergingthreats(SpiderFootPlugin):
     meta = {
         'name': "Emerging Threats",
         'summary': "Check if a netblock or IP is malicious according to emergingthreats.net.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

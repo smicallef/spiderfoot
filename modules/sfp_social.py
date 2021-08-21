@@ -36,7 +36,7 @@ class sfp_social(SpiderFootPlugin):
     meta = {
         'name': "Social Network Identifier",
         'summary': "Identify presence on social media networks such as LinkedIn, Twitter and others.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Social Media"]
     }

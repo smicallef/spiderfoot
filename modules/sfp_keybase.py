@@ -25,7 +25,7 @@ class sfp_keybase(SpiderFootPlugin):
     meta = {
         'name': "Keybase",
         'summary': "Obtain additional information about target username",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
         'dataSource': {

@@ -20,7 +20,7 @@ class sfp_cookie(SpiderFootPlugin):
     meta = {
         'name': "Cookie Extractor",
         'summary': "Extract Cookies from HTTP headers.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }

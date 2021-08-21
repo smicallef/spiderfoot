@@ -22,7 +22,7 @@ class sfp_spamcop(SpiderFootPlugin):
     meta = {
         'name': "SpamCop",
         'summary': "Query various spamcop databases for open relays, open proxies, vulnerable servers, etc.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

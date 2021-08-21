@@ -23,7 +23,7 @@ class sfp_scylla(SpiderFootPlugin):
     meta = {
         'name': "Scylla",
         'summary': "Gather breach data from Scylla API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {

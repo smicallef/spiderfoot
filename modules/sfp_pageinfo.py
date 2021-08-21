@@ -33,7 +33,7 @@ class sfp_pageinfo(SpiderFootPlugin):
     meta = {
         'name': "Page Information",
         'summary': "Obtain information about web pages (do they take passwords, do they contain forms, etc.)",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }

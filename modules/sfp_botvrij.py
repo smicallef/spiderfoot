@@ -31,7 +31,7 @@ class sfp_botvrij(SpiderFootPlugin):
     meta = {
         'name': "botvrij.eu",
         'summary': "Check if a domain is malicious according to botvrij.eu.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

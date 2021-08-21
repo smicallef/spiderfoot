@@ -20,7 +20,7 @@ class sfp_textmagic(SpiderFootPlugin):
     meta = {
         "name": "TextMagic",
         "summary": "Obtain phone number type from TextMagic API",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Search Engines"],
         "dataSource": {

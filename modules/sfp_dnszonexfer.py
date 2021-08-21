@@ -23,7 +23,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
     meta = {
         'name': "DNS Zone Transfer",
         'summary': "Attempts to perform a full DNS zone transfer.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["DNS"]
     }

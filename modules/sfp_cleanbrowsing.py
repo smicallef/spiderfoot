@@ -21,7 +21,7 @@ class sfp_cleanbrowsing(SpiderFootPlugin):
     meta = {
         'name': "CleanBrowsing.org",
         'summary': "Check if a host would be blocked by CleanBrowsing.org DNS",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

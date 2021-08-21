@@ -24,7 +24,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
     meta = {
         'name': "DNS Resolver",
         'summary': "Resolves Hosts and IP Addresses identified, also extracted from raw content.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["DNS"]
     }

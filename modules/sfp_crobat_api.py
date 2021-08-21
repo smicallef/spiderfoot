@@ -24,7 +24,7 @@ class sfp_crobat_api(SpiderFootPlugin):
     meta = {
         'name': "Crobat API",
         'summary': "Search Crobat API for subdomains.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         'dataSource': {

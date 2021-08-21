@@ -26,7 +26,7 @@ class sfp_flickr(SpiderFootPlugin):
     meta = {
         'name': "Flickr",
         'summary': "Search Flickr for domains, URLs and emails related to the specified domain.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {
