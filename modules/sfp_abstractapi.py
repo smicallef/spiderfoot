@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:        sfp_abstractapi
-# Purpose:     SpiderFoot plug-in to identify the Geolocation of IP addresses
-#              from abstractapi.com Geolocation API
+# Purpose:     Search AbstractAPI for domain, phone and IP address information.
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
@@ -13,6 +12,7 @@
 
 import json
 import time
+import urllib
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -20,161 +20,335 @@ from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 class sfp_abstractapi(SpiderFootPlugin):
 
     meta = {
-        'name': "abstractapi",
-        'summary': "Queries abstractapi.com to identify geolocation of IP Addresses using their Geolocation API",
+        'name': "AbstractAPI",
+        'summary': "Look up domain, phone and IP address information from AbstractAPI.",
         'flags': ["apikey"],
-        'useCases': ["Footprint", "Investigate", "Passive"],
-        'categories': ["Real World"],
+        'useCases': ["Passive", "Footprint", "Investigate"],
+        'categories': ["Search Engines"],
         'dataSource': {
-            'website': "https://abstractapi.com",
-            'model': "FREE_AUTH_LIMITED",
+            'website': "https://app.abstractapi.com/",
+            'model': "FREE_NOAUTH_LIMITED",
             'references': [
-                "https://app.abstractapi.com/api/ip-geolocation/documentation"
+                "https://app.abstractapi.com/",
             ],
             'apiKeyInstructions': [
                 "Visit https://app.abstractapi.com/users/signup",
                 "Register a free account",
-                "Browse to https://app.abstractapi.com/api/ip-geolocation/tester",
-                "Click on 'Try it out'",
+                "Visit https://app.abstractapi.com/api/",
+                "Visit each API page and click on 'Try it out'",
                 "Your API Key will be listed under 'This is your private API key, specific to this API.'",
             ],
-            'favIcon': "https://global-uploads.webflow.com/5ebbd0a566a3996636e55959/5ec2ba27ede983917dbff22f_favicon.png",
-            'logo': "https://global-uploads.webflow.com/5ebbd0a566a3996636e55959/5ec2b974e578f93e553425eb_logo-dark.svg",
-            'description': "The IP Geolocation allows you to look up the location, timezone, country details, and more of an IPv4 or IPv6 address.",
+            'favIcon': "https://app.abstractapi.com/favicon.ico",
+            'logo': "https://app.abstractapi.com/logo192.png",
+            'description': "Abstract provides powerful APIs to help you enrich any user experience or automate any workflow."
         }
     }
 
-    # Default options
     opts = {
-        "api_key": ""
+        "companyenrichment_api_key": "",
+        "phonevalidation_api_key": "",
+        "ipgeolocation_api_key": "",
     }
 
-    # Option descriptions
     optdescs = {
-        "api_key": "AbstractAPI Geolocation API Key"
+        "companyenrichment_api_key": "Company Enrichment API key.",
+        "phonevalidation_api_key": "Phone Validation API key.",
+        "ipgeolocation_api_key": "IP Geolocation API key.",
     }
 
     results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
+        self.errorState = False
         self.results = self.tempStorage()
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-    # What events is this module interested in for input
     def watchedEvents(self):
-        return [
-            "IP_ADDRESS",
-            "IPV6_ADDRESS"
-        ]
+        return ["DOMAIN_NAME", "PHONE_NUMBER", "IP_ADDRESS", "IPV6_ADDRESS"]
 
-    # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return [
-            "GEOINFO",
-            "PHYISCAL_COORDINATES",
-            "RAW_RIR_DATA"
-        ]
+        return ["COMPANY_NAME", "SOCIAL_MEDIA", "GEOINFO", "PHYSICAL_COORDINATES", "PROVIDER_TELCO", "RAW_RIR_DATA"]
 
-    def query(self, qry):
-        queryString = f"https://ipgeolocation.abstractapi.com/v1/?api_key={self.opts['api_key']}&ip_address={qry}"
-
-        res = self.sf.fetchUrl(queryString,
-                               timeout=self.opts['_fetchtimeout'],
-                               useragent=self.opts['_useragent'])
-        time.sleep(1.2)
-
-        return self.parseAPIResponse(res)
-
-    def parseAPIResponse(self, res):
-        if res['code'] == '204':
-            self.sf.debug("No geolocation information for target")
-            return None
-
-        if res['code'] == "400":
-            self.sf.error("Bad Request")
-            self.errorState = True
-            return None
-
-        if res['code'] == "401":
-            self.sf.error("Unauthorized. Invalid abstractapi API key")
-            self.errorState = True
-            return None
-
-        if res['code'] == '422':
-            self.sf.error("Usage quota reached. Insufficient API Credit")
-            self.errorState = True
-            return None
+    def parseApiResponse(self, res):
+        if not res:
+            return
 
         if res['code'] == '429':
-            self.sf.error("Too many requests")
-            return None
+            self.sf.error("You are being rate-limited by AbstractAPI.")
+            return
+
+        if res['code'] == '401':
+            self.sf.error("Unauthorized. Invalid AbstractAPI API key.")
+            self.errorState = True
+            return
+
+        if res['code'] == '422':
+            self.sf.error("Usage quota reached. Insufficient API credit.")
+            self.errorState = True
+            return
 
         if res['code'] == '500' or res['code'] == '503':
-            self.sf.error("abstractapi service is unavailable")
+            self.sf.error("Abstract API service is unavailable")
             self.errorState = True
-            return None
+            return
+
+        if res['code'] == '204':
+            self.sf.debug("No response data for target")
+            return
 
         if res['code'] != '200':
-            self.sf.error("Failed to retrieve data from abstractapi")
-            self.errorState = True
-            return None
+            self.sf.error(f"Unexpected reply from AbstractAPI: {res['code']}")
+            return
 
         if res['content'] is None:
-            return None
+            return
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            return
 
         return data
 
-    # Handle events sent to this module
+    def queryCompanyEnrichment(self, qry):
+        """Enrich domain with company information.
+
+        Args:
+            qry (str): domain name
+
+        Returns:
+            dict: company information
+        """
+
+        api_key = self.opts['companyenrichment_api_key']
+        if not api_key:
+            return
+
+        params = urllib.parse.urlencode({
+            'api_key': api_key,
+            'domain': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
+        })
+
+        res = self.sf.fetchUrl(
+            f"https://companyenrichment.abstractapi.com/v1/?{params}",
+            useragent=self.opts['_useragent']
+        )
+
+        time.sleep(1)
+
+        if not res:
+            self.sf.debug("No response from AbstractAPI Company Enrichment API endpoint")
+            return
+
+        return self.parseApiResponse(res)
+
+    def queryPhoneValidation(self, qry):
+        """Verify phone number and enrich with carrier and location information.
+
+        Args:
+            qry (str): phone number
+
+        Returns:
+            dict: phone number information
+        """
+
+        api_key = self.opts['phonevalidation_api_key']
+        if not api_key:
+            return
+
+        params = urllib.parse.urlencode({
+            'api_key': api_key,
+            'phone': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
+        })
+
+        res = self.sf.fetchUrl(
+            f"https://phonevalidation.abstractapi.com/v1/?{params}",
+            useragent=self.opts['_useragent']
+        )
+
+        time.sleep(1)
+
+        if not res:
+            self.sf.debug("No response from AbstractAPI Phone Validation API endpoint")
+            return
+
+        return self.parseApiResponse(res)
+
+    def queryIpGeolocation(self, qry):
+        """Enrich IP address with geolocation information.
+
+        Args:
+            qry (str): IPv4 address
+
+        Returns:
+            dict: location information
+        """
+
+        api_key = self.opts['ipgeolocation_api_key']
+        if not api_key:
+            return
+
+        params = urllib.parse.urlencode({
+            'api_key': api_key,
+            'ip_address': qry.encode('raw_unicode_escape').decode("ascii", errors='replace'),
+        })
+
+        res = self.sf.fetchUrl(
+            f"https://ipgeolocation.abstractapi.com/v1/?{params}",
+            useragent=self.opts['_useragent']
+        )
+
+        time.sleep(1)
+
+        if not res:
+            self.sf.debug("No response from AbstractAPI Phone Validation API endpoint")
+            return
+
+        return self.parseApiResponse(res)
+
     def handleEvent(self, event):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
 
-        if self.errorState:
-            return None
-
-        if self.opts['api_key'] == "":
-            self.sf.error("You enabled sfp_abstractapi but did not set an API key!")
-            self.errorState = True
-            return None
-
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
-        data = self.query(eventData)
+        if self.opts["companyenrichment_api_key"] == "" and self.opts["phonevalidation_api_key"] == "" and self.opts["ipgeolocation_api_key"] == "":
+            self.sf.error(
+                f"You enabled {self.__class__.__name__} but did not set any API keys!"
+            )
+            self.errorState = True
+            return
 
-        if data is None:
-            self.sf.info("No results returned from abstractapi")
-            return None
+        if eventName not in self.watchedEvents():
+            return
 
-        if data.get('country'):
-            location = ', '.join(filter(None, [data.get('city'), data.get('region'), data.get('region_iso_code'), data.get('country'), data.get('country_code'), data.get('continent'), data.get('continent_code')]))
-            evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
-            self.notifyListeners(evt)
+        if eventName == "DOMAIN_NAME":
+            if self.opts["companyenrichment_api_key"] == "":
+                self.sf.info(
+                    f"No API key set for Company Enrichment API endpoint. Ignoring {eventData}"
+                )
+                return
 
-            if data.get('latitude') and data.get('longitude'):
-                evt = SpiderFootEvent("PHYSICAL_COORDINATES", f"{data.get('latitude')}, {data.get('longitude')}", self.__name__, event)
-                self.notifyListeners(evt)
+            data = self.queryCompanyEnrichment(eventData)
 
-            evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
-            self.notifyListeners(evt)
+            if not data:
+                return
 
+            name = data.get('name')
+            if not name:
+                return
+
+            if name == 'To Be Confirmed':
+                return
+
+            e = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+            self.notifyListeners(e)
+
+            e = SpiderFootEvent("COMPANY_NAME", name, self.__name__, event)
+            self.notifyListeners(e)
+
+            linkedin_url = data.get('linkedin_url')
+            if linkedin_url:
+                if linkedin_url.startswith('linkedin.com'):
+                    linkedin_url = f"https://{linkedin_url}"
+                e = SpiderFootEvent("SOCIAL_MEDIA", f"LinkedIn (Company): <SFURL>{linkedin_url}</SFURL>", self.__name__, event)
+                self.notifyListeners(e)
+
+            locality = data.get('locality')
+            country = data.get('country')
+            geoinfo = ', '.join(
+                filter(None, [locality, country])
+            )
+
+            if geoinfo:
+                e = SpiderFootEvent("GEOINFO", geoinfo, self.__name__, event)
+                self.notifyListeners(e)
+
+        elif eventName == "PHONE_NUMBER":
+            if self.opts["phonevalidation_api_key"] == "":
+                self.sf.info(
+                    f"No API key set for Phone Validation API endpoint. Ignoring {eventData}"
+                )
+                return
+
+            data = self.queryPhoneValidation(eventData)
+
+            if not data:
+                return
+
+            valid = data.get('valid')
+            if not valid:
+                return
+
+            e = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+            self.notifyListeners(e)
+
+            carrier = data.get('carrier')
+            if carrier:
+                e = SpiderFootEvent("PROVIDER_TELCO", carrier, self.__name__, event)
+                self.notifyListeners(e)
+
+            location = data.get('location')
+            country = data.get('country')
+            country_name = None
+            if country:
+                country_name = country.get('name')
+
+            geoinfo = ', '.join(
+                filter(None, [location, country_name])
+            )
+
+            if geoinfo:
+                e = SpiderFootEvent("GEOINFO", geoinfo, self.__name__, event)
+                self.notifyListeners(e)
+
+        elif eventName == "IP_ADDRESS" or eventName == "IPV6_ADDRESS":
+            if self.opts["ipgeolocation_api_key"] == "":
+                self.sf.info(
+                    f"No API key set for IP Geolocation API endpoint. Ignoring {eventData}"
+                )
+                return
+
+            data = self.queryIpGeolocation(eventData)
+
+            if not data:
+                return
+
+            e = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
+            self.notifyListeners(e)
+
+            geoinfo = ', '.join(
+                [
+                    _f for _f in [
+                        data.get('city'),
+                        data.get('region'),
+                        data.get('postal_code'),
+                        data.get('country'),
+                        data.get('continent'),
+                    ] if _f
+                ]
+            )
+
+            if geoinfo:
+                e = SpiderFootEvent("GEOINFO", geoinfo, self.__name__, event)
+                self.notifyListeners(e)
+
+            latitude = data.get('latitude')
+            longitude = data.get('longitude')
+            if latitude and longitude:
+                e = SpiderFootEvent("PHYSICAL_COORDINATES", f"{latitude}, {longitude}", self.__name__, event)
+                self.notifyListeners(e)
 
 # End of sfp_abstractapi class
