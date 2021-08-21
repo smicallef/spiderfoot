@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_sociallinks
-# Purpose:      Spiderfoot plugin to query mtg-bi.com to gather intelligence from
-#               social media platforms and dark web.
+# Name:        sfp_sociallinks
+# Purpose:     Spiderfoot plugin to query SocialLinks.io to gather intelligence
+#              from social media platforms and dark web.
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
 #
@@ -20,17 +20,19 @@ class sfp_sociallinks(SpiderFootPlugin):
 
     meta = {
         'name': "Social Links",
-        'summary': "Queries mtg-bi.com to gather intelligence from social media platforms and dark web",
+        'summary': "Queries SocialLinks.io to gather intelligence from social media platforms and dark web.",
         'flags': ["apikey"],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Real World"],
         'dataSource': {
-            'website': "https://mtg-bi.com/",
+            'website': "https://sociallinks.io/",
             'model': "COMMERCIAL_ONLY",
             'references': [
                 "https://docs.osint.rest/"
             ],
             'apiKeyInstructions': [
+                "Visit https://sociallinks.io/",
+                "Register an account",
             ],
             'favIcon': "https://static.tildacdn.com/tild6563-6633-4533-b362-663333656461/favicon.ico",
             'logo': "https://static.tildacdn.com/tild3935-6136-4330-b561-643034663032/LogoSL.svg",
@@ -46,7 +48,7 @@ class sfp_sociallinks(SpiderFootPlugin):
 
     # Option descriptions
     optdescs = {
-        'api_key': "Social Links (mtg-bi.com) API Key",
+        'api_key': "Social Links API Key",
     }
 
     results = None

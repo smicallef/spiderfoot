@@ -30,6 +30,10 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
                 "https://buckets.grayhatwarfare.com/docs/api/v1"
             ],
             'apiKeyInstructions': [
+                "Visit https://grayhatwarfare.com/register",
+                "Register an account",
+                "Visit https://grayhatwarfare.com/account/settings",
+                "Your API key is listed under 'Api Key'",
             ],
             'favIcon': "https://buckets.grayhatwarfare.com/assets/template/images/favicon.png",
             'logo': "https://buckets.grayhatwarfare.com/assets/images/logo/logo-sm.png",

@@ -28,9 +28,13 @@ class sfp_seon(SpiderFootPlugin):
             'website': "https://seon.io/",
             'model': "COMMERCIAL_ONLY",
             'references': [
-                "https://developers.seon.io/"
+                "https://docs.seon.io/api-reference",
             ],
             'apiKeyInstructions': [
+                "Visit https://seon.io/",
+                "Register an account",
+                "Visit https://docs.seon.io/api-reference",
+                "Your API key is listed under 'License key'",
             ],
             'favIcon': "https://seon.io/assets/favicons/favicon-16x16.png",
             'logo': "https://seon.io/assets/favicons/apple-touch-icon-152.png",
