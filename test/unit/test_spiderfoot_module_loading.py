@@ -12,6 +12,164 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
     Test SpiderFoot module loading
     """
 
+    valid_events = [
+        'ACCOUNT_EXTERNAL_OWNED',
+        'ACCOUNT_EXTERNAL_OWNED_COMPROMISED',
+        'ACCOUNT_EXTERNAL_USER_SHARED_COMPROMISED',
+        'AFFILIATE_EMAILADDR',
+        'AFFILIATE_INTERNET_NAME',
+        'AFFILIATE_INTERNET_NAME_HIJACKABLE',
+        'AFFILIATE_INTERNET_NAME_UNRESOLVED',
+        'AFFILIATE_IPADDR',
+        'AFFILIATE_WEB_CONTENT',
+        'AFFILIATE_DOMAIN_NAME',
+        'AFFILIATE_DOMAIN_UNREGISTERED',
+        'AFFILIATE_COMPANY_NAME',
+        'AFFILIATE_DOMAIN_WHOIS',
+        'AFFILIATE_DESCRIPTION_CATEGORY',
+        'AFFILIATE_DESCRIPTION_ABSTRACT',
+        'APPSTORE_ENTRY',
+        'CLOUD_STORAGE_BUCKET',
+        'CLOUD_STORAGE_BUCKET_OPEN',
+        'COMPANY_NAME',
+        'CREDIT_CARD_NUMBER',
+        'BASE64_DATA',
+        'BITCOIN_ADDRESS',
+        'BITCOIN_BALANCE',
+        'BGP_AS_OWNER',
+        'BGP_AS_MEMBER',
+        'BLACKLISTED_IPADDR',
+        'BLACKLISTED_AFFILIATE_IPADDR',
+        'BLACKLISTED_SUBNET',
+        'BLACKLISTED_NETBLOCK',
+        'COUNTRY_NAME',
+        'CO_HOSTED_SITE',
+        'CO_HOSTED_SITE_DOMAIN',
+        'CO_HOSTED_SITE_DOMAIN_WHOIS',
+        'DARKNET_MENTION_URL',
+        'DARKNET_MENTION_CONTENT',
+        'DATE_HUMAN_DOB',
+        'DEFACED_INTERNET_NAME',
+        'DEFACED_IPADDR',
+        'DEFACED_AFFILIATE_INTERNET_NAME',
+        'DEFACED_COHOST',
+        'DEFACED_AFFILIATE_IPADDR',
+        'DESCRIPTION_CATEGORY',
+        'DESCRIPTION_ABSTRACT',
+        'DEVICE_TYPE',
+        'DNS_TEXT',
+        'DNS_SRV',
+        'DNS_SPF',
+        'DOMAIN_NAME',
+        'DOMAIN_NAME_PARENT',
+        'DOMAIN_REGISTRAR',
+        'DOMAIN_WHOIS',
+        'EMAILADDR',
+        'EMAILADDR_COMPROMISED',
+        'EMAILADDR_DELIVERABLE',
+        'EMAILADDR_DISPOSABLE',
+        'EMAILADDR_GENERIC',
+        'EMAILADDR_UNDELIVERABLE',
+        'ERROR_MESSAGE',
+        'ETHEREUM_ADDRESS',
+        'ETHEREUM_BALANCE',
+        'GEOINFO',
+        'HASH',
+        'HASH_COMPROMISED',
+        'HTTP_CODE',
+        'HUMAN_NAME',
+        'IBAN_NUMBER',
+        'INTERESTING_FILE',
+        'INTERESTING_FILE_HISTORIC',
+        'JUNK_FILE',
+        'INTERNET_NAME',
+        'INTERNET_NAME_UNRESOLVED',
+        'IP_ADDRESS',
+        'IPV6_ADDRESS',
+        'LEI',
+        'JOB_TITLE',
+        'LINKED_URL_INTERNAL',
+        'LINKED_URL_EXTERNAL',
+        'MALICIOUS_ASN',
+        'MALICIOUS_BITCOIN_ADDRESS',
+        'MALICIOUS_IPADDR',
+        'MALICIOUS_COHOST',
+        'MALICIOUS_EMAILADDR',
+        'MALICIOUS_INTERNET_NAME',
+        'MALICIOUS_AFFILIATE_INTERNET_NAME',
+        'MALICIOUS_AFFILIATE_IPADDR',
+        'MALICIOUS_NETBLOCK',
+        'MALICIOUS_PHONE_NUMBER',
+        'MALICIOUS_SUBNET',
+        'NETBLOCK_OWNER',
+        'NETBLOCK_MEMBER',
+        'NETBLOCK_WHOIS',
+        'OPERATING_SYSTEM',
+        'LEAKSITE_URL',
+        'LEAKSITE_CONTENT',
+        'PASSWORD_COMPROMISED',
+        'PHONE_NUMBER',
+        'PHONE_NUMBER_COMPROMISED',
+        'PHONE_NUMBER_TYPE',
+        'PHYSICAL_ADDRESS',
+        'PHYSICAL_COORDINATES',
+        'PGP_KEY',
+        'PROVIDER_DNS',
+        'PROVIDER_JAVASCRIPT',
+        'PROVIDER_MAIL',
+        'PROVIDER_HOSTING',
+        'PROVIDER_TELCO',
+        'PUBLIC_CODE_REPO',
+        'RAW_RIR_DATA',
+        'RAW_DNS_RECORDS',
+        'RAW_FILE_META_DATA',
+        'SEARCH_ENGINE_WEB_CONTENT',
+        'SOCIAL_MEDIA',
+        'SIMILARDOMAIN',
+        'SIMILARDOMAIN_WHOIS',
+        'SOFTWARE_USED',
+        'SSL_CERTIFICATE_RAW',
+        'SSL_CERTIFICATE_ISSUED',
+        'SSL_CERTIFICATE_ISSUER',
+        'SSL_CERTIFICATE_MISMATCH',
+        'SSL_CERTIFICATE_EXPIRED',
+        'SSL_CERTIFICATE_EXPIRING',
+        'TARGET_WEB_CONTENT',
+        'TARGET_WEB_CONTENT_TYPE',
+        'TARGET_WEB_COOKIE',
+        'TCP_PORT_OPEN',
+        'TCP_PORT_OPEN_BANNER',
+        'UDP_PORT_OPEN',
+        'UDP_PORT_OPEN_INFO',
+        'URL_ADBLOCKED_EXTERNAL',
+        'URL_ADBLOCKED_INTERNAL',
+        'URL_FORM',
+        'URL_FLASH',
+        'URL_JAVASCRIPT',
+        'URL_WEB_FRAMEWORK',
+        'URL_JAVA_APPLET',
+        'URL_STATIC',
+        'URL_PASSWORD',
+        'URL_UPLOAD',
+        'URL_FORM_HISTORIC',
+        'URL_FLASH_HISTORIC',
+        'URL_JAVASCRIPT_HISTORIC',
+        'URL_WEB_FRAMEWORK_HISTORIC',
+        'URL_JAVA_APPLET_HISTORIC',
+        'URL_STATIC_HISTORIC',
+        'URL_PASSWORD_HISTORIC',
+        'URL_UPLOAD_HISTORIC',
+        'USERNAME',
+        'VULNERABILITY',
+        'WEB_ANALYTICS_ID',
+        'WEBSERVER_BANNER',
+        'WEBSERVER_HTTPHEADERS',
+        'WEBSERVER_STRANGEHEADER',
+        'WEBSERVER_TECHNOLOGY',
+        'WIFI_ACCESS_POINT',
+        'WIKIPEDIA_PAGE_EDIT',
+    ]
+
     @staticmethod
     def load_modules(sf):
         # Go through each module in the modules directory with a .py extension
@@ -131,6 +289,32 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
 
             if "Passive" in m.get('group'):
                 self.assertTrue("invasive" not in m.get('labels', list()))
+
+    def test_module_watched_events_are_valid(self):
+        sf = SpiderFoot(self.default_options)
+        sfModules = self.load_modules(sf)
+        for module in sfModules:
+            m = sfModules[module]
+
+            if module in ["sfp__stor_db", "sfp__stor_stdout"]:
+                continue
+
+            for watched_event in m.get('consumes'):
+                if watched_event == '*':
+                    continue
+                self.assertTrue(watched_event in self.valid_events)
+
+    def test_module_produced_events_are_valid(self):
+        sf = SpiderFoot(self.default_options)
+        sfModules = self.load_modules(sf)
+        for module in sfModules:
+            m = sfModules[module]
+
+            if module in ["sfp__stor_db", "sfp__stor_stdout"]:
+                continue
+
+            for produced_event in m.get('provides'):
+                self.assertTrue(produced_event in self.valid_events)
 
     def test_each_module_option_has_a_description(self):
         sf = SpiderFoot(self.default_options)

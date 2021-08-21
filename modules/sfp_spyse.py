@@ -97,7 +97,7 @@ class sfp_spyse(SpiderFootPlugin):
                 "COMPANY_NAME", "WEBSERVER_TECHNOLOGY", "PROVIDER_MAIL",
                 "PROVIDER_DNS", "DNS_TEXT", "DNS_SPF", "COUNTRY_NAME",
                 "WEB_ANALYTICS_ID", "VULNERABILITY", "SSL_CERTIFICATE_ISSUED",
-                "SSL_CERTIFICATE_ISSUER" "EMAILADDR", "DOMAIN_REGISTRAR",
+                "SSL_CERTIFICATE_ISSUER", "EMAILADDR", "DOMAIN_REGISTRAR",
                 "HTTP_CODE"]
 
     def querySubdomains(self, qry, currentOffset):
