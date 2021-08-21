@@ -113,8 +113,16 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             self.sf.error("Invalid input, refusing to run.")
             return
 
+        args = [
+            self.opts['pythonpath'],
+            exe,
+            '--follow-redirect',
+            '--batch',
+            '-u',
+            eventData
+        ]
         try:
-            p = Popen([self.opts['pythonpath'], exe, "--follow-redirect", "-u", eventData], stdout=PIPE, stderr=PIPE)
+            p = Popen(args, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
         except Exception as e:
             self.sf.error(f"Unable to run CMSeeK: {e}")
@@ -128,8 +136,12 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             self.sf.debug(f"Could not detect the CMS for {eventData}")
             return
 
+        log_path = f"{resultpath}/{eventData}/cms.json"
+        if not os.path.isfile(log_path):
+            self.sf.error(f"File does not exist: {log_path}")
+            return
+
         try:
-            log_path = f"{resultpath}/{eventData}/cms.json"
             f = io.open(log_path, encoding='utf-8')
             j = json.loads(f.read())
         except Exception as e:
