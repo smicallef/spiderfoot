@@ -93,7 +93,7 @@ class sfp_spur(SpiderFootPlugin):
             "IP_ADDRESS",
             "MALICIOUS_IPADDR",
             "RAW_RIR_DATA",
-            "GEO_INFO",
+            "GEOINFO",
             "COMPANY_NAME",
             "MALICIOUS_AFFILIATE_IPADDR"
         ]
