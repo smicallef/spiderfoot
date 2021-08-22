@@ -46,6 +46,8 @@ class SpiderFootPlugin():
     __outputFilter__ = None
     # Priority, smaller numbers should run first
     _priority = 1
+    # Plugin meta information
+    meta = None
     # Error state of the module
     errorState = False
     # SOCKS proxy
@@ -336,6 +338,20 @@ class SpiderFootPlugin():
         """
 
         return
+
+    def asdict(self):
+        return {
+            'name': self.meta.get('name'),
+            'descr': self.meta.get('summary'),
+            'cats': self.meta.get('categories', []),
+            'group': self.meta.get('useCases', []),
+            'labels': self.meta.get('flags', []),
+            'provides': self.producedEvents(),
+            'consumes': self.watchedEvents(),
+            'meta': self.meta,
+            'opts': self.opts,
+            'optdescs': self.optdescs,
+        }
 
     def start(self):
         self.thread = threading.Thread(target=self.threadWorker)

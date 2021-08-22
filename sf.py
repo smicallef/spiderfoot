@@ -166,32 +166,20 @@ def main():
             continue
         if not filename.startswith("sfp_"):
             continue
-
-        # Skip the module template and debugging modules
-        if filename in ('sfp_template.py', 'sfp_stor_print.py'):
+        if filename in ('sfp_template.py'):
             continue
 
         modName = filename.split('.')[0]
 
         # Load and instantiate the module
         sfModules[modName] = dict()
-        mod = __import__('modules.' + modName, globals(), locals(), [modName])
-        sfModules[modName]['object'] = getattr(mod, modName)()
         try:
-            sfModules[modName]['name'] = sfModules[modName]['object'].meta['name']
-            sfModules[modName]['cats'] = sfModules[modName]['object'].meta.get('categories', list())
-            sfModules[modName]['group'] = sfModules[modName]['object'].meta.get('useCases', list())
-            sfModules[modName]['labels'] = sfModules[modName]['object'].meta.get('flags', list())
-            sfModules[modName]['descr'] = sfModules[modName]['object'].meta['summary']
-            sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
-            sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
-            sfModules[modName]['meta'] = sfModules[modName]['object'].meta
-            if hasattr(sfModules[modName]['object'], 'opts'):
-                sfModules[modName]['opts'] = sfModules[modName]['object'].opts
-            if hasattr(sfModules[modName]['object'], 'optdescs'):
-                sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
+            mod = __import__('modules.' + modName, globals(), locals(), [modName])
+            sfModules[modName]['object'] = getattr(mod, modName)()
+            mod_dict = sfModules[modName]['object'].asdict()
+            sfModules[modName].update(mod_dict)
         except BaseException as e:
-            log.critical(f"Failed to load {modName}: {e}")
+            log.critical(f"Failed to load module {modName}: {e}")
             sys.exit(-1)
 
     if not sfModules:
