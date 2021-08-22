@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_multiproxy
-# Purpose:      Checks if an ASN, IP or domain is malicious.
+# Name:        sfp_multiproxy
+# Purpose:     Check if an IP arress is an open proxy according to multiproxy.org
+#              open proxy list.
 #
 # Author:       steve@binarypool.com
 #
@@ -10,27 +11,15 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-
 from netaddr import IPAddress, IPNetwork
-
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
-
-malchecks = {
-    'multiproxy.org Open Proxies': {
-        'id': '_multiproxy',
-        'checks': ['ip'],
-        'url': 'http://multiproxy.org/txt_all/proxy.txt',
-        'regex': '{0}:.*'
-    }
-}
 
 
 class sfp_multiproxy(SpiderFootPlugin):
 
     meta = {
         'name': "multiproxy.org Open Proxies",
-        'summary': "Check if an IP is an open proxy according to multiproxy.org' open proxy list.",
+        'summary': "Check if an IP address is an open proxy according to multiproxy.org open proxy list.",
         'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Secondary Networks"],
@@ -66,118 +55,100 @@ class sfp_multiproxy(SpiderFootPlugin):
         'cacheperiod': "Hours to cache list data before re-fetching."
     }
 
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
-
     results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
+        self.errorState = False
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
-    # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
+        return [
+            "IP_ADDRESS",
+            "AFFILIATE_IPADDR",
+            "NETBLOCK_MEMBER",
+            "NETBLOCK_OWNER"
+        ]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR"]
+        return [
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_SUBNET",
+            "MALICIOUS_NETBLOCK"
+        ]
 
-    # Look up 'list' type resources
-    def resourceList(self, id, target, targetType):
-        targetDom = ''
-        # Get the base domain if we're supplied a domain
-        if targetType == "domain":
-            targetDom = self.sf.hostDomain(target, self.opts['_internettlds'])
-            if not targetDom:
-                return None
+    def queryProxyList(self, target, targetType):
+        proxy_list = self.retrieveProxyList()
 
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if id == cid:
-                data = dict()
-                url = malchecks[check]['url']
-                data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
-                if data['content'] is None:
-                    data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-                    if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url)
-                        return None
-                    else:
-                        self.sf.cachePut("sfmal_" + cid, data['content'])
+        if targetType == "ip":
+            if target in proxy_list:
+                self.sf.debug(f"IP address {target} found in multiproxy.org open proxy list.")
+                return True
+        elif targetType == "netblock":
+            netblock = IPNetwork(target)
+            for ip in proxy_list:
+                if IPAddress(ip) in netblock:
+                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in multiproxy.org open proxy list.")
+                    return True
 
-                # If we're looking at netblocks
-                if targetType == "netblock":
-                    iplist = list()
-                    # Get the regex, replace {0} with an IP address matcher to
-                    # build a list of IP.
-                    # Cycle through each IP and check if it's in the netblock.
-                    if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
-                        pat = re.compile(rx, re.IGNORECASE)
-                        self.sf.debug("New regex for " + check + ": " + rx)
-                        for line in data['content'].split('\n'):
-                            grp = re.findall(pat, line)
-                            if len(grp) > 0:
-                                # self.sf.debug("Adding " + grp[0] + " to list.")
-                                iplist.append(grp[0])
-                    else:
-                        iplist = data['content'].split('\n')
+        return False
 
-                    for ip in iplist:
-                        if len(ip) < 8 or ip.startswith("#"):
-                            continue
-                        ip = ip.strip()
+    def retrieveProxyList(self):
+        proxy_list = self.sf.cacheGet('multiproxyopenproxies', 24)
 
-                        try:
-                            if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
-                                return url
-                        except Exception as e:
-                            self.sf.debug(f"Error encountered parsing: {e}")
-                            continue
+        if proxy_list is not None:
+            return self.parseProxyList(proxy_list)
 
-                    return None
+        res = self.sf.fetchUrl(
+            "http://multiproxy.org/txt_all/proxy.txt",
+            timeout=self.opts['_fetchtimeout'],
+            useragent=self.opts['_useragent'],
+        )
 
-                # If we're looking at hostnames/domains/IPs
-                if 'regex' not in malchecks[check]:
-                    for line in data['content'].split('\n'):
-                        if line == target or (targetType == "domain" and line == targetDom):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                            return url
-                else:
-                    # Check for the domain and the hostname
-                    try:
-                        rxDom = str(malchecks[check]['regex']).format(targetDom)
-                        rxTgt = str(malchecks[check]['regex']).format(target)
-                        for line in data['content'].split('\n'):
-                            if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
-                                    re.match(rxTgt, line, re.IGNORECASE):
-                                self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                                return url
-                    except Exception as e:
-                        self.sf.debug("Error encountered parsing 2: " + str(e))
-                        continue
+        if res['code'] != "200":
+            self.sf.error(f"Unexpected HTTP response code {res['code']} from multiproxy.org.")
+            self.errorState = True
+            return
 
-        return None
+        if res['content'] is None:
+            self.sf.error("Received no content from multiproxy.org")
+            self.errorState = True
+            return
 
-    def lookupItem(self, resourceId, itemType, target):
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug("Checking maliciousness of " + target + " (" + itemType + ") with: " + cid)
-                return self.resourceList(cid, target, itemType)
+        self.sf.cachePut("multiproxyopenproxies", res['content'])
 
-        return None
+        return self.parseProxyList(res['content'])
+
+    def parseProxyList(self, proxy_list):
+        """Parse plaintext open proxy list
+
+        Args:
+            proxy_list (str): plaintext open proxy list from multiproxy.org
+
+        Returns:
+            list: list of open proxy IP addresses
+        """
+        ips = list()
+
+        if not proxy_list:
+            return ips
+
+        for ip in proxy_list.split('\n'):
+            ip = ip.strip().split(":")[0]
+            if ip.startswith('#'):
+                continue
+            if not self.sf.validIP(ip):
+                continue
+            ips.append(ip)
+
+        return ips
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -189,49 +160,40 @@ class sfp_multiproxy(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
+
+        if self.errorState:
+            return
 
         self.results[eventData] = True
 
-        if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return None
-        if eventName == 'AFFILIATE_IPADDR' \
-                and not self.opts.get('checkaffiliates', False):
-            return None
+        if eventName == 'IP_ADDRESS':
+            targetType = 'ip'
+            evtType = 'MALICIOUS_IPADDR'
+        elif eventName == 'AFFILIATE_IPADDR':
+            if not self.opts.get('checkaffiliates', False):
+                return
+            targetType = 'ip'
+            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+        elif eventName == 'NETBLOCK_OWNER':
+            if not self.opts.get('checknetblocks', False):
+                return
+            targetType = 'netblock'
+            evtType = 'MALICIOUS_NETBLOCK'
+        elif eventName == 'NETBLOCK_MEMBER':
+            if not self.opts.get('checksubnets', False):
+                return
+            targetType = 'netblock'
+            evtType = 'MALICIOUS_SUBNET'
+        else:
+            return
 
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
+        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with multiproxy.org open proxy list")
 
-            if eventName in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
-                typeId = 'ip'
-                if eventName == 'IP_ADDRESS':
-                    evtType = 'MALICIOUS_IPADDR'
-                else:
-                    evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-
-            if eventName in ['BGP_AS_OWNER', 'BGP_AS_MEMBER']:
-                typeId = 'asn'
-                evtType = 'MALICIOUS_ASN'
-
-            if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE',
-                             'AFFILIATE_INTERNET_NAME']:
-                typeId = 'domain'
-                if eventName == "INTERNET_NAME":
-                    evtType = "MALICIOUS_INTERNET_NAME"
-                if eventName == 'AFFILIATE_INTERNET_NAME':
-                    evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-                if eventName == 'CO_HOSTED_SITE':
-                    evtType = 'MALICIOUS_COHOST'
-
-            url = self.lookupItem(cid, typeId, eventData)
-
-            if self.checkForStop():
-                return None
-
-            # Notify other modules of what you've found
-            if url is not None:
-                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
-                evt = SpiderFootEvent(evtType, text, self.__name__, event)
-                self.notifyListeners(evt)
+        if self.queryProxyList(eventData, targetType):
+            url = "http://multiproxy.org/txt_all/proxy.txt"
+            text = f"multiproxy.org Open Proxies [{eventData}]\n<SFURL>{url}</SFURL>"
+            evt = SpiderFootEvent(evtType, text, self.__name__, event)
+            self.notifyListeners(evt)
 
 # End of sfp_multiproxy class
