@@ -77,7 +77,6 @@ class TestSpiderFootModuleLoading(unittest.TestCase):
             for cat in m.get('cats', list()):
                 self.assertIn(cat, valid_categories)
 
-    @unittest.skip("some modules are missing API key instructions")
     def test_modules_with_api_key_have_apiKeyInstructions(self):
         sf = SpiderFoot(self.default_options)
         sfModules = self.load_modules(sf)
