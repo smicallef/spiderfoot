@@ -31,7 +31,11 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 "https://haveibeenpwned.com/API/v3",
                 "https://haveibeenpwned.com/FAQs"
             ],
-            'apiKeyInstructions': [],
+            'apiKeyInstructions': [
+                "Visit https://haveibeenpwned.com/API/Key",
+                "Register an account",
+                "Visit https://haveibeenpwned.com/API/Key",
+            ],
             'favIcon': "https://haveibeenpwned.com/favicon.ico",
             'logo': "https://haveibeenpwned.com/favicon.ico",
             'description': "Check if you have an account that has been compromised in a data breach.",

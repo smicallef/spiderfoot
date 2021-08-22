@@ -30,6 +30,10 @@ class sfp_dehashed(SpiderFootPlugin):
                 "https://www.dehashed.com/docs"
             ],
             'apiKeyInstructions': [
+                "Visit https://www.dehashed.com/register"
+                "Register a free account",
+                "Visit https://www.dehashed.com/profile",
+                "Your API key is listed under 'API Key'",
             ],
             'favIcon': "https://www.dehashed.com/assets/img/favicon.ico",
             'logo': "https://www.dehashed.com/assets/img/logo.png",

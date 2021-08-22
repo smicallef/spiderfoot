@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_onioncity
-# Purpose:      Searches the Tor search engine 'Onion City' for content related
-#               to the domain in question.
+# Purpose:      Searches the Tor search engine 'Onion City' using Google Custom
+#               Search for content related to the domain in question.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -20,14 +20,24 @@ class sfp_onioncity(SpiderFootPlugin):
 
     meta = {
         'name': "Onion.link",
-        'summary': "Search Tor 'Onion City' search engine for mentions of the target domain.",
+        'summary': "Search Tor 'Onion City' search engine for mentions of the target domain using Google Custom Search.",
         'flags': ["apikey", "tor"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://onion.link/",
             'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://developers.google.com/custom-search/v1",
+                "https://developers.google.com/custom-search/docs/overview",
+                "https://cse.google.com/cse"
+            ],
             'apiKeyInstructions': [
+                "Visit https://developers.google.com/custom-search/v1/introduction",
+                "Register a free Google account",
+                "Click on 'Get A Key'",
+                "Connect a Project",
+                "The API Key will be listed under 'YOUR API KEY'"
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://onion.link",
             'logo': "https://onion.link/images/OC.png",
