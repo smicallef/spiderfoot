@@ -114,7 +114,7 @@ class sfp_blocklistde(SpiderFootPlugin):
 
         res = self.sf.fetchUrl(
             "https://lists.blocklist.de/lists/all.txt",
-            self.opts['_fetchtimeout'],
+            timeout=self.opts['_fetchtimeout'],
             useragent=self.opts['_useragent'],
         )
 
