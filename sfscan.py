@@ -21,7 +21,12 @@ from collections import OrderedDict
 import dns.resolver
 
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget, SpiderFootHelpers
+from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget, SpiderFootHelpers, logger
+
+
+def startSpiderFootScanner(loggingQueue, *args, **kwargs):
+    logger.logWorkerSetup(loggingQueue)
+    return SpiderFootScanner(*args, **kwargs)
 
 
 class SpiderFootScanner():

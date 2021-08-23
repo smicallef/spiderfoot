@@ -21,46 +21,18 @@ import signal
 import sys
 import time
 from copy import deepcopy
-from logging import handlers
 
 import cherrypy
 import cherrypy_cors
 from cherrypy.lib import auth_digest
 
 from sflib import SpiderFoot
-from sfscan import SpiderFootScanner
+from sfscan import startSpiderFootScanner
 from sfwebui import SpiderFootWebUi
 from spiderfoot import SpiderFootHelpers
 from spiderfoot import SpiderFootDb
+from spiderfoot.logger import logListenerSetup, logWorkerSetup
 from spiderfoot import __version__
-
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
-log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-
-debug_handler = handlers.TimedRotatingFileHandler(
-    "log/spiderfoot.debug.log",
-    when="d",
-    interval=1,
-    backupCount=30
-)
-debug_handler.setLevel(logging.DEBUG)
-debug_handler.setFormatter(log_format)
-log.addHandler(debug_handler)
-
-error_handler = handlers.TimedRotatingFileHandler(
-    "log/spiderfoot.error.log",
-    when="d",
-    interval=1,
-    backupCount=30
-)
-error_handler.setLevel(logging.WARN)
-error_handler.setFormatter(log_format)
-log.addHandler(error_handler)
-
-console_handler = logging.StreamHandler(sys.stderr)
-console_handler.setFormatter(log_format)
-log.addHandler(console_handler)
 
 scanId = None
 dbh = None
@@ -142,14 +114,18 @@ def main():
 
     if args.debug:
         sfConfig['_debug'] = True
-        log.setLevel(logging.DEBUG)
     else:
-        log.setLevel(logging.INFO)
         sfConfig['_debug'] = False
 
     if args.q:
-        log.setLevel(logging.NOTSET)
         sfConfig['__logging'] = False
+
+    global log
+    global loggingQueue
+    loggingQueue = mp.Queue()
+    logListenerSetup(loggingQueue, sfConfig)
+    logWorkerSetup(loggingQueue)
+    log = logging.getLogger(f"spiderfoot.{__name__}")
 
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
@@ -413,7 +389,7 @@ def start_scan(sfConfig, sfModules, args):
     scanName = target
     scanId = SpiderFootHelpers.genScanInstanceId()
     try:
-        p = mp.Process(target=SpiderFootScanner, args=(scanName, scanId, target, targetType, modlist, cfg))
+        p = mp.Process(target=startSpiderFootScanner, args=(loggingQueue, scanName, scanId, target, targetType, modlist, cfg))
         p.daemon = True
         p.start()
     except BaseException as e:
