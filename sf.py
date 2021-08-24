@@ -120,8 +120,6 @@ def main():
     if args.q:
         sfConfig['__logging'] = False
 
-    global log
-    global loggingQueue
     loggingQueue = mp.Queue()
     logListenerSetup(loggingQueue, sfConfig)
     logWorkerSetup(loggingQueue)
@@ -200,17 +198,20 @@ def main():
         start_web_server(sfWebUiConfig, sfConfig)
         exit(0)
 
-    start_scan(sfConfig, sfModules, args)
+    start_scan(sfConfig, sfModules, args, loggingQueue)
 
 
-def start_scan(sfConfig, sfModules, args):
+def start_scan(sfConfig, sfModules, args, loggingQueue):
     """Start scan
 
     Args:
         sfConfig (dict): SpiderFoot config options
         sfModules (dict): modules
         args (argparse.Namespace): command line args
+        loggingQueue (Queue): main SpiderFoot logging queue
     """
+    log = logging.getLogger(f"spiderfoot.{__name__}")
+
     global dbh
     global scanId
 
@@ -419,6 +420,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
         sfWebUiConfig (dict): web server options
         sfConfig (dict): SpiderFoot config options
     """
+    log = logging.getLogger(f"spiderfoot.{__name__}")
 
     web_host = sfWebUiConfig.get('host', '127.0.0.1')
     web_port = sfWebUiConfig.get('port', 5001)
@@ -546,6 +548,8 @@ def handle_abort(signal, frame):
         signal: TBD
         frame: TBD
     """
+    log = logging.getLogger(f"spiderfoot.{__name__}")
+
     global dbh
     global scanId
 
