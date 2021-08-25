@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "alertifyjs": "^1.13.1",
+    "bootstrap": "^3.4.1",
+    "jquery": "^3.6.0",
+    "sigma": "^1.2.1"
+  }
+}
