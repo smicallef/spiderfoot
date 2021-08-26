@@ -13,23 +13,21 @@
 
     <link href="${docroot}/static/css/spiderfoot.css" rel="stylesheet">
     <link href="${docroot}/static/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="${docroot}/static/node_modules/tablesorter/dist/css/jquery.tablesorter.pager.min.css" rel="stylesheet">
     <link href="${docroot}/static/node_modules/alertifyjs/build/css/alertify.min.css" rel="stylesheet">
 
     <script>
-
-        // Executes the fastes and preloads the stylesheet before the body loads
-        var head = document.getElementsByTagName('HEAD')[0]; 
+        // Load themes before the page body loads
+        var head = document.getElementsByTagName('HEAD')[0];
         var link = document.createElement('link');
-  
-        // set the attributes for link element 
-        link.rel = 'stylesheet'; 
+        link.rel = 'stylesheet';
         link.type = 'text/css';
-      
         if (localStorage.getItem("theme") === "dark-theme") {
-            link.href = "${docroot}/static/css/dark.css"; 
+            link.href = "${docroot}/static/css/dark.css";
+        } else {
+            link.href = "${docroot}/static/node_modules/tablesorter/dist/css/theme.default.min.css";
         }
-        
-        head.appendChild(link); 
+        head.appendChild(link);
     </script>
   </head>
 
@@ -121,8 +119,8 @@ class="nav-item"><a href="${docroot}/opts" class="nav-link"><i class="glyphicon 
     <script src="${docroot}/static/node_modules/jquery/dist/jquery.min.js"></script>
     <script src="${docroot}/static/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="${docroot}/static/node_modules/alertifyjs/build/alertify.min.js"></script>
-    <script src="${docroot}/static/js/jquery.tablesorter.min.js"></script>
-    <script src='${docroot}/static/js/jquery.tablesorter.pager.min.js'></script>
+    <script src="${docroot}/static/node_modules/tablesorter/dist/js/jquery.tablesorter.min.js"></script>
+    <script src='${docroot}/static/node_modules/tablesorter/dist/js/extras/jquery.tablesorter.pager.min.js'></script>
     <script src="${docroot}/static/js/d3.min.js"></script>
     <script type='text/javascript' hash="sha256-0kTZzWMEh3cdgCMVytlY1E8rg7oO13eyLa+kvyAhRmo=">sf.updateTooltips();</script>
 

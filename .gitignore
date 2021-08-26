@@ -55,6 +55,22 @@ spiderfoot/static/node_modules/sigma/build/plugins/*
 !spiderfoot/static/node_modules/sigma/build/plugins/sigma.layout.forceAtlas2.min.js
 !spiderfoot/static/node_modules/sigma/build/plugins/sigma.renderers.snapshot.min.js
 
+spiderfoot/static/node_modules/tablesorter/*
+spiderfoot/static/node_modules/tablesorter/dist/*
+spiderfoot/static/node_modules/tablesorter/dist/js/*
+spiderfoot/static/node_modules/tablesorter/dist/css/*
+spiderfoot/static/node_modules/tablesorter/dist/js/extras/*
+
+!spiderfoot/static/node_modules/tablesorter/
+!spiderfoot/static/node_modules/tablesorter/dist/
+!spiderfoot/static/node_modules/tablesorter/dist/css/
+!spiderfoot/static/node_modules/tablesorter/dist/css/jquery.tablesorter.pager.min.css
+!spiderfoot/static/node_modules/tablesorter/dist/css/theme.default.min.css
+!spiderfoot/static/node_modules/tablesorter/dist/js/
+!spiderfoot/static/node_modules/tablesorter/dist/js/jquery.tablesorter.min.js
+!spiderfoot/static/node_modules/tablesorter/dist/js/extras/
+!spiderfoot/static/node_modules/tablesorter/dist/js/extras/jquery.tablesorter.pager.min.js
+
 # Compiled source #
 ###################
 *.com
