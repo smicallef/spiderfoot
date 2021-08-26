@@ -20,11 +20,10 @@ spiderfoot/static/node_modules/alertifyjs/build/css/*
 !spiderfoot/static/node_modules/alertifyjs/build/css/alertify.min.css
 
 spiderfoot/static/node_modules/bootstrap/*
-spiderfoot/static/node_modules/bootstrap/fonts/*
 spiderfoot/static/node_modules/bootstrap/dist/*
 spiderfoot/static/node_modules/bootstrap/dist/js/*
 spiderfoot/static/node_modules/bootstrap/dist/css/*
-spiderfoot/static/node_modules/bootstrap/fonts/*
+spiderfoot/static/node_modules/bootstrap/dist/fonts/*
 
 !spiderfoot/static/node_modules/bootstrap/
 !spiderfoot/static/node_modules/bootstrap/dist/
@@ -32,9 +31,9 @@ spiderfoot/static/node_modules/bootstrap/fonts/*
 !spiderfoot/static/node_modules/bootstrap/dist/js/bootstrap.min.js
 !spiderfoot/static/node_modules/bootstrap/dist/css/
 !spiderfoot/static/node_modules/bootstrap/dist/css/bootstrap.min.css
-!spiderfoot/static/node_modules/bootstrap/fonts/
-!spiderfoot/static/node_modules/bootstrap/fonts/glyphicons-halflings-regular.woff
-!spiderfoot/static/node_modules/bootstrap/fonts/glyphicons-halflings-regular.woff2
+!spiderfoot/static/node_modules/bootstrap/dist/fonts/
+!spiderfoot/static/node_modules/bootstrap/dist/fonts/glyphicons-halflings-regular.woff
+!spiderfoot/static/node_modules/bootstrap/dist/fonts/glyphicons-halflings-regular.woff2
 
 spiderfoot/static/node_modules/jquery/*
 spiderfoot/static/node_modules/jquery/dist/*
