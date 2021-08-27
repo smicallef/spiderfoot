@@ -46,21 +46,16 @@ class SpiderFootHelpers():
 
     @staticmethod
     def buildGraphGexf(root, title, data, flt=[]):
-        """Convert supplied raw data into GEXF format (e.g. for Gephi)
-
-        GEXF produced by PyGEXF doesn't work with SigmaJS because
-        SJS needs coordinates for each node.
-        flt is a list of event types to include, if not set everything is
-        included.
+        """Convert supplied raw data into GEXF (Graph Exchange XML Format) format (e.g. for Gephi)
 
         Args:
             root (str): TBD
             title (str): unused
-            data (list): scan result as list
-            flt (list): TBD
+            data (list): Scan result as list
+            flt (list): List of event types to include. If not set everything is included.
 
         Returns:
-            str: TBD
+            str: GEXF formatted XML
         """
 
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
@@ -70,25 +65,31 @@ class SpiderFootHelpers():
         ncounter = 0
         for pair in mapping:
             (dst, src) = pair
-            col = ["0", "0", "0"]
 
             # Leave out this special case
             if dst == "ROOT" or src == "ROOT":
                 continue
 
+            color = {
+                'r': 0,
+                'g': 0,
+                'b': 0
+            }
+
             if dst not in nodelist:
                 ncounter = ncounter + 1
                 if dst in root:
-                    col = ["255", "0", "0"]
-                graph.node[dst]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
+                    color['r'] = 255
+                graph.add_node(dst)
+                graph.nodes[dst]['viz'] = {'color': color}
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
                 ncounter = ncounter + 1
                 if src in root:
-                    col = ["255", "0", "0"]
+                    color['r'] = 255
                 graph.add_node(src)
-                graph.node[src]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
+                graph.nodes[src]['viz'] = {'color': color}
                 nodelist[src] = ncounter
 
             graph.add_edge(src, dst)
@@ -102,8 +103,8 @@ class SpiderFootHelpers():
 
         Args:
             root (str): TBD
-            data (list): scan result as list
-            flt (list): TBD
+            data (list): Scan result as list
+            flt (list): List of event types to include. If not set everything is included.
 
         Returns:
             str: TBD
@@ -176,7 +177,7 @@ class SpiderFootHelpers():
 
         Args:
             data (list): Scan result as list
-            flt (list): TBD
+            flt (list): List of event types to include. If not set everything is included.
 
         Returns:
             set: TBD
