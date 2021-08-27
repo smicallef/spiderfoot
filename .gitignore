@@ -71,6 +71,11 @@ spiderfoot/static/node_modules/tablesorter/dist/js/extras/*
 !spiderfoot/static/node_modules/tablesorter/dist/js/extras/
 !spiderfoot/static/node_modules/tablesorter/dist/js/extras/jquery.tablesorter.pager.min.js
 
+spiderfoot/static/node_modules/d3/*
+
+!spiderfoot/static/node_modules/d3/
+!spiderfoot/static/node_modules/d3/d3.min.js
+
 # Compiled source #
 ###################
 *.com
