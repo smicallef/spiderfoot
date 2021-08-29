@@ -95,7 +95,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-            "https://api.emailcrawlr.com/v2/domain?%s" % urllib.parse.urlencode(params),
+            f"https://api.emailcrawlr.com/v2/domain?{urllib.parse.urlencode(params)}",
             headers=headers,
             timeout=15,
             useragent=self.opts['_useragent']
@@ -168,7 +168,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             data = self.queryDomain(eventData)
 
             if data is None:
-                self.sf.debug("No information found for domain %s" % eventData)
+                self.sf.debug(f"No information found for domain {eventData}")
                 return None
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
@@ -177,7 +177,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             emails = data.get("emails")
 
             if not emails:
-                self.sf.info("No emails found for domain %s" % eventData)
+                self.sf.info(f"No emails found for domain {eventData}")
                 return None
 
             for res in emails:

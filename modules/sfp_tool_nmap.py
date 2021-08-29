@@ -145,14 +145,14 @@ class sfp_tool_nmap(SpiderFootPlugin):
                 content = stdout.decode('utf-8', errors='replace')
             else:
                 self.sf.error("Unable to read Nmap content.")
-                self.sf.debug("Error running Nmap: " + stderr + ", " + stdout)
+                self.sf.debug(f"Error running Nmap: {stderr}, {stdout}")
                 return
 
             if "No exact OS matches for host" in content or "OSScan results may be unreliable" in content:
-                self.sf.debug("Couldn't reliably detect the OS for " + eventData)
+                self.sf.debug(f"Couldn't reliably detect the OS for {eventData}")
                 return
         except Exception as e:
-            self.sf.error("Unable to run Nmap: " + str(e))
+            self.sf.error(f"Unable to run Nmap: {e}")
             return
 
         if not content:

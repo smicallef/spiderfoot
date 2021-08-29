@@ -54,7 +54,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
             res = self.sf.fetchUrl(url, useragent="SpiderFoot")
 
             if res['content'] is None:
-                self.sf.error("Unable to fetch %s" % url)
+                self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return
 
@@ -108,7 +108,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
 
                     for proto in ["https", "http"]:
                         res = self.sf.fetchUrl(
-                            "%s://%s/" % (proto, eventData),
+                            f"{proto}://{eventData}/",
                             timeout=15,
                             useragent=self.opts['_useragent'],
                             verify=False
@@ -119,7 +119,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
                             continue
                         for fingerprint in fingerprints:
                             if fingerprint in res['content']:
-                                self.sf.info("%s appears to be vulnerable to takeover on %s" % (eventData, service))
+                                self.sf.info(f"{eventData} appears to be vulnerable to takeover on {service}")
                                 evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME_HIJACKABLE", eventData, self.__name__, event)
                                 self.notifyListeners(evt)
                                 break
@@ -136,7 +136,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
                 for cname in cnames:
                     if not cname.lower() in eventData.lower():
                         continue
-                    self.sf.info("%s appears to be vulnerable to takeover on %s" % (eventData, service))
+                    self.sf.info(f"{eventData} appears to be vulnerable to takeover on {service}")
                     evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME_HIJACKABLE", eventData, self.__name__, event)
                     self.notifyListeners(evt)
 

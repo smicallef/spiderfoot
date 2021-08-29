@@ -186,10 +186,10 @@ class sfp_zetalytics(SpiderFootPlugin):
             self.errorState = True
             return
 
-        if "{}:{}".format(eventName, eventData) in self.results:
+        if f"{eventName}:{eventData}" in self.results:
             self.sf.debug(f"Skipping {eventName}:{eventData}, already checked.")
             return
-        self.results["{}:{}".format(eventName, eventData)] = True
+        self.results[f"{eventName}:{eventData}"] = True
 
         if eventName == "INTERNET_NAME":
             data = self.query_hostname(eventData)

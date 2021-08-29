@@ -53,8 +53,7 @@ class sfp_bitcoin(SpiderFootPlugin):
 
     def to_bytes(self, n, length):
         h = '%x' % n
-        s = codecs.decode(('0' * (len(h) % 2) + h).zfill(length * 2), "hex")
-        return s
+        return codecs.decode(('0' * (len(h) % 2) + h).zfill(length * 2), "hex")
 
     def decode_base58(self, bc, length):
         digits58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
@@ -75,7 +74,7 @@ class sfp_bitcoin(SpiderFootPlugin):
         sourceData = self.sf.hashstring(eventData)
 
         if sourceData in self.results:
-            return None
+            return
 
         self.results[sourceData] = True
 
@@ -84,7 +83,7 @@ class sfp_bitcoin(SpiderFootPlugin):
         # thanks to https://stackoverflow.com/questions/21683680/regex-to-match-bitcoin-addresses
         matches = re.findall(r"[\s:=\>]([13][a-km-zA-HJ-NP-Z1-9]{25,34})", eventData)
         for m in matches:
-            self.sf.debug("Bitcoin potential match: " + m)
+            self.sf.debug(f"Bitcoin potential match: {m}")
             if self.check_bc(m):
                 evt = SpiderFootEvent("BITCOIN_ADDRESS", m, self.__name__, event)
                 self.notifyListeners(evt)

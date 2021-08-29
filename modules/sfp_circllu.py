@@ -110,7 +110,7 @@ class sfp_circllu(SpiderFootPlugin):
         secret = self.opts['api_key_login'] + ':' + self.opts['api_key_password']
         b64_val = base64.b64encode(secret.encode('utf-8'))
         headers = {
-            'Authorization': 'Basic %s' % b64_val.decode('utf-8')
+            'Authorization': f"Basic {b64_val.decode('utf-8')}"
         }
 
         # Be more forgiving with the timeout as some queries for subnets can be slow

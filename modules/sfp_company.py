@@ -86,13 +86,13 @@ class sfp_company(SpiderFootPlugin):
 
         # Don't re-parse company names
         if eventName in ["COMPANY_NAME", "AFFILIATE_COMPANY_NAME"]:
-            return None
+            return
 
         if eventName == "TARGET_WEB_CONTENT":
             url = event.actualSource
             if self.opts['filterjscss'] and (".js" in url or ".css" in url):
                 self.sf.debug("Ignoring web content from CSS/JS.")
-                return None
+                return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName} ({len(eventData)} bytes)")
 
