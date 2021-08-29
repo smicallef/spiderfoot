@@ -87,7 +87,7 @@ class sfp_slideshare(SpiderFootPlugin):
             self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return None
 
-        if not network == "SlideShare":
+        if network != "SlideShare":
             self.sf.debug(f"Skipping social network profile, {url}, as not a SlideShare profile")
             return None
 

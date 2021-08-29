@@ -136,23 +136,22 @@ class sfp_alienvault(SpiderFootPlugin):
         if res['code'] == '429':
             self.sf.error("You are being rate-limited by AienVault OTX")
             self.errorState = True
-            return
+            return None
 
         if res['code'] == "403":
             self.sf.error("AlienVault OTX API key seems to have been rejected or you have exceeded usage limits for the month.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None or res['code'] == "404":
-            return
+            return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from AlienVault OTX: {e}")
-            return
 
-        return data
+        return None
 
     def queryReputation(self, qry):
         if ":" in qry:
@@ -327,7 +326,7 @@ class sfp_alienvault(SpiderFootPlugin):
             qrylist.append(eventData)
 
         # For IP Addresses, do the additional passive DNS lookup
-        if eventName == "IP_ADDRESS" or eventName == "IPV6_ADDRESS":
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             ret = self.queryPassiveDns(eventData)
 
             if ret is None:
@@ -379,7 +378,7 @@ class sfp_alienvault(SpiderFootPlugin):
             if self.errorState:
                 return
 
-            if eventName == 'IP_ADDRESS' or eventName == 'IPV6_ADDRESS' or eventName.startswith('NETBLOCK_'):
+            if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS'] or eventName.startswith('NETBLOCK_'):
                 evtType = 'MALICIOUS_IPADDR'
             elif eventName == "AFFILIATE_IPADDR":
                 evtType = 'MALICIOUS_AFFILIATE_IPADDR'

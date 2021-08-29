@@ -74,15 +74,11 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        ret = ["IP_ADDRESS"]
-
-        return ret
+        return ["IP_ADDRESS"]
 
     # What events this module produces
     def producedEvents(self):
-        ret = ["MALICIOUS_IPADDR"]
-
-        return ret
+        return ["MALICIOUS_IPADDR"]
 
     def query(self, qry):
         ret = None
@@ -116,7 +112,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         if not len(ret['contents']):
             return None
 
-        retdata = "<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip=" + qry + "</SFURL>\n"
+        retdata = f"<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip={qry}</SFURL>\n"
         for d in ret['contents']:
             retdata += d['torrent']['name'] + " (" + d.get("endDate", "Date unknown") + ")\n"
 

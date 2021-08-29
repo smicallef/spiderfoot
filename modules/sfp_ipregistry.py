@@ -80,14 +80,13 @@ class sfp_ipregistry(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res["content"])
+            return json.loads(res["content"])
         except Exception as e:
             self.sf.error(
                 f"Error processing JSON response from {self.meta['name']}: {e}"
             )
-            return None
 
-        return info
+        return None
 
     def emit(self, etype, data, pevent):
         evt = SpiderFootEvent(etype, data, self.__name__, pevent)

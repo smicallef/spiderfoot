@@ -84,7 +84,7 @@ class sfp_scylla(SpiderFootPlugin):
         headers = {
             'Accept': 'application/json'
         }
-        res = self.sf.fetchUrl('https://scylla.so/search?' + urllib.parse.urlencode(params),
+        res = self.sf.fetchUrl(f"https://scylla.so/search?{urllib.parse.urlencode(params)}",
                                headers=headers,
                                timeout=15,
                                useragent=self.opts['_useragent'],
@@ -103,12 +103,11 @@ class sfp_scylla(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):

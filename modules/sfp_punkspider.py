@@ -61,12 +61,9 @@ class sfp_punkspider(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        ret = ["VULNERABILITY"]
-
-        return ret
+        return ["VULNERABILITY"]
 
     def query(self, qry):
-        ret = None
         qryhash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # noqa: DUO130
         url = f"https://api.punkspider.org/api/partial-hash/{qryhash}"
 
@@ -76,11 +73,11 @@ class sfp_punkspider(SpiderFootPlugin):
             return None
 
         try:
-            ret = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing response from PunkSpider: {e}")
-            return None
-        return ret
+
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):

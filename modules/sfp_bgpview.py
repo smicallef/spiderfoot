@@ -76,7 +76,7 @@ class sfp_bgpview(SpiderFootPlugin):
             self.sf.debug(f"Error processing JSON response from BGPView: {e}")
             return None
 
-        if not json_data.get('status') == 'ok':
+        if json_data.get('status') != 'ok':
             self.sf.debug("No results found for ASN " + qry)
             return None
 
@@ -104,7 +104,7 @@ class sfp_bgpview(SpiderFootPlugin):
             self.sf.debug(f"Error processing JSON response from BGPView: {e}")
             return None
 
-        if not json_data.get('status') == 'ok':
+        if json_data.get('status') != 'ok':
             self.sf.debug("No results found for IP address " + qry)
             return None
 
@@ -132,7 +132,7 @@ class sfp_bgpview(SpiderFootPlugin):
             self.sf.debug(f"Error processing JSON response from BGPView: {e}")
             return None
 
-        if not json_data.get('status') == 'ok':
+        if json_data.get('status') != 'ok':
             self.sf.debug("No results found for netblock " + qry)
             return None
 

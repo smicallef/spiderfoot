@@ -256,15 +256,17 @@ class sfp_ripe(SpiderFootPlugin):
     def ownsAs(self, asn):
         # Determine whether the AS is owned by our target
         ownerinfo = self.asOwnerInfo(asn)
-        owned = False
 
-        if ownerinfo is not None:
-            for k in list(ownerinfo.keys()):
-                items = ownerinfo[k]
-                for item in items:
-                    if self.findName(item.lower()):
-                        owned = True
-        return owned
+        if not ownerinfo:
+            return False
+
+        for k in list(ownerinfo.keys()):
+            items = ownerinfo[k]
+            for item in items:
+                if self.findName(item.lower()):
+                    return True
+
+        return False
 
     # Handle events sent to this module
     def handleEvent(self, event):

@@ -194,12 +194,11 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return data
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType

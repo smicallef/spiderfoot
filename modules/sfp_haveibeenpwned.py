@@ -78,7 +78,6 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
         return ["EMAILADDR_COMPROMISED", "PHONE_NUMBER_COMPROMISED", "LEAKSITE_CONTENT", "LEAKSITE_URL"]
 
     def query(self, qry):
-        ret = None
         if self.opts['api_key']:
             version = "3"
         else:
@@ -114,16 +113,13 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 return None
 
         try:
-            ret = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
-            return None
 
-        return ret
+        return None
 
     def queryPaste(self, qry):
-        ret = None
-
         url = f"https://haveibeenpwned.com/api/v3/pasteaccount/{qry}"
         headers = {
             'Accept': "application/json",
@@ -155,12 +151,11 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 return None
 
         try:
-            ret = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from HaveIBeenPwned?: {e}")
-            return None
 
-        return ret
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):

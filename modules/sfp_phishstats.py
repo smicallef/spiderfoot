@@ -106,7 +106,7 @@ class sfp_phishstats(SpiderFootPlugin):
             useragent=self.opts['_useragent']
         )
 
-        if not res['code'] == "200":
+        if res['code'] != "200":
             self.sf.debug("No information found from Phishstats for IP Address")
             return None
 

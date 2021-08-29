@@ -73,19 +73,18 @@ class sfp_cloudflaredns(SpiderFootPlugin):
 
         try:
             addrs = res.resolve(qaddr)
-            self.sf.debug("Addresses returned: " + str(addrs))
+            self.sf.debug(f"Addresses returned: {addrs}")
         except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
-        if addrs:
-            a = self.sf.normalizeDNS(addrs)
-            if "0.0.0.0" in a:
-                return False
-            else:
-                return True
+        if not addrs:
+            return False
 
-        return False
+        if "0.0.0.0" in self.sf.normalizeDNS(addrs):
+            return False
+
+        return True
 
     # Handle events sent to this module
     def handleEvent(self, event):

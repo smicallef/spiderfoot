@@ -89,7 +89,7 @@ class sfp_keybase(SpiderFootPlugin):
 
         # In this case, it will always be 200 if keybase is queried
         # The actual response codes are stored in status tag of the response
-        if not res['code'] == '200':
+        if res['code'] != '200':
             return None
 
         content = json.loads(res['content'])
@@ -103,7 +103,7 @@ class sfp_keybase(SpiderFootPlugin):
             return None
 
         try:
-            if not int(code) == 0:
+            if int(code) != 0:
                 return None
         except Exception:
             self.sf.error("Invalid code returned as response")
@@ -180,7 +180,7 @@ class sfp_keybase(SpiderFootPlugin):
         # Failsafe to prevent reporting any wrongly received data
         if basics:
             responseUserName = basics.get('username')
-            if not userName == responseUserName:
+            if userName != responseUserName:
                 self.sf.error("Username does not match received response, skipping")
                 return None
 

@@ -502,7 +502,7 @@ class SpiderFootCli(cmd.Cmd):
                     if re.match(p, r.strip()):
                         newout += r + "\n"
 
-            if pipecmd == "str" or pipecmd == "grep":
+            if pipecmd in ['str', 'grep']:
                 for r in out.split("\n"):
                     if pipeargs.lower() in r.strip().lower():
                         newout += r + "\n"
@@ -1171,11 +1171,8 @@ class SpiderFootCli(cmd.Cmd):
             output = list()
             for k in ks:
                 c = self.ownopts[k]
-                if type(c) == bool:
-                    if c:
-                        c = "True"
-                    else:
-                        c = "False"
+                if isinstance(c, bool):
+                    c = str(c)
 
                 if not cfg:
                     output.append({'opt': k, 'val': c})

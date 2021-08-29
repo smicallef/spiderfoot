@@ -96,7 +96,7 @@ class sfp_seon(SpiderFootPlugin):
         ]
 
     def query(self, qry, eventName):
-        if eventName == "IP_ADDRESS" or eventName == "IPV6_ADDRESS":
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             queryString = f"https://api.seon.io/SeonRestService/ip-api/v1.0/{qry}"
         elif eventName == "EMAILADDR":
             queryString = f"https://api.seon.io/SeonRestService/email-api/v2.0/{qry}"
@@ -152,7 +152,7 @@ class sfp_seon(SpiderFootPlugin):
         self.results[eventData] = True
 
         dataFound = False
-        if eventName == "IP_ADDRESS" or eventName == "IPV6_ADDRESS":
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             data = self.query(eventData, eventName)
             if data is None:
                 return None

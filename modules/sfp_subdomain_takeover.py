@@ -103,7 +103,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
                     continue
 
                 for cname in cnames:
-                    if not cname.lower() in eventData.lower():
+                    if cname.lower() not in eventData.lower():
                         continue
 
                     for proto in ["https", "http"]:
@@ -134,7 +134,7 @@ class sfp_subdomain_takeover(SpiderFootPlugin):
                     continue
 
                 for cname in cnames:
-                    if not cname.lower() in eventData.lower():
+                    if cname.lower() not in eventData.lower():
                         continue
                     self.sf.info(f"{eventData} appears to be vulnerable to takeover on {service}")
                     evt = SpiderFootEvent("AFFILIATE_INTERNET_NAME_HIJACKABLE", eventData, self.__name__, event)

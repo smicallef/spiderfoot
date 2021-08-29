@@ -65,12 +65,11 @@ class sfp_instagram(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(json_data[0])
+            return json.loads(json_data[0])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return data
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -92,7 +91,7 @@ class sfp_instagram(SpiderFootPlugin):
             self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return None
 
-        if not network == 'Instagram':
+        if network != 'Instagram':
             self.sf.debug(f"Skipping social network profile, {url}, as not an Instagram profile")
             return None
 

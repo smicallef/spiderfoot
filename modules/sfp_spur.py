@@ -125,7 +125,7 @@ class sfp_spur(SpiderFootPlugin):
             self.sf.debug("IP Address not found.")
             return None
 
-        if not code == '200':
+        if code != '200':
             self.sf.error("Unable to fetch data from spur.us")
             return None
 

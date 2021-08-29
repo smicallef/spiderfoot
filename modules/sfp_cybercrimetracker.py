@@ -104,12 +104,12 @@ class sfp_cybercrimetracker(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from cybercrime-tracker.net.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from cybercrime-tracker.net")
             self.errorState = True
-            return
+            return None
 
         self.sf.cachePut("cybercrime-tracker", res['content'])
 

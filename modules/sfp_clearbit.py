@@ -86,8 +86,6 @@ class sfp_clearbit(SpiderFootPlugin):
                 "AFFILIATE_INTERNET_NAME", "EMAILADDR", "EMAILADDR_GENERIC"]
 
     def query(self, t):
-        ret = None
-
         api_key = self.opts['api_key']
         if type(api_key) == str:
             api_key = api_key.encode('utf-8')
@@ -105,12 +103,11 @@ class sfp_clearbit(SpiderFootPlugin):
             return None
 
         try:
-            ret = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from clearbit.io: {e}")
-            return None
 
-        return ret
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
