@@ -79,8 +79,8 @@ class sfp_twitter(SpiderFootPlugin):
             self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
             return
 
-        if not network == "Twitter":
-            self.sf.debug("Skipping social network profile, " + url + ", as not a Twitter profile")
+        if network != "Twitter":
+            self.sf.debug(f"Skipping social network profile, {url}, as not a Twitter profile")
             return
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
@@ -89,7 +89,7 @@ class sfp_twitter(SpiderFootPlugin):
         if res['content'] is None:
             return
 
-        if not res['code'] == "200":
+        if res['code'] != "200":
             self.sf.debug(url + " is not a valid Twitter profile")
             return
 

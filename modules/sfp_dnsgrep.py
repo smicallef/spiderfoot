@@ -100,12 +100,11 @@ class sfp_dnsgrep(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from DNSGrep: {e}")
-            return None
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):

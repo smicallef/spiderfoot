@@ -128,10 +128,9 @@ class sfp_honeypot(SpiderFootPlugin):
         if int(bits[3]) == 0 and self.opts['searchengine']:
             return None
 
-        text = "Honeypotproject ({0}): " + self.statuses[bits[3]] + \
+        return "Honeypotproject ({0}): " + self.statuses[bits[3]] + \
                "\nLast Activity: " + bits[1] + " days ago" + \
                "\nThreat Level: " + bits[2]
-        return text
 
     def queryAddr(self, qaddr, parentEvent):
         eventName = parentEvent.eventType

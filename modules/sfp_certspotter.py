@@ -119,25 +119,24 @@ class sfp_certspotter(SpiderFootPlugin):
 
         if res['content'] is None:
             self.sf.debug('No response from CertSpotter API')
-            return
+            return None
 
         if res['code'] == '429':
             self.sf.error("You are being rate-limited by CertSpotter")
             self.errorState = True
-            return
+            return None
 
         if res['code'] != '200':
             self.sf.error(f"Unexpected HTTP response code {res['code']} from CertSpotter")
             self.errorState = True
-            return
+            return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):

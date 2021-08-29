@@ -71,17 +71,20 @@ class sfp_zetalytics(SpiderFootPlugin):
     def verify_emit_internet_name(self, hostname, pevent):
         if f"INTERNET_NAME:{hostname}" in self.results:
             return False
+
         if not self.getTarget().matches(hostname):
             return False
+
         if self.opts["verify"] and not self.sf.resolveHost(hostname):
             self.sf.debug(f"Host {hostname} could not be resolved")
             self.emit("INTERNET_NAME_UNRESOLVED", hostname, pevent)
             return True
-        else:
-            self.emit("INTERNET_NAME", hostname, pevent)
-            if self.sf.isDomain(hostname, self.opts["_internettlds"]):
-                self.emit("DOMAIN_NAME", hostname, pevent)
-            return True
+
+        self.emit("INTERNET_NAME", hostname, pevent)
+        if self.sf.isDomain(hostname, self.opts["_internettlds"]):
+            self.emit("DOMAIN_NAME", hostname, pevent)
+
+        return True
 
     def request(self, path, params):
         params = {**params, "token": self.opts["api_key"]}
@@ -115,16 +118,21 @@ class sfp_zetalytics(SpiderFootPlugin):
         return self.request("/email_address", {"q": email_address})
 
     def generate_subdomains_events(self, data, pevent):
+        if not isinstance(data, dict):
+            return False
+
+        results = data.get("results", [])
+        if not isinstance(results, list):
+            return False
+
         events_generated = False
-        if isinstance(data, dict):
-            results = data.get("results", [])
-            if isinstance(results, list):
-                for r in results:
-                    qname = r.get("qname")
-                    if not isinstance(qname, str):
-                        continue
-                    if self.verify_emit_internet_name(qname, pevent):
-                        events_generated = True
+        for r in results:
+            qname = r.get("qname")
+            if not isinstance(qname, str):
+                continue
+            if self.verify_emit_internet_name(qname, pevent):
+                events_generated = True
+
         return events_generated
 
     def generate_hostname_events(self, data, pevent):
@@ -175,7 +183,7 @@ class sfp_zetalytics(SpiderFootPlugin):
             return
 
         if self.checkForStop():
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 

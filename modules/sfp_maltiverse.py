@@ -105,7 +105,7 @@ class sfp_maltiverse(SpiderFootPlugin):
             self.sf.error("API endpoint not found")
             return None
 
-        if not res['code'] == "200":
+        if res['code'] != "200":
             self.sf.debug("No information found from Maltiverse for IP Address")
             return None
 

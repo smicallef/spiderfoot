@@ -66,29 +66,30 @@ class sfp_github(SpiderFootPlugin):
 
     # Build up repo info for use as an event
     def buildRepoInfo(self, item):
-        repo_info = None
-
         # Get repos matching the name
-        if item.get('name') is None:
+        name = item.get('name')
+        if name is None:
             self.sf.debug("Incomplete Github information found (name).")
             return None
 
-        if item.get('html_url') is None:
+        html_url = item.get('html_url')
+        if html_url is None:
             self.sf.debug("Incomplete Github information found (url).")
             return None
 
-        if item.get('description') is None:
+        description = item.get('description')
+        if description is None:
             self.sf.debug("Incomplete Github information found (description).")
             return None
 
-        repo_info = "Name: " + item['name'] + "\n" + "URL: " + item['html_url'] + \
-                    "\n" + "Description: " + item['description']
-
-        return repo_info
+        return "\n".join(f"Name: {name}", f"URL: {html_url}", f"Description: {description}")
 
     def handleEvent(self, event):
         eventName = event.eventType
         eventData = event.data
+        srcModuleName = event.module
+
+        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             self.sf.debug(f"Already did a search for {eventData}, skipping.")
@@ -105,7 +106,7 @@ class sfp_github(SpiderFootPlugin):
                 self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
                 return None
 
-            if not network == "Github":
+            if network != "Github":
                 self.sf.debug(f"Skipping social network profile, {url}, as not a GitHub profile")
                 return None
 

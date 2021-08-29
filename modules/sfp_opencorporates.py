@@ -86,7 +86,7 @@ class sfp_opencorporates(SpiderFootPlugin):
         version = '0.4'
 
         apiparam = ""
-        if not self.opts['api_key'] == "":
+        if self.opts['api_key']:
             apiparam = "&api_token=" + self.opts['api_key']
 
         params = urllib.parse.urlencode({
@@ -124,7 +124,7 @@ class sfp_opencorporates(SpiderFootPlugin):
     def retrieveCompanyDetails(self, jurisdiction_code, company_number):
         url = f"https://api.opencorporates.com/companies/{jurisdiction_code}/{company_number}"
 
-        if not self.opts['api_key'] == "":
+        if self.opts['api_key']:
             url += "?api_token=" + self.opts['api_key']
 
         res = self.sf.fetchUrl(
@@ -230,7 +230,7 @@ class sfp_opencorporates(SpiderFootPlugin):
                 continue
 
             # Check for match
-            if not eventData.lower() == company.get('name').lower():
+            if eventData.lower() != company.get('name').lower():
                 continue
 
             # Extract company details from search results

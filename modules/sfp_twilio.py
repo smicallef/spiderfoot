@@ -105,7 +105,7 @@ class sfp_twilio(SpiderFootPlugin):
             self.sf.error("Service unavailable.")
             return None
 
-        if not res['code'] == '200':
+        if res['code'] != '200':
             self.sf.error("Could not fetch data.")
             return None
 

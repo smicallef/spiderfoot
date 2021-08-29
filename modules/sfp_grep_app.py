@@ -88,12 +88,11 @@ class sfp_grep_app(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return data
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -101,7 +100,7 @@ class sfp_grep_app(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -109,7 +108,7 @@ class sfp_grep_app(SpiderFootPlugin):
 
         if srcModuleName == 'sfp_grep_app':
             self.sf.debug("Ignoring " + eventData + ", from self.")
-            return None
+            return
 
         hosts = list()
         page = 1
@@ -117,25 +116,25 @@ class sfp_grep_app(SpiderFootPlugin):
         pages = self.opts['max_pages']
         while page <= pages:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             res = self.query(eventData, page)
 
             if res is None:
-                return None
+                return
 
             facets = res.get('facets')
 
             if facets is None:
-                return None
+                return
 
             count = facets.get('count')
 
             if count is None:
-                return None
+                return
 
             last_page = math.ceil(count / per_page)
 
@@ -151,12 +150,12 @@ class sfp_grep_app(SpiderFootPlugin):
             hits = res.get('hits')
 
             if hits is None:
-                return None
+                return
 
             data = hits.get('hits')
 
             if data is None:
-                return None
+                return
 
             for result in data:
                 if result is None:
@@ -220,10 +219,10 @@ class sfp_grep_app(SpiderFootPlugin):
 
         for host in set(hosts):
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             if self.opts['dns_resolve'] and not self.sf.resolveHost(host):
                 self.sf.debug(f"Host {host} could not be resolved")

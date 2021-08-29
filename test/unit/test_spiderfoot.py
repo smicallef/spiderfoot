@@ -38,9 +38,8 @@ class TestSpiderFoot(unittest.TestCase):
         """
         invalid_types = [None, "", list(), int()]
         for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError):
-                    SpiderFoot(invalid_type)
+            with self.subTest(invalid_type=invalid_type), self.assertRaises(TypeError):
+                SpiderFoot(invalid_type)
 
     def test_init_argument_options_with_empty_dict(self):
         """
@@ -84,6 +83,17 @@ class TestSpiderFoot(unittest.TestCase):
         opt_data = sf.optValueToData(test_string)
         self.assertIsInstance(opt_data, str)
         self.assertEqual(test_string, opt_data)
+
+    def test_optValueToData_argument_val_filename_should_return_file_contents_as_string(self):
+        """
+        Test optValueToData(self, val)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        test_string = "@VERSION"
+        opt_data = sf.optValueToData(test_string)
+        self.assertIsInstance(opt_data, str)
+        self.assertTrue(opt_data.startswith("SpiderFoot"))
 
     def test_optValueToData_argument_val_invalid_type_should_return_None(self):
         """
@@ -1137,9 +1147,8 @@ class TestSpiderFoot(unittest.TestCase):
 
         invalid_types = [None, "", list()]
         for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError):
-                    sf.sslDerToPem(invalid_type)
+            with self.subTest(invalid_type=invalid_type), self.assertRaises(TypeError):
+                sf.sslDerToPem(invalid_type)
 
     def test_parse_cert_should_return_a_dict(self):
         """

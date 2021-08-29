@@ -134,7 +134,7 @@ class sfp_phishtank(SpiderFootPlugin):
             phish_id = line.strip().split(",")[0]
             url = str(line.strip().split(",")[1]).lower()
             # Note: URL parsing and validation with sf.validHost() is too slow to use here
-            if not len(url.split("/")) >= 3:
+            if len(url.split("/")) < 3:
                 continue
             host = url.split("/")[2]
             if not host:

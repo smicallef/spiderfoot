@@ -139,7 +139,7 @@ class sfp_vxvault(SpiderFootPlugin):
 
             # Note: URL parsing and validation with sf.validHost() is too slow to use here
             url = line.strip().lower()
-            if not len(url.split("/")) >= 3:
+            if len(url.split("/")) < 3:
                 continue
             host = url.split("/")[2]
             if not host:

@@ -69,9 +69,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        ret = ["VULNERABILITY"]
-
-        return ret
+        return ["VULNERABILITY"]
 
     # Query XSSposed.org
     def queryOBB(self, qry):

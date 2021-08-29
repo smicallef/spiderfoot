@@ -90,7 +90,6 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 "MALICIOUS_SUBNET", "MALICIOUS_EMAILADDR"]
 
     def query(self, qry):
-        ret = None
         url = None
 
         if self.sf.validIP(qry):
@@ -105,17 +104,16 @@ class sfp_threatcrowd(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         if res['content'] is None:
-            self.sf.info("No ThreatCrowd info found for " + qry)
+            self.sf.info(f"No ThreatCrowd info found for {qry}")
             return None
 
         try:
-            ret = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from ThreatCrowd: {e}")
             self.errorState = True
-            return None
 
-        return ret
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):

@@ -86,12 +86,11 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res["content"])
+            return json.loads(res["content"])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from BitcoinAbuse: {e}")
-            return None
 
-        return info
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType

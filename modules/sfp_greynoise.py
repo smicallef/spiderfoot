@@ -113,12 +113,11 @@ class sfp_greynoise(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from Greynoise: {e}")
-            return None
 
-        return info
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):

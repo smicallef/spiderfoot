@@ -90,8 +90,6 @@ class sfp_hunter(SpiderFootPlugin):
             "limit": str(limit)
         }
 
-        ret = None
-
         url = f"https://api.hunter.io/v2/domain-search?{urllib.parse.urlencode(params)}"
 
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
@@ -103,12 +101,11 @@ class sfp_hunter(SpiderFootPlugin):
             return None
 
         try:
-            ret = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from hunter.io: {e}")
-            return None
 
-        return ret
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
