@@ -131,7 +131,7 @@ class sfp_pageinfo(SpiderFootPlugin):
                     continue
                 if self.getTarget().matches(self.sf.urlFQDN(match)):
                     continue
-                self.sf.debug("Externally hosted JavaScript found at: %s" % match)
+                self.sf.debug(f"Externally hosted JavaScript found at: {match}")
                 evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match, self.__name__, event)
                 self.notifyListeners(evt)
 

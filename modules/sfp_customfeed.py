@@ -84,7 +84,7 @@ class sfp_customfeed(SpiderFootPlugin):
                 "MALICIOUS_COHOST"]
 
     # Look up 'list' type resources
-    def resourceList(self, id, target, targetType):
+    def resourceList(self, replaceme_id, target, targetType):
         targetDom = ''
         # Get the base domain if we're supplied a domain
         if targetType == "domain":
@@ -95,7 +95,7 @@ class sfp_customfeed(SpiderFootPlugin):
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
             url = self.opts['url']
-            if id == cid:
+            if replaceme_id == cid:
                 data = dict()
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
                 if data['content'] is None:

@@ -94,7 +94,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-            "https://jsonwhois.com/api/v1/whois?%s" % urllib.parse.urlencode(params),
+            f"https://jsonwhois.com/api/v1/whois?{urllib.parse.urlencode(params)}",
             headers=headers,
             timeout=15,
             useragent=self.opts['_useragent']
@@ -171,7 +171,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
         res = self.queryDomain(eventData)
 
         if res is None:
-            self.sf.debug("No information found for domain %s" % eventData)
+            self.sf.debug(f"No information found for domain {eventData}")
             return None
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)

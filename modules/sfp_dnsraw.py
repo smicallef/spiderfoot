@@ -110,7 +110,7 @@ class sfp_dnsraw(SpiderFootPlugin):
                 if not len(res.answer):
                     continue
             except Exception as e:
-                self.sf.error("Failed to obtain DNS response for %s (%s)" % (eventData, e))
+                self.sf.error(f"Failed to obtain DNS response for {eventData} ({e})")
                 continue
 
             # Iterate through DNS answers

@@ -132,7 +132,7 @@ class sfp_abusech(SpiderFootPlugin):
                 "MALICIOUS_SUBNET", "MALICIOUS_COHOST", "MALICIOUS_NETBLOCK"]
 
     # Look up 'list' type resources
-    def resourceList(self, id, target, targetType):
+    def resourceList(self, replaceme_id, target, targetType):
         targetDom = ''
         # Get the base domain if we're supplied a domain
         if targetType == "domain":
@@ -142,7 +142,7 @@ class sfp_abusech(SpiderFootPlugin):
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
-            if id == cid:
+            if replaceme_id == cid:
                 data = dict()
                 url = malchecks[check]['url']
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))

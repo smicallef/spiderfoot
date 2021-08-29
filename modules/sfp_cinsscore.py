@@ -81,12 +81,12 @@ class sfp_cinsscore(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url)
+                self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url)
+                self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
@@ -98,15 +98,15 @@ class sfp_cinsscore(SpiderFootPlugin):
             if targetType == "netblock":
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
-                        self.sf.debug("%s found within netblock/subnet %s in cinsscore.com list." % (ip, qry))
+                        self.sf.debug(f"{ip} found within netblock/subnet {qry} in cinsscore.com list.")
                         return url
                 except Exception as e:
-                    self.sf.debug("Error encountered parsing: %s" % e)
+                    self.sf.debug(f"Error encountered parsing: {e}")
                     continue
 
             if targetType == "ip":
                 if qry.lower() == ip:
-                    self.sf.debug("%s found in cinsscore.com list." % qry)
+                    self.sf.debug(f"{qry} found in cinsscore.com list.")
                     return url
 
         return None
@@ -149,14 +149,14 @@ class sfp_cinsscore(SpiderFootPlugin):
         else:
             return None
 
-        self.sf.debug("Checking maliciousness of %s with cinsscore.com" % eventData)
+        self.sf.debug(f"Checking maliciousness of {eventData} with cinsscore.com")
 
         url = self.query(eventData, targetType)
 
         if not url:
             return None
 
-        text = "cinsscore.com [%s]\n<SFURL>%s</SFURL>" % (eventData, url)
+        text = f"cinsscore.com [{eventData}]\n<SFURL>{url}</SFURL>"
         evt = SpiderFootEvent(evtType, text, self.__name__, event)
         self.notifyListeners(evt)
 

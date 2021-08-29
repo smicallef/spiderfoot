@@ -103,10 +103,7 @@ class sfp_pastebin(SpiderFootPlugin):
         for dom in list(self.domains.keys()):
             target = self.domains[dom]
             res = self.sf.googleIterate(
-                searchString="+site:{target_site} \"{search_keyword}\"".format(
-                    target_site=target,
-                    search_keyword=eventData,
-                ),
+                searchString=f'+site:{target} "{eventData}"',
                 opts={
                     "timeout": self.opts["_fetchtimeout"],
                     "useragent": self.opts["_useragent"],
