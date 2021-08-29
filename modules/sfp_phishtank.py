@@ -82,9 +82,9 @@ class sfp_phishtank(SpiderFootPlugin):
                 continue
             if target.lower() in item[1]:
                 self.sf.debug(f"Host name {target} found in phishtank.com blacklist.")
-            return item[0]
+                return item[0]
 
-        return
+        return None
 
     def retrieveBlacklist(self):
         blacklist = self.sf.cacheGet('phishtank', 24)
