@@ -2,8 +2,15 @@
 darglint==1.5.4
 dlint==0.10.3
 flake8==3.9.2
+flake8-blind-except==0.2.0
 flake8-bugbear==21.4.3
+flake8-builtins==1.5.3
+flake8-import-order==0.18.1
+flake8-quotes==3.3.0
 flake8-return==1.1.2
+flake8-self==0.2.2
+flake8-sfs==0.0.3
+flake8-simplify==0.14.1
 pytest==6.2.4
 pytest-cov==2.10.1
 pytest-flake8==1.0.6
