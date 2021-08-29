@@ -67,7 +67,7 @@ class sfp_punkspider(SpiderFootPlugin):
 
     def query(self, qry):
         ret = None
-        qryhash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()
+        qryhash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # noqa: DUO130
         url = f"https://api.punkspider.org/api/partial-hash/{qryhash}"
 
         res = self.sf.fetchUrl(url, timeout=30, useragent=self.opts['_useragent'])
