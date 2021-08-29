@@ -1,0 +1,8 @@
+# To run the tests, start sf web interface:
+#   python3 ./sf.py -l 127.0.0.1:5001
+# then:
+#   robot --variable BROWSER:Firefox --outputdir results example.robot
+-r ../requirements.txt
+robotframework
+robotframework-seleniumlibrary
+

@@ -128,3 +128,4 @@ venv3/
 coverage/
 report/
 htmlcov/
+test/acceptance/results/
