@@ -8,7 +8,6 @@ flake8-builtins==1.5.3
 flake8-import-order==0.18.1
 flake8-quotes==3.3.0
 flake8-return==1.1.2
-flake8-self==0.2.2
 flake8-sfs==0.0.3
 flake8-simplify==0.14.1
 pytest==6.2.4

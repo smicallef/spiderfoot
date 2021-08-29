@@ -74,7 +74,7 @@ class sfp_gravatar(SpiderFootPlugin):
     # https://secure.gravatar.com/site/implement/
     # https://secure.gravatar.com/site/implement/profiles/
     def query(self, qry):
-        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # nosec
+        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # noqa: DUO130
         output = 'json'
 
         res = self.sf.fetchUrl("https://secure.gravatar.com/" + email_hash + '.' + output,
