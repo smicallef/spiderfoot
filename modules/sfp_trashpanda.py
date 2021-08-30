@@ -118,7 +118,7 @@ class sfp_trashpanda(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key_username'] == "" or self.opts['api_key_password'] == "":
             self.sf.error("You enabled sfp_trashpanda but did not set an API username / password!")
@@ -127,14 +127,14 @@ class sfp_trashpanda(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         data = self.query(eventData, eventName)
 
         if data is None:
-            return None
+            return
 
         leaksiteUrls = set()
         for row in data:
@@ -148,7 +148,7 @@ class sfp_trashpanda(SpiderFootPlugin):
                 self.sf.debug("Found a link: " + leaksiteUrl)
 
                 if self.checkForStop():
-                    return None
+                    return
 
                 res = self.sf.fetchUrl(leaksiteUrl, timeout=self.opts['_fetchtimeout'],
                                        useragent=self.opts['_useragent'])

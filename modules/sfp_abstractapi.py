@@ -158,7 +158,7 @@ class sfp_abstractapi(SpiderFootPlugin):
 
         api_key = self.opts['phonevalidation_api_key']
         if not api_key:
-            return
+            return None
 
         params = urllib.parse.urlencode({
             'api_key': api_key,
@@ -190,7 +190,7 @@ class sfp_abstractapi(SpiderFootPlugin):
 
         api_key = self.opts['ipgeolocation_api_key']
         if not api_key:
-            return
+            return None
 
         params = urllib.parse.urlencode({
             'api_key': api_key,

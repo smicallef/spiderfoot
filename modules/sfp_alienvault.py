@@ -160,7 +160,7 @@ class sfp_alienvault(SpiderFootPlugin):
             target_type = "IPv4"
         else:
             self.sf.info(f"Could not determine target type for {qry}")
-            return
+            return None
 
         headers = {
             'Accept': 'application/json',
@@ -182,7 +182,7 @@ class sfp_alienvault(SpiderFootPlugin):
             target_type = "IPv4"
         else:
             self.sf.info(f"Could not determine target type for {qry}")
-            return
+            return None
 
         headers = {
             'Accept': 'application/json',

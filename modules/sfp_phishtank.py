@@ -101,12 +101,12 @@ class sfp_phishtank(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from phishtank.com.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from phishtank.com")
             self.errorState = True
-            return
+            return None
 
         self.sf.cachePut("phishtank", res['content'])
 

@@ -103,12 +103,12 @@ class sfp_torexits(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from check.torproject.org.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from check.torproject.org.")
             self.errorState = True
-            return
+            return None
 
         self.sf.cachePut("torexitnodes", res['content'])
 

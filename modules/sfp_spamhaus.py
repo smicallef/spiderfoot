@@ -104,7 +104,7 @@ class sfp_spamhaus(SpiderFootPlugin):
 
         for domain in self.checks:
             if self.checkForStop():
-                return None
+                return
 
             try:
                 lookup = self.reverseAddr(qaddr) + "." + domain

@@ -136,15 +136,15 @@ class sfp_numverify(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_numverify but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -154,7 +154,7 @@ class sfp_numverify(SpiderFootPlugin):
 
         if data is None:
             self.sf.debug("No phone information found for " + eventData)
-            return None
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)

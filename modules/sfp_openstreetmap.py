@@ -99,7 +99,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -108,7 +108,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
         # Skip post office boxes
         if address.lower().startswith('po box'):
             self.sf.debug("Skipping PO BOX address")
-            return None
+            return
 
         rx1 = re.compile(r'^(c/o|care of|attn:|attention:)\s+[0-9a-z\s\.]', flags=re.IGNORECASE)
         # Remove address prefixes for delivery instructions
@@ -126,7 +126,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
 
         if data is None:
             self.sf.debug("Found no results for " + eventData)
-            return None
+            return
 
         self.sf.info("Found " + str(len(data)) + " matches for " + eventData)
 
