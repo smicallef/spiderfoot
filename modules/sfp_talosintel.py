@@ -119,12 +119,12 @@ class sfp_talosintel(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from Talos Intelligence.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from Talos Intelligence")
             self.errorState = True
-            return
+            return None
 
         self.sf.cachePut("talosintel", res['content'])
 

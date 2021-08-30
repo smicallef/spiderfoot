@@ -64,7 +64,7 @@ class sfp_fortinet(SpiderFootPlugin):
 
     def query(self, ip):
         if not ip:
-            return
+            return None
 
         res = self.sf.fetchUrl(
             f"https://www.fortiguard.com/search?q={ip}&engine=8",
@@ -75,12 +75,12 @@ class sfp_fortinet(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from FortiGuard Antispam.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from FortiGuard Antispam")
             self.errorState = True
-            return
+            return None
 
         return res['content']
 

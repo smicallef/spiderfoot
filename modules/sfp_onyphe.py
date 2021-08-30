@@ -247,19 +247,18 @@ class sfp_onyphe(SpiderFootPlugin):
         sentData = set()
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_onyphe, but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
-        # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug("Skipping " + eventData + " as already mapped.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -273,7 +272,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
             for geoLocData in geoLocDataArr:
                 if self.checkForStop():
-                    return None
+                    return
 
                 for result in geoLocData["results"]:
                     if not self.isFreshEnough(result):
@@ -323,7 +322,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
             for pastriesData in pastriesDataArr:
                 if self.checkForStop():
-                    return None
+                    return
 
                 for result in pastriesData["results"]:
                     pastry = result.get("content")
@@ -353,7 +352,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
             for threatListData in threatListDataArr:
                 if self.checkForStop():
-                    return None
+                    return
 
                 for result in threatListData["results"]:
                     threatList = result.get("threatlist")
@@ -387,7 +386,7 @@ class sfp_onyphe(SpiderFootPlugin):
 
             for vulnerabilityData in vulnerabilityDataArr:
                 if self.checkForStop():
-                    return None
+                    return
 
                 for result in vulnerabilityData["results"]:
                     cves = result.get("cve")
@@ -412,6 +411,5 @@ class sfp_onyphe(SpiderFootPlugin):
                         event,
                     )
                     self.notifyListeners(evt)
-
 
 # End of sfp_onyphe class

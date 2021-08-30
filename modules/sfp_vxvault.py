@@ -106,12 +106,12 @@ class sfp_vxvault(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from VXVault.net.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from VXVault.net")
             self.errorState = True
-            return
+            return None
 
         self.sf.cachePut("vxvault", res['content'])
 

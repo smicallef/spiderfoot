@@ -118,12 +118,12 @@ class sfp_alienvaultiprep(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from AlienVault IP Reputation Database.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from AlienVault IP Reputation Database")
             self.errorState = True
-            return
+            return None
 
         self.sf.cachePut("alienvaultiprep", res['content'])
 

@@ -113,12 +113,12 @@ class sfp_voipbl(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from VoIP Blacklist (VoIPBL).")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from VoIP Blacklist (VoIPBL)")
             self.errorState = True
-            return
+            return None
 
         self.sf.cachePut("voipbl", res['content'])
 

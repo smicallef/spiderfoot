@@ -90,21 +90,21 @@ class sfp_onioncity(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_onioncity but did not set a Google API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Already did a search for {eventData}, skipping.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -120,7 +120,7 @@ class sfp_onioncity(SpiderFootPlugin):
         )
         if res is None:
             # Failed to talk to the bing API or no results returned
-            return None
+            return
 
         urls = res["urls"]
         new_links = list(set(urls) - set(self.results.keys()))
@@ -146,7 +146,7 @@ class sfp_onioncity(SpiderFootPlugin):
 
         # Check if we've been asked to stop
         if self.checkForStop():
-            return None
+            return
 
         darknet_links = [
             link for link in new_links if self.sf.urlFQDN(link).endswith(".onion.link")
@@ -187,6 +187,5 @@ class sfp_onioncity(SpiderFootPlugin):
             else:
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", torlink, self.__name__, event)
                 self.notifyListeners(evt)
-
 
 # End of sfp_onioncity class

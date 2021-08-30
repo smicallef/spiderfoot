@@ -153,30 +153,29 @@ class sfp_riskiq(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        ret = None
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Ignore messages from myself
         if srcModuleName == "sfp_riskiq":
             self.sf.debug("Ignoring " + eventName + ", from self.")
-            return None
+            return
 
         if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":
             self.sf.error("You enabled sfp_riskiq but did not set an credentials!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
-        if eventName in ['DOMAIN_NAME']:
+        if eventName == 'DOMAIN_NAME':
             ret = self.query(eventData, "PSSL")
             if not ret:
                 self.sf.info("No RiskIQ passive SSL data found for " + eventData)
@@ -208,7 +207,7 @@ class sfp_riskiq(SpiderFootPlugin):
             ret = self.query(eventData, "WHOIS")
             if not ret:
                 self.sf.info("No RiskIQ passive DNS data found for " + eventData)
-                return None
+                return
 
             for r in ret:
                 if not eventData.endswith("@" + r['domain']):
@@ -223,13 +222,13 @@ class sfp_riskiq(SpiderFootPlugin):
                         evt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", r['domain'], self.__name__, event)
                         self.notifyListeners(evt)
 
-            return None
+            return
 
         if eventName in ['IP_ADDRESS', 'INTERNET_NAME', 'DOMAIN_NAME']:
             ret = self.query(eventData, "PDNS")
             if not ret:
                 self.sf.info("No RiskIQ passive DNS data found for " + eventData)
-                return None
+                return
 
             cohosts = list()
             if eventName == "IP_ADDRESS":

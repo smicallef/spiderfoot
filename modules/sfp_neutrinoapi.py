@@ -163,20 +163,20 @@ class sfp_neutrinoapi(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_neutrinoapi but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if self.opts['user_id'] == "":
             self.sf.error("You enabled sfp_neutrinoapi but did not set a user ID!")
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 

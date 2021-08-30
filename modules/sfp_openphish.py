@@ -102,12 +102,12 @@ class sfp_openphish(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from OpenPhish.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from OpenPhish")
             self.errorState = True
-            return
+            return None
 
         self.sf.cachePut("openphish", res['content'])
 

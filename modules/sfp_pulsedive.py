@@ -134,41 +134,39 @@ class sfp_pulsedive(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_pulsedive but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
 
-            if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                self.sf.debug("Network size bigger than permitted: "
-                              + str(IPNetwork(eventData).prefixlen) + " > "
-                              + str(self.opts['maxnetblock']))
-                return None
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
 
-            if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                self.sf.debug("Network size bigger than permitted: "
-                              + str(IPNetwork(eventData).prefixlen) + " > "
-                              + str(self.opts['maxsubnet']))
-                return None
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
 
         qrylist = list()
 
@@ -181,7 +179,7 @@ class sfp_pulsedive(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
                 evtType = 'MALICIOUS_IPADDR'

@@ -108,7 +108,7 @@ class sfp_gravatar(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -118,7 +118,7 @@ class sfp_gravatar(SpiderFootPlugin):
 
         if data is None:
             self.sf.debug("No user information found for " + eventData)
-            return None
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)

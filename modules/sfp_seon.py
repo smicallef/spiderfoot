@@ -138,7 +138,7 @@ class sfp_seon(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_seon but did not set an API key!")
@@ -147,7 +147,7 @@ class sfp_seon(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -155,7 +155,7 @@ class sfp_seon(SpiderFootPlugin):
         if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             data = self.query(eventData, eventName)
             if data is None:
-                return None
+                return
 
             resultSet = data.get('data')
             if resultSet:
@@ -205,7 +205,7 @@ class sfp_seon(SpiderFootPlugin):
         elif eventName == "EMAILADDR":
             data = self.query(eventData, eventName)
             if data is None:
-                return None
+                return
 
             resultSet = data.get('data')
             if resultSet:
@@ -267,7 +267,7 @@ class sfp_seon(SpiderFootPlugin):
         elif eventName == "PHONE_NUMBER":
             data = self.query(eventData, eventName)
             if data is None:
-                return None
+                return
 
             resultSet = data.get('data')
             if resultSet:

@@ -206,33 +206,33 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName not in ["IP_ADDRESS", "DOMAIN_NAME"]:
-            return None
+            return
 
         if eventName == "IP_ADDRESS":
             data = self.queryHost(eventData)
         elif eventName == "DOMAIN_NAME":
             data = self.queryDomain(eventData)
         else:
-            return None
+            return
 
         if data is None:
             self.sf.debug(f"No information found for{eventData}")
-            return None
+            return
 
         results = data.get("result")
 
         if not results:
-            return None
+            return
 
         hashes = []
 
@@ -242,7 +242,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
                 hashes.append(file_hash)
 
         if not hashes:
-            return None
+            return
 
         self.sf.info(f"Found {len(hashes)} results for {eventData}")
 
@@ -291,7 +291,7 @@ class sfp_hybrid_analysis(SpiderFootPlugin):
 
         for domain in set(domains):
             if self.checkForStop():
-                return None
+                return
 
             if domain in self.results:
                 continue

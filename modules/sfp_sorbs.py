@@ -105,7 +105,7 @@ class sfp_sorbs(SpiderFootPlugin):
 
         for domain in self.checks:
             if self.checkForStop():
-                return None
+                return
 
             try:
                 lookup = self.reverseAddr(qaddr) + "." + domain
@@ -146,7 +146,7 @@ class sfp_sorbs(SpiderFootPlugin):
             except Exception as e:
                 self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
-        return None
+        return
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -158,28 +158,27 @@ class sfp_sorbs(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
+
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
                 return
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxnetblock']))
-                    return
+
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
                 return
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxsubnet']))
-                    return
+
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
 
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):

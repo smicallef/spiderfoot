@@ -146,7 +146,7 @@ class sfp_sociallinks(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_sociallinks but did not set an API key!")
@@ -155,14 +155,14 @@ class sfp_sociallinks(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == "PHONE_NUMBER":
             data = self.queryTelegram(eventData, eventName)
             if data is None:
-                return None
+                return
 
             resultSet = data.get('result')
             if resultSet:
@@ -179,7 +179,7 @@ class sfp_sociallinks(SpiderFootPlugin):
         elif eventName == "USERNAME":
             data = self.queryTelegram(eventData, eventName)
             if data is None:
-                return None
+                return
 
             resultSet = data.get('result')
             if resultSet:
@@ -268,6 +268,6 @@ class sfp_sociallinks(SpiderFootPlugin):
 
             if failedModules == 3:
                 self.sf.info(f"No data found for {eventData}")
-                return None
+                return
 
 # End of sfp_sociallinks class

@@ -154,28 +154,26 @@ class sfp_spamcop(SpiderFootPlugin):
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxnetblock']))
-                    return None
+                return
+
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxsubnet']))
-                    return None
+                return
+
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
 
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):
                 if self.checkForStop():
-                    return None
+                    return
                 self.queryAddr(str(addr), parentEvent)
         else:
             self.queryAddr(eventData, parentEvent)

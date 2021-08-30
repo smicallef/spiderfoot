@@ -79,7 +79,7 @@ class sfp_isc(SpiderFootPlugin):
 
     def query(self, ip):
         if not ip:
-            return
+            return None
 
         res = self.sf.fetchUrl(
             f"https://isc.sans.edu/api/ip/{ip}",
@@ -90,12 +90,12 @@ class sfp_isc(SpiderFootPlugin):
         if res['code'] != "200":
             self.sf.error(f"Unexpected HTTP response code {res['code']} from ISC.")
             self.errorState = True
-            return
+            return None
 
         if res['content'] is None:
             self.sf.error("Received no content from ISC")
             self.errorState = True
-            return
+            return None
 
         return res['content']
 
@@ -109,7 +109,7 @@ class sfp_isc(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         if self.errorState:
             return

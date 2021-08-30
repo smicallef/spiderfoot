@@ -152,7 +152,7 @@ class sfp_s3bucket(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -165,7 +165,7 @@ class sfp_s3bucket(SpiderFootPlugin):
                     b += "/" + eventData.split(b + "/")[1].split("/")[0]
                 evt = SpiderFootEvent("CLOUD_STORAGE_BUCKET", b, self.__name__, event)
                 self.notifyListeners(evt)
-            return None
+            return
 
         targets = [eventData.replace('.', '')]
         kw = self.sf.domainKeyword(eventData, self.opts['_internettlds'])
@@ -178,7 +178,7 @@ class sfp_s3bucket(SpiderFootPlugin):
                 suffixes = [''] + self.opts['suffixes'].split(',')
                 for s in suffixes:
                     if self.checkForStop():
-                        return None
+                        return
 
                     b = t + s + "." + e
                     url = "https://" + b
