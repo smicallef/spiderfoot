@@ -9,7 +9,6 @@
 [![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/github/smicallef/spiderfoot)](https://libraries.io/github/smicallef/spiderfoot)
 [![Codecov](https://codecov.io/github/smicallef/spiderfoot/coverage.svg)](https://codecov.io/github/smicallef/spiderfoot)
 [![Twitter Follow](https://img.shields.io/twitter/follow/spiderfoot?label=follow&style=social)](https://twitter.com/spiderfoot)
-[![Discourse Posts](https://img.shields.io/discourse/posts?server=https%3A%2F%2Fforum.spiderfoot.net%2F)](https://forum.spiderfoot.net/)
 [![Discord](https://img.shields.io/discord/770524432464216074)](https://discord.gg/vyvztrG)
 
 **SpiderFoot** is an open source intelligence (OSINT) automation tool. It integrates with just about every data source available and utilises a range of methods for data analysis, making that data easy to navigate. 
@@ -116,7 +115,7 @@ Check out the [documentation](https://www.spiderfoot.net/documentation) and our 
 
 ### COMMUNITY
 
-Whether you're a contributor, user or just curious about SpiderFoot and OSINT in general, we'd love to have you join our community! SpiderFoot now has a [Discord server](https://discord.gg/vyvztrG) for chat, and a [Discourse server](https://forum.spiderfoot.net/) to serve as a more permanent knowledge base.
+Whether you're a contributor, user or just curious about SpiderFoot and OSINT in general, we'd love to have you join our community! SpiderFoot now has a [Discord server](https://discord.gg/vyvztrG) for seeking help from the community, requesting features or just general OSINT chit-chat.
 
 ### MODULES / INTEGRATIONS
 
