@@ -149,15 +149,15 @@ class sfp_emailcrawlr(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_emailcrawlr but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -168,7 +168,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
 
             if data is None:
                 self.sf.debug(f"No information found for domain {eventData}")
-                return None
+                return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
@@ -177,7 +177,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
 
             if not emails:
                 self.sf.info(f"No emails found for domain {eventData}")
-                return None
+                return
 
             for res in emails:
                 email = res.get('email')

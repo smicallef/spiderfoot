@@ -103,7 +103,8 @@ class sfp_builtwith(SpiderFootPlugin):
             return json.loads(res['content'])['Relationships']
         except Exception as e:
             self.sf.error(f"Error processing JSON response from builtwith.com: {e}")
-            return None
+
+        return None
 
     def queryDomainInfo(self, t):
         url = f"https://api.builtwith.com/rv1/api.json?LOOKUP={t}&KEY={self.opts['api_key']}"
@@ -120,7 +121,8 @@ class sfp_builtwith(SpiderFootPlugin):
             return json.loads(res['content'])['Results'][0]
         except Exception as e:
             self.sf.error(f"Error processing JSON response from builtwith.com: {e}")
-            return None
+
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -129,18 +131,18 @@ class sfp_builtwith(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_builtwith but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -209,7 +211,7 @@ class sfp_builtwith(SpiderFootPlugin):
 
         data = self.queryRelationships(eventData)
         if data is None:
-            return None
+            return
 
         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
 

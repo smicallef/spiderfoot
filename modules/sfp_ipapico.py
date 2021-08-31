@@ -87,7 +87,8 @@ class sfp_ipapico(SpiderFootPlugin):
             return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -100,7 +101,7 @@ class sfp_ipapico(SpiderFootPlugin):
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -108,7 +109,7 @@ class sfp_ipapico(SpiderFootPlugin):
 
         if data is None:
             self.sf.info("No results returned from ipapi.co")
-            return None
+            return
 
         if data.get('country'):
             location = ', '.join(filter(None, [data.get('city'), data.get('region'), data.get('region_code'), data.get('country_name'), data.get('country')]))

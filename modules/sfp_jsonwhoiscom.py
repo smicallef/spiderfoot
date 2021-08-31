@@ -153,15 +153,15 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_jsonwhoiscom but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -171,7 +171,7 @@ class sfp_jsonwhoiscom(SpiderFootPlugin):
 
         if res is None:
             self.sf.debug(f"No information found for domain {eventData}")
-            return None
+            return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
         self.notifyListeners(evt)

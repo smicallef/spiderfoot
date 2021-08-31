@@ -374,7 +374,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
     def processDomain(self, domainName, parentEvent, affil=False, host=None):
         if domainName in self.domresults:
             self.sf.debug(f"Skipping domain, {domainName}, already processed.")
-            return None
+            return
 
         self.domresults[domainName] = True
 
@@ -382,7 +382,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
             domevt = SpiderFootEvent("AFFILIATE_DOMAIN_NAME", domainName,
                                      self.__name__, parentEvent)
             self.notifyListeners(domevt)
-            return None
+            return
 
         if self.getTarget().matches(domainName):
             domevt = SpiderFootEvent("DOMAIN_NAME", domainName,
@@ -392,11 +392,10 @@ class sfp_dnsresolve(SpiderFootPlugin):
             # Only makes sense to link this event with a source event
             # that sits on the parent domain.
             if not host:
-                return None
+                return
             if parentEvent.data.endswith("." + domainName):
                 domevt = SpiderFootEvent("DOMAIN_NAME_PARENT", domainName,
                                          self.__name__, parentEvent)
                 self.notifyListeners(domevt)
-        return None
 
 # End of sfp_dnsresolve class

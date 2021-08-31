@@ -141,7 +141,7 @@ class sfp_honeypot(SpiderFootPlugin):
             self.sf.debug(f"Checking Honeypot: {lookup}")
             addrs = self.sf.resolveHost(lookup)
             if not addrs:
-                return None
+                return
 
             self.sf.debug(f"Addresses returned: {addrs}")
 
@@ -166,8 +166,6 @@ class sfp_honeypot(SpiderFootPlugin):
         except Exception as e:
             self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
-        return None
-
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -176,43 +174,43 @@ class sfp_honeypot(SpiderFootPlugin):
         parentEvent = event
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_honeypot but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxnetblock']))
-                    return None
+                    return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxsubnet']))
-                    return None
+                    return
 
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):
                 if self.checkForStop():
-                    return None
+                    return
                 self.queryAddr(str(addr), parentEvent)
         else:
             self.queryAddr(eventData, parentEvent)

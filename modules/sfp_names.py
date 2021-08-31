@@ -80,20 +80,20 @@ class sfp_names(SpiderFootPlugin):
             if url is not None:
                 if self.opts['filterjscss'] and (".js" in url or ".css" in url):
                     self.sf.debug("Ignoring web content from CSS/JS.")
-                    return None
+                    return
 
         # Find names in email addresses in "<firstname>.<lastname>@<domain>" format
         if eventName == "EMAILADDR" and self.opts['emailtoname']:
             potential_name = eventData.split("@")[0]
 
             if "." not in potential_name:
-                return None
+                return
 
             name = " ".join(map(str.capitalize, potential_name.split(".")))
 
             # Names usually do not contain numbers
             if re.search("[0-9]", name):
-                return None
+                return
 
             evt = SpiderFootEvent("HUMAN_NAME", name, self.__name__, event)
             if event.moduleDataSource:
@@ -101,7 +101,7 @@ class sfp_names(SpiderFootPlugin):
             else:
                 evt.moduleDataSource = "Unknown"
             self.notifyListeners(evt)
-            return None
+            return
 
         # For RAW_RIR_DATA, there are only specific modules we
         # expect to see RELEVANT names within.
@@ -111,7 +111,7 @@ class sfp_names(SpiderFootPlugin):
                                      "sfp_opencorporates", "sfp_slideshare",
                                      "sfp_twitter", "sfp_venmo", "sfp_instagram"]:
                 self.sf.debug("Ignoring RAW_RIR_DATA from untrusted module.")
-                return None
+                return
 
         # Stage 1: Find things that look (very vaguely) like names
         rx = re.compile(r"([A-Z][a-z�������������]+)\s+.?.?\s?([A-Z][�������������a-zA-Z\'\-]+)")

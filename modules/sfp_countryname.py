@@ -193,7 +193,7 @@ class sfp_countryname(SpiderFootPlugin):
 
         if eventDataHash in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventDataHash] = True
 
@@ -221,7 +221,7 @@ class sfp_countryname(SpiderFootPlugin):
 
         if not countryNames:
             self.sf.debug(f"Found no country names associated with {eventName}: {eventData}")
-            return None
+            return
 
         for countryName in set(countryNames):
             if not countryName:

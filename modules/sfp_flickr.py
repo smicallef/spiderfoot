@@ -130,7 +130,8 @@ class sfp_flickr(SpiderFootPlugin):
             return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -140,7 +141,7 @@ class sfp_flickr(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -148,14 +149,14 @@ class sfp_flickr(SpiderFootPlugin):
 
         if srcModuleName == 'sfp_flickr':
             self.sf.debug(f"Ignoring {eventData}, from self.")
-            return None
+            return
 
         # Retrieve API key
         api_key = self.retrieveApiKey()
 
         if not api_key:
             self.sf.error("Failed to obtain API key")
-            return None
+            return
 
         self.sf.debug(f"Retrieved API key: {api_key}")
 
@@ -166,26 +167,26 @@ class sfp_flickr(SpiderFootPlugin):
         per_page = self.opts['per_page']
         while page <= pages:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             data = self.query(eventData, api_key, page=page, per_page=per_page)
 
             if data is None:
-                return None
+                return
 
             # Check the response is ok
             if data.get('stat') != "ok":
                 self.sf.debug("Error retrieving search results.")
-                return None
+                return
 
             photos = data.get('photos')
 
             if not photos:
                 self.sf.debug("No search results.")
-                return None
+                return
 
             # Calculate number of pages to retrieve
             result_pages = int(photos.get('pages', 0))
@@ -245,10 +246,10 @@ class sfp_flickr(SpiderFootPlugin):
 
         for host in set(hosts):
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             if self.opts['dns_resolve'] and not self.sf.resolveHost(host):
                 self.sf.debug(f"Host {host} could not be resolved")

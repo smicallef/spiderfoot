@@ -74,7 +74,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventDataHash in self.events:
-            return None
+            return
 
         self.events[eventDataHash] = True
 
@@ -84,7 +84,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             network = ipaddress.ip_network(f"{eventData}/{netmask}", strict=False)
         except ValueError:
             self.sf.error(f"Invalid IP address received: {eventData}")
-            return None
+            return
 
         self.sf.debug(f"Lookaside max: {network.network_address}, min: {network.broadcast_address}")
 
@@ -92,7 +92,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             sip = str(ip)
             self.sf.debug("Attempting look-aside lookup of: " + sip)
             if self.checkForStop():
-                return None
+                return
 
             if sip in self.hostresults or sip == eventData:
                 continue
@@ -122,7 +122,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
 
             for addr in addrs:
                 if self.checkForStop():
-                    return None
+                    return
 
                 if addr == sip:
                     continue
@@ -148,8 +148,7 @@ class sfp_dnsneighbor(SpiderFootPlugin):
             if parentHash in self.hostresults[host] or parentEvent.data == host:
                 self.sf.debug("Skipping host, " + host + ", already processed.")
                 return None
-            else:
-                self.hostresults[host] = self.hostresults[host] + [parentHash]
+            self.hostresults[host] = self.hostresults[host] + [parentHash]
 
         self.sf.debug("Found host: " + host)
         # If the returned hostname is aliaseed to our

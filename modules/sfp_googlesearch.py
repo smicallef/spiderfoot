@@ -85,18 +85,18 @@ class sfp_googlesearch(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_googlesearch but did not set a Google API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -112,7 +112,7 @@ class sfp_googlesearch(SpiderFootPlugin):
         )
         if res is None:
             # Failed to talk to the Google API or no results returned
-            return None
+            return
 
         urls = res["urls"]
         new_links = list(set(urls) - set(self.results.keys()))

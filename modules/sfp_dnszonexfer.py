@@ -61,11 +61,11 @@ class sfp_dnszonexfer(SpiderFootPlugin):
 
         if srcModuleName == "sfp_dnszonexfer":
             self.sf.debug(f"Ignoring {eventName}, from self.")
-            return None
+            return
 
         if eventDataHash in self.events:
             self.sf.debug("Skipping duplicate event for " + eventData)
-            return None
+            return
 
         self.events[eventDataHash] = True
 
@@ -79,7 +79,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         if not self.sf.validIP(eventData):
             nsips = self.sf.resolveHost(eventData)
             if not nsips:
-                return None
+                return
 
             if len(nsips) > 0:
                 for n in nsips:
@@ -88,7 +88,7 @@ class sfp_dnszonexfer(SpiderFootPlugin):
                         break
             else:
                 self.sf.error("Couldn't resolve the name server, so not attempting zone transfer.")
-                return None
+                return
         else:
             nsip = eventData
 

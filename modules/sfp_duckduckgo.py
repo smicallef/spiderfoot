@@ -77,11 +77,11 @@ class sfp_duckduckgo(SpiderFootPlugin):
         if self.opts['affiliatedomains'] and "AFFILIATE_" in eventName:
             eventData = self.sf.hostDomain(eventData, self.opts['_internettlds'])
             if not eventData:
-                return None
+                return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -91,17 +91,17 @@ class sfp_duckduckgo(SpiderFootPlugin):
 
         if res['content'] is None:
             self.sf.error(f"Unable to fetch {url}")
-            return None
+            return
 
         try:
             ret = json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from DuckDuckGo: {e}")
-            return None
+            return
 
         if not ret['Heading']:
             self.sf.debug(f"No DuckDuckGo information for {eventData}")
-            return None
+            return
 
         # Submit the DuckDuckGo results for analysis
         evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],

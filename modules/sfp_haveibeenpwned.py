@@ -164,18 +164,18 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_haveibeenpwned but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -199,10 +199,10 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
 
         # This API endpoint doesn't support phone numbers
         if eventName == "PHONE_NUMBER":
-            return None
+            return
         pasteData = self.queryPaste(eventData)
         if pasteData is None:
-            return None
+            return
 
         sites = {
             "Pastebin": "https://pastebin.com/",
@@ -229,7 +229,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
                 self.sf.debug("Found a link: " + link)
 
                 if self.checkForStop():
-                    return None
+                    return
 
                 res = self.sf.fetchUrl(link, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 

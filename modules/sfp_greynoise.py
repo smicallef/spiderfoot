@@ -126,40 +126,40 @@ class sfp_greynoise(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_greynoise but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxnetblock']))
-                    return None
+                    return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
             else:
                 if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                     self.sf.debug("Network size bigger than permitted: "
                                   + str(IPNetwork(eventData).prefixlen) + " > "
                                   + str(self.opts['maxsubnet']))
-                    return None
+                    return
 
         if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
             evtType = 'MALICIOUS_IPADDR'
@@ -169,10 +169,10 @@ class sfp_greynoise(SpiderFootPlugin):
         ret = self.queryIP(eventData)
 
         if not ret:
-            return None
+            return
 
         if "data" not in ret:
-            return None
+            return
 
         if len(ret["data"]) > 0:
             for rec in ret["data"]:
@@ -184,7 +184,7 @@ class sfp_greynoise(SpiderFootPlugin):
                     age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                     if self.opts['age_limit_days'] > 0 and lastseen_ts < age_limit_ts:
                         self.sf.debug("Record found but too old, skipping.")
-                        return None
+                        return
 
                     # Only report meta data about the target, not affiliates
                     if rec.get("metadata") and eventName == "IP_ADDRESS":

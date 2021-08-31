@@ -97,11 +97,11 @@ class sfp_googlemaps(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -112,13 +112,13 @@ class sfp_googlemaps(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         res = self.query(eventData)
 
         if not res:
             self.sf.debug(f"No information found for {eventData}")
-            return None
+            return
 
         evt = SpiderFootEvent(
             "RAW_RIR_DATA",
@@ -132,10 +132,10 @@ class sfp_googlemaps(SpiderFootPlugin):
             data = json.loads(res['content'])['results'][0]
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            return
 
         if srcModuleName == "sfp_googlemaps":
-            return None
+            return
 
         geometry = data.get('geometry')
         if geometry:

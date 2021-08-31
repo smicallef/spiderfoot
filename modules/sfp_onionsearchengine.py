@@ -83,11 +83,11 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         eventData = event.data
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug("Already did a search for " + eventData + ", skipping.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -96,7 +96,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
         while keepGoing and page <= int(self.opts['max_pages']):
             # Check if we've been asked to stop
             if self.checkForStop():
-                return None
+                return
 
             params = {
                 'search': '"' + eventData.encode('raw_unicode_escape').decode("ascii", errors='replace') + '"',
@@ -111,7 +111,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
 
             if data is None or not data.get('content'):
                 self.sf.info("No results returned from onionsearchengine.com.")
-                return None
+                return
 
             page += 1
 
@@ -119,7 +119,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
                 # Work around some kind of bug in the site
                 if "you didn't submit a keyword" in data['content']:
                     continue
-                return None
+                return
 
             if "forward >" not in data['content']:
                 keepGoing = False
@@ -134,7 +134,7 @@ class sfp_onionsearchengine(SpiderFootPlugin):
 
             for link in links:
                 if self.checkForStop():
-                    return None
+                    return
 
                 if link in self.results:
                     continue

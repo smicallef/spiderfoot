@@ -171,7 +171,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -180,11 +180,11 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
                 "You enabled sfp_googlesafebrowsing but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -206,7 +206,7 @@ class sfp_googlesafebrowsing(SpiderFootPlugin):
         rec = self.query(eventData)
 
         if rec is None:
-            return None
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(rec), self.__name__, event)
         self.notifyListeners(evt)

@@ -75,10 +75,10 @@ class sfp_callername(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -87,14 +87,14 @@ class sfp_callername(SpiderFootPlugin):
         # Only US numbers are supported (+1)
         if not eventData.startswith('+1'):
             self.sf.debug('Unsupported phone number: ' + eventData)
-            return None
+            return
 
         # Strip country code (+1) and formatting
         number = eventData.lstrip('+1').strip('(').strip(')').strip('-').strip(' ')
 
         if not number.isdigit():
             self.sf.debug('Invalid phone number: ' + number)
-            return None
+            return
 
         # Query CallerName.com for the specified phone number
         url = f"https://callername.com/{number}"
@@ -104,11 +104,11 @@ class sfp_callername(SpiderFootPlugin):
 
         if res['content'] is None:
             self.sf.debug('No response from CallerName.com')
-            return None
+            return
 
         if res['code'] != '200':
             self.sf.debug('No phone information found for ' + eventData)
-            return None
+            return
 
         location_match = re.findall(r'<div class="callerid"><h4>.*?</h4><p>(.+?)</p></div>', res['content'], re.MULTILINE | re.DOTALL)
 

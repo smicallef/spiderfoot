@@ -129,19 +129,19 @@ class sfp_citadel(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         data = self.queryEmail(eventData)
 
         if data is None:
-            return None
+            return
 
         error = data.get('error')
         message = data.get('message')
@@ -150,11 +150,11 @@ class sfp_citadel(SpiderFootPlugin):
             self.sf.error(f"Error encountered processing {eventData}: {message}")
             if "MISSING API" in message:
                 self.errorState = True
-                return None
-            return None
+                return
+            return
 
         if not message:
-            return None
+            return
 
         for site in message:
             self.sf.info(f"Found Leak-Lookup entry for {eventData}: {site}")

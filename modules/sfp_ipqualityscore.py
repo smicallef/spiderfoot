@@ -158,7 +158,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -167,11 +167,11 @@ class sfp_ipqualityscore(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API Key!"
             )
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData} as already mapped.")
-            return None
+            return
         self.results[eventData] = True
 
         data = self.query(eventData, eventName)

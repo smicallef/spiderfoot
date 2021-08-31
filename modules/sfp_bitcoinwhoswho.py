@@ -109,18 +109,18 @@ class sfp_bitcoinwhoswho(SpiderFootPlugin):
 
     def handleEvent(self, event):
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
 
         if self.opts["api_key"] == "":
             self.sf.error(f"You enabled {self.__class__.__name__} but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if event.data in self.results:
             self.sf.debug(f"Skipping {event.data}, already checked.")
-            return None
+            return
         self.results[event.data] = True
 
         if event.eventType == "BITCOIN_ADDRESS":

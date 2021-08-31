@@ -254,15 +254,15 @@ class sfp_networksdb(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         if self.opts['api_key'] == '':
             self.sf.error("You enabled sfp_networksdb but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -314,7 +314,7 @@ class sfp_networksdb(SpiderFootPlugin):
 
             for co in set(cohosts):
                 if self.checkForStop():
-                    return None
+                    return
 
                 if co in self.results:
                     continue
@@ -342,13 +342,13 @@ class sfp_networksdb(SpiderFootPlugin):
 
             if data is None:
                 self.sf.debug("No forward DNS results for " + eventData)
-                return None
+                return
 
             res = data.get('results')
 
             if not res:
                 self.sf.debug("No forward DNS results for " + eventData)
-                return None
+                return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(res), self.__name__, event)
             self.notifyListeners(evt)

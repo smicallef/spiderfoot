@@ -144,13 +144,13 @@ class sfp_dehashed(SpiderFootPlugin):
         eventData = event.data
 
         if srcModuleName == self.__name__:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -167,7 +167,7 @@ class sfp_dehashed(SpiderFootPlugin):
 
         while currentPage <= maxPages:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
                 break
@@ -175,7 +175,7 @@ class sfp_dehashed(SpiderFootPlugin):
             data = self.query(event, perPage, currentPage)
 
             if not data:
-                return None
+                return
 
             breachResults = set()
             emailResults = set()
@@ -230,6 +230,6 @@ class sfp_dehashed(SpiderFootPlugin):
             currentPage += 1
 
             if data.get('total') < self.opts['per_page']:
-                return None
+                break
 
 # End of sfp_dehashed class

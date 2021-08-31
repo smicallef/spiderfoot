@@ -77,7 +77,7 @@ class sfp_errors(SpiderFootPlugin):
 
         # We only want web content from the target
         if srcModuleName != "sfp_spider":
-            return None
+            return
 
         eventSource = event.actualSource
 
@@ -89,7 +89,7 @@ class sfp_errors(SpiderFootPlugin):
         # We only want web content for pages on the target site
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
             self.sf.debug("Not collecting web content information for external sites.")
-            return None
+            return
 
         for regexpGrp in list(regexps.keys()):
             if regexpGrp in self.results[eventSource]:

@@ -64,8 +64,6 @@ class sfp_s3bucket(SpiderFootPlugin):
         return ["DOMAIN_NAME", "LINKED_URL_EXTERNAL"]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["CLOUD_STORAGE_BUCKET", "CLOUD_STORAGE_BUCKET_OPEN"]
 
@@ -73,11 +71,11 @@ class sfp_s3bucket(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=10, useragent="SpiderFoot", noLog=True)
 
         if not res['content']:
-            return None
+            return
 
         if "NoSuchBucket" in res['content']:
             self.sf.debug(f"Not a valid bucket: {url}")
-            return None
+            return
 
         # Bucket found
         if res['code'] in ["301", "302", "200"]:
@@ -98,7 +96,7 @@ class sfp_s3bucket(SpiderFootPlugin):
 
         for site in siteList:
             if self.checkForStop():
-                return None
+                return False
 
             self.sf.info("Spawning thread to check bucket: " + site)
             tname = str(random.SystemRandom().randint(0, 999999999))
