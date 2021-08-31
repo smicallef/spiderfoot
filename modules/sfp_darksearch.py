@@ -105,11 +105,11 @@ class sfp_darksearch(SpiderFootPlugin):
         eventData = event.data
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -121,12 +121,12 @@ class sfp_darksearch(SpiderFootPlugin):
             found = False
 
             if self.checkForStop():
-                return None
+                return
 
             query_results = self.query(eventData, page)
 
             if query_results is None:
-                return None
+                return
 
             page += 1
 
@@ -141,7 +141,7 @@ class sfp_darksearch(SpiderFootPlugin):
             data = query_results.get('data')
 
             if data is None:
-                return None
+                return
 
             for result in data:
                 if result is None:

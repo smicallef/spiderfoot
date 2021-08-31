@@ -186,7 +186,7 @@ class sfp_binaryedge(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -195,11 +195,11 @@ class sfp_binaryedge(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -207,7 +207,7 @@ class sfp_binaryedge(SpiderFootPlugin):
             ret = self.query(eventData, "email")
             if ret is None:
                 self.sf.info(f"No leak info for {eventData}")
-                return None
+                return
 
             for rec in ret:
                 events = rec.get('events')
@@ -221,27 +221,27 @@ class sfp_binaryedge(SpiderFootPlugin):
                     self.notifyListeners(e)
 
             # No further API endpoints available for email addresses. we can bail out here
-            return None
+            return
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
 
             net_size = IPNetwork(eventData).prefixlen
             max_netblock = self.opts['maxnetblock']
             if net_size < max_netblock:
                 self.sf.debug(f"Network size bigger than permitted: {net_size} > {max_netblock}")
-                return None
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
 
             net_size = IPNetwork(eventData).prefixlen
             max_subnet = self.opts['maxsubnet']
             if net_size < max_subnet:
                 self.sf.debug(f"Network size bigger than permitted: {net_size} > {max_subnet}")
-                return None
+                return
 
         # For IP Addresses, do the additional passive DNS lookup
         if eventName == "IP_ADDRESS":
@@ -249,7 +249,7 @@ class sfp_binaryedge(SpiderFootPlugin):
             ret = self.query(eventData, "passive")
             if ret is None:
                 self.sf.info(f"No Passive DNS info for {eventData}")
-                return None
+                return
 
             for rec in ret:
                 events = rec.get('events')
@@ -285,7 +285,7 @@ class sfp_binaryedge(SpiderFootPlugin):
             ret = self.query(eventData, "subs")
             if ret is None:
                 self.sf.info(f"No hosts found for {eventData}")
-                return None
+                return
 
             for rec in ret:
                 events = rec.get('events')
@@ -318,10 +318,10 @@ class sfp_binaryedge(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             if addr in self.checkedips:
                 continue
@@ -352,10 +352,10 @@ class sfp_binaryedge(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             if addr in self.checkedips:
                 continue
@@ -392,10 +392,10 @@ class sfp_binaryedge(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             if addr in self.checkedips:
                 continue
@@ -403,7 +403,7 @@ class sfp_binaryedge(SpiderFootPlugin):
             ret = self.query(addr, "ip")
             if ret is None:
                 self.sf.info(f"No port/banner info for {addr}")
-                return None
+                return
 
             for rec in ret:
                 events = rec.get('events')

@@ -150,13 +150,13 @@ class sfp_bgpview(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -165,7 +165,7 @@ class sfp_bgpview(SpiderFootPlugin):
 
             if not data:
                 self.sf.info("No results found for ASN " + eventData)
-                return None
+                return
 
             e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(e)
@@ -173,7 +173,7 @@ class sfp_bgpview(SpiderFootPlugin):
             address = data.get('owner_address')
 
             if not address:
-                return None
+                return
 
             evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join([_f for _f in address if _f]), self.__name__, event)
             self.notifyListeners(evt)
@@ -183,7 +183,7 @@ class sfp_bgpview(SpiderFootPlugin):
 
             if not data:
                 self.sf.info("No results found for netblock " + eventData)
-                return None
+                return
 
             e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(e)
@@ -191,7 +191,7 @@ class sfp_bgpview(SpiderFootPlugin):
             address = data.get('owner_address')
 
             if not address:
-                return None
+                return
 
             evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join([_f for _f in address if _f]), self.__name__, event)
             self.notifyListeners(evt)
@@ -201,7 +201,7 @@ class sfp_bgpview(SpiderFootPlugin):
 
             if not data:
                 self.sf.info("No results found for IP address " + eventData)
-                return None
+                return
 
             e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(e)
@@ -210,7 +210,7 @@ class sfp_bgpview(SpiderFootPlugin):
 
             if not prefixes:
                 self.sf.info("No prefixes found for IP address " + eventData)
-                return None
+                return
 
             for prefix in prefixes:
                 p = prefix.get('prefix')

@@ -97,29 +97,27 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'])
 
         if res['content'] is None:
-            return None
+            return
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response from F-Secure Riddler: {e}")
-            return None
+            return
 
         try:
             token = data.get('response').get('user').get('authentication_token')
         except Exception:
             self.sf.error('Login failed')
             self.errorState = True
-            return None
+            return
 
         if not token:
             self.sf.error('Login failed')
             self.errorState = True
-            return None
+            return
 
         self.token = token
-
-        return None
 
     # https://riddler.io/help/search
     def query(self, qry):
@@ -165,22 +163,22 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == 'sfp_fsecure_riddler':
             self.sf.debug("Ignoring " + eventData + ", from self.")
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         if self.opts['username'] == '' or self.opts['password'] == '':
             self.sf.error('You enabled sfp_fsecure_riddler but did not set an API username/password!')
             self.errorState = True
-            return None
+            return
 
         if not self.token:
             self.login()
@@ -196,7 +194,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
 
         if not data:
             self.sf.info("No results found for " + eventData)
-            return None
+            return
 
         e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)

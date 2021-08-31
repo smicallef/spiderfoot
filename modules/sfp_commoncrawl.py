@@ -139,10 +139,10 @@ class sfp_commoncrawl(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -151,23 +151,23 @@ class sfp_commoncrawl(SpiderFootPlugin):
 
         if not self.indexBase:
             self.sf.error("Unable to fetch CommonCrawl index.")
-            return None
+            return
 
         if len(self.indexBase) == 0:
             self.sf.error("Unable to fetch CommonCrawl index.")
-            return None
+            return
 
         data = self.search(eventData)
         if not data:
             self.sf.error("Unable to obtain content from CommonCrawl.")
-            return None
+            return
 
         sent = list()
         for content in data:
             try:
                 for line in content.split("\n"):
                     if self.checkForStop():
-                        return None
+                        return
 
                     if len(line) < 2:
                         continue

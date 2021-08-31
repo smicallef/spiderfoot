@@ -116,24 +116,24 @@ class sfp_clearbit(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_clearbit but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         data = self.query(eventData)
         if not data:
-            return None
+            return
 
         try:
             # Get the name associated with the e-mail

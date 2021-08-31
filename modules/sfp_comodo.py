@@ -96,7 +96,7 @@ class sfp_comodo(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
         self.results[eventData] = True
 
         # Check that it resolves first, as it becomes a valid
@@ -105,7 +105,7 @@ class sfp_comodo(SpiderFootPlugin):
             if self.sf.resolveHost(eventData):
                 resolved = True
         except Exception:
-            return None
+            return
 
         if resolved:
             found = self.queryAddr(eventData)

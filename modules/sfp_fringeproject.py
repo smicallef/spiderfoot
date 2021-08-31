@@ -103,17 +103,17 @@ class sfp_fringeproject(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if srcModuleName == 'sfp_fringeproject':
             self.sf.debug("Ignoring " + eventData + ", from self.")
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -121,7 +121,7 @@ class sfp_fringeproject(SpiderFootPlugin):
 
         if not data:
             self.sf.info("No results found for " + eventData)
-            return None
+            return
 
         e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(e)

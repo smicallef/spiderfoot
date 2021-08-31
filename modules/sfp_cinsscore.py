@@ -121,10 +121,10 @@ class sfp_cinsscore(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -133,28 +133,28 @@ class sfp_cinsscore(SpiderFootPlugin):
             evtType = 'MALICIOUS_IPADDR'
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
-                return None
+                return
             targetType = 'ip'
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
-                return None
+                return
             targetType = 'netblock'
             evtType = 'MALICIOUS_NETBLOCK'
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
-                return None
+                return
             targetType = 'netblock'
             evtType = 'MALICIOUS_SUBNET'
         else:
-            return None
+            return
 
         self.sf.debug(f"Checking maliciousness of {eventData} with cinsscore.com")
 
         url = self.query(eventData, targetType)
 
         if not url:
-            return None
+            return
 
         text = f"cinsscore.com [{eventData}]\n<SFURL>{url}</SFURL>"
         evt = SpiderFootEvent(evtType, text, self.__name__, event)

@@ -301,27 +301,27 @@ class sfp_hackertarget(SpiderFootPlugin):
 
         if srcModuleName == "sfp_hackertarget" and eventName == "IP_ADDRESS":
             self.sf.debug(f"Ignoring {eventName}, from self.")
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
 
             max_netblock = self.opts['maxnetblock']
             net_size = IPNetwork(eventData).prefixlen
             if net_size < max_netblock:
                 self.sf.debug(f"Network size bigger than permitted: {net_size} > {max_netblock}")
-                return None
+                return
 
         if eventName == 'DOMAIN_NAME_PARENT':
             records = self.zoneTransfer(eventData)
 
             if not records:
-                return None
+                return
 
             evt = SpiderFootEvent('RAW_DNS_RECORDS', "\n".join(records), self.__name__, event)
             self.notifyListeners(evt)
@@ -364,7 +364,7 @@ class sfp_hackertarget(SpiderFootPlugin):
                             evt = SpiderFootEvent('DOMAIN_NAME', host, self.__name__, event)
                             self.notifyListeners(evt)
 
-            return None
+            return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -380,7 +380,7 @@ class sfp_hackertarget(SpiderFootPlugin):
 
         for ip in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             hosts = self.reverseIpLookup(ip)
             if not hosts:

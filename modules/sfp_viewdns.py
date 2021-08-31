@@ -109,33 +109,33 @@ class sfp_viewdns(SpiderFootPlugin):
         if res['code'] in ["400", "429", "500", "403"]:
             self.sf.error("ViewDNS.info API key seems to have been rejected or you have exceeded usage limits.")
             self.errorState = True
-            return None
+            return
 
         if res['content'] is None:
             self.sf.info(f"No ViewDNS.info data found for {qry}")
-            return None
+            return
 
         if res['content'] == 'Query limit reached for the supplied API key.':
             self.sf.error("ViewDNS.info API usage limit exceeded.")
             self.errorState = True
-            return None
+            return
 
         try:
             info = json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from ViewDNS.info: {e}")
-            return None
+            return
 
         if not info.get("query"):
             self.sf.error("Error querying ViewDNS.info. Could be unavailable right now.")
             self.errorState = True
-            return None
+            return
 
         response = info.get("response")
         if response:
             if response.get("error"):
                 self.sf.error(f"Error querying ViewDNS.info: {response.get('error')}")
-                return None
+                return
 
             if len(response.get(responsekey, list())) == pagesize:
                 self.sf.debug(f"Looping at ViewDNS page {page}")

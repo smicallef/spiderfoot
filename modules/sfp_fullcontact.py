@@ -165,20 +165,20 @@ class sfp_fullcontact(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if self.opts["api_key"] == "":
             self.sf.error(
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -186,7 +186,7 @@ class sfp_fullcontact(SpiderFootPlugin):
             data = self.queryPersonByEmail(eventData)
 
             if not data:
-                return None
+                return
 
             full_name = data.get('fullName')
 
@@ -194,13 +194,13 @@ class sfp_fullcontact(SpiderFootPlugin):
                 e = SpiderFootEvent("RAW_RIR_DATA", f"Possible full name: {full_name}", self.__name__, event)
                 self.notifyListeners(e)
 
-            return None
+            return
 
         if eventName == "DOMAIN_NAME":
             data = self.queryCompany(eventData)
 
             if not data:
-                return None
+                return
 
             if data.get("details"):
                 data = data['details']

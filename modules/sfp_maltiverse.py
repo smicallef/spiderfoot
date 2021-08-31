@@ -124,36 +124,36 @@ class sfp_maltiverse(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
+                return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
                 self.sf.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxnetblock']))
-                return None
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
+                return
 
             if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
                 self.sf.debug("Network size bigger than permitted: "
                               + str(IPNetwork(eventData).prefixlen) + " > "
                               + str(self.opts['maxsubnet']))
-                return None
+                return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -163,13 +163,13 @@ class sfp_maltiverse(SpiderFootPlugin):
         else:
             # If user has enabled affiliate checking
             if eventName == "AFFILIATE_IPADDR" and not self.opts['checkaffiliates']:
-                return None
+                return
             qrylist.append(eventData)
 
         for addr in qrylist:
 
             if self.checkForStop():
-                return None
+                return
 
             data = self.queryIPAddress(addr)
 

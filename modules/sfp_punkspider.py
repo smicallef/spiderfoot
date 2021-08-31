@@ -89,13 +89,13 @@ class sfp_punkspider(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         res = self.query(eventData)
         if not res:
-            return None
+            return
 
         for rec in res:
             if 'vulns' not in res[rec]:

@@ -58,21 +58,21 @@ class sfp_cookie(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
         if eventSource in self.results:
-            return None
+            return
         else:
             self.results[eventSource] = True
 
         if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
             self.sf.debug("Not collecting cookies from external sites.")
-            return None
+            return
 
         try:
             jdata = json.loads(eventData)
             if jdata is None:
-                return None
+                return
         except Exception:
             self.sf.error("Received HTTP headers from another module in an unexpected format.")
-            return None
+            return
 
         if 'set-cookie' in jdata:
             evt = SpiderFootEvent("TARGET_WEB_COOKIE", jdata['set-cookie'],

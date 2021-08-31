@@ -66,7 +66,7 @@ class sfp_myspace(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -81,14 +81,14 @@ class sfp_myspace(SpiderFootPlugin):
 
             if res['content'] is None:
                 self.sf.error(f"Could not fetch MySpace content for {email}")
-                return None
+                return
 
             # Extract HTML containing potential profile matches
             profiles = re.findall(r'<a href="/[a-zA-Z0-9_]+">[^<]+</a></h6>', res['content'])
 
             if not profiles:
                 self.sf.debug(f"No profiles found for e-mail: {email}")
-                return None
+                return
 
             # The first result is the closest match, but whether it's an exact match is unknown.
             profile = profiles[0]
@@ -98,11 +98,11 @@ class sfp_myspace(SpiderFootPlugin):
                 matches = re.findall(r'<a href=\"\/([a-zA-Z0-9_]+)\".*[\&; :\"\#\*\(\"\'\;\,\>\.\?\!]+' + email + r'[\&; :\"\#\*\)\"\'\;\,\<\.\?\!]+', profile, re.IGNORECASE)
             except Exception:
                 self.sf.debug("Malformed e-mail address, skipping.")
-                return None
+                return
 
             if not matches:
                 self.sf.debug("No concrete match for that e-mail.")
-                return None
+                return
 
             name = matches[0]
             e = SpiderFootEvent(
@@ -120,28 +120,28 @@ class sfp_myspace(SpiderFootPlugin):
                 url = eventData.split(": ")[1].replace("<SFURL>", "").replace("</SFURL>", "")
             except Exception as e:
                 self.sf.error(f"Unable to parse SOCIAL_MEDIA: {eventData} ({e})")
-                return None
+                return
 
             if network != "MySpace":
                 self.sf.debug(f"Skipping social network profile, {url}, as not a MySpace profile")
-                return None
+                return
 
             res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'])
 
             if res['content'] is None:
-                return None
+                return
 
             data = re.findall(r'<div class="location_[^"]+" data-display-text="(.+?)"', res['content'])
 
             if not data:
-                return None
+                return
 
             location = data[0]
 
             if len(location) < 5 or len(location) > 100:
                 self.sf.debug("Skipping likely invalid location.")
-                return None
+                return
 
             e = SpiderFootEvent("GEOINFO", location, self.__name__, event)
             self.notifyListeners(e)

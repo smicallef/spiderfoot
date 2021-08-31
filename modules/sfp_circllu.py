@@ -136,23 +136,23 @@ class sfp_circllu(SpiderFootPlugin):
         ret = None
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         # Ignore messages from myself
         if srcModuleName == "sfp_circllu":
             self.sf.debug("Ignoring " + eventName + ", from self.")
-            return None
+            return
 
         if self.opts['api_key_login'] == "" or self.opts['api_key_password'] == "":
             self.sf.error("You enabled sfp_circllu but did not set an credentials!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -195,7 +195,7 @@ class sfp_circllu(SpiderFootPlugin):
             ret = self.query(eventData, "PDNS")
             if not ret:
                 self.sf.info("No CIRCL.LU passive DNS data found for " + eventData)
-                return None
+                return
 
             # CIRCL.LU doesn't return valid JSON - it's one JSON record per line
             for line in ret.split("\n"):

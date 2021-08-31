@@ -80,7 +80,7 @@ class sfp_crt(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -97,16 +97,15 @@ class sfp_crt(SpiderFootPlugin):
 
         if res['content'] is None:
             self.sf.info("No certificate transparency info found for " + eventData)
-            return None
+            return
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
         if data is None or len(data) == 0:
-            return None
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
@@ -167,7 +166,7 @@ class sfp_crt(SpiderFootPlugin):
 
         for cert_id in fetch_certs:
             if self.checkForStop():
-                return None
+                return
 
             params = {
                 'd': str(cert_id)

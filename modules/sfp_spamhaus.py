@@ -120,14 +120,13 @@ class sfp_spamhaus(SpiderFootPlugin):
                     if type(self.checks[domain]) is str:
                         text = self.checks[domain] + " (" + qaddr + ")"
                         break
-                    else:
-                        if str(addr) not in list(self.checks[domain].keys()):
-                            self.sf.debug("Return code not found in list: " + str(addr))
-                            continue
 
+                    if str(addr) in list(self.checks[domain].keys()):
                         k = str(addr)
                         text = self.checks[domain][k] + " (" + qaddr + ")"
                         break
+
+                    self.sf.debug(f"Return code not found in list: {addr}")
 
                 if text is not None:
                     if eventName == "AFFILIATE_IPADDR":
@@ -144,8 +143,6 @@ class sfp_spamhaus(SpiderFootPlugin):
 
             except Exception as e:
                 self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
-
-        return None
 
     def handleEvent(self, event):
         eventName = event.eventType

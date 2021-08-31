@@ -144,15 +144,15 @@ class sfp_metadefender(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_metadefender but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -163,7 +163,7 @@ class sfp_metadefender(SpiderFootPlugin):
 
             if data is None:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             geo_info = data.get('geo_info')
 
@@ -176,13 +176,13 @@ class sfp_metadefender(SpiderFootPlugin):
 
             if not res:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             sources = res.get('sources')
 
             if not sources:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             for m in sources:
                 if m.get('assessment'):
@@ -195,19 +195,19 @@ class sfp_metadefender(SpiderFootPlugin):
 
             if data is None:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             res = data.get('lookup_results')
 
             if not res:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             sources = res.get('sources')
 
             if not sources:
                 self.sf.debug("No matches found for " + eventData)
-                return None
+                return
 
             for m in sources:
                 if m.get('assessment'):

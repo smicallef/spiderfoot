@@ -126,10 +126,10 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -150,7 +150,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
         while currentPage < maxPages:
             currentIndex = currentPage * perPage
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
                 break
@@ -158,7 +158,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
             data = self.query(keyword=keyword, start=currentIndex)
 
             if not data:
-                return None
+                return
 
             for row in data.get('buckets'):
                 bucketName = row.get('bucket')

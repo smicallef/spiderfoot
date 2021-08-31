@@ -91,7 +91,7 @@ class sfp_junkfiles(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -99,20 +99,20 @@ class sfp_junkfiles(SpiderFootPlugin):
 
         if host in self.skiphosts:
             self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-            return None
+            return
 
         # http://www/blah/abc.php -> try http://www/blah/abc.php.[fileexts]
         for ext in self.opts['urlextstry']:
             if host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-                return None
+                return
 
             if "." + ext + "?" in eventData or "." + ext + "#" in eventData or \
                     eventData.endswith("." + ext):
                 bits = eventData.split("?")
                 for x in self.opts['fileexts']:
                     if self.checkForStop():
-                        return None
+                        return
 
                     self.sf.debug("Trying " + x + " against " + eventData)
                     fetch = bits[0] + "." + x
@@ -139,18 +139,18 @@ class sfp_junkfiles(SpiderFootPlugin):
 
         base = self.sf.urlBaseDir(eventData)
         if not base or base in self.bases:
-            return None
+            return
 
         self.bases[base] = True
 
         # http://www/blah/abc.html -> try http://www/blah/[files]
         for f in self.opts['files']:
             if self.checkForStop():
-                return None
+                return
 
             if host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-                return None
+                return
 
             self.sf.debug("Trying " + f + " against " + eventData)
             fetch = base + f
@@ -177,16 +177,16 @@ class sfp_junkfiles(SpiderFootPlugin):
         # don't do anything with the root directory of a site
         self.sf.debug(f"Base: {base}, event: {eventData}")
         if base in [eventData, eventData + "/"]:
-            return None
+            return
 
         # http://www/blah/abc.html -> try http://www/blah.[dirs]
         for dirfile in self.opts['dirs']:
             if self.checkForStop():
-                return None
+                return
 
             if host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-                return None
+                return
 
             if base.count('/') == 3:
                 self.sf.debug("Skipping base url.")

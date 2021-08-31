@@ -122,31 +122,31 @@ class sfp_crobat_api(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventName != "DOMAIN_NAME":
-            return None
+            return
 
         page = 0
         while page < self.opts['max_pages']:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             data = self.queryDomain(eventData, page)
 
             if not data:
                 self.sf.debug(f"No information found for domain {eventData} (page: {page})")
-                return None
+                return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
