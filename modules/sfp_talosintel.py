@@ -89,6 +89,9 @@ class sfp_talosintel(SpiderFootPlugin):
     def queryBlacklist(self, target, targetType):
         blacklist = self.retrieveBlacklist()
 
+        if not blacklist:
+            return False
+
         if targetType == "ip":
             if target in blacklist:
                 self.sf.debug(f"IP address {target} found in Talos Intelligence blacklist.")

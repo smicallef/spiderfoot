@@ -77,6 +77,9 @@ class sfp_phishtank(SpiderFootPlugin):
     def queryBlacklist(self, target):
         blacklist = self.retrieveBlacklist()
 
+        if not blacklist:
+            return False
+
         for item in blacklist:
             if not item:
                 continue

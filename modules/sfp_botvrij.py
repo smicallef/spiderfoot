@@ -76,6 +76,9 @@ class sfp_botvrij(SpiderFootPlugin):
     def queryBlacklist(self, target):
         blacklist = self.retrieveBlacklist()
 
+        if not blacklist:
+            return False
+
         if target.lower() in blacklist:
             self.sf.debug(f"Host name {target} found in botvrij.eu blacklist.")
             return True
