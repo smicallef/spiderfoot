@@ -1,6 +1,7 @@
 import sys
 import logging
 from pathlib import Path
+from contextlib import suppress
 from logging.handlers import QueueHandler, QueueListener
 from spiderfoot import SpiderFootDb
 
@@ -113,7 +114,5 @@ def logWorkerSetup(loggingQueue):
 
 
 def stop_listener(listener):
-    try:
+    with suppress(Exception):
         listener.stop()
-    except Exception:
-        pass
