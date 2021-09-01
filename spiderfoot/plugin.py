@@ -23,8 +23,6 @@ class SpiderFootPlugin():
         socksProxy (str): SOCKS proxy
     """
 
-    log = logging.getLogger(__name__)
-
     # Will be set to True by the controller if the user aborts scanning
     _stopScanning = False
     # Modules that will be notified when this module produces events
@@ -68,6 +66,8 @@ class SpiderFootPlugin():
         self.running = False
         # Holds the thread object when module threading is enabled
         self.thread = None
+
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
 
     def _updateSocket(self, socksProxy):
         """Hack to override module's use of socket, replacing it with

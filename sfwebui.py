@@ -30,7 +30,8 @@ from spiderfoot import SpiderFootDb
 from spiderfoot import SpiderFootHelpers
 from spiderfoot import __version__
 from sflib import SpiderFoot
-from sfscan import SpiderFootScanner
+from sfscan import startSpiderFootScanner
+from spiderfoot.logger import logListenerSetup, logWorkerSetup
 
 mp.set_start_method("spawn", force=True)
 
@@ -43,9 +44,8 @@ class SpiderFootWebUi:
     config = dict()
     token = None
     docroot = ''
-    log = logging.getLogger(__name__)
 
-    def __init__(self, web_config, config):
+    def __init__(self, web_config, config, loggingQueue=None):
         """Initialize web server
 
         Args:
@@ -75,6 +75,15 @@ class SpiderFootWebUi:
         dbh = SpiderFootDb(self.defaultConfig)
         sf = SpiderFoot(self.defaultConfig)
         self.config = sf.configUnserialize(dbh.configGet(), self.defaultConfig)
+
+        # Set up logging
+        if loggingQueue is None:
+            self.loggingQueue = mp.Queue()
+            logListenerSetup(self.loggingQueue, self.config)
+        else:
+            self.loggingQueue = loggingQueue
+        logWorkerSetup(self.loggingQueue)
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
 
         cherrypy.config.update({
             'error_page.401': self.error_page_401,
@@ -571,7 +580,7 @@ class SpiderFootWebUi:
         # Start running a new scan
         scanId = SpiderFootHelpers.genScanInstanceId()
         try:
-            p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
+            p = mp.Process(target=startSpiderFootScanner, args=(self.loggingQueue, scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True
             p.start()
         except Exception as e:
@@ -626,7 +635,7 @@ class SpiderFootWebUi:
             # Start running a new scan
             scanId = SpiderFootHelpers.genScanInstanceId()
             try:
-                p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
+                p = mp.Process(target=startSpiderFootScanner, args=(self.loggingQueue, scanname, scanId, scantarget, targetType, modlist, cfg))
                 p.daemon = True
                 p.start()
             except Exception as e:
@@ -1201,7 +1210,7 @@ class SpiderFootWebUi:
         # Start running a new scan
         scanId = SpiderFootHelpers.genScanInstanceId()
         try:
-            p = mp.Process(target=SpiderFootScanner, args=(scanname, scanId, scantarget, targetType, modlist, cfg))
+            p = mp.Process(target=startSpiderFootScanner, args=(self.loggingQueue, scanname, scanId, scantarget, targetType, modlist, cfg))
             p.daemon = True
             p.start()
         except Exception as e:

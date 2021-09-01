@@ -58,7 +58,6 @@ class SpiderFoot:
     _scanId = None
     _socksProxy = None
     opts = dict()
-    log = logging.getLogger(__name__)
 
     def __init__(self, options):
         """Initialize SpiderFoot object.
@@ -73,6 +72,8 @@ class SpiderFoot:
             raise TypeError("options is %s; expected dict()" % type(options))
 
         self.opts = deepcopy(options)
+
+        self.log = logging.getLogger(f"spiderfoot.{__name__}")
 
         # This is ugly but we don't want any fetches to fail - we expect
         # to encounter unverified SSL certs!
@@ -184,27 +185,6 @@ class SpiderFoot:
 
         return val
 
-    def _dblog(self, level, message, component=None):
-        """Log a scan event.
-
-        Args:
-            level (str): log level
-            message (str): log message
-            component (str): component from which the log event originated
-
-        Returns:
-            bool: scan event logged successfully
-
-        Raises:
-            BaseException: internal error encountered attempting to access the database handler
-        """
-
-        if not self.dbh:
-            self.log.exception(f"No database handle. Could not log event to database: {message}")
-            raise BaseException(f"Internal Error Encountered: {message}")
-
-        return self.dbh.scanLogEvent(self.scanId, level, message, component)
-
     def error(self, message):
         """Print and log an error message
 
@@ -215,10 +195,7 @@ class SpiderFoot:
         if not self.opts['__logging']:
             return
 
-        if self.dbh:
-            self._dblog("ERROR", message)
-
-        self.log.error(message)
+        self.log.error(message, extra={'scanId': self._scanId})
 
     def fatal(self, error):
         """Print an error message and stacktrace then exit.
@@ -227,10 +204,7 @@ class SpiderFoot:
             error (str): error message
         """
 
-        if self.dbh:
-            self._dblog("FATAL", error)
-
-        self.log.critical(error)
+        self.log.critical(error, extra={'scanId': self._scanId})
 
         print(str(inspect.stack()))
 
@@ -246,10 +220,7 @@ class SpiderFoot:
         if not self.opts['__logging']:
             return
 
-        if self.dbh:
-            self._dblog("STATUS", message)
-
-        self.log.info(message)
+        self.log.info(message, extra={'scanId': self._scanId})
 
     def info(self, message):
         """Log and print an info message.
@@ -277,10 +248,7 @@ class SpiderFoot:
             else:
                 modName = mod.__name__
 
-        if self.dbh:
-            self._dblog("INFO", message, modName)
-
-        self.log.info(f"{modName} : {message}")
+        self.log.info(f"{modName} : {message}", extra={'scanId': self._scanId, 'component': modName})
 
     def debug(self, message):
         """Log and print a debug message.
@@ -309,10 +277,7 @@ class SpiderFoot:
             else:
                 modName = mod.__name__
 
-        if self.dbh:
-            self._dblog("DEBUG", message, modName)
-
-        self.log.debug(f"{modName} : {message}")
+        self.log.debug(f"{modName} : {message}", extra={'scanId': self._scanId})
 
     @staticmethod
     def myPath():

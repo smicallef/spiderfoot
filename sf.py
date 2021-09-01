@@ -21,46 +21,18 @@ import signal
 import sys
 import time
 from copy import deepcopy
-from logging import handlers
 
 import cherrypy
 import cherrypy_cors
 from cherrypy.lib import auth_digest
 
 from sflib import SpiderFoot
-from sfscan import SpiderFootScanner
+from sfscan import startSpiderFootScanner
 from sfwebui import SpiderFootWebUi
 from spiderfoot import SpiderFootHelpers
 from spiderfoot import SpiderFootDb
+from spiderfoot.logger import logListenerSetup, logWorkerSetup
 from spiderfoot import __version__
-
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
-log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-
-debug_handler = handlers.TimedRotatingFileHandler(
-    "log/spiderfoot.debug.log",
-    when="d",
-    interval=1,
-    backupCount=30
-)
-debug_handler.setLevel(logging.DEBUG)
-debug_handler.setFormatter(log_format)
-log.addHandler(debug_handler)
-
-error_handler = handlers.TimedRotatingFileHandler(
-    "log/spiderfoot.error.log",
-    when="d",
-    interval=1,
-    backupCount=30
-)
-error_handler.setLevel(logging.WARN)
-error_handler.setFormatter(log_format)
-log.addHandler(error_handler)
-
-console_handler = logging.StreamHandler(sys.stderr)
-console_handler.setFormatter(log_format)
-log.addHandler(console_handler)
 
 scanId = None
 dbh = None
@@ -142,14 +114,16 @@ def main():
 
     if args.debug:
         sfConfig['_debug'] = True
-        log.setLevel(logging.DEBUG)
     else:
-        log.setLevel(logging.INFO)
         sfConfig['_debug'] = False
 
     if args.q:
-        log.setLevel(logging.NOTSET)
         sfConfig['__logging'] = False
+
+    loggingQueue = mp.Queue()
+    logListenerSetup(loggingQueue, sfConfig)
+    logWorkerSetup(loggingQueue)
+    log = logging.getLogger(f"spiderfoot.{__name__}")
 
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
@@ -221,20 +195,23 @@ def main():
         sfWebUiConfig['host'] = host
         sfWebUiConfig['port'] = port
 
-        start_web_server(sfWebUiConfig, sfConfig)
+        start_web_server(sfWebUiConfig, sfConfig, loggingQueue)
         exit(0)
 
-    start_scan(sfConfig, sfModules, args)
+    start_scan(sfConfig, sfModules, args, loggingQueue)
 
 
-def start_scan(sfConfig, sfModules, args):
+def start_scan(sfConfig, sfModules, args, loggingQueue):
     """Start scan
 
     Args:
         sfConfig (dict): SpiderFoot config options
         sfModules (dict): modules
         args (argparse.Namespace): command line args
+        loggingQueue (Queue): main SpiderFoot logging queue
     """
+    log = logging.getLogger(f"spiderfoot.{__name__}")
+
     global dbh
     global scanId
 
@@ -413,7 +390,7 @@ def start_scan(sfConfig, sfModules, args):
     scanName = target
     scanId = SpiderFootHelpers.genScanInstanceId()
     try:
-        p = mp.Process(target=SpiderFootScanner, args=(scanName, scanId, target, targetType, modlist, cfg))
+        p = mp.Process(target=startSpiderFootScanner, args=(loggingQueue, scanName, scanId, target, targetType, modlist, cfg))
         p.daemon = True
         p.start()
     except BaseException as e:
@@ -436,13 +413,14 @@ def start_scan(sfConfig, sfModules, args):
     return
 
 
-def start_web_server(sfWebUiConfig, sfConfig):
+def start_web_server(sfWebUiConfig, sfConfig, loggingQueue=None):
     """Start the web server so you can start looking at results
 
     Args:
         sfWebUiConfig (dict): web server options
         sfConfig (dict): SpiderFoot config options
     """
+    log = logging.getLogger(f"spiderfoot.{__name__}")
 
     web_host = sfWebUiConfig.get('host', '127.0.0.1')
     web_port = sfWebUiConfig.get('port', 5001)
@@ -560,7 +538,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
     # Disable auto-reloading of content
     cherrypy.engine.autoreload.unsubscribe()
 
-    cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig), script_name=web_root, config=conf)
+    cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig, loggingQueue), script_name=web_root, config=conf)
 
 
 def handle_abort(signal, frame):
@@ -570,6 +548,8 @@ def handle_abort(signal, frame):
         signal: TBD
         frame: TBD
     """
+    log = logging.getLogger(f"spiderfoot.{__name__}")
+
     global dbh
     global scanId
 

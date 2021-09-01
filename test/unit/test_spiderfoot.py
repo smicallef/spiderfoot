@@ -107,15 +107,6 @@ class TestSpiderFoot(unittest.TestCase):
                 opt_data = sf.optValueToData(invalid_type)
                 self.assertEqual(opt_data, None)
 
-    def test_dblog_invalid_dbh_should_raise(self):
-        """
-        Test _dblog(self, level, message, component=None)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        with self.assertRaises(BaseException):
-            sf._dblog(None, None, None)
-
     def test_error(self):
         """
         Test error(self, error):
