@@ -208,44 +208,54 @@ class sfp_spider(SpiderFootPlugin):
 
     # Notify listening modules about raw data and others
     def contentNotify(self, url, httpresult, parentEvent=None):
-        sendcontent = True
-        if httpresult.get('headers'):
-            ctype = httpresult['headers'].get('content-type')
-            if not ctype:
-                sendcontent = True
-            else:
-                for mt in self.opts['filtermime']:
-                    if ctype.startswith(mt):
-                        sendcontent = False
-
-        if sendcontent:
-            if httpresult['content'] is not None:
-                event = SpiderFootEvent("TARGET_WEB_CONTENT", httpresult['content'],
-                                        self.__name__, parentEvent)
-                event.actualSource = url
-                self.notifyListeners(event)
-
-        hdr = httpresult['headers']
-        if hdr is not None:
-            event = SpiderFootEvent("WEBSERVER_HTTPHEADERS", json.dumps(hdr, ensure_ascii=False),
-                                    self.__name__, parentEvent)
-            event.actualSource = url
-            self.notifyListeners(event)
-
-        event = SpiderFootEvent("HTTP_CODE", str(httpresult['code']),
-                                self.__name__, parentEvent)
+        event = SpiderFootEvent(
+            "HTTP_CODE",
+            str(httpresult['code']),
+            self.__name__,
+            parentEvent
+        )
         event.actualSource = url
         self.notifyListeners(event)
 
-        if not httpresult.get('headers'):
-            return
+        store_content = True
+        headers = httpresult.get('headers')
 
-        ctype = httpresult['headers'].get('content-type')
-        if ctype:
-            event = SpiderFootEvent("TARGET_WEB_CONTENT_TYPE", ctype,
-                                    self.__name__, parentEvent)
+        if headers:
+            event = SpiderFootEvent(
+                "WEBSERVER_HTTPHEADERS",
+                json.dumps(headers, ensure_ascii=False),
+                self.__name__,
+                parentEvent
+            )
             event.actualSource = url
             self.notifyListeners(event)
+
+            ctype = headers.get('content-type')
+            if ctype:
+                for mt in self.opts['filtermime']:
+                    if ctype.startswith(mt):
+                        store_content = False
+
+                event = SpiderFootEvent(
+                    "TARGET_WEB_CONTENT_TYPE",
+                    ctype,
+                    self.__name__,
+                    parentEvent
+                )
+                event.actualSource = url
+                self.notifyListeners(event)
+
+        if store_content:
+            content = httpresult.get('content')
+            if content:
+                event = SpiderFootEvent(
+                    "TARGET_WEB_CONTENT",
+                    str(content),
+                    self.__name__,
+                    parentEvent
+                )
+                event.actualSource = url
+                self.notifyListeners(event)
 
     # Trigger spidering off the following events..
     # Spidering and search engines provide LINKED_URL_INTERNAL, and DNS lookups
