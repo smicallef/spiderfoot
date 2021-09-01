@@ -195,7 +195,7 @@ def main():
         sfWebUiConfig['host'] = host
         sfWebUiConfig['port'] = port
 
-        start_web_server(sfWebUiConfig, sfConfig)
+        start_web_server(sfWebUiConfig, sfConfig, loggingQueue)
         exit(0)
 
     start_scan(sfConfig, sfModules, args, loggingQueue)
@@ -413,7 +413,7 @@ def start_scan(sfConfig, sfModules, args, loggingQueue):
     return
 
 
-def start_web_server(sfWebUiConfig, sfConfig):
+def start_web_server(sfWebUiConfig, sfConfig, loggingQueue=None):
     """Start the web server so you can start looking at results
 
     Args:
@@ -538,7 +538,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
     # Disable auto-reloading of content
     cherrypy.engine.autoreload.unsubscribe()
 
-    cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig), script_name=web_root, config=conf)
+    cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig, loggingQueue), script_name=web_root, config=conf)
 
 
 def handle_abort(signal, frame):

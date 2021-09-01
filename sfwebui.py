@@ -45,7 +45,7 @@ class SpiderFootWebUi:
     token = None
     docroot = ''
 
-    def __init__(self, web_config, config):
+    def __init__(self, web_config, config, loggingQueue=None):
         """Initialize web server
 
         Args:
@@ -77,8 +77,11 @@ class SpiderFootWebUi:
         self.config = sf.configUnserialize(dbh.configGet(), self.defaultConfig)
 
         # Set up logging
-        self.loggingQueue = mp.Queue()
-        logListenerSetup(self.loggingQueue, self.config)
+        if loggingQueue is None:
+            self.loggingQueue = mp.Queue()
+            logListenerSetup(self.loggingQueue, self.config)
+        else:
+            self.loggingQueue = loggingQueue
         logWorkerSetup(self.loggingQueue)
         self.log = logging.getLogger(f"spiderfoot.{__name__}")
 
