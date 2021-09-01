@@ -82,7 +82,7 @@ class sfp_github(SpiderFootPlugin):
             self.sf.debug("Incomplete Github information found (description).")
             return None
 
-        return "\n".join(f"Name: {name}", f"URL: {html_url}", f"Description: {description}")
+        return "\n".join([f"Name: {name}", f"URL: {html_url}", f"Description: {description}"])
 
     def handleEvent(self, event):
         eventName = event.eventType
