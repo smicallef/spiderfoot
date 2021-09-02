@@ -3,6 +3,7 @@ import logging
 import queue
 import threading
 from time import sleep
+from contextlib import suppress
 
 
 class SpiderFootPlugin():
@@ -662,7 +663,7 @@ class ThreadPoolWorker(threading.Thread):
             self.outputQueue = queue.Queue()
             self.stop = False
 
-        def map(self, iterable, callback, args=None, kwargs=None, name=""):
+        def map(self, iterable, callback, args=None, kwargs=None, name=""):  # noqa: A003
             """
             Args:
                 iterable: each entry will be passed as the first argument to the function
@@ -693,8 +694,7 @@ class ThreadPoolWorker(threading.Thread):
 
             # wait for threads to finish
             while not self.finished and not self.sfp.checkForStop():
-                for result in self.results:
-                    yield result
+                yield from self.results
 
             self.stop = True
             for t in self.pool:
@@ -707,8 +707,7 @@ class ThreadPoolWorker(threading.Thread):
                 except queue.Empty:
                     break
 
-            for result in self.results:
-                yield result
+            yield from self.results
 
         @property
         def results(self):
@@ -749,15 +748,13 @@ class ThreadPoolWorker(threading.Thread):
 
         def __exit__(self, exception_type, exception_value, traceback):
             # Make sure queues are empty before exiting
-            try:
+            with suppress(Exception):
                 for q in (self.outputQueue, self.inputQueue):
                     while 1:
                         try:
                             q.get_nowait()
                         except queue.Empty:
                             break
-            except Exception:
-                pass
 
     def threadPool(self, *args, **kwargs):
         return self.ThreadPool(self, *args, **kwargs)

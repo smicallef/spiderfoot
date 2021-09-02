@@ -17,9 +17,12 @@ import random
 import datetime
 import tempfile
 import subprocess
-import dns.resolver
 from shutil import which
 from pathlib import Path
+from contextlib import suppress
+
+import dns.resolver
+
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -332,10 +335,8 @@ class sfp_tool_massdns(SpiderFootPlugin):
                 subdomains.add(f"{host}{s}{i}")
 
         # ensure we aren't including the source subdomain
-        try:
+        with suppress(KeyError):
             subdomains.remove(host)
-        except KeyError:
-            pass
 
         return subdomains
 
@@ -366,10 +367,8 @@ class sfp_tool_massdns(SpiderFootPlugin):
             subdomains.add(f"{m}.{host}")
 
         # ensure we aren't including the source subdomain
-        try:
+        with suppress(KeyError):
             subdomains.remove(host)
-        except KeyError:
-            pass
 
         return subdomains
 
