@@ -11,15 +11,15 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
+import datetime
 import json
 import random
-import datetime
-import tempfile
+import re
 import subprocess
-from shutil import which
-from pathlib import Path
+import tempfile
 from contextlib import suppress
+from pathlib import Path
+from shutil import which
 
 import dns.resolver
 
