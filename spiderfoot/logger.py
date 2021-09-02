@@ -1,15 +1,16 @@
-import sys
 import logging
-from pathlib import Path
+import sys
 from contextlib import suppress
 from logging.handlers import QueueHandler, QueueListener
+from pathlib import Path
+
 from spiderfoot import SpiderFootDb
 
 log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
 
 
 class SpiderFootSqliteLogHandler(logging.Handler):
-    """Handler for logging to SQLite database
+    """Handler for logging to SQLite database.
 
     This ensure all sqlite logging is done from a single
     process and a single database handle.
@@ -40,6 +41,7 @@ class SpiderFootSqliteLogHandler(logging.Handler):
 
 def logListenerSetup(loggingQueue, opts=None):
     """Create and start a SpiderFoot log listener in its own thread.
+
     This function should be called as soon as possible in the main
     process, or whichever process is attached to stdin/stdout.
 

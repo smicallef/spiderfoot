@@ -11,8 +11,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import urllib
 import json
+import urllib
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 

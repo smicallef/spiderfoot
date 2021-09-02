@@ -10,8 +10,8 @@
 # -------------------------------------------------------------------------------
 
 import json
-import time
 import re
+import time
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -216,7 +216,7 @@ class sfp_haveibeenpwned(SpiderFootPlugin):
             try:
                 source = n.get("Source")
                 site = source
-                if source in sites.keys():
+                if source in sites:
                     site = f"{sites[n.get('Source')]}{n.get('Id')}"
                     links.add(site)
 

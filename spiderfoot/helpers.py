@@ -2,6 +2,7 @@ import json
 import random
 import re
 import uuid
+
 import networkx as nx
 from networkx.readwrite.gexf import GEXFWriter
 
@@ -46,7 +47,7 @@ class SpiderFootHelpers():
 
     @staticmethod
     def buildGraphGexf(root, title, data, flt=[]):
-        """Convert supplied raw data into GEXF (Graph Exchange XML Format) format (e.g. for Gephi)
+        """Convert supplied raw data into GEXF (Graph Exchange XML Format) format (e.g. for Gephi).
 
         Args:
             root (str): TBD
@@ -57,7 +58,6 @@ class SpiderFootHelpers():
         Returns:
             str: GEXF formatted XML
         """
-
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
         graph = nx.Graph()
 
@@ -109,7 +109,6 @@ class SpiderFootHelpers():
         Returns:
             str: TBD
         """
-
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
         ret = dict()
         ret['nodes'] = list()
@@ -247,7 +246,6 @@ class SpiderFootHelpers():
         Returns:
             dict: nested tree
         """
-
         if not isinstance(data, dict):
             # TODO: print error
             return {}
@@ -317,7 +315,6 @@ class SpiderFootHelpers():
         Returns:
             str: scan instance unique ID
         """
-
         return str(uuid.uuid4()).split("-")[0].upper()
 
     @staticmethod
@@ -335,7 +332,6 @@ class SpiderFootHelpers():
 
             Fix whitespace parsing; ie, " " is not a valid disallowed path
         """
-
         returnArr = list()
 
         if not isinstance(robotsTxtData, str):

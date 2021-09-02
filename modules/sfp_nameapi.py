@@ -12,6 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
+
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 

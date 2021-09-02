@@ -25,7 +25,6 @@ class SpiderFootTarget():
             targetValue (str): target value
             typeName (str): target type
         """
-
         self.targetType = typeName
         self.targetValue = targetValue
         self.targetAliases = list()
@@ -102,7 +101,6 @@ class SpiderFootTarget():
         Returns:
             list: target aliases
         """
-
         ret = list()
         for item in self.targetAliases:
             if item['type'] == typeName:
@@ -115,7 +113,6 @@ class SpiderFootTarget():
         Returns:
             list: domains associated with the target
         """
-
         e = self._getEquivalents("INTERNET_NAME")
         if self.targetType in ["INTERNET_NAME", "EMAILADDR"] and self.targetValue.lower() not in e:
             e.append(self.targetValue.lower())
@@ -135,7 +132,6 @@ class SpiderFootTarget():
         Returns:
             list: TBD
         """
-
         e = self._getEquivalents("IP_ADDRESS")
         if self.targetType == "IP_ADDRESS":
             e.append(self.targetValue)
@@ -147,8 +143,7 @@ class SpiderFootTarget():
         return e
 
     def matches(self, value, includeParents=False, includeChildren=True):
-        """Check whether the supplied value is "tightly" related
-        to the original target.
+        """Check whether the supplied value is "tightly" related to the original target.
 
         Tightly in this case means:
 
