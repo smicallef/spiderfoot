@@ -10,14 +10,13 @@
 # License:      GPL
 # -----------------------------------------------------------------
 import csv
-import openpyxl
 import html
 import json
 import logging
 import multiprocessing as mp
 import random
-import time
 import string
+import time
 from copy import deepcopy
 from io import BytesIO, StringIO
 from operator import itemgetter
@@ -27,6 +26,8 @@ from cherrypy import _cperror
 
 from mako.lookup import TemplateLookup
 from mako.template import Template
+
+import openpyxl
 
 import secure
 
@@ -320,6 +321,7 @@ class SpiderFootWebUi:
         Args:
             id (str): scan ID
             type (str): TBD
+            filetype (str): type of file ("xlsx|excel" or "csv")
             dialect (str): TBD
 
         Returns:
@@ -363,6 +365,7 @@ class SpiderFootWebUi:
 
         Args:
             ids (str): comma separated list of scan IDs
+            filetype (str): type of file ("xlsx|excel" or "csv")
             dialect (str): TBD
 
         Returns:
@@ -418,6 +421,7 @@ class SpiderFootWebUi:
             id (str): scan ID
             eventType (str): TBD
             value (str): TBD
+            filetype (str): type of file ("xlsx|excel" or "csv")
             dialect (str): TBD
 
         Returns:
