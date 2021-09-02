@@ -1,0 +1,6 @@
+version: "3"
+
+services:
+  spiderfoot:
+    volumes:
+      - .:/home/spiderfoot

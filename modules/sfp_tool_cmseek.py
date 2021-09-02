@@ -38,7 +38,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
     # Default options
     opts = {
         'pythonpath': "python3",
-        'cmseekpath': ""
+        'cmseekpath': "/tools/CMSeeK/cmseek.py"
     }
 
     # Option descriptions
