@@ -11,10 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import urllib
 import json
+import urllib
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_gleif(SpiderFootPlugin):

@@ -15,9 +15,10 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-
 from datetime import datetime
+
 from netaddr import IPNetwork
+
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 

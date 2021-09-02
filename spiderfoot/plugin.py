@@ -1,6 +1,6 @@
 import logging
-import threading
 import queue
+import threading
 from time import sleep
 
 

@@ -14,10 +14,13 @@
 import io
 import mimetypes
 
-import docx
-import exifread
-import pptx
 import PyPDF2
+
+import docx
+
+import exifread
+
+import pptx
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 

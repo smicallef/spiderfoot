@@ -12,9 +12,9 @@
 
 import json
 import re
+import time
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
-import time
 
 
 class sfp_dnsdb(SpiderFootPlugin):

@@ -165,7 +165,7 @@ class SpiderFootScanner():
             proxy_port = int(self.__config.get('_socks3port') or 0)
 
             if not proxy_port:
-                if proxy_type == '4' or proxy_type == '5':
+                if proxy_type in ['4', '5']:
                     proxy_port = 1080
                 elif proxy_type.upper() == 'HTTP':
                     proxy_port = 8080

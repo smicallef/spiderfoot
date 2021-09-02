@@ -16,6 +16,7 @@ import threading
 import time
 
 from netaddr import IPNetwork
+
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 

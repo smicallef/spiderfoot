@@ -11,8 +11,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import base64
+import json
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin

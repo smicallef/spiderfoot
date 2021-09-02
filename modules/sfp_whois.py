@@ -12,10 +12,12 @@
 # -------------------------------------------------------------------------------
 
 import ipwhois
-import whois
+
 from netaddr import IPAddress
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+
+import whois
 
 
 class sfp_whois(SpiderFootPlugin):

@@ -11,6 +11,7 @@
 # -------------------------------------------------------------------------------
 
 import re
+
 from netaddr import IPAddress, IPNetwork
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin

@@ -9,9 +9,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import base64
 import json
 import time
-import base64
+
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
