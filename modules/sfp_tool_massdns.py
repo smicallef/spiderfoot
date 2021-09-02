@@ -343,22 +343,21 @@ class sfp_tool_massdns(SpiderFootPlugin):
         subdomains = set()
         host, domain = host.split(".", 1)
 
-        # if the input is "host01-www", it tries "host" and "www"
-        # or if the input is "host01", it tries "host"
-        for m in self.word_regex.findall(host):
+        # if the input is "host01-www", it tries "host01", "host", and "www"
+        for m in list(self.word_regex.findall(host)) + list(self.word_num_regex.findall(host)):
             if m != host:
                 subdomains.add(m)
             if m not in self.state["alpha_mutation_wordlist"]:
                 self.state["alpha_mutation_wordlist"].append(m)
-        # same thing but including numbers
-        # if the input is "host01-www", it tries "host01" and "www"
-        for m in self.word_num_regex.findall(host):
-            if m != host:
-                subdomains.add(m)
-            if m not in self.state["alpha_mutation_wordlist"]:
-                self.state["alpha_mutation_wordlist"].append(m)
+        # if the input is "host01-www", it tries "host01-<mutation>", "<mutation>01-www", and "<mutation>-www"
+        for match in list(self.word_regex.finditer(host))[-3:] + list(self.word_num_regex.finditer(host))[-3:]:
+            span = match.span()
+            before = host[:span[0]]
+            after = host[span[-1]:]
+            for m in self.state["alpha_mutation_wordlist"]:
+                subdomains.add(before + m + after)
 
-        # host-www, www-host, etc.
+        # if the input is "host01-www", it tries "host01-www-<mutation>", "<mutation>-host01-www", etc.
         for m in self.state["alpha_mutation_wordlist"]:
             subdomains.add(f"{host}.{m}")
             subdomains.add(f"{host}-{m}")
