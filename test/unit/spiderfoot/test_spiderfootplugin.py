@@ -2,6 +2,7 @@
 import pytest
 import unittest
 
+from sflib import SpiderFoot
 from spiderfoot import SpiderFootDb, SpiderFootEvent, SpiderFootPlugin, SpiderFootTarget
 
 
@@ -363,6 +364,8 @@ class TestSpiderFootPlugin(unittest.TestCase):
         """
         Test start(self)
         """
+        sf = SpiderFoot(self.default_options)
         sfp = SpiderFootPlugin()
+        sfp.sf = sf
 
         sfp.start()
