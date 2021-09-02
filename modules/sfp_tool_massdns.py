@@ -31,7 +31,7 @@ class sfp_tool_massdns(SpiderFootPlugin):
     meta = {
         'name': "MassDNS",
         'summary': "Attempts to identify hostnames through brute-forcing common names and iterations.",
-        'flags': [""],
+        'flags': ["tool"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["DNS"]
     }
