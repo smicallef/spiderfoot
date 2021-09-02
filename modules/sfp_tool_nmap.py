@@ -3,7 +3,7 @@
 # Name:         sfp_tool_nmap
 # Purpose:      SpiderFoot plug-in for using nmap to perform OS fingerprinting.
 #
-# Author:      Steve Micallef <steve@binarypool.com>
+# Author:      Steve Micallef <steve@binarypool.com>, TheTechromancer
 #
 # Created:     03/05/2020
 # Copyright:   (c) Steve Micallef 2020
@@ -13,9 +13,8 @@
 import os
 from shutil import which
 from pathlib import Path
+from ipaddress import ip_network
 from nmappalyzer import NmapScan
-
-from netaddr import IPNetwork
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
@@ -46,7 +45,8 @@ class sfp_tool_nmap(SpiderFootPlugin):
         'topports': 1000,
         'ports': '',
         'netblockscan': True,
-        'netblockscanmax': 24
+        'netblockscanmax': 24,
+        'batchsize': 16
     }
 
     # Option descriptions
@@ -55,7 +55,8 @@ class sfp_tool_nmap(SpiderFootPlugin):
         'topports': "Scan top commonly-open ports.",
         'ports': "Manually specify ports to scan, comma-separated. Overrides \"top ports\".",
         'netblockscan': "Port scan all IPs within identified owned netblocks?",
-        'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'batchsize': "Scan in batches of this size."
     }
 
     results = None
@@ -64,28 +65,12 @@ class sfp_tool_nmap(SpiderFootPlugin):
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
+        self.targetPool = self.tempStorage()
         self.errorState = False
         self.__dataSource__ = "Target Network"
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
-
-        self.ports = ""
-        if self.opts["ports"]:
-            try:
-                for s in self.opts["ports"].split(","):
-                    try:
-                        # port should either be an int
-                        port = int(s)
-                        assert 0 <= port <= 65535
-                    except ValueError:
-                        # or an int range
-                        high, low = s.split('-', 1)
-                        high, low = int(high), int(low)
-                        assert high >= low and all([0 <= x <= 65535 for x in (high, low)])
-                self.ports = str(self.opts["ports"])
-            except Exception:
-                self.sf.error("Invalid \"ports\" setting. Defaulting to top ports.")
 
         # Normalize path
         if self.opts["nmappath"]:
@@ -118,10 +103,14 @@ class sfp_tool_nmap(SpiderFootPlugin):
             '-sV',
             # This is a convenience alias for --version-intensity 2.
             # This light mode makes version scanning much faster, but it is slightly less likely to identify services.
-            '--version-light'
+            '--version-light',
+            # Nmap has the ability to port scan or version scan multiple hosts in parallel
+            # Nmap does this by dividing the target IP space into groups and then scanning
+            # one group at a time. In general, larger groups are more efficient.
+            '--min-hostgroup', str(self.opts['batchsize'])
         )
-        if self.ports:
-            self.args += ("-p", self.ports)
+        if self.opts['ports']:
+            self.args += ("-p", self.opts['ports'])
         else:
             self.args += ("--top-ports", str(int(self.opts["topports"])))
         # if we're root, enable OS detection
@@ -143,47 +132,57 @@ class sfp_tool_nmap(SpiderFootPlugin):
 
     # Handle events sent to this module
     def handleEvent(self, event):
-        eventName = event.eventType
-        srcModuleName = event.module
-        eventData = event.data
 
-        if srcModuleName == "sfp_tool_nmap":
+        if event.module == "sfp_tool_nmap":
             self.sf.debug("Skipping event from myself.")
             return
 
-        self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+        self.sf.debug(f"Received event, {event.eventType}, from {event.module}")
 
         if self.errorState:
             return
 
         # resolve hostnames to IPs
-        targets = [eventData]
-        if eventName == "INTERNET_NAME":
-            targets = [t for t in self.sf.resolveHost(eventData) if self.sf.validIP(t) or self.sf.validIP6(t)]
+        targets = [event.data]
+        if event.eventType == "INTERNET_NAME":
+            targets = [t for t in self.sf.resolveHost(event.data) if self.sf.validIP(t) or self.sf.validIP6(t)]
 
         try:
-            if eventName == "NETBLOCK_OWNER" and self.opts['netblockscan']:
-                net = IPNetwork(eventData)
-                targets = [eventData]
+            if event.eventType == "NETBLOCK_OWNER" and self.opts['netblockscan']:
+                net = ip_network(event.data, strict=False)
                 if net.prefixlen < self.opts['netblockscanmax']:
-                    self.sf.debug("Skipping port scanning of " + eventData + ", too big.")
+                    self.sf.debug("Skipping port scanning of " + event.data + ", too big.")
                     return
 
         except Exception as e:
-            self.sf.error("Strange netblock identified, unable to parse: " + eventData + " (" + str(e) + ")")
+            self.sf.error("Strange netblock identified, unable to parse: " + event.data + " (" + str(e) + ")")
             return
 
-        targets = [t for t in targets if not any([IPNetwork(t) in r for r in self.already_scanned])]
+        targets = [t for t in targets if not any([ip_network(t, strict=False) in r for r in self.alreadyScannedHosts])]
 
+        if targets:
+            self.sf.debug(f"Adding {len(targets):,} targets to queue.")
         if not targets:
-            self.sf.debug(f"Skipping {eventData}, already scanned.")
+            self.sf.debug(f"Skipping {event.data}, already scanned.")
             return
 
+        # Add targets to queue
         for target in targets:
-            self.results[str(target)] = True
+            self.targetPool[target] = event
 
-        # Run scan
-        scan = NmapScan(targets, self.args, nmap_executable=self.exe, start=False)
+        if 0 < self.numHostsWaiting >= self.opts['batchsize']:
+            self.scan()
+
+    def finish(self):
+        if self.numHostsWaiting > 0:
+            self.sf.debug("Starting final Nmap scan.")
+            self.scan()
+        else:
+            self.sf.debug("Nmap scans finished.")
+
+    def scan(self):
+        self.sf.info(f"Scanning {len(self.targetPool):,} targets.")
+        scan = NmapScan(list(self.targetPool.keys()), self.args, nmap_executable=self.exe, start=False)
         self.sf.debug(f"Running nmap command: {' '.join(scan.command)}")
         scan.start()
         if scan._process.returncode != 0:
@@ -192,13 +191,22 @@ class sfp_tool_nmap(SpiderFootPlugin):
 
         # Parse results
         for host in scan:
-
+            sourceEvent = None
+            for target, event in self.targetPool.items():
+                targetAddr = ip_network(target, strict=False)
+                hostAddr = ip_network(f"{host.address}/{targetAddr.prefixlen}", strict=False)
+                if hostAddr == targetAddr:
+                    sourceEvent = event
+                    break
+            if sourceEvent is None:
+                self.sf.error(f"{host.address} not found in {list(self.targetPool.keys())}")
+                return
             # Look for open ports
             for open_port in host.open_ports:
-                port, protocol = open_port.split("/")
+                port, protocol = open_port.split("/", 1)
                 if protocol.lower() in ("tcp", "udp"):
                     open_port = f"{host.address}:{port}"
-                    evt = SpiderFootEvent(f"{protocol.upper()}_PORT_OPEN", open_port, self.__name__, event)
+                    evt = SpiderFootEvent(f"{protocol.upper()}_PORT_OPEN", open_port, self.__name__, sourceEvent)
                     self.notifyListeners(evt)
 
             # Look for HTTP and SSL
@@ -208,21 +216,23 @@ class sfp_tool_nmap(SpiderFootPlugin):
                 for service in port_elem.findall("service"):
                     serviceName = service.attrib.get("name", "").lower()
                     tunnel = service.attrib.get("tunnel", "").lower()
-                    if eventName == "INTERNET_NAME":
-                        fqdn = eventData
+                    if sourceEvent.eventType == "INTERNET_NAME":
+                        fqdn = sourceEvent.data
                     else:
                         fqdn = host.address
                     # HTTP
                     if serviceName in ("http", "https"):
+                        if tunnel in ("ssl", "tls"):
+                            serviceName = "https"
                         web_service = f"{serviceName}://{fqdn}:{port}"
                         if web_service not in self.results:
                             self.results[web_service] = True
-                            evt = SpiderFootEvent("LINKED_URL_INTERNAL", web_service, self.__name__, event)
+                            evt = SpiderFootEvent("LINKED_URL_INTERNAL", web_service, self.__name__, sourceEvent)
                             self.notifyListeners(evt)
                     # SSL
                     if port and protocol == "tcp" and tunnel in ("ssl", "tls"):
                         ssl_protocol = f"{host.address}:{port}"
-                        evt = SpiderFootEvent("TCP_PORT_OPEN_SSL", ssl_protocol, self.__name__, event)
+                        evt = SpiderFootEvent("TCP_PORT_OPEN_SSL", ssl_protocol, self.__name__, sourceEvent)
                         self.notifyListeners(evt)
 
             # Look for Operating Systems
@@ -232,21 +242,32 @@ class sfp_tool_nmap(SpiderFootPlugin):
                     osName = osMatch.attrib.get("name", "")
                     accuracy = int(osMatch.attrib.get("accuracy", "0"))
                     if osName and accuracy >= 100:
-                        evt = SpiderFootEvent("OPERATING_SYSTEM", osName, self.__name__, event)
+                        evt = SpiderFootEvent("OPERATING_SYSTEM", osName, self.__name__, sourceEvent)
                         self.notifyListeners(evt)
                         detectedOS = True
                         break
                 except Exception:
                     continue
             if not detectedOS:
-                self.sf.debug("Couldn't reliably detect the OS for " + eventData)
+                self.sf.debug("Couldn't reliably detect the OS for " + sourceEvent.data)
+
+        for target in self.targetPool:
+            self.results[target] = True
+        self.targetPool.clear()
 
     @property
-    def already_scanned(self):
+    def numHostsWaiting(self):
+        hostsWaiting = 0
+        for target in self.targetPool.keys():
+            hostsWaiting += ip_network(target, strict=False).num_addresses
+        return hostsWaiting
+
+    @property
+    def alreadyScannedHosts(self):
         scanned = []
         for t in self.results:
             try:
-                scanned.append(IPNetwork(t))
+                scanned.append(ip_network(t, strict=False))
             except Exception:
                 continue
         return scanned
