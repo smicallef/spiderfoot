@@ -419,6 +419,7 @@ def start_web_server(sfWebUiConfig, sfConfig, loggingQueue=None):
     Args:
         sfWebUiConfig (dict): web server options
         sfConfig (dict): SpiderFoot config options
+        loggingQueue (Queue): main SpiderFoot logging queue
     """
     log = logging.getLogger(f"spiderfoot.{__name__}")
 

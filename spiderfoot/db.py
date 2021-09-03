@@ -1003,7 +1003,7 @@ class SpiderFootDb:
         """Store a configuration value for a scan.
 
         Args:
-            id (int): scan instance ID
+            scan_id (int): scan instance ID
             optMap (dict): config options
 
         Raises:
