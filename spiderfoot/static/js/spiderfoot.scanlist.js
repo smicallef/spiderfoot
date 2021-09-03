@@ -113,6 +113,10 @@ function exportSelected(type) {
             sf.log("Exporting scans as " + type + ": " + ids.join(','));
             efr.src = docroot + '/scaneventresultexportmulti?ids=' + ids.join(',');
             break;
+        case "excel":
+            sf.log("Exporting scans as " + type + ": " + ids.join(','));
+            efr.src = docroot + '/scaneventresultexportmulti?filetype=excel&ids=' + ids.join(',');
+            break;
         case "json":
             sf.log("Exporting scans as " + type + ": " + ids.join(','));
             efr.src = docroot + '/scanexportjsonmulti?ids=' + ids.join(',');
@@ -168,10 +172,10 @@ function showlisttable(types, filter, data) {
 
     buttons += "<div class='btn-group pull-right'>";
     buttons += "<button rel='tooltip' data-title='Refresh' id='btn-refresh' class='btn btn-default btn-success'><i class='glyphicon glyphicon-refresh glyphicon-white'></i></a>";
-    buttons += "<button rel='tooltip' data-title='Export Selected' id='btn-export' class='btn btn-default btn-success'><i class='glyphicon glyphicon-download-alt glyphicon-white'></i></button>";
-    buttons += "<button class='btn btn-default dropdown-toggle btn-success' data-toggle='dropdown'><span class='caret'></span></button>";
+    buttons += "<button rel='tooltip' data-toggle='dropdown' data-title='Export Selected' id='btn-export' class='btn btn-default btn-success dropdown-toggle download-button'><i class='glyphicon glyphicon-download-alt glyphicon-white'></i></button>";
     buttons += "<ul class='dropdown-menu'>";
     buttons += "<li><a href='javascript:exportSelected(\"csv\")'>CSV</a></li>";
+    buttons += "<li><a href='javascript:exportSelected(\"excel\")'>Excel</a></li>";
     buttons += "<li><a href='javascript:exportSelected(\"gexf\")'>GEXF</a></li>";
     buttons += "<li><a href='javascript:exportSelected(\"json\")'>JSON</a></li>";
     buttons += "</ul>";

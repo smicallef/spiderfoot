@@ -91,33 +91,39 @@ class TestSpiderFootWebUi(unittest.TestCase):
 
     def test_scan_event_result_export_should_return_bytes(self):
         """
-        Test scaneventresultexport(self, id, type, dialect="excel")
+        Test scaneventresultexport(self, id, type, filetype="csv", dialect="excel")
         """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        search_results = sfwebui.scaneventresultexport("", "")
+        self.assertIsInstance(search_results, bytes)
         search_results = sfwebui.scaneventresultexport("", "", "excel")
         self.assertIsInstance(search_results, bytes)
 
     def test_scan_event_result_export_multi(self):
         """
-        Test scaneventresultexportmulti(self, ids, dialect="excel")
+        Test scaneventresultexportmulti(self, ids, filetype="csv", dialect="excel")
         """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        search_results = sfwebui.scaneventresultexport("", "", "excel")
+        search_results = sfwebui.scaneventresultexportmulti("", "")
+        self.assertIsInstance(search_results, bytes)
+        search_results = sfwebui.scaneventresultexportmulti("", "excel")
         self.assertIsInstance(search_results, bytes)
 
     @unittest.skip("todo")
     def test_scan_search_result_export(self):
         """
-        Test scansearchresultexport(self, id, eventType=None, value=None, dialect="excel")
+        Test scansearchresultexport(self, id, eventType=None, value=None, filetype="csv", dialect="excel")
         """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        search_results = sfwebui.scansearchresultexport("", "", "excel")
+        search_results = sfwebui.scansearchresultexport("")
+        self.assertIsInstance(search_results, bytes)
+        search_results = sfwebui.scansearchresultexport("", None, None, "excel")
         self.assertIsInstance(search_results, bytes)
 
     @unittest.skip("todo")
