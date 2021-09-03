@@ -1,0 +1,83 @@
+#
+# Spiderfoot Dockerfile (Full - includes all CLI tools, etc.)
+#
+# http://www.spiderfoot.net
+#
+# Written by: TheTechromancer
+#
+
+FROM python:3
+
+# Install tools/dependencies from apt
+RUN apt-get -y update && apt-get -y install nmap
+
+# Compile other tools from source
+# MassDNS
+RUN mkdir /tools || true
+WORKDIR /tools
+RUN git clone --depth=1 https://github.com/blechschmidt/massdns.git \
+   && cd massdns && make && make install && cd /tools && rm -r massdns
+
+# Install Golang tools
+RUN apt-get -y update && apt-get -y install golang
+ENV GOPATH="/go"
+ENV PATH="$GOPATH/bin:$PATH"
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin"
+# ShuffleDNS
+RUN GO111MODULE=on go get -v github.com/projectdiscovery/shuffledns/cmd/shuffledns
+
+# Install Ruby tools
+RUN apt-get -y update && apt-get -y install ruby ruby-dev bundler
+# WhatWeb
+RUN git clone https://github.com/urbanadventurer/WhatWeb \
+   && gem install rchardet mongo json && cd /tools/WhatWeb \
+   && bundle install && cd /tools
+
+RUN groupadd spiderfoot \
+    && useradd -m -g spiderfoot -d /home/spiderfoot -s /sbin/nologin \
+    -c "SpiderFoot User" spiderfoot
+
+ENV SPIDERFOOT_LOGS /home/spiderfoot/log
+ENV SPIDERFOOT_DATA /var/lib/spiderfoot
+RUN mkdir -p  "$SPIDERFOOT_LOGS" "$SPIDERFOOT_DATA" \
+   && chown spiderfoot:spiderfoot "$SPIDERFOOT_LOGS" "$SPIDERFOOT_DATA"
+
+WORKDIR /home/spiderfoot
+COPY . .
+
+ENV VIRTUAL_ENV=/opt/venv
+RUN mkdir -p "$VIRTUAL_ENV" || true
+RUN chown spiderfoot:spiderfoot "$VIRTUAL_ENV"
+
+RUN chown -R spiderfoot:spiderfoot /tools
+WORKDIR /tools
+
+USER spiderfoot
+
+ARG REQUIREMENTS=requirements.txt
+COPY "$REQUIREMENTS" requirements.txt
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN python -m venv "$VIRTUAL_ENV"
+RUN pip install -U pip
+RUN pip install -r "$REQUIREMENTS"
+
+# Install Python tools
+RUN pip install dnstwist
+# CMSeeK
+RUN git clone https://github.com/Tuhinshubhra/CMSeeK && cd CMSeeK \
+   && pip install -r requirements.txt && mkdir Results && cd /tools
+
+WORKDIR /home/spiderfoot
+
+EXPOSE 5001
+
+# Configure tool paths
+ENTRYPOINT python -c 'from spiderfoot import SpiderFootDb; \
+db = SpiderFootDb({"__database": "spiderfoot.db"}, init=True); \
+db.configSet({ \
+    "sfp_tool_cmseek:cmseekpath": "/tools/CMSeeK/cmseek.py", \
+    "sfp_tool_whatweb:whatweb_path": "/tools/WhatWeb/whatweb" \
+})' && /bin/bash
+
+# Run the application.
+CMD ["./sf.py", "-l", "0.0.0.0:5001"]

@@ -12,7 +12,8 @@
 # -------------------------------------------------------------------------------
 
 import json
-import os.path
+from pathlib import Path
+from shutil import which
 from subprocess import PIPE, Popen
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -46,7 +47,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
     # Option descriptions
     optdescs = {
         'pythonpath': "Path to Python interpreter to use for DNSTwist. If just 'python' then it must be in your PATH.",
-        'dnstwistpath': "Path to the where the dnstwist.py file lives. Must be set."
+        'dnstwistpath': "Path to the where the dnstwist.py file lives. Optional."
     }
 
     results = None
@@ -88,24 +89,30 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if not self.opts['dnstwistpath']:
-            self.sf.error("You enabled sfp_tool_dnstwist but did not set a path to the tool!")
-            self.errorState = True
-            return
-
-        # Normalize path
-        if self.opts['dnstwistpath'].endswith('dnstwist.py'):
-            exe = self.opts['dnstwistpath']
-        elif self.opts['dnstwistpath'].endswith('/'):
-            exe = self.opts['dnstwistpath'] + "dnstwist.py"
+        dnstwistLocation = which('dnstwist')
+        if dnstwistLocation and Path(dnstwistLocation).is_file():
+            cmd = ['dnstwist']
         else:
-            exe = self.opts['dnstwistpath'] + "/dnstwist.py"
+            if not self.opts['dnstwistpath']:
+                self.sf.error("You enabled sfp_tool_dnstwist but did not set a path to the tool!")
+                self.errorState = True
+                return
 
-        # If tool is not found, abort
-        if not os.path.isfile(exe):
-            self.sf.error("File does not exist: " + exe)
-            self.errorState = True
-            return
+            # Normalize path
+            if self.opts['dnstwistpath'].endswith('dnstwist.py'):
+                exe = self.opts['dnstwistpath']
+            elif self.opts['dnstwistpath'].endswith('/'):
+                exe = self.opts['dnstwistpath'] + "dnstwist.py"
+            else:
+                exe = self.opts['dnstwistpath'] + "/dnstwist.py"
+
+            # If tool is not found, abort
+            if not Path(exe).is_file():
+                self.sf.error("File does not exist: " + exe)
+                self.errorState = True
+                return
+
+            cmd = [self.opts['pythonpath'], exe]
 
         # Sanitize domain name.
         if not self.sf.sanitiseInput(eventData):
@@ -113,7 +120,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             return
 
         try:
-            p = Popen([self.opts['pythonpath'], exe, "-f", "json", "-r", eventData], stdout=PIPE, stderr=PIPE)
+            p = Popen(cmd + ["-f", "json", "-r", eventData], stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input=None)
             if p.returncode == 0:
                 content = stdout

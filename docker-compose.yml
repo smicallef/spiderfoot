@@ -1,9 +1,20 @@
 version: "3"
 
+# Basic usage:
+#     $ docker-compose up
+#
+# Dev environment (code directory mapped into container):
+#     $ docker-compose -f docker-compose.yml -f docker-compose-dev.yml up
+#
+# Full image (all CLI tools installed):
+#     $ docker-compose -f docker-compose.yml -f docker-compose-full.yml up
+
 services:
   spiderfoot:
     build:
        context: ./
+    volumes:
+      - ./spiderfoot.db:/home/spiderfoot/spiderfoot.db
     image: spiderfoot
     container_name: spiderfoot
     ports:
