@@ -42,7 +42,7 @@ class sfp_tool_whatweb(SpiderFootPlugin):
     opts = {
         'aggression': 1,
         'ruby_path': 'ruby',
-        'whatweb_path': '/tools/WhatWeb/whatweb'
+        'whatweb_path': ''
     }
 
     # Option descriptions
