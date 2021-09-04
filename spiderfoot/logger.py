@@ -16,12 +16,22 @@ class SpiderFootSqliteLogHandler(logging.Handler):
     process and a single database handle.
     """
 
-    def __init__(self, opts):
+    def __init__(self, opts: dict) -> None:
+        """TBD.
+
+        Args:
+            opts (dict): TBD
+        """
         self.opts = opts
         self.dbh = None
         super().__init__()
 
-    def emit(self, record):
+    def emit(self, record: 'logging.LogRecord') -> None:
+        """TBD
+
+        Args:
+            record (logging.LogRecord): Log event record
+        """
         if self.dbh is None:
             # Create a new database handle when the first log record is received
             self.makeDbh()
@@ -35,11 +45,12 @@ class SpiderFootSqliteLogHandler(logging.Handler):
                 self.makeDbh()
                 self.dbh.scanLogEvent(scanId, level, record.getMessage(), component=component)
 
-    def makeDbh(self):
+    def makeDbh(self) -> None:
+        """TBD."""
         self.dbh = SpiderFootDb(self.opts)
 
 
-def logListenerSetup(loggingQueue, opts=None):
+def logListenerSetup(loggingQueue, opts: dict = None) -> 'logging.handlers.QueueListener':
     """Create and start a SpiderFoot log listener in its own thread.
 
     This function should be called as soon as possible in the main
@@ -51,7 +62,7 @@ def logListenerSetup(loggingQueue, opts=None):
         opts (dict): SpiderFoot config
 
     Returns:
-        spiderFootLogListener (str): Log listener
+        spiderFootLogListener (logging.handlers.QueueListener): Log listener
     """
     if opts is None:
         opts = dict()
@@ -106,8 +117,15 @@ def logListenerSetup(loggingQueue, opts=None):
     return spiderFootLogListener
 
 
-def logWorkerSetup(loggingQueue):
-    # Root SpiderFoot logger
+def logWorkerSetup(loggingQueue) -> 'logging.Logger':
+    """Root SpiderFoot logger.
+
+    Args:
+        loggingQueue (Queue): TBD
+
+    Returns:
+        logging.Logger: Logger
+    """
     log = logging.getLogger("spiderfoot")
     log.setLevel(logging.DEBUG)
     queue_handler = QueueHandler(loggingQueue)
@@ -115,6 +133,11 @@ def logWorkerSetup(loggingQueue):
     return log
 
 
-def stop_listener(listener):
+def stop_listener(listener: 'logging.handlers.QueueListener') -> None:
+    """TBD.
+
+    Args:
+        listener: (logging.handlers.QueueListener): TBD
+    """
     with suppress(Exception):
         listener.stop()
