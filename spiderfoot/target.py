@@ -18,7 +18,7 @@ class SpiderFootTarget():
     _targetValue = None
     _targetAliases = list()
 
-    def __init__(self, targetValue, typeName):
+    def __init__(self, targetValue: str, typeName: str) -> None:
         """Initialize SpiderFoot target.
 
         Args:
@@ -30,11 +30,11 @@ class SpiderFootTarget():
         self.targetAliases = list()
 
     @property
-    def targetType(self):
+    def targetType(self) -> str:
         return self._targetType
 
     @targetType.setter
-    def targetType(self, targetType):
+    def targetType(self, targetType: str) -> None:
         if not isinstance(targetType, str):
             raise TypeError(f"targetType is {type(targetType)}; expected str()")
 
@@ -44,11 +44,11 @@ class SpiderFootTarget():
         self._targetType = targetType
 
     @property
-    def targetValue(self):
+    def targetValue(self) -> str:
         return self._targetValue
 
     @targetValue.setter
-    def targetValue(self, targetValue):
+    def targetValue(self, targetValue: str) -> None:
         if not isinstance(targetValue, str):
             raise TypeError(f"targetValue is {type(targetValue)}; expected str()")
         if not targetValue:
@@ -57,14 +57,14 @@ class SpiderFootTarget():
         self._targetValue = targetValue
 
     @property
-    def targetAliases(self):
+    def targetAliases(self) -> list:
         return self._targetAliases
 
     @targetAliases.setter
-    def targetAliases(self, value):
+    def targetAliases(self, value: list) -> None:
         self._targetAliases = value
 
-    def setAlias(self, value, typeName):
+    def setAlias(self, value: str, typeName: str) -> None:
         """Specify other hostnames, IPs, etc. that are aliases for this target.
 
         For instance, if the user searched for an ASN, a module
@@ -92,7 +92,7 @@ class SpiderFootTarget():
             {'type': typeName, 'value': value.lower()}
         )
 
-    def _getEquivalents(self, typeName):
+    def _getEquivalents(self, typeName: str) -> list:
         """TBD
 
         Args:
@@ -107,7 +107,7 @@ class SpiderFootTarget():
                 ret.append(item['value'].lower())
         return ret
 
-    def getNames(self):
+    def getNames(self) -> list:
         """Get all domains associated with the target.
 
         Returns:
@@ -126,11 +126,11 @@ class SpiderFootTarget():
 
         return names
 
-    def getAddresses(self):
+    def getAddresses(self) -> list:
         """Get all IP Subnets or IP Addresses associated with the target.
 
         Returns:
-            list: TBD
+            list: List of IP subnets and addresses
         """
         e = self._getEquivalents("IP_ADDRESS")
         if self.targetType == "IP_ADDRESS":
@@ -142,7 +142,7 @@ class SpiderFootTarget():
 
         return e
 
-    def matches(self, value, includeParents=False, includeChildren=True):
+    def matches(self, value: str, includeParents: bool = False, includeChildren: bool = True) -> bool:
         """Check whether the supplied value is "tightly" related to the original target.
 
         Tightly in this case means:
