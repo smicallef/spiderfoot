@@ -25,7 +25,6 @@ class sfp_cookie(SpiderFootPlugin):
         'categories': ["Content Analysis"]
     }
 
-    # Default options
     opts = {}
     optdescs = {}
 
@@ -44,8 +43,6 @@ class sfp_cookie(SpiderFootPlugin):
         return ["WEBSERVER_HTTPHEADERS"]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["TARGET_WEB_COOKIE"]
 
@@ -57,26 +54,26 @@ class sfp_cookie(SpiderFootPlugin):
         eventSource = event.actualSource
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
+
         if eventSource in self.results:
             return
-        else:
-            self.results[eventSource] = True
 
-        if not self.getTarget().matches(self.sf.urlFQDN(eventSource)):
-            self.sf.debug("Not collecting cookies from external sites.")
+        self.results[eventSource] = True
+
+        fqdn = self.sf.urlFQDN(eventSource)
+        if not self.getTarget().matches(fqdn):
+            self.sf.debug(f"Not collecting cookies from external sites. Ignoring HTTP headers from {fqdn}")
             return
 
         try:
-            jdata = json.loads(eventData)
-            if jdata is None:
-                return
+            data = json.loads(eventData)
         except Exception:
             self.sf.error("Received HTTP headers from another module in an unexpected format.")
             return
 
-        if 'set-cookie' in jdata:
-            evt = SpiderFootEvent("TARGET_WEB_COOKIE", jdata['set-cookie'],
-                                  self.__name__, event)
+        cookie = data.get('cookie')
+        if cookie:
+            evt = SpiderFootEvent("TARGET_WEB_COOKIE", cookie, self.__name__, event)
             self.notifyListeners(evt)
 
 # End of sfp_cookie class
