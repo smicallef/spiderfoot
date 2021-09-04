@@ -88,7 +88,7 @@ class sfp_filemeta(SpiderFootPlugin):
                 # Fetch the file, allow much more time given that these files are
                 # typically large.
                 ret = self.sf.fetchUrl(eventData, timeout=self.opts['timeout'],
-                                       useragent=self.opts['_useragent'], dontMangle=True,
+                                       useragent=self.opts['_useragent'], disableContentEncoding=True,
                                        sizeLimit=10000000,
                                        verify=False)
                 if ret['content'] is None:

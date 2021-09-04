@@ -2187,7 +2187,7 @@ class SpiderFoot:
         headers: dict = None,
         noLog: bool = False,
         postData: str = None,
-        dontMangle: bool = False,
+        disableContentEncoding: bool = False,
         sizeLimit: int = None,
         headOnly: bool = False,
         verify: bool = True
@@ -2203,7 +2203,7 @@ class SpiderFoot:
             headers (dict): headers
             noLog (bool): do not log request
             postData (str): HTTP POST data
-            dontMangle (bool): do not mangle
+            disableContentEncoding (bool): do not UTF-8 encode response body
             sizeLimit (int): size threshold
             headOnly (bool): use HTTP HEAD method
             verify (bool): use HTTPS SSL/TLS verification
@@ -2398,14 +2398,14 @@ class SpiderFoot:
                     headers,
                     noLog,
                     postData,
-                    dontMangle,
+                    disableContentEncoding,
                     sizeLimit,
                     headOnly
                 )
 
             result['realurl'] = res.url
             result['code'] = str(res.status_code)
-            if dontMangle:
+            if disableContentEncoding:
                 result['content'] = res.content
             else:
                 for encoding in ("utf-8", "ascii"):
