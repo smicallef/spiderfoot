@@ -130,7 +130,7 @@ class sfp_binstring(SpiderFootPlugin):
                 res = self.sf.fetchUrl(
                     eventData,
                     useragent=self.opts['_useragent'],
-                    dontMangle=True,
+                    disableContentEncoding=True,
                     sizeLimit=self.opts['maxfilesize'],
                     verify=False
                 )

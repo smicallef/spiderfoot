@@ -1304,7 +1304,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
+                 postData=None, disableContentEncoding=False, sizeLimit=None,
                  headOnly=False, verify=False)
         """
         sf = SpiderFoot(self.default_options)
@@ -1318,7 +1318,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
+                 postData=None, disableContentEncoding=False, sizeLimit=None,
                  headOnly=False, verify=False)
         """
         sf = SpiderFoot(self.default_options)
@@ -1332,7 +1332,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
+                 postData=None, disableContentEncoding=False, sizeLimit=None,
                  headOnly=False, verify=False)
         """
         sf = SpiderFoot(self.default_options)
@@ -1347,7 +1347,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
+                 postData=None, disableContentEncoding=False, sizeLimit=None,
                  headOnly=False, verify=False)
         """
         sf = SpiderFoot(self.default_options)
