@@ -315,6 +315,44 @@ class SpiderFootWebUi:
     #
 
     @cherrypy.expose
+    def scanexportlogs(self, id, dialect="excel"):
+        """Get scan log
+
+        Args:
+            id (str): scan ID
+            dialect (str): CSV style
+
+        Returns:
+            string: scan logs in CSV format
+        """
+        dbh = SpiderFootDb(self.config)
+
+        try:
+            data = dbh.scanLogs(id, None, None, True)
+        except Exception:
+            return self.error("Scan ID not found.")
+
+        if not data:
+            return self.error("Scan ID not found.")
+
+        fileobj = StringIO()
+        parser = csv.writer(fileobj, dialect=dialect)
+        parser.writerow(["Date", "Component", "Type", "Event", "Event ID"])
+        for row in data:
+            parser.writerow([
+                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0] / 1000)),
+                str(row[1]),
+                str(row[2]),
+                str(row[3]),
+                row[4]
+            ])
+
+        cherrypy.response.headers['Content-Disposition'] = f"attachment; filename=SpiderFoot-{id}.log.csv"
+        cherrypy.response.headers['Content-Type'] = "application/csv"
+        cherrypy.response.headers['Pragma'] = "no-cache"
+        return fileobj.getvalue().encode('utf-8')
+
+    @cherrypy.expose
     def scaneventresultexport(self, id, type, filetype="csv", dialect="excel"):
         """Get scan event result data in CSV format
 
