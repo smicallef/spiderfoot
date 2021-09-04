@@ -11,7 +11,7 @@ class SpiderFootHelpers():
     """SpiderFoot helper functions."""
 
     @staticmethod
-    def targetTypeFromString(target):
+    def targetTypeFromString(target: str) -> None:
         """Return the scan target seed data type for the specified scan target input.
 
         Args:
@@ -46,7 +46,7 @@ class SpiderFootHelpers():
         return None
 
     @staticmethod
-    def buildGraphGexf(root, title, data, flt=[]):
+    def buildGraphGexf(root: str, title: str, data: list, flt: list = []) -> str:
         """Convert supplied raw data into GEXF (Graph Exchange XML Format) format (e.g. for Gephi).
 
         Args:
@@ -98,7 +98,7 @@ class SpiderFootHelpers():
         return str(gexf).encode('utf-8')
 
     @staticmethod
-    def buildGraphJson(root, data, flt=[]):
+    def buildGraphJson(root: str, data: list, flt: list = []) -> str:
         """Convert supplied raw data into JSON format for SigmaJS.
 
         Args:
@@ -170,7 +170,7 @@ class SpiderFootHelpers():
         return json.dumps(ret)
 
     @staticmethod
-    def buildGraphData(data, flt=list()):
+    def buildGraphData(data: list, flt: list = []) -> set:
         """Return a format-agnostic collection of tuples to use as the
         basis for building graphs in various formats.
 
@@ -188,7 +188,7 @@ class SpiderFootHelpers():
         entities = dict()
         parents = dict()
 
-        def get_next_parent_entities(item, pids):
+        def get_next_parent_entities(item: str, pids: list) -> list:
             ret = list()
 
             for [parent, entity_id] in parents[item]:
@@ -236,7 +236,7 @@ class SpiderFootHelpers():
         return mapping
 
     @staticmethod
-    def dataParentChildToTree(data):
+    def dataParentChildToTree(data: dict) -> dict:
         """Converts a dictionary of k -> array to a nested
         tree that can be digested by d3 for visualizations.
 
@@ -250,7 +250,7 @@ class SpiderFootHelpers():
             # TODO: print error
             return {}
 
-        def get_children(needle, haystack):
+        def get_children(needle: str, haystack: dict) -> list:
             ret = list()
 
             if needle not in list(haystack.keys()):
@@ -287,7 +287,7 @@ class SpiderFootHelpers():
         return {"name": root, "children": get_children(root, data)}
 
     @staticmethod
-    def validLEI(lei):
+    def validLEI(lei: str) -> bool:
         """Check if the provided string is a valid Legal Entity Identifier (LEI).
 
         Args:
@@ -309,7 +309,7 @@ class SpiderFootHelpers():
         return True
 
     @staticmethod
-    def genScanInstanceId():
+    def genScanInstanceId() -> str:
         """Generate an globally unique ID for this scan.
 
         Returns:
@@ -318,7 +318,7 @@ class SpiderFootHelpers():
         return str(uuid.uuid4()).split("-")[0].upper()
 
     @staticmethod
-    def parseRobotsTxt(robotsTxtData):
+    def parseRobotsTxt(robotsTxtData: str) -> list:
         """Parse the contents of robots.txt.
 
         Args:
