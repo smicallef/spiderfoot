@@ -84,7 +84,7 @@ class sfp_myspace(SpiderFootPlugin):
                 return
 
             # Extract HTML containing potential profile matches
-            profiles = re.findall(r'<a href="/[a-zA-Z0-9_]+">[^<]+</a></h6>', res['content'])
+            profiles = re.findall(r'<a href="/[a-zA-Z0-9_]+">[^<]+</a></h6>', str(res['content']))
 
             if not profiles:
                 self.sf.debug(f"No profiles found for e-mail: {email}")

@@ -91,7 +91,7 @@ class sfp_flickr(SpiderFootPlugin):
         if res['content'] is None:
             return None
 
-        keys = re.findall(r'YUI_config.flickr.api.site_key = "([a-zA-Z0-9]+)"', res['content'])
+        keys = re.findall(r'YUI_config.flickr.api.site_key = "([a-zA-Z0-9]+)"', str(res['content']))
 
         if not keys:
             return None

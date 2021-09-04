@@ -95,7 +95,7 @@ class sfp_twitter(SpiderFootPlugin):
 
         # Retrieve name
         human_name = re.findall(r'<div class="fullname">([^<]+)\s*</div>',
-                                res['content'], re.MULTILINE)
+                                str(res['content']), re.MULTILINE)
 
         if human_name:
             e = SpiderFootEvent("RAW_RIR_DATA", "Possible full name: " + human_name[0],
