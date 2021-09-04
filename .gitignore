@@ -78,13 +78,35 @@ spiderfoot/static/node_modules/d3/*
 
 # Compiled source #
 ###################
+__pycache__/
 *.com
 *.class
 *.dll
 *.exe
 *.o
 *.so
-*.pyc
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
 # Packages #
 ############
@@ -122,10 +144,30 @@ Thumbs.db
 venv/
 venv3/
 
-# Test Report & Coverage #
-##########################
+# IDE #
+#######
+.idea
+
+# Test & Coverage Reports #
+###########################
 .coverage
 coverage/
-report/
-htmlcov/
 test/acceptance/results/
+htmlcov/
+report/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Documentation #
+#################
+docs/_build/
