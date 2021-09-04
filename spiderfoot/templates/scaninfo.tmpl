@@ -34,6 +34,7 @@
     </div>
         <div class="btn-group pull-right" role="group">
             <button id='btn-refresh' rel="tooltip" title="Refresh" class="btn btn-success btn-default" onClick='refresh()'><i class='glyphicon glyphicon-refresh glyphicon glyphicon-white'></i></button>
+            <button id='btn-download-logs' rel="tooltip" data-title="Download Scan Logs" class="btn btn-default download-button" onClick='downloadLogs("${id}")'><i class='glyphicon glyphicon-download-alt glyphicon glyphicon-white'></i></a>
             <a id='btn-export' rel="tooltip" data-title="Export Data" class="btn btn-default dropdown-toggle download-button" data-toggle="dropdown"><i class='glyphicon glyphicon-download-alt glyphicon glyphicon-white'></i></a>
             <ul class="dropdown-menu">
               <li><a class='link' onClick='exportEventData("${id}", currentType, "csv")'>CSV</a></li>
@@ -130,7 +131,7 @@
 
         function navTo(target) {
             var targets = [ "btn-browse", "btn-info", "btn-log", 
-                "btn-export", "btn-viz", "btn-status", "btn-graph" ]
+                "btn-export", "btn-download-logs", "btn-viz", "btn-status", "btn-graph" ]
             for (var i = 0; i < targets.length; i++) {
                 if (targets[i] == target) {
                     $("#" + targets[i]).addClass("active");
@@ -163,6 +164,7 @@
             $("#modifyactions").hide();
             $("#loader").show();
             $("#btn-export").show();
+            $("#btn-download-logs").hide();
             $("#btn-refresh").show();
             $("#btn-search").show();
             $("#scanreminder").hide();
@@ -220,6 +222,7 @@
             $("#scansummary-content").remove();
             $("#loader").show();
             $("#btn-export").show();
+            $("#btn-download-logs").hide();
             $("#btn-refresh").show();
             $("#btn-search").hide();
             $("#btn-graph").show();
@@ -298,6 +301,7 @@
             $("#scansummary-content").remove();
             $("#loader").show();
             $("#btn-export").hide();
+            $("#btn-download-logs").hide();
             $("#btn-refresh").hide();
             $("#btn-search").hide();
             $("#scanreminder").show();
@@ -391,6 +395,7 @@
             $("#loader").show();
             $("#btn-search").hide();
             $("#btn-export").hide();
+            $("#btn-download-logs").show();
             $("#scanreminder").hide();
             navTo("btn-log");
             refresh = function() { viewScanLog(instanceId); }
@@ -426,6 +431,7 @@
             navTo("btn-browse");
             $("#loader").show();
             $("#btn-export").show();
+            $("#btn-download-logs").hide();
             $("#btn-refresh").show();
             $("#btn-search").show();
             $("#scanreminder").hide();
@@ -463,6 +469,7 @@
             $("#loader").show();
             navTo("btn-browse");
             $("#btn-export").show();
+            $("#btn-download-logs").hide();
             $("#btn-refresh").show();
             $("#btn-search").show();
             $("#customtabview").show();
@@ -648,6 +655,15 @@
             }
         }
 
+        function downloadLogs(instanceId) {
+            $("#loader").show();
+            sf.log("Loading logs for scan: " + instanceId);
+            var efr = document.getElementById('exportframe');
+            var urlBase = '${docroot}/scanexportlogs?id=';
+            efr.src = urlBase + instanceId;
+            $("#loader").fadeOut(500);
+        }
+
         // Download the data currently being viewed
         function exportEventData(instanceId, eventType, fileType) {
             $("#loader").show();
@@ -688,6 +704,7 @@
             $("#scansummary-content").remove();
             $("#loader").show();
             $("#btn-export").hide();
+            $("#btn-download-logs").hide();
             $("#btn-refresh").show();
             $("#btn-search").hide();
             $("#scanreminder").hide();
