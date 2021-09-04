@@ -305,14 +305,4 @@ class SpiderFootEvent():
 
         return evtDict
 
-    def getHash(self) -> str:
-        """Unique SHA256 hash of the event or "ROOT".
-
-        Note: required for SpiderFoot HX compatibility of modules.
-
-        Returns:
-            str: event hash
-        """
-        return self.hash
-
 # end of SpiderFootEvent class

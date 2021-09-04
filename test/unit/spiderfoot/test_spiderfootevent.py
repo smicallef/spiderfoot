@@ -354,24 +354,18 @@ class TestSpiderFootEvent(unittest.TestCase):
         self.assertEqual(evt_dict['data'], event_data)
         self.assertEqual(evt_dict['module'], module)
 
-    def test_getHash_root_event_should_return_root_as_a_string(self):
-        """
-        Test getHash(self)
-        """
+    def test_hash_attribute_root_event_should_return_root_as_a_string(self):
         event_type = 'ROOT'
         event_data = 'example event data'
         module = ''
         source_event = ''
 
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
-        evt_hash = evt.getHash()
+        evt_hash = evt.hash
 
         self.assertEqual('ROOT', evt_hash)
 
-    def test_getHash_nonroot_event_should_return_a_string(self):
-        """
-        Test getHash(self)
-        """
+    def test_hash_attribute_nonroot_event_should_return_a_string(self):
         event_type = 'ROOT'
         event_data = 'example event data'
         module = 'example module'
@@ -379,6 +373,6 @@ class TestSpiderFootEvent(unittest.TestCase):
 
         event_type = 'not ROOT'
         evt = SpiderFootEvent(event_type, event_data, module, source_event)
-        evt_hash = evt.getHash()
+        evt_hash = evt.hash
 
         self.assertIsInstance(evt_hash, str)
