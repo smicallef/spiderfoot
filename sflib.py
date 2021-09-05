@@ -29,6 +29,7 @@ import urllib.parse
 import urllib.request
 from copy import deepcopy
 from datetime import datetime
+from pathlib import Path
 
 import cryptography
 import dns.resolver
@@ -71,7 +72,6 @@ class SpiderFoot:
             raise TypeError("options is %s; expected dict()" % type(options))
 
         self.opts = deepcopy(options)
-
         self.log = logging.getLogger(f"spiderfoot.{__name__}")
 
         # This is ugly but we don't want any fetches to fail - we expect
@@ -285,16 +285,6 @@ class SpiderFoot:
 
         return os.path.dirname(__file__)
 
-    @classmethod
-    def dataPath(cls) -> str:
-        """Returns the file system location of SpiderFoot data and configuration files.
-
-        Returns:
-            str: SpiderFoot file system path
-        """
-        path = os.environ.get('SPIDERFOOT_DATA')
-        return path if path is not None else cls.myPath()
-
     def hashstring(self, string: str) -> str:
         """Returns a SHA256 hash of the specified input.
 
@@ -317,7 +307,7 @@ class SpiderFoot:
         """
         path = os.environ.get('SPIDERFOOT_CACHE')
         if not path:
-            path = self.myPath() + '/cache'
+            path = f"{Path.home()}/.spiderfoot/cache"
         if not os.path.isdir(path):
             os.mkdir(path)
         return path

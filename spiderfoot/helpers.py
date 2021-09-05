@@ -1,14 +1,31 @@
 import json
+import os
+import os.path
 import random
 import re
 import uuid
 
 import networkx as nx
 from networkx.readwrite.gexf import GEXFWriter
+from pathlib import Path
 
 
 class SpiderFootHelpers():
     """SpiderFoot helper functions."""
+
+    @staticmethod
+    def dataPath() -> str:
+        """Returns the file system location of SpiderFoot data and configuration files.
+
+        Returns:
+            str: SpiderFoot data file system path
+        """
+        path = os.environ.get('SPIDERFOOT_DATA')
+        if not path:
+            path = f"{Path.home()}/.spiderfoot/"
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        return path
 
     @staticmethod
     def targetTypeFromString(target: str) -> None:
