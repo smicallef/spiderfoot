@@ -110,7 +110,7 @@ class sfp_callername(SpiderFootPlugin):
             self.sf.debug('No phone information found for ' + eventData)
             return
 
-        location_match = re.findall(r'<div class="callerid"><h4>.*?</h4><p>(.+?)</p></div>', res['content'], re.MULTILINE | re.DOTALL)
+        location_match = re.findall(r'<div class="callerid"><h4>.*?</h4><p>(.+?)</p></div>', str(res['content']), re.MULTILINE | re.DOTALL)
 
         if location_match:
             location = location_match[0]
@@ -121,8 +121,8 @@ class sfp_callername(SpiderFootPlugin):
                 evt = SpiderFootEvent('GEOINFO', location, self.__name__, event)
                 self.notifyListeners(evt)
 
-        rep_good_match = re.findall(r'>SAFE.*?>(\d+) votes?<', res['content'])
-        rep_bad_match = re.findall(r'>UNSAFE.*?>(\d+) votes?<', res['content'])
+        rep_good_match = re.findall(r'>SAFE.*?>(\d+) votes?<', str(res['content']))
+        rep_bad_match = re.findall(r'>UNSAFE.*?>(\d+) votes?<', str(res['content']))
 
         if rep_good_match and rep_bad_match:
             good_votes = int(rep_good_match[0])

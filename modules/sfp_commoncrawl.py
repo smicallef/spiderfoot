@@ -101,7 +101,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
             self.errorState = True
             return list()
 
-        indexes = re.findall(r".*(CC-MAIN-\d+-\d+).*", res['content'])
+        indexes = re.findall(r".*(CC-MAIN-\d+-\d+).*", str(res['content']))
         indexlist = dict()
         for m in indexes:
             ms = m.replace("CC-MAIN-", "").replace("-", "")

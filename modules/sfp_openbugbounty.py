@@ -84,7 +84,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 
         try:
             rx = re.compile(".*<div class=.cell1.><a href=.(.*).>(.*" + qry + ").*?</a></div>.*", re.IGNORECASE)
-            for m in rx.findall(res['content']):
+            for m in rx.findall(str(res['content'])):
                 # Report it
                 if m[1] == qry or m[1].endswith("." + qry):
                     ret.append("From openbugbounty.org: <SFURL>" + base + m[0] + "</SFURL>")

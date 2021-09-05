@@ -113,7 +113,7 @@ class sfp_crossref(SpiderFootPlugin):
                 r"([\.\'\/\"\ ]" + re.escape(name) + r"[\.\'\/\"\ ])",
                 re.IGNORECASE
             )
-            matches = re.findall(pat, res['content'])
+            matches = re.findall(pat, str(res['content']))
 
             if len(matches) > 0:
                 matched = True
@@ -144,7 +144,7 @@ class sfp_crossref(SpiderFootPlugin):
                             r"([\.\'\/\"\ ]" + re.escape(name) + r"[\'\/\"\ ])",
                             re.IGNORECASE
                         )
-                        matches = re.findall(pat, res['content'])
+                        matches = re.findall(pat, str(res['content']))
 
                         if len(matches) > 0:
                             matched = True

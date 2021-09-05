@@ -93,7 +93,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
             self.sf.debug("No results found for " + qry)
             return None
 
-        rows = re.findall(r'<tr>(.+?)</tr>', res['content'], re.DOTALL)
+        rows = re.findall(r'<tr>(.+?)</tr>', str(res['content']), re.DOTALL)
 
         if not rows:
             self.sf.debug("No passive DNS results for " + qry)

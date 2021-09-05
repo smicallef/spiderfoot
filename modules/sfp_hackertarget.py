@@ -130,7 +130,7 @@ class sfp_hackertarget(SpiderFootPlugin):
         if res['content'] is None:
             return None
 
-        html_data = re.findall(r'<pre id="formResponse">(.*?)</pre>', res['content'], re.MULTILINE | re.DOTALL)
+        html_data = re.findall(r'<pre id="formResponse">(.*?)</pre>', str(res['content']), re.MULTILINE | re.DOTALL)
 
         if not html_data:
             self.sf.debug(f"Found no open UDP ports on {ip}")

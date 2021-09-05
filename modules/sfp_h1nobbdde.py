@@ -77,7 +77,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
         try:
             rx = re.compile("<a class=\"title\" href=.(.[^\"]+).*?title=.(.[^\"\']+)", re.IGNORECASE | re.DOTALL)
-            for m in rx.findall(res['content']):
+            for m in rx.findall(str(res['content'])):
                 # Report it
                 if qry in m[1]:
                     ret.append(m[1] + "\n<SFURL>" + m[0] + "</SFURL>")
