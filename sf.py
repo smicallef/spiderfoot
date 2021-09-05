@@ -60,7 +60,7 @@ def main():
         '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
         '_internettlds_cache': 72,
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-        '__database': 'spiderfoot.db',
+        '__database': f"{SpiderFootHelpers.dataPath()}/spiderfoot.db",
         '__modules__': None,  # List of modules. Will be set after start-up.
         '_socks1type': '',
         '_socks2addr': '',
@@ -452,7 +452,7 @@ def start_web_server(sfWebUiConfig, sfConfig, loggingQueue=None):
     }
 
     secrets = dict()
-    passwd_file = sf.dataPath() + '/passwd'
+    passwd_file = SpiderFootHelpers.dataPath() + '/passwd'
     if os.path.isfile(passwd_file):
         if not os.access(passwd_file, os.R_OK):
             log.error("Could not read passwd file. Permission denied.")
@@ -494,8 +494,8 @@ def start_web_server(sfWebUiConfig, sfConfig, loggingQueue=None):
         log.warning(warn_msg)
 
     using_ssl = False
-    key_path = sf.dataPath() + '/spiderfoot.key'
-    crt_path = sf.dataPath() + '/spiderfoot.crt'
+    key_path = SpiderFootHelpers.dataPath() + '/spiderfoot.key'
+    crt_path = SpiderFootHelpers.dataPath() + '/spiderfoot.crt'
     if os.path.isfile(key_path) and os.path.isfile(crt_path):
         if not os.access(crt_path, os.R_OK):
             log.critical(f"Could not read {crt_path} file. Permission denied.")
@@ -567,6 +567,15 @@ if __name__ == '__main__':
 
     if len(sys.argv) <= 1:
         print("SpiderFoot requires -l <ip>:<port> to start the web server. Try --help for guidance.")
+        sys.exit(-1)
+
+    # TODO: remove this after a few releases (added in 3.5 pre-release 2021-09-05)
+    from pathlib import Path
+    if os.path.exists('spiderfoot.db'):
+        print(f"ERROR: spiderfoot.db file exists in {os.path.dirname(__file__)}")
+        print("SpiderFoot no longer supports loading the spiderfoot.db database from the application directory.")
+        print(f"The database is now loaded from your home directory: {Path.home()}/.spiderfoot/spiderfoot.db")
+        print(f"This message will go away once you move or remove spiderfoot.db from {os.path.dirname(__file__)}")
         sys.exit(-1)
 
     main()

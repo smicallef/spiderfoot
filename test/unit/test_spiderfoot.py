@@ -163,15 +163,6 @@ class TestSpiderFoot(unittest.TestCase):
         path = sf.myPath()
         self.assertIsInstance(path, str)
 
-    def test_data_path_should_return_a_string(self):
-        """
-        Test def dataPath(self)
-        """
-        sf = SpiderFoot(dict())
-
-        path = sf.myPath()
-        self.assertIsInstance(path, str)
-
     def test_hash_string_should_return_a_string(self):
         """
         Test hashstring(self, string)

@@ -1,4 +1,5 @@
 import pytest
+from spiderfoot import SpiderFootHelpers
 
 
 @pytest.fixture(autouse=True)
@@ -13,7 +14,7 @@ def default_options(request):
         '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
         '_internettlds_cache': 72,
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-        '__database': 'spiderfoot.test.db',  # note: test database file
+        '__database': f"{SpiderFootHelpers.dataPath()}/spiderfoot.test.db",  # note: test database file
         '__modules__': None,  # List of modules. Will be set after start-up.
         '_socks1type': '',
         '_socks2addr': '',
