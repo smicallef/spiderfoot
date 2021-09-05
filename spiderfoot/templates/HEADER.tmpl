@@ -54,18 +54,18 @@
     class="active"
 % endif
 class="nav-item"
-><a href="${docroot}/newscan"><i class="glyphicon glyphicon-screenshot"></i>&nbsp;New Scan</a></li>
+><a id="nav-link-newscan" href="${docroot}/newscan"><i class="glyphicon glyphicon-screenshot"></i>&nbsp;New Scan</a></li>
         <li 
 % if pageid == "SCANLIST": 
     class="active"
 % endif
 class="nav-item"
-><a href="${docroot}/"><i class="glyphicon glyphicon-list"></i>&nbsp;Scans</a></li>
+><a id="nav-link-scans" href="${docroot}/"><i class="glyphicon glyphicon-list"></i>&nbsp;Scans</a></li>
         <li
 % if pageid == "SETTINGS":
     class="active"
 %endif
-class="nav-item"><a href="${docroot}/opts" class="nav-link"><i class="glyphicon glyphicon-wrench"></i>&nbsp;Settings</a></li>
+class="nav-item"><a id="nav-link-settings" href="${docroot}/opts" class="nav-link"><i class="glyphicon glyphicon-wrench"></i>&nbsp;Settings</a></li>
  
       </ul>
 
