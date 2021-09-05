@@ -89,6 +89,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         search_results = sfwebui.searchBase(None, None, "//")
         self.assertIsInstance(search_results, list)
 
+    @unittest.skip("todo")
     def test_scan_event_result_export_should_return_bytes(self):
         """
         Test scaneventresultexport(self, id, type, filetype="csv", dialect="excel")
@@ -101,6 +102,7 @@ class TestSpiderFootWebUi(unittest.TestCase):
         search_results = sfwebui.scaneventresultexport("", "", "excel")
         self.assertIsInstance(search_results, bytes)
 
+    @unittest.skip("todo")
     def test_scan_event_result_export_multi(self):
         """
         Test scaneventresultexportmulti(self, ids, filetype="csv", dialect="excel")

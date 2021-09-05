@@ -315,15 +315,15 @@ class SpiderFootWebUi:
     #
 
     @cherrypy.expose
-    def scanexportlogs(self, id, dialect="excel"):
+    def scanexportlogs(self, id, dialect="excel") -> str:
         """Get scan log
 
         Args:
             id (str): scan ID
-            dialect (str): CSV style
+            dialect (str): CSV dialect (default: excel)
 
         Returns:
-            string: scan logs in CSV format
+            str: scan logs in CSV format
         """
         dbh = SpiderFootDb(self.config)
 
@@ -353,17 +353,17 @@ class SpiderFootWebUi:
         return fileobj.getvalue().encode('utf-8')
 
     @cherrypy.expose
-    def scaneventresultexport(self, id, type, filetype="csv", dialect="excel"):
-        """Get scan event result data in CSV format
+    def scaneventresultexport(self, id, type, filetype="csv", dialect="excel") -> str:
+        """Get scan event result data in CSV or Excel format
 
         Args:
             id (str): scan ID
             type (str): TBD
             filetype (str): type of file ("xlsx|excel" or "csv")
-            dialect (str): TBD
+            dialect (str): CSV dialect (default: excel)
 
         Returns:
-            string: results in CSV format
+            str: results in CSV or Excel format
         """
         dbh = SpiderFootDb(self.config)
         data = dbh.scanResultEvent(id, type)
@@ -376,13 +376,15 @@ class SpiderFootWebUi:
                 lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
                 datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
                 rows.append([lastseen, str(row[4]), str(row[3]), str(row[2]), row[13], datafield])
-            cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.xlsx"
+
+            fname = "SpiderFoot.xlsx"
+            cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
             cherrypy.response.headers['Content-Type'] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             cherrypy.response.headers['Pragma'] = "no-cache"
             return self.buildExcel(rows, ["Updated", "Type", "Module", "Source",
                                    "F/P", "Data"], sheetNameIndex=1)
 
-        else:
+        elif filetype.lower() == 'csv':
             fileobj = StringIO()
             parser = csv.writer(fileobj, dialect=dialect)
             parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
@@ -392,31 +394,44 @@ class SpiderFootWebUi:
                 lastseen = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(row[0]))
                 datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
                 parser.writerow([lastseen, str(row[4]), str(row[3]), str(row[2]), row[13], datafield])
-            cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
+
+            fname = "SpiderFoot.csv"
+            cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
             cherrypy.response.headers['Content-Type'] = "application/csv"
             cherrypy.response.headers['Pragma'] = "no-cache"
             return fileobj.getvalue().encode('utf-8')
 
+        else:
+            return self.error("Invalid export filetype.")
+
     @cherrypy.expose
-    def scaneventresultexportmulti(self, ids, filetype="csv", dialect="excel"):
-        """Get scan event result data in CSV format for multiple scans
+    def scaneventresultexportmulti(self, ids, filetype="csv", dialect="excel") -> str:
+        """Get scan event result data in CSV or Excel format for multiple scans
 
         Args:
             ids (str): comma separated list of scan IDs
             filetype (str): type of file ("xlsx|excel" or "csv")
-            dialect (str): TBD
+            dialect (str): CSV dialect (default: excel)
 
         Returns:
-            string: results in CSV format
+            str: results in CSV or Excel format
         """
         dbh = SpiderFootDb(self.config)
         scaninfo = dict()
         data = list()
+        scan_name = ""
+
+        for id in ids.split(','):
+            scaninfo[id] = dbh.scanInstanceGet(id)
+            if scaninfo[id] is None:
+                continue
+            scan_name = scaninfo[id][0]
+            data = data + dbh.scanResultEvent(id)
+
+        if not data:
+            return None
 
         if filetype.lower() in ["xlsx", "excel"]:
-            for id in ids.split(','):
-                scaninfo[id] = dbh.scanInstanceGet(id)
-                data = data + dbh.scanResultEvent(id)
             rows = []
             for row in data:
                 if row[4] == "ROOT":
@@ -425,17 +440,19 @@ class SpiderFootWebUi:
                 datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
                 rows.append([scaninfo[row[12]][0], lastseen, str(row[4]), str(row[3]),
                             str(row[2]), row[13], datafield])
-            cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.xlsx"
+
+            if len(ids.split(',')) > 1 or scan_name == "":
+                fname = "SpiderFoot.xlsx"
+            else:
+                fname = scan_name + "-SpiderFoot.xlsx"
+
+            cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
             cherrypy.response.headers['Content-Type'] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             cherrypy.response.headers['Pragma'] = "no-cache"
             return self.buildExcel(rows, ["Scan Name", "Updated", "Type", "Module",
                                    "Source", "F/P", "Data"], sheetNameIndex=2)
 
-        else:
-            for id in ids.split(','):
-                scaninfo[id] = dbh.scanInstanceGet(id)
-                data = data + dbh.scanResultEvent(id)
-
+        elif filetype.lower() == 'csv':
             fileobj = StringIO()
             parser = csv.writer(fileobj, dialect=dialect)
             parser.writerow(["Scan Name", "Updated", "Type", "Module", "Source", "F/P", "Data"])
@@ -446,30 +463,40 @@ class SpiderFootWebUi:
                 datafield = str(row[1]).replace("<SFURL>", "").replace("</SFURL>", "")
                 parser.writerow([scaninfo[row[12]][0], lastseen, str(row[4]), str(row[3]),
                                 str(row[2]), row[13], datafield])
-            cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.csv"
+
+            if len(ids.split(',')) > 1 or scan_name == "":
+                fname = "SpiderFoot.csv"
+            else:
+                fname = scan_name + "-SpiderFoot.csv"
+
+            cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
             cherrypy.response.headers['Content-Type'] = "application/csv"
             cherrypy.response.headers['Pragma'] = "no-cache"
             return fileobj.getvalue().encode('utf-8')
 
+        else:
+            return self.error("Invalid export filetype.")
+
     @cherrypy.expose
-    def scansearchresultexport(self, id, eventType=None, value=None, filetype="csv", dialect="excel"):
-        """Get search result data in CSV format
+    def scansearchresultexport(self, id, eventType=None, value=None, filetype="csv", dialect="excel") -> str:
+        """Get search result data in CSV or Excel format
 
         Args:
             id (str): scan ID
             eventType (str): TBD
             value (str): TBD
             filetype (str): type of file ("xlsx|excel" or "csv")
-            dialect (str): TBD
+            dialect (str): CSV dialect (default: excel)
 
         Returns:
-            string: results in CSV format
+            str: results in CSV or Excel format
         """
         data = self.searchBase(id, eventType, value)
 
+        if not data:
+            return None
+
         if filetype.lower() in ["xlsx", "excel"]:
-            if not data:
-                return None
             rows = []
             for row in data:
                 if row[10] == "ROOT":
@@ -482,12 +509,10 @@ class SpiderFootWebUi:
             return self.buildExcel(rows, ["Updated", "Type", "Module", "Source",
                                    "F/P", "Data"], sheetNameIndex=1)
 
-        else:
+        elif filetype.lower() == 'csv':
             fileobj = StringIO()
             parser = csv.writer(fileobj, dialect=dialect)
             parser.writerow(["Updated", "Type", "Module", "Source", "F/P", "Data"])
-            if not data:
-                return None
             for row in data:
                 if row[10] == "ROOT":
                     continue
@@ -498,15 +523,18 @@ class SpiderFootWebUi:
             cherrypy.response.headers['Pragma'] = "no-cache"
             return fileobj.getvalue().encode('utf-8')
 
+        else:
+            return self.error("Invalid export filetype.")
+
     @cherrypy.expose
-    def scanexportjsonmulti(self, ids):
+    def scanexportjsonmulti(self, ids) -> str:
         """Get scan event result data in JSON format for multiple scans.
 
         Args:
             ids (str): comma separated list of scan IDs
 
         Returns:
-            string: results in CSV format
+            str: results in JSON format
         """
         dbh = SpiderFootDb(self.config)
         scaninfo = list()
@@ -547,7 +575,7 @@ class SpiderFootWebUi:
         else:
             fname = scan_name + "-SpiderFoot.json"
 
-        cherrypy.response.headers['Content-Disposition'] = "attachment; filename=" + fname
+        cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
         cherrypy.response.headers['Pragma'] = "no-cache"
         return json.dumps(scaninfo).encode('utf-8')
@@ -561,7 +589,7 @@ class SpiderFootWebUi:
             gexf (str): TBD
 
         Returns:
-            string: GEXF data
+            str: GEXF data
         """
         if not id:
             return None
@@ -573,18 +601,25 @@ class SpiderFootWebUi:
         if not scan:
             return None
 
+        scan_name = scan[0]
+
         root = scan[1]
 
         if gexf == "0":
             return SpiderFootHelpers.buildGraphJson([root], data)
 
-        cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.gexf"
+        if not scan_name:
+            fname = "SpiderFoot.gexf"
+        else:
+            fname = scan_name + "SpiderFoot.gexf"
+
+        cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
         cherrypy.response.headers['Content-Type'] = "application/gexf"
         cherrypy.response.headers['Pragma'] = "no-cache"
         return SpiderFootHelpers.buildGraphGexf([root], "SpiderFoot Export", data)
 
     @cherrypy.expose
-    def scanvizmulti(self, ids, gexf="1"):
+    def scanvizmulti(self, ids, gexf="1") -> str:
         """Export entities results from multiple scans in GEXF format.
 
         Args:
@@ -592,26 +627,34 @@ class SpiderFootWebUi:
             gexf (str): TBD
 
         Returns:
-            string: GEXF data
+            str: GEXF data
         """
         dbh = SpiderFootDb(self.config)
         data = list()
         roots = list()
+        scan_name = ""
 
         if not ids:
             return None
 
         for id in ids.split(','):
-            data = data + dbh.scanResultEvent(id, filterFp=True)
             scan = dbh.scanInstanceGet(id)
-            if scan:
-                roots.append(scan[1])
+            if not scan:
+                continue
+            data = data + dbh.scanResultEvent(id, filterFp=True)
+            roots.append(scan[1])
+            scan_name = scan[0]
 
         if gexf == "0":
             # Not implemented yet
             return None
 
-        cherrypy.response.headers['Content-Disposition'] = "attachment; filename=SpiderFoot.gexf"
+        if len(ids.split(',')) > 1 or scan_name == "":
+            fname = "SpiderFoot.gexf"
+        else:
+            fname = scan_name + "-SpiderFoot.gexf"
+
+        cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
         cherrypy.response.headers['Content-Type'] = "application/gexf"
         cherrypy.response.headers['Pragma'] = "no-cache"
         return SpiderFootHelpers.buildGraphGexf(roots, "SpiderFoot Export", data)
