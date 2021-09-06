@@ -12,9 +12,7 @@ version: "3"
 services:
   spiderfoot:
     build:
-       context: ./
-    volumes:
-      - ./spiderfoot.db:/home/spiderfoot/spiderfoot.db
+      context: ./
     image: spiderfoot
     container_name: spiderfoot
     ports:
