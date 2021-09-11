@@ -24,7 +24,21 @@ class SpiderFootHelpers():
         if not path:
             path = f"{Path.home()}/.spiderfoot/"
         if not os.path.isdir(path):
-            os.mkdir(path)
+            os.makedirs(path, exist_ok=True)
+        return path
+
+    @staticmethod
+    def cachePath() -> str:
+        """Returns the file system location of the cacha data files.
+
+        Returns:
+            str: SpiderFoot cache file system path
+        """
+        path = os.environ.get('SPIDERFOOT_CACHE')
+        if not path:
+            path = f"{Path.home()}/.spiderfoot/cache"
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
         return path
 
     @staticmethod

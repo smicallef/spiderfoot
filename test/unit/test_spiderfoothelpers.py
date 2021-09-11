@@ -11,6 +11,20 @@ class TestSpiderFootHelpers(unittest.TestCase):
     Test SpiderFootHelpers
     """
 
+    def test_data_path_should_return_a_string(self):
+        """
+        Test dataPath()
+        """
+        data_path = SpiderFootHelpers.dataPath()
+        self.assertIsInstance(data_path, str)
+
+    def test_cache_path_should_return_a_string(self):
+        """
+        Test cachePath()
+        """
+        cache_path = SpiderFootHelpers.cachePath()
+        self.assertIsInstance(cache_path, str)
+
     def test_target_type(self):
         """
         Test targetType(target)
