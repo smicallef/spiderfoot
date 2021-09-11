@@ -173,15 +173,6 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(hash_string, str)
         self.assertEqual("aedfb92b3053a21a114f4f301a02a3c6ad5dff504d124dc2cee6117623eec706", hash_string)
 
-    def test_cache_path_should_return_a_string(self):
-        """
-        Test cachePath(self)
-        """
-        sf = SpiderFoot(dict())
-
-        cache_path = sf.cachePath()
-        self.assertIsInstance(cache_path, str)
-
     def test_cache_get_should_return_a_string(self):
         """
         Test cachePut(self, label, data)

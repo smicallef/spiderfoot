@@ -29,7 +29,6 @@ import urllib.parse
 import urllib.request
 from copy import deepcopy
 from datetime import datetime
-from pathlib import Path
 
 import cryptography
 import dns.resolver
@@ -40,6 +39,7 @@ import requests
 import urllib3
 from bs4 import BeautifulSoup, SoupStrainer
 from publicsuffixlist import PublicSuffixList
+from spiderfoot import SpiderFootHelpers
 
 # For hiding the SSL warnings coming from the requests lib
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # noqa: DUO131
@@ -299,19 +299,6 @@ class SpiderFoot:
             s = str(string)
         return hashlib.sha256(s.encode('raw_unicode_escape')).hexdigest()
 
-    def cachePath(self) -> str:
-        """Returns the file system location of the cacha data files.
-
-        Returns:
-            str: SpiderFoot cache file system path
-        """
-        path = os.environ.get('SPIDERFOOT_CACHE')
-        if not path:
-            path = f"{Path.home()}/.spiderfoot/cache"
-        if not os.path.isdir(path):
-            os.mkdir(path)
-        return path
-
     def cachePut(self, label: str, data: str) -> None:
         """Store data to the cache
 
@@ -320,7 +307,7 @@ class SpiderFoot:
             data (str): Data to cache
         """
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
-        cacheFile = self.cachePath() + "/" + pathLabel
+        cacheFile = SpiderFootHelpers.cachePath() + "/" + pathLabel
         with io.open(cacheFile, "w", encoding="utf-8", errors="ignore") as fp:
             if isinstance(data, list):
                 for line in data:
@@ -349,7 +336,7 @@ class SpiderFoot:
             return None
 
         pathLabel = hashlib.sha224(label.encode('utf-8')).hexdigest()
-        cacheFile = self.cachePath() + "/" + pathLabel
+        cacheFile = SpiderFootHelpers.cachePath() + "/" + pathLabel
         try:
             (m, i, d, n, u, g, sz, atime, mtime, ctime) = os.stat(cacheFile)
 
