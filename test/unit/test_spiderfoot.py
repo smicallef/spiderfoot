@@ -379,6 +379,10 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(keyword, str)
         self.assertEqual('spiderfoot', keyword)
 
+        keyword = sf.domainKeyword('spiderfööt.example', sf.opts.get('_internettlds'))
+        self.assertIsInstance(keyword, str)
+        self.assertEqual('spiderfööt', keyword)
+
     def test_domain_keyword_invalid_domain_should_return_none(self):
         """
         Test domainKeyword(self, domain, tldList)
@@ -393,6 +397,10 @@ class TestSpiderFoot(unittest.TestCase):
         keyword = sf.domainKeyword(None, sf.opts.get('_internettlds'))
         self.assertEqual(None, keyword)
         keyword = sf.domainKeyword("net", sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
+        keyword = sf.domainKeyword(".net", sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
+        keyword = sf.domainKeyword(".", sf.opts.get('_internettlds'))
         self.assertEqual(None, keyword)
 
     def test_domain_keywords_should_return_a_set(self):
