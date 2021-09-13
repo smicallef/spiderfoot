@@ -75,6 +75,8 @@ def logListenerSetup(loggingQueue, opts: dict = None) -> 'logging.handlers.Queue
 
     # Log debug messages to file
     log_dir = Path(__file__).parent.parent / "log"
+    # Create log directory if it doesn't exist
+    log_dir.mkdir(exist_ok=True)
     debug_handler = logging.handlers.TimedRotatingFileHandler(
         str(log_dir / "spiderfoot.debug.log"),
         when="d",
@@ -90,10 +92,10 @@ def logListenerSetup(loggingQueue, opts: dict = None) -> 'logging.handlers.Queue
         backupCount=30
     )
 
-    # Set log level
-    console_handler.setLevel(logLevel)
-    debug_handler.setLevel(logging.DEBUG)
-    error_handler.setLevel(logging.WARN)
+    # Filter by log level
+    console_handler.addFilter(lambda x: x.levelno >= logLevel)
+    debug_handler.addFilter(lambda x: x.levelno >= logging.DEBUG)
+    error_handler.addFilter(lambda x: x.levelno >= logging.WARN)
 
     # Set log format
     console_handler.setFormatter(log_format)
@@ -127,9 +129,11 @@ def logWorkerSetup(loggingQueue) -> 'logging.Logger':
         logging.Logger: Logger
     """
     log = logging.getLogger("spiderfoot")
-    log.setLevel(logging.DEBUG)
-    queue_handler = QueueHandler(loggingQueue)
-    log.addHandler(queue_handler)
+    # Don't do this more than once
+    if len(log.handlers) == 0:
+        log.setLevel(logging.DEBUG)
+        queue_handler = QueueHandler(loggingQueue)
+        log.addHandler(queue_handler)
     return log
 
 
