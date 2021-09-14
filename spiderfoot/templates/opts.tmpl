@@ -140,7 +140,7 @@
                             instructions = ""
                             for step in apiKeyInstructions:
                                 if "https://" in step or "http://" in step:
-                                    step = re.sub(r'.*(https?://.[^ ]+).*', '<a target=_new href=\'\\1\'>\\1</a>', step)
+                                    step = re.sub(r'(https?://.[^ ]+)', '<a target=_new href=\'\\1\'>\\1</a>', step)
                                 instructions += f"<li>{step}</li>"
                         %>
                         &nbsp;&nbsp;<a href='#' data-html="true" data-toggle="popover" data-trigger="focus" title="Instructions" data-content="<ol>${instructions}</ol>"><i class="glyphicon glyphicon-question-sign"></i></a>
