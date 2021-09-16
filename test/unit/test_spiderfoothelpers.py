@@ -25,6 +25,13 @@ class TestSpiderFootHelpers(unittest.TestCase):
         cache_path = SpiderFootHelpers.cachePath()
         self.assertIsInstance(cache_path, str)
 
+    def test_log_path_should_return_a_string(self):
+        """
+        Test logPath()
+        """
+        log_path = SpiderFootHelpers.logPath()
+        self.assertIsInstance(log_path, str)
+
     def test_target_type(self):
         """
         Test targetType(target)

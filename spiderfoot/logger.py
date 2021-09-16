@@ -2,11 +2,8 @@ import logging
 import sys
 from contextlib import suppress
 from logging.handlers import QueueHandler, QueueListener
-from pathlib import Path
 
-from spiderfoot import SpiderFootDb
-
-log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+from spiderfoot import SpiderFootDb, SpiderFootHelpers
 
 
 class SpiderFootSqliteLogHandler(logging.Handler):
@@ -74,11 +71,9 @@ def logListenerSetup(loggingQueue, opts: dict = None) -> 'logging.handlers.Queue
     console_handler = logging.StreamHandler(sys.stderr)
 
     # Log debug messages to file
-    log_dir = Path(__file__).parent.parent / "log"
-    # Create log directory if it doesn't exist
-    log_dir.mkdir(exist_ok=True)
+    log_dir = SpiderFootHelpers.logPath()
     debug_handler = logging.handlers.TimedRotatingFileHandler(
-        str(log_dir / "spiderfoot.debug.log"),
+        f"{log_dir}/spiderfoot.debug.log",
         when="d",
         interval=1,
         backupCount=30
@@ -86,7 +81,7 @@ def logListenerSetup(loggingQueue, opts: dict = None) -> 'logging.handlers.Queue
 
     # Log error messages to file
     error_handler = logging.handlers.TimedRotatingFileHandler(
-        str(log_dir / "spiderfoot.error.log"),
+        f"{log_dir}/spiderfoot.error.log",
         when="d",
         interval=1,
         backupCount=30
@@ -98,6 +93,7 @@ def logListenerSetup(loggingQueue, opts: dict = None) -> 'logging.handlers.Queue
     error_handler.addFilter(lambda x: x.levelno >= logging.WARN)
 
     # Set log format
+    log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
     console_handler.setFormatter(log_format)
     debug_handler.setFormatter(log_format)
     error_handler.setFormatter(log_format)

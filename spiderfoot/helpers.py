@@ -42,6 +42,20 @@ class SpiderFootHelpers():
         return path
 
     @staticmethod
+    def logPath() -> str:
+        """Returns the file system location of SpiderFoot log files.
+
+        Returns:
+            str: SpiderFoot data file system path
+        """
+        path = os.environ.get('SPIDERFOOT_LOGS')
+        if not path:
+            path = f"{Path.home()}/.spiderfoot/logs"
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
+        return path
+
+    @staticmethod
     def targetTypeFromString(target: str) -> None:
         """Return the scan target seed data type for the specified scan target input.
 
