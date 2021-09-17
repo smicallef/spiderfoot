@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_creditcard
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_spider) and identifying credit card numbers.
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
@@ -24,23 +24,17 @@ class sfp_creditcard(SpiderFootPlugin):
         'categories': ["Content Analysis"]
     }
 
-    # Default options.
     opts = {
     }
 
-    # Option descriptions.
     optdescs = {
     }
 
-    # Tracking results can be helpful to avoid reporting/processing duplicates
     results = None
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
 
         # Override datasource for sfp_creditcard module
         self.__dataSource__ = "Target Website"
@@ -64,21 +58,11 @@ class sfp_creditcard(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        # Extract Credit Card numbers
         creditCards = self.sf.parseCreditCards(eventData)
 
-        myres = list()
-        for creditCard in creditCards:
-            evttype = "CREDIT_CARD_NUMBER"
-
-            self.sf.info("Found credit card number : " + creditCard)
-
-            if creditCard in myres:
-                self.sf.debug("Already found from this source")
-                continue
-            myres.append(creditCard)
-
-            evt = SpiderFootEvent(evttype, creditCard, self.__name__, event)
+        for creditCard in set(creditCards):
+            self.sf.info(f"Found credit card number: {creditCard}")
+            evt = SpiderFootEvent("CREDIT_CARD_NUMBER", creditCard, self.__name__, event)
             if event.moduleDataSource:
                 evt.moduleDataSource = event.moduleDataSource
             else:
