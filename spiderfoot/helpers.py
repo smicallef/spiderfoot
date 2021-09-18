@@ -225,13 +225,16 @@ class SpiderFootHelpers():
 
         Returns:
             set: TBD
-        """
-        if not data:
-            return set()
 
-        mapping = set()
-        entities = dict()
-        parents = dict()
+        Raises:
+            ValueError: data value was invalid
+            TypeError: data type was invalid
+        """
+        if not isinstance(data, list):
+            raise TypeError(f"data is {type(data)}; expected list()")
+
+        if not data:
+            raise ValueError("data is empty")
 
         def get_next_parent_entities(item: str, pids: list) -> list:
             ret = list()
@@ -247,10 +250,13 @@ class SpiderFootHelpers():
                         ret.append(p)
             return ret
 
+        mapping = set()
+        entities = dict()
+        parents = dict()
+
         for row in data:
             if len(row) != 15:
-                # TODO: print error
-                continue
+                raise ValueError(f"data row length is {len(row)}; expected 15")
 
             if row[11] == "ENTITY" or row[11] == "INTERNAL":
                 # List of all valid entity values
@@ -290,10 +296,16 @@ class SpiderFootHelpers():
 
         Returns:
             dict: nested tree
+
+        Raises:
+            ValueError: data value was invalid
+            TypeError: data type was invalid
         """
         if not isinstance(data, dict):
-            # TODO: print error
-            return {}
+            raise TypeError(f"data is {type(data)}; expected dict()")
+
+        if not data:
+            raise ValueError("data is empty")
 
         def get_children(needle: str, haystack: dict) -> list:
             ret = list()
