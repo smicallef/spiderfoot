@@ -127,6 +127,10 @@ class sfp_tool_wafw00f(SpiderFootPlugin):
             self.sf.error(f"Could not parse wafw00f output as JSON: {e}\nstdout: {stdout}")
             return
 
+        if not result_json:
+            self.sf.debug(f"wafw00f returned no output for {eventData}")
+            return
+
         evt = SpiderFootEvent('RAW_RIR_DATA', json.dumps(result_json), self.__name__, event)
         self.notifyListeners(evt)
 
