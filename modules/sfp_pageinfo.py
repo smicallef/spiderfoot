@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_pageinfo
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_spider) and building up information about
 #               the page, such as whether it uses Javascript, has forms, and more.
 #
