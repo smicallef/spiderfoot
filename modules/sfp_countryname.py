@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_countryname
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_iban, sfp_phone, sfp_whois) and identifying country names
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
