@@ -263,74 +263,109 @@ class SpiderFootScanner():
         aborted = False
 
         self.__setStatus("STARTING", time.time() * 1000, None)
-        self.__sf.status(f"Scan [{self.__scanId}] initiated.")
+        self.__sf.status(f"Scan [{self.__scanId}] for '{self.__target.targetValue}' initiated.")
 
         if threaded:
             self.eventQueue = queue.Queue()
 
-        try:
-            # moduleList = list of modules the user wants to run
-            for modName in self.__moduleList:
-                if modName == '':
-                    continue
+        # moduleList = list of modules the user wants to run
+        self.__sf.debug("Loading {len(self.__moduleList)} modules ...")
+        for modName in self.__moduleList:
+            if not modName:
+                continue
 
-                try:
-                    module = __import__('modules.' + modName, globals(), locals(), [modName])
-                except ImportError:
-                    self.__sf.error(f"Failed to load module: {modName}")
-                    continue
+            # Module may have been renamed or removed
+            if modName not in self.__config['__modules__']:
+                self.__sf.error(f"Failed to load module: {modName}")
+                continue
 
+            try:
+                module = __import__('modules.' + modName, globals(), locals(), [modName])
+            except ImportError:
+                self.__sf.error(f"Failed to load module: {modName}")
+                continue
+
+            try:
                 mod = getattr(module, modName)()
                 mod.__name__ = modName
+            except Exception as e:
+                self.__sf.error(f"Module {modName} initialization failed: {e}")
+                continue
 
-                # Module may have been renamed or removed
-                if modName not in self.__config['__modules__']:
-                    continue
-
-                # Set up the module
+            # Set up the module options, scan ID, database handle and listeners
+            try:
                 # Configuration is a combined global config with module-specific options
                 self.__modconfig[modName] = deepcopy(self.__config['__modules__'][modName]['opts'])
                 for opt in list(self.__config.keys()):
                     self.__modconfig[modName][opt] = deepcopy(self.__config[opt])
 
-                mod.clearListeners()  # clear any listener relationships from the past
+                # clear any listener relationships from the past
+                mod.clearListeners()
                 mod.setup(self.__sf, self.__modconfig[modName])
                 mod.setDbh(self.__dbh)
                 mod.setScanId(self.__scanId)
+            except Exception as e:
+                self.__sf.error(f"Module {modName} initialization failed: {e}")
+                continue
 
-                # Give modules a chance to 'enrich' the original target with
-                # aliases of that target.
+            # Override the module's local socket module to be the SOCKS one.
+            if self.__config['_socks1type'] != '':
+                try:
+                    mod._updateSocket(socket)
+                except Exception as e:
+                    self.__sf.error(f"Module {modName} socket setup failed: {e}")
+                    continue
+
+            # Set up event output filters if requested
+            if self.__config['__outputfilter']:
+                try:
+                    mod.setOutputFilter(self.__config['__outputfilter'])
+                except Exception as e:
+                    self.__sf.error(f"Module {modName} output filter setup failed: {e}")
+                    continue
+
+            # Give modules a chance to 'enrich' the original target with aliases of that target.
+            try:
                 newTarget = mod.enrichTarget(self.__target)
                 if newTarget is not None:
                     self.__target = newTarget
-                self.__moduleInstances[modName] = mod
+            except Exception as e:
+                self.__sf.error(f"Module {modName} target enrichment failed: {e}")
+                continue
 
-                # Override the module's local socket module
-                # to be the SOCKS one.
-                if self.__config['_socks1type'] != '':
-                    mod._updateSocket(socket)
-
-                # Set up event output filters if requested
-                if self.__config['__outputfilter']:
-                    mod.setOutputFilter(self.__config['__outputfilter'])
-
-                # Register the target with the module
+            # Register the target with the module
+            try:
                 mod.setTarget(self.__target)
+            except Exception as e:
+                self.__sf.error(f"Module {modName} failed to set target '{self.__target}': {e}")
+                continue
 
-                if threaded:
-                    # Set up the outgoing event queue
+            # Set up the outgoing event queue
+            if threaded:
+                try:
                     mod.outgoingEventQueue = self.eventQueue
                     mod.incomingEventQueue = queue.Queue()
+                except Exception as e:
+                    self.__sf.error(f"Module {modName} event queue setup failed: {e}")
+                    continue
 
-                self.__sf.status(modName + " module loaded.")
+            self.__moduleInstances[modName] = mod
+            self.__sf.status(f"{modName} module loaded.")
 
+        self.__sf.debug(f"Scan [{self.__scanId}] loaded {len(self.__moduleInstances)} modules.")
+
+        if not self.__moduleInstances:
+            self.__setStatus("ERROR-FAILED", None, time.time() * 1000)
+            self.__dbh.close()
+            return
+
+        try:
             # sort modules by priority
             self.__moduleInstances = OrderedDict(sorted(self.__moduleInstances.items(), key=lambda m: m[-1]._priority))
 
             if not threaded:
                 # Register listener modules and then start all modules sequentially
                 for module in list(self.__moduleInstances.values()):
-
                     for listenerModule in list(self.__moduleInstances.values()):
                         # Careful not to register twice or you will get duplicate events
                         if listenerModule in module._listenerModules:
