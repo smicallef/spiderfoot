@@ -87,6 +87,8 @@ class sfp_whois(SpiderFootPlugin):
             self.sf.error(f"Invalid event type: {eventName}")
             return
 
+        data = None
+
         if eventName == "NETBLOCK_OWNER":
             qry = eventData.split("/")[0]
             ip = IPAddress(qry) + 1
@@ -98,12 +100,12 @@ class sfp_whois(SpiderFootPlugin):
             except Exception as e:
                 self.sf.error(f"Unable to perform WHOIS query on {qry}: {e}")
         else:
-            self.sf.debug("Sending WHOIS query for domain: {eventData}")
+            self.sf.debug(f"Sending WHOIS query for domain: {eventData}")
             try:
                 whoisdata = whois.whois(eventData)
                 data = str(whoisdata.text)
             except Exception as e:
-                self.sf.error(f"Unable to perform WHOIS query on {qry}: {e}")
+                self.sf.error(f"Unable to perform WHOIS query on {eventData}: {e}")
 
         if not data:
             self.sf.error(f"No WHOIS record for {eventData}")
