@@ -655,6 +655,9 @@ class SpiderFootWebUi:
             roots.append(scan[1])
             scan_name = scan[0]
 
+        if not data:
+            return None
+
         if gexf == "0":
             # Not implemented yet
             return None

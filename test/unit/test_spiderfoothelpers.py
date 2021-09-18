@@ -70,23 +70,40 @@ class TestSpiderFootHelpers(unittest.TestCase):
         target_type = SpiderFootHelpers.targetTypeFromString('""')
         self.assertEqual(None, target_type)
 
-    def test_buildGraphData_should_return_a_set(self):
+    def test_buildGraphData_invalid_data_type_should_raise_TypeError(self):
         """
         Test buildGraphData(data, flt=list())
         """
-        graph_data = SpiderFootHelpers.buildGraphData('', '')
-        self.assertIsInstance(graph_data, set)
+        invalid_types = [None, "", dict(), int()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                with self.assertRaises(TypeError):
+                    SpiderFootHelpers.buildGraphData(invalid_type)
 
-        graph_data = SpiderFootHelpers.buildGraphData(None, None)
-        self.assertIsInstance(graph_data, set)
+    def test_buildGraphData_empty_data_should_raise_ValueError(self):
+        """
+        Test buildGraphData(data, flt=list())
+        """
+        with self.assertRaises(ValueError):
+            SpiderFootHelpers.buildGraphData([])
 
-        graph_data = SpiderFootHelpers.buildGraphData(list(), list())
-        self.assertIsInstance(graph_data, set)
+    def test_buildGraphData_data_row_with_invalid_number_of_columns_should_raise_ValueError(self):
+        """
+        Test buildGraphData(data, flt=list())
+        """
+        with self.assertRaises(ValueError):
+            SpiderFootHelpers.buildGraphData(
+                [
+                    ['only one column']
+                ]
+            )
 
-        graph_data = SpiderFootHelpers.buildGraphData([])
-        self.assertIsInstance(graph_data, set)
-
-        graph_data = SpiderFootHelpers.buildGraphData(["test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test"])
+    def test_buildGraphData_should_return_a_set(self):
+        graph_data = SpiderFootHelpers.buildGraphData(
+            [
+                ["test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test"]
+            ]
+        )
         self.assertIsInstance(graph_data, set)
 
         self.assertEqual('TBD', 'TBD')
@@ -95,15 +112,6 @@ class TestSpiderFootHelpers(unittest.TestCase):
         """
         Test buildGraphGexf(root, title, data, flt=[])
         """
-        gexf = SpiderFootHelpers.buildGraphGexf(None, None, None)
-        self.assertIsInstance(gexf, bytes)
-
-        gexf = SpiderFootHelpers.buildGraphGexf('', '', '')
-        self.assertIsInstance(gexf, bytes)
-
-        gexf = SpiderFootHelpers.buildGraphGexf('test root', 'test title', [])
-        self.assertIsInstance(gexf, bytes)
-
         gexf = SpiderFootHelpers.buildGraphGexf('test root', 'test title', [["test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "ENTITY", "test", "test", "test"]])
         self.assertIsInstance(gexf, bytes)
 
@@ -113,33 +121,32 @@ class TestSpiderFootHelpers(unittest.TestCase):
         """
         Test buildGraphJson(root, data, flt=list())
         """
-        json = SpiderFootHelpers.buildGraphJson(None, None)
-        self.assertIsInstance(json, str)
-
-        json = SpiderFootHelpers.buildGraphJson('', '')
-        self.assertIsInstance(json, str)
-
-        json = SpiderFootHelpers.buildGraphJson('test root', [])
-        self.assertIsInstance(json, str)
-
         json = SpiderFootHelpers.buildGraphJson('test root', [["test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "test", "ENTITY", "test", "test", "test"]])
         self.assertIsInstance(json, str)
 
         self.assertEqual('TBD', 'TBD')
 
-    def test_dataParentChildToTree_should_return_dict(self):
+    def test_dataParentChildToTree_invalid_data_type_should_return_TypeError(self):
         """
         Test dataParentChildToTree(data)
         """
         invalid_types = [None, "", list(), int()]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
-                tree = SpiderFootHelpers.dataParentChildToTree(invalid_type)
-                self.assertIsInstance(tree, dict)
+                with self.assertRaises(TypeError):
+                    SpiderFootHelpers.dataParentChildToTree(invalid_type)
 
-        tree = SpiderFootHelpers.dataParentChildToTree(dict())
-        self.assertIsInstance(tree, dict)
+    def test_dataParentChildToTree_empty_data_should_return_ValueError(self):
+        """
+        Test dataParentChildToTree(data)
+        """
+        with self.assertRaises(ValueError):
+            SpiderFootHelpers.dataParentChildToTree(dict())
 
+    def test_dataParentChildToTree_should_return_dict(self):
+        """
+        Test dataParentChildToTree(data)
+        """
         tree = SpiderFootHelpers.dataParentChildToTree({"test": {"123": "456"}})
         self.assertIsInstance(tree, dict)
 
