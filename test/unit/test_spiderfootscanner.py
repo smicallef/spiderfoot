@@ -21,19 +21,19 @@ class TestSpiderFootScanner(unittest.TestCase):
         scan_id = str(uuid.uuid4())
         module_list = ['sfp__stor_db']
 
-        sfscan = SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, opts, start=False)
+        sfscan = SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "INTERNET_NAME", module_list, opts, start=False)
         self.assertIsInstance(sfscan, SpiderFootScanner)
         self.assertEqual(sfscan.status, "INITIALIZING")
 
-    def test_init_argument_start_true_should_create_and_start_a_scan(self):
+    def test_init_argument_start_true_with_no_valid_modules_should_set_scanstatus_to_failed(self):
         opts = self.default_options
         opts['__modules__'] = dict()
         scan_id = str(uuid.uuid4())
-        module_list = ['sfp__stor_db']
+        module_list = ['invalid module']
 
-        sfscan = SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "IP_ADDRESS", module_list, opts, start=True)
+        sfscan = SpiderFootScanner("example scan name", scan_id, "spiderfoot.net", "INTERNET_NAME", module_list, opts, start=True)
         self.assertIsInstance(sfscan, SpiderFootScanner)
-        self.assertEqual(sfscan.status, "FINISHED")
+        self.assertEqual(sfscan.status, "ERROR-FAILED")
 
     def test_init_argument_scanName_of_invalid_type_should_raise_TypeError(self):
         """
