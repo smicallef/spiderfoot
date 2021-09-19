@@ -1009,33 +1009,6 @@ class SpiderFoot:
         except Exception:
             return False
 
-    def sanitiseInput(self, cmd: str) -> bool:
-        """Verify input command is safe to execute
-
-        Args:
-            cmd (str): The command to check
-
-        Returns:
-            bool: command is "safe"
-        """
-        chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
-        for c in cmd:
-            if c.lower() not in chars:
-                return False
-
-        if '..' in cmd:
-            return False
-
-        if cmd.startswith("-"):
-            return False
-
-        if len(cmd) < 3:
-            return False
-
-        return True
-
     def dictwords(self) -> list:
         """Return dictionary words and/or names from several language dictionaries.
 

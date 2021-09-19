@@ -15,7 +15,7 @@ import json
 import os.path
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
 
 class sfp_tool_wafw00f(SpiderFootPlugin):
@@ -93,7 +93,7 @@ class sfp_tool_wafw00f(SpiderFootPlugin):
 
         url = eventData
 
-        if not self.sf.sanitiseInput(url):
+        if not SpiderFootHelpers.sanitiseInput(url):
             self.sf.error("Invalid input, refusing to run.")
             return
 

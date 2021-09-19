@@ -193,3 +193,31 @@ class TestSpiderFootHelpers(unittest.TestCase):
         robots_txt = SpiderFootHelpers.parseRobotsTxt("disallow: /disallowed/path\n")
         self.assertIsInstance(robots_txt, list)
         self.assertIn("/disallowed/path", robots_txt)
+
+    def test_sanitise_input(self):
+        """
+        Test sanitiseInput(self, cmd)
+        """
+        safe = SpiderFootHelpers.sanitiseInput("example-string")
+        self.assertIsInstance(safe, bool)
+        self.assertTrue(safe)
+
+        safe = SpiderFootHelpers.sanitiseInput("example-string\n")
+        self.assertIsInstance(safe, bool)
+        self.assertFalse(safe)
+
+        safe = SpiderFootHelpers.sanitiseInput("example string")
+        self.assertIsInstance(safe, bool)
+        self.assertFalse(safe)
+
+        safe = SpiderFootHelpers.sanitiseInput("-example-string")
+        self.assertIsInstance(safe, bool)
+        self.assertFalse(safe)
+
+        safe = SpiderFootHelpers.sanitiseInput("..example-string")
+        self.assertIsInstance(safe, bool)
+        self.assertFalse(safe)
+
+        safe = SpiderFootHelpers.sanitiseInput("12")
+        self.assertIsInstance(safe, bool)
+        self.assertFalse(safe)
