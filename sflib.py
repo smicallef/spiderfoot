@@ -1178,57 +1178,6 @@ class SpiderFoot:
 
         return False
 
-    def resolveTargets(self, target, validateReverse: bool) -> list:
-        """Resolve alternative names for a given target.
-
-        Args:
-            target (SpiderFootTarget): target object
-            validateReverse (bool): validate domain names resolve
-
-        Returns:
-            list: list of domain names and IP addresses
-        """
-        ret = list()
-
-        if not target:
-            return ret
-
-        t = target.targetType
-        v = target.targetValue
-
-        if t in ["IP_ADDRESS", "IPV6_ADDRESS"]:
-            r = self.resolveIP(v)
-            if r:
-                ret.extend(r)
-        if t == "INTERNET_NAME":
-            r = self.resolveHost(v)
-            if r:
-                ret.extend(r)
-            r = self.resolveHost6(v)
-            if r:
-                ret.extend(r)
-        if t == "NETBLOCK_OWNER":
-            for addr in netaddr.IPNetwork(v):
-                ipaddr = str(addr)
-                if ipaddr.split(".")[3] in ['255', '0']:
-                    continue
-                if '255' in ipaddr.split("."):
-                    continue
-                ret.append(ipaddr)
-
-                # Add the reverse-resolved hostnames as aliases too..
-                names = self.resolveIP(ipaddr)
-                if names:
-                    if validateReverse:
-                        for host in names:
-                            chk = self.resolveHost(host)
-                            if chk:
-                                if ipaddr in chk:
-                                    ret.append(host)
-                    else:
-                        ret.extend(names)
-        return list(set(ret))
-
     def safeSocket(self, host: str, port: int, timeout: int) -> 'ssl.SSLSocket':
         """Create a safe socket that's using SOCKS/TOR if it was enabled.
 
