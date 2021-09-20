@@ -723,36 +723,6 @@ class TestSpiderFoot(unittest.TestCase):
                 dns = sf.normalizeDNS(invalid_type)
                 self.assertIsInstance(dns, list)
 
-    def test_sanitise_input(self):
-        """
-        Test sanitiseInput(self, cmd)
-        """
-        sf = SpiderFoot(dict())
-
-        safe = sf.sanitiseInput("example-string")
-        self.assertIsInstance(safe, bool)
-        self.assertTrue(safe)
-
-        safe = sf.sanitiseInput("example-string\n")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("example string")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("-example-string")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("..example-string")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("12")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
     def test_dictwords_should_return_a_list(self):
         """
         Test dictwords(self)

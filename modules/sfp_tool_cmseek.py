@@ -16,7 +16,7 @@ import json
 import os.path
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
 
 class sfp_tool_cmseek(SpiderFootPlugin):
@@ -109,7 +109,7 @@ class sfp_tool_cmseek(SpiderFootPlugin):
             return
 
         # Sanitize domain name.
-        if not self.sf.sanitiseInput(eventData):
+        if not SpiderFootHelpers.sanitiseInput(eventData):
             self.sf.error("Invalid input, refusing to run.")
             return
 

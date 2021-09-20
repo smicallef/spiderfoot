@@ -16,7 +16,7 @@ from pathlib import Path
 from shutil import which
 from subprocess import PIPE, Popen
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
 
 
 class sfp_tool_dnstwist(SpiderFootPlugin):
@@ -115,7 +115,7 @@ class sfp_tool_dnstwist(SpiderFootPlugin):
             cmd = [self.opts['pythonpath'], exe]
 
         # Sanitize domain name.
-        if not self.sf.sanitiseInput(eventData):
+        if not SpiderFootHelpers.sanitiseInput(eventData):
             self.sf.error("Invalid input, refusing to run.")
             return
 
