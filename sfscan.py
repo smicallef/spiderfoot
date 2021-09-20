@@ -483,9 +483,10 @@ class SpiderFootScanner():
                         raise AssertionError(f"{mod.__name__} requested stop")
 
                     # send it the new event if applicable
-                    watchedEvents = mod.watchedEvents()
-                    if sfEvent.eventType in watchedEvents or "*" in watchedEvents:
-                        mod.incomingEventQueue.put(deepcopy(sfEvent))
+                    if not mod.errorState:
+                        watchedEvents = mod.watchedEvents()
+                        if sfEvent.eventType in watchedEvents or "*" in watchedEvents:
+                            mod.incomingEventQueue.put(deepcopy(sfEvent))
 
         except (KeyboardInterrupt, AssertionError) as e:
             self.__sf.status(f"Scan [{self.__scanId}] aborted, {e}.")
