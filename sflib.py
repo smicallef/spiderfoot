@@ -1059,7 +1059,7 @@ class SpiderFoot:
         return list(wd.keys())
 
     def resolveHost(self, host: str) -> list:
-        """Return a normalised resolution of a hostname.
+        """Return a normalised IPv4 resolution of a hostname.
 
         Args:
             host (str): host to resolve
@@ -1071,22 +1071,23 @@ class SpiderFoot:
             self.error(f"Unable to resolve host: {host} (Invalid host)")
             return list()
 
+        addrs = list()
         try:
             addrs = self.normalizeDNS(socket.gethostbyname_ex(host))
         except BaseException as e:
             self.debug(f"Unable to resolve host: {host} ({e})")
-            return list()
+            return addrs
 
         if not addrs:
             self.debug(f"Unable to resolve host: {host}")
-            return list()
+            return addrs
 
-        self.debug(f"Resolved {host} to: {addrs}")
+        self.debug(f"Resolved {host} to IPv4: {addrs}")
 
         return list(set(addrs))
 
     def resolveIP(self, ipaddr: str) -> list:
-        """Return a normalised resolution of an IPv4 address.
+        """Return a normalised resolution of an IPv4 or IPv6 address.
 
         Args:
             ipaddr (str): IP address to reverse resolve
@@ -1116,30 +1117,33 @@ class SpiderFoot:
         return list(set(addrs))
 
     def resolveHost6(self, hostname: str) -> list:
-        """Return a normalised resolution of an IPv6 address.
+        """Return a normalised IPv6 resolution of a hostname.
 
         Args:
-            hostname (str): hostname to reverse resolve
+            hostname (str): hostname to resolve
 
         Returns:
             list
         """
-        addrs = list()
-
         if not hostname:
-            self.error("Unable to resolve %s (Invalid hostname)" % hostname)
-            return addrs
+            self.error(f"Unable to resolve host: {hostname} (Invalid host)")
+            return list()
 
+        addrs = list()
         try:
             res = socket.getaddrinfo(hostname, None, socket.AF_INET6)
             for addr in res:
                 if addr[4][0] not in addrs:
                     addrs.append(addr[4][0])
         except BaseException as e:
-            self.debug("Unable to IPv6 resolve %s (%s)" % (hostname, e))
+            self.debug(f"Unable to resolve host: {hostname} ({e})")
+            return addrs
 
-        if len(addrs):
-            self.debug("Resolved %s to IPv6: %s" % (hostname, addrs))
+        if not addrs:
+            self.debug(f"Unable to resolve host: {hostname}")
+            return addrs
+
+        self.debug(f"Resolved {hostname} to IPv6: {addrs}")
 
         return list(set(addrs))
 
@@ -1153,7 +1157,17 @@ class SpiderFoot:
         Returns:
             bool: host resolves to the given IP address
         """
-        addrs = self.resolveHost(host)
+        if not host:
+            self.error(f"Unable to resolve host: {host} (Invalid host)")
+            return False
+
+        if self.validIP(ip):
+            addrs = self.resolveHost(host)
+        elif self.validIP6(ip):
+            addrs = self.resolveHost6(host)
+        else:
+            self.error(f"Unable to verify hostname {host} resolves to {ip} (Invalid IP address)")
+            return False
 
         if not addrs:
             return False
@@ -1188,6 +1202,9 @@ class SpiderFoot:
                 ret.extend(r)
         if t == "INTERNET_NAME":
             r = self.resolveHost(v)
+            if r:
+                ret.extend(r)
+            r = self.resolveHost6(v)
             if r:
                 ret.extend(r)
         if t == "NETBLOCK_OWNER":
