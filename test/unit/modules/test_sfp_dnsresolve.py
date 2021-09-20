@@ -136,6 +136,7 @@ class TestModuleDnsResolve(unittest.TestCase):
 
         self.assertEqual("OK", str(cm.exception))
 
+    @unittest.skip("CI tests fail on MacOSX")
     def test_handleEvent_event_data_affiliate_ip_address_should_return_affiliate_internet_name_event(self):
         sf = SpiderFoot(self.default_options)
 
