@@ -1,3 +1,4 @@
+from contextlib import suppress
 import logging
 import queue
 import threading
@@ -282,6 +283,13 @@ class SpiderFootPlugin():
                     listener.handleEvent(sfEvent)
                 except Exception as e:
                     self.sf.error(f"Module ({listener.__module__}) encountered an error: {e}")
+                    # set errorState
+                    self.errorState = True
+                    # clear incoming queue
+                    if self.incomingEventQueue:
+                        with suppress(queue.Empty):
+                            while 1:
+                                self.incomingEventQueue.get_nowait()
 
     def checkForStop(self):
         """For modules to use to check for when they should give back control.
