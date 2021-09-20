@@ -34,37 +34,6 @@ class TestModuleDnsResolve(unittest.TestCase):
         module = sfp_dnsresolve()
         self.assertIsInstance(module.producedEvents(), list)
 
-    def test_handleEvent(self):
-        """
-        Test handleEvent(self, event)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        module = sfp_dnsresolve()
-        module.setup(sf, dict())
-
-        target_value = 'spiderfoot.net'
-        target_type = 'INTERNET_NAME'
-        target = SpiderFootTarget(target_value, target_type)
-        module.setTarget(target)
-
-        event_type = 'ROOT'
-        event_data = 'example data'
-        event_module = ''
-        source_event = ''
-        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
-
-        event_type = 'RAW_RIR_DATA'
-        event_data = 'example data spiderfoot.net example data'
-        event_module = 'example module'
-        source_event = evt
-        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
-
-        result = module.handleEvent(evt)
-
-        self.assertIsNone(result)
-        self.assertEqual('TODO', 'TODO')
-
     def test_enrichTarget_should_return_SpiderFootTarget(self):
         """
         Test enrichTarget(self, target)
@@ -83,13 +52,8 @@ class TestModuleDnsResolve(unittest.TestCase):
         self.assertEqual(result.targetType, target_type)
         self.assertEqual(result.targetValue, target_value)
 
-    def test_processDomain_should_return_None(self):
-        """
-        Test processDomain(self, domainName, parentEvent, affil=False, host=None)
-
-        Todo:
-            review: why should this return None?
-        """
+    @unittest.skip("CI tests fail on MacOSX")
+    def test_handleEvent_event_data_ip_address_should_return_internet_name_event(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_dnsresolve()
@@ -100,70 +64,77 @@ class TestModuleDnsResolve(unittest.TestCase):
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
 
+        def new_notifyListeners(self, event):
+            expected = 'INTERNET_NAME'
+            if str(event.eventType) != expected:
+                raise Exception(f"{event.eventType} != {expected}")
+
+            expected = "one.one.one.one"
+            if str(event.data) != expected:
+                raise Exception(f"{event.data} != {expected}")
+
+            raise Exception("OK")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_dnsresolve)
+
         event_type = 'ROOT'
         event_data = 'example data'
-        event_module = 'example module'
+        event_module = ''
         source_event = ''
-        parent_event = SpiderFootEvent(event_type, event_data, event_module, source_event)
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        result = module.processDomain('www.example.local', parent_event, None, None)
+        event_type = 'IP_ADDRESS'
+        event_data = '1.1.1.1'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        self.assertIsNone(result)
-        self.assertEqual('TODO', 'TODO')
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
 
-    def test_processHost_ip_address_should_return_ip_address_event(self):
-        """
-        Test processHost(self, host, parentEvent, affiliate=None)
-        """
+        self.assertEqual("OK", str(cm.exception))
+
+    @unittest.skip("CI tests fail on MacOSX")
+    def test_handleEvent_event_data_ipv6_address_should_return_internet_name_event(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_dnsresolve()
         module.setup(sf, dict())
 
-        target_value = '127.0.0.1'
-        target_type = 'IP_ADDRESS'
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
 
-        event_type = 'ROOT'
-        event_data = 'example data'
-        event_module = 'example module'
-        source_event = ''
-        parent_event = SpiderFootEvent(event_type, event_data, event_module, source_event)
+        def new_notifyListeners(self, event):
+            expected = 'INTERNET_NAME'
+            if str(event.eventType) != expected:
+                raise Exception(f"{event.eventType} != {expected}")
 
-        host = '127.0.0.1'
-        result = module.processHost(host, parent_event, False)
+            expected = "one.one.one.one"
+            if str(event.data) != expected:
+                raise Exception(f"{event.data} != {expected}")
 
-        self.assertIsInstance(result, SpiderFootEvent)
-        self.assertEqual(result.data, host)
-        self.assertEqual(result.eventType, 'IP_ADDRESS')
+            raise Exception("OK")
 
-    def test_processHost_affiliate_ip_address_should_return_affiliate_ip_address_event(self):
-        """
-        Test processHost(self, host, parentEvent, affiliate=None)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        module = sfp_dnsresolve()
-        module.setup(sf, dict())
-
-        target_value = '127.0.0.1'
-        target_type = 'IP_ADDRESS'
-        target = SpiderFootTarget(target_value, target_type)
-        module.setTarget(target)
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_dnsresolve)
 
         event_type = 'ROOT'
         event_data = 'example data'
-        event_module = 'example module'
+        event_module = ''
         source_event = ''
-        parent_event = SpiderFootEvent(event_type, event_data, event_module, source_event)
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        host = '127.0.0.1'
-        result = module.processHost(host, parent_event, True)
+        event_type = 'IPV6_ADDRESS'
+        event_data = '2606:4700:4700::1111'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        self.assertIsInstance(result, SpiderFootEvent)
-        self.assertEqual(result.data, host)
-        self.assertEqual(result.eventType, 'AFFILIATE_IPADDR')
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
+
+        self.assertEqual("OK", str(cm.exception))
 
     def test_handleEvent_event_data_affiliate_ip_address_should_return_affiliate_internet_name_event(self):
         sf = SpiderFoot(self.default_options)
@@ -195,8 +166,52 @@ class TestModuleDnsResolve(unittest.TestCase):
         source_event = ''
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
 
-        event_type = 'IP_ADDRESS'
+        event_type = 'AFFILIATE_IPADDR'
         event_data = '1.1.1.1'
+        event_module = 'example module'
+        source_event = evt
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        with self.assertRaises(Exception) as cm:
+            module.handleEvent(evt)
+
+        self.assertEqual("OK", str(cm.exception))
+
+    def test_handleEvent_event_data_raw_rir_data_containing_subdomain_should_return_internet_name_event(self):
+        """
+        Test handleEvent(self, event)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_dnsresolve()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        def new_notifyListeners(self, event):
+            expected = 'INTERNET_NAME'
+            if str(event.eventType) != expected:
+                raise Exception(f"{event.eventType} != {expected}")
+
+            expected = "www.spiderfoot.net"
+            if str(event.data) != expected:
+                raise Exception(f"{event.data} != {expected}")
+
+            raise Exception("OK")
+
+        module.notifyListeners = new_notifyListeners.__get__(module, sfp_dnsresolve)
+
+        event_type = 'ROOT'
+        event_data = 'example data'
+        event_module = ''
+        source_event = ''
+        evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
+
+        event_type = 'RAW_RIR_DATA'
+        event_data = 'example data www.spiderfoot.net example data'
         event_module = 'example module'
         source_event = evt
         evt = SpiderFootEvent(event_type, event_data, event_module, source_event)
