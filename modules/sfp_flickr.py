@@ -251,7 +251,7 @@ class sfp_flickr(SpiderFootPlugin):
             if self.errorState:
                 return
 
-            if self.opts['dns_resolve'] and not self.sf.resolveHost(host):
+            if self.opts['dns_resolve'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
                 self.sf.debug(f"Host {host} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
                 self.notifyListeners(evt)

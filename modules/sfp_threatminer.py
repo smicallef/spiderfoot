@@ -196,10 +196,10 @@ class sfp_threatminer(SpiderFootPlugin):
                 if host == eventData:
                     continue
                 if self.getTarget().matches(host, includeParents=True):
-                    if self.opts['verify']:
-                        if not self.sf.resolveHost(host):
-                            continue
-                    evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
+                    if self.opts['verify'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
+                        evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
+                    else:
+                        evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
                     self.notifyListeners(evt)
                     self.reportedhosts[host] = True
                     continue
@@ -220,17 +220,19 @@ class sfp_threatminer(SpiderFootPlugin):
                 self.sf.debug("No hosts found")
                 return
 
-            for rec in ret.get("results"):
+            for host in ret.get("results"):
                 self.sf.debug("Found host results in ThreatMiner")
-                if rec in self.reportedhosts:
+
+                if host in self.reportedhosts:
                     continue
+
+                self.reportedhosts[host] = True
+
+                if self.opts['verify'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
+                    evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
                 else:
-                    self.reportedhosts[rec] = True
-                if self.opts['verify']:
-                    if not self.sf.resolveHost(rec):
-                        self.sf.debug("Couldn't resolve " + rec + ", so skipping.")
-                        continue
-                e = SpiderFootEvent(evtType, rec, self.__name__, event)
-                self.notifyListeners(e)
+                    evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
+                evt = SpiderFootEvent(evtType, host, self.__name__, event)
+                self.notifyListeners(evt)
 
 # End of sfp_threatminer class

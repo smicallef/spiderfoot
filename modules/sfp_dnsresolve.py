@@ -396,6 +396,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         if affil:
             if self.sf.validIP(host):
                 htype = "AFFILIATE_IPADDR"
+            elif self.sf.validIP6(host):
+                htype = "AFFILIATE_IPV6_ADDRESS"
             else:
                 htype = "AFFILIATE_INTERNET_NAME"
         else:

@@ -178,30 +178,29 @@ class sfp_riskiq(SpiderFootPlugin):
         if eventName == 'DOMAIN_NAME':
             ret = self.query(eventData, "PSSL")
             if not ret:
-                self.sf.info("No RiskIQ passive SSL data found for " + eventData)
+                self.sf.info(f"No RiskIQ passive SSL data found for {eventData}")
+            else:
+                # Generate an event for the IP first, and then link the cert
+                # to that event.
+                for res in ret:
+                    host = res.get('subjectCommonName')
 
-            if ret:
-                try:
-                    # Generate an event for the IP first, and then link the cert
-                    # to that event.
-                    for res in ret:
-                        if res['subjectCommonName'] == eventData:
-                            continue
-                        if self.getTarget().matches(res['subjectCommonName'], includeChildren=True):
-                            if self.sf.resolveHost(res['subjectCommonName']):
-                                e = SpiderFootEvent("INTERNET_NAME", res['subjectCommonName'],
-                                                    self.__name__, event)
-                            else:
-                                e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", res['subjectCommonName'],
-                                                    self.__name__, event)
+                    if not host:
+                        continue
+
+                    if host == eventData:
+                        continue
+
+                    if self.getTarget().matches(host, includeChildren=True):
+                        if self.sf.resolveHost(host) or self.sf.resolveHost6(host):
+                            e = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
+                        else:
+                            e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
+                        self.notifyListeners(e)
+
+                        if self.sf.isDomain(host, self.opts['_internettlds']):
+                            e = SpiderFootEvent("DOMAIN_NAME", host, self.__name__, event)
                             self.notifyListeners(e)
-
-                            if self.sf.isDomain(res['subjectCommonName'], self.opts['_internettlds']):
-                                e = SpiderFootEvent("DOMAIN_NAME", res['subjectCommonName'],
-                                                    self.__name__, event)
-                                self.notifyListeners(e)
-                except Exception as e:
-                    self.sf.error("Invalid response returned from RiskIQ: " + str(e))
 
         if eventName == 'EMAILADDR':
             ret = self.query(eventData, "WHOIS")
@@ -260,7 +259,7 @@ class sfp_riskiq(SpiderFootPlugin):
 
                 if not self.opts['cohostsamedomain']:
                     if self.getTarget().matches(co, includeParents=True):
-                        if self.sf.resolveHost(co):
+                        if self.sf.resolveHost(co) or self.sf.resolveHost6(co):
                             e = SpiderFootEvent("INTERNET_NAME", co, self.__name__, event)
                         else:
                             e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", co, self.__name__, event)

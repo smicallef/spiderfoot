@@ -354,7 +354,7 @@ class sfp_c99(SpiderFootPlugin):
         if not self.sf.validHost(data, self.opts['_internettlds']):
             return
 
-        if self.opts["verify"] and not self.sf.resolveHost(data):
+        if self.opts["verify"] and not self.sf.resolveHost(data) and not self.sf.resolveHost6(data):
             self.sf.debug(
                 "Host {data} could not be resolved."
             )

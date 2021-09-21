@@ -233,7 +233,7 @@ class sfp_fsecure_riddler(SpiderFootPlugin):
             else:
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
-            if self.opts['verify'] and not self.sf.resolveHost(host):
+            if self.opts['verify'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
                 self.sf.debug(f"Host {host} could not be resolved")
                 evt_type += '_UNRESOLVED'
 

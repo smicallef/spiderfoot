@@ -265,7 +265,7 @@ class sfp_mnemonic(SpiderFootPlugin):
                 continue
 
             if self.getTarget().matches(co, includeParents=True):
-                if self.opts['verify'] and not self.sf.resolveHost(co):
+                if self.opts['verify'] and not self.sf.resolveHost(co) and not self.sf.resolveHost6(co):
                     self.sf.debug(f"Host {co} could not be resolved")
                     evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", co, self.__name__, event)
                     self.notifyListeners(evt)

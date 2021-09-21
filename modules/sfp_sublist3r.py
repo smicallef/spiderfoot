@@ -76,7 +76,7 @@ class sfp_sublist3r(SpiderFootPlugin):
         return list(set(ret))
 
     def sendEvent(self, source, host):
-        if self.sf.resolveHost(host):
+        if self.sf.resolveHost(host) or self.sf.resolveHost6(host):
             e = SpiderFootEvent("INTERNET_NAME", host, self.__name__, source)
         else:
             e = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, source)

@@ -304,7 +304,7 @@ class sfp_dnsdb(SpiderFootPlugin):
                     coHosts.add(data)
                     continue
 
-                if self.opts["verify"] and not self.sf.resolveHost(data):
+                if self.opts["verify"] and not self.sf.resolveHost(data) and not self.sf.resolveHost6(data):
                     self.sf.debug(f"Host {data} could not be resolved")
                     evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", data, self.__name__, event)
                 else:

@@ -46,7 +46,6 @@ class sfp_zetalytics(SpiderFootPlugin):
     }
 
     results = None
-
     errorState = False
 
     def setup(self, sfc, userOpts=None):
@@ -75,7 +74,7 @@ class sfp_zetalytics(SpiderFootPlugin):
         if not self.getTarget().matches(hostname):
             return False
 
-        if self.opts["verify"] and not self.sf.resolveHost(hostname):
+        if self.opts["verify"] and not self.sf.resolveHost(hostname) and not self.sf.resolveHost6(hostname):
             self.sf.debug(f"Host {hostname} could not be resolved")
             self.emit("INTERNET_NAME_UNRESOLVED", hostname, pevent)
             return True

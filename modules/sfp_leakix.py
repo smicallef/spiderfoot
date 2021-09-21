@@ -181,7 +181,7 @@ class sfp_leakix(SpiderFootPlugin):
                         ports.append(eventData + ":" + port)
                     hostname = service.get('hostname')
                     if hostname and eventName == "DOMAIN_NAME" and self.getTarget().matches(hostname) and hostname not in hosts:
-                        if self.opts["verify"] and not self.sf.resolveHost(hostname):
+                        if self.opts["verify"] and not self.sf.resolveHost(hostname) and not self.sf.resolveHost6(hostname):
                             self.sf.debug(f"Host {hostname} could not be resolved")
                             evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", hostname, self.__name__, event)
                         else:
