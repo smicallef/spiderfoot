@@ -99,6 +99,7 @@ class SpiderFootDb:
         ['AFFILIATE_INTERNET_NAME_HIJACKABLE', 'Affiliate - Internet Name Hijackable', 0, 'ENTITY'],
         ['AFFILIATE_INTERNET_NAME_UNRESOLVED', 'Affiliate - Internet Name - Unresolved', 0, 'ENTITY'],
         ['AFFILIATE_IPADDR', 'Affiliate - IP Address', 0, 'ENTITY'],
+        ['AFFILIATE_IPV6_ADDRESS', 'Affiliate - IPv6 Address', 0, 'ENTITY'],
         ['AFFILIATE_WEB_CONTENT', 'Affiliate - Web Content', 1, 'DATA'],
         ['AFFILIATE_DOMAIN_NAME', 'Affiliate - Domain Name', 0, 'ENTITY'],
         ['AFFILIATE_DOMAIN_UNREGISTERED', 'Affiliate - Domain Name Unregistered', 0, 'ENTITY'],
