@@ -13,6 +13,8 @@ services:
   spiderfoot:
     build:
       context: ./
+    volumes:
+      - $HOME/.spiderfoot:/home/spiderfoot/.spiderfoot
     image: spiderfoot
     container_name: spiderfoot
     ports:
