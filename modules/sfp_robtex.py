@@ -79,14 +79,8 @@ class sfp_robtex(SpiderFootPlugin):
         return ["IP_ADDRESS", "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["CO_HOSTED_SITE", "IP_ADDRESS"]
-
-    # Don't notify me about events from myself
-    def watchOpts(self):
-        return ['noself']
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -100,8 +94,8 @@ class sfp_robtex(SpiderFootPlugin):
         if self.cohostcount > self.opts['maxcohost']:
             return
 
-        if srcModuleName == "sfp_robtex" and eventName == "IP_ADDRESS":
-            self.sf.debug("Ignoring " + eventName + ", from self.")
+        if srcModuleName == "sfp_robtex":
+            self.sf.debug(f"Ignoring {eventName}, from self.")
             return
 
         if eventData in self.results:

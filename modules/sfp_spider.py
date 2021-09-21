@@ -263,13 +263,7 @@ class sfp_spider(SpiderFootPlugin):
     def watchedEvents(self):
         return ["LINKED_URL_INTERNAL", "INTERNET_NAME"]
 
-    # Don't notify me about events from myself
-    def watchOpts(self):
-        return ['noself']
-
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["WEBSERVER_HTTPHEADERS", "HTTP_CODE", "LINKED_URL_INTERNAL",
                 "LINKED_URL_EXTERNAL", "TARGET_WEB_CONTENT", "TARGET_WEB_CONTENT_TYPE"]
@@ -283,15 +277,16 @@ class sfp_spider(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
+        # Don't spider links we find ourselves
+        if srcModuleName == "sfp_spider":
+            self.sf.debug(f"Ignoring {eventName}, from self.")
+            return None
+
         if eventData in self.urlEvents:
             self.sf.debug("Ignoring " + eventData + " as already spidered or is being spidered.")
             return None
-        else:
-            self.urlEvents[eventData] = event
 
-        # Don't spider links we find ourselves, obviously
-        if eventName == "LINKED_URL_INTERNAL" and "sfp_spider" in srcModuleName:
-            return None
+        self.urlEvents[eventData] = event
 
         # Determine where to start spidering from if it's a INTERNET_NAME event
         if eventName == "INTERNET_NAME":
