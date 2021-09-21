@@ -1,0 +1,8 @@
+#!/bin/bash
+# Run unit and integration tests.
+# These same tests are run on all pull requests automatically.
+#
+# Must be run from SpiderFoot root directory; ie:
+# ./test/run
+
+time python3 -m pytest -n auto --flake8 --dist loadfile --durations=5 --cov-report html --cov=. .

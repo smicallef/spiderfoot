@@ -26,7 +26,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
     meta = {
         'name': "OpenStreetMap",
         'summary': "Retrieves latitude/longitude coordinates for physical addresses from OpenStreetMap API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Real World"],
         'dataSource': {
@@ -83,12 +83,11 @@ class sfp_openstreetmap(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -100,7 +99,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -109,7 +108,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
         # Skip post office boxes
         if address.lower().startswith('po box'):
             self.sf.debug("Skipping PO BOX address")
-            return None
+            return
 
         rx1 = re.compile(r'^(c/o|care of|attn:|attention:)\s+[0-9a-z\s\.]', flags=re.IGNORECASE)
         # Remove address prefixes for delivery instructions
@@ -127,7 +126,7 @@ class sfp_openstreetmap(SpiderFootPlugin):
 
         if data is None:
             self.sf.debug("Found no results for " + eventData)
-            return None
+            return
 
         self.sf.info("Found " + str(len(data)) + " matches for " + eventData)
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_phone
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_spider) to identify phone numbers, and
 #               lookup carrier information in Google's libphonenumber DB.
 #
@@ -24,7 +24,7 @@ class sfp_phone(SpiderFootPlugin):
     meta = {
         'name': "Phone Number Extractor",
         'summary': "Identify phone numbers in scraped webpages.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Passive", "Footprint", "Investigate"],
         'categories': ["Content Analysis"]
     }

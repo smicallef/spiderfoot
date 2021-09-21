@@ -87,39 +87,41 @@ class sfp_junkfiles(SpiderFootPlugin):
         eventName = event.eventType
         srcModuleName = event.module
         eventData = event.data
-        host = self.sf.urlBaseUrl(eventData)
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
+        host = self.sf.urlBaseUrl(eventData)
+
         if host in self.skiphosts:
             self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-            return None
+            return
 
         # http://www/blah/abc.php -> try http://www/blah/abc.php.[fileexts]
         for ext in self.opts['urlextstry']:
             if host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-                return None
+                return
 
             if "." + ext + "?" in eventData or "." + ext + "#" in eventData or \
                     eventData.endswith("." + ext):
                 bits = eventData.split("?")
                 for x in self.opts['fileexts']:
                     if self.checkForStop():
-                        return None
+                        return
 
                     self.sf.debug("Trying " + x + " against " + eventData)
                     fetch = bits[0] + "." + x
-                    if fetch not in self.results:
-                        self.results[fetch] = True
-                    else:
+                    if fetch in self.results:
                         self.sf.debug("Skipping, already fetched.")
                         continue
+
+                    self.results[fetch] = True
+
                     res = self.sf.fetchUrl(fetch, headOnly=True,
                                            timeout=self.opts['_fetchtimeout'],
                                            useragent=self.opts['_useragent'],
@@ -137,26 +139,27 @@ class sfp_junkfiles(SpiderFootPlugin):
 
         base = self.sf.urlBaseDir(eventData)
         if not base or base in self.bases:
-            return None
-        else:
-            self.bases[base] = True
+            return
+
+        self.bases[base] = True
 
         # http://www/blah/abc.html -> try http://www/blah/[files]
         for f in self.opts['files']:
             if self.checkForStop():
-                return None
+                return
 
             if host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-                return None
+                return
 
             self.sf.debug("Trying " + f + " against " + eventData)
             fetch = base + f
-            if fetch not in self.results:
-                self.results[fetch] = True
-            else:
+            if fetch in self.results:
                 self.sf.debug("Skipping, already fetched.")
                 continue
+
+            self.results[fetch] = True
+
             res = self.sf.fetchUrl(fetch, headOnly=True,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'],
@@ -172,18 +175,18 @@ class sfp_junkfiles(SpiderFootPlugin):
                 self.notifyListeners(evt)
 
         # don't do anything with the root directory of a site
-        self.sf.debug("Base: " + base + ", event: " + eventData)
-        if base == eventData + "/" or base == eventData:
-            return None
+        self.sf.debug(f"Base: {base}, event: {eventData}")
+        if base in [eventData, eventData + "/"]:
+            return
 
         # http://www/blah/abc.html -> try http://www/blah.[dirs]
         for dirfile in self.opts['dirs']:
             if self.checkForStop():
-                return None
+                return
 
             if host in self.skiphosts:
                 self.sf.debug("Skipping " + host + " because it doesn't return 404s.")
-                return None
+                return
 
             if base.count('/') == 3:
                 self.sf.debug("Skipping base url.")
@@ -191,11 +194,12 @@ class sfp_junkfiles(SpiderFootPlugin):
 
             self.sf.debug("Trying " + dirfile + " against " + eventData)
             fetch = base[0:len(base) - 1] + "." + dirfile
-            if fetch not in self.results:
-                self.results[fetch] = True
-            else:
+            if fetch in self.results:
                 self.sf.debug("Skipping, already fetched.")
                 continue
+
+            self.results[fetch] = True
+
             res = self.sf.fetchUrl(fetch, headOnly=True,
                                    timeout=self.opts['_fetchtimeout'],
                                    useragent=self.opts['_useragent'],

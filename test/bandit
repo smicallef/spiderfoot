@@ -1,2 +1,7 @@
 #!/bin/sh
-python3 -m bandit *.py modules/*.py
+# Run bandit static analysis checks
+#
+# Must be run from SpiderFoot root directory; ie:
+# ./test/bandit
+
+python3 -m bandit *.py spiderfoot/* modules/*.py

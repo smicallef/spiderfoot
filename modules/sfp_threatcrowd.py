@@ -22,7 +22,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
     meta = {
         'name': "ThreatCrowd",
         'summary': "Obtain information from ThreatCrowd about identified IP addresses, domains and e-mail addresses.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -90,7 +90,6 @@ class sfp_threatcrowd(SpiderFootPlugin):
                 "MALICIOUS_SUBNET", "MALICIOUS_EMAILADDR"]
 
     def query(self, qry):
-        ret = None
         url = None
 
         if self.sf.validIP(qry):
@@ -105,17 +104,16 @@ class sfp_threatcrowd(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
 
         if res['content'] is None:
-            self.sf.info("No ThreatCrowd info found for " + qry)
+            self.sf.info(f"No ThreatCrowd info found for {qry}")
             return None
 
         try:
-            ret = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from ThreatCrowd: {e}")
             self.errorState = True
-            return None
 
-        return ret
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -124,41 +122,37 @@ class sfp_threatcrowd(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
-            return None
+            return
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
-            return None
+            return
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxnetblock']))
-                    return None
+                return
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxsubnet']))
-                    return None
+                return
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
 
         qrylist = list()
         if eventName.startswith("NETBLOCK_"):
@@ -170,7 +164,7 @@ class sfp_threatcrowd(SpiderFootPlugin):
 
         for addr in qrylist:
             if self.checkForStop():
-                return None
+                return
 
             info = self.query(addr)
             if info is None:

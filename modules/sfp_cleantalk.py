@@ -20,7 +20,7 @@ class sfp_cleantalk(SpiderFootPlugin):
     meta = {
         'name': "CleanTalk Spam List",
         'summary': "Check if a netblock or IP address is on CleanTalk.org's spam IP list.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -95,12 +95,12 @@ class sfp_cleantalk(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url)
+                self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url)
+                self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
@@ -115,15 +115,15 @@ class sfp_cleantalk(SpiderFootPlugin):
             if targetType == "netblock":
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
-                        self.sf.debug("%s found within netblock/subnet %s in CleanTalk Spam List." % (ip, qry))
+                        self.sf.debug(f"{ip} found within netblock/subnet {qry} in CleanTalk Spam List.")
                         return url
                 except Exception as e:
-                    self.sf.debug("Error encountered parsing: %s" % e)
+                    self.sf.debug(f"Error encountered parsing: {e}")
                     continue
 
             if targetType == "ip":
                 if qry.lower() == ip:
-                    self.sf.debug("%s found in CleanTalk Spam List." % qry)
+                    self.sf.debug(f"{qry} found in CleanTalk Spam List.")
                     return url
 
         return None
@@ -138,10 +138,10 @@ class sfp_cleantalk(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -150,30 +150,30 @@ class sfp_cleantalk(SpiderFootPlugin):
             evtType = 'MALICIOUS_IPADDR'
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
-                return None
+                return
             targetType = 'ip'
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
-                return None
+                return
             targetType = 'netblock'
             evtType = 'MALICIOUS_NETBLOCK'
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
-                return None
+                return
             targetType = 'netblock'
             evtType = 'MALICIOUS_SUBNET'
         else:
-            return None
+            return
 
-        self.sf.debug("Checking maliciousness of %s with CleanTalk Spam List" % eventData)
+        self.sf.debug(f"Checking maliciousness of {eventData} with CleanTalk Spam List")
 
         url = self.query(eventData, targetType)
 
         if not url:
-            return None
+            return
 
-        text = "CleanTalk Spam List [%s]\n<SFURL>%s</SFURL>" % (eventData, url)
+        text = f"CleanTalk Spam List [{eventData}]\n<SFURL>{url}</SFURL>"
         evt = SpiderFootEvent(evtType, text, self.__name__, event)
         self.notifyListeners(evt)
 

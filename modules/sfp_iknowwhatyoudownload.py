@@ -74,15 +74,11 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        ret = ["IP_ADDRESS"]
-
-        return ret
+        return ["IP_ADDRESS"]
 
     # What events this module produces
     def producedEvents(self):
-        ret = ["MALICIOUS_IPADDR"]
-
-        return ret
+        return ["MALICIOUS_IPADDR"]
 
     def query(self, qry):
         ret = None
@@ -116,7 +112,7 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         if not len(ret['contents']):
             return None
 
-        retdata = "<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip=" + qry + "</SFURL>\n"
+        retdata = f"<SFURL>https://iknowwhatyoudownload.com/en/peer/?ip={qry}</SFURL>\n"
         for d in ret['contents']:
             retdata += d['torrent']['name'] + " (" + d.get("endDate", "Date unknown") + ")\n"
 
@@ -131,24 +127,24 @@ class sfp_iknowwhatyoudownload(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_iknowwhatyoudownload but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         data = self.query(eventData)
 
         if not data:
-            return None
+            return
 
         e = SpiderFootEvent("MALICIOUS_IPADDR", data, self.__name__, event)
         self.notifyListeners(e)

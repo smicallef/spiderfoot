@@ -22,7 +22,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
     meta = {
         'name': "CommonCrawl",
         'summary': "Searches for URLs found through CommonCrawl.org.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -101,7 +101,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
             self.errorState = True
             return list()
 
-        indexes = re.findall(r".*(CC-MAIN-\d+-\d+).*", res['content'])
+        indexes = re.findall(r".*(CC-MAIN-\d+-\d+).*", str(res['content']))
         indexlist = dict()
         for m in indexes:
             ms = m.replace("CC-MAIN-", "").replace("-", "")
@@ -139,10 +139,10 @@ class sfp_commoncrawl(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -151,23 +151,23 @@ class sfp_commoncrawl(SpiderFootPlugin):
 
         if not self.indexBase:
             self.sf.error("Unable to fetch CommonCrawl index.")
-            return None
+            return
 
         if len(self.indexBase) == 0:
             self.sf.error("Unable to fetch CommonCrawl index.")
-            return None
+            return
 
         data = self.search(eventData)
         if not data:
             self.sf.error("Unable to obtain content from CommonCrawl.")
-            return None
+            return
 
         sent = list()
         for content in data:
             try:
                 for line in content.split("\n"):
                     if self.checkForStop():
-                        return None
+                        return
 
                     if len(line) < 2:
                         continue

@@ -95,7 +95,7 @@ class sfp_emailcrawlr(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-            "https://api.emailcrawlr.com/v2/domain?%s" % urllib.parse.urlencode(params),
+            f"https://api.emailcrawlr.com/v2/domain?{urllib.parse.urlencode(params)}",
             headers=headers,
             timeout=15,
             useragent=self.opts['_useragent']
@@ -136,12 +136,11 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -150,15 +149,15 @@ class sfp_emailcrawlr(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_emailcrawlr but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -168,8 +167,8 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             data = self.queryDomain(eventData)
 
             if data is None:
-                self.sf.debug("No information found for domain %s" % eventData)
-                return None
+                self.sf.debug(f"No information found for domain {eventData}")
+                return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)
@@ -177,8 +176,8 @@ class sfp_emailcrawlr(SpiderFootPlugin):
             emails = data.get("emails")
 
             if not emails:
-                self.sf.info("No emails found for domain %s" % eventData)
-                return None
+                self.sf.info(f"No emails found for domain {eventData}")
+                return
 
             for res in emails:
                 email = res.get('email')

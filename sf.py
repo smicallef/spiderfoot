@@ -21,46 +21,18 @@ import signal
 import sys
 import time
 from copy import deepcopy
-from logging import handlers
 
 import cherrypy
 import cherrypy_cors
 from cherrypy.lib import auth_digest
 
 from sflib import SpiderFoot
-from sfscan import SpiderFootScanner
+from sfscan import startSpiderFootScanner
 from sfwebui import SpiderFootWebUi
 from spiderfoot import SpiderFootHelpers
 from spiderfoot import SpiderFootDb
+from spiderfoot.logger import logListenerSetup, logWorkerSetup
 from spiderfoot import __version__
-
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
-log_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-
-console_handler = logging.StreamHandler(sys.stderr)
-console_handler.setFormatter(log_format)
-log.addHandler(console_handler)
-
-debug_handler = handlers.TimedRotatingFileHandler(
-    "log/spiderfoot.debug.log",
-    when="d",
-    interval=1,
-    backupCount=30
-)
-debug_handler.setLevel(logging.DEBUG)
-debug_handler.setFormatter(log_format)
-log.addHandler(debug_handler)
-
-error_handler = handlers.TimedRotatingFileHandler(
-    "log/spiderfoot.error.log",
-    when="d",
-    interval=1,
-    backupCount=30
-)
-error_handler.setLevel(logging.WARN)
-error_handler.setFormatter(log_format)
-log.addHandler(error_handler)
 
 scanId = None
 dbh = None
@@ -88,7 +60,7 @@ def main():
         '_internettlds': 'https://publicsuffix.org/list/effective_tld_names.dat',
         '_internettlds_cache': 72,
         '_genericusers': "abuse,admin,billing,compliance,devnull,dns,ftp,hostmaster,inoc,ispfeedback,ispsupport,list-request,list,maildaemon,marketing,noc,no-reply,noreply,null,peering,peering-notify,peering-request,phish,phishing,postmaster,privacy,registrar,registry,root,routing-registry,rr,sales,security,spam,support,sysadmin,tech,undisclosed-recipients,unsubscribe,usenet,uucp,webmaster,www",
-        '__database': 'spiderfoot.db',
+        '__database': f"{SpiderFootHelpers.dataPath()}/spiderfoot.db",
         '__modules__': None,  # List of modules. Will be set after start-up.
         '_socks1type': '',
         '_socks2addr': '',
@@ -123,7 +95,7 @@ def main():
     p.add_argument("-s", metavar="TARGET", help="Target for the scan.")
     p.add_argument("-t", metavar="type1,type2,...", type=str, help="Event types to collect (modules selected automatically).")
     p.add_argument("-T", "--types", action='store_true', help="List available event types.")
-    p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default. If using json, -q is enforced.")
+    p.add_argument("-o", metavar="tab|csv|json", type=str, help="Output format. Tab is default.")
     p.add_argument("-H", action='store_true', help="Don't print field headers, just data.")
     p.add_argument("-n", action='store_true', help="Strip newlines from data.")
     p.add_argument("-r", action='store_true', help="Include the source data field in tab/csv output.")
@@ -142,14 +114,16 @@ def main():
 
     if args.debug:
         sfConfig['_debug'] = True
-        log.setLevel(logging.DEBUG)
     else:
-        log.setLevel(logging.INFO)
         sfConfig['_debug'] = False
 
-    if args.q or args.o == "json":
-        log.setLevel(logging.NOTSET)
+    if args.q:
         sfConfig['__logging'] = False
+
+    loggingQueue = mp.Queue()
+    logListenerSetup(loggingQueue, sfConfig)
+    logWorkerSetup(loggingQueue)
+    log = logging.getLogger(f"spiderfoot.{__name__}")
 
     sfModules = dict()
     sft = SpiderFoot(sfConfig)
@@ -166,32 +140,20 @@ def main():
             continue
         if not filename.startswith("sfp_"):
             continue
-
-        # Skip the module template and debugging modules
-        if filename in ('sfp_template.py', 'sfp_stor_print.py'):
+        if filename in ('sfp_template.py'):
             continue
 
         modName = filename.split('.')[0]
 
         # Load and instantiate the module
         sfModules[modName] = dict()
-        mod = __import__('modules.' + modName, globals(), locals(), [modName])
-        sfModules[modName]['object'] = getattr(mod, modName)()
         try:
-            sfModules[modName]['name'] = sfModules[modName]['object'].meta['name']
-            sfModules[modName]['cats'] = sfModules[modName]['object'].meta.get('categories', list())
-            sfModules[modName]['group'] = sfModules[modName]['object'].meta.get('useCases', list())
-            sfModules[modName]['labels'] = sfModules[modName]['object'].meta.get('flags', list())
-            sfModules[modName]['descr'] = sfModules[modName]['object'].meta['summary']
-            sfModules[modName]['provides'] = sfModules[modName]['object'].producedEvents()
-            sfModules[modName]['consumes'] = sfModules[modName]['object'].watchedEvents()
-            sfModules[modName]['meta'] = sfModules[modName]['object'].meta
-            if hasattr(sfModules[modName]['object'], 'opts'):
-                sfModules[modName]['opts'] = sfModules[modName]['object'].opts
-            if hasattr(sfModules[modName]['object'], 'optdescs'):
-                sfModules[modName]['optdescs'] = sfModules[modName]['object'].optdescs
+            mod = __import__('modules.' + modName, globals(), locals(), [modName])
+            sfModules[modName]['object'] = getattr(mod, modName)()
+            mod_dict = sfModules[modName]['object'].asdict()
+            sfModules[modName].update(mod_dict)
         except BaseException as e:
-            log.critical(f"Failed to load {modName}: {e}")
+            log.critical(f"Failed to load module {modName}: {e}")
             sys.exit(-1)
 
     if not sfModules:
@@ -233,20 +195,23 @@ def main():
         sfWebUiConfig['host'] = host
         sfWebUiConfig['port'] = port
 
-        start_web_server(sfWebUiConfig, sfConfig)
+        start_web_server(sfWebUiConfig, sfConfig, loggingQueue)
         exit(0)
 
-    start_scan(sfConfig, sfModules, args)
+    start_scan(sfConfig, sfModules, args, loggingQueue)
 
 
-def start_scan(sfConfig, sfModules, args):
+def start_scan(sfConfig, sfModules, args, loggingQueue):
     """Start scan
 
     Args:
         sfConfig (dict): SpiderFoot config options
         sfModules (dict): modules
         args (argparse.Namespace): command line args
+        loggingQueue (Queue): main SpiderFoot logging queue
     """
+    log = logging.getLogger(f"spiderfoot.{__name__}")
+
     global dbh
     global scanId
 
@@ -341,6 +306,9 @@ def start_scan(sfConfig, sfModules, args):
         sfp__stor_stdout_opts['_requested'] = args.F.split(",")
         sfp__stor_stdout_opts['_showonlyrequested'] = True
     if args.o:
+        if args.o not in ["tab", "csv", "json"]:
+            log.error("Invalid output format selected. Must be 'tab', 'csv' or 'json'.")
+            sys.exit(-1)
         sfp__stor_stdout_opts['_format'] = args.o
     if args.t:
         sfp__stor_stdout_opts['_requested'] = args.t.split(",")
@@ -422,7 +390,7 @@ def start_scan(sfConfig, sfModules, args):
     scanName = target
     scanId = SpiderFootHelpers.genScanInstanceId()
     try:
-        p = mp.Process(target=SpiderFootScanner, args=(scanName, scanId, target, targetType, modlist, cfg))
+        p = mp.Process(target=startSpiderFootScanner, args=(loggingQueue, scanName, scanId, target, targetType, modlist, cfg))
         p.daemon = True
         p.start()
     except BaseException as e:
@@ -445,13 +413,15 @@ def start_scan(sfConfig, sfModules, args):
     return
 
 
-def start_web_server(sfWebUiConfig, sfConfig):
+def start_web_server(sfWebUiConfig, sfConfig, loggingQueue=None):
     """Start the web server so you can start looking at results
 
     Args:
         sfWebUiConfig (dict): web server options
         sfConfig (dict): SpiderFoot config options
+        loggingQueue (Queue): main SpiderFoot logging queue
     """
+    log = logging.getLogger(f"spiderfoot.{__name__}")
 
     web_host = sfWebUiConfig.get('host', '127.0.0.1')
     web_port = sfWebUiConfig.get('port', 5001)
@@ -482,7 +452,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
     }
 
     secrets = dict()
-    passwd_file = sf.dataPath() + '/passwd'
+    passwd_file = SpiderFootHelpers.dataPath() + '/passwd'
     if os.path.isfile(passwd_file):
         if not os.access(passwd_file, os.R_OK):
             log.error("Could not read passwd file. Permission denied.")
@@ -524,8 +494,8 @@ def start_web_server(sfWebUiConfig, sfConfig):
         log.warning(warn_msg)
 
     using_ssl = False
-    key_path = sf.dataPath() + '/spiderfoot.key'
-    crt_path = sf.dataPath() + '/spiderfoot.crt'
+    key_path = SpiderFootHelpers.dataPath() + '/spiderfoot.key'
+    crt_path = SpiderFootHelpers.dataPath() + '/spiderfoot.crt'
     if os.path.isfile(key_path) and os.path.isfile(crt_path):
         if not os.access(crt_path, os.R_OK):
             log.critical(f"Could not read {crt_path} file. Permission denied.")
@@ -569,7 +539,7 @@ def start_web_server(sfWebUiConfig, sfConfig):
     # Disable auto-reloading of content
     cherrypy.engine.autoreload.unsubscribe()
 
-    cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig), script_name=web_root, config=conf)
+    cherrypy.quickstart(SpiderFootWebUi(sfWebUiConfig, sfConfig, loggingQueue), script_name=web_root, config=conf)
 
 
 def handle_abort(signal, frame):
@@ -579,6 +549,8 @@ def handle_abort(signal, frame):
         signal: TBD
         frame: TBD
     """
+    log = logging.getLogger(f"spiderfoot.{__name__}")
+
     global dbh
     global scanId
 
@@ -589,12 +561,30 @@ def handle_abort(signal, frame):
 
 
 if __name__ == '__main__':
-    if sys.version_info < (3, 6):
-        print("SpiderFoot requires Python 3.6 or higher.")
+    if sys.version_info < (3, 7):
+        print("SpiderFoot requires Python 3.7 or higher.")
         sys.exit(-1)
 
     if len(sys.argv) <= 1:
         print("SpiderFoot requires -l <ip>:<port> to start the web server. Try --help for guidance.")
+        sys.exit(-1)
+
+    # TODO: remove this after a few releases (added in 3.5 pre-release 2021-09-05)
+    from pathlib import Path
+    if os.path.exists('spiderfoot.db'):
+        print(f"ERROR: spiderfoot.db file exists in {os.path.dirname(__file__)}")
+        print("SpiderFoot no longer supports loading the spiderfoot.db database from the application directory.")
+        print(f"The database is now loaded from your home directory: {Path.home()}/.spiderfoot/spiderfoot.db")
+        print(f"This message will go away once you move or remove spiderfoot.db from {os.path.dirname(__file__)}")
+        sys.exit(-1)
+
+    # TODO: remove this after a few releases (added in 3.5 pre-release 2021-09-05)
+    from pathlib import Path
+    if os.path.exists('passwd'):
+        print(f"ERROR: passwd file exists in {os.path.dirname(__file__)}")
+        print("SpiderFoot no longer supports loading credentials from the application directory.")
+        print(f"The passwd file is now loaded from your home directory: {Path.home()}/.spiderfoot/passwd")
+        print(f"This message will go away once you move or remove passwd from {os.path.dirname(__file__)}")
         sys.exit(-1)
 
     main()

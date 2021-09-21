@@ -193,30 +193,30 @@ class sfp_intelx(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == "" or self.opts['base_url'] == "":
             self.sf.error("You enabled sfp_intelx but did not set an API key and/or base URL!")
             self.errorState = True
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
-            return None
+            return
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
-            return None
+            return
 
         data = self.query(eventData, "intelligent")
         if data is None:
-            return None
+            return
 
         self.sf.info("Found IntelligenceX leak data for " + eventData)
         agelimit = int(time.time() * 1000) - (86400000 * self.opts['maxage'])
@@ -249,11 +249,11 @@ class sfp_intelx(SpiderFootPlugin):
                 self.notifyListeners(e)
 
         if "public.intelx.io" in self.opts['base_url'] or eventName != "INTERNET_NAME":
-            return None
+            return
 
         data = self.query(eventData, "phonebook")
         if data is None:
-            return None
+            return
 
         self.sf.info(f"Found IntelligenceX host and email data for {eventData}")
         for info in data:

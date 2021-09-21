@@ -11,8 +11,8 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import json
 import base64
+import json
 import re
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -86,7 +86,7 @@ class sfp_trashpanda(SpiderFootPlugin):
         auth = base64.b64encode(secret.encode('utf-8')).decode('utf-8')
 
         queryString = ""
-        if eventName == "DOMAIN_NAME" or eventName == "INTERNET_NAME":
+        if eventName in ['DOMAIN_NAME', 'INTERNET_NAME']:
             queryString = f"http://api.got-hacked.wtf:5580/domain?v={qry}&s=zpg"
         elif eventName == "EMAILADDR":
             queryString = f"http://api.got-hacked.wtf:5580/email?v={qry}&s=zpg"
@@ -118,7 +118,7 @@ class sfp_trashpanda(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key_username'] == "" or self.opts['api_key_password'] == "":
             self.sf.error("You enabled sfp_trashpanda but did not set an API username / password!")
@@ -127,14 +127,14 @@ class sfp_trashpanda(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         data = self.query(eventData, eventName)
 
         if data is None:
-            return None
+            return
 
         leaksiteUrls = set()
         for row in data:
@@ -148,7 +148,7 @@ class sfp_trashpanda(SpiderFootPlugin):
                 self.sf.debug("Found a link: " + leaksiteUrl)
 
                 if self.checkForStop():
-                    return None
+                    return
 
                 res = self.sf.fetchUrl(leaksiteUrl, timeout=self.opts['_fetchtimeout'],
                                        useragent=self.opts['_useragent'])

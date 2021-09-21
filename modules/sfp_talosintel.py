@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_talosintel
-# Purpose:      Checks if an ASN, IP or domain is malicious.
+# Purpose:      Check if a netblock or IP address is malicious according to
+#               TalosIntelligence.
 #
 # Author:       steve@binarypool.com
 #
@@ -10,27 +11,17 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import re
-
 from netaddr import IPAddress, IPNetwork
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
-
-malchecks = {
-    'talosintelligence.com List': {
-        'id': '_talosintel',
-        'checks': ['ip', 'netblock'],
-        'url': 'https://talosintelligence.com/documents/ip-blacklist'
-    }
-}
 
 
 class sfp_talosintel(SpiderFootPlugin):
 
     meta = {
         'name': "Talos Intelligence",
-        'summary': "Check if a netblock or IP is malicious according to talosintelligence.com.",
-        'flags': [""],
+        'summary': "Check if a netblock or IP address is malicious according to TalosIntelligence.",
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -52,7 +43,6 @@ class sfp_talosintel(SpiderFootPlugin):
         }
     }
 
-    # Default options
     opts = {
         'checkaffiliates': True,
         'cacheperiod': 18,
@@ -60,7 +50,6 @@ class sfp_talosintel(SpiderFootPlugin):
         'checksubnets': True
     }
 
-    # Option descriptions
     optdescs = {
         'checkaffiliates': "Apply checks to affiliates?",
         'cacheperiod': "Hours to cache list data before re-fetching.",
@@ -68,120 +57,105 @@ class sfp_talosintel(SpiderFootPlugin):
         'checksubnets': "Check if any malicious IPs are found within the same subnet of the target?"
     }
 
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
-
     results = None
+    errorState = False
 
     def setup(self, sfc, userOpts=dict()):
         self.sf = sfc
         self.results = self.tempStorage()
-
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
+        self.errorState = False
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
-    # * = be notified about all events.
     def watchedEvents(self):
-        return ["IP_ADDRESS", "NETBLOCK_MEMBER", "AFFILIATE_IPADDR",
-                "NETBLOCK_OWNER"]
+        return [
+            "IP_ADDRESS",
+            "AFFILIATE_IPADDR",
+            "NETBLOCK_MEMBER",
+            "NETBLOCK_OWNER"
+        ]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
-        return ["MALICIOUS_IPADDR", "MALICIOUS_AFFILIATE_IPADDR",
-                "MALICIOUS_SUBNET", "MALICIOUS_NETBLOCK"]
+        return [
+            "MALICIOUS_IPADDR",
+            "MALICIOUS_AFFILIATE_IPADDR",
+            "MALICIOUS_SUBNET",
+            "MALICIOUS_NETBLOCK"
+        ]
 
-    # Look up 'list' type resources
-    def resourceList(self, id, target, targetType):
-        targetDom = ''
-        # Get the base domain if we're supplied a domain
-        if targetType == "domain":
-            targetDom = self.sf.hostDomain(target, self.opts['_internettlds'])
-            if not targetDom:
-                return None
+    def queryBlacklist(self, target, targetType):
+        blacklist = self.retrieveBlacklist()
 
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if id == cid:
-                data = dict()
-                url = malchecks[check]['url']
-                data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))
-                if data['content'] is None:
-                    data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
-                    if data['content'] is None:
-                        self.sf.error("Unable to fetch " + url)
-                        return None
-                    else:
-                        self.sf.cachePut("sfmal_" + cid, data['content'])
+        if not blacklist:
+            return False
 
-                # If we're looking at netblocks
-                if targetType == "netblock":
-                    iplist = list()
-                    # Get the regex, replace {0} with an IP address matcher to
-                    # build a list of IP.
-                    # Cycle through each IP and check if it's in the netblock.
-                    if 'regex' in malchecks[check]:
-                        rx = malchecks[check]['regex'].replace("{0}", r"(\d+\.\d+\.\d+\.\d+)")
-                        pat = re.compile(rx, re.IGNORECASE)
-                        self.sf.debug("New regex for " + check + ": " + rx)
-                        for line in data['content'].split('\n'):
-                            grp = re.findall(pat, line)
-                            if len(grp) > 0:
-                                # self.sf.debug("Adding " + grp[0] + " to list.")
-                                iplist.append(grp[0])
-                    else:
-                        iplist = data['content'].split('\n')
+        if targetType == "ip":
+            if target in blacklist:
+                self.sf.debug(f"IP address {target} found in Talos Intelligence blacklist.")
+                return True
+        elif targetType == "netblock":
+            netblock = IPNetwork(target)
+            for ip in blacklist:
+                if IPAddress(ip) in netblock:
+                    self.sf.debug(f"IP address {ip} found within netblock/subnet {target} in Talos Intelligence blacklist.")
+                    return True
 
-                    for ip in iplist:
-                        if len(ip) < 8 or ip.startswith("#"):
-                            continue
-                        ip = ip.strip()
+        return False
 
-                        try:
-                            if IPAddress(ip) in IPNetwork(target):
-                                self.sf.debug(f"{ip} found within netblock/subnet {target} in {check}")
-                                return url
-                        except Exception as e:
-                            self.sf.debug(f"Error encountered parsing: {e}")
-                            continue
+    def retrieveBlacklist(self):
+        blacklist = self.sf.cacheGet('talosintel', 24)
 
-                    return None
+        if blacklist is not None:
+            return self.parseBlacklist(blacklist)
 
-                # If we're looking at hostnames/domains/IPs
-                if 'regex' not in malchecks[check]:
-                    for line in data['content'].split('\n'):
-                        if line == target or (targetType == "domain" and line == targetDom):
-                            self.sf.debug(target + "/" + targetDom + " found in " + check + " list.")
-                            return url
-                else:
-                    # Check for the domain and the hostname
-                    try:
-                        rxDom = str(malchecks[check]['regex']).format(targetDom)
-                        rxTgt = str(malchecks[check]['regex']).format(target)
-                        for line in data['content'].split('\n'):
-                            if (targetType == "domain" and re.match(rxDom, line, re.IGNORECASE)) or \
-                                    re.match(rxTgt, line, re.IGNORECASE):
-                                self.sf.debug(f"{target}/{targetDom} found in {check} list.")
-                                return url
-                    except Exception as e:
-                        self.sf.debug("Error encountered parsing 2: " + str(e))
-                        continue
+        # https://talosintelligence.com/documents/ip-blacklist redirects to:
+        # https://snort.org/downloads/ip-block-list
+        res = self.sf.fetchUrl(
+            "https://snort.org/downloads/ip-block-list",
+            timeout=self.opts['_fetchtimeout'],
+            useragent=self.opts['_useragent'],
+        )
 
-        return None
+        if res['code'] != "200":
+            self.sf.error(f"Unexpected HTTP response code {res['code']} from Talos Intelligence.")
+            self.errorState = True
+            return None
 
-    def lookupItem(self, resourceId, itemType, target):
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-            if cid == resourceId and itemType in malchecks[check]['checks']:
-                self.sf.debug(f"Checking maliciousness of {target} ({itemType}) with: {cid}")
-                return self.resourceList(cid, target, itemType)
+        if res['content'] is None:
+            self.sf.error("Received no content from Talos Intelligence")
+            self.errorState = True
+            return None
 
-        return None
+        self.sf.cachePut("talosintel", res['content'])
+
+        return self.parseBlacklist(res['content'])
+
+    def parseBlacklist(self, blacklist):
+        """Parse plaintext blacklist
+
+        Args:
+            blacklist (str): plaintext blacklist from Talos Intelligence
+
+        Returns:
+            list: list of blacklisted IP addresses
+        """
+        ips = list()
+
+        if not blacklist:
+            return ips
+
+        for ip in blacklist.split('\n'):
+            ip = ip.strip()
+            if ip.startswith('#'):
+                continue
+            if not self.sf.validIP(ip):
+                continue
+            ips.append(ip)
+
+        return ips
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -195,58 +169,38 @@ class sfp_talosintel(SpiderFootPlugin):
             self.sf.debug(f"Skipping {eventData}, already checked.")
             return
 
+        if self.errorState:
+            return
+
         self.results[eventData] = True
 
-        if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts', False):
-            return
-        if eventName == 'AFFILIATE_IPADDR' \
-                and not self.opts.get('checkaffiliates', False):
-            return
-        if eventName == 'NETBLOCK_OWNER' and not self.opts.get('checknetblocks', False):
-            return
-        if eventName == 'NETBLOCK_MEMBER' and not self.opts.get('checksubnets', False):
-            return
-
-        for check in list(malchecks.keys()):
-            cid = malchecks[check]['id']
-
-            if eventName in ['IP_ADDRESS', 'AFFILIATE_IPADDR']:
-                typeId = 'ip'
-                if eventName == 'IP_ADDRESS':
-                    evtType = 'MALICIOUS_IPADDR'
-                else:
-                    evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-
-            if eventName in ['BGP_AS_OWNER', 'BGP_AS_MEMBER']:
-                typeId = 'asn'
-                evtType = 'MALICIOUS_ASN'
-
-            if eventName in ['INTERNET_NAME', 'CO_HOSTED_SITE',
-                             'AFFILIATE_INTERNET_NAME']:
-                typeId = 'domain'
-                if eventName == "INTERNET_NAME":
-                    evtType = "MALICIOUS_INTERNET_NAME"
-                if eventName == 'AFFILIATE_INTERNET_NAME':
-                    evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
-                if eventName == 'CO_HOSTED_SITE':
-                    evtType = 'MALICIOUS_COHOST'
-
-            if eventName == 'NETBLOCK_OWNER':
-                typeId = 'netblock'
-                evtType = 'MALICIOUS_NETBLOCK'
-            if eventName == 'NETBLOCK_MEMBER':
-                typeId = 'netblock'
-                evtType = 'MALICIOUS_SUBNET'
-
-            url = self.lookupItem(cid, typeId, eventData)
-
-            if self.checkForStop():
+        if eventName == 'IP_ADDRESS':
+            targetType = 'ip'
+            evtType = 'MALICIOUS_IPADDR'
+        elif eventName == 'AFFILIATE_IPADDR':
+            if not self.opts.get('checkaffiliates', False):
                 return
+            targetType = 'ip'
+            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+        elif eventName == 'NETBLOCK_OWNER':
+            if not self.opts.get('checknetblocks', False):
+                return
+            targetType = 'netblock'
+            evtType = 'MALICIOUS_NETBLOCK'
+        elif eventName == 'NETBLOCK_MEMBER':
+            if not self.opts.get('checksubnets', False):
+                return
+            targetType = 'netblock'
+            evtType = 'MALICIOUS_SUBNET'
+        else:
+            return
 
-            # Notify other modules of what you've found
-            if url is not None:
-                text = f"{check} [{eventData}]\n<SFURL>{url}</SFURL>"
-                evt = SpiderFootEvent(evtType, text, self.__name__, event)
-                self.notifyListeners(evt)
+        self.sf.debug(f"Checking maliciousness of {eventData} ({eventName}) with Talos Intelligence")
+
+        if self.queryBlacklist(eventData, targetType):
+            url = "https://snort.org/downloads/ip-block-list"
+            text = f"Talos Intelligence [{eventData}]\n<SFURL>{url}</SFURL>"
+            evt = SpiderFootEvent(evtType, text, self.__name__, event)
+            self.notifyListeners(evt)
 
 # End of sfp_talosintel class

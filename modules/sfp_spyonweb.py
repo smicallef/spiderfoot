@@ -110,7 +110,7 @@ class sfp_spyonweb(SpiderFootPlugin):
 
         status = data.get('status')
 
-        if not status == 'found':
+        if status != 'found':
             self.sf.debug("No results found for " + qry)
             return None
 

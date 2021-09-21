@@ -7,19 +7,19 @@ class SpiderFootEvent():
     """SpiderFootEvent object representing identified data and associated meta data.
 
     Attributes:
-        generated (float): timestamp of event creation time
-        eventType (str): event type, e.g. URL_FORM, RAW_DATA, etc.
-        confidence (int): how sure are we of this data's validity, 0-100
-        visibility (int): how 'visible' was this data, 0-100
-        risk (int): how much risk does this data represent, 0-100
-        module (str): module from which the event originated
-        data (str): event data, e.g. a URL, port number, webpage content, etc.
+        generated (float): Timestamp of event creation time
+        eventType (str): Event type, e.g. URL_FORM, RAW_DATA, etc.
+        confidence (int): How sure are we of this data's validity, 0-100
+        visibility (int): How 'visible' was this data, 0-100
+        risk (int): How much risk does this data represent, 0-100
+        module (str): Module from which the event originated
+        data (str): Event data, e.g. a URL, port number, webpage content, etc.
         sourceEvent (SpiderFootEvent): SpiderFootEvent that triggered this event
-        sourceEventHash (str): hash of the SpiderFootEvent event that triggered this event
-        hash (str): unique SHA256 hash of the event, or "ROOT"
-        moduleDataSource (str): module data source
-        actualSource (str): source data of parent event
-        __id: unique ID of the event, generated using eventType, generated, module, and a random integer
+        sourceEventHash (str): Hash of the SpiderFootEvent event that triggered this event
+        hash (str): Unique SHA256 hash of the event, or "ROOT"
+        moduleDataSource (str): Module data source
+        actualSource (str): Source data of parent event
+        __id (str): Unique ID of the event, generated using eventType, generated, module, and a random integer
     """
 
     _generated = None
@@ -35,92 +35,97 @@ class SpiderFootEvent():
     _actualSource = None
     __id = None
 
-    def __init__(self, eventType, data, module, sourceEvent, confidence=100, visibility=100, risk=0):
+    def __init__(self, eventType: str, data: str, module: str, sourceEvent: 'SpiderFootEvent') -> None:
         """Initialize SpiderFoot event object.
 
         Args:
-            eventType (str): event type, e.g. URL_FORM, RAW_DATA, etc.
-            data (str): event data, e.g. a URL, port number, webpage content, etc.
-            module (str): module from which the event originated
+            eventType (str): Event type, e.g. URL_FORM, RAW_DATA, etc.
+            data (str): Event data, e.g. a URL, port number, webpage content, etc.
+            module (str): Module from which the event originated
             sourceEvent (SpiderFootEvent): SpiderFootEvent event that triggered this event
-            confidence (int): how sure are we of this data's validity, 0-100
-            visibility (int): how 'visible' was this data, 0-100
-            risk (int): how much risk does this data represent, 0-100
         """
-
         self._generated = time.time()
         self.data = data
         self.eventType = eventType
         self.module = module
-        self.confidence = confidence
-        self.visibility = visibility
-        self.risk = risk
+        self.confidence = 100
+        self.visibility = 100
+        self.risk = 0
         self.sourceEvent = sourceEvent
         self.__id = f"{self.eventType}{self.generated}{self.module}{random.SystemRandom().randint(0, 99999999)}"
 
     @property
-    def generated(self):
-        """
+    def generated(self) -> float:
+        """Timestamp of event creation time.
+
         Returns:
             float: timestamp of event creation time
         """
         return self._generated
 
     @property
-    def eventType(self):
+    def eventType(self) -> str:
+        """Event type.
+
+        Returns:
+            str: event type
+        """
         return self._eventType
 
     @property
-    def confidence(self):
-        """
+    def confidence(self) -> int:
+        """How sure are we of this data's validity.
+
         Returns:
-            int: How sure are we of this data's validity (0 to 100)
+            int: confidence score (0 to 100).
         """
         return self._confidence
 
     @property
-    def visibility(self):
-        """
+    def visibility(self) -> int:
+        """How 'visible' was this data (0 to 100).
+
         Returns:
-            int: How 'visible' was this data (0 to 100)
+            int: visibility score (0 to 100).
         """
         return self._visibility
 
     @property
-    def risk(self):
-        """
+    def risk(self) -> int:
+        """How much risk does this data represent.
+
         Returns:
-            int: How much risk does this data represent (0 to 100)
+            int: risk score (0 to 100).
         """
         return self._risk
 
     @property
-    def module(self):
+    def module(self) -> str:
         return self._module
 
     @property
-    def data(self):
+    def data(self) -> str:
         return self._data
 
     @property
-    def sourceEvent(self):
+    def sourceEvent(self) -> 'SpiderFootEvent':
         return self._sourceEvent
 
     @property
-    def sourceEventHash(self):
+    def sourceEventHash(self) -> str:
         return self._sourceEventHash
 
     @property
-    def actualSource(self):
+    def actualSource(self) -> str:
         return self._actualSource
 
     @property
-    def moduleDataSource(self):
+    def moduleDataSource(self) -> str:
         return self._moduleDataSource
 
     @property
-    def hash(self):
-        """Unique hash of this event.
+    def hash(self) -> str:
+        """Unique SHA256 hash of the event, or "ROOT".
 
         Returns:
             str: unique SHA256 hash of the event, or "ROOT"
@@ -132,8 +137,9 @@ class SpiderFootEvent():
         return hashlib.sha256(digestStr).hexdigest()
 
     @eventType.setter
-    def eventType(self, eventType):
-        """
+    def eventType(self, eventType: str) -> None:
+        """Event type.
+
         Args:
             eventType (str): type of data for this event
 
@@ -141,7 +147,6 @@ class SpiderFootEvent():
             TypeError: confidence type was invalid
             ValueError: confidence value was invalid
         """
-
         if not isinstance(eventType, str):
             raise TypeError(f"eventType is {type(eventType)}; expected str()")
 
@@ -151,16 +156,16 @@ class SpiderFootEvent():
         self._eventType = eventType
 
     @confidence.setter
-    def confidence(self, confidence):
-        """
+    def confidence(self, confidence: int) -> None:
+        """Event confidence.
+
         Args:
-            confidence (int): How sure are we of this data's validitya(0 to 100)
+            confidence (int): How sure are we of this data's validity (0 to 100)
 
         Raises:
             TypeError: confidence type was invalid
             ValueError: confidence value was invalid
         """
-
         if not isinstance(confidence, int):
             raise TypeError(f"confidence is {type(confidence)}; expected int()")
 
@@ -170,8 +175,9 @@ class SpiderFootEvent():
         self._confidence = confidence
 
     @visibility.setter
-    def visibility(self, visibility):
-        """
+    def visibility(self, visibility: int) -> None:
+        """Event visibility.
+
         Args:
             visibility (int): How 'visible' was this data (0 to 100)
 
@@ -179,7 +185,6 @@ class SpiderFootEvent():
             TypeError: visibility type was invalid
             ValueError: visibility value was invalid
         """
-
         if not isinstance(visibility, int):
             raise TypeError(f"visibility is {type(visibility)}; expected int()")
 
@@ -189,8 +194,9 @@ class SpiderFootEvent():
         self._visibility = visibility
 
     @risk.setter
-    def risk(self, risk):
-        """
+    def risk(self, risk: int) -> None:
+        """Event risk.
+
         Args:
             risk (int): How much risk does this data represent (0 to 100)
 
@@ -198,7 +204,6 @@ class SpiderFootEvent():
             TypeError: risk type was invalid
             ValueError: risk value was invalid
         """
-
         if not isinstance(risk, int):
             raise TypeError(f"risk is {type(risk)}; expected int()")
 
@@ -208,8 +213,9 @@ class SpiderFootEvent():
         self._risk = risk
 
     @module.setter
-    def module(self, module):
-        """
+    def module(self, module: str) -> None:
+        """Module which created the event.
+
         Args:
             module (str): module
 
@@ -217,7 +223,6 @@ class SpiderFootEvent():
             TypeError: module type was invalid
             ValueError: module value was invalid
         """
-
         if not isinstance(module, str):
             raise TypeError(f"module is {type(module )}; expected str()")
 
@@ -228,8 +233,8 @@ class SpiderFootEvent():
         self._module = module
 
     @data.setter
-    def data(self, data):
-        """Event data
+    def data(self, data: str) -> None:
+        """Event data.
 
         Args:
             data (str): data
@@ -238,7 +243,6 @@ class SpiderFootEvent():
             TypeError: data type was invalid
             ValueError: data value was invalid
         """
-
         if not isinstance(data, str):
             raise TypeError(f"data is {type(data)}; expected str()")
 
@@ -248,8 +252,8 @@ class SpiderFootEvent():
         self._data = data
 
     @sourceEvent.setter
-    def sourceEvent(self, sourceEvent):
-        """source event
+    def sourceEvent(self, sourceEvent: 'SpiderFootEvent') -> None:
+        """Source event which lead to this event.
 
         Args:
             sourceEvent (SpiderFootEvent): source event
@@ -257,7 +261,6 @@ class SpiderFootEvent():
         Raises:
             TypeError: sourceEvent type was invalid
         """
-
         # "ROOT" is a special "hash" reserved for elements with no parent,
         # such as targets provided via the web UI or CLI.
         if self.eventType == "ROOT":
@@ -272,19 +275,19 @@ class SpiderFootEvent():
         self._sourceEventHash = self.sourceEvent.hash
 
     @actualSource.setter
-    def actualSource(self, actualSource):
+    def actualSource(self, actualSource: str) -> None:
         self._actualSource = actualSource
 
     @moduleDataSource.setter
-    def moduleDataSource(self, moduleDataSource):
+    def moduleDataSource(self, moduleDataSource: str) -> None:
         self._moduleDataSource = moduleDataSource
 
-    def asDict(self):
-        """
+    def asDict(self) -> dict:
+        """Event object as dictionary.
+
         Returns:
             dict: event as dictionary
         """
-
         evtDict = {
             'generated': int(self.generated),
             'type': self.eventType,
@@ -298,15 +301,5 @@ class SpiderFootEvent():
                 evtDict['source'] = self.sourceEvent.data
 
         return evtDict
-
-    def getHash(self):
-        """Event hash
-
-        Note: required for SpiderFoot HX compatibility of modules.
-
-        Returns:
-            str: event hash
-        """
-        return self.hash
 
 # end of SpiderFootEvent class

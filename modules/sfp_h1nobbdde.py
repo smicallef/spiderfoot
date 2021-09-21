@@ -19,7 +19,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
     meta = {
         'name': "HackerOne (Unofficial)",
         'summary': "Check external vulnerability scanning/reporting service h1.nobbd.de to see if the target is listed.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
@@ -77,7 +77,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
         try:
             rx = re.compile("<a class=\"title\" href=.(.[^\"]+).*?title=.(.[^\"\']+)", re.IGNORECASE | re.DOTALL)
-            for m in rx.findall(res['content']):
+            for m in rx.findall(str(res['content'])):
                 # Report it
                 if qry in m[1]:
                     ret.append(m[1] + "\n<SFURL>" + m[0] + "</SFURL>")
@@ -97,7 +97,7 @@ class sfp_h1nobbdde(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_onioncity
-# Purpose:      Searches the Tor search engine 'Onion City' for content related
-#               to the domain in question.
+# Purpose:      Searches the Tor search engine 'Onion City' using Google Custom
+#               Search for content related to the domain in question.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
 #
@@ -20,13 +20,25 @@ class sfp_onioncity(SpiderFootPlugin):
 
     meta = {
         'name': "Onion.link",
-        'summary': "Search Tor 'Onion City' search engine for mentions of the target domain.",
+        'summary': "Search Tor 'Onion City' search engine for mentions of the target domain using Google Custom Search.",
         'flags': ["apikey", "tor"],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {
             'website': "https://onion.link/",
             'model': "FREE_NOAUTH_UNLIMITED",
+            'references': [
+                "https://developers.google.com/custom-search/v1",
+                "https://developers.google.com/custom-search/docs/overview",
+                "https://cse.google.com/cse"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://developers.google.com/custom-search/v1/introduction",
+                "Register a free Google account",
+                "Click on 'Get A Key'",
+                "Connect a Project",
+                "The API Key will be listed under 'YOUR API KEY'"
+            ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://onion.link",
             'logo': "https://onion.link/images/OC.png",
             'description': "Enabling search and global access to Tor's onionsites.",
@@ -78,21 +90,21 @@ class sfp_onioncity(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if not self.opts['fullnames'] and eventName == 'HUMAN_NAME':
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_onioncity but did not set a Google API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Already did a search for {eventData}, skipping.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -108,7 +120,7 @@ class sfp_onioncity(SpiderFootPlugin):
         )
         if res is None:
             # Failed to talk to the bing API or no results returned
-            return None
+            return
 
         urls = res["urls"]
         new_links = list(set(urls) - set(self.results.keys()))
@@ -134,7 +146,7 @@ class sfp_onioncity(SpiderFootPlugin):
 
         # Check if we've been asked to stop
         if self.checkForStop():
-            return None
+            return
 
         darknet_links = [
             link for link in new_links if self.sf.urlFQDN(link).endswith(".onion.link")
@@ -175,6 +187,5 @@ class sfp_onioncity(SpiderFootPlugin):
             else:
                 evt = SpiderFootEvent("DARKNET_MENTION_URL", torlink, self.__name__, event)
                 self.notifyListeners(evt)
-
 
 # End of sfp_onioncity class

@@ -22,7 +22,7 @@ class sfp_pgp(SpiderFootPlugin):
     meta = {
         'name': "PGP Key Servers",
         'summary': "Look up e-mail addresses in PGP public key servers.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"]
     }
@@ -115,7 +115,7 @@ class sfp_pgp(SpiderFootPlugin):
 
             if res['content'] is not None and res['code'] != "503":
                 pat = re.compile("(-----BEGIN.*END.*BLOCK-----)", re.MULTILINE | re.DOTALL)
-                matches = re.findall(pat, res['content'])
+                matches = re.findall(pat, str(res['content']))
                 for match in matches:
                     self.sf.debug("Found public key: " + match)
                     if len(match) < 300:

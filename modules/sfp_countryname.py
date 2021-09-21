@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_countryname
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_iban, sfp_phone, sfp_whois) and identifying country names
 #
 # Author:      Krishnasis Mandal <krishnasis@hotmail.com>
@@ -24,7 +24,7 @@ class sfp_countryname(SpiderFootPlugin):
     meta = {
         'name': "Country Name Extractor",
         'summary': "Identify country names in any obtained data.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }
@@ -193,7 +193,7 @@ class sfp_countryname(SpiderFootPlugin):
 
         if eventDataHash in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventDataHash] = True
 
@@ -221,7 +221,7 @@ class sfp_countryname(SpiderFootPlugin):
 
         if not countryNames:
             self.sf.debug(f"Found no country names associated with {eventName}: {eventData}")
-            return None
+            return
 
         for countryName in set(countryNames):
             if not countryName:

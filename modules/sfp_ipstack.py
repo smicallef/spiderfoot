@@ -82,17 +82,17 @@ class sfp_ipstack(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_ipstack but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -106,10 +106,10 @@ class sfp_ipstack(SpiderFootPlugin):
             if 'success' in hostip and hostip['success'] is False:
                 self.sf.error("Invalid ipstack.com API key or usage limits exceeded.")
                 self.errorState = True
-                return None
+                return
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            return
 
         geoinfo = hostip.get('country_name')
         if geoinfo:

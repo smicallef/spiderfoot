@@ -20,7 +20,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
     meta = {
         "name": "IPQualityScore",
         "summary": "Determine if target is malicious using IPQualityScore API",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Investigate", "Passive"],
         "categories": ["Reputation Systems"],
         "dataSource": {
@@ -107,7 +107,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
             queryString = f"https://ipqualityscore.com/api/json/phone/{self.opts['api_key']}/{qry}?strictness={self.opts['strictness']}"
         elif eventName == "EMAILADDR":
             queryString = f"https://ipqualityscore.com/api/json/email/{self.opts['api_key']}/{qry}?strictness={self.opts['strictness']}"
-        elif eventName == "IP_ADDRESS" or eventName == "DOMAIN_NAME":
+        elif eventName in ['IP_ADDRESS', 'DOMAIN_NAME']:
             queryString = f"https://ipqualityscore.com/api/json/ip/{self.opts['api_key']}/{qry}?strictness={self.opts['strictness']}"
 
         res = self.sf.fetchUrl(
@@ -158,7 +158,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -167,11 +167,11 @@ class sfp_ipqualityscore(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API Key!"
             )
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData} as already mapped.")
-            return None
+            return
         self.results[eventData] = True
 
         data = self.query(eventData, eventName)
@@ -220,7 +220,7 @@ class sfp_ipqualityscore(SpiderFootPlugin):
                 evt = SpiderFootEvent("EMAILADDR_COMPROMISED", f"{eventData} [Unknown]", self.__name__, event)
                 self.notifyListeners(evt)
 
-        elif eventName == "IP_ADDRESS" or eventName == "DOMAIN_NAME":
+        elif eventName in ['IP_ADDRESS', 'DOMAIN_NAME']:
             if malicious:
                 maliciousDesc += f" - FRAUD SCORE: {fraudScore}\n - BOT STATUS: {botStatus}\n - RECENT ABUSE: {recentAbuse}\n - ABUSE VELOCITY: {data.get('abuse_velocity')}\n - VPN: {data.get('vpn')}\n - ACTIVE VPN: {data.get('active_vpn')}\n - TOR: {data.get('tor')}\n - ACTIVE TOR: {data.get('active_tor')}"
 

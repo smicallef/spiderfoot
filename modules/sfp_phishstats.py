@@ -26,7 +26,7 @@ class sfp_phishstats(SpiderFootPlugin):
     meta = {
         'name': "PhishStats",
         'summary': "Determine if an IP Address is malicious",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -106,7 +106,7 @@ class sfp_phishstats(SpiderFootPlugin):
             useragent=self.opts['_useragent']
         )
 
-        if not res['code'] == "200":
+        if res['code'] != "200":
             self.sf.debug("No information found from Phishstats for IP Address")
             return None
 
@@ -123,7 +123,7 @@ class sfp_phishstats(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 

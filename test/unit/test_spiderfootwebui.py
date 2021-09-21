@@ -11,15 +11,25 @@ class TestSpiderFootWebUi(unittest.TestCase):
     Test SpiderFootWebUi
     """
 
-    def test_init_no_options_should_raise(self):
+    def test_init_config_invalid_type_should_raise_TypeError(self):
         """
-        Test __init__(self, config)
+        Test __init__(self, config, web_config)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+
+        with self.assertRaises(TypeError):
+            SpiderFootWebUi(None, opts)
+
+    def test_init_no_web_config_should_raise(self):
+        """
+        Test __init__(self, config, web_config)
         """
         with self.assertRaises(TypeError):
-            SpiderFootWebUi(None, None)
+            SpiderFootWebUi(self.web_default_options, None)
 
         with self.assertRaises(ValueError):
-            SpiderFootWebUi(dict(), dict())
+            SpiderFootWebUi(self.web_default_options, dict())
 
     def test_init(self):
         """
@@ -40,6 +50,17 @@ class TestSpiderFootWebUi(unittest.TestCase):
 
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
         sfwebui.error_page()
+
+    def test_error_page_401(self):
+        """
+        Test error_page(self)
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        error_page_401 = sfwebui.error_page_401(None, None, None, None)
+        self.assertIsInstance(error_page_401, str)
 
     def test_error_page_404(self):
         """
@@ -89,36 +110,66 @@ class TestSpiderFootWebUi(unittest.TestCase):
         search_results = sfwebui.searchBase(None, None, "//")
         self.assertIsInstance(search_results, list)
 
+    @unittest.skip("todo")
     def test_scan_event_result_export_should_return_bytes(self):
         """
-        Test scaneventresultexport(self, id, type, dialect="excel")
+        Test scaneventresultexport(self, id, type, filetype="csv", dialect="excel")
         """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        search_results = sfwebui.scaneventresultexport("", "")
+        self.assertIsInstance(search_results, bytes)
         search_results = sfwebui.scaneventresultexport("", "", "excel")
         self.assertIsInstance(search_results, bytes)
 
+    @unittest.skip("todo")
     def test_scan_event_result_export_multi(self):
         """
-        Test scaneventresultexportmulti(self, ids, dialect="excel")
+        Test scaneventresultexportmulti(self, ids, filetype="csv", dialect="excel")
         """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        search_results = sfwebui.scaneventresultexport("", "", "excel")
+        search_results = sfwebui.scaneventresultexportmulti("", "")
+        self.assertIsInstance(search_results, bytes)
+        search_results = sfwebui.scaneventresultexportmulti("", "excel")
         self.assertIsInstance(search_results, bytes)
 
     @unittest.skip("todo")
     def test_scan_search_result_export(self):
         """
-        Test scansearchresultexport(self, id, eventType=None, value=None, dialect="excel")
+        Test scansearchresultexport(self, id, eventType=None, value=None, filetype="csv", dialect="excel")
         """
         opts = self.default_options
         opts['__modules__'] = dict()
         sfwebui = SpiderFootWebUi(self.web_default_options, opts)
-        search_results = sfwebui.scansearchresultexport("", "", "excel")
+        search_results = sfwebui.scansearchresultexport("")
         self.assertIsInstance(search_results, bytes)
+        search_results = sfwebui.scansearchresultexport("", None, None, "excel")
+        self.assertIsInstance(search_results, bytes)
+
+    def test_scan_export_logs_invalid_scan_id_should_return_string(self):
+        """
+        Test scanexportlogs(self: 'SpiderFootWebUi', id: str, dialect: str = "excel") -> str
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        logs = sfwebui.scanexportlogs(None, "excel")
+        self.assertIsInstance(logs, str)
+        self.assertIn("Scan ID not found.", logs)
+
+    @unittest.skip("todo")
+    def test_scan_export_logs_should_return_bytes(self):
+        """
+        Test scanexportlogs(self: 'SpiderFootWebUi', id: str, dialect: str = "excel") -> str
+        """
+        opts = self.default_options
+        opts['__modules__'] = dict()
+        sfwebui = SpiderFootWebUi(self.web_default_options, opts)
+        logs = sfwebui.scanexportlogs("scan id", "excel")
+        self.assertIsInstance(logs, bytes)
 
     @unittest.skip("todo")
     def test_scan_export_json_multi(self):

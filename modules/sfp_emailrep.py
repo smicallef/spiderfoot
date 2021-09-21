@@ -113,12 +113,11 @@ class sfp_emailrep(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return data
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -126,7 +125,7 @@ class sfp_emailrep(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -138,12 +137,12 @@ class sfp_emailrep(SpiderFootPlugin):
         res = self.query(eventData)
 
         if res is None:
-            return None
+            return
 
         details = res.get('details')
 
         if not details:
-            return None
+            return
 
         credentials_leaked = details.get('credentials_leaked')
         if credentials_leaked:

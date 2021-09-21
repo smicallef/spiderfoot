@@ -22,7 +22,7 @@ class sfp_spamcop(SpiderFootPlugin):
     meta = {
         'name': "SpamCop",
         'summary': "Query various spamcop databases for open relays, open proxies, vulnerable servers, etc.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -96,7 +96,7 @@ class sfp_spamcop(SpiderFootPlugin):
 
         for domain in self.checks:
             if self.checkForStop():
-                return None
+                return
 
             try:
                 lookup = self.reverseAddr(qaddr) + "." + domain
@@ -112,14 +112,13 @@ class sfp_spamcop(SpiderFootPlugin):
                     if type(self.checks[domain]) is str:
                         text = self.checks[domain] + " (" + qaddr + ")"
                         break
-                    else:
-                        if str(addr) not in list(self.checks[domain].keys()):
-                            self.sf.debug("Return code not found in list: " + str(addr))
-                            continue
 
+                    if str(addr) in list(self.checks[domain].keys()):
                         k = str(addr)
                         text = self.checks[domain][k] + " (" + qaddr + ")"
                         break
+
+                    self.sf.debug(f"Return code not found in list: {addr}")
 
                 if text is not None:
                     if eventName == "AFFILIATE_IPADDR":
@@ -137,8 +136,6 @@ class sfp_spamcop(SpiderFootPlugin):
             except Exception as e:
                 self.sf.debug("Unable to resolve " + qaddr + " / " + lookup + ": " + str(e))
 
-        return None
-
     # Handle events sent to this module
     def handleEvent(self, event):
         eventName = event.eventType
@@ -149,33 +146,31 @@ class sfp_spamcop(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
         self.results[eventData] = True
 
         if eventName == 'NETBLOCK_OWNER':
             if not self.opts['netblocklookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxnetblock']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxnetblock']))
-                    return None
+                return
+
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(eventData).prefixlen < max_netblock:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
+                return
 
         if eventName == 'NETBLOCK_MEMBER':
             if not self.opts['subnetlookup']:
-                return None
-            else:
-                if IPNetwork(eventData).prefixlen < self.opts['maxsubnet']:
-                    self.sf.debug("Network size bigger than permitted: "
-                                  + str(IPNetwork(eventData).prefixlen) + " > "
-                                  + str(self.opts['maxsubnet']))
-                    return None
+                return
+
+            max_subnet = self.opts['maxsubnet']
+            if IPNetwork(eventData).prefixlen < max_subnet:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
+                return
 
         if eventName.startswith("NETBLOCK_"):
             for addr in IPNetwork(eventData):
                 if self.checkForStop():
-                    return None
+                    return
                 self.queryAddr(str(addr), parentEvent)
         else:
             self.queryAddr(eventData, parentEvent)

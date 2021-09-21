@@ -38,9 +38,8 @@ class TestSpiderFoot(unittest.TestCase):
         """
         invalid_types = [None, "", list(), int()]
         for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError):
-                    SpiderFoot(invalid_type)
+            with self.subTest(invalid_type=invalid_type), self.assertRaises(TypeError):
+                SpiderFoot(invalid_type)
 
     def test_init_argument_options_with_empty_dict(self):
         """
@@ -85,6 +84,17 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(opt_data, str)
         self.assertEqual(test_string, opt_data)
 
+    def test_optValueToData_argument_val_filename_should_return_file_contents_as_string(self):
+        """
+        Test optValueToData(self, val)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        test_string = "@VERSION"
+        opt_data = sf.optValueToData(test_string)
+        self.assertIsInstance(opt_data, str)
+        self.assertTrue(opt_data.startswith("SpiderFoot"))
+
     def test_optValueToData_argument_val_invalid_type_should_return_None(self):
         """
         Test optValueToData(self, val)
@@ -96,15 +106,6 @@ class TestSpiderFoot(unittest.TestCase):
             with self.subTest(invalid_type=invalid_type):
                 opt_data = sf.optValueToData(invalid_type)
                 self.assertEqual(opt_data, None)
-
-    def test_dblog_invalid_dbh_should_raise(self):
-        """
-        Test _dblog(self, level, message, component=None)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        with self.assertRaises(BaseException):
-            sf._dblog(None, None, None)
 
     def test_error(self):
         """
@@ -162,15 +163,6 @@ class TestSpiderFoot(unittest.TestCase):
         path = sf.myPath()
         self.assertIsInstance(path, str)
 
-    def test_data_path_should_return_a_string(self):
-        """
-        Test def dataPath(self)
-        """
-        sf = SpiderFoot(dict())
-
-        path = sf.myPath()
-        self.assertIsInstance(path, str)
-
     def test_hash_string_should_return_a_string(self):
         """
         Test hashstring(self, string)
@@ -180,15 +172,6 @@ class TestSpiderFoot(unittest.TestCase):
         hash_string = sf.hashstring('example string')
         self.assertIsInstance(hash_string, str)
         self.assertEqual("aedfb92b3053a21a114f4f301a02a3c6ad5dff504d124dc2cee6117623eec706", hash_string)
-
-    def test_cache_path_should_return_a_string(self):
-        """
-        Test cachePath(self)
-        """
-        sf = SpiderFoot(dict())
-
-        cache_path = sf.cachePath()
-        self.assertIsInstance(cache_path, str)
 
     def test_cache_get_should_return_a_string(self):
         """
@@ -396,6 +379,10 @@ class TestSpiderFoot(unittest.TestCase):
         self.assertIsInstance(keyword, str)
         self.assertEqual('spiderfoot', keyword)
 
+        keyword = sf.domainKeyword('spiderfööt.example', sf.opts.get('_internettlds'))
+        self.assertIsInstance(keyword, str)
+        self.assertEqual('spiderfööt', keyword)
+
     def test_domain_keyword_invalid_domain_should_return_none(self):
         """
         Test domainKeyword(self, domain, tldList)
@@ -410,6 +397,10 @@ class TestSpiderFoot(unittest.TestCase):
         keyword = sf.domainKeyword(None, sf.opts.get('_internettlds'))
         self.assertEqual(None, keyword)
         keyword = sf.domainKeyword("net", sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
+        keyword = sf.domainKeyword(".net", sf.opts.get('_internettlds'))
+        self.assertEqual(None, keyword)
+        keyword = sf.domainKeyword(".", sf.opts.get('_internettlds'))
         self.assertEqual(None, keyword)
 
     def test_domain_keywords_should_return_a_set(self):
@@ -731,36 +722,6 @@ class TestSpiderFoot(unittest.TestCase):
             with self.subTest(invalid_type=invalid_type):
                 dns = sf.normalizeDNS(invalid_type)
                 self.assertIsInstance(dns, list)
-
-    def test_sanitise_input(self):
-        """
-        Test sanitiseInput(self, cmd)
-        """
-        sf = SpiderFoot(dict())
-
-        safe = sf.sanitiseInput("example-string")
-        self.assertIsInstance(safe, bool)
-        self.assertTrue(safe)
-
-        safe = sf.sanitiseInput("example-string\n")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("example string")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("-example-string")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("..example-string")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
-
-        safe = sf.sanitiseInput("12")
-        self.assertIsInstance(safe, bool)
-        self.assertFalse(safe)
 
     def test_dictwords_should_return_a_list(self):
         """
@@ -1137,9 +1098,8 @@ class TestSpiderFoot(unittest.TestCase):
 
         invalid_types = [None, "", list()]
         for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                with self.assertRaises(TypeError):
-                    sf.sslDerToPem(invalid_type)
+            with self.subTest(invalid_type=invalid_type), self.assertRaises(TypeError):
+                sf.sslDerToPem(invalid_type)
 
     def test_parse_cert_should_return_a_dict(self):
         """
@@ -1304,7 +1264,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
+                 postData=None, disableContentEncoding=False, sizeLimit=None,
                  headOnly=False, verify=False)
         """
         sf = SpiderFoot(self.default_options)
@@ -1318,7 +1278,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
+                 postData=None, disableContentEncoding=False, sizeLimit=None,
                  headOnly=False, verify=False)
         """
         sf = SpiderFoot(self.default_options)
@@ -1332,7 +1292,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
+                 postData=None, disableContentEncoding=False, sizeLimit=None,
                  headOnly=False, verify=False)
         """
         sf = SpiderFoot(self.default_options)
@@ -1347,7 +1307,7 @@ class TestSpiderFoot(unittest.TestCase):
         """
         Test fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
                  useragent="SpiderFoot", headers=None, noLog=False,
-                 postData=None, dontMangle=False, sizeLimit=None,
+                 postData=None, disableContentEncoding=False, sizeLimit=None,
                  headOnly=False, verify=False)
         """
         sf = SpiderFoot(self.default_options)

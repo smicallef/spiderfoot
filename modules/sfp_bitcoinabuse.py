@@ -20,7 +20,7 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
     meta = {
         "name": "BitcoinAbuse",
         "summary": "Check Bitcoin addresses against the bitcoinabuse.com database of suspect/malicious addresses.",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive", "Investigate"],
         "categories": ["Reputation Systems"],
         "dataSource": {
@@ -86,12 +86,11 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
             return None
 
         try:
-            info = json.loads(res["content"])
+            return json.loads(res["content"])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from BitcoinAbuse: {e}")
-            return None
 
-        return info
+        return None
 
     def handleEvent(self, event):
         eventName = event.eventType
@@ -99,18 +98,18 @@ class sfp_bitcoinabuse(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_bitcoinabuse but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 

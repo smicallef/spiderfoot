@@ -11,14 +11,15 @@
 # -------------------------------------------------------------------------------
 
 import json
-from spiderfoot import SpiderFootPlugin, SpiderFootEvent
+
+from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
 class sfp_c99(SpiderFootPlugin):
     meta = {
         "name": "C99",
         "summary": "Queries the C99 API which offers various data (geo location, proxy detection, phone lookup, etc).",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Footprint", "Passive", "Investigate"],
         "categories": ["Search Engines"],
         "dataSource": {
@@ -167,7 +168,7 @@ class sfp_c99(SpiderFootPlugin):
 
         for subDomainElem in subDomainData:
             if self.checkForStop():
-                return None
+                return
 
             subDomain = subDomainElem.get("subdomain", "").strip()
 
@@ -183,7 +184,7 @@ class sfp_c99(SpiderFootPlugin):
 
         for domainHistoryElem in domainHistoryData:
             if self.checkForStop():
-                return None
+                return
 
             ip = domainHistoryElem.get("ip_address")
 
@@ -229,7 +230,7 @@ class sfp_c99(SpiderFootPlugin):
         if isinstance(domains, list):
             for domain in domains:
                 if self.checkForStop():
-                    return None
+                    return
 
                 domain = domain.strip()
                 if domain:
@@ -323,7 +324,7 @@ class sfp_c99(SpiderFootPlugin):
             found = True
             for ipElem in ips:
                 if self.checkForStop():
-                    return None
+                    return
 
                 evt = SpiderFootEvent(
                     "IP_ADDRESS",
@@ -351,7 +352,7 @@ class sfp_c99(SpiderFootPlugin):
 
     def emitHostname(self, data, event):
         if not self.sf.validHost(data, self.opts['_internettlds']):
-            return None
+            return
 
         if self.opts["verify"] and not self.sf.resolveHost(data):
             self.sf.debug(
@@ -394,19 +395,19 @@ class sfp_c99(SpiderFootPlugin):
 
         # Once we are in this state, return immediately.
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.opts["api_key"] == "":
             self.sf.error("You enabled sfp_c99, but did not set an API key!")
             self.errorState = True
-            return None
+            return
 
         # Don't look up stuff twice
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 

@@ -20,7 +20,7 @@ class sfp_emergingthreats(SpiderFootPlugin):
     meta = {
         'name': "Emerging Threats",
         'summary': "Check if a netblock or IP is malicious according to emergingthreats.net.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -88,12 +88,12 @@ class sfp_emergingthreats(SpiderFootPlugin):
             data = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
 
             if data["code"] != "200":
-                self.sf.error("Unable to fetch %s" % url)
+                self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
             if data["content"] is None:
-                self.sf.error("Unable to fetch %s" % url)
+                self.sf.error(f"Unable to fetch {url}")
                 self.errorState = True
                 return None
 
@@ -105,15 +105,15 @@ class sfp_emergingthreats(SpiderFootPlugin):
             if targetType == "netblock":
                 try:
                     if IPAddress(ip) in IPNetwork(qry):
-                        self.sf.debug("%s found within netblock/subnet %s in emergingthreats.net list." % (ip, qry))
+                        self.sf.debug(f"{ip} found within netblock/subnet {qry} in emergingthreats.net list.")
                         return url
                 except Exception as e:
-                    self.sf.debug("Error encountered parsing: %s" % e)
+                    self.sf.debug(f"Error encountered parsing: {e}")
                     continue
 
             if targetType == "ip":
                 if qry.lower() == ip:
-                    self.sf.debug("%s found in emergingthreats.net list." % qry)
+                    self.sf.debug(f"{qry} found in emergingthreats.net list.")
                     return url
 
         return None
@@ -128,10 +128,10 @@ class sfp_emergingthreats(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -140,30 +140,30 @@ class sfp_emergingthreats(SpiderFootPlugin):
             evtType = 'MALICIOUS_IPADDR'
         elif eventName == 'AFFILIATE_IPADDR':
             if not self.opts.get('checkaffiliates', False):
-                return None
+                return
             targetType = 'ip'
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
         elif eventName == 'NETBLOCK_OWNER':
             if not self.opts.get('checknetblocks', False):
-                return None
+                return
             targetType = 'netblock'
             evtType = 'MALICIOUS_NETBLOCK'
         elif eventName == 'NETBLOCK_MEMBER':
             if not self.opts.get('checksubnets', False):
-                return None
+                return
             targetType = 'netblock'
             evtType = 'MALICIOUS_SUBNET'
         else:
-            return None
+            return
 
-        self.sf.debug("Checking maliciousness of %s with emergingthreats.net" % eventData)
+        self.sf.debug(f"Checking maliciousness of {eventData} with emergingthreats.net")
 
         url = self.query(eventData, targetType)
 
         if not url:
-            return None
+            return
 
-        text = "emergingthreats.net [%s]\n<SFURL>%s</SFURL>" % (eventData, url)
+        text = f"emergingthreats.net [{eventData}]\n<SFURL>{url}</SFURL>"
         evt = SpiderFootEvent(evtType, text, self.__name__, event)
         self.notifyListeners(evt)
 

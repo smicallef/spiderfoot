@@ -21,7 +21,7 @@ class sfp_bgpview(SpiderFootPlugin):
     meta = {
         'name': "BGPView",
         'summary': "Obtain network information from BGPView API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -76,7 +76,7 @@ class sfp_bgpview(SpiderFootPlugin):
             self.sf.debug(f"Error processing JSON response from BGPView: {e}")
             return None
 
-        if not json_data.get('status') == 'ok':
+        if json_data.get('status') != 'ok':
             self.sf.debug("No results found for ASN " + qry)
             return None
 
@@ -104,7 +104,7 @@ class sfp_bgpview(SpiderFootPlugin):
             self.sf.debug(f"Error processing JSON response from BGPView: {e}")
             return None
 
-        if not json_data.get('status') == 'ok':
+        if json_data.get('status') != 'ok':
             self.sf.debug("No results found for IP address " + qry)
             return None
 
@@ -132,7 +132,7 @@ class sfp_bgpview(SpiderFootPlugin):
             self.sf.debug(f"Error processing JSON response from BGPView: {e}")
             return None
 
-        if not json_data.get('status') == 'ok':
+        if json_data.get('status') != 'ok':
             self.sf.debug("No results found for netblock " + qry)
             return None
 
@@ -150,13 +150,13 @@ class sfp_bgpview(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -165,7 +165,7 @@ class sfp_bgpview(SpiderFootPlugin):
 
             if not data:
                 self.sf.info("No results found for ASN " + eventData)
-                return None
+                return
 
             e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(e)
@@ -173,7 +173,7 @@ class sfp_bgpview(SpiderFootPlugin):
             address = data.get('owner_address')
 
             if not address:
-                return None
+                return
 
             evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join([_f for _f in address if _f]), self.__name__, event)
             self.notifyListeners(evt)
@@ -183,7 +183,7 @@ class sfp_bgpview(SpiderFootPlugin):
 
             if not data:
                 self.sf.info("No results found for netblock " + eventData)
-                return None
+                return
 
             e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(e)
@@ -191,7 +191,7 @@ class sfp_bgpview(SpiderFootPlugin):
             address = data.get('owner_address')
 
             if not address:
-                return None
+                return
 
             evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join([_f for _f in address if _f]), self.__name__, event)
             self.notifyListeners(evt)
@@ -201,7 +201,7 @@ class sfp_bgpview(SpiderFootPlugin):
 
             if not data:
                 self.sf.info("No results found for IP address " + eventData)
-                return None
+                return
 
             e = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(e)
@@ -210,7 +210,7 @@ class sfp_bgpview(SpiderFootPlugin):
 
             if not prefixes:
                 self.sf.info("No prefixes found for IP address " + eventData)
-                return None
+                return
 
             for prefix in prefixes:
                 p = prefix.get('prefix')

@@ -24,7 +24,7 @@ class sfp_searchcode(SpiderFootPlugin):
     meta = {
         'name': "searchcode",
         'summary': "Search searchcode for code repositories mentioning the target domain.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -128,8 +128,8 @@ class sfp_searchcode(SpiderFootPlugin):
         self.results[eventData] = True
 
         max_pages = int(self.opts['max_pages'])
-        page = 1
-        while page <= max_pages:
+        page = 0
+        while page < max_pages:
             if self.checkForStop():
                 return
 
@@ -167,11 +167,12 @@ class sfp_searchcode(SpiderFootPlugin):
 
             links = set()
             for result in results:
-                if 'lines' in result:
-                    for line in result['lines']:
-                        links.update(self.sf.extractUrls(result['lines'][line]))
+                lines = result.get('lines')
+                if lines:
+                    for line in lines:
+                        links.update(self.sf.extractUrls(lines[line]))
 
-            for link in list(links):
+            for link in links:
                 if link in self.results:
                     continue
 

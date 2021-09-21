@@ -99,7 +99,7 @@ class sfp_snov(SpiderFootPlugin):
             useragent=self.opts['_useragent']
         )
 
-        if not res['code'] == '200':
+        if res['code'] != '200':
             self.sf.error("No access token received from snov.io for the provided Client ID and/or Client Secret")
             self.errorState = True
             return None
@@ -138,7 +138,7 @@ class sfp_snov(SpiderFootPlugin):
             timeout=30,
             useragent=self.opts['_useragent']
         )
-        if not res['code'] == '200':
+        if res['code'] != '200':
             self.sf.debug("Could not fetch email addresses")
             return None
 

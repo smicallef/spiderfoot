@@ -12,24 +12,22 @@
     <script type='text/javascript' src='${docroot}/static/js/viz.js'></script>
 
     <link href="${docroot}/static/css/spiderfoot.css" rel="stylesheet">
-    <link href="${docroot}/static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="${docroot}/static/css/alertify.min.css" rel="stylesheet">
+    <link href="${docroot}/static/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="${docroot}/static/node_modules/tablesorter/dist/css/jquery.tablesorter.pager.min.css" rel="stylesheet">
+    <link href="${docroot}/static/node_modules/alertifyjs/build/css/alertify.min.css" rel="stylesheet">
 
     <script>
-
-        // Executes the fastes and preloads the stylesheet before the body loads
-        var head = document.getElementsByTagName('HEAD')[0]; 
+        // Load themes before the page body loads
+        var head = document.getElementsByTagName('HEAD')[0];
         var link = document.createElement('link');
-  
-        // set the attributes for link element 
-        link.rel = 'stylesheet'; 
+        link.rel = 'stylesheet';
         link.type = 'text/css';
-      
         if (localStorage.getItem("theme") === "dark-theme") {
-            link.href = "${docroot}/static/css/dark.css"; 
+            link.href = "${docroot}/static/css/dark.css";
+        } else {
+            link.href = "${docroot}/static/node_modules/tablesorter/dist/css/theme.default.min.css";
         }
-        
-        head.appendChild(link); 
+        head.appendChild(link);
     </script>
   </head>
 
@@ -56,18 +54,18 @@
     class="active"
 % endif
 class="nav-item"
-><a href="${docroot}/newscan"><i class="glyphicon glyphicon-screenshot"></i>&nbsp;New Scan</a></li>
+><a id="nav-link-newscan" href="${docroot}/newscan"><i class="glyphicon glyphicon-screenshot"></i>&nbsp;New Scan</a></li>
         <li 
 % if pageid == "SCANLIST": 
     class="active"
 % endif
 class="nav-item"
-><a href="${docroot}/"><i class="glyphicon glyphicon-list"></i>&nbsp;Scans</a></li>
+><a id="nav-link-scans" href="${docroot}/"><i class="glyphicon glyphicon-list"></i>&nbsp;Scans</a></li>
         <li
 % if pageid == "SETTINGS":
     class="active"
 %endif
-class="nav-item"><a href="${docroot}/opts" class="nav-link"><i class="glyphicon glyphicon-wrench"></i>&nbsp;Settings</a></li>
+class="nav-item"><a id="nav-link-settings" href="${docroot}/opts" class="nav-link"><i class="glyphicon glyphicon-wrench"></i>&nbsp;Settings</a></li>
  
       </ul>
 
@@ -118,13 +116,13 @@ class="nav-item"><a href="${docroot}/opts" class="nav-link"><i class="glyphicon 
 
     <!-- Placed at the end of the document so the pages load faster -->
     <script>var docroot = '${docroot}';</script>
-    <script src="${docroot}/static/js/jquery.min.js"></script>
-    <script src="${docroot}/static/js/bootstrap.min.js"></script>
-    <script src="${docroot}/static/js/alertify.min.js"></script>
-    <script src="${docroot}/static/js/jquery.tablesorter.min.js"></script>
-    <script src='${docroot}/static/js/jquery.tablesorter.pager.min.js'></script>
-    <script src="${docroot}/static/js/d3.min.js"></script>
+    <script src="${docroot}/static/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="${docroot}/static/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="${docroot}/static/node_modules/alertifyjs/build/alertify.min.js"></script>
+    <script src="${docroot}/static/node_modules/tablesorter/dist/js/jquery.tablesorter.min.js"></script>
+    <script src='${docroot}/static/node_modules/tablesorter/dist/js/extras/jquery.tablesorter.pager.min.js'></script>
+    <script src="${docroot}/static/node_modules/d3/d3.min.js"></script>
     <script type='text/javascript' hash="sha256-0kTZzWMEh3cdgCMVytlY1E8rg7oO13eyLa+kvyAhRmo=">sf.updateTooltips();</script>
 
-    <div class="container" id="mainbody">
+    <div class="container" id="mainbody" style='padding-bottom: 50px'>
 

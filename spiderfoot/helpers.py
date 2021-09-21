@@ -1,16 +1,62 @@
 import json
+import os
+import os.path
 import random
 import re
 import uuid
-from networkx import nx
+
+import networkx as nx
 from networkx.readwrite.gexf import GEXFWriter
+from pathlib import Path
 
 
 class SpiderFootHelpers():
     """SpiderFoot helper functions."""
 
     @staticmethod
-    def targetTypeFromString(target):
+    def dataPath() -> str:
+        """Returns the file system location of SpiderFoot data and configuration files.
+
+        Returns:
+            str: SpiderFoot data file system path
+        """
+        path = os.environ.get('SPIDERFOOT_DATA')
+        if not path:
+            path = f"{Path.home()}/.spiderfoot/"
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
+        return path
+
+    @staticmethod
+    def cachePath() -> str:
+        """Returns the file system location of the cacha data files.
+
+        Returns:
+            str: SpiderFoot cache file system path
+        """
+        path = os.environ.get('SPIDERFOOT_CACHE')
+        if not path:
+            path = f"{Path.home()}/.spiderfoot/cache"
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
+        return path
+
+    @staticmethod
+    def logPath() -> str:
+        """Returns the file system location of SpiderFoot log files.
+
+        Returns:
+            str: SpiderFoot data file system path
+        """
+        path = os.environ.get('SPIDERFOOT_LOGS')
+        if not path:
+            path = f"{Path.home()}/.spiderfoot/logs"
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
+        return path
+
+    @staticmethod
+    def targetTypeFromString(target: str) -> None:
         """Return the scan target seed data type for the specified scan target input.
 
         Args:
@@ -45,24 +91,18 @@ class SpiderFootHelpers():
         return None
 
     @staticmethod
-    def buildGraphGexf(root, title, data, flt=[]):
-        """Convert supplied raw data into GEXF format (e.g. for Gephi)
-
-        GEXF produced by PyGEXF doesn't work with SigmaJS because
-        SJS needs coordinates for each node.
-        flt is a list of event types to include, if not set everything is
-        included.
+    def buildGraphGexf(root: str, title: str, data: list, flt: list = []) -> str:
+        """Convert supplied raw data into GEXF (Graph Exchange XML Format) format (e.g. for Gephi).
 
         Args:
             root (str): TBD
             title (str): unused
-            data (list): scan result as list
-            flt (list): TBD
+            data (list): Scan result as list
+            flt (list): List of event types to include. If not set everything is included.
 
         Returns:
-            str: TBD
+            str: GEXF formatted XML
         """
-
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
         graph = nx.Graph()
 
@@ -70,25 +110,31 @@ class SpiderFootHelpers():
         ncounter = 0
         for pair in mapping:
             (dst, src) = pair
-            col = ["0", "0", "0"]
 
             # Leave out this special case
             if dst == "ROOT" or src == "ROOT":
                 continue
 
+            color = {
+                'r': 0,
+                'g': 0,
+                'b': 0
+            }
+
             if dst not in nodelist:
                 ncounter = ncounter + 1
                 if dst in root:
-                    col = ["255", "0", "0"]
-                graph.node[dst]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
+                    color['r'] = 255
+                graph.add_node(dst)
+                graph.nodes[dst]['viz'] = {'color': color}
                 nodelist[dst] = ncounter
 
             if src not in nodelist:
                 ncounter = ncounter + 1
                 if src in root:
-                    col = ["255", "0", "0"]
+                    color['r'] = 255
                 graph.add_node(src)
-                graph.node[src]['viz'] = {'color': {'r': col[0], 'g': col[1], 'b': col[2]}}
+                graph.nodes[src]['viz'] = {'color': color}
                 nodelist[src] = ncounter
 
             graph.add_edge(src, dst)
@@ -97,18 +143,17 @@ class SpiderFootHelpers():
         return str(gexf).encode('utf-8')
 
     @staticmethod
-    def buildGraphJson(root, data, flt=[]):
+    def buildGraphJson(root: str, data: list, flt: list = []) -> str:
         """Convert supplied raw data into JSON format for SigmaJS.
 
         Args:
             root (str): TBD
-            data (list): scan result as list
-            flt (list): TBD
+            data (list): Scan result as list
+            flt (list): List of event types to include. If not set everything is included.
 
         Returns:
             str: TBD
         """
-
         mapping = SpiderFootHelpers.buildGraphData(data, flt)
         ret = dict()
         ret['nodes'] = list()
@@ -170,25 +215,28 @@ class SpiderFootHelpers():
         return json.dumps(ret)
 
     @staticmethod
-    def buildGraphData(data, flt=list()):
+    def buildGraphData(data: list, flt: list = []) -> set:
         """Return a format-agnostic collection of tuples to use as the
         basis for building graphs in various formats.
 
         Args:
             data (list): Scan result as list
-            flt (list): TBD
+            flt (list): List of event types to include. If not set everything is included.
 
         Returns:
             set: TBD
+
+        Raises:
+            ValueError: data value was invalid
+            TypeError: data type was invalid
         """
+        if not isinstance(data, list):
+            raise TypeError(f"data is {type(data)}; expected list()")
+
         if not data:
-            return set()
+            raise ValueError("data is empty")
 
-        mapping = set()
-        entities = dict()
-        parents = dict()
-
-        def get_next_parent_entities(item, pids):
+        def get_next_parent_entities(item: str, pids: list) -> list:
             ret = list()
 
             for [parent, entity_id] in parents[item]:
@@ -202,10 +250,13 @@ class SpiderFootHelpers():
                         ret.append(p)
             return ret
 
+        mapping = set()
+        entities = dict()
+        parents = dict()
+
         for row in data:
             if len(row) != 15:
-                # TODO: print error
-                continue
+                raise ValueError(f"data row length is {len(row)}; expected 15")
 
             if row[11] == "ENTITY" or row[11] == "INTERNAL":
                 # List of all valid entity values
@@ -236,7 +287,7 @@ class SpiderFootHelpers():
         return mapping
 
     @staticmethod
-    def dataParentChildToTree(data):
+    def dataParentChildToTree(data: dict) -> dict:
         """Converts a dictionary of k -> array to a nested
         tree that can be digested by d3 for visualizations.
 
@@ -245,13 +296,18 @@ class SpiderFootHelpers():
 
         Returns:
             dict: nested tree
+
+        Raises:
+            ValueError: data value was invalid
+            TypeError: data type was invalid
         """
-
         if not isinstance(data, dict):
-            # TODO: print error
-            return {}
+            raise TypeError(f"data is {type(data)}; expected dict()")
 
-        def get_children(needle, haystack):
+        if not data:
+            raise ValueError("data is empty")
+
+        def get_children(needle: str, haystack: dict) -> list:
             ret = list()
 
             if needle not in list(haystack.keys()):
@@ -288,7 +344,7 @@ class SpiderFootHelpers():
         return {"name": root, "children": get_children(root, data)}
 
     @staticmethod
-    def validLEI(lei):
+    def validLEI(lei: str) -> bool:
         """Check if the provided string is a valid Legal Entity Identifier (LEI).
 
         Args:
@@ -310,17 +366,16 @@ class SpiderFootHelpers():
         return True
 
     @staticmethod
-    def genScanInstanceId():
+    def genScanInstanceId() -> str:
         """Generate an globally unique ID for this scan.
 
         Returns:
             str: scan instance unique ID
         """
-
         return str(uuid.uuid4()).split("-")[0].upper()
 
     @staticmethod
-    def parseRobotsTxt(robotsTxtData):
+    def parseRobotsTxt(robotsTxtData: str) -> list:
         """Parse the contents of robots.txt.
 
         Args:
@@ -334,7 +389,6 @@ class SpiderFootHelpers():
 
             Fix whitespace parsing; ie, " " is not a valid disallowed path
         """
-
         returnArr = list()
 
         if not isinstance(robotsTxtData, str):
@@ -347,3 +401,31 @@ class SpiderFootHelpers():
                     returnArr.append(m.group(1))
 
         return returnArr
+
+    @staticmethod
+    def sanitiseInput(cmd: str) -> bool:
+        """Verify input command is safe to execute
+
+        Args:
+            cmd (str): The command to check
+
+        Returns:
+            bool: command is "safe"
+        """
+        chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.']
+        for c in cmd:
+            if c.lower() not in chars:
+                return False
+
+        if '..' in cmd:
+            return False
+
+        if cmd.startswith("-"):
+            return False
+
+        if len(cmd) < 3:
+            return False
+
+        return True

@@ -134,18 +134,17 @@
             <tr>
               <td>${optdescs.get(opt) or "No description available."}
                 % if "api_key" in opt:
-                    <%
-                        import re
-                        if apiKeyInstructions:
-                            n = 0
+                    % if apiKeyInstructions:
+                        <%
+                            import re
                             instructions = ""
                             for step in apiKeyInstructions:
-                                n += 1
                                 if "https://" in step or "http://" in step:
-                                    step = re.sub(r'.*(https?://.[^ ]+).*', '<a target=_new href=\'\\1\'>\\1</a>', step)
-                                instructions += str(n) + ". " + step + "<br>"
-                    %>
-                    &nbsp;&nbsp;<a href='#' data-html="true" data-toggle="popover" data-trigger="focus" title="Instructions" data-content="${instructions}"><i class="glyphicon glyphicon-question-sign"></i></a>
+                                    step = re.sub(r'(https?://.[^ ]+)', '<a target=_new href=\'\\1\'>\\1</a>', step)
+                                instructions += f"<li>{step}</li>"
+                        %>
+                        &nbsp;&nbsp;<a href='#' data-html="true" data-toggle="popover" data-trigger="focus" title="Instructions" data-content="<ol>${instructions}</ol>"><i class="glyphicon glyphicon-question-sign"></i></a>
+                    % endif
                 % endif
               </td>
               <td style='vertical-align: middle'>

@@ -121,12 +121,11 @@ class sfp_leakix(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -142,10 +141,10 @@ class sfp_leakix(SpiderFootPlugin):
         locs = list()
 
         if self.errorState:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -161,7 +160,7 @@ class sfp_leakix(SpiderFootPlugin):
 
             if data is None:
                 self.sf.debug("No information found for host " + eventData)
-                return None
+                return
 
             evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
             self.notifyListeners(evt)

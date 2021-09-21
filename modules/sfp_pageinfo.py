@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # Name:         sfp_pageinfo
-# Purpose:      SpiderFoot plug-in for scanning retreived content by other
+# Purpose:      SpiderFoot plug-in for scanning retrieved content by other
 #               modules (such as sfp_spider) and building up information about
 #               the page, such as whether it uses Javascript, has forms, and more.
 #
@@ -33,7 +33,7 @@ class sfp_pageinfo(SpiderFootPlugin):
     meta = {
         'name': "Page Information",
         'summary': "Obtain information about web pages (do they take passwords, do they contain forms, etc.)",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Content Analysis"]
     }
@@ -131,7 +131,7 @@ class sfp_pageinfo(SpiderFootPlugin):
                     continue
                 if self.getTarget().matches(self.sf.urlFQDN(match)):
                     continue
-                self.sf.debug("Externally hosted JavaScript found at: %s" % match)
+                self.sf.debug(f"Externally hosted JavaScript found at: {match}")
                 evt = SpiderFootEvent("PROVIDER_JAVASCRIPT", match, self.__name__, event)
                 self.notifyListeners(evt)
 

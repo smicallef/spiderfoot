@@ -25,7 +25,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
     meta = {
         'name': "Open Passive DNS Database",
         'summary': "Obtain passive DNS information from pdns.daloo.de Open passive DNS database.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         'dataSource': {
@@ -93,7 +93,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
             self.sf.debug("No results found for " + qry)
             return None
 
-        rows = re.findall(r'<tr>(.+?)</tr>', res['content'], re.DOTALL)
+        rows = re.findall(r'<tr>(.+?)</tr>', str(res['content']), re.DOTALL)
 
         if not rows:
             self.sf.debug("No passive DNS results for " + qry)
@@ -125,15 +125,15 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         if srcModuleName == "sfp_open_passive_dns_database":
             self.sf.debug("Ignoring " + eventName + ", from self.")
-            return None
+            return
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -143,16 +143,16 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
 
         if data is None or len(data) == 0:
             self.sf.info("No passive DNS data found for " + eventData)
-            return None
+            return
 
         domains = list()
 
         for record in data:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
-                return None
+                return
 
             # first_seen = record[0]
             # last_seen = record[1]
@@ -226,7 +226,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
 
         for domain in set(domains):
             if self.checkForStop():
-                return None
+                return
 
             if domain in self.results:
                 continue

@@ -23,7 +23,7 @@ class sfp_crossref(SpiderFootPlugin):
     meta = {
         'name': "Cross-Referencer",
         'summary': "Identify whether other domains are associated ('Affiliates') of the target by looking for links back to the target site(s).",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint"],
         'categories': ["Crawling and Scanning"]
     }
@@ -73,14 +73,14 @@ class sfp_crossref(SpiderFootPlugin):
         elif 'URL' in eventName:
             url = eventData
         else:
-            return None
+            return
 
         fqdn = self.sf.urlFQDN(url)
 
         # We are only interested in external sites for the crossref
         if self.getTarget().matches(fqdn):
             self.sf.debug(f"Ignoring {url} as not external")
-            return None
+            return
 
         if eventData in self.fetched:
             self.sf.debug(f"Ignoring {url} as already tested")
@@ -88,7 +88,7 @@ class sfp_crossref(SpiderFootPlugin):
 
         if not self.sf.resolveHost(fqdn):
             self.sf.debug(f"Ignoring {url} as {fqdn} does not resolve")
-            return None
+            return
 
         self.fetched[url] = True
 
@@ -104,7 +104,7 @@ class sfp_crossref(SpiderFootPlugin):
 
         if res['content'] is None:
             self.sf.debug(f"Ignoring {url} as no data returned")
-            return None
+            return
 
         matched = False
         for name in self.getTarget().getNames():
@@ -113,7 +113,7 @@ class sfp_crossref(SpiderFootPlugin):
                 r"([\.\'\/\"\ ]" + re.escape(name) + r"[\.\'\/\"\ ])",
                 re.IGNORECASE
             )
-            matches = re.findall(pat, res['content'])
+            matches = re.findall(pat, str(res['content']))
 
             if len(matches) > 0:
                 matched = True
@@ -126,7 +126,7 @@ class sfp_crossref(SpiderFootPlugin):
                 # Check the base url to see if there is an affiliation
                 url = self.sf.urlBaseUrl(eventData)
                 if url in self.fetched:
-                    return None
+                    return
 
                 self.fetched[url] = True
 
@@ -144,14 +144,14 @@ class sfp_crossref(SpiderFootPlugin):
                             r"([\.\'\/\"\ ]" + re.escape(name) + r"[\'\/\"\ ])",
                             re.IGNORECASE
                         )
-                        matches = re.findall(pat, res['content'])
+                        matches = re.findall(pat, str(res['content']))
 
                         if len(matches) > 0:
                             matched = True
                             break
 
         if not matched:
-            return None
+            return
 
         if not event.moduleDataSource:
             event.moduleDataSource = "Unknown"

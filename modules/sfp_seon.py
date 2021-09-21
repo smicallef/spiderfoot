@@ -28,7 +28,13 @@ class sfp_seon(SpiderFootPlugin):
             'website': "https://seon.io/",
             'model': "COMMERCIAL_ONLY",
             'references': [
-                "https://developers.seon.io/"
+                "https://docs.seon.io/api-reference",
+            ],
+            'apiKeyInstructions': [
+                "Visit https://seon.io/",
+                "Register an account",
+                "Visit https://docs.seon.io/api-reference",
+                "Your API key is listed under 'License key'",
             ],
             'favIcon': "https://seon.io/assets/favicons/favicon-16x16.png",
             'logo': "https://seon.io/assets/favicons/apple-touch-icon-152.png",
@@ -90,7 +96,7 @@ class sfp_seon(SpiderFootPlugin):
         ]
 
     def query(self, qry, eventName):
-        if eventName == "IP_ADDRESS" or eventName == "IPV6_ADDRESS":
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             queryString = f"https://api.seon.io/SeonRestService/ip-api/v1.0/{qry}"
         elif eventName == "EMAILADDR":
             queryString = f"https://api.seon.io/SeonRestService/email-api/v2.0/{qry}"
@@ -132,7 +138,7 @@ class sfp_seon(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if self.errorState:
-            return None
+            return
 
         if self.opts['api_key'] == "":
             self.sf.error("You enabled sfp_seon but did not set an API key!")
@@ -141,15 +147,15 @@ class sfp_seon(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         dataFound = False
-        if eventName == "IP_ADDRESS" or eventName == "IPV6_ADDRESS":
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             data = self.query(eventData, eventName)
             if data is None:
-                return None
+                return
 
             resultSet = data.get('data')
             if resultSet:
@@ -199,7 +205,7 @@ class sfp_seon(SpiderFootPlugin):
         elif eventName == "EMAILADDR":
             data = self.query(eventData, eventName)
             if data is None:
-                return None
+                return
 
             resultSet = data.get('data')
             if resultSet:
@@ -261,7 +267,7 @@ class sfp_seon(SpiderFootPlugin):
         elif eventName == "PHONE_NUMBER":
             data = self.query(eventData, eventName)
             if data is None:
-                return None
+                return
 
             resultSet = data.get('data')
             if resultSet:

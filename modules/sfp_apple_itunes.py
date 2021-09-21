@@ -24,7 +24,7 @@ class sfp_apple_itunes(SpiderFootPlugin):
     meta = {
         'name': "Apple iTunes",
         'summary': "Search Apple iTunes for mobile apps.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {

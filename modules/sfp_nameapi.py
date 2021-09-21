@@ -12,6 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
+
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -107,7 +108,7 @@ class sfp_nameapi(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API key!"
             )
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 

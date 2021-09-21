@@ -22,7 +22,7 @@ class sfp_crt(SpiderFootPlugin):
     meta = {
         'name': "Certificate Transparency",
         'summary': "Gather hostnames from historical certificates in crt.sh.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {
@@ -41,10 +41,12 @@ class sfp_crt(SpiderFootPlugin):
 
     opts = {
         'verify': True,
+        'fetchcerts': True,
     }
 
     optdescs = {
-        'verify': 'Verify certificate subject alternative names resolve.'
+        'verify': 'Verify certificate subject alternative names resolve.',
+        'fetchcerts': 'Fetch each certificate found, for processing by other modules.',
     }
 
     results = None
@@ -78,7 +80,7 @@ class sfp_crt(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -95,16 +97,15 @@ class sfp_crt(SpiderFootPlugin):
 
         if res['content'] is None:
             self.sf.info("No certificate transparency info found for " + eventData)
-            return None
+            return
 
         try:
             data = json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
 
         if data is None or len(data) == 0:
-            return None
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)
@@ -121,7 +122,8 @@ class sfp_crt(SpiderFootPlugin):
                     continue
                 self.cert_ids[cert_id] = True
 
-            fetch_certs.append(cert_id)
+            if self.opts['fetchcerts']:
+                fetch_certs.append(cert_id)
 
             domain = cert_info.get('name_value')
             if '\n' in domain:
@@ -164,7 +166,7 @@ class sfp_crt(SpiderFootPlugin):
 
         for cert_id in fetch_certs:
             if self.checkForStop():
-                return None
+                return
 
             params = {
                 'd': str(cert_id)

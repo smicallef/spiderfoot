@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "alertifyjs": "^1.13.1",
+    "bootstrap": "^3.4.1",
+    "d3": "^3.5.17",
+    "jquery": "^3.6.0",
+    "sigma": "^1.2.1",
+    "tablesorter": "^2.31.3"
+  }
+}

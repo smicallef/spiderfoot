@@ -12,16 +12,16 @@
 
 import json
 import re
+import time
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
-import time
 
 
 class sfp_dnsdb(SpiderFootPlugin):
     meta = {
         "name": "DNSDB",
         "summary": "Query FarSight's DNSDB for historical and passive DNS data.",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive", "Footprint", "Investigate"],
         "categories": ["Passive DNS"],
         "dataSource": {

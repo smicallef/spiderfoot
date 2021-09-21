@@ -37,7 +37,7 @@ class sfp_bambenek(SpiderFootPlugin):
     meta = {
         'name': "Bambenek C&C List",
         'summary': "Check if a host/domain or IP appears on Bambenek Consulting's C&C tracker lists.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -112,7 +112,7 @@ class sfp_bambenek(SpiderFootPlugin):
                 "MALICIOUS_SUBNET", "MALICIOUS_COHOST", "MALICIOUS_NETBLOCK"]
 
     # Look up 'list' type resources
-    def resourceList(self, id, target, targetType):
+    def resourceList(self, replaceme_id, target, targetType):
         targetDom = ''
         # Get the base domain if we're supplied a domain
         if targetType == "domain":
@@ -122,7 +122,7 @@ class sfp_bambenek(SpiderFootPlugin):
 
         for check in list(malchecks.keys()):
             cid = malchecks[check]['id']
-            if id == cid:
+            if replaceme_id == cid:
                 data = dict()
                 url = malchecks[check]['url']
                 data['content'] = self.sf.cacheGet("sfmal_" + cid, self.opts.get('cacheperiod', 0))

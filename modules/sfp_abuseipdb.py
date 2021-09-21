@@ -151,6 +151,9 @@ class sfp_abuseipdb(SpiderFootPlugin):
         """
         ips = list()
 
+        if not blacklist:
+            return ips()
+
         for ip in blacklist.split('\n'):
             ip = ip.strip()
             if ip.startswith('#'):

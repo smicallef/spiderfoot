@@ -12,6 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import json
+
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -20,7 +21,7 @@ class sfp_trumail(SpiderFootPlugin):
     meta = {
         'name': "Trumail",
         'summary': "Check whether an email is disposable",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {

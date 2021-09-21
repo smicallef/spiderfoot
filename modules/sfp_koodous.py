@@ -25,7 +25,7 @@ class sfp_koodous(SpiderFootPlugin):
     meta = {
         'name': "Koodous",
         'summary': "Search Koodous for mobile apps.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Footprint", "Passive"],
         'categories': ["Search Engines"],
         'dataSource': {

@@ -19,7 +19,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
     meta = {
         'name': "Open Bug Bounty",
         'summary': "Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
@@ -69,9 +69,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        ret = ["VULNERABILITY"]
-
-        return ret
+        return ["VULNERABILITY"]
 
     # Query XSSposed.org
     def queryOBB(self, qry):
@@ -86,7 +84,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 
         try:
             rx = re.compile(".*<div class=.cell1.><a href=.(.*).>(.*" + qry + ").*?</a></div>.*", re.IGNORECASE)
-            for m in rx.findall(res['content']):
+            for m in rx.findall(str(res['content'])):
                 # Report it
                 if m[1] == qry or m[1].endswith("." + qry):
                     ret.append("From openbugbounty.org: <SFURL>" + base + m[0] + "</SFURL>")
@@ -106,7 +104,7 @@ class sfp_openbugbounty(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 

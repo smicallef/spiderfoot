@@ -20,7 +20,7 @@ class sfp_textmagic(SpiderFootPlugin):
     meta = {
         "name": "TextMagic",
         "summary": "Obtain phone number type from TextMagic API",
-        "flags": ["apikey"],
+        'flags': ["apikey"],
         "useCases": ["Passive"],
         "categories": ["Search Engines"],
         "dataSource": {
@@ -122,7 +122,7 @@ class sfp_textmagic(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
@@ -131,7 +131,7 @@ class sfp_textmagic(SpiderFootPlugin):
                 f"You enabled {self.__class__.__name__} but did not set an API Username/Key!"
             )
             self.errorState = True
-            return None
+            return
 
         self.results[eventData] = True
 

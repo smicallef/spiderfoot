@@ -12,6 +12,7 @@
 import json
 import time
 import urllib
+
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -28,6 +29,12 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
             'model': "FREE_AUTH_LIMITED",
             'references': [
                 "https://buckets.grayhatwarfare.com/docs/api/v1"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://grayhatwarfare.com/register",
+                "Register an account",
+                "Visit https://grayhatwarfare.com/account/settings",
+                "Your API key is listed under 'Api Key'",
             ],
             'favIcon': "https://buckets.grayhatwarfare.com/assets/template/images/favicon.png",
             'logo': "https://buckets.grayhatwarfare.com/assets/images/logo/logo-sm.png",
@@ -120,10 +127,10 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -144,7 +151,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
         while currentPage < maxPages:
             currentIndex = currentPage * perPage
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
                 break
@@ -152,7 +159,7 @@ class sfp_grayhatwarfare(SpiderFootPlugin):
             data = self.query(keyword=keyword, start=currentIndex)
 
             if not data:
-                return None
+                return
 
             for row in data.get('buckets'):
                 bucketName = row.get('bucket')

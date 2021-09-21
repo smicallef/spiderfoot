@@ -180,7 +180,9 @@ class SpiderFootDb:
         ['MALICIOUS_PHONE_NUMBER', 'Malicious Phone Number', 0, 'DESCRIPTOR'],
         ['MALICIOUS_SUBNET', 'Malicious IP on Same Subnet', 0, 'DESCRIPTOR'],
         ['NETBLOCK_OWNER', 'Netblock Ownership', 0, 'ENTITY'],
+        ['NETBLOCKV6_OWNER', 'Netblock IPv6 Ownership', 0, 'ENTITY'],
         ['NETBLOCK_MEMBER', 'Netblock Membership', 0, 'ENTITY'],
+        ['NETBLOCKV6_MEMBER', 'Netblock IPv6 Membership', 0, 'ENTITY'],
         ['NETBLOCK_WHOIS', 'Netblock Whois', 1, 'DATA'],
         ['OPERATING_SYSTEM', 'Operating System', 0, 'DESCRIPTOR'],
         ['LEAKSITE_URL', 'Leak Site URL', 0, 'ENTITY'],
@@ -507,12 +509,11 @@ class SpiderFootDb:
                 ))
                 self.conn.commit()
             except sqlite3.Error as e:
-                if "locked" in e.args[0] or "thread" in e.args[0]:
-                    # print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
-                    # log.critical(f"Unable to log event in DB due to lock: {e.args[0]}")
-                    pass
-                else:
+                if "locked" not in e.args[0] and "thread" not in e.args[0]:
                     raise IOError(f"Unable to log scan event in DB: {e.args[0]}")
+                # print("[warning] Couldn't log due to SQLite limitations. You can probably ignore this.")
+                # log.critical(f"Unable to log event in DB due to lock: {e.args[0]}")
+                pass
 
     def scanInstanceCreate(self, instanceId, scanName, scanTarget):
         """Store a scan instance in the database.
@@ -1000,11 +1001,11 @@ class SpiderFootDb:
             except sqlite3.Error as e:
                 raise IOError(f"Unable to clear configuration from the database: {e.args[0]}")
 
-    def scanConfigSet(self, id, optMap=dict()):
+    def scanConfigSet(self, scan_id, optMap=dict()):
         """Store a configuration value for a scan.
 
         Args:
-            id (int): scan instance ID
+            scan_id (int): scan instance ID
             optMap (dict): config options
 
         Raises:
@@ -1026,10 +1027,10 @@ class SpiderFootDb:
                 # Module option
                 if ":" in opt:
                     parts = opt.split(':')
-                    qvals = [id, parts[0], parts[1], optMap[opt]]
+                    qvals = [scan_id, parts[0], parts[1], optMap[opt]]
                 else:
                     # Global option
-                    qvals = [id, "GLOBAL", opt, optMap[opt]]
+                    qvals = [scan_id, "GLOBAL", opt, optMap[opt]]
 
                 try:
                     self.dbh.execute(qry, qvals)

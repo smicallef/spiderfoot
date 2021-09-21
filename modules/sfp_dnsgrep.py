@@ -27,7 +27,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
     meta = {
         'name': "DNSGrep",
         'summary': "Obtain Passive DNS information from Rapid7 Sonar Project using DNSGrep API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         'dataSource': {
@@ -100,12 +100,11 @@ class sfp_dnsgrep(SpiderFootPlugin):
             return None
 
         try:
-            data = json.loads(res['content'])
+            return json.loads(res['content'])
         except Exception as e:
             self.sf.error(f"Error processing JSON response from DNSGrep: {e}")
-            return None
 
-        return data
+        return None
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -114,7 +113,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
         self.results[eventData] = True
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
@@ -123,7 +122,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
 
         if data is None:
             self.sf.info("No DNS records found for " + eventData)
-            return None
+            return
 
         evt = SpiderFootEvent('RAW_RIR_DATA', str(data), self.__name__, event)
         self.notifyListeners(evt)

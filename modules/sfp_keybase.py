@@ -25,7 +25,7 @@ class sfp_keybase(SpiderFootPlugin):
     meta = {
         'name': "Keybase",
         'summary': "Obtain additional information about target username",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
         'dataSource': {
@@ -89,7 +89,7 @@ class sfp_keybase(SpiderFootPlugin):
 
         # In this case, it will always be 200 if keybase is queried
         # The actual response codes are stored in status tag of the response
-        if not res['code'] == '200':
+        if res['code'] != '200':
             return None
 
         content = json.loads(res['content'])
@@ -103,7 +103,7 @@ class sfp_keybase(SpiderFootPlugin):
             return None
 
         try:
-            if not int(code) == 0:
+            if int(code) != 0:
                 return None
         except Exception:
             self.sf.error("Invalid code returned as response")
@@ -118,13 +118,13 @@ class sfp_keybase(SpiderFootPlugin):
         eventData = event.data
 
         if self.errorState:
-            return None
+            return
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -137,13 +137,13 @@ class sfp_keybase(SpiderFootPlugin):
 
             if len(links) == 0:
                 self.sf.debug("Not a keybase link")
-                return None
+                return
 
             userName = links[0].split("/")[3]
 
             if userName in self.results:
                 self.sf.debug(f"Skipping {userName}, already checked.")
-                return None
+                return
 
             self.results[userName] = True
 
@@ -151,7 +151,7 @@ class sfp_keybase(SpiderFootPlugin):
 
         if content is None:
             self.sf.debug("No data found for username")
-            return None
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(content), self.__name__, event)
         self.notifyListeners(evt)
@@ -169,7 +169,7 @@ class sfp_keybase(SpiderFootPlugin):
 
         if them is None:
             self.sf.debug("No data found for username")
-            return None
+            return
 
         # Basic information about the username
         basics = them.get('basics')
@@ -180,9 +180,9 @@ class sfp_keybase(SpiderFootPlugin):
         # Failsafe to prevent reporting any wrongly received data
         if basics:
             responseUserName = basics.get('username')
-            if not userName == responseUserName:
+            if userName != responseUserName:
                 self.sf.error("Username does not match received response, skipping")
-                return None
+                return
 
         if profile:
             # Get and report full name of user

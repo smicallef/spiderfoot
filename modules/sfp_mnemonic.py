@@ -25,7 +25,7 @@ class sfp_mnemonic(SpiderFootPlugin):
     meta = {
         'name': "Mnemonic PassiveDNS",
         'summary': "Obtain Passive DNS information from PassiveDNS.mnemonic.no.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Passive DNS"],
         'dataSource': {

@@ -11,10 +11,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-import urllib
 import json
+import urllib
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin, SpiderFootHelpers
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_gleif(SpiderFootPlugin):
@@ -22,7 +22,7 @@ class sfp_gleif(SpiderFootPlugin):
     meta = {
         'name': "GLEIF",
         'summary': "Look up company information from Global Legal Entity Identifier Foundation (GLEIF).",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Passive", "Footprint", "Investigate"],
         'categories': ["Search Engines"],
         'dataSource': {

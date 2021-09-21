@@ -23,7 +23,7 @@ class sfp_gravatar(SpiderFootPlugin):
     meta = {
         'name': "Gravatar",
         'summary': "Retrieve user information from Gravatar API.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Social Media"],
         'dataSource': {
@@ -74,7 +74,7 @@ class sfp_gravatar(SpiderFootPlugin):
     # https://secure.gravatar.com/site/implement/
     # https://secure.gravatar.com/site/implement/profiles/
     def query(self, qry):
-        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # nosec
+        email_hash = hashlib.md5(qry.encode('utf-8', errors='replace').lower()).hexdigest()  # noqa: DUO130
         output = 'json'
 
         res = self.sf.fetchUrl("https://secure.gravatar.com/" + email_hash + '.' + output,
@@ -108,7 +108,7 @@ class sfp_gravatar(SpiderFootPlugin):
         eventData = event.data
 
         if eventData in self.results:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -118,7 +118,7 @@ class sfp_gravatar(SpiderFootPlugin):
 
         if data is None:
             self.sf.debug("No user information found for " + eventData)
-            return None
+            return
 
         evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, event)
         self.notifyListeners(evt)

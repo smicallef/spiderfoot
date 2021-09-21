@@ -20,7 +20,7 @@ class sfp_sslcert(SpiderFootPlugin):
     meta = {
         'name': "SSL Certificate Analyzer",
         'summary': "Gather information about SSL certificates used by the target's HTTPS sites.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate"],
         'categories': ["Crawling and Scanning"]
     }

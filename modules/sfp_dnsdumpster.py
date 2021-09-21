@@ -12,6 +12,7 @@
 # -------------------------------------------------------------------------------
 
 import re
+
 from bs4 import BeautifulSoup
 
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
@@ -91,7 +92,8 @@ class sfp_dnsdumpster(SpiderFootPlugin):
             },
             postData={
                 "csrfmiddlewaretoken": csrfmiddlewaretoken,
-                "targetip": str(domain).lower()
+                "targetip": str(domain).lower(),
+                "user": "free"
             },
             headers={
                 "origin": "https://dnsdumpster.com",

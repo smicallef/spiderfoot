@@ -21,7 +21,7 @@ class sfp_blockchain(SpiderFootPlugin):
     meta = {
         'name': "Blockchain",
         'summary': "Queries blockchain.info to find the balance of identified bitcoin wallet addresses.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
         'dataSource': {
@@ -75,7 +75,7 @@ class sfp_blockchain(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -84,13 +84,13 @@ class sfp_blockchain(SpiderFootPlugin):
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'])
         if res['content'] is None:
             self.sf.info("No Blockchain info found for " + eventData)
-            return None
+            return
         try:
             data = json.loads(res['content'])
             balance = float(data[eventData]['final_balance']) / 100000000
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
-            return None
+            return
 
         evt = SpiderFootEvent("BITCOIN_BALANCE", str(balance) + " BTC", self.__name__, event)
         self.notifyListeners(evt)

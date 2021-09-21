@@ -29,6 +29,7 @@ class sfp_adblock(SpiderFootPlugin):
             'references': [
                 "https://help.eyeo.com/en/adblockplus/",
                 "https://adblockplus.org/en/download",
+                "https://adblockplus.org/en/filters#options",
                 "https://chrome.google.com/webstore/detail/adblock-plus-free-ad-bloc/cfhdojbkjhnklbpkdaibdccddilifddb"
             ],
             'favIcon': "https://www.google.com/s2/favicons?domain=https://adblockplus.org/en/",
@@ -47,11 +48,13 @@ class sfp_adblock(SpiderFootPlugin):
 
     # Default options
     opts = {
-        "blocklist": "https://easylist-downloads.adblockplus.org/easylist.txt"
+        "blocklist": "https://easylist-downloads.adblockplus.org/easylist.txt",
+        'cacheperiod': 24,
     }
 
     optdescs = {
-        "blocklist": "AdBlockPlus block list."
+        "blocklist": "AdBlockPlus block list.",
+        'cacheperiod': "Hours to cache list data before re-fetching.",
     }
 
     results = None
@@ -69,13 +72,53 @@ class sfp_adblock(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["LINKED_URL_INTERNAL", "LINKED_URL_EXTERNAL"]
+        return ["LINKED_URL_INTERNAL", "LINKED_URL_EXTERNAL", "PROVIDER_JAVASCRIPT"]
 
     # What events this module produces
-    # This is to support the end user in selecting modules based on events
-    # produced.
     def producedEvents(self):
         return ["URL_ADBLOCKED_INTERNAL", "URL_ADBLOCKED_EXTERNAL"]
+
+    def retrieveBlocklist(self, blocklist_url):
+        if not blocklist_url:
+            return None
+
+        blocklist = self.sf.cacheGet(f"adblock_{blocklist_url}", 24)
+
+        if blocklist is not None:
+            return self.setBlocklistRules(blocklist)
+
+        res = self.sf.fetchUrl(blocklist_url, timeout=30)
+
+        if res['code'] != "200":
+            self.sf.error(f"Unexpected HTTP response code {res['code']} for {blocklist_url}")
+            self.errorState = True
+            return None
+
+        if res['content'] is None:
+            self.sf.error(f"Unable to download AdBlock Plus blocklist: {blocklist_url}")
+            self.errorState = True
+            return None
+
+        self.sf.cachePut(f"adblock_{blocklist_url}", res['content'])
+
+        return self.setBlocklistRules(res['content'])
+
+    def setBlocklistRules(self, blocklist):
+        """Parse AdBlock Plus blocklist and set blocklist rules
+
+        Args:
+            blocklist (str): plaintext AdBlock Plus blocklist
+        """
+        if not blocklist:
+            return
+
+        lines = blocklist.split('\n')
+        self.sf.debug(f"Retrieved {len(lines)} AdBlock blocklist rules")
+        try:
+            self.rules = adblockparser.AdblockRules(lines)
+        except adblockparser.AdblockParsingError as e:
+            self.errorState = True
+            self.sf.error(f"Parsing error handling AdBlock list: {e}")
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -85,41 +128,48 @@ class sfp_adblock(SpiderFootPlugin):
 
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
-        if self.errorState:
-            return
-
-        if self.rules is None:
-            raw = self.sf.fetchUrl(self.opts['blocklist'], timeout=30)
-            if raw['content'] is not None:
-                lines = raw['content'].split('\n')
-                self.sf.debug("RULE LINES: " + str(len(lines)))
-                try:
-                    self.rules = adblockparser.AdblockRules(lines)
-                except Exception as e:
-                    self.errorState = True
-                    self.sf.error("Parsing error handling AdBlock list: " + str(e))
-            else:
-                self.errorState = True
-                self.sf.error("Unable to download AdBlockPlus list: " + self.opts['blocklist'])
-
-        if "_EXTERNAL" in eventName:
-            pagetype = "_EXTERNAL"
-        else:
-            pagetype = "_INTERNAL"
-
         if eventData in self.results:
-            self.sf.debug("Already checked this page for AdBlock matching, skipping.")
+            self.sf.debug("Already checked this URL for AdBlock matching, skipping.")
             return
 
         self.results[eventData] = True
 
+        if self.errorState:
+            return
+
+        if not self.opts["blocklist"]:
+            self.sf.error(
+                f"You enabled {self.__class__.__name__} but did not set a blocklist URL!"
+            )
+            self.errorState = True
+            return
+
+        if not self.rules:
+            self.retrieveBlocklist(self.opts['blocklist'])
+
+        if not self.rules:
+            self.sf.error("No AdBlock Plus rules loaded")
+            self.errorState = True
+            return
+
         try:
-            if self.rules and self.rules.should_block(eventData):
-                evt = SpiderFootEvent("URL_ADBLOCKED" + pagetype, eventData,
-                                      self.__name__, event)
-                self.notifyListeners(evt)
-        except Exception as e:
-            self.sf.error("Parsing error handling AdBlock list: " + str(e))
+            if eventName == 'PROVIDER_JAVASCRIPT':
+                if self.rules and self.rules.should_block(eventData, {'third-party': True, 'script': True}):
+                    evt = SpiderFootEvent("URL_ADBLOCKED_EXTERNAL", eventData, self.__name__, event)
+                    self.notifyListeners(evt)
+
+            if eventName == 'LINKED_URL_EXTERNAL':
+                if self.rules and self.rules.should_block(eventData, {'third-party': True}):
+                    evt = SpiderFootEvent("URL_ADBLOCKED_EXTERNAL", eventData, self.__name__, event)
+                    self.notifyListeners(evt)
+
+            if eventName == 'LINKED_URL_INTERNAL':
+                if self.rules and self.rules.should_block(eventData):
+                    evt = SpiderFootEvent("URL_ADBLOCKED_INTERNAL", eventData, self.__name__, event)
+                    self.notifyListeners(evt)
+
+        except ValueError as e:
+            self.sf.error(f"Parsing error handling AdBlock list: {e}")
             self.errorState = True
 
 # End of sfp_adblock class

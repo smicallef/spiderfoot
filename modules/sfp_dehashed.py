@@ -9,9 +9,10 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+import base64
 import json
 import time
-import base64
+
 from spiderfoot import SpiderFootEvent, SpiderFootPlugin
 
 
@@ -28,6 +29,12 @@ class sfp_dehashed(SpiderFootPlugin):
             'model': "COMMERCIAL_ONLY",
             'references': [
                 "https://www.dehashed.com/docs"
+            ],
+            'apiKeyInstructions': [
+                "Visit https://www.dehashed.com/register"
+                "Register a free account",
+                "Visit https://www.dehashed.com/profile",
+                "Your API key is listed under 'API Key'",
             ],
             'favIcon': "https://www.dehashed.com/assets/img/favicon.ico",
             'logo': "https://www.dehashed.com/assets/img/logo.png",
@@ -138,13 +145,13 @@ class sfp_dehashed(SpiderFootPlugin):
         eventData = event.data
 
         if srcModuleName == self.__name__:
-            return None
+            return
 
         if eventData in self.results:
-            return None
+            return
 
         if self.errorState:
-            return None
+            return
 
         self.results[eventData] = True
 
@@ -161,7 +168,7 @@ class sfp_dehashed(SpiderFootPlugin):
 
         while currentPage <= maxPages:
             if self.checkForStop():
-                return None
+                return
 
             if self.errorState:
                 break
@@ -169,7 +176,7 @@ class sfp_dehashed(SpiderFootPlugin):
             data = self.query(event, perPage, currentPage)
 
             if not data:
-                return None
+                return
 
             breachResults = set()
             emailResults = set()
@@ -224,6 +231,6 @@ class sfp_dehashed(SpiderFootPlugin):
             currentPage += 1
 
             if data.get('total') < self.opts['per_page']:
-                return None
+                break
 
 # End of sfp_dehashed class

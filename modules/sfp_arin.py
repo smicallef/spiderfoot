@@ -21,7 +21,7 @@ class sfp_arin(SpiderFootPlugin):
     meta = {
         'name': "ARIN",
         'summary': "Queries ARIN registry for contact information.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Public Registries"],
         'dataSource': {
@@ -110,14 +110,14 @@ class sfp_arin(SpiderFootPlugin):
             return None
 
         try:
-            j = json.loads(res['content'])
-            evt = SpiderFootEvent("RAW_RIR_DATA", res['content'], self.__name__,
-                                  self.currentEventSrc)
-            self.notifyListeners(evt)
-            return j
+            data = json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
             return None
+
+        evt = SpiderFootEvent("RAW_RIR_DATA", str(data), self.__name__, self.currentEventSrc)
+        self.notifyListeners(evt)
+        return data
 
     # Handle events sent to this module
     def handleEvent(self, event):

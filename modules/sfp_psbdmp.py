@@ -20,7 +20,7 @@ class sfp_psbdmp(SpiderFootPlugin):
     meta = {
         'name': "Psbdmp",
         'summary': "Check psbdmp.cc (PasteBin Dump) for potentially hacked e-mails and domains.",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["Leaks, Dumps and Breaches"],
         'dataSource': {
@@ -100,13 +100,13 @@ class sfp_psbdmp(SpiderFootPlugin):
 
         if eventData in self.results:
             self.sf.debug(f"Skipping {eventData}, already checked.")
-            return None
+            return
 
         self.results[eventData] = True
 
         data = self.query(eventData)
         if data is None:
-            return None
+            return
 
         for n in data:
             e = SpiderFootEvent("LEAKSITE_URL", n, self.__name__, event)

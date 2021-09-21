@@ -21,7 +21,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
     meta = {
         'name': "CloudFlare Malware DNS",
         'summary': "Check if a host would be blocked by CloudFlare Malware-blocking DNS",
-        'flags': [""],
+        'flags': [],
         'useCases': ["Investigate", "Passive"],
         'categories': ["Reputation Systems"],
         'dataSource': {
@@ -73,19 +73,18 @@ class sfp_cloudflaredns(SpiderFootPlugin):
 
         try:
             addrs = res.resolve(qaddr)
-            self.sf.debug("Addresses returned: " + str(addrs))
+            self.sf.debug(f"Addresses returned: {addrs}")
         except Exception:
             self.sf.debug(f"Unable to resolve {qaddr}")
             return False
 
-        if addrs:
-            a = self.sf.normalizeDNS(addrs)
-            if "0.0.0.0" in a:
-                return False
-            else:
-                return True
+        if not addrs:
+            return False
 
-        return False
+        if "0.0.0.0" in self.sf.normalizeDNS(addrs):
+            return False
+
+        return True
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -98,7 +97,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
         self.sf.debug(f"Received event, {eventName}, from {srcModuleName}")
 
         if eventData in self.results:
-            return None
+            return
         self.results[eventData] = True
 
         # Check that it resolves first, as it becomes a valid
@@ -107,7 +106,7 @@ class sfp_cloudflaredns(SpiderFootPlugin):
             if self.sf.resolveHost(eventData):
                 resolved = True
         except Exception:
-            return None
+            return
 
         if resolved:
             found = self.queryAddr(eventData)

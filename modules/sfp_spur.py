@@ -93,7 +93,7 @@ class sfp_spur(SpiderFootPlugin):
             "IP_ADDRESS",
             "MALICIOUS_IPADDR",
             "RAW_RIR_DATA",
-            "GEO_INFO",
+            "GEOINFO",
             "COMPANY_NAME",
             "MALICIOUS_AFFILIATE_IPADDR"
         ]
@@ -125,7 +125,7 @@ class sfp_spur(SpiderFootPlugin):
             self.sf.debug("IP Address not found.")
             return None
 
-        if not code == '200':
+        if code != '200':
             self.sf.error("Unable to fetch data from spur.us")
             return None
 
