@@ -299,19 +299,20 @@ class SpiderFootPlugin():
         """
         if self.outgoingEventQueue and self.incomingEventQueue:
             return self._stopScanning
-        else:
-            if not self.__scanId__:
-                return False
 
-            scanstatus = self.__sfdb__.scanInstanceGet(self.__scanId__)
-
-            if not scanstatus:
-                return False
-
-            if scanstatus[5] == "ABORT-REQUESTED":
-                return True
-
+        if not self.__scanId__:
             return False
+
+        scanstatus = self.__sfdb__.scanInstanceGet(self.__scanId__)
+
+        if not scanstatus:
+            return False
+
+        if scanstatus[5] == "ABORT-REQUESTED":
+            self._stopScanning = True
+            return True
+
+        return False
 
     def watchedEvents(self):
         """What events is this module interested in for input. The format is a list
