@@ -3,7 +3,6 @@ import pytest
 import unittest
 
 from sflib import SpiderFoot
-from spiderfoot import SpiderFootTarget
 
 
 @pytest.mark.usefixtures
@@ -815,33 +814,6 @@ class TestSpiderFoot(unittest.TestCase):
         validate_ip = sf.validateIP('one.one.one.one', '1.1.1.1')
         self.assertIsInstance(validate_ip, bool)
         self.assertTrue(validate_ip)
-
-    def test_resolve_targets_should_return_list(self):
-        """
-        Test resolveTargets(self, target, validateReverse)
-        """
-        sf = SpiderFoot(self.default_options)
-
-        invalid_types = [None, "", list()]
-        for invalid_type in invalid_types:
-            with self.subTest(invalid_type=invalid_type):
-                resolve_targets = sf.resolveTargets(invalid_type, False)
-                self.assertIsInstance(resolve_targets, list)
-
-        target = SpiderFootTarget("spiderfoot.net", "INTERNET_NAME")
-        resolve_targets = sf.resolveTargets(target, False)
-        self.assertIsInstance(resolve_targets, list)
-        self.assertIn('spiderfoot.net', resolve_targets)
-
-        target = SpiderFootTarget("1.1.1.1", "IP_ADDRESS")
-        resolve_targets = sf.resolveTargets(target, False)
-        self.assertIsInstance(resolve_targets, list)
-        self.assertIn('1.1.1.1', resolve_targets)
-
-        target = SpiderFootTarget("127.0.0.1/32", "NETBLOCK_OWNER")
-        resolve_targets = sf.resolveTargets(target, False)
-        self.assertIsInstance(resolve_targets, list)
-        self.assertIn('127.0.0.1', resolve_targets)
 
     @unittest.skip("todo")
     def test_safe_socket(self):

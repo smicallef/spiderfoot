@@ -52,6 +52,46 @@ class TestModuleDnsResolve(unittest.TestCase):
         self.assertEqual(result.targetType, target_type)
         self.assertEqual(result.targetValue, target_value)
 
+    def test_resolveTargets_should_return_list(self):
+        """
+        Test resolveTargets(self, target, validateReverse)
+        """
+        sf = SpiderFoot(self.default_options)
+
+        module = sfp_dnsresolve()
+        module.setup(sf, dict())
+
+        target_value = 'spiderfoot.net'
+        target_type = 'INTERNET_NAME'
+        target = SpiderFootTarget(target_value, target_type)
+        module.setTarget(target)
+
+        invalid_types = [None, "", list(), dict()]
+        for invalid_type in invalid_types:
+            with self.subTest(invalid_type=invalid_type):
+                resolve_targets = module.resolveTargets(invalid_type, False)
+                self.assertIsInstance(resolve_targets, list)
+
+        target = SpiderFootTarget("spiderfoot.net", "INTERNET_NAME")
+        resolve_targets = module.resolveTargets(target, False)
+        self.assertIsInstance(resolve_targets, list)
+        self.assertIn('spiderfoot.net', resolve_targets)
+
+        target = SpiderFootTarget("127.0.0.1", "IP_ADDRESS")
+        resolve_targets = module.resolveTargets(target, False)
+        self.assertIsInstance(resolve_targets, list)
+        self.assertIn('127.0.0.1', resolve_targets)
+
+        target = SpiderFootTarget("::1", "IPV6_ADDRESS")
+        resolve_targets = module.resolveTargets(target, False)
+        self.assertIsInstance(resolve_targets, list)
+        self.assertIn('::1', resolve_targets)
+
+        target = SpiderFootTarget("127.0.0.1/32", "NETBLOCK_OWNER")
+        resolve_targets = module.resolveTargets(target, False)
+        self.assertIsInstance(resolve_targets, list)
+        self.assertIn('127.0.0.1', resolve_targets)
+
     @unittest.skip("CI tests fail on MacOSX")
     def test_handleEvent_event_data_ip_address_should_return_internet_name_event(self):
         sf = SpiderFoot(self.default_options)

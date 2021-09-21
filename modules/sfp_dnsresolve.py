@@ -63,7 +63,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         ret = list()
         # If it's an IP, get the hostname it reverse resolves to
         self.sf.info("Identifying aliases for specified target(s)")
-        ret = self.sf.resolveTargets(target, self.opts['validatereverse'])
+        ret = self.resolveTargets(target, self.opts['validatereverse'])
         if not ret:
             return target
 
@@ -86,9 +86,68 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 #     dom = self.sf.hostDomain(host, self.opts['_internettlds'])
                 #     target.setAlias(dom, "INTERNET_NAME")
 
-        self.sf.info("Aliases identified: " + str(target.targetAliases))
+        self.sf.info(f"Target aliases identified: {target.targetAliases}")
 
         return target
+
+    def resolveTargets(self, target, validateReverse: bool) -> list:
+        """Resolve alternative names for a given target.
+
+        Args:
+            target (SpiderFootTarget): target object
+            validateReverse (bool): validate domain names resolve
+
+        Returns:
+            list: list of domain names and IP addresses
+        """
+        ret = list()
+
+        if not target:
+            return ret
+
+        t = target.targetType
+        v = target.targetValue
+
+        if t in ["IP_ADDRESS", "IPV6_ADDRESS"]:
+            r = self.sf.resolveIP(v)
+            if r:
+                ret.extend(r)
+        if t == "INTERNET_NAME":
+            r = self.sf.resolveHost(v)
+            if r:
+                ret.extend(r)
+            r = self.sf.resolveHost6(v)
+            if r:
+                ret.extend(r)
+        if t == "NETBLOCK_OWNER":
+            for addr in IPNetwork(v):
+                if self.checkForStop():
+                    return list(set(ret))
+
+                ipaddr = str(addr)
+                if ipaddr.split(".")[3] in ['255', '0']:
+                    continue
+
+                if '255' in ipaddr.split("."):
+                    continue
+
+                ret.append(ipaddr)
+
+                # Add the reverse-resolved hostnames as aliases too
+                names = self.sf.resolveIP(ipaddr)
+                if not names:
+                    continue
+
+                if not validateReverse:
+                    ret.extend(names)
+                    continue
+
+                for host in names:
+                    chk = self.sf.resolveHost(host)
+                    if chk and ipaddr in chk:
+                        ret.append(host)
+
+        return list(set(ret))
 
     # What events is this module interested in for input
     def watchedEvents(self):
