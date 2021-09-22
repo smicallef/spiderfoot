@@ -366,6 +366,13 @@ class SpiderFootPlugin():
         self.thread = threading.Thread(target=self.threadWorker)
         self.thread.start()
 
+    def finish(self):
+        """Perform final/cleanup functions before module exits
+        Overridden by the implementer
+        """
+
+        return
+
     def threadWorker(self):
         try:
             # create new database handle since we're in our own thread

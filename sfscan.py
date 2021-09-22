@@ -423,6 +423,10 @@ class SpiderFootScanner():
             if threaded and not aborted:
                 self.waitForThreads()
 
+            if not threaded:
+                for mod in list(self.__moduleInstances.values()):
+                    mod.finish()
+
             if aborted:
                 self.__sf.status(f"Scan [{self.__scanId}] aborted.")
                 self.__setStatus("ABORTED", None, time.time() * 1000)
@@ -466,7 +470,19 @@ class SpiderFootScanner():
                         sleep(.1)
                         # but are we really?
                         if self.threadsFinished(log_status):
-                            break
+                            if modulesFinished:
+                                break
+                            else:
+                                # Trigger module.finished()
+                                for mod in self.__moduleInstances.values():
+                                    mod.incomingEventQueue.put('FINISHED')
+                                sleep(.1)
+                                while not self.threadsFinished(log_status):
+                                    log_status = counter % 100 == 0
+                                    counter += 1
+                                    sleep(.01)
+                                modulesFinished = True
+
                     else:
                         # save on CPU
                         sleep(.01)
