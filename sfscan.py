@@ -473,16 +473,15 @@ class SpiderFootScanner():
                         if self.threadsFinished(log_status):
                             if modulesFinished:
                                 break
-                            else:
-                                # Trigger module.finished()
-                                for mod in self.__moduleInstances.values():
-                                    mod.incomingEventQueue.put('FINISHED')
-                                sleep(.1)
-                                while not self.threadsFinished(log_status):
-                                    log_status = counter % 100 == 0
-                                    counter += 1
-                                    sleep(.01)
-                                modulesFinished = True
+                            # Trigger module.finished()
+                            for mod in self.__moduleInstances.values():
+                                mod.incomingEventQueue.put('FINISHED')
+                            sleep(.1)
+                            while not self.threadsFinished(log_status):
+                                log_status = counter % 100 == 0
+                                counter += 1
+                                sleep(.01)
+                            modulesFinished = True
 
                     else:
                         # save on CPU
