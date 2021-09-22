@@ -453,6 +453,7 @@ class SpiderFootScanner():
             # start one thread for each module
             for mod in self.__moduleInstances.values():
                 mod.start()
+            modulesFinished = False
 
             # watch for newly-generated events
             while True:
