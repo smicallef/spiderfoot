@@ -76,6 +76,10 @@ class sfp_torexits(SpiderFootPlugin):
     def queryExitNodes(self, target, targetType):
         exit_addresses = self.retrieveExitNodes()
 
+        if not exit_addresses:
+            self.errorState = True
+            return False
+
         if targetType == "ip":
             if target in exit_addresses:
                 self.sf.debug(f"IP address {target} found in TOR exit node list.")
