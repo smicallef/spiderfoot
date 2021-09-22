@@ -387,9 +387,13 @@ class SpiderFootPlugin():
             while not self.checkForStop():
                 try:
                     sfEvent = self.incomingEventQueue.get_nowait()
-                    self.sf.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
                     self.running = True
-                    self.handleEvent(sfEvent)
+                    if sfEvent == 'FINISHED':
+                        self.sf.debug(f"{self.__name__}.threadWorker() got \"FINISHED\" from incomingEventQueue.")
+                        self.finish()
+                    else:
+                        self.sf.debug(f"{self.__name__}.threadWorker() got event, {sfEvent.eventType}, from incomingEventQueue.")
+                        self.handleEvent(sfEvent)
                     self.running = False
                 except queue.Empty:
                     sleep(.3)
