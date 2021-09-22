@@ -10,6 +10,7 @@
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
+from pathlib import Path
 import re
 import sqlite3
 import threading
@@ -275,6 +276,9 @@ class SpiderFootDb:
             raise ValueError("opts['__database'] is empty")
 
         database_path = opts['__database']
+
+        # create database directory
+        Path(database_path).parent.mkdir(exist_ok=True, parents=True)
 
         # connect() will create the database file if it doesn't exist, but
         # at least we can use this opportunity to ensure we have permissions to
