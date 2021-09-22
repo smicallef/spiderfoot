@@ -16,7 +16,7 @@ RUN apt-get -y update && apt-get -y install nmap
 RUN mkdir /tools || true
 WORKDIR /tools
 RUN git clone --depth=1 https://github.com/blechschmidt/massdns.git \
-   && cd massdns && make && make install && cd /tools && rm -r massdns
+    && cd massdns && make && make install && cd /tools && rm -r massdns
 
 # Install Golang tools
 RUN apt-get -y update && apt-get -y install golang
@@ -30,17 +30,24 @@ RUN GO111MODULE=on go get -v github.com/projectdiscovery/shuffledns/cmd/shuffled
 RUN apt-get -y update && apt-get -y install ruby ruby-dev bundler
 # WhatWeb
 RUN git clone https://github.com/urbanadventurer/WhatWeb \
-   && gem install rchardet mongo json && cd /tools/WhatWeb \
-   && bundle install && cd /tools
+    && gem install rchardet mongo json && cd /tools/WhatWeb \
+    && bundle install && cd /tools
 
 RUN groupadd spiderfoot \
     && useradd -m -g spiderfoot -d /home/spiderfoot -s /sbin/nologin \
     -c "SpiderFoot User" spiderfoot
 
-ENV SPIDERFOOT_LOGS /home/spiderfoot/log
+# Place database and logs outside installation directory
 ENV SPIDERFOOT_DATA /var/lib/spiderfoot
-RUN mkdir -p  "$SPIDERFOOT_LOGS" "$SPIDERFOOT_DATA" \
-   && chown spiderfoot:spiderfoot "$SPIDERFOOT_LOGS" "$SPIDERFOOT_DATA"
+ENV SPIDERFOOT_LOGS /var/lib/spiderfoot/log
+ENV SPIDERFOOT_CACHE /var/lib/spiderfoot/cache
+
+RUN mkdir -p $SPIDERFOOT_DATA || true \
+    && mkdir -p $SPIDERFOOT_LOGS || true \
+    && mkdir -p $SPIDERFOOT_CACHE || true \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_CACHE
 
 WORKDIR /home/spiderfoot
 COPY . .
@@ -67,7 +74,7 @@ RUN pip install dnstwist
 # CMSeeK
 WORKDIR /tools
 RUN git clone https://github.com/Tuhinshubhra/CMSeeK && cd CMSeeK \
-   && pip install -r requirements.txt && mkdir Results
+    && pip install -r requirements.txt && mkdir Results
 
 WORKDIR /home/spiderfoot
 
