@@ -190,7 +190,10 @@ class sfp_censys(SpiderFootPlugin):
             if eventName in ["IP_ADDRESS", "NETBLOCK_OWNER"]:
                 rec = self.queryIp(addr)
 
-            rec = rec.get('result')
+            try:
+                rec = rec["result"]
+            except Exception:
+                rec = None
 
             if rec is None:
                 continue
