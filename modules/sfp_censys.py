@@ -212,7 +212,7 @@ class sfp_censys(SpiderFootPlugin):
             self.notifyListeners(e)
 
             try:
-                # Date format: 2016-12-24T07:25:35+00:00' 2021-09-22T16:46:47.623Z
+                # Date format: 2021-09-22T16:46:47.623Z
                 created_dt = datetime.strptime(rec.get('last_updated_at', "1970-01-01T00:00:00.000Z"), '%Y-%m-%dT%H:%M:%S.%fZ')
                 created_ts = int(time.mktime(created_dt.timetuple()))
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
