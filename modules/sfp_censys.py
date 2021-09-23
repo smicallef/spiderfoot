@@ -227,16 +227,27 @@ class sfp_censys(SpiderFootPlugin):
                         e = SpiderFootEvent("GEOINFO", location, self.__name__, pevent)
                         self.notifyListeners(e)
 
-                try:
-                    headers = rec['services'][1]['http']['response']['headers']
-                except Exception:
-                    headers = None
+                for service in rec['services']:
+                    try:
+                        headers = service['http']['response']['headers']
+                    except Exception:
+                        headers = None
 
-                if headers:
-                    dat = json.dumps(headers, ensure_ascii=False)
-                    e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, pevent)
-                    e.actualSource = addr
-                    self.notifyListeners(e)
+                    if headers:
+                        dat = json.dumps(headers, ensure_ascii=False)
+                        e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, pevent)
+                        e.actualSource = addr
+                        self.notifyListeners(e)
+
+                    try:
+                        transportFingerprint = service["transport_fingerprint"]
+                    except Exception:
+                        transportFingerprint = None
+
+                    if transportFingerprint:
+                        if 'os' in transportFingerprint:
+                            e = SpiderFootEvent("OPERATING_SYSTEM", transportFingerprint["os"], self.__name__, pevent)
+                            self.notifyListeners(e)
 
                 if 'autonomous_system' in rec:
                     dat = str(rec['autonomous_system']['asn'])
@@ -254,15 +265,7 @@ class sfp_censys(SpiderFootPlugin):
                         dat = rec['ip'] + ":" + p.split("/")[0]
                         e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, pevent)
                         self.notifyListeners(e)
-                try:
-                    transportFingerprint = rec["services"][0]["transport_fingerprint"]
-                except Exception:
-                    transportFingerprint = None
 
-                if transportFingerprint:
-                    if 'os' in transportFingerprint:
-                        e = SpiderFootEvent("OPERATING_SYSTEM", transportFingerprint["os"], self.__name__, pevent)
-                        self.notifyListeners(e)
             except Exception as e:
                 self.sf.error(f"Error encountered processing record for {eventData} ({e})")
 
