@@ -190,10 +190,14 @@ class sfp_censys(SpiderFootPlugin):
             if eventName in ["IP_ADDRESS", "NETBLOCK_OWNER"]:
                 rec = self.queryIp(addr)
 
+            try:
+                rec = rec["result"]
+            except:
+                rec = None
+
             if rec is None:
                 continue
-
-            rec = rec["result"]
+            
             self.sf.debug("Found results in Censys.io")
 
             # For netblocks, we need to create the IP address event so that
@@ -222,7 +226,12 @@ class sfp_censys(SpiderFootPlugin):
                     if location:
                         e = SpiderFootEvent("GEOINFO", location, self.__name__, pevent)
                         self.notifyListeners(e)
-                headers = rec['services'][1]['http']['response']['headers']
+
+                try:
+                    headers = rec['services'][1]['http']['response']['headers']
+                except:
+                    headers = None
+
                 if headers:
                     dat = json.dumps(headers, ensure_ascii=False)
                     e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, pevent)
@@ -245,8 +254,11 @@ class sfp_censys(SpiderFootPlugin):
                         dat = rec['ip'] + ":" + p.split("/")[0]
                         e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, pevent)
                         self.notifyListeners(e)
+                try:
+                    transportFingerprint = rec["services"][0]["transport_fingerprint"]
+                except:
+                    transportFingerprint = None
 
-                transportFingerprint = rec["services"][0]["transport_fingerprint"]
                 if transportFingerprint:
                     if 'os' in transportFingerprint:
                         e = SpiderFootEvent("OPERATING_SYSTEM", transportFingerprint["os"], self.__name__, pevent)
