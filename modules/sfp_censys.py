@@ -192,12 +192,12 @@ class sfp_censys(SpiderFootPlugin):
 
             try:
                 rec = rec["result"]
-            except:
+            except Exception:
                 rec = None
 
             if rec is None:
                 continue
-            
+
             self.sf.debug("Found results in Censys.io")
 
             # For netblocks, we need to create the IP address event so that
@@ -229,7 +229,7 @@ class sfp_censys(SpiderFootPlugin):
 
                 try:
                     headers = rec['services'][1]['http']['response']['headers']
-                except:
+                except Exception:
                     headers = None
 
                 if headers:
@@ -256,7 +256,7 @@ class sfp_censys(SpiderFootPlugin):
                         self.notifyListeners(e)
                 try:
                     transportFingerprint = rec["services"][0]["transport_fingerprint"]
-                except:
+                except Exception:
                     transportFingerprint = None
 
                 if transportFingerprint:
