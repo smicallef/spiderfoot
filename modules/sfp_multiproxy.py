@@ -88,6 +88,10 @@ class sfp_multiproxy(SpiderFootPlugin):
     def queryProxyList(self, target, targetType):
         proxy_list = self.retrieveProxyList()
 
+        if not proxy_list:
+            self.errorState = True
+            return False
+
         if targetType == "ip":
             if target in proxy_list:
                 self.sf.debug(f"IP address {target} found in multiproxy.org open proxy list.")
