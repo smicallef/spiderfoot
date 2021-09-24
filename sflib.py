@@ -2043,6 +2043,26 @@ class SpiderFoot:
 
         return ret
 
+    def isValidLocalOrLoopbackIp(self, ip: str) -> bool:
+        """Check if the specified IPv4 or IPv6 address is a loopback or local network IP address (IPv4 RFC1918 / IPv6 RFC4192 ULA).
+
+        Args:
+            ip (str): IPv4 or IPv6 address
+
+        Returns:
+            bool: IP address is local or loopback
+        """
+        if not self.validIP(ip) and not self.validIP6(ip):
+            return False
+
+        if netaddr.IPAddress(ip).is_private():
+            return True
+
+        if netaddr.IPAddress(ip).is_loopback():
+            return True
+
+        return False
+
     def useProxyForUrl(self, url: str) -> bool:
         """Check if the configured proxy should be used to connect to a specified URL.
 
