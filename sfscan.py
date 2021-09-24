@@ -475,7 +475,8 @@ class SpiderFootScanner():
                                 break
                             # Trigger module.finished()
                             for mod in self.__moduleInstances.values():
-                                mod.incomingEventQueue.put('FINISHED')
+                                if not mod.errorState and mod.incomingEventQueue is not None:
+                                    mod.incomingEventQueue.put('FINISHED')
                             sleep(.1)
                             while not self.threadsFinished(log_status):
                                 log_status = counter % 100 == 0
@@ -499,7 +500,7 @@ class SpiderFootScanner():
                         raise AssertionError(f"{mod.__name__} requested stop")
 
                     # send it the new event if applicable
-                    if not mod.errorState:
+                    if not mod.errorState and mod.incomingEventQueue is not None:
                         watchedEvents = mod.watchedEvents()
                         if sfEvent.eventType in watchedEvents or "*" in watchedEvents:
                             mod.incomingEventQueue.put(deepcopy(sfEvent))
@@ -516,7 +517,10 @@ class SpiderFootScanner():
         if self.eventQueue is None:
             return True
 
-        modules_waiting = {m.__name__: m.incomingEventQueue.qsize() for m in self.__moduleInstances.values()}
+        modules_waiting = {
+            m.__name__: m.incomingEventQueue.qsize() for m in
+            self.__moduleInstances.values() if m.incomingEventQueue is not None
+        }
         modules_waiting = sorted(modules_waiting.items(), key=lambda x: x[-1], reverse=True)
         modules_running = [m.__name__ for m in self.__moduleInstances.values() if m.running]
         queues_empty = [qsize == 0 for m, qsize in modules_waiting]
