@@ -16,7 +16,7 @@ RUN apt-get -y update && apt-get -y install nmap
 RUN mkdir /tools || true
 WORKDIR /tools
 RUN git clone --depth=1 https://github.com/blechschmidt/massdns.git \
-   && cd massdns && make && make install && cd /tools && rm -r massdns
+    && cd massdns && make && make install && cd /tools && rm -r massdns
 
 # Install Golang tools
 RUN apt-get -y update && apt-get -y install golang
@@ -30,54 +30,60 @@ RUN GO111MODULE=on go get -v github.com/projectdiscovery/shuffledns/cmd/shuffled
 RUN apt-get -y update && apt-get -y install ruby ruby-dev bundler
 # WhatWeb
 RUN git clone https://github.com/urbanadventurer/WhatWeb \
-   && gem install rchardet mongo json && cd /tools/WhatWeb \
-   && bundle install && cd /tools
+    && gem install rchardet mongo json && cd /tools/WhatWeb \
+    && bundle install && cd /tools
 
 RUN groupadd spiderfoot \
     && useradd -m -g spiderfoot -d /home/spiderfoot -s /sbin/nologin \
     -c "SpiderFoot User" spiderfoot
 
-ENV SPIDERFOOT_LOGS /home/spiderfoot/log
+# Place database and logs outside installation directory
 ENV SPIDERFOOT_DATA /var/lib/spiderfoot
-RUN mkdir -p  "$SPIDERFOOT_LOGS" "$SPIDERFOOT_DATA" \
-   && chown spiderfoot:spiderfoot "$SPIDERFOOT_LOGS" "$SPIDERFOOT_DATA"
+ENV SPIDERFOOT_LOGS /var/lib/spiderfoot/log
+ENV SPIDERFOOT_CACHE /var/lib/spiderfoot/cache
+
+RUN mkdir -p $SPIDERFOOT_DATA || true \
+    && mkdir -p $SPIDERFOOT_LOGS || true \
+    && mkdir -p $SPIDERFOOT_CACHE || true \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS \
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_CACHE
 
 WORKDIR /home/spiderfoot
 COPY . .
 
 ENV VIRTUAL_ENV=/opt/venv
 RUN mkdir -p "$VIRTUAL_ENV" || true
-RUN chown spiderfoot:spiderfoot "$VIRTUAL_ENV"
-
-RUN chown -R spiderfoot:spiderfoot /tools
-WORKDIR /tools
-
-USER spiderfoot
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN python -m venv "$VIRTUAL_ENV"
 
 ARG REQUIREMENTS=requirements.txt
 COPY "$REQUIREMENTS" requirements.txt
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN python -m venv "$VIRTUAL_ENV"
+
+RUN chown -R spiderfoot:spiderfoot /tools
+RUN chown -R spiderfoot:spiderfoot "$VIRTUAL_ENV"
+RUN chown -R spiderfoot:spiderfoot "/home/spiderfoot"
+
+USER spiderfoot
+
 RUN pip install -U pip
 RUN pip install -r "$REQUIREMENTS"
 
 # Install Python tools
 RUN pip install dnstwist
 # CMSeeK
+WORKDIR /tools
 RUN git clone https://github.com/Tuhinshubhra/CMSeeK && cd CMSeeK \
-   && pip install -r requirements.txt && mkdir Results && cd /tools
+    && pip install -r requirements.txt && mkdir Results
 
 WORKDIR /home/spiderfoot
 
 EXPOSE 5001
 
-# Configure tool paths
-ENTRYPOINT python -c 'from spiderfoot import SpiderFootDb; \
-db = SpiderFootDb({"__database": "spiderfoot.db"}, init=True); \
+# Run the application
+CMD python -c 'from spiderfoot import SpiderFootDb; \
+db = SpiderFootDb({"__database": "/var/lib/spiderfoot/spiderfoot.db"}); \
 db.configSet({ \
     "sfp_tool_cmseek:cmseekpath": "/tools/CMSeeK/cmseek.py", \
     "sfp_tool_whatweb:whatweb_path": "/tools/WhatWeb/whatweb" \
-})' && /bin/bash
-
-# Run the application.
-CMD ["./sf.py", "-l", "0.0.0.0:5001"]
+})' || true && ./sf.py -l 0.0.0.0:5001
