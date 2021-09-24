@@ -162,6 +162,7 @@ class SpiderFootDb:
         ['INTERESTING_FILE', 'Interesting File', 0, 'DESCRIPTOR'],
         ['INTERESTING_FILE_HISTORIC', 'Historic Interesting File', 0, 'DESCRIPTOR'],
         ['JUNK_FILE', 'Junk File', 0, 'DESCRIPTOR'],
+        ['INTERNAL_IP_ADDRESS', 'IP Address - Internal Network', 0, 'ENTITY'],
         ['INTERNET_NAME', 'Internet Name', 0, 'ENTITY'],
         ['INTERNET_NAME_UNRESOLVED', 'Internet Name - Unresolved', 0, 'ENTITY'],
         ['IP_ADDRESS', 'IP Address', 0, 'ENTITY'],
