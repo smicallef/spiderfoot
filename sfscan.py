@@ -269,7 +269,7 @@ class SpiderFootScanner():
             self.eventQueue = queue.Queue()
 
         # moduleList = list of modules the user wants to run
-        self.__sf.debug("Loading {len(self.__moduleList)} modules ...")
+        self.__sf.debug(f"Loading {len(self.__moduleList)} modules ...")
         for modName in self.__moduleList:
             if not modName:
                 continue
