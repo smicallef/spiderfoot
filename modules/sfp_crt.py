@@ -103,6 +103,7 @@ class sfp_crt(SpiderFootPlugin):
             data = json.loads(res['content'])
         except Exception as e:
             self.sf.debug(f"Error processing JSON response: {e}")
+            return
 
         if data is None or len(data) == 0:
             return
