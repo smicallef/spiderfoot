@@ -76,19 +76,20 @@ class sfp_dnszonexfer(SpiderFootPlugin):
         # Get the name server's IP. This is to avoid DNS leaks
         # when attempting to resolve the name server during
         # the zone transfer.
+        # TODO: Add support for IPv6 name servers
         if not self.sf.validIP(eventData):
             nsips = self.sf.resolveHost(eventData)
             if not nsips:
                 return
 
-            if len(nsips) > 0:
-                for n in nsips:
-                    if self.sf.validIP(n):
-                        nsip = n
-                        break
-            else:
+            if not nsips:
                 self.sf.error("Couldn't resolve the name server, so not attempting zone transfer.")
                 return
+
+            for n in nsips:
+                if self.sf.validIP(n):
+                    nsip = n
+                    break
         else:
             nsip = eventData
 

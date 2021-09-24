@@ -117,7 +117,7 @@ class sfp_dronebl(SpiderFootPlugin):
                 if not addrs:
                     continue
 
-                self.sf.debug("Addresses returned: " + str(addrs))
+                self.sf.debug(f"Addresses returned: {addrs}")
 
                 text = None
                 for addr in addrs:

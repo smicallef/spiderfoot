@@ -192,11 +192,12 @@ class sfp_onyphe(SpiderFootPlugin):
 
         for domain in domains:
             if self.getTarget().matches(domain):
-                if self.opts['verify'] and self.sf.resolveHost(domain):
-                    evt = SpiderFootEvent('INTERNET_NAME', domain, self.__name__, event)
-                else:
-                    evt = SpiderFootEvent('INTERNET_NAME_UNRESOLVED', domain, self.__name__, event)
-                self.notifyListeners(evt)
+                if self.opts['verify']:
+                    if self.sf.resolveHost(domain) or self.sf.resolveHost6(domain):
+                        evt = SpiderFootEvent('INTERNET_NAME', domain, self.__name__, event)
+                    else:
+                        evt = SpiderFootEvent('INTERNET_NAME_UNRESOLVED', domain, self.__name__, event)
+                    self.notifyListeners(evt)
 
                 if self.sf.isDomain(domain, self.opts['_internettlds']):
                     evt = SpiderFootEvent('DOMAIN_NAME', domain, self.__name__, event)

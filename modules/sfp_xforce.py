@@ -256,23 +256,24 @@ class sfp_xforce(SpiderFootPlugin):
                         last_ts = int(time.mktime(last_dt.timetuple()))
                         age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                         host = rec['value']
+
                         if self.opts['age_limit_days'] > 0 and last_ts < age_limit_ts:
                             self.sf.debug("Record found but too old, skipping.")
                             continue
-                        else:
-                            if not self.opts["cohostsamedomain"]:
-                                if self.getTarget().matches(host, includeParents=True):
-                                    self.sf.debug(
-                                        "Skipping " + host + " because it is on the same domain."
-                                    )
-                                    continue
 
-                            if self.opts['verify'] and not self.sf.resolveHost(host):
+                        if not self.opts["cohostsamedomain"]:
+                            if self.getTarget().matches(host, includeParents=True):
+                                self.sf.debug(
+                                    f"Skipping {host} because it is on the same domain."
+                                )
                                 continue
 
-                            e = SpiderFootEvent("CO_HOSTED_SITE", host, self.__name__, event)
-                            self.notifyListeners(e)
-                            self.cohostcount += 1
+                        if self.opts['verify'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
+                            continue
+
+                        e = SpiderFootEvent("CO_HOSTED_SITE", host, self.__name__, event)
+                        self.notifyListeners(e)
+                        self.cohostcount += 1
 
         for addr in qrylist:
             if self.checkForStop():

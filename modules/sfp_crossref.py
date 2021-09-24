@@ -86,7 +86,7 @@ class sfp_crossref(SpiderFootPlugin):
             self.sf.debug(f"Ignoring {url} as already tested")
             return
 
-        if not self.sf.resolveHost(fqdn):
+        if not self.sf.resolveHost(fqdn) and not self.sf.resolveHost6(fqdn):
             self.sf.debug(f"Ignoring {url} as {fqdn} does not resolve")
             return
 

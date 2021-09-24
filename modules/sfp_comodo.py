@@ -102,7 +102,7 @@ class sfp_comodo(SpiderFootPlugin):
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by Comodo.
         try:
-            if self.sf.resolveHost(eventData):
+            if self.sf.resolveHost(eventData) or self.sf.resolveHost6(eventData):
                 resolved = True
         except Exception:
             return
