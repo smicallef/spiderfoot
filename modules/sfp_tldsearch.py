@@ -82,6 +82,7 @@ class sfp_tldsearch(SpiderFootPlugin):
             return
 
         try:
+            # TODO: Support IPv6
             addrs = self.sf.resolveHost(target)
             if not addrs:
                 with self.lock:

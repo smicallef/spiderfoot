@@ -91,19 +91,19 @@ class sfp_searchcode(SpiderFootPlugin):
             return None
 
         if res['code'] == "429":
-            self.sf.error("You are being rate-limited by codesearch.")
+            self.sf.error("You are being rate-limited by searchcode.")
             self.errorState = True
             return None
 
         if res['code'] != '200':
-            self.sf.error(f"Unexpected reply from codesearch: {res['code']}")
+            self.sf.error(f"Unexpected reply from searchcode: {res['code']}")
             self.errorState = True
             return None
 
         try:
             return json.loads(res['content'])
         except Exception as e:
-            self.sf.debug(f"Error processing JSON response from codesearch: {e}")
+            self.sf.debug(f"Error processing JSON response from searchcode: {e}")
             return None
 
         return None
@@ -190,7 +190,7 @@ class sfp_searchcode(SpiderFootPlugin):
                 if host in self.results:
                     continue
 
-                if self.opts['dns_resolve'] and not self.sf.resolveHost(host):
+                if self.opts['dns_resolve'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
                     self.sf.debug(f"Host {host} could not be resolved")
                     evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", host, self.__name__, event)
                     self.notifyListeners(evt)

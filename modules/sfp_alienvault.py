@@ -344,7 +344,7 @@ class sfp_alienvault(SpiderFootPlugin):
 
                         if self.getTarget().matches(host, includeParents=True):
                             evtType = "INTERNET_NAME"
-                            if not self.sf.resolveHost(host):
+                            if not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
                                 evtType = "INTERNET_NAME_UNRESOVLED"
                             evt = SpiderFootEvent(evtType, host, self.__name__, event)
                             self.notifyListeners(evt)

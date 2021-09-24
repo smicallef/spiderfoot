@@ -234,7 +234,7 @@ class sfp_open_passive_dns_database(SpiderFootPlugin):
             if not self.getTarget().matches(domain, includeChildren=True, includeParents=True):
                 continue
 
-            if self.opts['verify'] and not self.sf.resolveHost(domain):
+            if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
                 self.sf.debug(f"Host {domain} could not be resolved")
                 evt = SpiderFootEvent("INTERNET_NAME_UNRESOLVED", domain, self.__name__, event)
                 self.notifyListeners(evt)

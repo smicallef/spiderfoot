@@ -169,7 +169,7 @@ class sfp_dnsraw(SpiderFootPlugin):
             else:
                 evt_type = 'AFFILIATE_INTERNET_NAME'
 
-            if self.opts['verify'] and not self.sf.resolveHost(domain):
+            if self.opts['verify'] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
                 self.sf.debug(f"Host {domain} could not be resolved")
                 evt_type += '_UNRESOLVED'
 

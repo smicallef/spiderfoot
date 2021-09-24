@@ -96,6 +96,7 @@ class sfp_dnsbrute(SpiderFootPlugin):
 
     def tryHost(self, name):
         try:
+            # TODO: Support IPv6
             addrs = self.sf.resolveHost(name)
             if addrs:
                 with self.lock:

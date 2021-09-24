@@ -160,7 +160,7 @@ class sfp_dnsgrep(SpiderFootPlugin):
 
             evt_type = "INTERNET_NAME"
 
-            if self.opts["dns_resolve"] and not self.sf.resolveHost(domain):
+            if self.opts["dns_resolve"] and not self.sf.resolveHost(domain) and not self.sf.resolveHost6(domain):
                 self.sf.debug(f"Host {domain} could not be resolved")
                 evt_type += "_UNRESOLVED"
 

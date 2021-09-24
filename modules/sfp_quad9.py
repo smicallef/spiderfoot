@@ -96,7 +96,7 @@ class sfp_quad9(SpiderFootPlugin):
 
         # Check that it resolves first, as it becomes a valid
         # malicious host only if NOT resolved by Quad9.
-        if not self.sf.resolveHost(eventData):
+        if not self.sf.resolveHost(eventData) and not self.sf.resolveHost6(eventData):
             return
 
         found = self.query(eventData)

@@ -264,7 +264,7 @@ class sfp_binaryedge(SpiderFootPlugin):
 
                     if self.getTarget().matches(host, includeParents=True):
                         if self.opts['verify']:
-                            if not self.sf.resolveHost(host):
+                            if not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
                                 continue
 
                         evt = SpiderFootEvent("INTERNET_NAME", host, self.__name__, event)
@@ -300,7 +300,7 @@ class sfp_binaryedge(SpiderFootPlugin):
                     self.reportedhosts[rec] = True
 
                     if self.opts['verify']:
-                        if not self.sf.resolveHost(rec):
+                        if not self.sf.resolveHost(rec) and not self.sf.resolveHost6(rec):
                             self.sf.debug(f"Couldn't resolve {rec}, so skipping.")
                             continue
 
