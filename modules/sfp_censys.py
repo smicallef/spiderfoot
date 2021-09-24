@@ -77,7 +77,7 @@ class sfp_censys(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ["IP_ADDRESS", "INTERNET_NAME", "NETBLOCK_OWNER"]
+        return ["IP_ADDRESS", "NETBLOCK_OWNER"]
 
     def producedEvents(self):
         return [
@@ -99,27 +99,7 @@ class sfp_censys(SpiderFootPlugin):
         }
 
         res = self.sf.fetchUrl(
-            f"https://censys.io/api/v1/view/ipv4/{qry}",
-            timeout=self.opts['_fetchtimeout'],
-            useragent="SpiderFoot",
-            headers=headers
-        )
-
-        # API rate limit: 0.4 actions/second (120.0 per 5 minute interval)
-        time.sleep(self.opts['delay'])
-
-        return self.parseApiResponse(res)
-
-    def queryHost(self, qry):
-        secret = self.opts['censys_api_key_uid'] + ':' + self.opts['censys_api_key_secret']
-        auth = base64.b64encode(secret.encode('utf-8')).decode('utf-8')
-
-        headers = {
-            'Authorization': f"Basic {auth}"
-        }
-
-        res = self.sf.fetchUrl(
-            f"https://censys.io/api/v1/view/websites/{qry}",
+            f"https://search.censys.io/api/v2/hosts/{qry}",
             timeout=self.opts['_fetchtimeout'],
             useragent="SpiderFoot",
             headers=headers
@@ -209,8 +189,8 @@ class sfp_censys(SpiderFootPlugin):
 
             if eventName in ["IP_ADDRESS", "NETBLOCK_OWNER"]:
                 rec = self.queryIp(addr)
-            else:
-                rec = self.queryHost(addr)
+
+            rec = rec.get("result")
 
             if rec is None:
                 continue
@@ -229,8 +209,8 @@ class sfp_censys(SpiderFootPlugin):
             self.notifyListeners(e)
 
             try:
-                # Date format: 2016-12-24T07:25:35+00:00'
-                created_dt = datetime.strptime(rec.get('updated_at', "1970-01-01T00:00:00+00:00"), '%Y-%m-%dT%H:%M:%S+00:00')
+                # Date format: 2021-09-22T16:46:47.623Z
+                created_dt = datetime.strptime(rec.get('last_updated_at', "1970-01-01T00:00:00.000Z"), '%Y-%m-%dT%H:%M:%S.%fZ')
                 created_ts = int(time.mktime(created_dt.timetuple()))
                 age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
 
@@ -244,18 +224,34 @@ class sfp_censys(SpiderFootPlugin):
                         e = SpiderFootEvent("GEOINFO", location, self.__name__, pevent)
                         self.notifyListeners(e)
 
-                if 'headers' in rec:
-                    dat = json.dumps(rec['headers'], ensure_ascii=False)
-                    e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, pevent)
-                    e.actualSource = addr
-                    self.notifyListeners(e)
+                for service in rec['services']:
+                    try:
+                        headers = service['http']['response']['headers']
+                    except Exception:
+                        headers = None
+
+                    if headers:
+                        dat = json.dumps(headers, ensure_ascii=False)
+                        e = SpiderFootEvent("WEBSERVER_HTTPHEADERS", dat, self.__name__, pevent)
+                        e.actualSource = addr
+                        self.notifyListeners(e)
+
+                    try:
+                        transportFingerprint = service["transport_fingerprint"]
+                    except Exception:
+                        transportFingerprint = None
+
+                    if transportFingerprint:
+                        if 'os' in transportFingerprint:
+                            e = SpiderFootEvent("OPERATING_SYSTEM", transportFingerprint["os"], self.__name__, pevent)
+                            self.notifyListeners(e)
 
                 if 'autonomous_system' in rec:
                     dat = str(rec['autonomous_system']['asn'])
                     e = SpiderFootEvent("BGP_AS_MEMBER", dat, self.__name__, pevent)
                     self.notifyListeners(e)
 
-                    dat = rec['autonomous_system']['routed_prefix']
+                    dat = rec['autonomous_system']['bgp_prefix']
                     e = SpiderFootEvent("NETBLOCK_MEMBER", dat, self.__name__, pevent)
                     self.notifyListeners(e)
 
@@ -267,11 +263,6 @@ class sfp_censys(SpiderFootPlugin):
                         e = SpiderFootEvent("TCP_PORT_OPEN", dat, self.__name__, pevent)
                         self.notifyListeners(e)
 
-                if 'metadata' in rec:
-                    if 'os_description' in rec['metadata']:
-                        dat = rec['metadata']['os_description']
-                        e = SpiderFootEvent("OPERATING_SYSTEM", dat, self.__name__, pevent)
-                        self.notifyListeners(e)
             except Exception as e:
                 self.sf.error(f"Error encountered processing record for {eventData} ({e})")
 
