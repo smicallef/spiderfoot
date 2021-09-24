@@ -1211,6 +1211,24 @@ class TestSpiderFoot(unittest.TestCase):
         new_url = sf.removeUrlCreds(url)
         self.assertNotIn("secret", new_url)
 
+    def test_isValidLocalOrLoopbackIp_argument_ip_should_return_a_bool(self):
+        """
+        Test isValidLocalOrLoopbackIp(self, ip: str) -> bool:
+        """
+        sf = SpiderFoot(self.default_options)
+
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('127.0.0.1'))
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('127.0.0.2'))
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('::1'))
+
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('10.1.1.1'))
+        self.assertTrue(sf.isValidLocalOrLoopbackIp('fdd1:a677:c70c:b8c5:1234:1234:1234:1234'))
+
+        self.assertFalse(sf.isValidLocalOrLoopbackIp('1.1.1.1'))
+        self.assertFalse(sf.isValidLocalOrLoopbackIp('2606:4700:4700::1111'))
+
+        self.assertFalse(sf.isValidLocalOrLoopbackIp('invalid ip address'))
+
     def test_useProxyForUrl_argument_url_should_return_a_bool(self):
         """
         Test useProxyForUrl(self, url)
