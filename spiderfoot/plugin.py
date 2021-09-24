@@ -405,7 +405,19 @@ class SpiderFootPlugin():
             import traceback
             self.sf.error(f"Exception ({e.__class__.__name__}) in module {self.__name__}."
                           + traceback.format_exc())
+            # set errorState
+            self.sf.debug(f"Setting errorState for module {self.__name__}.")
             self.errorState = True
+            # clear incoming queue
+            if self.incomingEventQueue:
+                self.sf.debug(f"Emptying incomingEventQueue for module {self.__name__}.")
+                with suppress(queue.Empty):
+                    while 1:
+                        self.incomingEventQueue.get_nowait()
+                # set queue to None to prevent its use
+                # if there are leftover objects in the queue, the scan will hang.
+                self.incomingEventQueue = None
+
         finally:
             self.running = False
 
