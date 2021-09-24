@@ -11,7 +11,7 @@ class SpiderFootTarget():
         targetAliases (list): target aliases
     """
 
-    _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "INTERNET_NAME",
+    _validTypes = ["IP_ADDRESS", 'IPV6_ADDRESS', "NETBLOCK_OWNER", "NETBLOCKV6_OWNER", "INTERNET_NAME",
                    "EMAILADDR", "HUMAN_NAME", "BGP_AS_OWNER", 'PHONE_NUMBER', "USERNAME",
                    "BITCOIN_ADDRESS"]
     _targetType = None
@@ -73,8 +73,8 @@ class SpiderFootTarget():
         might supply the hostname as an alias.
 
         Args:
-            value (str): TBD
-            typeName (str): TBD
+            value (str): Target alias value
+            typeName (str): Target alias data type
         """
         if not isinstance(value, (str, bytes)):
             return
@@ -85,18 +85,21 @@ class SpiderFootTarget():
         if not isinstance(typeName, (str, bytes)):
             return
 
-        if {'type': typeName, 'value': value} in self.targetAliases:
+        if not typeName:
             return
 
-        self.targetAliases.append(
-            {'type': typeName, 'value': value.lower()}
-        )
+        alias = {'type': typeName, 'value': value.lower()}
+
+        if alias in self.targetAliases:
+            return
+
+        self.targetAliases.append(alias)
 
     def _getEquivalents(self, typeName: str) -> list:
-        """TBD
+        """Get all aliases of the specfied target data type.
 
         Args:
-            typeName (str): event type
+            typeName (str): Target data type
 
         Returns:
             list: target aliases
@@ -127,7 +130,7 @@ class SpiderFootTarget():
         return names
 
     def getAddresses(self) -> list:
-        """Get all IP Subnets or IP Addresses associated with the target.
+        """Get all IP subnet or IP address aliases associated with the target.
 
         Returns:
             list: List of IP subnets and addresses
@@ -188,7 +191,7 @@ class SpiderFootTarget():
             if value in self.getAddresses():
                 return True
 
-            if self.targetType in ["IP_ADDRESS", "IPV6_ADDRESS", "NETBLOCK_OWNER"]:
+            if self.targetType in ["IP_ADDRESS", "IPV6_ADDRESS", "NETBLOCK_OWNER", "NETBLOCKV6_OWNER"]:
                 try:
                     if netaddr.IPAddress(value) in netaddr.IPNetwork(self.targetValue):
                         return True
