@@ -92,6 +92,7 @@ class sfp_mnemonic(SpiderFootPlugin):
         return [
             'IP_ADDRESS',
             'IPV6_ADDRESS',
+            'INTERNAL_IP_ADDRESS',
             'CO_HOSTED_SITE',
             'INTERNET_NAME',
             'DOMAIN_NAME'
@@ -235,14 +236,20 @@ class sfp_mnemonic(SpiderFootPlugin):
                         if not self.sf.validIP(answer):
                             continue
 
-                        evt = SpiderFootEvent("IP_ADDRESS", answer, self.__name__, event)
+                        if self.sf.isValidLocalOrLoopbackIp(answer):
+                            evt = SpiderFootEvent("INTERNAL_IP_ADDRESS", answer, self.__name__, event)
+                        else:
+                            evt = SpiderFootEvent("IP_ADDRESS", answer, self.__name__, event)
                         self.notifyListeners(evt)
 
                     if r['rrtype'] == 'aaaa':
                         if not self.sf.validIP6(r['answer']):
                             continue
 
-                        evt = SpiderFootEvent("IPV6_ADDRESS", answer, self.__name__, event)
+                        if self.sf.isValidLocalOrLoopbackIp(answer):
+                            evt = SpiderFootEvent("INTERNAL_IP_ADDRESS", answer, self.__name__, event)
+                        else:
+                            evt = SpiderFootEvent("IPV6_ADDRESS", answer, self.__name__, event)
                         self.notifyListeners(evt)
 
         for co in set(cohosts):
@@ -252,7 +259,7 @@ class sfp_mnemonic(SpiderFootPlugin):
             if co in self.results:
                 continue
 
-            if eventName == "IP_ADDRESS":
+            if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
                 if self.opts['verify'] and not self.sf.validateIP(co, eventData):
                     self.sf.debug(f"Host {co} no longer resolves to {eventData}")
                     continue
