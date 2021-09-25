@@ -178,7 +178,7 @@ class sfp_bgpview(SpiderFootPlugin):
             evt = SpiderFootEvent('PHYSICAL_ADDRESS', ', '.join([_f for _f in address if _f]), self.__name__, event)
             self.notifyListeners(evt)
 
-        if eventName == 'NETBLOCK_MEMBER':
+        if eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
             data = self.queryNetblock(eventData)
 
             if not data:
@@ -217,21 +217,22 @@ class sfp_bgpview(SpiderFootPlugin):
                 if not p:
                     continue
 
-                # Not supporting IPv6 prefixes
-                if ":" in p:
-                    continue
                 if not prefix.get('asn'):
                     continue
+
                 asn = prefix.get('asn').get('asn')
                 if not asn:
                     continue
 
-                self.sf.info("Netblock found: " + p + " (" + str(asn) + ")")
+                self.sf.info(f"Netblock found: {p} ({asn})")
                 evt = SpiderFootEvent("BGP_AS_MEMBER", str(asn), self.__name__, event)
                 self.notifyListeners(evt)
 
                 if self.sf.validIpNetwork(p):
-                    evt = SpiderFootEvent("NETBLOCK_MEMBER", p, self.__name__, event)
+                    if ":" in p:
+                        evt = SpiderFootEvent("NETBLOCKV6_MEMBER", p, self.__name__, event)
+                    else:
+                        evt = SpiderFootEvent("NETBLOCK_MEMBER", p, self.__name__, event)
                     self.notifyListeners(evt)
 
 # End of sfp_bgpview class
