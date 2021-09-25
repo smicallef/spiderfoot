@@ -78,6 +78,7 @@ class SpiderFootHelpers():
             {r"^\".+\"$": "USERNAME"},
             {r"^[0-9]+$": "BGP_AS_OWNER"},
             {r"^[0-9a-f:]+$": "IPV6_ADDRESS"},
+            {r"^[0-9a-f:]+::/[0-9]+$": "NETBLOCKV6_OWNER"},
             {r"^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)+([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$": "INTERNET_NAME"},
             {r"^([13][a-km-zA-HJ-NP-Z1-9]{25,34})$": "BITCOIN_ADDRESS"}
         ]
