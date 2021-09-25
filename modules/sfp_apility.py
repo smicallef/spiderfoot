@@ -77,8 +77,15 @@ class sfp_apility(SpiderFootPlugin):
 
     # What events this module produces
     def producedEvents(self):
-        return ['MALICIOUS_IPADDR', 'MALICIOUS_INTERNET_NAME',
-                'IP_ADDRESS', 'PROVIDER_MAIL', 'PROVIDER_DNS', 'RAW_RIR_DATA']
+        return [
+            'MALICIOUS_IPADDR',
+            'MALICIOUS_INTERNET_NAME',
+            'IP_ADDRESS',
+            'INTERNAL_IP_ADDRESS',
+            'PROVIDER_MAIL',
+            'PROVIDER_DNS',
+            'RAW_RIR_DATA'
+        ]
 
     # Query baddomain REST API
     # https://apility.io/apidocs/#domain-check
@@ -231,9 +238,16 @@ class sfp_apility(SpiderFootPlugin):
 
             if res.get('ip'):
                 ip_address = res.get('ip').get('address')
-                if ip_address and self.sf.validIP(ip_address):
-                    evt = SpiderFootEvent('IP_ADDRESS', ip_address, self.__name__, event)
-                    self.notifyListeners(evt)
+                if ip_address:
+                    if self.sf.isValidLocalOrLoopbackIp(ip_address):
+                        evt = SpiderFootEvent("INTERNAL_IP_ADDRESS", ip_address, self.__name__, event)
+                        self.notifyListeners(evt)
+                    elif self.sf.validIP(ip_address):
+                        evt = SpiderFootEvent('IP_ADDRESS', ip_address, self.__name__, event)
+                        self.notifyListeners(evt)
+                    elif self.sf.validIP6(ip_address):
+                        evt = SpiderFootEvent('IPV6_ADDRESS', ip_address, self.__name__, event)
+                        self.notifyListeners(evt)
 
             domain = res.get('domain')
 
