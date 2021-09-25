@@ -154,7 +154,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
         return [
             # Events that need some kind of DNS treatment
             "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", "NETBLOCK_OWNER",
-            "IP_ADDRESS", "IPV6_ADDRESS", "INTERNET_NAME", "AFFILIATE_IPADDR",
+            "IP_ADDRESS", "IPV6_ADDRESS", "INTERNET_NAME", "AFFILIATE_IPADDR", "AFFILIATE_IPV6_ADDRESS",
             # Events that may contain hostnames in their content
             "TARGET_WEB_CONTENT", "BASE64_DATA", "AFFILIATE_DOMAIN_WHOIS",
             "CO_HOSTED_SITE_DOMAIN_WHOIS", "DOMAIN_WHOIS", "NETBLOCK_WHOIS",
@@ -167,7 +167,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return ["IP_ADDRESS", "INTERNET_NAME", "AFFILIATE_INTERNET_NAME",
-                "AFFILIATE_IPADDR", "DOMAIN_NAME", "IPV6_ADDRESS",
+                "AFFILIATE_IPADDR", "AFFILIATE_IPV6_ADDRESS", "DOMAIN_NAME", "IPV6_ADDRESS", "INTERNAL_IP_ADDRESS",
                 "DOMAIN_NAME_PARENT", "CO_HOSTED_SITE_DOMAIN", "AFFILIATE_DOMAIN_NAME",
                 "INTERNET_NAME_UNRESOLVED"]
 
@@ -239,7 +239,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
                 self.processHost(addr, parentEvent, affiliate)
 
         # Reverse resolve IP addresses
-        elif eventName in ["IP_ADDRESS", "IPV6_ADDRESS", "AFFILIATE_IPADDR"]:
+        elif eventName in ["IP_ADDRESS", "IPV6_ADDRESS", "AFFILIATE_IPADDR", "AFFILIATE_IPV6_ADDRESS"]:
             addrs = self.sf.resolveIP(eventData)
 
             if not addrs:
@@ -394,14 +394,18 @@ class sfp_dnsresolve(SpiderFootPlugin):
             affil = affiliate
 
         if affil:
-            if self.sf.validIP(host):
+            if self.sf.isValidLocalOrLoopbackIp(host):
+                htype = "INTERNAL_IP_ADDRESS"
+            elif self.sf.validIP(host):
                 htype = "AFFILIATE_IPADDR"
             elif self.sf.validIP6(host):
                 htype = "AFFILIATE_IPV6_ADDRESS"
             else:
                 htype = "AFFILIATE_INTERNET_NAME"
         else:
-            if self.sf.validIP(host):
+            if self.sf.isValidLocalOrLoopbackIp(host):
+                htype = "INTERNAL_IP_ADDRESS"
+            elif self.sf.validIP(host):
                 htype = "IP_ADDRESS"
             elif self.sf.validIP6(host):
                 htype = "IPV6_ADDRESS"
