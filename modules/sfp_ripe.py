@@ -68,13 +68,28 @@ class sfp_ripe(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ['IP_ADDRESS', 'NETBLOCK_MEMBER', 'NETBLOCK_OWNER',
-                'BGP_AS_OWNER', 'BGP_AS_MEMBER']
+        return [
+            'IP_ADDRESS',
+            'IPV6_ADDRESS',
+            'NETBLOCK_MEMBER',
+            'NETBLOCK_OWNER',
+            'NETBLOCKV6_MEMBER',
+            'NETBLOCKV6_OWNER',
+            'BGP_AS_OWNER',
+            'BGP_AS_MEMBER',
+        ]
 
     # What events this module produces
     def producedEvents(self):
-        return ["NETBLOCK_MEMBER", "NETBLOCK_OWNER", "BGP_AS_MEMBER",
-                "RAW_RIR_DATA", "BGP_AS_OWNER"]
+        return [
+            'NETBLOCK_MEMBER',
+            'NETBLOCK_OWNER',
+            'NETBLOCKV6_MEMBER',
+            'NETBLOCKV6_OWNER',
+            'BGP_AS_MEMBER',
+            'BGP_AS_OWNER',
+            'RAW_RIR_DATA',
+        ]
 
     # Fetch content and notify of the raw data
     def fetchRir(self, url):
@@ -317,14 +332,14 @@ class sfp_ripe(SpiderFootPlugin):
                 if netblock in self.results:
                     continue
 
-                # TODO: Support IPv6
-                if ":" in netblock:
-                    continue
-
                 # Technically this netblock was identified via the AS, not
                 # the original IP event, so link it to asevt, not event.
-                evt = SpiderFootEvent("NETBLOCK_OWNER", netblock, self.__name__, event)
-                self.notifyListeners(evt)
+                if ":" in netblock:
+                    evt = SpiderFootEvent("NETBLOCKV6_OWNER", netblock, self.__name__, event)
+                    self.notifyListeners(evt)
+                else:
+                    evt = SpiderFootEvent("NETBLOCK_OWNER", netblock, self.__name__, event)
+                    self.notifyListeners(evt)
 
             evt = SpiderFootEvent("RAW_RIR_DATA", self.lastContent, self.__name__, event)
             self.notifyListeners(evt)
@@ -332,14 +347,14 @@ class sfp_ripe(SpiderFootPlugin):
             return
 
         # NETBLOCK -> AS and other owned netblocks
-        if eventName.startswith("NETBLOCK_"):
+        if eventName.startswith("NETBLOCK"):
             # Get the BGP AS the netblock is a part of
             asn = self.netblockAs(eventData)
             if asn is None:
                 self.sf.debug(f"Could not identify BGP AS for {eventData}")
                 return
 
-            if eventName == "NETBLOCK_OWNER" and self.ownsAs(asn):
+            if eventName in ["NETBLOCK_OWNER", "NETBLOCKV6_OWNER"] and self.ownsAs(asn):
                 asevt = SpiderFootEvent("BGP_AS_OWNER", asn, self.__name__, event)
                 self.notifyListeners(asevt)
                 evt = SpiderFootEvent("RAW_RIR_DATA", self.lastContent, self.__name__, event)
@@ -351,7 +366,7 @@ class sfp_ripe(SpiderFootPlugin):
             return
 
         # IP ADDRESS -> NETBLOCK
-        if eventName == "IP_ADDRESS":
+        if eventName in ["IP_ADDRESS", "IPV6_ADDRESS"]:
             # Get the Netblock the IP is a part of
             prefix = self.ipNetblock(eventData)
             if prefix is None:
@@ -364,9 +379,15 @@ class sfp_ripe(SpiderFootPlugin):
                 self.sf.debug(f"Could not identify BGP AS for {prefix}")
                 return
 
-            if self.sf.validIpNetwork(prefix):
-                self.sf.info(f"Netblock found: {prefix} ({asn})")
+            if not self.sf.validIpNetwork(prefix):
+                return
+
+            self.sf.info(f"Netblock found: {prefix} ({asn})")
+
+            if ":" in prefix:
+                evt = SpiderFootEvent("NETBLOCKV6_MEMBER", prefix, self.__name__, event)
+            else:
                 evt = SpiderFootEvent("NETBLOCK_MEMBER", prefix, self.__name__, event)
-                self.notifyListeners(evt)
+            self.notifyListeners(evt)
 
 # End of sfp_ripe class
