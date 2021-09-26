@@ -160,6 +160,7 @@
         function searchResults(instanceId, query, typeName) {
             // Remove pre-existing tables if they exist
             $("#scansummary-content").remove();
+            $("#scanlogs-content").remove();
             navTo("btn-search");
             $("#modifyactions").hide();
             $("#loader").show();
@@ -220,6 +221,7 @@
             grid += "</div>"
 
             $("#scansummary-content").remove();
+            $("#scanlogs-content").remove();
             $("#loader").show();
             $("#btn-export").show();
             $("#btn-download-logs").hide();
@@ -299,6 +301,7 @@
             grid += "</div></div>"
 
             $("#scansummary-content").remove();
+            $("#scanlogs-content").remove();
             $("#loader").show();
             $("#btn-export").hide();
             $("#btn-download-logs").hide();
@@ -392,6 +395,7 @@
         // Logs for the scan
         function viewScanLog(instanceId) {
             $("#scansummary-content").remove();
+            $("#scanlogs-content").remove();
             $("#loader").show();
             $("#btn-search").hide();
             $("#btn-export").hide();
@@ -400,7 +404,7 @@
             navTo("btn-log");
             refresh = function() { viewScanLog(instanceId); }
             sf.fetchData('${docroot}/scanlog', {'id': instanceId}, function(data) {
-                            var table = "<div class='table-responsive'><table id='scansummary-content' class='table table-bordered table-striped table-condensed font-size-90-percent'>";
+                            var table = "<table id='scanlogs-content' class='table table-bordered table-striped table-condensed tablesorter font-size-90-percent'>";
                             table += "<thead><tr><th>Time</th><th>Component</th><th>Type</th><th>Event</th></tr></thead><tbody>";
                             for (var i = 0; i < data.length; i++) {
                                 if (data[i][2] == "ERROR") {
@@ -414,10 +418,10 @@
                                 table += "<td>" + data[i][3] + "</td>";
                                 table += "</tr>";
                             }
-                            table += "</tbody></table></div>";
+                            table += "</tbody></table>";
                             $("#loader").fadeOut(500);
                             $("#mainbody").append(table);
-                            $("#scansummary-content").tablesorter();
+                            $("#scanlogs-content").tablesorter({widgets: ["filter"], widgetOptions : { filter_searchDelay : 300, filter_hideFilters : false }});
             });
         }
 
@@ -428,6 +432,7 @@
 
             // Remove pre-existing tables if they exist
             $("#scansummary-content").remove();
+            $("#scanlogs-content").remove();
             navTo("btn-browse");
             $("#loader").show();
             $("#btn-export").show();
@@ -465,6 +470,7 @@
                 filterFP = false;
             }
             $("#scansummary-content").remove();
+            $("#scanlogs-content").remove();
             $("#breadcrumbs").remove();
             $("#loader").show();
             navTo("btn-browse");
@@ -702,6 +708,7 @@
         // View the configuration that was used for this scan
         function viewScanConfig(instanceId) {
             $("#scansummary-content").remove();
+            $("#scanlogs-content").remove();
             $("#loader").show();
             $("#btn-export").hide();
             $("#btn-download-logs").hide();
