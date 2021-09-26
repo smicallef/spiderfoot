@@ -23,7 +23,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
     meta = {
         'name': "DNS Resolver",
-        'summary': "Resolves Hosts and IP Addresses identified, also extracted from raw content.",
+        'summary': "Resolves hosts and IP addresses identified, also extracted from raw content.",
         'flags': [],
         'useCases': ["Footprint", "Investigate", "Passive"],
         'categories': ["DNS"]
@@ -34,7 +34,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         'validatereverse': True,
         'skipcommononwildcard': True,
         'netblocklookup': True,
-        'maxnetblock': 24
+        'maxnetblock': 24,
+        'maxv6netblock': 120,
     }
 
     # Option descriptions
@@ -42,7 +43,8 @@ class sfp_dnsresolve(SpiderFootPlugin):
         'skipcommononwildcard': "If wildcard DNS is detected, only attempt to look up the first common sub-domain from the common sub-domain list.",
         'validatereverse': "Validate that reverse-resolved hostnames still resolve back to that IP before considering them as aliases of your target.",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible hosts on the same target subdomain/domain?",
-        'maxnetblock': "Maximum owned netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'maxnetblock': "Maximum owned IPv4 netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'maxv6netblock': "Maximum owned IPv6 netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
     }
 
     events = None
@@ -120,6 +122,11 @@ class sfp_dnsresolve(SpiderFootPlugin):
             if r:
                 ret.extend(r)
         if t == "NETBLOCK_OWNER":
+            max_netblock = self.opts['maxnetblock']
+            if IPNetwork(v).prefixlen < max_netblock:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
+                return list(set(ret))
+
             for addr in IPNetwork(v):
                 if self.checkForStop():
                     return list(set(ret))
@@ -146,6 +153,33 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     chk = self.sf.resolveHost(host)
                     if chk and ipaddr in chk:
                         ret.append(host)
+        if t == "NETBLOCKV6_OWNER":
+            max_netblock = self.opts['maxv6netblock']
+            if IPNetwork(v).prefixlen < max_netblock:
+                self.sf.debug(f"Network size bigger than permitted: {IPNetwork(v).prefixlen} > {max_netblock}")
+                return list(set(ret))
+
+            for addr in IPNetwork(v):
+                if self.checkForStop():
+                    return list(set(ret))
+
+                ipaddr = str(addr)
+
+                ret.append(ipaddr)
+
+                # Add the reverse-resolved hostnames as aliases too
+                names = self.sf.resolveIP(ipaddr)
+                if not names:
+                    continue
+
+                if not validateReverse:
+                    ret.extend(names)
+                    continue
+
+                for host in names:
+                    chk = self.sf.resolveHost6(host)
+                    if chk and ipaddr in chk:
+                        ret.append(host)
 
         return list(set(ret))
 
@@ -153,7 +187,7 @@ class sfp_dnsresolve(SpiderFootPlugin):
     def watchedEvents(self):
         return [
             # Events that need some kind of DNS treatment
-            "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", "NETBLOCK_OWNER",
+            "CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME", "NETBLOCK_OWNER", "NETBLOCKV6_OWNER",
             "IP_ADDRESS", "IPV6_ADDRESS", "INTERNET_NAME", "AFFILIATE_IPADDR", "AFFILIATE_IPV6_ADDRESS",
             # Events that may contain hostnames in their content
             "TARGET_WEB_CONTENT", "BASE64_DATA", "AFFILIATE_DOMAIN_WHOIS",
@@ -262,32 +296,32 @@ class sfp_dnsresolve(SpiderFootPlugin):
                     affiliate = True
                 self.processHost(addr, parentEvent, affiliate)
 
-        elif eventName == 'NETBLOCK_OWNER':
+        elif eventName in ['NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
             if not self.opts['netblocklookup']:
                 return
 
-            max_netblock = self.opts['maxnetblock']
+            if eventName == 'NETBLOCKV6_OWNER':
+                max_netblock = self.opts['maxv6netblock']
+            else:
+                max_netblock = self.opts['maxnetblock']
+
             if IPNetwork(eventData).prefixlen < max_netblock:
                 self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
-            # TODO: Add support for IPv6 netblocks
-            if "::" in eventData:
-                self.sf.info("IPv6 netblocks are not supported. Ignoring {eventData}.")
-                return
-
             self.sf.debug(f"Looking up IPs in owned netblock: {eventData}")
             for ip in IPNetwork(eventData):
-                ipaddr = str(ip)
-                if "::" in ipaddr:
-                    continue
-                if ipaddr.split(".")[3] in ['255', '0']:
-                    continue
-                if '255' in ipaddr.split("."):
-                    continue
-
                 if self.checkForStop():
                     return
+
+                ipaddr = str(ip)
+
+                # Skip 0 and 255 for IPv4 addresses
+                if self.sf.validIP(ipaddr):
+                    if ipaddr.split(".")[3] in ['255', '0']:
+                        continue
+                    if '255' in ipaddr.split("."):
+                        continue
 
                 addrs = self.sf.resolveIP(ipaddr)
                 if not addrs:
