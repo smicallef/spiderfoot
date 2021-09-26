@@ -74,8 +74,8 @@ class sfp_zoneh(SpiderFootPlugin):
     # What events is this module interested in for input
     # * = be notified about all events.
     def watchedEvents(self):
-        return ["INTERNET_NAME", "IP_ADDRESS",
-                "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR",
+        return ["INTERNET_NAME", "IP_ADDRESS", "IPV6_ADDRESS",
+                "AFFILIATE_INTERNET_NAME", "AFFILIATE_IPADDR", "AFFILIATE_IPV6_ADDRESS",
                 "CO_HOSTED_SITE"]
 
     # What events this module produces
@@ -114,23 +114,22 @@ class sfp_zoneh(SpiderFootPlugin):
 
         if eventName == 'CO_HOSTED_SITE' and not self.opts['checkcohosts']:
             return
-        if eventName == 'AFFILIATE_INTERNET_NAME' or eventName == 'AFFILIATE_IPADDR' \
-                and not self.opts['checkaffiliates']:
+
+        if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
             return
 
-        evtType = 'DEFACED_INTERNET_NAME'
-
-        if eventName == 'IP_ADDRESS':
+        if eventName == 'INTERNET_NAME':
+            evtType = 'DEFACED_INTERNET_NAME'
+        elif eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             evtType = 'DEFACED_IPADDR'
-
-        if eventName == 'CO_HOSTED_SITE':
+        elif eventName == 'CO_HOSTED_SITE':
             evtType = 'DEFACED_COHOST'
-
-        if eventName == 'AFFILIATE_INTERNET_NAME':
+        elif eventName == 'AFFILIATE_INTERNET_NAME':
             evtType = 'DEFACED_AFFILIATE_INTERNET_NAME'
-
-        if eventName == 'AFFILIATE_IPADDR':
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             evtType = 'DEFACED_AFFILIATE_IPADDR'
+        else:
+            self.sf.debug(f"Unexpected event type {eventName}, skipping")
 
         if self.checkForStop():
             return
@@ -143,9 +142,9 @@ class sfp_zoneh(SpiderFootPlugin):
                 self.sf.error("Unable to fetch " + url)
                 self.errorState = True
                 return
-            else:
-                self.sf.cachePut("sfzoneh", data['content'])
-                content = data['content']
+
+            self.sf.cachePut("sfzoneh", data['content'])
+            content = data['content']
 
         ret = self.lookupItem(eventData, content)
         if ret:
