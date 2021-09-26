@@ -56,7 +56,7 @@ class sfp_fortinet(SpiderFootPlugin):
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR"]
+        return ["IP_ADDRESS", "IPV6_ADDRESS", "AFFILIATE_IPADDR", "AFFILIATE_IPV6_ADDRESS"]
 
     # What events this module produces
     def producedEvents(self):
@@ -101,9 +101,9 @@ class sfp_fortinet(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == 'IP_ADDRESS':
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             evtType = 'MALICIOUS_IPADDR'
-        elif eventName == 'AFFILIATE_IPADDR':
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             if not self.opts.get('checkaffiliates', False):
                 return
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
