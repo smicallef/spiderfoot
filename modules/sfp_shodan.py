@@ -242,7 +242,7 @@ class sfp_shodan(SpiderFootPlugin):
 
             # For netblocks, we need to create the IP address event so that
             # the threat intel event is more meaningful.
-            if eventName.startswith('NETBLOCK_'):
+            if eventName == 'NETBLOCK_OWNER':
                 pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
                 self.notifyListeners(pevent)
             else:
