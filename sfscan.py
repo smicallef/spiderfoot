@@ -288,7 +288,7 @@ class SpiderFootScanner():
             try:
                 mod = getattr(module, modName)()
                 mod.__name__ = modName
-            except Exception as e:
+            except Exception:
                 self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 continue
 
@@ -304,7 +304,7 @@ class SpiderFootScanner():
                 mod.setup(self.__sf, self.__modconfig[modName])
                 mod.setDbh(self.__dbh)
                 mod.setScanId(self.__scanId)
-            except Exception as e:
+            except Exception:
                 self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 mod.errorState = True
                 continue
