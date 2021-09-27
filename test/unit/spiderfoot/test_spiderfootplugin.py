@@ -369,3 +369,47 @@ class TestSpiderFootPlugin(unittest.TestCase):
         sfp.sf = sf
 
         sfp.start()
+
+    def test_threadPool(self):
+        """
+        Test ThreadPool(sfp, threads=10)
+        """
+        sf = SpiderFoot(self.default_options)
+        sfp = SpiderFootPlugin()
+        sfp.sf = sf
+        threads = 10
+
+        def callback(x, *args, **kwargs):
+            return (x, args, list(kwargs.items())[0])
+
+        iterable = ["a", "b", "c"]
+        args = ("arg1",)
+        kwargs = {"kwarg1": "kwarg1"}
+        expectedOutput = [
+            ("a", ("arg1",), ("kwarg1", "kwarg1")),
+            ("b", ("arg1",), ("kwarg1", "kwarg1")),
+            ("c", ("arg1",), ("kwarg1", "kwarg1"))
+        ]
+        # Example 1: using map()
+        with sfp.threadPool(threads) as pool:
+            map_results = sorted(
+                list(pool.map(
+                    callback,
+                    iterable,
+                    args=args,
+                    kwargs=kwargs
+                )),
+                key=lambda x: x[0]
+            )
+        self.assertEqual(map_results, expectedOutput)
+
+        # Example 2: using submit()
+        with sfp.threadPool(threads) as pool:
+            pool.start(callback, *args, **kwargs)
+            for i in iterable:
+                pool.submit(i)
+            submit_results = sorted(
+                list(pool.shutdown()),
+                key=lambda x: x[0]
+            )
+        self.assertEqual(submit_results, expectedOutput)
