@@ -48,7 +48,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
         'netblockscan': True,
         'netblockscanmax': 24,
         'batchsize': 16,
-        '_maxthreads': 4
+        'maxthreads': 4
     }
 
     # Option descriptions
@@ -60,7 +60,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
         'netblockscan': "Port scan all IPs within identified owned netblocks?",
         'netblockscanmax': "Maximum netblock/subnet size to scan IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'batchsize': "Scan in batches of this size.",
-        '_maxthreads': "Maximum number of scans to run at one time"
+        'maxthreads': "Maximum number of scans to run at one time"
     }
 
     results = None
@@ -76,7 +76,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
-        self.scanPool = self.threadPool(threads=int(self.opts['_maxthreads']), name='sfp_tool_nmap')
+        self.scanPool = self.threadPool(threads=int(self.opts['maxthreads']), name='sfp_tool_nmap')
         self.scanPool.start(self.scan)
 
         # Normalize path
@@ -111,7 +111,9 @@ class sfp_tool_nmap(SpiderFootPlugin):
             # Nmap has the ability to port scan or version scan multiple hosts in parallel
             # Nmap does this by dividing the target IP space into groups and then scanning
             # one group at a time. In general, larger groups are more efficient.
-            '--min-hostgroup', str(self.opts['batchsize'])
+            '--min-hostgroup', str(self.opts['batchsize']),
+            # Disable runtime interactions via keyboard
+            '--noninteractive'
         )
         if self.opts['ports']:
             self.args += ("-p", self.opts['ports'])
