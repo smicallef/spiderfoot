@@ -127,7 +127,7 @@ class sfp_tool_nmap(SpiderFootPlugin):
             self.args += ("--osscan-limit",)
         # -T4 does the equivalent of --max-rtt-timeout 1250ms --min-rtt-timeout 100ms --initial-rtt-timeout 500ms
         # --max-retries 6 and sets the maximum TCP scan delay to 10 milliseconds.
-        self.args += ("-T{}".format(max(0, min(5, int(self.opts["timing"])))),)
+        self.args += (f"-T{max(0, min(5, int(self.opts['timing'])))}",)
 
     # What events is this module interested in for input
     def watchedEvents(self):
