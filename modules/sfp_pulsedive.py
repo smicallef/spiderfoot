@@ -56,10 +56,13 @@ class sfp_pulsedive(SpiderFootPlugin):
         # The rate limit for free users is 30 requests per minute
         "delay": 2,
         "age_limit_days": 30,
+        'checkaffiliates': True,
         'netblocklookup': True,
         'maxnetblock': 24,
+        'maxv6netblock': 120,
         'subnetlookup': True,
-        'maxsubnet': 24
+        'maxsubnet': 24,
+        'maxv6subnet': 120,
     }
 
     # Option descriptions
@@ -67,14 +70,14 @@ class sfp_pulsedive(SpiderFootPlugin):
         "api_key": "Pulsedive API Key.",
         "delay": "Delay between requests, in seconds.",
         "age_limit_days": "Ignore any records older than this many days. 0 = unlimited.",
+        "checkaffiliates": "Apply checks to affiliates?",
         'netblocklookup': "Look up all IPs on netblocks deemed to be owned by your target for possible blacklisted hosts on the same target subdomain/domain?",
-        'maxnetblock': "If looking up owned netblocks, the maximum netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'maxnetblock': "If looking up owned netblocks, the maximum IPv4 netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'maxv6netblock': "If looking up owned netblocks, the maximum IPv6 netblock size to look up all IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
         'subnetlookup': "Look up all IPs on subnets which your target is a part of for blacklisting?",
-        'maxsubnet': "If looking up subnets, the maximum subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)"
+        'maxsubnet': "If looking up subnets, the maximum IPv4 subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
+        'maxv6subnet': "If looking up subnets, the maximum IPv6 subnet size to look up all the IPs within (CIDR value, 24 = /24, 16 = /16, etc.)",
     }
-
-    # Be sure to completely clear any class variables in setup()
-    # or you run the risk of data persisting between scan runs.
 
     results = None
     errorState = False
@@ -83,16 +86,22 @@ class sfp_pulsedive(SpiderFootPlugin):
         self.sf = sfc
         self.results = self.tempStorage()
 
-        # Clear / reset any other class member variables here
-        # or you risk them persisting between threads.
-
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]
 
     # What events is this module interested in for input
     def watchedEvents(self):
-        return ["IP_ADDRESS", "AFFILIATE_IPADDR", "INTERNET_NAME",
-                "NETBLOCK_OWNER", "NETBLOCK_MEMBER"]
+        return [
+            "IP_ADDRESS",
+            "IPV6_ADDRESS",
+            "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
+            "INTERNET_NAME",
+            "NETBLOCK_OWNER",
+            "NETBLOCKV6_OWNER",
+            "NETBLOCK_MEMBER",
+            "NETBLOCKV6_MEMBER",
+        ]
 
     # What events this module produces
     def producedEvents(self):
@@ -111,6 +120,11 @@ class sfp_pulsedive(SpiderFootPlugin):
         res = self.sf.fetchUrl(url, timeout=30, useragent="SpiderFoot")
 
         time.sleep(self.opts['delay'])
+
+        if res['code'] == '429':
+            self.sf.error("You are being rate-limited by Pulsedive")
+            self.errorState = True
+            return None
 
         if res['code'] == "403":
             self.sf.error("Pulsedive API key seems to have been rejected or you have exceeded usage limits for the month.")
@@ -150,43 +164,57 @@ class sfp_pulsedive(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == 'NETBLOCK_OWNER':
+        if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
+            return
+
+        if eventName in ['NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
             if not self.opts['netblocklookup']:
                 return
+
+            if eventName == 'NETBLOCKV6_OWNER':
+                max_netblock = self.opts['maxv6netblock']
+            else:
+                max_netblock = self.opts['maxnetblock']
 
             max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
                 self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return
 
-        if eventName == 'NETBLOCK_MEMBER':
+        if eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
             if not self.opts['subnetlookup']:
                 return
 
-            max_subnet = self.opts['maxsubnet']
+            if eventName == 'NETBLOCKV6_OWNER':
+                max_subnet = self.opts['maxv6subnet']
+            else:
+                max_subnet = self.opts['maxsubnet']
+
             if IPNetwork(eventData).prefixlen < max_subnet:
                 self.sf.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_subnet}")
                 return
 
         qrylist = list()
 
-        if eventName.startswith("NETBLOCK_"):
+        if eventName.startswith("NETBLOCK"):
             for ipaddr in IPNetwork(eventData):
                 qrylist.append(str(ipaddr))
                 self.results[str(ipaddr)] = True
         else:
             qrylist.append(eventData)
 
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS', 'NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
+            evtType = 'MALICIOUS_IPADDR'
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS', 'NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
+            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+        elif eventName == "INTERNET_NAME":
+            evtType = 'MALICIOUS_INTERNET_NAME'
+        else:
+            return
+
         for addr in qrylist:
             if self.checkForStop():
                 return
-
-            if eventName == 'IP_ADDRESS' or eventName.startswith('NETBLOCK_'):
-                evtType = 'MALICIOUS_IPADDR'
-            if eventName == "AFFILIATE_IPADDR":
-                evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-            if eventName == "INTERNET_NAME":
-                evtType = 'MALICIOUS_INTERNET_NAME'
 
             rec = self.query(addr)
 
@@ -207,7 +235,7 @@ class sfp_pulsedive(SpiderFootPlugin):
             if not threats:
                 continue
 
-            self.sf.debug("Found threat info in Pulsedive")
+            self.sf.debug(f"Found threat info for {addr} in Pulsedive")
 
             for result in threats:
                 descr = addr
@@ -225,7 +253,7 @@ class sfp_pulsedive(SpiderFootPlugin):
                     created_ts = int(time.mktime(created_dt.timetuple()))
                     age_limit_ts = int(time.time()) - (86400 * self.opts['age_limit_days'])
                     if self.opts['age_limit_days'] > 0 and created_ts < age_limit_ts:
-                        self.sf.debug("Record found but too old, skipping.")
+                        self.sf.debug(f"Threat found but too old ({created_dt}), skipping.")
                         continue
                 except Exception:
                     self.sf.debug("Couldn't parse date from Pulsedive so assuming it's OK.")
