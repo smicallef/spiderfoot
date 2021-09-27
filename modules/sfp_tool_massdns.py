@@ -222,7 +222,7 @@ class sfp_tool_massdns(SpiderFootPlugin):
         """
         validResolvers = []
         with self.threadPool(threads=100, name='sfp_tool_massdns_verify_nameservers') as pool:
-            for resolver, error in pool.map(nameservers, self.verifyNameserver):
+            for resolver, error in pool.map(self.verifyNameserver, nameservers):
                 if not error:
                     validResolvers.append(resolver)
                 else:
@@ -270,7 +270,7 @@ class sfp_tool_massdns(SpiderFootPlugin):
         hosts = [h for h in hosts if h not in self.state["sent_events"]]
         validHosts = []
         with self.threadPool(threads=100, name='sfp_tool_massdns_validate_hosts') as pool:
-            for h, valid in pool.map(hosts, self.isValidHost):
+            for h, valid in pool.map(self.isValidHost, hosts):
                 if valid:
                     validHosts.append(h)
                 else:
@@ -439,6 +439,7 @@ class sfp_tool_massdns(SpiderFootPlugin):
             self.sf.debug(f"Loaded large subdomain wordlist ({len(subdomains):,} entries) from cache")
         else:
             today = datetime.datetime.now()
+            # AssetNote CI/CD runs on the 28th of each month
             day = 28
             month = int(today.month)
             year = int(today.year)
