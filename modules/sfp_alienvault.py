@@ -122,6 +122,8 @@ class sfp_alienvault(SpiderFootPlugin):
     # What events this module produces
     def producedEvents(self):
         return [
+            "IP_ADDRESS",
+            "AFFILIATE_IPADDR",
             "CO_HOSTED_SITE",
             "INTERNET_NAME",
             "INTERNET_NAME_UNRESOLVED",
@@ -373,19 +375,19 @@ class sfp_alienvault(SpiderFootPlugin):
                         else:
                             self.sf.info(f"Maximum co-host threshold exceeded ({self.opts['maxcohost']}), ignoring co-host {host}")
 
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS'] or eventName.startswith('NETBLOCK_'):
+            evtType = 'MALICIOUS_IPADDR'
+        elif eventName == "AFFILIATE_IPADDR":
+            evtType = 'MALICIOUS_AFFILIATE_IPADDR'
+        else:
+            self.sf.debug(f"Unexpected event type {eventName}, skipping")
+            return
+
         for addr in qrylist:
             if self.checkForStop():
                 return
             if self.errorState:
                 return
-
-            if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS'] or eventName.startswith('NETBLOCK_'):
-                evtType = 'MALICIOUS_IPADDR'
-            elif eventName == "AFFILIATE_IPADDR":
-                evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-            else:
-                self.sf.debug(f"Unexpected event type {eventName}, skipping")
-                continue
 
             rec = self.queryReputation(addr)
 
@@ -426,8 +428,11 @@ class sfp_alienvault(SpiderFootPlugin):
 
                 # For netblocks, we need to create the IP address event so that
                 # the threat intel event is more meaningful.
-                if eventName.startswith('NETBLOCK_'):
+                if eventName == 'NETBLOCK_OWNER':
                     pevent = SpiderFootEvent("IP_ADDRESS", addr, self.__name__, event)
+                    self.notifyListeners(pevent)
+                elif eventName == 'NETBLOCK_MEMBER':
+                    pevent = SpiderFootEvent("AFFILIATE_IPADDR", addr, self.__name__, event)
                     self.notifyListeners(pevent)
                 else:
                     pevent = event
