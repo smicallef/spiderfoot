@@ -81,7 +81,9 @@ class sfp_abuseipdb(SpiderFootPlugin):
     def watchedEvents(self):
         return [
             "IP_ADDRESS",
+            "IPV6_ADDRESS",
             "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
         ]
 
     def producedEvents(self):
@@ -158,14 +160,14 @@ class sfp_abuseipdb(SpiderFootPlugin):
             ip = ip.strip()
             if ip.startswith('#'):
                 continue
-            if not self.sf.validIP(ip):
+            if not self.sf.validIP(ip) and not self.sf.validIP6(ip):
                 continue
             ips.append(ip)
 
         return ips
 
     def queryIpAddress(self, ip):
-        """Query API for an IP address.
+        """Query API for an IPv4 or IPv6 address.
 
         Note: Currently unused.
 
@@ -291,12 +293,12 @@ class sfp_abuseipdb(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == 'AFFILIATE_IPADDR' and not self.opts.get('checkaffiliates'):
+        if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
             return
 
-        if eventName == 'IP_ADDRESS':
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             evtType = 'MALICIOUS_IPADDR'
-        elif eventName == 'AFFILIATE_IPADDR':
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
         else:
             return
