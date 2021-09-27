@@ -76,9 +76,13 @@ class sfp_blocklistde(SpiderFootPlugin):
     def watchedEvents(self):
         return [
             "IP_ADDRESS",
+            "IPV6_ADDRESS",
             "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
             "NETBLOCK_MEMBER",
-            "NETBLOCK_OWNER"
+            "NETBLOCKV6_MEMBER",
+            "NETBLOCK_OWNER",
+            "NETBLOCKV6_OWNER",
         ]
 
     # What events this module produces
@@ -153,7 +157,7 @@ class sfp_blocklistde(SpiderFootPlugin):
             ip = ip.strip()
             if ip.startswith('#'):
                 continue
-            if not self.sf.validIP(ip):
+            if not self.sf.validIP(ip) and not self.sf.validIP6(ip):
                 continue
             ips.append(ip)
 
@@ -176,20 +180,20 @@ class sfp_blocklistde(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == 'IP_ADDRESS':
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             targetType = 'ip'
             evtType = 'MALICIOUS_IPADDR'
-        elif eventName == 'AFFILIATE_IPADDR':
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             if not self.opts.get('checkaffiliates', False):
                 return
             targetType = 'ip'
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
-        elif eventName == 'NETBLOCK_OWNER':
+        elif eventName in ['NETBLOCK_OWNER', 'NETBLOCKV6_OWNER']:
             if not self.opts.get('checknetblocks', False):
                 return
             targetType = 'netblock'
             evtType = 'MALICIOUS_NETBLOCK'
-        elif eventName == 'NETBLOCK_MEMBER':
+        elif eventName in ['NETBLOCK_MEMBER', 'NETBLOCKV6_MEMBER']:
             if not self.opts.get('checksubnets', False):
                 return
             targetType = 'netblock'
