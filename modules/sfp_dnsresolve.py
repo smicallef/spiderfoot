@@ -226,6 +226,20 @@ class sfp_dnsresolve(SpiderFootPlugin):
 
         self.events[eventDataHash] = True
 
+        # TODO: support converting "in-addr.arpa" or "ip6.arpa" formatted affiliate internet names to IP addresses
+
+        # Parse Microsoft workaround "ipv6-literal.net" fake domain for IPv6 UNC paths
+        # For internal use on Windows systems (should not resolve in DNS)
+        if eventData.endswith(".ipv6-literal.net") and eventName == "AFFILIATE_INTERNET_NAME":
+            ipv6 = eventData.split(".ipv6-literal.net")[0].replace('-', ':').replace('s', '%').split('%')[0]
+            if self.sf.validIP6(ipv6):
+                if self.getTarget().matches(ipv6):
+                    evt = SpiderFootEvent("IPV6_ADDRESS", ipv6, self.__name__, parentEvent)
+                else:
+                    evt = SpiderFootEvent("AFFILIATE_IPV6_ADDRESS", ipv6, self.__name__, parentEvent)
+                self.notifyListeners(evt)
+            return
+
         # Simply translates these to their domains
         if eventName in ["CO_HOSTED_SITE", "AFFILIATE_INTERNET_NAME"]:
             # If the co-host or affiliate is a domain name, generate
