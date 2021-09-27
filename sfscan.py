@@ -538,7 +538,6 @@ class SpiderFootScanner():
             if modules_running:
                 self.__sf.debug(f"Modules running: {', '.join(modules_running)}")
 
-
         if all(queues_empty) and not modules_running:
             return True
         return False
