@@ -54,11 +54,22 @@ class sfp_bgpview(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ['IP_ADDRESS', 'IPV6_ADDRESS', 'BGP_AS_MEMBER', 'NETBLOCK_MEMBER']
+        return [
+            'IP_ADDRESS',
+            'IPV6_ADDRESS',
+            'BGP_AS_MEMBER',
+            'NETBLOCK_MEMBER',
+            'NETBLOCKV6_MEMBER'
+        ]
 
     def producedEvents(self):
-        return ['BGP_AS_MEMBER', 'NETBLOCK_MEMBER',
-                'PHYSICAL_ADDRESS', 'RAW_RIR_DATA']
+        return [
+            'BGP_AS_MEMBER',
+            'NETBLOCK_MEMBER',
+            'NETBLOCKV6_MEMBER',
+            'PHYSICAL_ADDRESS',
+            'RAW_RIR_DATA'
+        ]
 
     def queryAsn(self, qry):
         res = self.sf.fetchUrl("https://api.bgpview.io/asn/" + qry.replace('AS', ''),
