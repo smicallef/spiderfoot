@@ -67,8 +67,10 @@ class sfp_vxvault(SpiderFootPlugin):
         return [
             "INTERNET_NAME",
             "IP_ADDRESS",
-            "AFFILIATE_INTERNET_NAME",
+            "IPV6_ADDRESS",
             "AFFILIATE_IPADDR",
+            "AFFILIATE_IPV6_ADDRESS",
+            "AFFILIATE_INTERNET_NAME",
             "CO_HOSTED_SITE"
         ]
 
@@ -147,7 +149,7 @@ class sfp_vxvault(SpiderFootPlugin):
             host = url.split("/")[2]
             if not host:
                 continue
-            if "." not in host:
+            if "." not in host and "::" not in host:
                 continue
             hosts.append(host)
 
@@ -170,21 +172,21 @@ class sfp_vxvault(SpiderFootPlugin):
 
         self.results[eventData] = True
 
-        if eventName == "IP_ADDRESS":
+        if eventName.startswith("AFFILIATE") and not self.opts['checkaffiliates']:
+            return
+
+        if eventName == 'CO_HOSTED_SITE' and not self.opts.get('checkcohosts'):
+            return
+
+        if eventName in ['IP_ADDRESS', 'IPV6_ADDRESS']:
             evtType = 'MALICIOUS_IPADDR'
-        elif eventName == "AFFILIATE_IPADDR":
-            if not self.opts.get('checkaffiliates', False):
-                return
+        elif eventName in ['AFFILIATE_IPADDR', 'AFFILIATE_IPV6_ADDRESS']:
             evtType = 'MALICIOUS_AFFILIATE_IPADDR'
         elif eventName == "INTERNET_NAME":
             evtType = "MALICIOUS_INTERNET_NAME"
         elif eventName == 'AFFILIATE_INTERNET_NAME':
-            if not self.opts.get('checkaffiliates', False):
-                return
             evtType = 'MALICIOUS_AFFILIATE_INTERNET_NAME'
         elif eventName == 'CO_HOSTED_SITE':
-            if not self.opts.get('checkcohosts', False):
-                return
             evtType = 'MALICIOUS_COHOST'
         else:
             return
