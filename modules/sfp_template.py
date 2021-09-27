@@ -315,7 +315,7 @@ class sfp_template(SpiderFootPlugin):
             # For netblocks, we need to create the IP address event so that
             # the threat intel event is more meaningful and linked to the
             # IP address within the network, not the whole network.
-            if eventName.startswith('NETBLOCK_'):
+            if eventName == 'NETBLOCK_OWNER':
                 # This is where the module generates an event for other modules
                 # to process and is a fundamental part of the SpiderFoot architecture.
                 # We are generating an event of type "IP_ADDRESS" here, the data being
@@ -328,6 +328,9 @@ class sfp_template(SpiderFootPlugin):
                 # With the event created, we can now notify any other modules listening
                 # for IP_ADDRESS events (which they define in their watchedEvents()
                 # function).
+                self.notifyListeners(pevent)
+            elif eventName == 'NETBLOCK_MEMBER':
+                pevent = SpiderFootEvent("AFFILIATE_IPADDR", addr, self.__name__, event)
                 self.notifyListeners(pevent)
             else:
                 # If the event received wasn't a netblock, then use that event
