@@ -39,9 +39,11 @@ class sfp_crxcavator(SpiderFootPlugin):
     }
 
     opts = {
+        "verify": True,
     }
 
     optdescs = {
+        "verify": "Verify identified hostnames resolve.",
     }
 
     results = None
@@ -63,8 +65,10 @@ class sfp_crxcavator(SpiderFootPlugin):
         return [
             'APPSTORE_ENTRY',
             'INTERNET_NAME',
+            'INTERNET_NAME_UNRESOLVED',
             'LINKED_URL_INTERNAL',
             'AFFILIATE_INTERNET_NAME',
+            'AFFILIATE_INTERNET_NAME_UNRESOLVED',
             'PHYSICAL_ADDRESS'
         ]
 
@@ -260,11 +264,16 @@ class sfp_crxcavator(SpiderFootPlugin):
                 continue
 
             if self.getTarget().matches(host, includeChildren=True, includeParents=True):
-                evt = SpiderFootEvent('INTERNET_NAME', host, self.__name__, event)
-                self.notifyListeners(evt)
+                evt_type = 'INTERNET_NAME'
             else:
-                evt = SpiderFootEvent('AFFILIATE_INTERNET_NAME', host, self.__name__, event)
-                self.notifyListeners(evt)
+                evt_type = 'AFFILIATE_INTERNET_NAME'
+
+            if self.opts['verify'] and not self.sf.resolveHost(host) and not self.sf.resolveHost6(host):
+                self.sf.debug(f"Host {host} could not be resolved")
+                evt_type += '_UNRESOLVED'
+
+            evt = SpiderFootEvent(evt_type, host, self.__name__, event)
+            self.notifyListeners(evt)
 
         for location in set(locations):
             evt = SpiderFootEvent("PHYSICAL_ADDRESS", location, self.__name__, event)
