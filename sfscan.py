@@ -289,7 +289,7 @@ class SpiderFootScanner():
                 mod = getattr(module, modName)()
                 mod.__name__ = modName
             except Exception as e:
-                self.__sf.error(f"Module {modName} initialization failed: {e}")
+                self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
                 continue
 
             # Set up the module options, scan ID, database handle and listeners
@@ -305,7 +305,8 @@ class SpiderFootScanner():
                 mod.setDbh(self.__dbh)
                 mod.setScanId(self.__scanId)
             except Exception as e:
-                self.__sf.error(f"Module {modName} initialization failed: {e}")
+                self.__sf.error(f"Module {modName} initialization failed: {traceback.format_exc()}")
+                mod.errorState = True
                 continue
 
             # Override the module's local socket module to be the SOCKS one.

@@ -297,7 +297,13 @@ class SpiderFootPlugin():
         Returns:
             bool
         """
-        if self.outgoingEventQueue and self.incomingEventQueue:
+        # Stop if module is in error state.
+        if self.errorState:
+            return True
+
+        # If threading is enabled, check the _stopScanning attribute instead.
+        # This is to prevent each thread needing its own sqlite db handle.
+        if self.outgoingEventQueue is not None and self.incomingEventQueue is not None:
             return self._stopScanning
 
         if not self.__scanId__:
@@ -454,7 +460,7 @@ class SpiderFootPlugin():
             try:
                 self.qsize = int(qsize)
             except (TypeError, ValueError):
-                self.qsize = self.threads * 2
+                self.qsize = self.threads * 5
             self.pool = [None] * self.threads
             self.name = str(name)
             self.inputThread = None
@@ -493,7 +499,7 @@ class SpiderFootPlugin():
                 self.outputQueue.close()
 
         def submit(self, arg, wait=True):
-            self.inputQueue.put_nowait(arg)
+            self.inputQueue.put(arg)
 
         def map(self, callback, iterable, args=None, kwargs=None, name=""):  # noqa: A003
             """
@@ -543,14 +549,16 @@ class SpiderFootPlugin():
         @property
         def finished(self):
             if self.sfp.checkForStop():
-                return True
+                finished = True
             else:
                 finishedThreads = [not t.busy for t in self.pool if t is not None]
                 try:
                     inputThreadAlive = self.inputThread.is_alive()
                 except AttributeError:
                     inputThreadAlive = False
-                return not inputThreadAlive and self.inputQueue.empty() and all(finishedThreads)
+                finished = not inputThreadAlive and self.inputQueue.empty() and all(finishedThreads)
+            self.sfp.sf.debug(f'Finished: {finished}')
+            return finished
 
         def __enter__(self):
             return self
